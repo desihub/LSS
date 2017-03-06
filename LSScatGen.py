@@ -20,6 +20,7 @@ from astropy.io import fits
 import argparse
 from datetime import date
 import numpy as np
+import os
 
 # Parse arguments
 # Two input files, one output file
@@ -39,6 +40,10 @@ args = parser.parse_args()
 zcat_file = args.zcat
 mtl_file = args.mtl
 LSScat_file = args.lsscat
+if os.path.isfile(LSScat_file) == True:
+    print("This LSScat file already exists. Can not overwrite.")
+    print(" Choose an alternative name for the output LSScat file.")
+    quit()
 
 print("Extract information from zcat fits file")
 hdulist = fits.open(zcat_file)
