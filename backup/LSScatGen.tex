@@ -1,0 +1,221 @@
+\documentclass[11pt]{article}
+
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage[square,numbers]{natbib}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{center}
+\Large{\textbf{Large-scale structure catalogue and random generation task force}}
+\end{center}
+
+The charge of this task force is advance the development of tools for creating
+LSS catalogue and associated random catalogues. The work is divided into three
+tasks
+\begin{itemize}
+\item LSSIII: Assessment of the data model for LSS catalogue (lead Mariana Vargas-Magana, mmaganav@fisica.unam.mx)
+\item LSSI: Advancing the LSS catalogue generation code (lead Lado Samushia, lado@phys.ksu.edu)
+\item LSSII: Constructing tools for random catalogue generation (Angela Burden, angela.burden@yale.edu)
+\end{itemize}
+
+\subsection*{LSSIII} The goal is to define data model for the output LSS
+catalogue and random catalogues. This group will interact with galaxy
+clustering, bright galaxy survey, and $C^3$ working groups to make sure that all
+of the information that's required for subsequent science analysis is available
+in LSS and random catalogues in a well-documented and easy to use manner.
+
+\subsection*{LSSI} The goal is to develop a code that produces LSS catalogue
+compliant with the data model defined by \textit{LSSIII}. We have to understand
+where all of the information is coming from and what are the relevant data
+models. Some of the information (e.g., local density, etc.) may have to be
+computed from scratch from a more basic data.
+
+\subsection*{LSSII} The goal is to develop a set of tools that produce random
+catalogues compliant with the data model defined by \textit{LSSIII}. We have to
+understand all density variations that are of non-cosmological origin and make
+sure that they are reflected in either the LSS or the random catalogues.
+
+\section{LSSIII}
+
+The data model for the LSS catalogue is currently not fully defined. Below is a
+provisional list of quantities that should go to the LSS catalogue. One of the
+goals for the Argonne meeting is to review this list and make sure nothing
+important is missing.
+
+\begin{enumerate}
+\item Basic information
+\begin{itemize}
+\item right ascension
+\item declination
+\item redshift
+\item object type
+\end{itemize}
+\item Imaging information
+\begin{itemize}
+\item Identifier (Brick ID, \ldots)
+\item Where is the imaging coming from (DECaLS, WISE, \ldots)
+\item Fluxes in various bands
+\item Exposure information
+\item Observational conditions
+\item Quality information
+\end{itemize}
+\item Targeting information
+\begin{itemize}
+\item Target ID
+\item Target completeness
+\item Target priority
+\end{itemize}
+\item Tiling information
+\begin{itemize}
+\item Observing tile IDs and fiber IDs
+\item List of objects that could have been assigned the same tile/fiber
+combination
+\item Observed by which program
+\item Tile/fiber combinations that could have observed this object
+\item Likelihood that the object is assigned a fiber (defined over multiple 
+realisations of a fiber assignment code)
+\end{itemize}
+\item Spectroscopic information
+\begin{itemize}
+\item Redshift error
+\item Redshift failure
+\item Warning flags
+\item Likelihood of observing this redshift/line strength combination
+\end{itemize}
+\item Auxiliary information
+\begin{itemize}
+\item weights to describe systematic effects and incompletenesses
+\item weights to enhance clustering signal (FKP, PVP, \ldots)
+\end{itemize}
+\end{enumerate}
+
+\section{LSSI}
+
+The main objective is to identify where all of the information listed in the
+previous section will come from and develop a code that collects (or computes)
+all this information.
+\begin{enumerate}
+\item  The \textit{ra} and \textit{dec} will come from the imaging and will be
+propagated all the way (?); Not likely to change throughout the pipeline.
+Redshift will be measured by the spectroscopic pipeline. Object type will be
+assigned by the target selection pipeline; This may occasionally change after
+redshifts are taken so will have to be taken from spectroscopic pipeline output.
+\item Will be read from imaging data files. This information is not going to
+change down the pipeline. The DR1 of DECaLS data is available and documented in
+\url{http://legacysurvey.org/dr1/}.
+\item This will come from the target selection pipeline. Some of the information
+(e.g., target type) may change and will have to be retrieved after spectroscopy
+takes place. The target selection code is being implemented here:
+github.com/desihub/desitarget.
+\item The information will come from the output of the fiber assignment code.
+Some of the entities here are not well defined. For example, it's not clear that
+the likelihood that an object is assigned a fiber can be computed easily on
+practice, or that it will be useful in mitigating fiber assignment effects. The
+fiber assignment codes can be found here:
+\url{https://github.com/desihub/fiberassign_sqlite} and
+\url{https://github.com/desihub/fiberassign}. The data model for the fiber assignment
+output is not defined at the moment.
+\item This information will come from the spectroscopic pipeline. The data model
+is defined and can be found here:
+\url{https://github.com/desihub/desidatamodel/blob/master/doc/DESI_SPECTRO_REDUX/PRODNAME/bricks/BRICKNAME/zbest-BRICKNAME.rst}.
+Where does the likelihood of measuring a redshift come from? Is this information
+better put in the random catalogue by pushing the random catalogue through the
+spectroscopic pipeline?
+\item There are two types of weights. The ones that correct for systematics and
+the ones that are meant to increase the signal to noise. We will discuss this in
+Argonne. Some of the systematic are more naturally reflected in randoms rather
+than as weights in the LSS catalogue. The S/N weights will depend on local
+number density and bias estimate and will have to be computed from scratch.
+\end{enumerate}
+
+\section{LSSII}
+
+The main objective is to develop a set of tools for creating random catalogues.
+The random catalogues should reflect all the variations in number density that
+are not of cosmological origin. All parts of pipeline (imaging, targeting,
+tiling, fiber assignment, spectroscopic) will imprint on the mask and selection
+function. Some of this are better described as weights of objects in LSS
+catalogue, and some of them as density of points in randoms. We have to decide
+in Argonne what goes where. 
+
+The idea of ``forward modelling'' random catalogues is very popular. The idea is
+to start from a uniform distribution of objects and push the randoms through the
+same data pipeline. The hope is that imaging, spectro, tiling, will imprint the
+same systematics in randoms, making it possible to remove them from the
+clustering measurements. This has been done successfully for tiling/fiber
+assignment, and it feels like this should work for the imaging and spectroscopic
+pipelines as well.
+
+There are some effects that may not be correctable in either LSS catalogue or
+randoms. The incompleteness in fiber assignment due to local density of sources
+is possibly one such effect. If that's the case, they will have to be modelled
+at the analysis stage rather than corrected in data.
+
+\section{What do we want to accomplish at Argonne meeting \& Issues to be
+addressed}
+
+\begin{itemize}
+\item Define provisional data model for the output of LSS and random catalogues.
+Put documentation in github.
+\item Understand the format of imaginglss. Talk/tutorial by someone involved in
+imaginglss?
+\item Understand the format of target selection database. What can change down
+the pipeline? Talk/tutorial from a TS person?
+\item Understand data model for fiber assignment output. What information do we
+want to put in the LSS catalogue exactly? What does a probability of an object
+to have a fiber assigned mean?
+\item Understand data model for spectroscopic pipeline. 
+\item What kind of auxiliary information should go into LSS catalogue?
+\item What kind of systematic effects go into LSS catalogue as weights and what
+goes into random catalogue as completeness?
+\item Is full forward modelling of randoms feasible? Can we push uniform
+catalogues through the whole pipeline (imaging, TS, fiber assignment, spectro)?
+Are there easier ways of accounting for some of the effects?
+\item What to do with the overdensity dependent effects (overdensity dependence
+of fiber assignment efficiency)? Can they be removed from the data? If not, what
+information should be propagated so that the effects can be modelled at the
+analysis stage?
+\item Survey available effort. Identify codes and modules to be written.
+Timeline for next six months.
+\end{itemize}
+
+\section{Agenda for Argonne meeting}
+
+\begin{itemize}
+\item \textbf{Mon 2 parallel session} General overview of the task-force.
+Discussion about the LSS and random catalogue data model. Are there any
+obviously missing pieces. In what way will the BGS and dark time catalogues
+differ? Does $C^3$ require it's own catalogue?
+\item \textbf{Mon 3 parallel session} A talk/tutorial from the imaginglss
+person. What will LSS and random generating codes require? What codes are
+available (e.g., a script generating randoms for imaging)? What part of imaging
+incompleteness goes to the LSS and what goes what goes to randoms?
+\item \textbf{Tue 1 parallel session} A talk/tutorial from a TS person. Where
+does the incompleteness information go? What will LSS and random generation
+require exactly?
+\item \textbf{Tue 2 parallel session} A talk/tutorial from a fiber assignment
+person. What will LSS and random generation require? Does FA output data model
+have everything that we need? How do we describe FA incompleteness?
+\item \textbf{Tue 3 parallel session} A talk/tutorial from a spectro person.
+Understand data model for the spectro pipeline output. Can a redshift, type and
+line strength dependent weight be defined? What will LSS and random generating
+codes need and is it accommodated in the data model?
+\item \textbf{Wed 1 parallel session} Define a provisional data model for the
+output of the LSS and random catalogues. Put the data model and documentation in
+github. Create sample files. Identify person(s) who will do this.
+\item \textbf{Wed 2 parallel session} Finalize a high-level description of the
+LSS catalogue generating code describing modules and data flow. Identify people
+who will write specific components of the code.
+\item \textbf{Wed 3 parallel session} Finilize a high-level description of the
+random generating code describing modules and data flow.  Identify people who
+will write specific components of the code.
+\item \textbf{Thu 1 parallel session} General overview. Create a rough timeline
+for next six months.
+\end{itemize}
+\end{document}
