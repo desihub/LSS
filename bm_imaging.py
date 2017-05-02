@@ -1,3 +1,15 @@
+# This script will looks at the targets file and computes correlations between
+# number density of targets as a function of various parameters. 
+# 
+# This version only looks at variations due to depth_r, galdepth_r, and extinction (EBV).
+#
+# The sky is broken up into bricks of size 0.5. This results in ~70,000 bricks
+# for the entire DESI footprint. For each brick number of galaxies, and average
+# depth_r, galdepth_r, EBV are computed and saved into an output .npy file. The
+# area, ramin, ramax, decmin, decmax of each brick are also saved in the output
+# .npy file. This information is useful when creating random catalogues. We may
+# as well save them here so there is no need to recompute them later.
+
 from __future__ import print_function
 from astropy.io import fits 
 from astropy.coordinates import SkyCoord 
@@ -15,7 +27,15 @@ def bn_to_unique_int(name):
     else:                                                                       
         return int(name[:4] + "0" + name[5:])                                   
                                                                                 
-targets = fits.open("../../quicksurvey2016/input/dark/targets.fits")            
+parser = argparse.ArgumentParser(description='Compute properties of bricks')
+parser.add_argument('target_file',help='Input target catalogue')
+parser.add_argument('target_type',help='Which targets do we want? (2=ELG)')
+parser.add_argument('ebv_north',help='extinction map for north')
+parser.add_argument('ebv_south',help='extinction map for south')
+parser.add_argument('out_file',help='output_file')
+args = parser.parse_args()
+
+targets = fits.open(args.targets_file)            
 print("Loading targets")                                                        
 # Target information                                                            
 tbname = targets[1].data.field("brickname")                                     
@@ -27,12 +47,13 @@ tdec = targets[1].data.field("dec")
 targets.close()                                                                 
                                                                                 
 # Do this for ELGs only for now (2 means ELG)                                   
-print("select ELGs")
-tbname = tbname[tdesi == 2]                                                     
-tdepthr = tdepthr[tdesi == 2]                                                    
-tgdepthr = tgdepthr[tdesi == 2]                                                  
-tra = tra[tdesi == 2]                                                           
-tdec = tdec[tdesi == 2]                                                         
+target_type = args.target_type
+print("select targets")
+tbname = tbname[tdesi == target_type]                                                     
+tdepthr = tdepthr[tdesi == target_type2]                                                    
+tgdepthr = tgdepthr[tdesi == target_type2]                                                  
+tra = tra[tdesi == target_type2]                                                           
+tdec = tdec[tdesi == target_type2]                                                         
                                                                                 
 # Unique bricknames                                                             
 print("Map bricknames to integers")
@@ -44,8 +65,8 @@ tbname = np.asarray(tbname,dtype=np.int32)
 # Finding EBV for each target                                                   
 tebv = np.zeros((np.size(tbname)))
 print("Find extinction for each brick")
-ebv_north = fits.open("/project/projectdirs/desi/software/edison/dust/v0_1/maps/SFD_dust_4096_ngp.fits")
-ebv_south = fits.open("/project/projectdirs/desi/software/edison/dust/v0_1/maps/SFD_dust_4096_sgp.fits")
+ebv_north = fits.open(args.ebv_north)
+ebv_south = fits.open(args.ebv_south)
 SCALE = ebv_north[0].header["lam_scal"]                                         
 ebv_N = ebv_north[0].data                                                       
 ebv_S = ebv_south[0].data                             
@@ -103,4 +124,4 @@ for ind, name in enumerate(ubname):
 
 sbrick = np.array([ungal,udepthr,ugdepthr,uebv,area,ramin,ramax,decmin,decmax])
 
-np.save("bm_imaging.npy",sbrick)
+np.save(args.out_file,sbrick)
