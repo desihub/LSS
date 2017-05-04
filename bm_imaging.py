@@ -47,7 +47,7 @@ tdec = targets[1].data.field("dec")
 targets.close()                                                                 
                                                                                 
 # Do this for ELGs only for now (2 means ELG)                                   
-target_type = args.target_type
+target_type = int(args.target_type)
 print("select targets")
 tbname = tbname[tdesi == target_type]                                                     
 tdepthr = tdepthr[tdesi == target_type2]                                                    
