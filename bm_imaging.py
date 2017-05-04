@@ -18,6 +18,7 @@ from itertools import izip
 import numpy as np                                                              
 import sys                                                                      
 import desispec.brick                                                           
+import argparse
                                                                                 
 # Assign a unique integer to each brick                                         
 def bn_to_unique_int(name):                                                     
