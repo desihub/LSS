@@ -17,16 +17,19 @@
 # redshift_warn -- redshift warning: 0 means ???, 4 means ???
 
 from astropy.io import fits
+from astropy.table import Table
 import argparse
 from datetime import date
 import numpy as np
 import os
+from itertools import izip
 
 # Parse arguments
 # Two input files, one output file
 # Input:
 # zcat -- file containing measured redshifts
 # mtl -- merged target list contains ra, dec
+# targets -- file containing original targeting information
 # (see http://desidatamodel.readthedocs.io/en/latest/DESI_TARGET/mtl.html for
 # the mtl file datamodel)
 # Output:
@@ -37,77 +40,52 @@ parser.add_argument('mtl',help='input merged target list file')
 parser.add_argument('lsscat',help='output LSS catalogue')
 args = parser.parse_args()
 
-zcat_file = args.zcat
-mtl_file = args.mtl
-LSScat_file = args.lsscat
-if os.path.isfile(LSScat_file) == True:
+if os.path.isfile(args.lsscat) == True:
     print("This LSScat file already exists. Can not overwrite.")
-    print(" Choose an alternative name for the output LSScat file.")
+    print("Choose an alternative name for the output LSScat file.")
     quit()
 
-print("Extract information from zcat fits file")
-hdulist = fits.open(zcat_file)
-tbdata = hdulist[1].data
-
-target_id = tbdata.field('targetid')
-object_type = tbdata.field('spectype')
-redshift = tbdata.field('z')
-redshift_err = tbdata.field('zerr')
-redshift_warn = tbdata.field('zwarn')
-
-hdulist.close()
-
-print("Apply selection")
-# Binary mask to only select GALAXY or QSO
-isqso = object_type == 'QSO'
-isgalaxy = object_type == 'GALAXY'
-bm = np.any([isqso,isgalaxy],axis=0)
-target_id = target_id[bm]
-object_type = object_type[bm]
-redshift = redshift[bm]
-redshift_err = redshift_err[bm]
-redshift_warn = redshift_warn[bm]
-
 print("Extract information from mtl fits file")
-hdulist = fits.open(mtl_file)
-tbdata = hdulist[1].data
+mtl_file = fits.open(args.mtl)
+mtl = mtl_file[1].data
 
-# The ordering of targets in the mtl file is not necessarily the same as the
-# ordering in the zcat file. Also, we have applied some masks.
-mtl_target_id = tbdata.field('targetid')
-mtl_ra = tbdata.field('ra')
-mtl_dec = tbdata.field('dec')
+mtl_target_id = mtl.field('targetid')
+ra = mtl.field('ra')
+dec = mtl.field('dec')
+# desi_target 1 = LRG, 2 = ELG, 4 = QSO
+desi_target = mtl.field('desi_target')
+depth_r = mtl.field('depth_r')
+galdepth_r = mtl.field('galdepth_r')
+Ntarg = np.size(mtl_target_id)
+# The arrays below will be filled in from the zcat file
+z = np.zeros(Ntarg)
+z_err = np.zeros(Ntarg)
+z_warn = np.zeros(Ntarg)
+stype = np.array(['000000' for item in range(Ntarg)])
+# Create a dictionary from target_id to position in array
+print("Create dictionary")
+tid_dict = dict(zip(mtl_target_id,range(Ntarg)))
 
-# Create python dictionary to select ra, dec for a specific target_id
-print("Create radec dictionary")
-radec = zip(mtl_ra, mtl_dec)
-radec_dict = dict(zip(mtl_target_id, radec))
+print("Extract information from zcat fits file")
+zcat_file = fits.open(args.zcat)
+zcat = zcat_file[1].data
 
-ra = np.zeros(np.size(target_id))
-dec = np.zeros(np.size(target_id))
+zcat_target_id = zcat.field('targetid')
+spec_type = zcat.field('spectype')
+redshift = zcat.field('z')
+redshift_err = zcat.field('zerr')
+redshift_warn = zcat.field('zwarn')
 
-print("select ra, dec")
-for index, tid in enumerate(target_id):
-    ra[index], dec[index] = radec_dict[tid]
+print("select redshift and types")
+for ID, st, zz, zz_err, zz_warn in izip(zcat_target_id, spec_type, redshift, redshift_err, redshift_warn):
+    index = tid_dict[ID]
+    stype[index] = st
+    z[index] = zz
+    z_err[index] = zz_err
+    z_warn[index] = zz_warn
 
 # Write information into LSS catalogue fits file
-print("write to LSS catalogue file")
-prihdr = fits.Header()
-prihdr['comment'] = "DESI Large-Scale Structure Catalogue"
-creation_date = date.today()
-prihdr['date'] = creation_date.strftime('%m/%d/%Y')
-prihdu = fits.PrimaryHDU(header=prihdr)
-
-col1 = fits.Column(name='target_id',format='K',array=target_id)
-col2 = fits.Column(name='object_type',format='10A',array=object_type)
-col3 = fits.Column(name='redshift',format='D',array=redshift)
-col4 = fits.Column(name='ra',format='D',array=ra)
-col5 = fits.Column(name='dec',format='D',array=dec)
-col6 = fits.Column(name='redshift_err',format='E',array=redshift_err)
-col7 = fits.Column(name='redshift_warn',format='J',array=redshift_warn)
-
-cols = fits.ColDefs([col1, col2, col3, col4, col5, col6, col7])
-tbhdu = fits.BinTableHDU.from_columns(cols)
-
-thdulist = fits.HDUList([prihdu, tbhdu])
-thdulist.writeto(LSScat_file)
+lss = Table([mtl_target_id, ra, dec, desi_target, depth_r, galdepth_r, stype, z, z_err, z_warn], names=('targetid','ra','dec','desitarget','depthr','galdepthr','stype','z','z_err','z_warn'))
+lss.meta['comment'] = 'DESI Large-Scale Structure Catalogue'
+lss.meta['date'] = date.today()
+lss.write(args.lsscat, format='fits')
