@@ -32,5 +32,4 @@ new_z_vect = shuffle(z_vector)
 t = Table ([radec['col1'], radec['col2'],new_z_vect], names=['RA', 'DEC', 'Z'])
 hdu = fits.table_to_hdu(t)
 hdu.writeto(outfile)
-#awk 'FNR==NR{a[NR]=$1;next}{$3=a[FNR]}1' redshifts_elg_1.csv /scratch1/scratchdirs/angela/rand1/allELG_0.csv > ELG_FArand_radecz_0.txt
-#mv ELG_FArand_radecz_0.txt /global/project/projectdirs/desi/datachallenge/LSScat/quicksurvey2016/elg_fa_rands/
+
