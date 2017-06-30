@@ -44,8 +44,8 @@ def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, o
     del masked_data
 
     H, xedges, yedges = np.histogram2d(masked_pass_data['RA'],masked_pass_data['DEC'], bins=(no_ra,no_dec),range=[[xmin, xmax], [ymin, ymax]])
-    y = ymin:bin_size_y:(ymax-bin_size_y)
-    x = xmin:bin_size_x:(xmax-bin_size_x)
+    y = np.linspace(ymin, ymax, no_dec)
+    x = np.linspace(xmin, xmax, no_ra)
     [X,Y] = np.meshgrid(x,y);
     X=np.transpose(X)
     Y=np.transpose(Y)
@@ -66,11 +66,11 @@ def hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_fla
     if obs_flag==2:
         name_obs = 'true'
     
-    outfile = "target_density_%s_%s_pass%d.pdf" %(targ_type, name_obs, pass_flag)
+    outfile = "~/DESIhub/target_density_%s_%s_pass%d.pdf" %(targ_type, name_obs, pass_flag)
     bin_size_x = (xmax-xmin)/no_ra
     bin_size_y = (ymax-ymin)/no_dec
-    y = ymin:bin_size_y:(ymax-bin_size_y)
-    x = xmin:bin_size_x:(xmax-bin_size_x)
+    y = np.linspace(ymin, ymax, no_dec)
+    x = np.linspace(xmin, xmax, no_ra)
     [X,Y] = np.meshgrid(x,y);
     X=np.transpose(X)
     Y=np.transpose(Y)
@@ -100,15 +100,14 @@ for filename in os.listdir(os.getcwd()):
     tile_data1 = fits.open(filename)[1].data
     tile_data2 = fits.open(filename)[2].data
 
-    add_rows_all1 = Table(tile_data1['TARGETID'])
-    add_rows_all2 = Table(tile_data2['POTENTIALTARGETID'])
+    add_rows_all1 = Table((tile_data1['TARGETID'],), names=('TARGETID',))
+    add_rows_all2 = Table((tile_data2['POTENTIALTARGETID'],),names=('TARGETID',))
     del tile_data1, tile_data2
 
     add_rows1 = unique(add_rows_all1,keys='TARGETID')
     add_rows1['OBS'] = np.ones(len(add_rows1))
-    add_rows2 = unique(add_rows_all2,keys='POTENTIALTARGETID')
+    add_rows2 = unique(add_rows_all2,keys='TARGETID')
     add_rows2['OBS'] = np.zeros(len(add_rows2))
-    add_rows2['POTENTIALTARGETID'].name = 'TARGETID'
 
     add_rows1['TILEID']= np.ones(len(add_rows1))*int(tile_id)
     add_rows2['TILEID']= np.ones(len(add_rows2))*int(tile_id)
@@ -143,6 +142,16 @@ for filename in os.listdir(os.getcwd()):
 
 #Edit out the following functions depending on your objectives.
 #to save all this data 
+targ_flag = 4
+obs_flag =1
+pass_flag =0
+no_ra =72
+no_dec=36
+ymin = -90.
+ymax = 90.
+xmin = 0.
+xmax = 360.
+outall_filename = "~/DESIhub/test_output.fits"
 save_potential_target_data(total_unique_targs, outall_filename)
-get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
+density = get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
 hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
