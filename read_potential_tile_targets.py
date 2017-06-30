@@ -1,7 +1,10 @@
 import os
 from astropy.io import fits
-from astropy.table import Table, vstack
+from astropy.table import Table, vstack, join
 from astropy.table import Column, unique
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+import matplotlib.cm as cm
 import numpy as np
 
 #some useful functions
@@ -9,32 +12,77 @@ def save_potential_target_data(total_unique_targs, output_filename):
     hdu = fits.table_to_hdu(total_unique_targs)
     hdu.writeto(outfile_filename)
 
-def get_target_density(data, no_ra, no_dec, flag1, flag2):
+def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag):
     #Specify limits of binned data                                                                                                        
     ymin = -90.
     ymax = 90.
     xmin = 0.
     xmax = 360.
-    if flag1 ==1:
+    bin_size_x = (xmax-xmin)/no_ra
+    bin_size_y = (ymax-ymin)/no_dec
+    if targ_flag ==1:
         targ_type = 'LRG'
-    if flag1==2:
+    if targ_flag==2:
         targ_type = 'ELG'
-    if flag1==4:
+    if targ_flag==4:
         targ_type = 'QSO'
 
-    if flag2 == 1:
+    if obs_flag == 1:
         mask = data['SOURCETYPE']==targ_type
         masked_data = data[mask]
-    if flag2 ==2:
+    if obs_flag ==2:
         mask = data['TRUETYPE']==targ_type
         masked_data = data[mask]
-    if flag2 ==3:
+    if obs_flag ==3:
         masked_data = data
+    del data
+    if pass_flag<100:
+        mask_pass=masked_data['PASS']==pass_flag
+        masked_pass_data =masked_data[mask_pass]
+    if pass_flag ==100:
+        masked_pass_data =masked_data
+    del masked_data
 
-    H, xedges, yedges = np.histogram2d(data['RA'],data['DEC'], bins=(no_ra,no_dec),range=[[xmin, xmax], [ymin, ymax]])
+    H, xedges, yedges = np.histogram2d(masked_pass_data['RA'],masked_pass_data['DEC'], bins=(no_ra,no_dec),range=[[xmin, xmax], [ymin, ymax]])
+    y = ymin:bin_size_y:(ymax-bin_size_y)
+    x = xmin:bin_size_x:(xmax-bin_size_x)
+    [X,Y] = np.meshgrid(x,y);
+    X=np.transpose(X)
+    Y=np.transpose(Y)
+    middecrad = (Y)*np.pi/180;
+    area =  bin_size_x*bin_size_y*np.cos(middecrad);
+    density_in_bins = H/area;
+    return density_in_bins
+
+def hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag):
+    if targ_flag ==1:
+        targ_type = 'LRG'
+    if targ_flag==2:
+        targ_type = 'ELG'
+    if targ_flag==4:
+        targ_type = 'QSO'
+    if obs_flag==1:
+        name_obs = 'source'
+    if obs_flag==2:
+        name_obs = 'true'
     
+    outfile = "target_density_%s_%s_pass%d.pdf" %(targ_type, name_obs, pass_flag)
+    bin_size_x = (xmax-xmin)/no_ra
+    bin_size_y = (ymax-ymin)/no_dec
+    y = ymin:bin_size_y:(ymax-bin_size_y)
+    x = xmin:bin_size_x:(xmax-bin_size_x)
+    [X,Y] = np.meshgrid(x,y);
+    X=np.transpose(X)
+    Y=np.transpose(Y)
+    f = plt.figure()
+    m = Basemap(projection='moll',lon_0=180,resolution='c')
+    cs = m.pcolor(X, Y, density,  cmap=plt.cm.jet,latlon=True)
+    cbar = m.colorbar(cs,location='bottom',pad="5%")
+    f.savefig(outfile, bbox_inches='tight')
+
+#---------------------------------------------MAIN-------------------------------------------------------   
 #This first part of the code reads  all potential targets (within reach if a fiber), all actual targets 
-#selected by the fiber filters the info. so only the unique tarets are recorded, joins the tile number to the pass number
+#selected by the fiber and filters the info. so only the unique tarets are recorded, joins the tile number to the pass number
 #and joins the target id to the truth table to see what the targets were thought to be, what they actually are and their ra, dec, and z.
 i=0
 j=0
@@ -95,5 +143,6 @@ for filename in os.listdir(os.getcwd()):
 
 #Edit out the following functions depending on your objectives.
 #to save all this data 
-save_potential_target_data(total_unique_targs, output_filename)
-
+save_potential_target_data(total_unique_targs, outall_filename)
+get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
+hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
