@@ -13,7 +13,7 @@ import numpy as np
 #save all unique tagr info.
 def save_potential_target_data(total_unique_targs, output_filename):    
     hdu = fits.table_to_hdu(total_unique_targs)
-    hdu.writeto(outfile_filename)
+    hdu.writeto(output_filename)
 
 #find out target density in ra,dec bins
 def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag):
@@ -47,7 +47,7 @@ def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, o
         masked_pass_data =masked_data
     del masked_data
 
-    H, xedges, yedges = np.histogram2d(masked_pass_data['RA'],masked_pass_data['DEC'], bins=(no_ra,no_dec),range=[[xmin, xmax], [ymin, ymax]])
+    H, xedges, yedges = np.histogram2d(masked_pass_data['RA_1'],masked_pass_data['DEC_1'], bins=(no_ra,no_dec),range=[[xmin, xmax], [ymin, ymax]])
     y = np.linspace(ymin, ymax, no_dec)
     x = np.linspace(xmin, xmax, no_ra)
     [X,Y] = np.meshgrid(x,y);
@@ -124,12 +124,13 @@ for filename in os.listdir(os.getcwd()):
     i+=1
     #this next part is for efficiency, it is slow to vstack everything at once, please change this if you know of a better method.    
     if i %100 ==0:
-        print(i)
-        if i==100:
+        print(j,i)
+        if j==0:
             total_unique_targs = tot_unique_targsL100
         else:
             total_unique_targs = vstack(total_unique_targs, total_unique_targsL100)
         i=0
+        j+=1
         del tot_unique_targsL100
 
 tile_info_file = '/project/projectdirs/desi/software/edison/desimodel/master/data/footprint/desi-tiles.fits'
@@ -149,7 +150,13 @@ del pass_targs
 #from all tiles in the directory is now in the table total_unique_targs.
 
 #Edit out the following functions depending on your objectives.
-#to save all this data 
+#the following inputs should prob. go in a parameter file along with the output file names that gets read in. 
+#targ_flag-> whihc targets are you interested in for the plot/density info, 4->qso, 2->elg, 1->lrg
+#obs_flag -> do you want true qso/elg/lrg? use flag 2, do you want source targets? use flag 1
+#pass_flag-> which pass are you interested in? (0-4) if you want all then pass_flag ==100
+#no_ra, no_dec-> are the number of bins you want in your density plot (NB, density is always per sq. degree, 
+#this just depends on how finely you want to bin the area)
+#ymax/min is dec max/min, xmax/min is ra max and min
 targ_flag = 4
 obs_flag =1
 pass_flag =0
@@ -159,7 +166,7 @@ ymin = -90.
 ymax = 90.
 xmin = 0.
 xmax = 360.
-outall_filename = "~/DESIhub/test_output.fits"
+outall_filename = "~/DESIhub/test_output.fits"#change to your own directory path
 save_potential_target_data(all_info_unique_targs, outall_filename)
 density = get_target_density(all_info_unique_targs, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
 hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
