@@ -1,3 +1,4 @@
+#basic code but needs optimizing as very slow at present
 import os
 from astropy.io import fits
 from astropy.table import Table, vstack, join
@@ -8,10 +9,13 @@ import matplotlib.cm as cm
 import numpy as np
 
 #some useful functions
+
+#save all unique tagr info.
 def save_potential_target_data(total_unique_targs, output_filename):    
     hdu = fits.table_to_hdu(total_unique_targs)
     hdu.writeto(outfile_filename)
 
+#find out target density in ra,dec bins
 def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag):
     #Specify limits of binned data                                                                                                        
     ymin = -90.
@@ -54,6 +58,7 @@ def get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, o
     density_in_bins = H/area;
     return density_in_bins
 
+#plot target density on a mollweide plot (need to add labels), saves plot to pdf
 def hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag):
     if targ_flag ==1:
         targ_type = 'LRG'
@@ -86,11 +91,6 @@ def hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_fla
 #and joins the target id to the truth table to see what the targets were thought to be, what they actually are and their ra, dec, and z.
 i=0
 j=0
-tile_info_file = '/project/projectdirs/desi/software/edison/desimodel/master/data/footprint/desi-tiles.fits'
-pass_data = fits.open(tile_info_file)[1].data
-truth = fits.open('/global/project/projectdirs/desi/datachallenge/quicksurvey2017/input/dark/truth.fits')[1].data
-truth_table = Table( [ truth['TARGETID'],truth['RA'], truth['DEC'], truth['TRUEZ'], truth['TRUETYPE'], truth['SOURCETYPE']], 
-              names = ('TARGETID', 'RA', 'DEC', 'TRUEZ','TRUETYPE','SOURCETYPE'))
 
 for filename in os.listdir(os.getcwd()):
     start = filename.find('tile_') + 5
@@ -115,12 +115,8 @@ for filename in os.listdir(os.getcwd()):
     tot_targs = (vstack([add_rows1,add_rows2]))
     del add_rows1, add_rows2
 
-    uni_targs = unique(tot_targs, keys = 'TARGETID')
-    pass_targs = join(uni_targs, pass_data, keys='TILEID')
-    del uni_targs
-
-    unique_targs = join(pass_targs, truth_table, keys='TARGETID')
-
+    unique_targs = unique(tot_targs, keys = 'TARGETID')
+    
     if i==0:
         tot_unique_targsL100 = unique_targs
     else:
@@ -134,9 +130,21 @@ for filename in os.listdir(os.getcwd()):
         else:
             total_unique_targs = vstack(total_unique_targs, total_unique_targsL100)
         i=0
-        del total_unique_targsL100
+        del tot_unique_targsL100
 
+tile_info_file = '/project/projectdirs/desi/software/edison/desimodel/master/data/footprint/desi-tiles.fits'
+pass_data = fits.open(tile_info_file)[1].data
+truth = fits.open('/global/project/projectdirs/desi/datachallenge/quicksurvey2017/input/dark/truth.fits')[1].data
+truth_table = Table( [ truth['TARGETID'],truth['RA'], truth['DEC'], truth['TRUEZ'], truth['TRUETYPE'], truth['SOURCETYPE']],
+              names = ('TARGETID', 'RA', 'DEC', 'TRUEZ','TRUETYPE','SOURCETYPE'))
 
+pass_targs = join(total_unique_targs, pass_data, keys='TILEID')
+del total_unique_targs
+del pass_data
+all_info_unique_targs = join(pass_targs, truth_table, keys='TARGETID')
+del truth
+del truth_table
+del pass_targs
 #the data ['TARGETID', 'RA', 'DEC', 'TRUEZ','TRUETYPE','SOURCETYPE', 'OBS, 'PASS', 'TILEID'] where OBS is if the object was assigned a fiber
 #from all tiles in the directory is now in the table total_unique_targs.
 
@@ -152,6 +160,6 @@ ymax = 90.
 xmin = 0.
 xmax = 360.
 outall_filename = "~/DESIhub/test_output.fits"
-save_potential_target_data(total_unique_targs, outall_filename)
-density = get_target_density(data, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
+save_potential_target_data(all_info_unique_targs, outall_filename)
+density = get_target_density(all_info_unique_targs, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
 hammer_plot_density(density, xmax, xmin, ymax, ymin, no_ra, no_dec, targ_flag, obs_flag, pass_flag)
