@@ -36,7 +36,7 @@ parser.add_argument('ebv_south',help='extinction map for south')
 parser.add_argument('out_file',help='output_file')
 args = parser.parse_args()
 
-targets = fits.open(args.targets_file)            
+targets = fits.open(args.target_file)            
 print("Loading targets")                                                        
 # Target information                                                            
 tbname = targets[1].data.field("brickname")                                     
@@ -51,10 +51,10 @@ targets.close()
 target_type = int(args.target_type)
 print("select targets")
 tbname = tbname[tdesi == target_type]                                                     
-tdepthr = tdepthr[tdesi == target_type2]                                                    
-tgdepthr = tgdepthr[tdesi == target_type2]                                                  
-tra = tra[tdesi == target_type2]                                                           
-tdec = tdec[tdesi == target_type2]                                                         
+tdepthr = tdepthr[tdesi == target_type]                                
+tgdepthr = tgdepthr[tdesi == target_type]                                                  
+tra = tra[tdesi == target_type]                                                           
+tdec = tdec[tdesi == target_type]                                                         
                                                                                 
 # Unique bricknames                                                             
 print("Map bricknames to integers")

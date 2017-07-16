@@ -1,5 +1,5 @@
 '''
-This script will read the information about how number density varies across the
+Tihis script will read the information about how number density varies across the
 bricks as a function of various parameters and will create a random catalogue
 that describes the angular mask.
 
@@ -49,7 +49,9 @@ print(MM)
 
 # I am solving the equation nth - nave = sum(acoeff_i*(par - parave))
 a_coeff = np.dot(CC[0,1:],np.linalg.inv(CC[1:,1:]))
-mean_par = np.outer(np.mean(bricks[1:4,:],axis=1),np.ones(67701))
+print(np.shape(a_coeff))
+print(a_coeff)
+mean_par = np.outer(np.mean(bricks[1:4,:],axis=1),np.ones(67698))
 nave_th = MM[0] + np.dot(a_coeff, bricks[1:4,:] - mean_par)
 Nave_th = nave_th*area
 
