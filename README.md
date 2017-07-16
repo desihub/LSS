@@ -13,4 +13,8 @@ catalogues reflecting the angular variations in the targeting.
 
 For sample .slurm and input/output files see /project/projectdirs/desi/datachallenge/LSScat on NERSC
 
-For sample output catalogue and randoms see /project/projectdirs/desi/datachallenge/LSScat/quicksurvey2016 on NERSC
+For sample output catalogue and randoms see /project/projectdirs/desi/datachallenge/LSScat/quicksurvey2016 
+and /project/projectdirs/desi/datachallenge/LSScat/quicksurvey2017 on NERSC
+
+pipeline:
+
