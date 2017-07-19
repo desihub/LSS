@@ -1,4 +1,4 @@
-# LSS
+#  LSS
 Codes used to create LSS catalogue and randoms
 
 LSScatGen.py is a python code that creates the LSS catalogue for quicksurvey2016.
