@@ -1,0 +1,66 @@
+#This is a repo to host correlation function code
+#
+#
+#Dependencies:
+#numpy
+#cython
+
+
+#To Build the source:
+#Type: python setup.py build_ext --inplace
+#
+#
+#To Run the code with default setting and example data file use:
+#python Runme_Correlation.py
+#This will compute all the two point correlation,
+#To get the 2d correlation and multipoles from the pair count use:
+#python PairCountTOxi.py
+#
+#
+#To get all the input options for pair count use:
+#python Runme_Correlation.py --help
+#
+#These two pythong script is very modular and has the ability to compute correlation function with lot of different choices. You could use the modular nature and directly import these function in any other python script for ease of access. Some scripts will be added to automate a lot of things. 
+#
+#To understand the script options its important to understand how the correlation function is computed and various choices we make. There are many assumption which are never dicscussed and this code has the ability to test some of those assumption.
+#
+#
+#
+#
+#Simplest case: You just need a data and random file to compute the correaltion function: The code in general has the ability to read fits, text and some file handler format. Also, it can start from RA,DEC, Redshift if needed. For simplicity we will describe only the text file scenario here.
+#
+#The data and random file should have 4 columns consisting of X,Y,Z and weights. The X,Y,Z can be in any unit. The weights are normally used to optimize the correlation function if you dont know what weight to use then just use 1 as weight for all the galaxies and randoms.
+#The case 1: To run the correlation function with a simple data and random file use:
+#python Runme_Correlation.py -data datafile -rand randomfile -out outroot
+#outroot is just a path including some initial file name to be used for all of the output file
+#when you run python Runtime_Correlation.py --help then it will show you the deafult options for these inputs.
+#
+#Running the correlation function on multiple processor
+#To use a given number of processor use option -nproc N . The optimal performance will be when you use -nproc = number ofr processor in the node. using larger number than that will over subscribe the processor and might slow down the performance.
+#
+#If you want to use more than one node then you have to use qsub array job option
+#I will write about how to do it later
+#
+#The above code compute only the pair count.
+#It write all the pair count with -out as the root name
+#-out contains the full path of the output including a root name
+#for example if you want to write the pair count under diretory example/PairCount and provide the file name and initial root test then -out example/PairCount/test
+#
+#Now let say you want to write the 2d correlation function with root example/XI2D/test and monopole/quadruple with root example/XI02/test then you should run the PairCountToxi.py as follows:
+#
+#pyhton PairCountToxi.py example/PairCount/test example/XI2D/test example/XI02/test
+#This will create the 2d correlation and multipole in the respective directory
+#
+#All of the above directory should exists!! otherwise the script will fail with error
+#
+#
+#
+#
+#
+#
+#
+#TO Submit jobs on multiple nodes:
+#Note that the script uses job array, therefore in place of submitting one job on multiple nodes it submits independent jobs on each node. But, it takes care of the fact and combine the result without any extra work from use.
+#to submit type
+#qsub -t 1-nnode pbs_nnod4.sh
+#where nnode is number of nodes to be used. check pbs_nnode4.sh file for details
