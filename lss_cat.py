@@ -71,7 +71,7 @@ def datestamped_tiles(exps, MJD0, MJD1, printit=False):
     hdr['MJD1'] = MJD1
     
     if printit:
-      print(_tiles)
+        print(_tiles)
     
     return  _tiles, hdr
     
@@ -177,98 +177,98 @@ def get_randassign(fpath, gen=True, mtl=None, randoms=None):
         #             --skies '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'        
 
     else:
-      return  Table(fits.open(fpath)[4].data), Table(fits.open(fpath)[1].data)  
+        return  Table(fits.open(fpath)[4].data), Table(fits.open(fpath)[1].data)  
 
 def pop_assigned(final, printit=False):
     ##  Match ID list to the date stamped tiles.
     ids               = ['072015']
 
     for id in ids:
-      assigned        = Table(fits.open(root + 'fiberassign/tile-{}.fits'.format(id))[1].data)
+        assigned        = Table(fits.open(root + 'fiberassign/tile-{}.fits'.format(id))[1].data)
         
-      ##
-      assignable      = Table(fits.open(root + 'fiberassign/tile-{}.fits'.format(id))[4].data)
+        ##
+        assignable      = Table(fits.open(root + 'fiberassign/tile-{}.fits'.format(id))[4].data)
 
-      ##  Unique assignable targets in this tile.  Note:  uassigned, ** NOT ** unassined.
-      uassigned, cnts = np.unique(assignable['TARGETID'], return_counts=True)
-      repeated        = cnts > 1
+        ##  Unique assignable targets in this tile.  Note:  uassigned, ** NOT ** unassined.
+        uassigned, cnts = np.unique(assignable['TARGETID'], return_counts=True)
+        repeated        = cnts > 1
+        
+        nassignable     = len(uassigned)
+        ##  ntargetable = is_point_in_desi(tiles[tiles['TILEID'] == id], ...)
 
-      nassignable     = len(uassigned)
-      ##  ntargetable = is_point_in_desi(tiles[tiles['TILEID'] == id], ...)
-
-      ##  assign_cpt  = nassignable / ntargetable 
+        ##  assign_cpt  = nassignable / ntargetable 
       
-      print('Tile ID {} has {} and {} single target-fiber and many target-fiber respectively.'.format(id, len(repeated) - np.count_nonzero(repeated.astype(np.int)), np.count_nonzero(repeated.astype(np.int))))
+        print('Tile ID {} has {} and {} single target-fiber and many target-fiber respectively.'.format(id, len(repeated) - np.count_nonzero(repeated.astype(np.int)), np.count_nonzero(repeated.astype(np.int))))
 
       
-      count           = 0
+        count           = 0
       
-      # Set of targets reachable by a single fiber.
-      for entry in uassigned[~repeated]:
-        # This shouldn't be necessary ... 
-        if entry in final['TARGETID']:
-          print(entry)
+        # Set of targets reachable by a single fiber.
+        for entry in uassigned[~repeated]:
+            # This shouldn't be necessary ... 
+            if entry in final['TARGETID']:
+                print(entry)
             
-          # Tiles.
-          col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
-
-          final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
-          final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
-          
-          # Fibers.
-          col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_FIBERS'])[0] 
-          
-          final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = assignable[assignable['TARGETID'] == entry]['FIBER']
-          final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
-
-          # Priority of the target to which the potential fiber was actually assigned. 
-          final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
-
-          count                                                += 1
-
-          if count > 25:
-              break
-
-      count = 0
-          
-      # Set of targets reachable by multiple fibers, for this tile.
-      for entry in uassigned[repeated]:
-        # This shouldn't be necessary ...                                                                                                                                                                                                                                                                                                                                                                         
-        if entry in final['TARGETID']:
-          print(entry)
+            # Tiles.
+            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
             
-          # Tiles.                                                                                                                                                                                                                     
-          col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
-
-          final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
-          final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
-
-          # Fibers.
-          fentries    = assignable['FIBER'][assignable['TARGETID'] == entry]
-
-          for fentry in fentries:
-            col                                                   = np.array(final['NGOOD_FIBERS'][final['TARGETID'] == entry])[0]
-
-            final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = fentry
+            final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
+            final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
+          
+            # Fibers.
+            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_FIBERS'])[0] 
+          
+            final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = assignable[assignable['TARGETID'] == entry]['FIBER']
             final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
 
-            # Priority of the target to which the potential fiber was actually assigned.  Necessary for the ANG_VETO_FLAG = 3 class.
+            # Priority of the target to which the potential fiber was actually assigned. 
             final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
 
-          count                                                  += 1
+            count                                                += 1
 
-        if count > 25:
-            break
+            if count > 25:
+                break
+
+        count = 0
+        
+        # Set of targets reachable by multiple fibers, for this tile.
+        for entry in uassigned[repeated]:
+            # This shouldn't be necessary ...                                                                                                                                                                                                                                                                                                                                                                 
+            if entry in final['TARGETID']:
+                print(entry)
+            
+            # Tiles.                                                                                                                                                                                                                     
+            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
+
+            final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
+            final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
+
+            # Fibers.
+            fentries    = assignable['FIBER'][assignable['TARGETID'] == entry]
+
+            for fentry in fentries:
+                col                                               = np.array(final['NGOOD_FIBERS'][final['TARGETID'] == entry])[0]
+
+                final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = fentry
+                final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
+
+                # Priority of the target to which the potential fiber was actually assigned.  Necessary for the ANG_VETO_FLAG = 3 class.
+                final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
+                
+                count                                                += 1
+
+                if count > 25:
+                    break
           
-    # Catch if the initialization memory assignment was not sufficient for the max. # of fibers available to any target.
-    # May well have thrown an error by this point if that's the case. 
-    assert  np.all(final['NGOOD_FIBERS'] < MAX_NFIBER)
-    assert  np.all(final['NGOOD_TILES']  < MAX_NTILE)
+            # Catch if the initialization memory assignment was not sufficient for the max. # of fibers available to any target.
+            # May well have thrown an error by this point if that's the case. 
+            assert  np.all(final['NGOOD_FIBERS'] < MAX_NFIBER)
+            assert  np.all(final['NGOOD_TILES']  < MAX_NTILE)
+            
+            if printit:
+                toprint = final[final['NGOOD_FIBERS'] >= 1]
 
-    if printit:
-      toprint = final[final['NGOOD_FIBERS'] >= 1]
-
-      print(toprint['NGOOD_FIBERS', 'NGOOD_TILES', 'GOOD_FIBERS', 'GOOD_TILES', 'FIBPRIORITY'])
+            print(toprint['NGOOD_FIBERS', 'NGOOD_TILES', 'GOOD_FIBERS', 'GOOD_TILES', 'FIBPRIORITY'])
       
     return  final
 
@@ -328,13 +328,12 @@ def set_assigncomplete(dst_tiles, final):
     return  dst_tiles
 
 
-if __name__ == '__main__':
-    prod            = 'v1'
-    root            = '/project/projectdirs/desi/datachallenge/svdc-summer2019/svdc2019c/'
-
+def lsscat_gen(root, prod, odir):
     # Get required parent pipeline files. 
     _mtl            = root + 'targets/mtl.fits'
-    _skies          = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'
+
+    # Needed for fiberassign runs. 
+    # _skies        = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'
 
     targets         = Table(fits.open(root + 'targets/targets.fits')[1].data)
     
@@ -347,7 +346,7 @@ if __name__ == '__main__':
     _tiles          = fits.open(root + 'survey/SV-tiles.fits')[1]
     tiles           = Table(fits.open(root + 'survey/SV-tiles.fits')[1].data)
 
-    zcat            = Table(fits.open(root + 'spectro/redux/v1/zcatalog-{}.fits'.format(prod))[1].data)
+    zcat            = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod))[1].data)
     
     # DR8 randoms. 
     # rows          = np.arange(len(mtl))
@@ -361,7 +360,6 @@ if __name__ == '__main__':
     # TARGETID | FIBERID | LOCATION
     # print(rand_assignable)
     
-    
     # Date stamped tiles meeting quality requirements.  
     MJD0            = 58853.51129915193
     MJD1            = 58881.40164263005
@@ -369,7 +367,7 @@ if __name__ == '__main__':
     dst_tiles, hdr           = datestamped_tiles(exps, MJD0, MJD1, printit=False)
     
     # Write here (should add header).  Assign tile assignment completeness below. 
-    dst_tiles.write('/project/projectdirs/desi/www/users/mjwilson/dst_tiles.fits', format='fits', overwrite=True)
+    dst_tiles.write(odir + 'dst_tiles.fits', format='fits', overwrite=True)
     
     '''
     # Sort Targets by TARGETID
@@ -426,11 +424,20 @@ if __name__ == '__main__':
     
     final                          = final[final['Z'] > 0.]
     
-    final.write('/project/projectdirs/desi/www/users/mjwilson/lsscat_v1.fits', format='fits', overwrite=True)
+    final.write(odir + 'lsscat_v1.fits', format='fits', overwrite=True)
 
     final.pprint(max_width=-1)
     
     # Add tile assignment completeness based on reachable fibers from final. 
     dst_tiles                      = set_assigncomplete(dst_tiles, final)
     
+    
+if __name__ == '__main__':
+    odir            = '/project/projectdirs/desi/www/users/mjwilson/'
+
+    prod            = 'v1'
+    root            = '/project/projectdirs/desi/datachallenge/svdc-summer2019/svdc2019c/'    
+
+    lsscat_gen(root, prod, odir)
+
     print('\n\nDone.\n\n')
