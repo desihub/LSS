@@ -11,6 +11,8 @@ WJP data model.
 https://docs.google.com/document/d/1GNqJUvAugIhsVI7gpeZHOCcpXp4DkaOtrHqRHr_Cgt8/edit#
 
 By MJW (Dec. 28 2019)
+
+https://portal.nersc.gov/project/desi/users/mjwilson/lss_cat.py
 """
 
 import fitsio
@@ -29,6 +31,21 @@ MAX_NTILE   = 10
 log         = get_logger()
 
 def blind_distances(final):
+    '''
+    Given an LSS catalog instance with Z filled, 
+    return the same instance with (blinded) cosmo
+    distances. 
+
+    Parameters                                                                                                                                                                                                                                                                                                                                                                                                 
+    ----------                                                                                                                                                                                                                                                                                                                                                                                                 
+    final:  :class:`astropy.table.Table` 
+        LSS catalog Table.                                                                                                                                                                                                                                                                                                                                                                                                                
+    Returns                                                                                                                                                                                                                                                                                                                                                                                                    
+    -------                                                                                                                                                                                                                                                                                                                                                                                                    
+    lsscatalog: :class:`astropy.table.Table`                                                                                                                                                                                                                                                                                                                                                                   
+        LSS catalog Table. 
+    '''
+
     from astropy.cosmology import WMAP9 as cosmo
 
     
@@ -44,6 +61,26 @@ def good_tile(tiles):
     return  is_good
 
 def datestamped_tiles(exps, MJD0, MJD1, printit=False):
+    '''                                                                                                                                                                                                                                                                                                                                                                                                       
+    Given an two MJDs and an exposures list, 
+    returns a Table of the "good" tiles observed
+    between these dates, together with a header. 
+
+    Parameters                                                                                                                                                                                                                                                                                                                                                                                        
+    ----------                                                                                                                                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                                                                                           
+    final:  :class:`astropy.table.Table`                                                                                                                                                                                                                                                                                                                                                                       
+        LSS catalog Table.                                                                                                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                                                                                          
+    Returns                                                                                                                                                                                                                                                                                                                                                                                                   
+    ----------
+    _tiles: :class:`astropy.table.Table` 
+    hdr:  : FITS table header.                                                                                                                                                                                                                                                                                                                                                                             
+    -------                                                                                                                                                                                                                                                                                                                                                                                                 
+
+
+    '''
+
     _tiles  = exps['TILEID', 'MJD', 'SNR2']
     
     # Remove spurious TILEIDs                                                                                                                                                                                      
@@ -74,7 +111,26 @@ def datestamped_tiles(exps, MJD0, MJD1, printit=False):
         print(_tiles)
     
     return  _tiles, hdr
-    
+
+def initialise_lsscatalog(final):
+    final['Z']               =  -99.
+    final['ZERR']            =  -99.
+    final['ZWARN']           =  -99
+
+    final['COSMO_BLINDCHI']  =  -99.
+    final['COSMO_BLINDNZ']   =  -99.
+    final['COSMO_BLINDWFKP'] =  -99.
+
+    final['NGOOD_FIBERS']    =    0
+    final['NGOOD_TILES']     =    0
+
+    final['IMAGE_WGHT']      =  1.0
+    final['SPEC_WGHT']       =  1.0
+
+    final['ASSIGN_IIP']      =  1.0
+
+    return  final
+
 def lss_catalog(nobj=1):
     """
     Create an empty 'lsscatalog' table.
@@ -141,27 +197,10 @@ def lss_catalog(nobj=1):
 
     # 1. / Spectroscopic completeness [0., 1.]
     lsscatalog.add_column(Column(name='SPEC_WGHT',      length=nobj, dtype='float64'))
-    
+
+    initialise_lsscatalog(lsscatalog)
+
     return  lsscatalog
-
-def initialise_lsscatalog(final):
-    final['Z']               =  -99.
-    final['ZERR']            =  -99.
-    final['ZWARN']           =  -99
-
-    final['COSMO_BLINDCHI']  =  -99.
-    final['COSMO_BLINDNZ']   =  -99.
-    final['COSMO_BLINDWFKP'] =  -99.
-    
-    final['NGOOD_FIBERS']    =    0
-    final['NGOOD_TILES']     =    0
-     
-    final['IMAGE_WGHT']      =  1.0
-    final['SPEC_WGHT']       =  1.0
-
-    final['ASSIGN_IIP']      =  1.0
-    
-    return  final
 
 def get_randassign(fpath, gen=True, mtl=None, randoms=None):
     # Potential assignments for randoms.
@@ -209,64 +248,64 @@ def pop_assigned(final, printit=False):
             if entry in final['TARGETID']:
                 print(entry)
             
-            # Tiles.
-            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
+                # Tiles.
+                col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
             
-            final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
-            final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
+                final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
+                final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
           
-            # Fibers.
-            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_FIBERS'])[0] 
+                # Fibers.
+                col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_FIBERS'])[0] 
           
-            final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = assignable[assignable['TARGETID'] == entry]['FIBER']
-            final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
-
-            # Priority of the target to which the potential fiber was actually assigned. 
-            final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
-
-            count                                                += 1
-
-            if count > 25:
-                break
-
-        count = 0
-        
-        # Set of targets reachable by multiple fibers, for this tile.
-        for entry in uassigned[repeated]:
-            # This shouldn't be necessary ...                                                                                                                                                                                                                                                                                                                                                                 
-            if entry in final['TARGETID']:
-                print(entry)
-            
-            # Tiles.                                                                                                                                                                                                                     
-            col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
-
-            final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
-            final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
-
-            # Fibers.
-            fentries    = assignable['FIBER'][assignable['TARGETID'] == entry]
-
-            for fentry in fentries:
-                col                                               = np.array(final['NGOOD_FIBERS'][final['TARGETID'] == entry])[0]
-
-                final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = fentry
+                final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = assignable[assignable['TARGETID'] == entry]['FIBER']
                 final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
 
-                # Priority of the target to which the potential fiber was actually assigned.  Necessary for the ANG_VETO_FLAG = 3 class.
+                # Priority of the target to which the potential fiber was actually assigned. 
                 final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
                 
                 count                                                += 1
 
                 if count > 25:
                     break
-          
-            # Catch if the initialization memory assignment was not sufficient for the max. # of fibers available to any target.
-            # May well have thrown an error by this point if that's the case. 
-            assert  np.all(final['NGOOD_FIBERS'] < MAX_NFIBER)
-            assert  np.all(final['NGOOD_TILES']  < MAX_NTILE)
+
+        count = 0
+        
+        # Set of targets reachable by multiple fibers, for this tile.
+        for entry in uassigned[repeated]:
+            # This shouldn't be necessary ...
+            if entry in final['TARGETID']:
+                print(entry)
             
-            if printit:
-                toprint = final[final['NGOOD_FIBERS'] >= 1]
+                # Tiles.                                                                                                                                                                                                                     
+                col                                                   = np.array(final[final['TARGETID'] == entry]['NGOOD_TILES'])[0]
+
+                final['GOOD_TILES'][final['TARGETID'] == entry, col]  = id
+                final['NGOOD_TILES'][final['TARGETID'] == entry]     += 1
+
+                # Fibers.
+                fentries    = assignable['FIBER'][assignable['TARGETID'] == entry]
+
+                for fentry in fentries:
+                    col                                               = np.array(final['NGOOD_FIBERS'][final['TARGETID'] == entry])[0]
+
+                    final['GOOD_FIBERS'][final['TARGETID'] == entry, col] = fentry
+                    final['NGOOD_FIBERS'][final['TARGETID'] == entry]    += 1
+
+                    # Priority of the target to which the potential fiber was actually assigned.  Necessary for the ANG_VETO_FLAG = 3 class.
+                    final['FIBPRIORITY'][final['TARGETID'] == entry, col] = assigned[assigned == assignable[assignable['TARGETID'] == entry]['FIBER']]['PRIORITY_INIT']
+                
+                    count                                                += 1
+
+                    if count > 25:
+                        break
+          
+        # Catch if the initialization memory assignment was not sufficient for the max. # of fibers available to any target.
+        # May well have thrown an error by this point if that's the case. 
+        assert  np.all(final['NGOOD_FIBERS'] < MAX_NFIBER)
+        assert  np.all(final['NGOOD_TILES']  < MAX_NTILE)
+            
+        if printit:
+            toprint = final[final['NGOOD_FIBERS'] >= 1]
 
             print(toprint['NGOOD_FIBERS', 'NGOOD_TILES', 'GOOD_FIBERS', 'GOOD_TILES', 'FIBPRIORITY'])
       
@@ -346,7 +385,7 @@ def lsscat_gen(root, prod, odir):
     _tiles          = fits.open(root + 'survey/SV-tiles.fits')[1]
     tiles           = Table(fits.open(root + 'survey/SV-tiles.fits')[1].data)
 
-    zcat            = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod))[1].data)
+    zcat            = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod, prod))[1].data)
     
     # DR8 randoms. 
     # rows          = np.arange(len(mtl))
@@ -382,8 +421,6 @@ def lsscat_gen(root, prod, odir):
     ntarget                        = len(targets)
     
     final                          = lss_catalog(ntarget)
-
-    final                          = initialise_lsscatalog(final)
 
     final['TARGETID']              = targets['TARGETID']
     
