@@ -15,6 +15,7 @@ By MJW (Dec. 28 2019)
 https://portal.nersc.gov/project/desi/users/mjwilson/lss_cat.py
 """
 
+import os
 import fitsio
 import numpy                as      np
 import astropy.io.fits      as      fits
@@ -205,16 +206,27 @@ def lss_catalog(nobj=1):
 def get_randassign(fpath, gen=True, mtl=None, randoms=None):
     # Potential assignments for randoms.
     if gen:
-        # NEED:  a fiberassign run on randoms to get potential assignments.
+        nretain         = len(mtl)
+
+        scratch         = os.environ['CSCRATCH']
+
+        if not os.path.exists(scratch + '/desi/fiberassign/'):
+            os.makedirs(scratch + '/desi/fiberassign/')
+
         rand_mtl        = Table(mtl, copy=True)
-        rand_mtl['RA']  = randoms['RA']
-        rand_mtl['DEC'] = randoms['DEC']
+        rand_mtl['RA']  = randoms['RA'][:nretain]
+        rand_mtl['DEC'] = randoms['DEC'][:nretain]
         
-        rand_mtl.write('rand_mtl.fits', format='fits', overwrite=True)
+        rand_mtl.write(scratch + '/desi/fiberassign/rand_mtl.fits', format='fits', overwrite=True)
+        
+        cmd  = 'fiberassign --mtl {}'.format(scratch + '/desi/fiberassign/rand_mtl.fits')
+        cmd += '--skies /project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'        
+        cmd += '--outdir {}/desi/fiberassign/'.format(scratch)
 
-        # fiberassign --mtl /project/projectdirs/desi/datachallenge/svdc-summer2019/svdc2019c/targets/rand_mtl.fits                                                                                                                  
-        #             --skies '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'        
-
+        print('System call:  {}'.format(cmd))
+        
+        os.system(cmd)
+        
     else:
         return  Table(fits.open(fpath)[4].data), Table(fits.open(fpath)[1].data)  
 
@@ -374,28 +386,30 @@ def lsscat_gen(root, prod, odir):
     # Needed for fiberassign runs. 
     # _skies        = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'
 
-    targets         = Table(fits.open(root + 'targets/targets.fits')[1].data)
+    # targets       = Table(fits.open(root + 'targets/targets.fits')[1].data)
     
-    # mtl           = Table(fits.open(root + 'targets/mtl.fits')[1].data)
-    exps            = Table(fits.open(root + 'survey/sv_exposures.fits')[1].data)
+    mtl             = Table(fits.open(root + 'targets/mtl.fits')[1].data)
+    # exps          = Table(fits.open(root + 'survey/sv_exposures.fits')[1].data)
 
     # HACK:  Cumulative SNR2 achieved on a given tile by this exposure. Weird that this was missing?                                                                                                               
-    exps['SNR2']    = np.random.uniform(0.9, 1.1, len(exps))
+    # exps['SNR2']  = np.random.uniform(0.9, 1.1, len(exps))
     
     _tiles          = fits.open(root + 'survey/SV-tiles.fits')[1]
     tiles           = Table(fits.open(root + 'survey/SV-tiles.fits')[1].data)
 
-    zcat            = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod, prod))[1].data)
+    # zcat          = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod, prod))[1].data)
     
     # DR8 randoms. 
-    # rows          = np.arange(len(mtl))
-    # randoms       = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randoms/randoms-inside-dr8-0.31.0-4.fits', rows=rows)
+    rows            = np.arange(len(mtl))
+    randoms         = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randoms/randoms-inside-dr8-0.31.0-4.fits', rows=rows)
 
     # A list of targets that could have been assigned to each fiber;
     # desidatamodel.readthedocs.io/en/latest/DESI_TARGET/fiberassign/tile-TILEID-FIELDNUM.html#hdu2
 
-    rand_assignable, rand_assigned = get_randassign(root + 'fiberassign/tile-072015.fits', gen=False)
+    rand_assignable, rand_assigned = get_randassign(root + 'fiberassign/tile-072015.fits', mtl=mtl, gen=True, randoms=randoms)
 
+    exit(0)
+    
     # TARGETID | FIBERID | LOCATION
     # print(rand_assignable)
     
