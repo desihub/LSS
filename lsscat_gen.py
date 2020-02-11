@@ -203,29 +203,44 @@ def lss_catalog(nobj=1):
 
     return  lsscatalog
 
-def get_randassign(fpath, gen=True, mtl=None, randoms=None):
+def get_randassign(fpath, gen=True, mtl=None, randoms=None, lite=False):
     # Potential assignments for randoms.
     if gen:
-        nretain         = len(mtl)
-
         scratch         = os.environ['CSCRATCH']
 
         if not os.path.exists(scratch + '/desi/fiberassign/'):
-            os.makedirs(scratch + '/desi/fiberassign/')
+          os.makedirs(scratch + '/desi/fiberassign/')
+        
+        if lite:
+            cmd  = 'fiberassign --mtl {}'.format(scratch + '/desi/fiberassign/lite.fits')
+            cmd += ' --sky {}'.format(scratch + '/desi/fiberassign/lite_skies.fits')
+            cmd += ' --outdir {}/desi/fiberassign/'.format(scratch)
+            cmd += ' --overwrite'
 
-        rand_mtl        = Table(mtl, copy=True)
-        rand_mtl['RA']  = randoms['RA'][:nretain]
-        rand_mtl['DEC'] = randoms['DEC'][:nretain]
-        
-        rand_mtl.write(scratch + '/desi/fiberassign/rand_mtl.fits', format='fits', overwrite=True)
-        
-        cmd  = 'fiberassign --mtl {}'.format(scratch + '/desi/fiberassign/rand_mtl.fits')
-        cmd += '--skies /project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'        
-        cmd += '--outdir {}/desi/fiberassign/'.format(scratch)
+            print('System call:  {}'.format(cmd))
 
-        print('System call:  {}'.format(cmd))
+            os.system(cmd)
+
+            return  None, None
+
+        else:
+            nretain         = len(mtl)
+
+            rand_mtl        = Table(mtl, copy=True)
+            rand_mtl['RA']  = randoms['RA'][:nretain]
+            rand_mtl['DEC'] = randoms['DEC'][:nretain]
         
-        os.system(cmd)
+            rand_mtl.write(scratch + '/desi/fiberassign/rand_mtl.fits', format='fits', overwrite=True)
+        
+            cmd  = 'fiberassign --mtl {}'.format(scratch + '/desi/fiberassign/rand_mtl.fits')
+            cmd += ' --sky /project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits'        
+            cmd += ' --outdir {}/desi/fiberassign/'.format(scratch)
+                    
+            print('System call:  {}'.format(cmd))
+        
+            os.system(cmd)
+
+            return  None, None
         
     else:
         return  Table(fits.open(fpath)[4].data), Table(fits.open(fpath)[1].data)  
@@ -380,6 +395,7 @@ def set_assigncomplete(dst_tiles, final):
 
 
 def lsscat_gen(root, prod, odir):
+    '''
     # Get required parent pipeline files. 
     _mtl            = root + 'targets/mtl.fits'
 
@@ -400,14 +416,16 @@ def lsscat_gen(root, prod, odir):
     # zcat          = Table(fits.open(root + 'spectro/redux/{}/zcatalog-{}.fits'.format(prod, prod))[1].data)
     
     # DR8 randoms. 
-    rows            = np.arange(len(mtl))
-    randoms         = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randoms/randoms-inside-dr8-0.31.0-4.fits', rows=rows)
+    rows          = np.arange(len(mtl))
+    randoms       = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randoms/randoms-inside-dr8-0.31.0-4.fits', rows=rows)
 
     # A list of targets that could have been assigned to each fiber;
     # desidatamodel.readthedocs.io/en/latest/DESI_TARGET/fiberassign/tile-TILEID-FIELDNUM.html#hdu2
 
-    rand_assignable, rand_assigned = get_randassign(root + 'fiberassign/tile-072015.fits', mtl=mtl, gen=True, randoms=randoms)
-
+    rand_assignable, rand_assigned = get_randassign(root + 'fiberassign/tile-072015.fits', mtl=randoms, gen=True, randoms=randoms)
+    '''
+    rand_assignable, rand_assigned = get_randassign(root + 'fiberassign/tile-072015.fits', mtl=None, gen=True, randoms=None, lite=True)
+    
     exit(0)
     
     # TARGETID | FIBERID | LOCATION
