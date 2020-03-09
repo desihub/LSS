@@ -12,7 +12,7 @@ dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
 tardir = minisvdir+'targets/'
 
-type = 'ELG'
+type = 'QSO'
 if type == 'LRG':
 	bit = 53
 	pr = 4000
@@ -23,14 +23,14 @@ if type == 'ELG':
 	bit = 54
 	pr = 10000
 	
-tile = 70004
+tile = 70003
 night = '20200219'
 specs = [0,3,6,7,9]
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 #elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
-id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
-#id4coord = '00051073' #this is the config for 70003
+#id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
+id4coord = '00051073' #this is the config for 70003
 #get hardware info
 cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
 cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
@@ -43,17 +43,20 @@ goodloc = cloc[wps]
 
 #get target info
 tfa = Table.read(tardir+'/fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
+tft = unique(tfa,keys=['TARGETID'])
 wgt = (np.isin(tfa['LOCATION'],goodloc)) 
 print('comparison of number targets, number of targets with good locations')
 print(len(tfa),len(tfa[wgt]))
 tfa = unique(tfa[wgt],keys=['TARGETID'])
-print(str(len(tfa)) +' unique targets with good locations')
+
+print(str(len(tfa)) +' unique targets with good locations and '+str(len(tft))+ 'unique targets and unique locations '+str(len(np.unique(tft['LOCATION']))))
 mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.36.0_all.fits'
 tt = Table.read(mtlf)
 wtype = ((tt['CMX_TARGET'] & 2**bit) > 0)
 tt = tt[wtype]
 tfa = join(tfa,tt,keys=['TARGETID'])
-print(str(len(tfa)) +' unique '+type+' targets with good locations')
+tft = join(tft,tt,keys=['TARGETID'])
+print(str(len(tfa)) +' unique '+type+' targets with good locations and '+str(len(tft))+ ' at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and unique targets and unique locations '+str(len(np.unique(tft['LOCATION']))))
 print(len(np.unique(tfa['TARGETID'])))
 
 #keep = (tfa['NOBS_G']>0) & (tfa['NOBS_R']>0) & (tfa['NOBS_Z']>0)

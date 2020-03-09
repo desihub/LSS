@@ -6,12 +6,14 @@ import fitsio
 import glob
 import astropy.io.fits as fits
 from astropy.table import Table
+from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane
 
 ranf = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 minisvdir = '/global/cscratch1/sd/ajross/miniSV/'
 tardir = minisvdir+'targets/'
+dircat = minisvdir+'LSScats/'
 targroot = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
 
 
@@ -103,7 +105,25 @@ def mkminisvtilef(dirout=minisvdir,fout='msvtiles.fits'):
 	for i in range(0,7):
 		pa.append(b'DARK')
 	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
-	msvtiles.write(dirout+fout,format='fits', overwrite=True)     
+	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+	
+def plotdatran(type,tile,night):
+	df = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.dat.fits')
+	rf = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.ran.fits')
+	plt.plot(rf['RA'],rf['DEC'],'k,')		     
+	if type == 'LRG':
+		pc = 'r'
+		pt = 'o'
+	if type == 'ELG':
+		pc = 'b'
+		pt = '*'
+	plt.scatter(df['RA'],df['DEC'],s=df['WEIGHT']*3,c=pc,marker=pt)
+	plt.xlabel('RA')
+	plt.ylabel('DEC')
+	plt.title(type + ' '+tile+' '+night)
+	plt.savefig('dataran'+type+tile+night+'.png')
+	plt.show()
+		
 
 def gathertargets(type):
 	fns      = glob.glob(targroot+'*.fits')
