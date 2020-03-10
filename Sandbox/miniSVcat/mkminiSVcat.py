@@ -92,7 +92,7 @@ if night == '20200219':
 
 if night != '20200219':
 	goodloc = tf[wloc]['LOCATION']
-print(str(len(tf[goodloc])) + ' good locations with FIBERSTATUS 0')
+
 
 pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
@@ -101,6 +101,7 @@ pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 tfa = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
 tft = unique(tfa,keys=['TARGETID'])
 wgt = (np.isin(tfa['LOCATION'],goodloc)) 
+print(str(len(tf[wgt])) + ' good locations')
 print('comparison of number targets, number of targets with good locations')
 print(len(tfa),len(tfa[wgt]))
 tfa = unique(tfa[wgt],keys=['TARGETID'])
