@@ -192,7 +192,7 @@ ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
 wpr = ranall['PRIORITY'] <= pr
 #plt.plot(ranall['TARGET_RA'],ranall['TARGET_DEC'],'k,')
 plt.plot(ranall[wpr]['TARGET_RA'],ranall[wpr]['TARGET_DEC'],'k,',label='randoms')
-plt.plot(tout['RA'],tout['DEC'],'b.',label='targets',linewidth=.1)
+plt.plot(tout['RA'],tout['DEC'],'bo',label='targets',markersize=.1)
 plt.plot(tout[wz]['RA'],tout[wz]['DEC'],'r.',label='observed targets')
 plt.legend()
 plt.show()
