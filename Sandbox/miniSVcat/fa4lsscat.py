@@ -21,12 +21,16 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
                                 read_assignment_fits_tile)                                 
 import desimodel.io as dmio
 
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+randir = minisvdir+'random/'
+
+
 runtime = datetime.utcnow()
 
 # First get the starting focalplane from desimodel
 fp, exclude, state, tmstr = dmio.load_focalplane(runtime)
 
-def getfatiles(targetf,tilef,dirout):
+def getfatiles(targetf,tilef,dirout=randir):
 	'''
 	will write out fiberassignment files for each tile with the FASSIGN, FTARGETS, FAVAIL HDUS
 	these are what are required to determine the geometry of what fiberassign thinks could have been observed and also match to actual observations (though FASSIGN is not really necessary)

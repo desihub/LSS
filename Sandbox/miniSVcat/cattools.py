@@ -11,7 +11,7 @@ import desimodel.footprint
 import desimodel.focalplane
 
 ranf = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
-minisvdir = '/global/cscratch1/sd/ajross/miniSV/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 tardir = minisvdir+'targets/'
 dircat = minisvdir+'LSScats/'
 targroot = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'

@@ -7,12 +7,12 @@ import numpy as np
 import fitsio
 from matplotlib import pyplot as plt
 
-minisvdir = '/global/cscratch1/sd/ajross/miniSV/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
 tardir = minisvdir+'targets/'
 
-type = 'QSO'
+type = 'ELG'
 if type == 'LRG':
 	bit = 53
 	pr = 4000
@@ -23,14 +23,22 @@ if type == 'ELG':
 	bit = 54
 	pr = 10000
 	
-tile = 70003
-night = '20200219'
+tile = 70005
+#night = '20200219'
+night = '20200303'
 specs = [0,3,6,7,9]
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 #elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
-#id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
-id4coord = '00051073' #this is the config for 70003
+if tile == 70004 and night == '20200219':
+	id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
+if tile == 70003 and night == '20200219':
+	id4coord = '00051073' #this is the config for 70003
+if tile == 70002 and night == '20200304':
+	id4coord = '00053122'
+if tile == 70005 and night == '20200303':
+	id4coord = '00052978'
+
 #get hardware info
 cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
 cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
@@ -65,6 +73,17 @@ print(len(np.unique(tfa['TARGETID'])))
 #tfa = tfa[keep]
 #print(str(len(tfa)) +' unique targets with good locations after imaging veto' )
 
+#Mark targets that actually got assigned fibers
+tfall = Table.read(tardir+'/fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
+tfall.keep_columns(['TARGETID','LOCATION'])
+tfa = join(tfa,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
+#print(tfa.dtype.names)
+wal = tfa['LOCATION_ASSIGNED']*0 == 0
+print('number of assigned fibers '+str(len(tfa[wal])))
+tfa['LOCATION_ASSIGNED'] = np.zeros(len(tfa),dtype=int)
+tfa['LOCATION_ASSIGNED'][wal] = 1
+wal = tfa['LOCATION_ASSIGNED'] == 1
+print('number of assigned fibers '+str(len(tfa[wal])))
 
 #put data from different spectrographs together, one table for fibermap, other for z
 tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')

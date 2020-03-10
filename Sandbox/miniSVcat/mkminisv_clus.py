@@ -7,7 +7,7 @@ import numpy as np
 import fitsio
 from matplotlib import pyplot as plt
 
-minisvdir = '/global/cscratch1/sd/ajross/miniSV/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 
 tile = 70003
