@@ -6,6 +6,7 @@ from astropy.table import Table, join,unique,vstack
 import numpy as np
 import fitsio
 from matplotlib import pyplot as plt
+import sys
 
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
