@@ -70,7 +70,7 @@ for i in range(1,len(specs)):
 
 wloc = tf['FIBERSTATUS'] == 0
 goodloc = tf[wloc]['LOCATION']
-print(str(len(goodloc) + ' locations with FIBERSTATUS 0')
+print(str(len(goodloc)) + ' locations with FIBERSTATUS 0')
 
 pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
