@@ -43,24 +43,28 @@ if type == 'ELG':
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/minisv2/tiles/'
 #elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
-#if tile == 70004 and night == '20200219':
-#	id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
-#if tile == 70003 and night == '20200219':
-#	id4coord = '00051073' #this is the config for 70003
+if tile == 70004 and night == '20200219':
+	id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
+if tile == 70003 and night == '20200219':
+	id4coord = '00051073' 
+if tile == 70005 and night == '20200219':
+	id4coord = '00051039' 
+
 #if tile == 70002 and night == '20200304':
 #	id4coord = '00053122'
 #if tile == 70005 and night == '20200303':
 #	id4coord = '00052978'
 
-#get hardware info, not needed anymore because of fibermap info?
-#cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
-#cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
-#wpos = cf['FLAGS_EXP_2'] == 4
-#print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
-#wspec = np.isin(cf['PETAL_LOC'],specs)
-#wps = wpos & wspec
-#print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
-#goodloc = cloc[wps]
+#get hardware info, not needed for most nights anymore because of fibermap info, definitely needed for 20200219
+if night == '20200219':
+	cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
+	cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
+	wpos = cf['FLAGS_EXP_2'] == 4
+	print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
+	wspec = np.isin(cf['PETAL_LOC'],specs)
+	wps = wpos & wspec
+	print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
+	goodloc = cloc[wps]
 
 #put data from different spectrographs together, one table for fibermap, other for z
 specs = []
@@ -82,8 +86,12 @@ for i in range(1,len(specs)):
     tf = vstack([tf,tnf])
 
 wloc = tf['FIBERSTATUS'] == 0
-goodloc = tf[wloc]['LOCATION']
-print(str(len(goodloc)) + ' locations with FIBERSTATUS 0')
+print(str(len(f[wloc])) + ' locations with FIBERSTATUS 0')
+
+
+if night != '20200219':
+	goodloc = tf[wloc]['LOCATION']
+print(str(len(f[goodloc])) + ' good locations with FIBERSTATUS 0')
 
 pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
