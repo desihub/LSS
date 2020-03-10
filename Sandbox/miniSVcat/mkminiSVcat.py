@@ -6,6 +6,15 @@ from astropy.table import Table, join,unique,vstack
 import numpy as np
 import fitsio
 from matplotlib import pyplot as plt
+import sys
+
+try:
+	type = str(sys.argv[1])
+	tile = int(sys.argv[2])
+	night = str(sys.argv[3])
+except:
+	print('requires three arguments: type=LRG/QSO/ELG, tile, night)	
+	
 
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
@@ -14,7 +23,7 @@ tardir = minisvdir+'targets/'
 fatype = 'non_restricted_positioners/'
 fadir = minisvdir+'targets/'+fatype
 
-type = 'ELG'
+#type = 'ELG'
 if type == 'LRG':
 	bit = 53
 	pr = 4000
@@ -25,9 +34,9 @@ if type == 'ELG':
 	bit = 54
 	pr = 10000
 	
-tile = 70005
+#tile = 70005
 #night = '20200219'
-night = '20200303'
+#night = '20200303'
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/minisv2/tiles/'
 #elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
