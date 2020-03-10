@@ -76,7 +76,7 @@ for i in range(1,len(specs)):
     tf = vstack([tf,tnf])
 
 wloc = tf['FIBERSTATUS'] == 0
-print(str(len(f[wloc])) + ' locations with FIBERSTATUS 0')
+print(str(len(tf[wloc])) + ' locations with FIBERSTATUS 0')
 
 #get hardware info, not needed for most nights anymore because of fibermap info, definitely needed for 20200219
 if night == '20200219':
