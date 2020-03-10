@@ -10,10 +10,13 @@ import sys
 
 try:
 	type = str(sys.argv[1])
+	print(type)
 	tile = int(sys.argv[2])
+	print(tile)
 	night = str(sys.argv[3])
+	print(night)
 except:
-	print('requires three arguments: type=LRG/QSO/ELG, tile, night)	
+	print('requires three arguments: type=LRG/QSO/ELG, tile, night')	
 	
 
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
