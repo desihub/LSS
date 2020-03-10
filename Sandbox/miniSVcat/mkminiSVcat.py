@@ -77,7 +77,7 @@ pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
 
 #get target info
-tfa = Table.read(fadir+'/fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
+tfa = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
 tft = unique(tfa,keys=['TARGETID'])
 wgt = (np.isin(tfa['LOCATION'],goodloc)) 
 print('comparison of number targets, number of targets with good locations')
@@ -101,7 +101,7 @@ print(len(np.unique(tfa['TARGETID'])))
 #print(str(len(tfa)) +' unique targets with good locations after imaging veto' )
 
 #Mark targets that actually got assigned fibers
-tfall = Table.read(tardir+'/fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
+tfall = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
 tfall.keep_columns(['TARGETID','LOCATION'])
 tfa = join(tfa,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
 #print(tfa.dtype.names)
