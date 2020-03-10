@@ -84,7 +84,7 @@ print('comparison of number targets, number of targets with good locations')
 print(len(tfa),len(tfa[wgt]))
 tfa = unique(tfa[wgt],keys=['TARGETID'])
 
-print(str(len(tfa)) +' unique targets with good locations out of  '+str(len(tft))+ 'unique targets occupying ' +str(len(np.unique(tft['LOCATION']))) + ' unique locations '))
+print(str(len(tfa)) +' unique targets with good locations out of '+str(len(tft))+ ' unique targets occupying ' +str(len(np.unique(tft['LOCATION']))) + ' unique locations ')
 mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.36.0_all.fits'
 tt = Table.read(mtlf)
 wtype = ((tt['CMX_TARGET'] & 2**bit) > 0)
