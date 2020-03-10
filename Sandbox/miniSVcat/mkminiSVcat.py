@@ -10,7 +10,8 @@ from matplotlib import pyplot as plt
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
-tardir = minisvdir+'targets/'
+fatype = 'non_restricted_positioners/'
+tardir = minisvdir+'targets/'+fatype
 
 type = 'ELG'
 if type == 'LRG':
