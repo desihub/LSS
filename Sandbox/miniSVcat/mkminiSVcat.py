@@ -84,14 +84,14 @@ print('comparison of number targets, number of targets with good locations')
 print(len(tfa),len(tfa[wgt]))
 tfa = unique(tfa[wgt],keys=['TARGETID'])
 
-print(str(len(tfa)) +' unique targets with good locations and '+str(len(tft))+ 'unique targets and unique locations '+str(len(np.unique(tft['LOCATION']))))
+print(str(len(tfa)) +' unique targets with good locations out of  '+str(len(tft))+ 'unique targets occupying ' +str(len(np.unique(tft['LOCATION']))) + ' unique locations '))
 mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.36.0_all.fits'
 tt = Table.read(mtlf)
 wtype = ((tt['CMX_TARGET'] & 2**bit) > 0)
 tt = tt[wtype]
 tfa = join(tfa,tt,keys=['TARGETID'])
 tft = join(tft,tt,keys=['TARGETID'])
-print(str(len(tfa)) +' unique '+type+' targets with good locations and '+str(len(tft))+ ' at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and unique targets and unique locations '+str(len(np.unique(tft['LOCATION']))))
+print(str(len(tfa)) +' unique '+type+' targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft)) ' total unique '+type +' targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 print(len(np.unique(tfa['TARGETID'])))
 
 #keep = (tfa['NOBS_G']>0) & (tfa['NOBS_R']>0) & (tfa['NOBS_Z']>0)
@@ -192,7 +192,7 @@ ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
 wpr = ranall['PRIORITY'] <= pr
 #plt.plot(ranall['TARGET_RA'],ranall['TARGET_DEC'],'k,')
 plt.plot(ranall[wpr]['TARGET_RA'],ranall[wpr]['TARGET_DEC'],'k,',label='randoms')
-plt.plot(tout['RA'],tout['DEC'],'bo',label='targets',markersize=.5)
+plt.plot(tout['RA'],tout['DEC'],'bo',label='targets',markersize=1)
 plt.plot(tout[wz]['RA'],tout[wz]['DEC'],'r.',label='observed targets')
 plt.legend()
 plt.show()
