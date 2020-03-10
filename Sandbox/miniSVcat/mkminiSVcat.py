@@ -10,8 +10,9 @@ from matplotlib import pyplot as plt
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
+tardir = minisvdir+'targets/'
 fatype = 'non_restricted_positioners/'
-tardir = minisvdir+'targets/'+fatype
+fadir = minisvdir+'targets/'+fatype
 
 type = 'ELG'
 if type == 'LRG':
@@ -76,7 +77,7 @@ pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
 
 #get target info
-tfa = Table.read(tardir+'/fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
+tfa = Table.read(fadir+'/fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
 tft = unique(tfa,keys=['TARGETID'])
 wgt = (np.isin(tfa['LOCATION'],goodloc)) 
 print('comparison of number targets, number of targets with good locations')
