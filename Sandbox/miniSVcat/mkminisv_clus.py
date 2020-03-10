@@ -10,12 +10,23 @@ from matplotlib import pyplot as plt
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 
-tile = 70003
-night = '20200219'
-specs = [0,3,6,7,9]
-coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
+#tile = 70003
+#night = '20200219'
+try:
+	type = str(sys.argv[1])
+	print(type)
+	tile = int(sys.argv[2])
+	print(tile)
+	night = str(sys.argv[3])
+	print(night)
+except:
+	print('requires three arguments: type=LRG/QSO/ELG, tile, night')	
+
 elgandlrgbits = [1,5,6,7,8,9,11,12,13]
-type = 'LRG'
+
+#coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
+
+#type = 'LRG'
 
 def cutphotmask(aa):
 	keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
