@@ -91,7 +91,7 @@ wtype = ((tt['CMX_TARGET'] & 2**bit) > 0)
 tt = tt[wtype]
 tfa = join(tfa,tt,keys=['TARGETID'])
 tft = join(tft,tt,keys=['TARGETID'])
-print(str(len(tfa)) +' unique '+type+' targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft)) ' total unique '+type +' targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
+print(str(len(tfa)) +' unique '+type+' targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique '+type +' targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 print(len(np.unique(tfa['TARGETID'])))
 
 #keep = (tfa['NOBS_G']>0) & (tfa['NOBS_R']>0) & (tfa['NOBS_Z']>0)
