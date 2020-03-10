@@ -55,16 +55,6 @@ if tile == 70005 and night == '20200219':
 #if tile == 70005 and night == '20200303':
 #	id4coord = '00052978'
 
-#get hardware info, not needed for most nights anymore because of fibermap info, definitely needed for 20200219
-if night == '20200219':
-	cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
-	cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
-	wpos = cf['FLAGS_EXP_2'] == 4
-	print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
-	wspec = np.isin(cf['PETAL_LOC'],specs)
-	wps = wpos & wspec
-	print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
-	goodloc = cloc[wps]
 
 #put data from different spectrographs together, one table for fibermap, other for z
 specs = []
@@ -87,6 +77,17 @@ for i in range(1,len(specs)):
 
 wloc = tf['FIBERSTATUS'] == 0
 print(str(len(f[wloc])) + ' locations with FIBERSTATUS 0')
+
+#get hardware info, not needed for most nights anymore because of fibermap info, definitely needed for 20200219
+if night == '20200219':
+	cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
+	cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
+	wpos = cf['FLAGS_EXP_2'] == 4
+	print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
+	wspec = np.isin(cf['PETAL_LOC'],specs)
+	wps = wpos & wspec
+	print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
+	goodloc = cloc[wps]
 
 
 if night != '20200219':
