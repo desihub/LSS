@@ -26,28 +26,53 @@ if type == 'ELG':
 tile = 70005
 #night = '20200219'
 night = '20200303'
-specs = [0,3,6,7,9]
-coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
+coaddir = '/global/cfs/cdirs/desi/spectro/redux/minisv2/tiles/'
 #elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
-if tile == 70004 and night == '20200219':
-	id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
-if tile == 70003 and night == '20200219':
-	id4coord = '00051073' #this is the config for 70003
-if tile == 70002 and night == '20200304':
-	id4coord = '00053122'
-if tile == 70005 and night == '20200303':
-	id4coord = '00052978'
+#if tile == 70004 and night == '20200219':
+#	id4coord = '00051002' #this is the exposure ID for 70004 for the coordinates file for getting the actual hardware performance; hopefully not necessary in future
+#if tile == 70003 and night == '20200219':
+#	id4coord = '00051073' #this is the config for 70003
+#if tile == 70002 and night == '20200304':
+#	id4coord = '00053122'
+#if tile == 70005 and night == '20200303':
+#	id4coord = '00052978'
 
-#get hardware info
-cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
-cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
-wpos = cf['FLAGS_EXP_2'] == 4
-print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
-wspec = np.isin(cf['PETAL_LOC'],specs)
-wps = wpos & wspec
-print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
-goodloc = cloc[wps]
+#get hardware info, not needed anymore because of fibermap info?
+#cf = fitsio.read('/global/cfs/cdirs/desi/spectro/data/'+night+'/'+id4coord+'/coordinates-'+id4coord+'.fits')
+#cloc = cf['PETAL_LOC']*1000 + cf['DEVICE_LOC']
+#wpos = cf['FLAGS_EXP_2'] == 4
+#print('there were '+str(len(cloc[wpos]))+' positioners that could reach their targets on '+night )
+#wspec = np.isin(cf['PETAL_LOC'],specs)
+#wps = wpos & wspec
+#print(str(len(cloc[wps]))+' of these went to the working spectrographs ('+str(specs)+')' )
+#goodloc = cloc[wps]
+
+#put data from different spectrographs together, one table for fibermap, other for z
+specs = []
+#find out which spectrograph have data
+for si in range(0,10):
+	try:
+		fitsio.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits')
+		specs.append(si)
+	except:
+		print('no spectrograph '+str(si)+ ' on night '+night)
+print('spectrographs with data:')
+print(specs)			
+tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+tf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+for i in range(1,len(specs)):
+    tn = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+    tnf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+    tspec = vstack([tspec,tn])
+    tf = vstack([tf,tnf])
+
+wloc = tf['FIBERSTATUS'] == 0
+goodloc = tf[wloc]['LOCATION']
+print(str(len(goodloc) + ' locations with FIBERSTATUS 0')
+
+pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
+
 
 #get target info
 tfa = Table.read(tardir+'/fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
@@ -85,16 +110,6 @@ tfa['LOCATION_ASSIGNED'][wal] = 1
 wal = tfa['LOCATION_ASSIGNED'] == 1
 print('number of assigned fibers '+str(len(tfa[wal])))
 
-#put data from different spectrographs together, one table for fibermap, other for z
-tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-tf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-for i in range(1,len(specs)):
-    tn = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-    tnf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-    tspec = vstack([tspec,tn])
-    tf = vstack([tf,tnf])
-
-pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
 
 #whploc = tf['PRIORITY'] > pr
