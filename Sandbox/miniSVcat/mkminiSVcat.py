@@ -190,8 +190,10 @@ for i in range(0,len(ranall)):
 	ranall['Z'][i] = gz[ind]
 ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
 wpr = ranall['PRIORITY'] <= pr
-plt.plot(ranall['TARGET_RA'],ranall['TARGET_DEC'],'k,')
-plt.plot(ranall[wpr]['TARGET_RA'],ranall[wpr]['TARGET_DEC'],'r,')
+#plt.plot(ranall['TARGET_RA'],ranall['TARGET_DEC'],'k,')
+plt.plot(ranall[wpr]['TARGET_RA'],ranall[wpr]['TARGET_DEC'],'k,',label='randoms')
+plt.plot(tout['RA'],tout['DEC'],'b.',label='data')
+plt.legend()
 plt.show()
 
 fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
