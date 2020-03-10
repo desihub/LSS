@@ -92,7 +92,7 @@ if night == '20200219':
 
 if night != '20200219':
 	goodloc = tf[wloc]['LOCATION']
-print(str(len(f[goodloc])) + ' good locations with FIBERSTATUS 0')
+print(str(len(tf[goodloc])) + ' good locations with FIBERSTATUS 0')
 
 pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
