@@ -161,11 +161,11 @@ print('there are '+str(len(tspec[wtz]))+' '+type+' targets observed on good posi
 wz = tspec['ZWARN'] == 0
 wtzg = wtz & wz
 print('there are '+str(len(tspec[wtzg]))+' '+type+' good redshifts on tile '+str(tile) +' observed on '+night)
-
+tspec['LOC'] = tf['LOCATION']
 
 ttest = join(tt,tspec,keys=['TARGETID'],join_type='left')
 wz = ttest['ZWARN']*0 == 0
-wz &=  (np.isin(ttest['LOCATION'],goodloc))
+wz &=  (np.isin(ttest['LOC'],goodloc))
 print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file type '+type+', no good loc cut')
 
 
