@@ -165,7 +165,8 @@ print('there are '+str(len(tspec[wtzg]))+' '+type+' good redshifts on tile '+str
 
 ttest = join(tt,tspec,keys=['TARGETID'],join_type='left')
 wz = ttest['ZWARN']*0 == 0
-print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file, no good loc cut')
+wz &= tt['CMX_TARGET'] & 2**bit > 0
+print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file type '+type+', no good loc cut')
 
 
 #tout = join(tfa,tspec[wtz],keys=['TARGETID'],join_type='left')
