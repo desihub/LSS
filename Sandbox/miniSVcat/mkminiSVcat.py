@@ -128,6 +128,10 @@ print(len(np.unique(tfa['TARGETID'])))
 
 #Mark targets that actually got assigned fibers
 tfall = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
+wgl = np.isin(tfall['LOCATION'],goodloc)
+wtype = ((tfall['CMX_TARGET'] & 2**bit) > 0)
+wtfa = wgl & wtype
+print('number of assigned ' +type +' fibers at good locations '+str(len(tfall[wtfa])))
 tfall.keep_columns(['TARGETID','LOCATION'])
 tfa = join(tfa,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
 #print(tfa.dtype.names)
