@@ -165,7 +165,7 @@ print('there are '+str(len(tspec[wtzg]))+' '+type+' good redshifts on tile '+str
 
 ttest = join(tt,tspec,keys=['TARGETID'],join_type='left')
 wz = ttest['ZWARN']*0 == 0
-wz &= tt['CMX_TARGET'] & 2**bit > 0
+wz &=  (np.isin(ttest['LOCATION'],goodloc))
 print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file type '+type+', no good loc cut')
 
 
