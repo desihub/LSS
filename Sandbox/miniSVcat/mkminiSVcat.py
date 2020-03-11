@@ -163,10 +163,15 @@ wtzg = wtz & wz
 print('there are '+str(len(tspec[wtzg]))+' '+type+' good redshifts on tile '+str(tile) +' observed on '+night)
 
 
+ttest = join(tt,tspec,keys=['TARGETID'],join_type='left')
+wz = ttest['ZWARN']*0 == 0
+print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file, no good loc cut')
+
+
 #tout = join(tfa,tspec[wtz],keys=['TARGETID'],join_type='left')
 tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
 wz = tout['ZWARN']*0 == 0
-print('there are '+str(len(tout[wz]))+' rows with defined redshifts')
+print('there are '+str(len(tout[wz]))+' rows with good redshifts')
 #tout['RA'] = tf[wtz]['TARGET_RA']
 #tout['DEC'] = tf[wtz]['TARGET_DEC']
 #tout['Z'] = tspec[wtz]['Z']
