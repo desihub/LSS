@@ -23,7 +23,11 @@ minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
 tardir = minisvdir+'targets/'
-fatype = 'non_restricted_positioners/'
+if tile == 70003 or tile == 70004 or tile == 70005:
+	fatype = 'restricted_3.734mm/'
+else:
+	fatype = 'restricted_3.26mm/'	
+#fatype = 'non_restricted_positioners/'
 fadir = minisvdir+'targets/'+fatype
 
 #type = 'ELG'
@@ -146,9 +150,11 @@ print('number of assigned fibers '+str(len(tfa[wal])))
 wt = tf['CMX_TARGET'] & 2**bit > 0
 #select good redshifts
 #wtz = wt & (tspec['ZWARN'] == 0) & (np.isin(tf['LOCATION'],goodloc))
-wtz = wt & (np.isin(tf['LOCATION'],goodloc))
+wg = (np.isin(tf['LOCATION'],goodloc))
+wtz = wt & wg
 print('there are '+str(len(tspec[wtz]))+' '+type+' targets observed on good positioners on tile '+str(tile) +' observed on '+night)
-wtzg = wtz & (tspec['ZWARN'] == 0)
+wz = tspec['ZWARN'] == 0
+wtzg = wtz & wz
 print('there are '+str(len(tspec[wtzg]))+' '+type+' good redshifts on tile '+str(tile) +' observed on '+night)
 
 
