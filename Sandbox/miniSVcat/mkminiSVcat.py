@@ -24,10 +24,11 @@ dirout = minisvdir+'LSScats/'
 randir = minisvdir+'random/'
 tardir = minisvdir+'targets/'
 if tile == 70003 or tile == 70004 or tile == 70005:
-	fatype = 'restricted_3.734mm/'
+	#fatype = 'restricted_3.734mm/'
+	fatype = 'non_restricted_positioners/'
 else:
 	fatype = 'restricted_3.26mm/'	
-#fatype = 'non_restricted_positioners/'
+#
 fadir = minisvdir+'targets/'+fatype
 
 #type = 'ELG'
