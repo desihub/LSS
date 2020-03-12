@@ -1,4 +1,4 @@
-minisvdir = '/global/cscratch1/sd/ajross/miniSV/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 datadir = minisvdir+'LSScats/'
 dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
@@ -47,7 +47,8 @@ def createSourcesrd_ad(sample,tile,date,zmin=.5,zmax=1.1):
 	cdecl = np.cos(np.radians(fd[wz]['DEC']))
 	wl = fd[wz]['WEIGHT']
 	print(str(len(cdl))+' data objects going out for paircounts')
-	fdo = open(dirpcadw+ 'g'+file+zw+'pcadw.dat','w')
+	gf ='g'+file+zw
+	fdo = open(dirpcadw+gf +'pcadw.dat','w')
 	for i in range(0,len(cdl)):
 		fdo.write(str(sral[i])+' '+str(cral[i])+' '+str(sdecl[i])+' '+str(cdecl[i])+' '+str(cdl[i])+' '+str(wl[i])+'\n')
 
@@ -67,16 +68,23 @@ def createSourcesrd_ad(sample,tile,date,zmin=.5,zmax=1.1):
 	cdecl = np.cos(np.radians(fr[wz]['DEC']))
 	wl = np.ones(len(cdl))
 	print(str(len(cdl))+' randdom objects going out for paircounts')
-	fdo = open(dirpcadw+ 'r'+file+zw+'pcadw.dat','w')
+	rf = 'r'+file+zw
+	fdo = open(dirpcadw+rf +'pcadw.dat','w')
 	for i in range(0,len(cdl)):
 		fdo.write(str(sral[i])+' '+str(cral[i])+' '+str(sdecl[i])+' '+str(cdecl[i])+' '+str(cdl[i])+' '+str(wl[i])+'\n')
 
 	fdo.close()
+	fo = open('dopc'+gf+'.sh','w')
+	fo.write('#!/bin/bash\n')
+	fo.write('./pp2pt_Dmufb '+gf +' '+gf +' \n')
+	fo.write('./pp2pt_Dmufb '+gf +' '+rf +' \n')
+	fo.write('./pp2pt_Dmufb '+rf +' '+rf +' \n')
+	fo.close()
 
 	
-	return True
+	return gf
 
-def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=5,start=0,rmaxf=250,rmax=50,mumin=0,mumax=1.,wmu='counts',mom=0):
+def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=250,rmax=50,mumin=0,mumax=1.,wmu='counts',mom=0):
 	fl = sample+tile+'_'+date+'_zm'+str(zmin)+'zx'+str(zmax)
 	DDnl = []	
 	DDnorml = 0
@@ -184,7 +192,73 @@ def plotxi():
 	plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSVxi.png')
 	plt.show()
 
+def plot3ELG():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.61st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70005_20200228_zm0.8zx1.61st0.dat').transpose()
+	d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70006_20200303_zm0.8zx1.61st0.dat').transpose()
+	plt.loglog(d1[0],d1[1],label='MINI_SV_ELG, Tile 70004')
+	plt.loglog(d2[0],d2[1],label='MINI_SV_ELG, Tile 70005')
+	plt.loglog(d3[0],d3[1],label='MINI_SV_ELG, Tile 70006')
+	dm = (d1[1]+d2[1]+d3[1])/3.
+	plt.loglog(d3[0],dm,'k-',label='MINI_SV_ELG, mean 70004,5,6')
+	plt.legend()
+	plt.show()
+
+def plot2LRG():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70002_20200304_zm0.5zx1.11st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70003_20200228_zm0.5zx1.11st0.dat').transpose()
+	plt.loglog(d1[0],d1[1],label='MINI_SV_LRG, Tile 70002')
+	plt.loglog(d2[0],d2[1],label='MINI_SV_LRG, Tile 70003')
+	dm = (d1[1]+d2[1])/2.
+	plt.loglog(d2[0],dm,'k-',label='MINI_SV_LRG, mean 70002,3')
+	plt.legend()
+	plt.show()
+
+def plotxicomb():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70005_20200228_zm0.8zx1.6bsc.dat').transpose()
+	d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70006_20200303_zm0.8zx1.6bsc.dat').transpose()
+	dme = (d1[1]+d2[1]+d3[1])/3.
+
+	
+	plt.loglog(d1[0],dme,'b-',label='MINI_SV_ELG, mean 70004,5,6')
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70002_20200304_zm0.5zx1.1bsc.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70003_20200228_zm0.5zx1.1bsc.dat').transpose()
+	dml = (d1[1]+d2[1])/2.
+	ml = (d1[0]/7.78)**-1.98
+	plt.loglog(d1[0],dml,'r-',label='MINI_SV_LRG, mean 70002,3')
+	plt.loglog(d1[0],ml,'r:',label=r'$(r/7.78)^{-1.98}$ (Kitanidis et al.)')
+	plt.legend()
+	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi$')
+	plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSVxicomb.png')
+	plt.show()
+
 
 if __name__ == '__main__':
-	createSourcesrd_ad('LRG','70003','20200219')
-	createSourcesrd_ad('ELG','70004','20200219',zmin=.8,zmax=1.6)
+	import subprocess
+	#gf = createSourcesrd_ad('LRG','70002','20200304')
+	#subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	#subprocess.run('./dopc'+gf+'.sh')
+	#ppxilcalc_LSDfjack_bs('LRG','70002','20200304',zmin=.5,zmax=1.1)
+	ppxilcalc_LSDfjack_bs('LRG','70002','20200304',zmin=.5,zmax=1.1,bs=5)
+	#gf = createSourcesrd_ad('LRG','70003','20200228')
+	#subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	#subprocess.run('./dopc'+gf+'.sh')
+	#ppxilcalc_LSDfjack_bs('LRG','70003','20200228',zmin=.5,zmax=1.1)
+	ppxilcalc_LSDfjack_bs('LRG','70003','20200228',zmin=.5,zmax=1.1,bs=5)
+	#gf = createSourcesrd_ad('ELG','70004','20200219',zmin=.8,zmax=1.6)
+	#subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	#subprocess.run('./dopc'+gf+'.sh')
+	#ppxilcalc_LSDfjack_bs('ELG','70004','20200219',zmin=.8,zmax=1.6)
+	ppxilcalc_LSDfjack_bs('ELG','70004','20200219',zmin=.8,zmax=1.6,bs=5)
+	#gf = createSourcesrd_ad('ELG','70005','20200228',zmin=.8,zmax=1.6)
+	#subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	#subprocess.run('./dopc'+gf+'.sh')
+	#ppxilcalc_LSDfjack_bs('ELG','70005','20200228',zmin=.8,zmax=1.6)
+	ppxilcalc_LSDfjack_bs('ELG','70005','20200228',zmin=.8,zmax=1.6,bs=5)
+	#gf = createSourcesrd_ad('ELG','70006','20200303',zmin=.8,zmax=1.6)
+	#subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	#subprocess.run('./dopc'+gf+'.sh')
+	#ppxilcalc_LSDfjack_bs('ELG','70006','20200303',zmin=.8,zmax=1.6)
+	ppxilcalc_LSDfjack_bs('ELG','70006','20200303',zmin=.8,zmax=1.6,bs=5)
