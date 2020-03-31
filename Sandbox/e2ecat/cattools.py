@@ -96,7 +96,7 @@ def mke2etiles(run,dirout=e2eout):
 	atl = fitsio.read(e2ein+'run/survey/tiles/des.fits')
 	tls = []
 	for i in range(0,len(fafiles)):
-		tl = fls[i].split('-')[-1].strip('.fits')
+		tl = fafiles[i].split('-')[-1].strip('.fits')
 		tl = int(tl)
 		print(tl)
 		tls.append(tl)
