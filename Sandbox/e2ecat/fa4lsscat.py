@@ -21,7 +21,7 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
                                 read_assignment_fits_tile)                                 
 import desimodel.io as dmio
 
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020b-onepercent/'
 randir = minisvdir+'random/'
 
 
