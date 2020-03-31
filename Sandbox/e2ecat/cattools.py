@@ -97,7 +97,7 @@ def mke2etiles(run,dirout=e2eout):
 	tls = []
 	for i in range(0,len(fafiles)):
 		tl = fls[i].split('-')[-1].strip('.fits')
-		tl = int(tl
+		tl = int(tl)
 		tls.append(tl)
 	w = np.isin(atl['TILEID'],tls)
 	rtl = atl[w]
