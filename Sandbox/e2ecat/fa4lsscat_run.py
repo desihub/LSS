@@ -32,7 +32,7 @@ e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'
 randir = e2eout+'randoms/'+str(run)
 if os.path.isdir(randir):
 	pass
-else	
+else:	
 	os.mkdir(randir)
 
 fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/*')
