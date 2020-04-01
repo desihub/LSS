@@ -8,7 +8,7 @@ import astropy.io.fits as fits
 from astropy.table import Table
 from matplotlib import pyplot as plt
 import desimodel.footprint
-import desimodel.focalplane
+import desimodel.focalplane #
 
 ranf = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
