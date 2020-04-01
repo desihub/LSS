@@ -6,6 +6,7 @@ import json
 import numpy as np
 import fitsio
 import desimodel
+import glob
 
 from fiberassign.targets import (TargetsAvailable)
 from fiberassign.utils import option_list, GlobalTimers
