@@ -24,7 +24,7 @@ import desimodel.io as dmio
 
 import sys
 import os
-
+test
 run = int(sys.argv[1])
 
 e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020b-onepercent/'
