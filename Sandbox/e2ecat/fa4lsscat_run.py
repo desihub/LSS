@@ -30,7 +30,10 @@ run = int(sys.argv[1])
 e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020b-onepercent/'
 e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'
 randir = e2eout+'randoms/'+str(run)
-os.mkdir(randir)
+if os.path.isdir(randir):
+	pass
+else	
+	os.mkdir(randir)
 
 fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/*')
 hd = fitsio.read_header(fafls[0])
