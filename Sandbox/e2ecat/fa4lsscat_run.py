@@ -48,7 +48,7 @@ mke2etiles(run)
 tilef = e2eout+'e2etiles_run'+str(run)+'.fits'
 
 # First get the starting focalplane from desimodel
-fp, exclude, state, tmstr = dmio.load_focalplane(runtime)
+#fp, exclude, state, tmstr = dmio.load_focalplane(runtime) #not necessary because of date above
 
 
 '''
