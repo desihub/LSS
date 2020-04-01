@@ -43,6 +43,7 @@ runtime = datetime.strptime(dt,'%Y-%m-%dT%H:%M:%S')
 targetf = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #2e8 randoms from dr8 randoms, with columns needs for fa
 
 #make the tile file for this run
+from cattools import mke2etiles
 mke2etiles(run)
 tilef = e2eout+'e2etiles_run'+str(run)+'.fits'
 
