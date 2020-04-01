@@ -70,4 +70,4 @@ del tree
 asgn = Assignment(tgs, tgsavail, favail)
 asgn.assign_unused(TARGET_TYPE_SCIENCE)
 write_assignment_fits(tiles, asgn, out_dir=randir, all_targets=True)
-print('wrote assignment files to '+dirout)	
+print('wrote assignment files to '+randir)	
