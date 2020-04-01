@@ -38,7 +38,7 @@ else:
 fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/*')
 hd = fitsio.read_header(fafls[0])
 dt = hd['FA_RUN']
-runtime = datetime.strptime(dt,'%Y-%m-%dT%H:%M:%S')
+#runtime = datetime.strptime(dt,'%Y-%m-%dT%H:%M:%S')
 
 targetf = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #2e8 randoms from dr8 randoms, with columns needs for fa
 
@@ -62,7 +62,7 @@ tgs = Targets()
 load_target_file(tgs,targetf)
 print('loaded target file '+targetf)
 tree = TargetTree(tgs, 0.01)
-hw = load_hardware(focalplane=(fp, exclude, state))
+hw = load_hardware(rundate=dt)
 tiles = load_tiles(tiles_file=tilef)
 tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
 favail = LocationsAvailable(tgsavail)
