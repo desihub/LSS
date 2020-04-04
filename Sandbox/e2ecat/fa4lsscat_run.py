@@ -84,7 +84,7 @@ for run in range(srun,srun+nrun):
 	tiles = load_tiles(tiles_file=tilef)
 	tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
 	favail = LocationsAvailable(tgsavail)
-	del tree
+	#del tree
 	asgn = Assignment(tgs, tgsavail, favail)
 	asgn.assign_unused(TARGET_TYPE_SCIENCE)
 	write_assignment_fits(tiles, asgn, out_dir=randir, all_targets=True)
