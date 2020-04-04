@@ -42,6 +42,11 @@ import desimodel
 import desimodel.io as dmio
 
 
+#test
+run = 0
+fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
+hd = fitsio.read_header(fafls[0])
+dt = hd['FA_RUN']
 
 
 srun = int(sys.argv[1]) #starting run
@@ -55,11 +60,6 @@ load_target_file(tgs,targetf)
 print('loaded target file '+targetf)
 tree = TargetTree(tgs, 0.01)
 
-#test
-run = 0
-fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
-hd = fitsio.read_header(fafls[0])
-dt = hd['FA_RUN']
 
 
 
