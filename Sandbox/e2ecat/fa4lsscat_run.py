@@ -55,6 +55,13 @@ load_target_file(tgs,targetf)
 print('loaded target file '+targetf)
 tree = TargetTree(tgs, 0.01)
 
+#test
+run = 0
+fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
+hd = fitsio.read_header(fafls[0])
+dt = hd['FA_RUN']
+
+
 
 for run in range(srun,srun+nrun):
 	#make the tile file for this run
@@ -68,7 +75,7 @@ for run in range(srun,srun+nrun):
 	else:	
 		os.mkdir(randir)
 
-	fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/*')
+	fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
 	hd = fitsio.read_header(fafls[0])
 	dt = hd['FA_RUN']
 
