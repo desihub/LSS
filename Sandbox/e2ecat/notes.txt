@@ -1,11 +1,11 @@
 #steps for producing randoms matched to angular geometry
 
-run fiberassign on tiles from each run
+run fiberassign on tiles from each run #need to copy random random file for GRAY either copy or make new for BRIGHT
 
 Take outputs, remove those with fiber status != 1 from fibermap; need to connect tile and exposure info from exposures files
 
 Cut to unique IDs
 
-Concatenate files
+Concatenate files; vstack is easiest code wise but sometimes inefficient
 
 Match back to parent file to get full info #what is most efficient way to do this?; I think we have a narrow strip in Dec, so cut main random file that way first, then combine

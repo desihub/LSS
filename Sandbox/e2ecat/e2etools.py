@@ -5,7 +5,7 @@ import numpy as np
 import fitsio
 import glob
 import astropy.io.fits as fits
-from astropy.table import Table
+from astropy.table import Table,vstack,unique
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane #
@@ -38,8 +38,44 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def combran(srun=0,nrun=9):
-	#do things
-	from math import pi
+	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+str(srun)+'/'
+	fafls0 = glob.glob(dir0+'fiberassign-*.fits')
+	fah = fitsio.read_header(fafls0[0])
+	tile = fah['TILEID']
+	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
+	w = exps['TILEID'] == fah['TILEID']
+	if len(exps[w]) > 1:
+		return 'NEED to deal with multiple exposures of same tile'
+	expid = exps[w]['EXPID'][0]	
+	fmap = fitsio.read(e2ein+'run/'+str(srun)+'fiberassign/fibermaps-'+str(expid)+'.fits')
+	wloc = fmap['FIBERSTATUS'] == 0
+	gloc = fmap[wloc]['LOCATION']
+	fa = Table.read(fafls0[0],hdu='FAVAIL')
+	wg = np.isin(fa['LOCATION'],gloc)
+	fg = fa[wg]
+	fgu = unique(fg,keys='TARGETID')
+	print(len(fgu)+' unique randoms')
+	for i in range(1,len(fafls0)):
+		fah = fitsio.read_header(fafls0[i])
+		tile = fah['TILEID']
+		w = exps['TILEID'] == fah['TILEID']
+		if len(exps[w]) > 1:
+			return 'NEED to deal with multiple exposures of same tile'
+		expid = exps[w]['EXPID'][0]	
+		fmap = fitsio.read(e2ein+'run/'+str(srun)+'fiberassign/fibermaps-'+str(expid)+'.fits')
+		wloc = fmap['FIBERSTATUS'] == 0
+		gloc = fmap[wloc]['LOCATION']
+		fa = Table.read(fafls0[0],hdu='FAVAIL')
+		wg = np.isin(fa['LOCATION'],gloc)
+		fg = fa[wg]
+		fv = vstack(fgu,fg)
+		fgu = unique(fv,keys='TARGETID')
+		print(len(fgu)+' unique randoms')
+	print('run '+str(srun) +' done')	
+		
+		
+	
+	
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
 	tiles = fitsio.read(tilef)
