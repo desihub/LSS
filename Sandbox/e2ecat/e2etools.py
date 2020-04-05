@@ -54,7 +54,7 @@ def combran(srun=0,nrun=9):
 	wg = np.isin(fa['LOCATION'],gloc)
 	fg = fa[wg]
 	fgu = unique(fg,keys='TARGETID')
-	print(len(fgu)+' unique randoms')
+	print(str(len(fgu))+' unique randoms')
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
@@ -70,7 +70,7 @@ def combran(srun=0,nrun=9):
 		fg = fa[wg]
 		fv = vstack(fgu,fg)
 		fgu = unique(fv,keys='TARGETID')
-		print(len(fgu)+' unique randoms')
+		print(str(len(fgu))+' unique randoms')
 	print('run '+str(srun) +' done')	
 		
 		
