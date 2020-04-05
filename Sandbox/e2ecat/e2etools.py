@@ -47,7 +47,7 @@ def combran(srun=0,nrun=9):
 	if len(exps[w]) > 1:
 		return 'NEED to deal with multiple exposures of same tile'
 	expid = exps[w]['EXPID'][0]	
-	fmap = fitsio.read(e2ein+'run/'+str(srun)+'fiberassign/fibermaps-'+str(expid)+'.fits')
+	fmap = fitsio.read(e2ein+'run/'+str(srun)+'/fiberassign/fibermaps-'+str(expid)+'.fits')
 	wloc = fmap['FIBERSTATUS'] == 0
 	gloc = fmap[wloc]['LOCATION']
 	fa = Table.read(fafls0[0],hdu='FAVAIL')
