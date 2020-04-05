@@ -21,7 +21,7 @@ import fitsio
 import glob
 
 #import from catalog code
-from cattools import mke2etiles
+from e2etools import mke2etiles
 
 #import from fiberassign
 from fiberassign.targets import (TargetsAvailable)
