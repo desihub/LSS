@@ -38,7 +38,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def combran(srun=0,nrun=9):
-	
+	#do things
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
 	tiles = fitsio.read(tilef)
