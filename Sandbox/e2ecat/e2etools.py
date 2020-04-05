@@ -68,6 +68,7 @@ def combran(srun=0,nrun=9):
 		fa = Table.read(fafls0[i],hdu='FAVAIL')
 		wg = np.isin(fa['LOCATION'],gloc)
 		fg = fa[wg]
+		print(len(fg),len(gloc))
 		fv = vstack(fgu,fg)
 		fgu = unique(fv,keys='TARGETID')
 		print(str(len(fgu))+' unique randoms')
