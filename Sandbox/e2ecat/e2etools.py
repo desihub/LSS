@@ -65,7 +65,7 @@ def combran(srun=0,nrun=9):
 		fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
 		wloc = fmap['FIBERSTATUS'] == 0
 		gloc = fmap[wloc]['LOCATION']
-		fa = Table.read(fafls0[0],hdu='FAVAIL')
+		fa = Table.read(fafls0[i],hdu='FAVAIL')
 		wg = np.isin(fa['LOCATION'],gloc)
 		fg = fa[wg]
 		fv = vstack(fgu,fg)
