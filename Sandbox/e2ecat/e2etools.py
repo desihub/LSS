@@ -38,7 +38,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def combran(srun=0,nrun=9):
-	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+str(srun)+'/'
+	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(srun)+'/'
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
 	tile = fah['TILEID']
