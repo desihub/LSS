@@ -5,7 +5,7 @@ import numpy as np
 import fitsio
 import glob
 import astropy.io.fits as fits
-from astropy.table import Table,vstack,unique
+from astropy.table import Table,vstack,unique,join
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane #
@@ -98,7 +98,12 @@ def combran(srun=0,nrun=9,outf='randoms/randoms_darktime.fits'):
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 		
-	
+def matchran():
+	faran =	Table.read(e2eout+'randoms/randoms_darktime.fits')
+	mtlran = Table.read(e2eout+'randoms/randoms_mtl_cuttod.fits')
+	jran = join(faran,mtlran,keys=['TARGETID'])
+	print(len(jran),len(faran),len(mtlran))
+	jran.write(e2eout+'randoms/randoms_darktime_jmtl.fits',format='fits', overwrite=True)
 	
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
