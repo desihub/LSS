@@ -39,6 +39,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 
 def combran(srun=0,nrun=9):
 	#do things
+	from math import pi
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
 	tiles = fitsio.read(tilef)
