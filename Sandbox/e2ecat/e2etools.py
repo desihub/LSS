@@ -37,7 +37,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
-def combran(srun=0,nrun=9):
+def combran(srun=0,nrun=9,outf='randoms/randoms_darktime.fits'):
 	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(srun)+'/'
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
@@ -73,8 +73,30 @@ def combran(srun=0,nrun=9):
 		#print(len(fv))
 		fgu = unique(fv,keys='TARGETID')
 		print(str(len(fgu))+' unique randoms')
-	print('run '+str(srun) +' done')	
-		
+	print('run '+str(srun) +' done')
+	for run in range(srun+1,srun+nrun):
+		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(run)+'/'
+		faflsr = glob.glob(dirr+'fba-*.fits')
+		for i in range(0,len(faflsr)):
+			fah = fitsio.read_header(faflsr[i])
+			tile = fah['TILEID']
+			w = exps['TILEID'] == fah['TILEID']
+			if len(exps[w]) > 1:
+				return 'NEED to deal with multiple exposures of same tile'
+			expid = exps[w]['EXPID'][0]	
+			fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+			wloc = fmap['FIBERSTATUS'] == 0
+			gloc = fmap[wloc]['LOCATION']
+			fa = Table.read(faflsr[i],hdu='FAVAIL')
+			wg = np.isin(fa['LOCATION'],gloc)
+			fg = fa[wg]
+			#print(len(fg),len(gloc))
+			fv = vstack([fgu,fg])
+			#print(len(fv))
+			fgu = unique(fv,keys='TARGETID')
+			print(str(len(fgu))+' unique randoms')
+		print('run '+str(run) +' done')
+	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 		
 	
 	
