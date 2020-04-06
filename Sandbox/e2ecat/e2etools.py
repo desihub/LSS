@@ -97,6 +97,17 @@ def combran(srun=0,nrun=9,outf='randoms/randoms_darktime.fits'):
 			print(str(len(fgu))+' unique randoms')
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
+
+def matchzcatmtl(srun,nrun,outf='mtlzcat.fits'):
+	rmax = srun+nrun-1
+	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl.fits')
+	for i in range(srun,srun+nrun):
+		zc = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/zcat.fits')
+		mtlj = join(mtl,zc)
+	w = mtlj['ZWARN'] == 0
+	print('number of good redshifts:')
+	print(len(mtlj[w]))	
+	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 		
 def matchran():
 	faran =	Table.read(e2eout+'randoms/randoms_darktime.fits')
