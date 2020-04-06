@@ -99,14 +99,19 @@ def combran(srun=0,nrun=9,outf='randoms/randoms_darktime.fits'):
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 
 def matchzcatmtl(srun,nrun,outf='mtlzcat.fits'):
-	rmax = srun+nrun-1
-	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl.fits')
-	for i in range(srun,srun+nrun):
+	#rmax = srun+nrun-1
+	mtl = Table.read(e2ein+'run/quicksurvey/'+str(srun)+'/mtl.fits')
+	zc = Table.read(e2ein+'run/quicksurvey/'+str(srun)+'/zcat.fits')
+	mtlj = join(zc,mtl,keys=['TARGETID'],table_names=['zcat','mtl'])
+	
+	for i in range(srun+1,srun+nrun):
+		mtl = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/mtl.fits')
 		zc = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/zcat.fits')
-		mtlj = join(mtl,zc,keys=['TARGETID'],join_type='left')
+		mtlji = join(zc,mtl,keys=['TARGETID'],table_names=['zcat','mtl'])
+		mtlj = vstack([mtlj,mtlji])
 	w = mtlj['ZWARN'] == 0
-	print('number of good redshifts:')
-	print(len(mtlj[w]))	
+	print('number of obs, number of good redshifts:')
+	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 		
 def matchran():
