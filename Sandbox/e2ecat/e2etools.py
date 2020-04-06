@@ -103,13 +103,13 @@ def matchzcatmtl(srun,nrun,outf='mtlzcat.fits'):
 	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl.fits')
 	zc = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/zcat.fits')
 	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
-	
-# 	for i in range(srun+1,srun+nrun):
-# 		mtl = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/mtl.fits')
-# 		zc = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/zcat.fits')
-# 		mtlji = join(zc,mtl,keys=['TARGETID'],table_names=['zcat','mtl'])
-# 		mtlj = vstack([mtlj,mtlji])
- 	w = mtlj['ZWARN'] == 0
+
+	# 	for i in range(srun+1,srun+nrun):
+	# 		mtl = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/mtl.fits')
+	# 		zc = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/zcat.fits')
+	# 		mtlji = join(zc,mtl,keys=['TARGETID'],table_names=['zcat','mtl'])
+	# 		mtlj = vstack([mtlj,mtlji])
+	w = mtlj['ZWARN'] == 0
 	print('number of obs, number of good redshifts:')
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
