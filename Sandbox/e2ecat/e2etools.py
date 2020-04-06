@@ -103,7 +103,7 @@ def matchzcatmtl(srun,nrun,outf='mtlzcat.fits'):
 	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl.fits')
 	for i in range(srun,srun+nrun):
 		zc = Table.read(e2ein+'run/quicksurvey/'+str(i)+'/zcat.fits')
-		mtlj = join(mtl,zc)
+		mtlj = join(mtl,zc,keys=['TARGETID'],jointype='left')
 	w = mtlj['ZWARN'] == 0
 	print('number of good redshifts:')
 	print(len(mtlj[w]))	
