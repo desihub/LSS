@@ -52,7 +52,8 @@ dt = hd['FA_RUN']
 srun = int(sys.argv[1]) #starting run
 nrun = int(sys.argv[2]) #number of runs
 
-targetf = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #2e8 randoms from dr8 randoms, with columns needs for fa, 
+#targetf = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #2e8 randoms from dr8 randoms, with columns needs for fa, 
+targetf = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 #random are only for DARK right now, need to work something out for BRIGHT and GRAY
 
 #use fiberassign tools to read in randoms to be assigned
