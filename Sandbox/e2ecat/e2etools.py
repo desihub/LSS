@@ -48,6 +48,8 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 		return 'NEED to deal with multiple exposures of same tile'
 	expid = exps[w]['EXPID'][0]	
 	fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+	fmap['FIBERSTATUS'] = 0
+	print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
 	gloc = fmap[wloc]['LOCATION']
 	fa = Table.read(fafls0[0],hdu='FAVAIL')
@@ -63,6 +65,9 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 			return 'NEED to deal with multiple exposures of same tile'
 		expid = exps[w]['EXPID'][0]	
 		fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+		fmap['FIBERSTATUS'] = 0
+		print('set fiberstatus all to 0; fix this once propagated to zcat')
+
 		wloc = fmap['FIBERSTATUS'] == 0
 		gloc = fmap[wloc]['LOCATION']
 		fa = Table.read(fafls0[i],hdu='FAVAIL')
@@ -85,6 +90,9 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 				return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]	
 			fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+			fmap['FIBERSTATUS'] = 0
+			print('set fiberstatus all to 0; fix this once propagated to zcat')
+
 			wloc = fmap['FIBERSTATUS'] == 0
 			gloc = fmap[wloc]['LOCATION']
 			fa = Table.read(faflsr[i],hdu='FAVAIL')
