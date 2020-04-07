@@ -15,7 +15,7 @@ minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 tardir = minisvdir+'targets/'
 dircat = minisvdir+'LSScats/'
 targroot = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
-e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020d-onepercent/'
+e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020e-onepercent/'
 e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'
 
 
@@ -37,7 +37,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
-def combran(srun=0,nrun=9,outf='randoms/randoms_darktime.fits'):
+def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(srun)+'/'
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])

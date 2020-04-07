@@ -5,7 +5,7 @@ targetf is file with all targets to be run through
 tile files and output directories are generated based on the information in the run directories
 '''                                
 
-e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020d-onepercent/' #Mike's most recent
+e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020e-onepercent/' #Mike's most recent
 e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/' #I will keep over-writing most recent here until there are outputs to really be tested
 
 
