@@ -98,10 +98,11 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 
-def matchzcatmtl(srun,nrun,outf='mtlzcat.fits'):
+def matchzcatmtl(srun,nrun,pr='dark'):
+	outf='mtlzcat'+pr+'.fits'
 	rmax = srun+nrun-1
-	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl.fits')
-	zc = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/zcat.fits')
+	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl-'+pr+'.fits')
+	zc = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/zcat-'+pr+'.fits')
 	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
 
 	# 	for i in range(srun+1,srun+nrun):
