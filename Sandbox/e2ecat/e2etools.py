@@ -134,6 +134,32 @@ def matchzcatmtl(srun,nrun,pr='dark'):
 	print('number of obs, number of good redshifts:')
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
+
+def plotzcat_tilecen(pr='dark'):
+	if pr == 'dark':
+		pt = b'DARK'
+	ts = fitsio.read(e2ein+'run/survey/tiles/des.fits')	
+	wp = ts['PROGRAM'] == pt
+	ts = ts[wp]
+	df=e2eout+'mtlzcat'+pr+'.fits'
+	d = fitsio.read(df)
+	w = d['ZWARN'] == 0
+	dw = d[w]
+	raw = dw['RA']
+	wr = raw > 300
+	raw[wr] -= 360
+	plt.plot(raw,rw['DEC'],'k,',label='dark time good z')
+	
+	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
+	s = 0
+	for tile in exps['TILEID']:
+		wt = ts['TILE'] == tile
+		if s == 0:
+			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],label='completed dark time tile centers')
+		else:
+			plt.plot(ts[wt]['RA'],ts[wt]['DEC'])
+	plt.show()		
+	
 		
 def matchran():
 	faran =	Table.read(e2eout+'randoms/randoms_darktime.fits')
