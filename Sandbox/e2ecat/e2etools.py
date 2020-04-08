@@ -42,13 +42,16 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
 	tile = fah['TILEID']
-	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
-	if np.isin(tile,exps['TILEID']):#[0]:
-		w = exps['TILEID'] == fah['TILEID']
-		if len(exps[w]) > 1:
-			return 'NEED to deal with multiple exposures of same tile'
+	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
+	exps = fitsio.read(e2ein+'run/quicksurvey_v3/epochs.fits')
+	w = exps['TILEID'] == tile
+	if len(exps[w]) > 1:
+		return 'NEED to deal with multiple exposures of same tile'
+	
+	if exps[w]['EPOCH'][0] == srun:#[0]:
+		pass
 	else:
-		return 'first tile wasnot observed, fix code'
+		return 'first tile was not observed in assigned epoch, fix code'
 	expid = exps[w]['EXPID'][0]	
 	fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
 	fmap['FIBERSTATUS'] = 0
@@ -63,9 +66,10 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
-		if np.isin(tile,exps['TILEID']):
+		w = exps['TILEID'] == fah['TILEID']
+		if exps[w]['EPOCH'][0] == srun:
 
-			w = exps['TILEID'] == fah['TILEID']
+			
 			if len(exps[w]) > 1:
 				return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]	
@@ -84,7 +88,7 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 			fgu = unique(fv,keys='TARGETID')
 			print(str(len(fgu))+' unique randoms')
 		else:
-			print(str(tile)+' not observed')	
+			print(str(tile)+' not observed in assigned epoch')	
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
 		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(run)+'/'
@@ -92,9 +96,10 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 		for i in range(0,len(faflsr)):
 			fah = fitsio.read_header(faflsr[i])
 			tile = fah['TILEID']
-			if np.isin(tile,exps['TILEID']):
+			w = exps['TILEID'] == fah['TILEID']
+			if exps[w]['EPOCH'][0] == run:
 
-				w = exps['TILEID'] == fah['TILEID']
+				
 				if len(exps[w]) > 1:
 					return 'NEED to deal with multiple exposures of same tile'
 				expid = exps[w]['EXPID'][0]	
@@ -113,7 +118,7 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 				fgu = unique(fv,keys='TARGETID')
 				print(str(len(fgu))+' unique randoms')
 			else:
-				print(str(tile)+' not observed')	
+				print(str(tile)+' not observed in assigned epoch')	
 
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
