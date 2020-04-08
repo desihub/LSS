@@ -148,7 +148,7 @@ def plotzcat_tilecen(pr='dark'):
 	raw = dw['RA']
 	wr = raw > 300
 	raw[wr] -= 360
-	plt.plot(raw,rw['DEC'],'k,',label='dark time good z')
+	plt.plot(raw,dw['DEC'],'k,',label='dark time good z')
 	
 	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
 	s = 0
