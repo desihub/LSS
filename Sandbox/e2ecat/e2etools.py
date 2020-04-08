@@ -43,7 +43,7 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	fah = fitsio.read_header(fafls0[0])
 	tile = fah['TILEID']
 	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
-	if np.isin(fah['TILEID'],exps['TILEID'])[0]:
+	if np.isin(tile,exps['TILEID']):#[0]:
 		w = exps['TILEID'] == fah['TILEID']
 		if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
