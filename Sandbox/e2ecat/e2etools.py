@@ -148,16 +148,16 @@ def plotzcat_tilecen(pr='dark'):
 	raw = dw['RA']
 	wr = raw > 300
 	raw[wr] -= 360
-	plt.plot(raw,dw['DEC'],'k,',label='dark time good z')
+	plt.plot(raw,dw['DEC'],'k,',label='dark time good z',zorder=0)
 	
 	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
 	s = 0
 	for tile in exps['TILEID']:
 		wt = ts['TILEID'] == tile
 		if s == 0:
-			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],label='completed dark time tile centers')
+			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],'ro',label='completed dark time tile centers')
 		else:
-			plt.plot(ts[wt]['RA'],ts[wt]['DEC'])
+			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],'ro')
 	plt.show()		
 	
 		
