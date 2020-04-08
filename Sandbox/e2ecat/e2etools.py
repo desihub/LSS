@@ -63,7 +63,7 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
-		if np.isin(tile,exps['TILEID'])[0]:
+		if np.isin(tile,exps['TILEID']):
 
 			w = exps['TILEID'] == fah['TILEID']
 			if len(exps[w]) > 1:
@@ -92,7 +92,7 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 		for i in range(0,len(faflsr)):
 			fah = fitsio.read_header(faflsr[i])
 			tile = fah['TILEID']
-			if np.isin(tile,exps['TILEID'])[0]:
+			if np.isin(tile,exps['TILEID']):
 
 				w = exps['TILEID'] == fah['TILEID']
 				if len(exps[w]) > 1:
