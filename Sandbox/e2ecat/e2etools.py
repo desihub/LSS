@@ -57,7 +57,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	expid = exps[w]['EXPID'][0]	
 	#if expid < 100:
 	#	zer = '000000'
-	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+zer+str(expid).zfill(8)+'.fits')
+	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 	#fmap['FIBERSTATUS'] = 0
 	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
