@@ -38,7 +38,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def combran(srun=0,nrun=7,program='dark'):
-	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'program+'/randoms/'+str(srun)+'/'
+	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(srun)+'/'
 	outf=program+'/randoms/randoms_darktime.fits'
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
