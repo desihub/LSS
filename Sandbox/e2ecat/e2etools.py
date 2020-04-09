@@ -130,11 +130,11 @@ def combran(srun=0,nrun=7,program='dark'):
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 
-def matchzcatmtl(srun,nrun,pr='dark'):
-	outf=program+'/mtlzcat'+pr+'.fits'
+def matchzcatmtl(srun,nrun,program='dark'):
+	outf=program+'/mtlzcat'+program+'.fits'
 	rmax = srun+nrun-1
-	mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+pr+'.fits')
-	zc = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+pr+'.fits')
+	mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+program+'.fits')
+	zc = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
 	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
 
 	# 	for i in range(srun+1,srun+nrun):
