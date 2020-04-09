@@ -125,10 +125,10 @@ def combran(srun=0,nrun=7,program='dark'):
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 
 def matchzcatmtl(srun,nrun,pr='dark'):
-	outf='mtlzcat'+pr+'.fits'
+	outf=program+'/mtlzcat'+pr+'.fits'
 	rmax = srun+nrun-1
-	mtl = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/mtl-'+pr+'.fits')
-	zc = Table.read(e2ein+'run/quicksurvey/'+str(rmax)+'/zcat-'+pr+'.fits')
+	mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+pr+'.fits')
+	zc = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+pr+'.fits')
 	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
 
 	# 	for i in range(srun+1,srun+nrun):
@@ -167,12 +167,12 @@ def plotzcat_tilecen(pr='dark'):
 	plt.show()		
 	
 		
-def matchran():
-	faran =	Table.read(e2eout+'randoms/randoms_darktime.fits')
-	mtlran = Table.read(e2eout+'randoms/randoms_mtl_cuttod.fits')
+def matchran(program='dark'):
+	faran =	Table.read(e2eout+program+'/randoms/randoms_darktime.fits')
+	mtlran = Table.read(e2eout+program+'/randoms/randoms_mtl_cuttod.fits')
 	jran = join(faran,mtlran,keys=['TARGETID'])
 	print(len(jran),len(faran),len(mtlran))
-	jran.write(e2eout+'randoms/randoms_darktime_jmtl.fits',format='fits', overwrite=True)
+	jran.write(e2eout+program+'/randoms/randoms_darktime_jmtl.fits',format='fits', overwrite=True)
 	
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
