@@ -228,9 +228,9 @@ def targtilesi(type,tilef = minisvdir+'msvtiles.fits'):
 		fitsio.write(fname,rt[wdec][inds],clobber=True)
 		print('wrote tile '+str(tile))
 
-def mke2etiles(run,dirout=e2eout):
+def mke2etiles(run,dirout=e2eout,program='dark'):
 	fout = dirout+'e2etiles_run'+str(run)+'.fits'
-	fafiles = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/*')
+	fafiles = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/*')
 	atl = fitsio.read(e2ein+'run/survey/tiles/des.fits')
 	tls = []
 	for i in range(0,len(fafiles)):
