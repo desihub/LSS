@@ -147,6 +147,23 @@ def matchzcatmtl(srun,nrun,program='dark'):
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 
+def plotcompdr(program='dark'):
+	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
+	rarw = r['RA']
+	wr = rarw > 180
+	rarw[wr] -= 360
+	plt.plot(rarw,r['DEC'],'k,')
+
+	d = fitsio.read(e2eout+program+'/mtlzcat'+program+'.fits')
+	w = d['ZWARN'] == 0
+	dw = d[w]
+	radw = dw['RA']
+	wr = radw > 180
+	radw[wr] -= 360
+	plt.plot(radw,dw['DEC'],'r,')
+	plt.show()
+
+
 def plotzcat_tilecen(pr='dark'):
 	if pr == 'dark':
 		pt = b'DARK'
