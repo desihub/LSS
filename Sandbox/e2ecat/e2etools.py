@@ -55,7 +55,9 @@ def combran(srun=0,nrun=7,program='dark'):
 	#else:
 	#	return 'first tile was not observed in assigned epoch, fix code'
 	expid = exps[w]['EXPID'][0]	
-	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+	#if expid < 100:
+	#	zer = '000000'
+	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+zer+str(expid).zfill(8)+'.fits')
 	#fmap['FIBERSTATUS'] = 0
 	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
@@ -75,7 +77,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
 		expid = exps[w]['EXPID'][0]	
-		fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+		fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 		#fmap['FIBERSTATUS'] = 0
 		#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
@@ -105,7 +107,7 @@ def combran(srun=0,nrun=7,program='dark'):
 			if len(exps[w]) > 1:
 				return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]	
-			fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+			fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 			#fmap['FIBERSTATUS'] = 0
 			#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
