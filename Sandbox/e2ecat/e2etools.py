@@ -37,8 +37,9 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
-def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
-	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(srun)+'/'
+def combran(srun=0,nrun=7,program='dark'):
+	dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'program+'/randoms/'+str(srun)+'/'
+	outf=program+'/randoms/randoms_darktime.fits'
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
 	tile = fah['TILEID']
@@ -48,14 +49,14 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 	if len(exps[w]) > 1:
 		return 'NEED to deal with multiple exposures of same tile'
 	
-	if exps[w]['EPOCH'][0] == srun:#[0]:
-		pass
-	else:
-		return 'first tile was not observed in assigned epoch, fix code'
+	#if exps[w]['EPOCH'][0] == srun:#[0]:
+	#	pass
+	#else:
+	#	return 'first tile was not observed in assigned epoch, fix code'
 	expid = exps[w]['EXPID'][0]	
 	fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
-	fmap['FIBERSTATUS'] = 0
-	print('set fiberstatus all to 0; fix this once propagated to zcat')
+	#fmap['FIBERSTATUS'] = 0
+	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
 	gloc = fmap[wloc]['LOCATION']
 	fa = Table.read(fafls0[0],hdu='FAVAIL')
@@ -67,28 +68,28 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
 		w = exps['TILEID'] == fah['TILEID']
-		if exps[w]['EPOCH'][0] == srun:
+		#if exps[w]['EPOCH'][0] == srun:
 
 			
-			if len(exps[w]) > 1:
-				return 'NEED to deal with multiple exposures of same tile'
-			expid = exps[w]['EXPID'][0]	
-			fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
-			fmap['FIBERSTATUS'] = 0
-			print('set fiberstatus all to 0; fix this once propagated to zcat')
+		if len(exps[w]) > 1:
+			return 'NEED to deal with multiple exposures of same tile'
+		expid = exps[w]['EXPID'][0]	
+		fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+		#fmap['FIBERSTATUS'] = 0
+		#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
-			wloc = fmap['FIBERSTATUS'] == 0
-			gloc = fmap[wloc]['LOCATION']
-			fa = Table.read(fafls0[i],hdu='FAVAIL')
-			wg = np.isin(fa['LOCATION'],gloc)
-			fg = fa[wg]
-			#print(len(fg),len(gloc))
-			fv = vstack([fgu,fg])
-			#print(len(fv))
-			fgu = unique(fv,keys='TARGETID')
-			print(str(len(fgu))+' unique randoms')
-		else:
-			print(str(tile)+' not observed in assigned epoch')	
+		wloc = fmap['FIBERSTATUS'] == 0
+		gloc = fmap[wloc]['LOCATION']
+		fa = Table.read(fafls0[i],hdu='FAVAIL')
+		wg = np.isin(fa['LOCATION'],gloc)
+		fg = fa[wg]
+		#print(len(fg),len(gloc))
+		fv = vstack([fgu,fg])
+		#print(len(fv))
+		fgu = unique(fv,keys='TARGETID')
+		print(str(len(fgu))+' unique randoms')
+		#else:
+		#	print(str(tile)+' not observed in assigned epoch')	
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
 		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(run)+'/'
@@ -97,28 +98,28 @@ def combran(srun=0,nrun=11,outf='randoms/randoms_darktime.fits'):
 			fah = fitsio.read_header(faflsr[i])
 			tile = fah['TILEID']
 			w = exps['TILEID'] == fah['TILEID']
-			if exps[w]['EPOCH'][0] == run:
+			#if exps[w]['EPOCH'][0] == run:
 
 				
-				if len(exps[w]) > 1:
-					return 'NEED to deal with multiple exposures of same tile'
-				expid = exps[w]['EXPID'][0]	
-				fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
-				fmap['FIBERSTATUS'] = 0
-				print('set fiberstatus all to 0; fix this once propagated to zcat')
+			if len(exps[w]) > 1:
+				return 'NEED to deal with multiple exposures of same tile'
+			expid = exps[w]['EXPID'][0]	
+			fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+			#fmap['FIBERSTATUS'] = 0
+			#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
-				wloc = fmap['FIBERSTATUS'] == 0
-				gloc = fmap[wloc]['LOCATION']
-				fa = Table.read(faflsr[i],hdu='FAVAIL')
-				wg = np.isin(fa['LOCATION'],gloc)
-				fg = fa[wg]
-				#print(len(fg),len(gloc))
-				fv = vstack([fgu,fg])
-				#print(len(fv))
-				fgu = unique(fv,keys='TARGETID')
-				print(str(len(fgu))+' unique randoms')
-			else:
-				print(str(tile)+' not observed in assigned epoch')	
+			wloc = fmap['FIBERSTATUS'] == 0
+			gloc = fmap[wloc]['LOCATION']
+			fa = Table.read(faflsr[i],hdu='FAVAIL')
+			wg = np.isin(fa['LOCATION'],gloc)
+			fg = fa[wg]
+			#print(len(fg),len(gloc))
+			fv = vstack([fgu,fg])
+			#print(len(fv))
+			fgu = unique(fv,keys='TARGETID')
+			print(str(len(fgu))+' unique randoms')
+			#else:
+			#	print(str(tile)+' not observed in assigned epoch')	
 
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	

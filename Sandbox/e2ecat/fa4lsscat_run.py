@@ -42,18 +42,21 @@ import desimodel
 import desimodel.io as dmio
 
 
-#test
-run = 0
-fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
-hd = fitsio.read_header(fafls[0])
-dt = hd['FA_RUN']
 
 
 srun = int(sys.argv[1]) #starting run
 nrun = int(sys.argv[2]) #number of runs
+program = str(sys.argv[3])
+
+#test
+run = srun
+fafls = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/fiberassign*')
+hd = fitsio.read_header(fafls[0])
+dt = hd['FA_RUN']
+
 
 #targetf = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #2e8 randoms from dr8 randoms, with columns needs for fa, 
-targetf = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
+targetf = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 #random are only for DARK right now, need to work something out for BRIGHT and GRAY
 
 #use fiberassign tools to read in randoms to be assigned
@@ -71,13 +74,13 @@ for run in range(srun,srun+nrun):
 	tilef = e2eout+'e2etiles_run'+str(run)+'.fits'
 
 
-	randir = e2eout+'randoms/'+str(run)
+	randir = e2eout+program+'/randoms/'+str(run)
 	if os.path.isdir(randir):
 		pass
 	else:	
 		os.mkdir(randir)
 
-	fafls = glob.glob(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fiberassign*')
+	fafls = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/fiberassign*')
 	hd = fitsio.read_header(fafls[0])
 	dt = hd['FA_RUN']
 
