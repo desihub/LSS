@@ -160,6 +160,7 @@ def plotcompdr(program='dark'):
 	radw = dw['RA']
 	wr = radw > 180
 	radw[wr] -= 360
+	wt = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
 	plt.plot(radw,dw['DEC'],'r,')
 	plt.show()
 
