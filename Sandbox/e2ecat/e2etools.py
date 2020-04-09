@@ -43,8 +43,9 @@ def combran(srun=0,nrun=7,program='dark'):
 	fafls0 = glob.glob(dir0+'fba-*.fits')
 	fah = fitsio.read_header(fafls0[0])
 	tile = fah['TILEID']
-	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
-	exps = fitsio.read(e2ein+'run/quicksurvey_v3/epochs.fits')
+	#
+	exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
+	#exps = fitsio.read(e2ein+'run/quicksurvey_v3/epochs.fits')
 	w = exps['TILEID'] == tile
 	if len(exps[w]) > 1:
 		return 'NEED to deal with multiple exposures of same tile'

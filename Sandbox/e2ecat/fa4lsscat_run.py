@@ -70,7 +70,7 @@ tree = TargetTree(tgs, 0.01)
 
 for run in range(srun,srun+nrun):
 	#make the tile file for this run
-	mke2etiles(run)
+	mke2etiles(run,program=program)
 	tilef = e2eout+'e2etiles_run'+str(run)+'.fits'
 
 
