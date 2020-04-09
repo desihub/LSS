@@ -55,7 +55,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	#else:
 	#	return 'first tile was not observed in assigned epoch, fix code'
 	expid = exps[w]['EXPID'][0]	
-	fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
 	#fmap['FIBERSTATUS'] = 0
 	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
@@ -75,7 +75,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
 		expid = exps[w]['EXPID'][0]	
-		fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+		fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/fibermap-'+str(expid)+'.fits')
 		#fmap['FIBERSTATUS'] = 0
 		#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
@@ -93,7 +93,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		#	print(str(tile)+' not observed in assigned epoch')	
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
-		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/randoms/'+str(run)+'/'
+		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(run)+'/'
 		faflsr = glob.glob(dirr+'fba-*.fits')
 		for i in range(0,len(faflsr)):
 			fah = fitsio.read_header(faflsr[i])
@@ -105,7 +105,7 @@ def combran(srun=0,nrun=7,program='dark'):
 			if len(exps[w]) > 1:
 				return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]	
-			fmap = fitsio.read(e2ein+'run/quicksurvey/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
+			fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/fibermap-'+str(expid)+'.fits')
 			#fmap['FIBERSTATUS'] = 0
 			#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
