@@ -152,7 +152,7 @@ def plotcompdr(program='dark'):
 	rarw = r['RA']
 	wr = rarw > 180
 	rarw[wr] -= 360
-	plt.plot(rarw,r['DEC'],'k,')
+	plt.plot(rarw,r['DEC'],'k,',label='randoms')
 
 	d = fitsio.read(e2eout+program+'/mtlzcat'+program+'.fits')
 	w = d['ZWARN'] == 0
@@ -161,7 +161,11 @@ def plotcompdr(program='dark'):
 	wr = radw > 180
 	radw[wr] -= 360
 	wt = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
-	plt.plot(radw[wt],dw[wt]['DEC'],'r,')
+	plt.plot(radw[wt],dw[wt]['DEC'],'r,',label='data')
+	plt.xlabel('RA')
+	plt.ylabel('DEC')
+	plt.legend()
+	plt.title('e2e one per cent survey LRGs')
 	plt.show()
 
 
