@@ -24,11 +24,11 @@ import desimodel.io as dmio
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 randir = minisvdir+'random/'
 
-
-runtime = datetime.utcnow()
+dt = '2020-03-10T00:00:00'
+#runtime = datetime.utcnow()
 
 # First get the starting focalplane from desimodel
-fp, exclude, state, tmstr = dmio.load_focalplane(runtime)
+#fp, exclude, state, tmstr = dmio.load_focalplane(runtime)
 
 def getfatiles(targetf,tilef,dirout=randir):
 	'''
@@ -42,7 +42,8 @@ def getfatiles(targetf,tilef,dirout=randir):
 	load_target_file(tgs,targetf)
 	print('loaded target file '+targetf)
 	tree = TargetTree(tgs, 0.01)
-	hw = load_hardware(focalplane=(fp, exclude, state))
+	#hw = load_hardware(focalplane=(fp, exclude, state))
+	hw = load_hardware(rundate=dt)
 	tiles = load_tiles(tiles_file=tilef)
 	tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
 	favail = LocationsAvailable(tgsavail)

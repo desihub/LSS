@@ -106,6 +106,24 @@ def mkminisvtilef(dirout=minisvdir,fout='msvtiles.fits'):
 		pa.append(b'DARK')
 	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
 	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+
+def mkminisvtilef_SV0(dirout=minisvdir,fout='msv0tiles.fits'):
+	'''
+	manually make tile fits file for minisv0 tiles
+	'''
+	msvtiles = Table()
+	msvtiles['TILEID'] = np.array([68000,68001,68002,67142,67230],dtype=int)
+	msvtiles['RA'] = np.array([214.75,214.76384,202.,204.136476102484,138.997356099811])
+	msvtiles['DEC'] = np.array([53.4,53.408,8.25,5.90422737037591,0.574227370375913])
+	msvtiles['PASS'] = np.zeros(5,dtype=int)
+	msvtiles['IN_DESI'] = np.ones(5,dtype=int)
+	msvtiles['OBSCONDITIONS'] = np.ones(5,dtype=int)*65535
+	pa = []
+	for i in range(0,5):
+		pa.append(b'DARK')
+	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
+	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+
 	
 def plotdatran(type,tile,night):
 	df = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.dat.fits')
