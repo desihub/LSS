@@ -79,7 +79,7 @@ pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
 
 
 #get target info
-tfa = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FAVAIL')
+tfa = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='POTENTIAL_ASSIGNMENTS')
 tft = unique(tfa,keys=['TARGETID'])
 wgt = (np.isin(tfa['LOCATION'],goodloc)) 
 print(str(len(np.unique(tfa[wgt]['LOCATION']))) + ' good locations')
