@@ -91,7 +91,7 @@ print(str(len(tfa)) +' unique targets with good locations out of '+str(len(tft))
 if type != 'ELG':
 	mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.37.0_all.fits'
 else:
-	mtlf = tardir+'MTL_ELG_Tile_'+str(tile)+'_0.37.0.fits'	
+	mtlf = tardir+'MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'	
 tt = Table.read(mtlf)
 wtype = ((tt['CMX_TARGET'] & 2**bit) > 0)
 tt = tt[wtype]
