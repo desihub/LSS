@@ -11,8 +11,6 @@ import sys
 minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 dirout = minisvdir+'LSScats/'
 
-#tile = 70003
-#night = '20200219'
 try:
 	type = str(sys.argv[1])
 	print(type)
@@ -25,9 +23,6 @@ except:
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13]
 
-#coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
-
-#type = 'LRG'
 
 def cutphotmask(aa):
 	keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
@@ -60,14 +55,20 @@ dd = fitsio.read(df)
 print(np.unique(dd['ZWARN']))
 maxp = np.max(dd['PRIORITY'])
 
-wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)
-loc_fail = dd[wfail]['LOCATION']
+if type != 'LRG':
+	wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
+else:
+	wfail = (dd['ZWARN'] != 999999) & ((dd['DELTACHI2'] < 200) | (dd['ZWARN'] > 0)	)
+
+loc_fail = dd[wfail]['LOCATION']	
 print(len(loc_fail))
 
 ddm = cutphotmask(dd)
 nl = countloc(ddm)
 
 wg = (ddm['ZWARN'] == 0) 
+if type == 'LRG':
+	wg &= ddm['DELTACHI2'] > 200
 
 ddzg = ddm[wg]
 

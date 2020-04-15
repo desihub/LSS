@@ -232,7 +232,7 @@ def plotLRG0():
 	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68001_20200315_zm0.5zx1.11st0.dat').transpose() 
 	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68002_20200315_zm0.5zx1.11st0.dat').transpose()
 	plt.loglog(d1[0],d1[1],label='SV0_LRG, Tile 68001')
-	plt.loglog(d2[0],d2[1],label='SV0_LRG, Tile 68001')
+	plt.loglog(d2[0],d2[1],label='SV0_LRG, Tile 68002')
 	dm = (d1[1]+d2[1])/2.
 	plt.loglog(d2[0],dm,'k-',label='SV0_LRG, mean')
 	plt.legend()
@@ -241,6 +241,7 @@ def plotLRG0():
 
 
 def plotxicomb():
+	xilin = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
 	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose() 
 	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70005_20200228_zm0.8zx1.6bsc.dat').transpose()
 	d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70006_20200303_zm0.8zx1.6bsc.dat').transpose()
@@ -258,6 +259,29 @@ def plotxicomb():
 	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$\xi$')
 	plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSVxicomb.png')
+	plt.show()
+
+def plotxicomb0():
+	xilin = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
+	dme = (d1[1]+d2[1])/2.	
+	plt.loglog(d1[0],dme,'b-',label='SV0_ELG, mean 67142,67230')
+
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68001_20200315_zm0.5zx1.11st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68002_20200315_zm0.5zx1.11st0.dat').transpose()
+	dml = (d1[1]+d2[1])/2.
+	ml = (d1[0]/7.78)**-1.98
+	plt.loglog(d1[0],dml,'r-',label='SV0_LRG, mean 68001,68002')
+	plt.loglog(d1[0],ml,'r--',label=r'$(r/7.78)^{-1.98}$ (Kitanidis et al.)')
+	plt.loglog(xilin[0],xilin[1]*1.4,'r:',label=r'3.1$\xi_{\rm lin}(z=0.8)$')
+	plt.loglog(xilin[0],xilin[1]*.7,'b:',label=r'2$\xi_{\rm lin}(z=1.1)$')
+	plt.legend()
+	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi$')
+	plt.ylim(1.e-2,70)
+	plt.xlim(0.25,60)
+	plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSV0xicomb.png')
 	plt.show()
 
 
