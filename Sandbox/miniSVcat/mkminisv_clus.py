@@ -55,7 +55,7 @@ dd = fitsio.read(df)
 print(np.unique(dd['ZWARN']))
 maxp = np.max(dd['PRIORITY'])
 
-dchi2 = 9
+dchi2 = 0
 
 if type != 'LRG':
 	wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
