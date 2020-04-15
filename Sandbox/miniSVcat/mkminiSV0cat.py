@@ -144,7 +144,7 @@ wz = ttest['ZWARN'] == 0
 wz &=  (np.isin(ttest['LOC'],goodloc))
 print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to mtl file type '+type)
 
-ttest = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FASSIGN')
+ttest = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
 ttest = unique(tfa,keys=['TARGETID'])
 ttest = join(ttest,tspec,keys=['TARGETID'],join_type='left')
 wz = ttest['ZWARN'] == 0
