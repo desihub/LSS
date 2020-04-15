@@ -158,7 +158,7 @@ print('there are '+str(len(ttest[wz]))+' rows with good redshifts, matching to F
 #tout = join(tfa,tspec[wtz],keys=['TARGETID'],join_type='left')
 tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
 wz = tout['ZWARN']*0 == 0
-print('there are '+str(len(tout[wz]))+' rows with good redshifts')
+print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
 #tout['RA'] = tf[wtz]['TARGET_RA']
 #tout['DEC'] = tf[wtz]['TARGET_DEC']
 #tout['Z'] = tspec[wtz]['Z']
@@ -183,7 +183,7 @@ tj['TARGETID'] = f3[goodranw]['TARGETID']
 tj['LOCATION'] = f3[goodranw]['LOCATION']
 tj['FIBER'] = f3[goodranw]['FIBER']
 tj = unique(tj,keys=['TARGETID'])
-t2.remove_columns(['NUMOBS_MORE','PRIORITY','OBSCONDITIONS','SUBPRIORITY'])
+t2.remove_columns(['PRIORITY','OBSCONDITIONS','SUBPRIORITY'])
 rant = join(tj,t2,keys=['TARGETID'],join_type='left')
 
 #now match back to randoms with all columns
