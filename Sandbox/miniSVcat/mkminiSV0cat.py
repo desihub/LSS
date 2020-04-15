@@ -88,7 +88,7 @@ print(len(tfa),len(tfa[wgt]))
 tfa = unique(tfa[wgt],keys=['TARGETID'])
 
 print(str(len(tfa)) +' unique targets with good locations out of '+str(len(tft))+ ' unique targets occupying ' +str(len(np.unique(tft['LOCATION']))) + ' unique locations ')
-if type != 'ELG'
+if type != 'ELG':
 	mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.37.0_all.fits'
 else:
 	mtlf = tardir+'MTL_ELG_Tile_'+str(tile)+'_0.37.0.fits'	
