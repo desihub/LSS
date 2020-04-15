@@ -68,6 +68,27 @@ def randomtilesi(tilef = minisvdir+'msvtiles.fits'):
 		fitsio.write(fname,rt[wdec][inds],clobber=True)
 		print('wrote tile '+str(tile))
 
+def ELGtilesi(tilef = minisvdir+'msv0tiles.fits'):
+	tiles = fitsio.read(tilef)
+	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+	print(trad)
+	rt = fitsio.read(minisvdir+'targets/MTL_all_SV0_ELG_tiles_0.37.0.fits')
+	print('loaded random file')	
+	
+	for i in range(3,len(tiles)):
+		tile = tiles['TILEID'][i]
+		fname = minisvdir+'targets/MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'
+		tdec = tiles['DEC'][i]
+		decmin = tdec - trad
+		decmax = tdec + trad
+		wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+		print(len(rt[wdec]))
+		inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+		print('got indexes')
+		fitsio.write(fname,rt[wdec][inds],clobber=True)
+		print('wrote tile '+str(tile))
+
+
 def targtilesi(type,tilef = minisvdir+'msvtiles.fits'):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
