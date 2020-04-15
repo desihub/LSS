@@ -55,10 +55,12 @@ dd = fitsio.read(df)
 print(np.unique(dd['ZWARN']))
 maxp = np.max(dd['PRIORITY'])
 
+dchi2 = 9
+
 if type != 'LRG':
 	wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
 else:
-	wfail = (dd['ZWARN'] != 999999) & ((dd['DELTACHI2'] < 200) | (dd['ZWARN'] > 0)	)
+	wfail = (dd['ZWARN'] != 999999) & ((dd['DELTACHI2'] <= dchi2) | (dd['ZWARN'] > 0)	)
 
 loc_fail = dd[wfail]['LOCATION']	
 print(len(loc_fail))
@@ -68,7 +70,7 @@ nl = countloc(ddm)
 
 wg = (ddm['ZWARN'] == 0) 
 if type == 'LRG':
-	wg &= ddm['DELTACHI2'] > 200
+	wg &= ddm['DELTACHI2'] > dchi2
 
 ddzg = ddm[wg]
 
