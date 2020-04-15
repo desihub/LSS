@@ -202,7 +202,20 @@ def plot3ELG():
 	dm = (d1[1]+d2[1]+d3[1])/3.
 	plt.loglog(d3[0],dm,'k-',label='MINI_SV_ELG, mean 70004,5,6')
 	plt.legend()
+	plt.ylim(1.e-3,30)
 	plt.show()
+
+def plotELG0():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
+	plt.loglog(d1[0],d1[1],label='SV0_ELG, Tile 67142')
+	plt.loglog(d2[0],d2[1],label='SV0_ELG, Tile 67230')
+	dm = (d1[1]+d2[1])/2.
+	plt.loglog(d2[0],dm,'k-',label='SV0_ELG, mean')
+	plt.legend()
+	plt.ylim(1.e-3,30)
+	plt.show()
+
 
 def plot2LRG():
 	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70002_20200304_zm0.5zx1.11st0.dat').transpose() 
@@ -212,7 +225,20 @@ def plot2LRG():
 	dm = (d1[1]+d2[1])/2.
 	plt.loglog(d2[0],dm,'k-',label='MINI_SV_LRG, mean 70002,3')
 	plt.legend()
+	plt.ylim(1.e-3,30)
 	plt.show()
+
+def plotLRG0():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68001_20200315_zm0.5zx1.11st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68002_20200315_zm0.5zx1.11st0.dat').transpose()
+	plt.loglog(d1[0],d1[1],label='SV0_LRG, Tile 68001')
+	plt.loglog(d2[0],d2[1],label='SV0_LRG, Tile 68001')
+	dm = (d1[1]+d2[1])/2.
+	plt.loglog(d2[0],dm,'k-',label='SV0_LRG, mean')
+	plt.legend()
+	plt.ylim(1.e-3,30)
+	plt.show()
+
 
 def plotxicomb():
 	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose() 
@@ -239,28 +265,28 @@ if __name__ == '__main__':
 	import subprocess
 	night = '20200315'
 	type = 'LRG'
-	tile = '68001'
+# 	tile = '68001'
+# 	gf = createSourcesrd_ad(type,tile,night)
+# 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+# 	subprocess.run('./dopc'+gf+'.sh')
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
+	tile = '68002'
 	gf = createSourcesrd_ad(type,tile,night)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
-	tile = '68001'
-	gf = createSourcesrd_ad(type,tile,night)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
-	type = 'ELG'
-	tile = '67230'
-	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=1.6)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6)
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6,bs=5)
-	tile = '67142'
-	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=1.6)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6)
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6,bs=5)
+# 	type = 'ELG'
+# 	tile = '67230'
+# 	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=1.6)
+# 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+# 	subprocess.run('./dopc'+gf+'.sh')
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6)
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6,bs=5)
+# 	tile = '67142'
+# 	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=1.6)
+# 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+# 	subprocess.run('./dopc'+gf+'.sh')
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6)
+# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=1.6,bs=5)
