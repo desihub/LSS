@@ -289,7 +289,7 @@ if __name__ == '__main__':
 	import subprocess
 	night = '20200315'
 	type = 'LRG'
- 	tile = '68001'
+	tile = '68001'
 # 	gf = createSourcesrd_ad(type,tile,night)
 # 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 # 	subprocess.run('./dopc'+gf+'.sh')
