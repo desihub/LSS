@@ -297,7 +297,7 @@ if __name__ == '__main__':
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
 	type = 'QSO'
-	gf = createSourcesrd_ad(type,tile,night)
+	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
 	type = 'QSO'
-	gf = createSourcesrd_ad(type,tile,night)
+	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
