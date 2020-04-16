@@ -297,11 +297,11 @@ if __name__ == '__main__':
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
 	type = 'QSO'
- 	gf = createSourcesrd_ad(type,tile,night)
- 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
- 	subprocess.run('./dopc'+gf+'.sh')
- 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
- 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+	gf = createSourcesrd_ad(type,tile,night)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
 	tile = '68002'
 
 # 	type = 'LRG'
@@ -312,11 +312,11 @@ if __name__ == '__main__':
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
 	type = 'QSO'
- 	gf = createSourcesrd_ad(type,tile,night)
- 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
- 	subprocess.run('./dopc'+gf+'.sh')
- 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
- 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+	gf = createSourcesrd_ad(type,tile,night)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
 
 # 	type = 'ELG'
 # 	tile = '67230'
