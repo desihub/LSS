@@ -244,7 +244,7 @@ def plotzcat_tilecen(pr='dark'):
 			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],'ro')
 	plt.show()		
 
-def testfavail(tile,epoch=6):
+def testfavail(tile,epoch=6,program='dark'):
 	mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/mtl-'+program+'.fits')	
 	tilef = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/fiberassign/fiberassign-'+str(tile).zfill(8)+'.fits',hdu='FAVAIL')
 	tj = join(tilef,mtl,keys=['TARGETID'],join_type='left')
