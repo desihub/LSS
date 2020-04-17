@@ -69,6 +69,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	fgu = unique(fg,keys='TARGETID')
 	print(str(len(fgu))+' unique randoms')
 	aa = np.chararray(len(fgu),unicode=True,itemsize=100)
+	aa[:] = str(tile)
 	fgu['TILE'] = aa
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
@@ -92,6 +93,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		fg = fa[wg]
 		fgun = unique(fg,keys='TARGETID')
 		aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+		aa[:] = str(tile)
 		fgun['TILE'] = aa
 
 		#fgun['TILE'] = str(tile)
