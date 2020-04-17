@@ -5,7 +5,7 @@ import numpy as np
 import fitsio
 import glob
 import astropy.io.fits as fits
-from astropy.table import Table,vstack,unique,join,setdiff
+from astropy.table import Table,vstack,unique,join#,setdiff
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane #
@@ -94,9 +94,10 @@ def combran(srun=0,nrun=7,program='dark'):
 		#print(len(fg),len(gloc))
 		fv = vstack([fgu,fgun])
 		#print(len(fv))
+		fgo = fgu
 		fgu = unique(fv,keys='TARGETID')
-		fguc = setdiff((fgun,fgu))
-		dids = np.isin(fgu['TARGETID'],fguc['TARGETID'])
+		#fguc = setdiff((fgun,fgu))
+		dids = np.isin(fgu['TARGETID'],fgo['TARGETID'])
 		fgu['TILE'][dids] += '-'+str(tile)
 		print(str(len(fgu))+' unique randoms')
 		#else:
