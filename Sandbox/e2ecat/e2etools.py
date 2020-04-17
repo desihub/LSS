@@ -320,6 +320,19 @@ def matchzcatmtl(srun,nrun,program='dark'):
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 
+def matchzcattar(program='dark'):
+	outf=program+'/tarzcat'+program+'.fits'
+	
+	mtl = Table.read(e2eout+'targets_darktime_jmtl.fits')
+	zc = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
+	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
+
+	w = mtlj['ZWARN'] == 0
+	print('number of obs, number of good redshifts:')
+	print(len(mtlj),len(mtlj[w]))	
+	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
+
+
 def plotcompdr(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
 	rarw = r['RA']
@@ -564,9 +577,9 @@ if __name__ == '__main__':
 	#plotrntile()
 	#testfavail(47693)
 	#testfavail(47714)
-	combtargets()
-	matchtar(rmax=0)
-	plottntile()
+	#combtargets()
+	#matchtar(rmax=0)
+	#plottntile()
 	#plotrntile()
-	
+	matchzcattar()
 	
