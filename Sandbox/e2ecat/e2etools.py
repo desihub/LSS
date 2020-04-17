@@ -353,4 +353,7 @@ def gathertargets(type):
 		print(key)
 	hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
 	hdu.writeto(outf,overwrite=True)
+	
+if __name__ == '__main__':
+	combran()	
 	print('wrote to '+outf)
