@@ -205,58 +205,10 @@ def combtargets(srun=0,nrun=7,program='dark'):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
 		w = exps['TILEID'] == fah['TILEID']
-		#if exps[w]['EPOCH'][0] == srun:
+		if len(exps[w]) > 0:
+			#if exps[w]['EPOCH'][0] == srun:
 
 			
-		if len(exps[w]) > 1:
-			return 'NEED to deal with multiple exposures of same tile'
-		expid = exps[w]['EXPID'][0]	
-		ep = exps[w]['EPOCH'][0]
-		fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
-		#fmap['FIBERSTATUS'] = 0
-		#print('set fiberstatus all to 0; fix this once propagated to zcat')
-
-		wloc = fmap['FIBERSTATUS'] == 0
-		gloc = fmap[wloc]['LOCATION']
-		fa = Table.read(fafls0[i],hdu='FAVAIL')
-		wg = np.isin(fa['LOCATION'],gloc)
-		fg = fa[wg]
-		fgun = unique(fg,keys='TARGETID')
-		aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-		aa[:] = str(tile)
-		fgun['TILE'] = aa
-
-		#fgun['TILE'] = str(tile)
-		#print(len(fg),len(gloc))
-		fv = vstack([fgu,fgun])
-		#print(len(fv))
-		fgo = fgu
-		fgu = unique(fv,keys='TARGETID')
-		#fguc = setdiff((fgun,fgu))
-		dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-		didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-		aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
-		aa[:] = '-'+str(tile)
-		#rint(aa)
-		ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
-		print(ms)
-		fgu['TILE'][didsc] = ms #add the tile info
-		print(str(len(fgu))+' unique targets')
-		#else:
-		#	print(str(tile)+' not observed in assigned epoch')	
-	print(np.unique(fgu['TILE']))
-	#return('ended test')
-	print('run '+str(srun) +' done')
-	for run in range(srun+1,srun+nrun):
-		dirr = 	e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/'
-		faflsr = glob.glob(dirr+'fiberassign-*.fits')
-		for i in range(0,len(faflsr)):
-			fah = fitsio.read_header(faflsr[i])
-			tile = fah['TILEID']
-			w = exps['TILEID'] == fah['TILEID']
-			#if exps[w]['EPOCH'][0] == run:
-
-				
 			if len(exps[w]) > 1:
 				return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]	
@@ -267,19 +219,21 @@ def combtargets(srun=0,nrun=7,program='dark'):
 
 			wloc = fmap['FIBERSTATUS'] == 0
 			gloc = fmap[wloc]['LOCATION']
-			fa = Table.read(faflsr[i],hdu='FAVAIL')
+			fa = Table.read(fafls0[i],hdu='FAVAIL')
 			wg = np.isin(fa['LOCATION'],gloc)
 			fg = fa[wg]
-			#print(len(fg),len(gloc))
 			fgun = unique(fg,keys='TARGETID')
 			aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 			aa[:] = str(tile)
 			fgun['TILE'] = aa
 
+			#fgun['TILE'] = str(tile)
+			#print(len(fg),len(gloc))
 			fv = vstack([fgu,fgun])
 			#print(len(fv))
 			fgo = fgu
 			fgu = unique(fv,keys='TARGETID')
+			#fguc = setdiff((fgun,fgu))
 			dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 			didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 			aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
@@ -288,10 +242,58 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
 			print(ms)
 			fgu['TILE'][didsc] = ms #add the tile info
-
 			print(str(len(fgu))+' unique targets')
 			#else:
 			#	print(str(tile)+' not observed in assigned epoch')	
+	print(np.unique(fgu['TILE']))
+	#return('ended test')
+	print('run '+str(srun) +' done')
+	for run in range(srun+1,srun+nrun):
+		dirr = 	e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/'
+		faflsr = glob.glob(dirr+'fiberassign-*.fits')
+		for i in range(0,len(faflsr)):
+			fah = fitsio.read_header(faflsr[i])
+			tile = fah['TILEID']
+			w = exps['TILEID'] == fah['TILEID']
+			if len(exps[w]) > 0:
+				#if exps[w]['EPOCH'][0] == run:
+
+				
+				if len(exps[w]) > 1:
+					return 'NEED to deal with multiple exposures of same tile'
+				expid = exps[w]['EXPID'][0]	
+				ep = exps[w]['EPOCH'][0]
+				fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+				#fmap['FIBERSTATUS'] = 0
+				#print('set fiberstatus all to 0; fix this once propagated to zcat')
+
+				wloc = fmap['FIBERSTATUS'] == 0
+				gloc = fmap[wloc]['LOCATION']
+				fa = Table.read(faflsr[i],hdu='FAVAIL')
+				wg = np.isin(fa['LOCATION'],gloc)
+				fg = fa[wg]
+				#print(len(fg),len(gloc))
+				fgun = unique(fg,keys='TARGETID')
+				aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+				aa[:] = str(tile)
+				fgun['TILE'] = aa
+
+				fv = vstack([fgu,fgun])
+				#print(len(fv))
+				fgo = fgu
+				fgu = unique(fv,keys='TARGETID')
+				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+				aa[:] = '-'+str(tile)
+				#rint(aa)
+				ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+				print(ms)
+				fgu['TILE'][didsc] = ms #add the tile info
+
+				print(str(len(fgu))+' unique targets')
+				#else:
+				#	print(str(tile)+' not observed in assigned epoch')	
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
