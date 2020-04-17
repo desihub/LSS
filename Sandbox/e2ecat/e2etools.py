@@ -97,8 +97,9 @@ def combran(srun=0,nrun=7,program='dark'):
 		fgo = fgu
 		fgu = unique(fv,keys='TARGETID')
 		#fguc = setdiff((fgun,fgu))
-		dids = np.isin(fgu['TARGETID'],fgo['TARGETID'])
-		fgu['TILE'][dids] += '-'+str(tile)
+		dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+		didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+		fgu['TILE'][didsc] += '-'+str(tile) #add the tile info
 		print(str(len(fgu))+' unique randoms')
 		#else:
 		#	print(str(tile)+' not observed in assigned epoch')	
