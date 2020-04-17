@@ -234,6 +234,8 @@ def plotzcat_tilecen(pr='dark'):
 		
 def matchran(program='dark'):
 	faran =	Table.read(e2eout+program+'/randoms/randoms_darktime.fits')
+	faran['NTILE'] = np.char.count(faran['TILE'],b'-')
+	faran['NTILE'] += 1
 	mtlran = Table.read(e2eout+program+'/randoms/randoms_mtl_cuttod.fits')
 	jran = join(faran,mtlran,keys=['TARGETID'])
 	print(len(jran),len(faran),len(mtlran))
@@ -377,5 +379,6 @@ def gathertargets(type):
 	print('wrote to '+outf)
 	
 if __name__ == '__main__':
-	combran()	
+	#combran()	
+	matchran()
 	
