@@ -15,7 +15,7 @@ minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
 tardir = minisvdir+'targets/'
 dircat = minisvdir+'LSScats/'
 targroot = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
-e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020e-onepercent/'
+e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
 e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'
 
 
@@ -205,6 +205,19 @@ def plotcompdr(program='dark'):
 	plt.title('e2e one per cent survey LRGs')
 	plt.show()
 
+def plotrntile(program='dark'):
+	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
+	rarw = r['RA']
+	wr = rarw > 180
+	rarw[wr] -= 360
+	plt.scatter(rarw,r['DEC'],c=r['NTILE'])
+
+	plt.xlabel('RA')
+	plt.ylabel('DEC')
+	plt.colorbar()
+	plt.title('e2e one per cent survey NTILE for randoms')
+	plt.show()
+
 
 def plotzcat_tilecen(pr='dark'):
 	if pr == 'dark':
@@ -381,5 +394,9 @@ def gathertargets(type):
 	
 if __name__ == '__main__':
 	#combran()	
-	matchran()
+	#matchran()
+	matchzcatmtl(0,7)
+	plotcompdr()
+	plotrntile(
+	
 	
