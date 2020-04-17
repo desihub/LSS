@@ -332,6 +332,21 @@ def matchzcattar(program='dark',rmax=6):
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 
+def plotzprobvsntile(program='dark')
+	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+	ntl = np.unique(dz['NTILE'])
+	zfl = []
+	for nt in ntl:
+		w = dz['NTILE'] == nt
+		ntar = len(dz[w])
+		wz = w & (dz['ZWARN'] == 0)
+		nz = len(dz[wz])
+		print(nt,nz,ntar)
+		zfl.append(nz/ntar)
+	plt.plot(ntl,zfl,'k-')
+	plt.xlabel('NTILES')
+	plt.ylabel('fraction of targets with good z')
+	plt.show()	
 
 def plotcompdr(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
@@ -581,5 +596,6 @@ if __name__ == '__main__':
 	#matchtar(rmax=0)
 	#plottntile()
 	#plotrntile()
-	matchzcattar()
+	#matchzcattar()
+	plotzprobvsntile()
 	
