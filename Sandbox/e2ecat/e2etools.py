@@ -5,7 +5,7 @@ import numpy as np
 import fitsio
 import glob
 import astropy.io.fits as fits
-from astropy.table import Table,vstack,unique,join,set_diff
+from astropy.table import Table,vstack,unique,join,setdiff
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane #
@@ -95,13 +95,14 @@ def combran(srun=0,nrun=7,program='dark'):
 		fv = vstack([fgu,fgun])
 		#print(len(fv))
 		fgu = unique(fv,keys='TARGETID')
-		fguc = set_diff((fgun,fgu))
+		fguc = setdiff((fgun,fgu))
 		dids = np.isin(fgu['TARGETID'],fguc['TARGETID'])
 		fgu['TILE'][dids] += '-'+str(tile)
 		print(str(len(fgu))+' unique randoms')
 		#else:
 		#	print(str(tile)+' not observed in assigned epoch')	
 	print(np.unique(fgu['TILE']))
+	return('ended test')
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
 		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(run)+'/'
