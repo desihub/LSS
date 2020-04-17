@@ -349,6 +349,9 @@ def plotzprobvsntile(program='dark',type=0):
 	plt.xlabel('NTILES')
 	if type == 0:
 		plt.ylabel('fraction of LRG targets with good z')
+	if type == 1:
+		plt.ylabel('fraction of ELG targets with good z')
+
 	plt.show()	
 
 def plotcompdr(program='dark'):
@@ -600,5 +603,5 @@ if __name__ == '__main__':
 	#plottntile()
 	#plotrntile()
 	#matchzcattar()
-	plotzprobvsntile()
+	plotzprobvsntile(type=1)
 	
