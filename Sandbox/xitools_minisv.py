@@ -239,6 +239,17 @@ def plotLRG0():
 	plt.ylim(1.e-3,30)
 	plt.show()
 
+def plotQSO0():
+	d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiQSO68001_20200315_zm0.8zx2.25st0.dat').transpose() 
+	d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiQSO68002_20200315_zm0.8zx2.25st0.dat').transpose()
+	plt.loglog(d1[0],d1[1],label='SV0_QSO, Tile 68001')
+	plt.loglog(d2[0],d2[1],label='SV0_QSO, Tile 68002')
+	dm = (d1[1]+d2[1])/2.
+	plt.loglog(d2[0],dm,'k-',label='SV0_QSO, mean')
+	plt.legend()
+	plt.ylim(1.e-3,30)
+	plt.show()
+
 
 def plotxicomb():
 	xilin = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xi0Challenge_matterpower0.42.04915.00.dat').transpose()

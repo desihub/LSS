@@ -5,7 +5,7 @@ import numpy as np
 import fitsio
 import glob
 import astropy.io.fits as fits
-from astropy.table import Table,vstack,unique,join
+from astropy.table import Table,vstack,unique,join,set_diff
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane #
@@ -68,6 +68,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	fg = fa[wg]
 	fgu = unique(fg,keys='TARGETID')
 	print(str(len(fgu))+' unique randoms')
+	fgu['TILE'] = str(tile)
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
@@ -88,13 +89,19 @@ def combran(srun=0,nrun=7,program='dark'):
 		fa = Table.read(fafls0[i],hdu='FAVAIL')
 		wg = np.isin(fa['LOCATION'],gloc)
 		fg = fa[wg]
+		fgun = unique(fg,keys='TARGETID')
+		fgun['TILE'] = str(tile)
 		#print(len(fg),len(gloc))
-		fv = vstack([fgu,fg])
+		fv = vstack([fgu,fgun])
 		#print(len(fv))
 		fgu = unique(fv,keys='TARGETID')
+		fguc = set_diff((fgun,fgu))
+		dids = np.isin(fgu['TARGETID'],fguc['TARGETID'])
+		fgu['TILE'][dids] += '-'+str(tile)
 		print(str(len(fgu))+' unique randoms')
 		#else:
 		#	print(str(tile)+' not observed in assigned epoch')	
+	print(np.unique(fgu['TILE']))
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
 		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(run)+'/'
