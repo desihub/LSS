@@ -397,6 +397,6 @@ if __name__ == '__main__':
 	#matchran()
 	matchzcatmtl(0,7)
 	plotcompdr()
-	plotrntile(
+	plotrntile()
 	
 	
