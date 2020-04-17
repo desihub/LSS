@@ -405,6 +405,16 @@ def matchran(program='dark'):
 	jran = join(faran,mtlran,keys=['TARGETID'])
 	print(len(jran),len(faran),len(mtlran))
 	jran.write(e2eout+program+'/randoms/randoms_darktime_jmtl.fits',format='fits', overwrite=True)
+
+def matchtar(program='dark',rmax=6):
+	faran =	Table.read(e2eout+program+'/targets_darktime.fits')
+	faran['NTILE'] = np.char.count(faran['TILE'],'-')
+	faran['NTILE'] += 1
+	print(max(faran['NTILE']))
+	mtlran = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+program+'.fits')
+	jran = join(faran,mtlran,keys=['TARGETID'],join_type='left')
+	print(len(jran),len(faran),len(mtlran))
+	jran.write(e2eout+program+'/targets_darktime_jmtl.fits',format='fits', overwrite=True)
 	
 
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
@@ -551,7 +561,8 @@ if __name__ == '__main__':
 	#plotrntile()
 	#testfavail(47693)
 	#testfavail(47714)
-	combtargets()
+	#combtargets()
+	matchtar()
 	plottntile()
 	plotrntile()
 	
