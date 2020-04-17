@@ -320,7 +320,7 @@ def matchzcatmtl(srun,nrun,program='dark'):
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 
-def matchzcattar(program='dark'):
+def matchzcattar(program='dark',rmax=6):
 	outf=program+'/tarzcat'+program+'.fits'
 	
 	mtl = Table.read(e2eout+program+'/targets_darktime_jmtl.fits')
