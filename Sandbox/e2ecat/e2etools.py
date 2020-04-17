@@ -210,7 +210,7 @@ def plotrntile(program='dark'):
 	rarw = r['RA']
 	wr = rarw > 180
 	rarw[wr] -= 360
-	plt.scatter(rarw,r['DEC'],c=r['NTILE'])
+	plt.scatter(rarw,r['DEC'],c=r['NTILE'],marker='.')
 
 	plt.xlabel('RA')
 	plt.ylabel('DEC')
@@ -396,7 +396,7 @@ if __name__ == '__main__':
 	#combran()	
 	#matchran()
 	#matchzcatmtl(0,7)
-	plotcompdr()
+	#plotcompdr()
 	plotrntile()
 	
 	
