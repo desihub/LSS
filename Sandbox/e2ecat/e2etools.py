@@ -100,7 +100,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		#fguc = setdiff((fgun,fgu))
 		dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 		didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-		aa = np.chararray(len(fgu['TILE']),unicode=True)
+		aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 		aa[:] = '-'+str(tile)
 		print(aa)
 		ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
@@ -353,7 +353,8 @@ def gathertargets(type):
 		print(key)
 	hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
 	hdu.writeto(outf,overwrite=True)
+	print('wrote to '+outf)
 	
 if __name__ == '__main__':
 	combran()	
-	print('wrote to '+outf)
+	
