@@ -323,7 +323,7 @@ def matchzcatmtl(srun,nrun,program='dark'):
 def matchzcattar(program='dark'):
 	outf=program+'/tarzcat'+program+'.fits'
 	
-	mtl = Table.read(e2eout+'targets_darktime_jmtl.fits')
+	mtl = Table.read(e2eout+program+'/targets_darktime_jmtl.fits')
 	zc = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
 	mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['zcat','mtl'],join_type='left')
 
