@@ -115,7 +115,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		#else:
 		#	print(str(tile)+' not observed in assigned epoch')	
 	print(np.unique(fgu['TILE']))
-	return('ended test')
+	#return('ended test')
 	print('run '+str(srun) +' done')
 	for run in range(srun+1,srun+nrun):
 		dirr = 	'/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(run)+'/'
@@ -141,13 +141,29 @@ def combran(srun=0,nrun=7,program='dark'):
 			wg = np.isin(fa['LOCATION'],gloc)
 			fg = fa[wg]
 			#print(len(fg),len(gloc))
-			fv = vstack([fgu,fg])
+			fgun = unique(fg,keys='TARGETID')
+			aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+			aa[:] = str(tile)
+			fgun['TILE'] = aa
+
+			fv = vstack([fgu,fgun])
 			#print(len(fv))
+			fgo = fgu
 			fgu = unique(fv,keys='TARGETID')
+			dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+			didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+			aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+			aa[:] = '-'+str(tile)
+			#rint(aa)
+			ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+			print(ms)
+			fgu['TILE'][didsc] = ms #add the tile info
+
 			print(str(len(fgu))+' unique randoms')
 			#else:
 			#	print(str(tile)+' not observed in assigned epoch')	
 
+		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
 	fgu.write(e2eout+outf,format='fits', overwrite=True)	
 
