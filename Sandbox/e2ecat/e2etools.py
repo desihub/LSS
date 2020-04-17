@@ -210,7 +210,7 @@ def plotrntile(program='dark'):
 	rarw = r['RA']
 	wr = rarw > 180
 	rarw[wr] -= 360
-	plt.scatter(rarw,r['DEC'],c=r['NTILE'],marker='.')
+	plt.scatter(rarw,r['DEC'],c=r['NTILE'],marker=',')
 
 	plt.xlabel('RA')
 	plt.ylabel('DEC')
