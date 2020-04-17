@@ -334,7 +334,7 @@ def matchzcattar(program='dark',rmax=6):
 
 def plotzprobvsntile(program='dark',type=0):
 	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
-	wt = dz['DESI_TARGET'] & 2**type > 0
+	wt = (dz['DESI_TARGET'] & 2**type > 0) & (dz['NUMOBS_MORE_mtl'] > -1)
 	dz = dz[wt]
 	ntl = np.unique(dz['NTILE'])
 	zfl = []
@@ -603,5 +603,5 @@ if __name__ == '__main__':
 	#plottntile()
 	#plotrntile()
 	#matchzcattar()
-	plotzprobvsntile(type=1)
+	plotzprobvsntile(type=0)
 	
