@@ -243,7 +243,12 @@ def plotzcat_tilecen(pr='dark'):
 		else:
 			plt.plot(ts[wt]['RA'],ts[wt]['DEC'],'ro')
 	plt.show()		
-	
+
+def testfavail(tile,epoch=6):
+	mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/mtl-'+program+'.fits')	
+	tilef = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/fiberassign/fiberassign-'+str(tile).zfill(8)+'.fits',hdu='FAVAIL')
+	tj = join(tilef,mtl,keys=['TARGETID'],join_type='left')
+	print(np.unique(tj['NUMOBS_MORE']))
 		
 def matchran(program='dark'):
 	faran =	Table.read(e2eout+program+'/randoms/randoms_darktime.fits')
@@ -395,8 +400,10 @@ def gathertargets(type):
 if __name__ == '__main__':
 	#combran()	
 	#matchran()
-	matchzcatmtl(0,7)
-	plotcompdr()
+	#matchzcatmtl(0,7)
+	#plotcompdr()
 	#plotrntile()
+	testfavail(47693)
+	testfavail(47714)
 	
 	
