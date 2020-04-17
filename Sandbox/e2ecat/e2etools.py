@@ -176,6 +176,9 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	#
 	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
 	exps = fitsio.read(e2ein+'run/quicksurvey/'+program+'/epochs-'+program+'.fits')
+	if program == 'dark':
+		we = exps['PROGRAM'] == b'DARK'
+		exps = exps[we]
 	w = exps['TILEID'] == tile
 	if len(exps[w]) > 1:
 		return 'NEED to deal with multiple exposures of same tile'
@@ -412,7 +415,7 @@ def matchtar(program='dark',rmax=6):
 	faran['NTILE'] += 1
 	print(max(faran['NTILE']))
 	mtlran = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+program+'.fits')
-	jran = join(faran,mtlran,keys=['TARGETID'],join_type='left')
+	jran = join(faran,mtlran,keys=['TARGETID'])
 	print(len(jran),len(faran),len(mtlran))
 	jran.write(e2eout+program+'/targets_darktime_jmtl.fits',format='fits', overwrite=True)
 	
@@ -561,7 +564,7 @@ if __name__ == '__main__':
 	#plotrntile()
 	#testfavail(47693)
 	#testfavail(47714)
-	#combtargets()
+	combtargets()
 	matchtar(rmax=0)
 	plottntile()
 	#plotrntile()
