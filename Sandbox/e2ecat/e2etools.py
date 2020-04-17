@@ -395,7 +395,7 @@ def gathertargets(type):
 if __name__ == '__main__':
 	#combran()	
 	#matchran()
-	matchzcatmtl(0,7)
+	#matchzcatmtl(0,7)
 	plotcompdr()
 	plotrntile()
 	
