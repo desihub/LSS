@@ -562,8 +562,8 @@ if __name__ == '__main__':
 	#testfavail(47693)
 	#testfavail(47714)
 	#combtargets()
-	matchtar()
+	matchtar(rmax=0)
 	plottntile()
-	plotrntile()
+	#plotrntile()
 	
 	
