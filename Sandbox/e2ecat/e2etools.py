@@ -68,8 +68,8 @@ def combran(srun=0,nrun=7,program='dark'):
 	fg = fa[wg]
 	fgu = unique(fg,keys='TARGETID')
 	print(str(len(fgu))+' unique randoms')
-	
-	fgu['TILE'] = str(tile)
+	aa = np.chararray(len(fgu),unicode=True,itemsize=100)
+	fgu['TILE'] = aa
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
@@ -91,7 +91,10 @@ def combran(srun=0,nrun=7,program='dark'):
 		wg = np.isin(fa['LOCATION'],gloc)
 		fg = fa[wg]
 		fgun = unique(fg,keys='TARGETID')
-		fgun['TILE'] = str(tile)
+		aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+		fgun['TILE'] = aa
+
+		#fgun['TILE'] = str(tile)
 		#print(len(fg),len(gloc))
 		fv = vstack([fgu,fgun])
 		#print(len(fv))
@@ -102,7 +105,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 		aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 		aa[:] = '-'+str(tile)
-		print(aa)
+		#rint(aa)
 		ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
 		print(ms)
 		fgu['TILE'][didsc] = ms #add the tile info
