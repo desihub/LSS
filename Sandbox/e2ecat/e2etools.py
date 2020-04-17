@@ -332,7 +332,7 @@ def matchzcattar(program='dark',rmax=6):
 	print(len(mtlj),len(mtlj[w]))	
 	mtlj.write(e2eout+outf,format='fits', overwrite=True)	
 
-def plotzprobvsntile(program='dark')
+def plotzprobvsntile(program='dark'):
 	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
 	ntl = np.unique(dz['NTILE'])
 	zfl = []
