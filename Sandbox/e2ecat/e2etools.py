@@ -102,7 +102,9 @@ def combran(srun=0,nrun=7,program='dark'):
 		didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 		aa = np.chararray(len(fgu['TILE']),unicode=True)
 		aa[:] = '-'+str(tile)
-		fgu['TILE'][didsc] = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc]) #add the tile info
+		ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+		print(ms)
+		fgu['TILE'][didsc] = ms #add the tile info
 		print(str(len(fgu))+' unique randoms')
 		#else:
 		#	print(str(tile)+' not observed in assigned epoch')	
