@@ -354,6 +354,21 @@ def plotzprobvsntile(program='dark',type=0):
 
 	plt.show()	
 
+def mkzprobvsntiledic(program='dark',type=0):
+	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+	wt = (dz['DESI_TARGET'] & 2**type > 0) & (dz['NUMOBS_MORE_mtl'] > -1)
+	dz = dz[wt]
+	ntl = np.unique(dz['NTILE'])
+	zfl = []
+	for nt in ntl:
+		w = dz['NTILE'] == nt
+		ntar = len(dz[w])
+		wz = w & ((dz['NUMOBS_MORE_mtl'] == 0) | (dz['ZWARN'] == 0))
+		nz = len(dz[wz])
+		print(nt,nz,ntar)
+		zfl.append((nt,nz/ntar))
+	return dict(zfl)
+
 def plotcompdr(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
 	rarw = r['RA']
@@ -639,5 +654,5 @@ if __name__ == '__main__':
 	#plotzprobvsntile(type=0)
 	#plotzprobvsntile(type=1)
 	#comphistNT()
-	plotznz_nt()
+	#plotznz_nt()
 	
