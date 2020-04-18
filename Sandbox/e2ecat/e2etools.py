@@ -375,6 +375,16 @@ def plotcompdr(program='dark'):
 	plt.title('e2e one per cent survey LRGs')
 	plt.show()
 
+def comphistNT(program='dark'):
+	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
+	plt.hist(r['NTILE'],normed=True,histtype='step',color='k',label='randoms')
+	t = fitsio.read(e2eout+program+'/targets_darktime_jmtl.fits')
+	plt.hist(t['NTILE'],normed=True,histtype='step',color='k',label='targets')
+	plt.legend()
+	plt.xlabel('Number of Tiles')
+	plt.ylabel('Relative number')
+	plt.show()
+
 def plotrntile(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
 	rarw = r['RA']
@@ -603,6 +613,7 @@ if __name__ == '__main__':
 	#plottntile()
 	#plotrntile()
 	#matchzcattar()
-	plotzprobvsntile(type=0)
-	plotzprobvsntile(type=1)
+	#plotzprobvsntile(type=0)
+	#plotzprobvsntile(type=1)
+	comphistNT()
 	
