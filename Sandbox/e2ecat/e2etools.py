@@ -388,12 +388,11 @@ def plotznz_nt(program='dark'):
 		wt = dw['NTILE'] == nt
 		wz = wt & (dw['ZWARN']==0)
 		plt.plot(radw[wt],dw['DEC'][wt],'k,',label='all targets')
-		plt.plot(radw[wz],dw['DEC'][wz],'k,',label='all good z')
+		plt.plot(radw[wz],dw['DEC'][wz],'r,',label='all good z')
 		plt.title('regions with '+str(nt)+' overlapping tiles')
 		plt.xlabel('RA')
 		plt.ylabel('DEC')
 		plt.legend()
-		plt.title('e2e one per cent survey LRGs')
 		plt.show()
 
 
@@ -628,7 +627,7 @@ if __name__ == '__main__':
 	#combran()	
 	#matchran()
 	#matchzcatmtl(0,7)
-	plotcompdr()
+	#plotcompdr()
 	#plotrntile()
 	#testfavail(47693)
 	#testfavail(47714)
