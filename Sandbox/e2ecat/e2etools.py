@@ -384,7 +384,7 @@ def plotznz_nt(program='dark'):
 	wr = radw > 180
 	radw[wr] -= 360
 	ntl = np.unique(dw['NTILE'])
-	for nt = ntl:
+	for nt in ntl:
 		wt = dw['NTILE'] == nt
 		wz = wt & (dw['ZWARN']==0)
 		plt.plot(radw[wt],dw['DEC'][wt],'k,',label='all targets')
