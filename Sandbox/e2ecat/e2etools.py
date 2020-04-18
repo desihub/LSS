@@ -378,7 +378,7 @@ def plotcompdr(program='dark'):
 def plotznz_nt(program='dark'):
 
 	d = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
-	w = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
+	w = (d['DESI_TARGET'] & 2**0 > 0) & (d['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
 	dw = d[w]
 	radw = dw['RA']
 	wr = radw > 180
