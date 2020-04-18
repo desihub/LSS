@@ -341,7 +341,7 @@ def plotzprobvsntile(program='dark',type=0):
 	for nt in ntl:
 		w = dz['NTILE'] == nt
 		ntar = len(dz[w])
-		wz = w & (dz['ZWARN'] == 0)
+		wz = w & (dz['NUMOBS_MORE_mtl'] == 0)#(dz['ZWARN'] == 0)
 		nz = len(dz[wz])
 		print(nt,nz,ntar)
 		zfl.append(nz/ntar)
@@ -604,4 +604,5 @@ if __name__ == '__main__':
 	#plotrntile()
 	#matchzcattar()
 	plotzprobvsntile(type=0)
+	plotzprobvsntile(type=1)
 	
