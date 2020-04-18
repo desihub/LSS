@@ -378,7 +378,7 @@ def plotcompdr(program='dark'):
 def comphistNT(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
 	plt.hist(r['NTILE'],normed=True,histtype='step',color='k',label='randoms',bins=8)
-	t = fitsio.read(e2eout+program+'/targets_darktime_jmtl.fits')
+	t = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
 	w = t['NUMOBS_MORE_mtl'] > -1
 	t = t[w]
 	plt.hist(t['NTILE'],normed=True,histtype='step',color='r',label='targets',bins=8)
