@@ -361,7 +361,7 @@ def plotcompdr(program='dark'):
 	rarw[wr] -= 360
 	plt.plot(rarw,r['DEC'],'k,',label='randoms')
 
-	d = fitsio.read(e2eout+program+'/mtlzcat'+program+'.fits')
+	d = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
 	w = d['ZWARN'] == 0
 	dw = d[w]
 	radw = dw['RA']
@@ -374,6 +374,28 @@ def plotcompdr(program='dark'):
 	plt.legend()
 	plt.title('e2e one per cent survey LRGs')
 	plt.show()
+
+def plotznz_nt(program='dark'):
+
+	d = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+	w = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
+	dw = d[w]
+	radw = dw['RA']
+	wr = radw > 180
+	radw[wr] -= 360
+	ntl = np.unique(dw['NTILE'])
+	for nt = ntl:
+		wt = dw['NTILE'] == nt
+		wz = wt & (dw['ZWARN']==0)
+		plt.plot(radw[wt],dw['DEC'][wt],'k,',label='all targets')
+		plt.plot(radw[wz],dw['DEC'][wz],'k,',label='all good z')
+		plt.title('regions with '+str(nt)+' overlapping tiles')
+		plt.xlabel('RA')
+		plt.ylabel('DEC')
+		plt.legend()
+		plt.title('e2e one per cent survey LRGs')
+		plt.show()
+
 
 def comphistNT(program='dark'):
 	r = fitsio.read(e2eout+program+'/randoms/randoms_darktime_jmtl.fits')
@@ -606,7 +628,7 @@ if __name__ == '__main__':
 	#combran()	
 	#matchran()
 	#matchzcatmtl(0,7)
-	#plotcompdr()
+	plotcompdr()
 	#plotrntile()
 	#testfavail(47693)
 	#testfavail(47714)
@@ -617,5 +639,6 @@ if __name__ == '__main__':
 	#matchzcattar()
 	#plotzprobvsntile(type=0)
 	#plotzprobvsntile(type=1)
-	comphistNT()
+	#comphistNT()
+	plotznz_nt()
 	
