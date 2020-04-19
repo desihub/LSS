@@ -13,7 +13,8 @@ e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/' #I will ke
 #list of independent tasks to perform
 farandoms = False #run randoms through fiberassign
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
-combtar = False #concatenate target files and match targets to mtl info and to zcat info
+combtar = False #concatenate target files and 
+matchtar = False #match targets to mtl info and to zcat info
 
 
 
@@ -92,6 +93,8 @@ if combran: #concatenate random files, match to mtl
 	
 if combtar: #concatenate target files, match to mtl and zcat info
 	e2e.combtargets(srun,nrun,program)
+
+if matchtar:	
 	rmax=nrun-1
 	e2e.matchtar(program,rmax)
 	e2e.matchzcattar(program,rmax)
