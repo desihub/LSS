@@ -1,22 +1,26 @@
+import os
+
+E2EDIR = os.environ['E2EDIR']
+
 #run through steps to make LRG catalogs
 
 type = 0
 program = 'dark'
 #epochs
 srun = 0
+
+# Maximum epoch?
 nrun = 7
 
 #directories for inputs and output
-e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/' #Mike's most recent
-e2eout = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/' #I will keep over-writing most recent here until there are outputs to really be tested
+e2ein  = E2EDIR                     # Most recent: f. 
+e2eout = E2EDIR + '/run/catalogs/'
 
 #list of independent tasks to perform
 farandoms = False #run randoms through fiberassign
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
 combtar = False #concatenate target files and 
 matchtar = False #match targets to mtl info and to zcat info
-
-
 
 #standard python
 import sys
@@ -90,7 +94,7 @@ if farandoms:
 if combran: #concatenate random files, match to mtl
 	e2e.combran(srun,nrun,program)
 	e2e.matchran(program)
-	
+ 
 if combtar: #concatenate target files, match to mtl and zcat info
 	e2e.combtargets(srun,nrun,program)
 
