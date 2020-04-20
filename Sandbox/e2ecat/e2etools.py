@@ -23,6 +23,10 @@ dircat    = minisvdir+'LSScats/'
 # E2E
 e2ein     = os.environ['E2EDIR']
 e2eout    = e2ein + '/run/catalogs/'
+print('end to end directory is')
+print(e2ein)
+
+elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs
 
 def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
         '''
@@ -369,7 +373,7 @@ def matchzcattar(program='dark',rmax=6):
 
         '''
         
-        outf = program+'/tarzcat'+program+'.fits'
+        outf = program+'/targets_oneper_darktime_jmtl_jzcat.fits'
         
         mtl  = Table.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
         zc   = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
@@ -572,19 +576,93 @@ def matchtar(program='dark',rmax=6):
         print(len(jran),len(faran),len(mtlran))
 
         jran.write(e2eout+program+'/targets_oneper_darktime_jmtl.fits',format='fits', overwrite=True)
+
+def mkfulldat(type='LRG',program='dark'):
+    '''
+    take targets, cut them to particular target type and mask for particular target type 
+    '''    
+    if type == 'LRG':
+        bits = elgandlrgbits 
+        tb = 0
+    tarf = Table.read(e2eout+ program+'/targets_oneper_darktime_jmtl_jzcat.fits')
+    tarf = cutphotmask(tarf,bits) 
+    wt = tarf['DESI_TARGET'] & 2**tb > 0
+    tt = tarf[wt]
+    outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
+    tt.write(outf,format='fits', overwrite=True)
+    
+def mkclusdat(type='LRG',program='dark'):
+    '''
+    take full catalog, cut to ra,dec,z add any weight
+    '''    
+    ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+    outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
+    wz = ff['ZWARN'] == 0
+    ff = ff[wz]
+    ff.keep_columns(['RA','DEC','Z'])
+    ff['WEIGHT'] = np.ones(len(ff))
+    ff.write(outf,format='fits', overwrite=True)
+    
+       
+    
+def mkfullran(type='LRG',program='dark'):
+    '''
+    take randoms, mask for particular target type 
+    '''    
+    if type == 'LRG':
+        bits = elgandlrgbits 
+        tb = 0
+    tarf = Table.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
+    tarf = cutphotmask(tarf,bits) 
+    outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
+    tarf.write(outf,format='fits', overwrite=True)
+
+def mkclusran(type='LRG',program='dark'):
+    from random import random
+    '''
+    take full catalog, cut to ra,dec,z add any weight
+    '''    
+    if type == 'LRG':
+        bits = elgandlrgbits 
+        tb = 0
+
+    ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
+    ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+    outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
+    zeffdic = mkzprobvsntiledic(program='dark',type=tb)
+    ff['WEIGHT'] = zeffdic[ff['NTILE']]
+    ff['Z'] = np.zeros(len(ff))
+    nd = len(ffd)
+    for i in range(0,len(ff)):
+    	ind = int(random()*nd)
+    	ff['Z'][i] = ffd['Z'][ind]
+    	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
+
+    ff.keep_columns(['RA','DEC','Z','WEIGHT'])
+    ff['WEIGHT'] = np.ones(len(ff))
+    ff.write(outf,format='fits', overwrite=True)
+       
+
+def cutphotmask(aa,bits):
+	keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+	for biti in bits:
+		keep &= ((aa['MASKBITS'] & 2**biti)==0)
+	aa = aa[keep]
+	print(str(len(aa)) +' after imaging veto' )
+	return aa
         
 def randomtiles(tilef = minisvdir+'msvtiles.fits'):
-        tiles = fitsio.read(tilef)
-        rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-        print('loaded random file')
-        indsa = desimodel.footprint.find_points_in_tiles(tiles,rt['RA'], rt['DEC'])
-        print('got indexes')
-        for i in range(0,len(indsa)):
-                tile = tiles['TILEID']
-                fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
-                inds = indsa[i]
-                fitsio.write(fname,rt[inds],clobber=True)
-                print('wrote tile '+str(tile))
+	tiles = fitsio.read(tilef)
+	rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+	print('loaded random file')
+	indsa = desimodel.footprint.find_points_in_tiles(tiles,rt['RA'], rt['DEC'])
+	print('got indexes')
+	for i in range(0,len(indsa)):
+			tile = tiles['TILEID']
+			fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
+			inds = indsa[i]
+			fitsio.write(fname,rt[inds],clobber=True)
+			print('wrote tile '+str(tile))
 
 def randomtilesi(tilef = minisvdir+'msvtiles.fits'):
         tiles = fitsio.read(tilef)

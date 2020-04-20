@@ -1,6 +1,9 @@
 import os
 
-E2EDIR = os.environ['E2EDIR']
+E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
+#E2EDIR = os.environ['E2EDIR']
+print('end to end directory is')
+print(E2EDIR)
 
 #run through steps to make LRG catalogs
 
@@ -9,7 +12,7 @@ program = 'dark'
 #epochs
 srun = 0
 
-# Maximum epoch?
+# number of epochs
 nrun = 7
 
 #directories for inputs and output
@@ -20,7 +23,12 @@ e2eout = E2EDIR + '/run/catalogs/'
 farandoms = False #run randoms through fiberassign
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
 combtar = False #concatenate target files and 
-matchtar = False #match targets to mtl info and to zcat info
+matchtar = True #match targets to mtl info and to zcat info
+mkfullran = True #make "full" catalog for randoms
+mkfulldat = True #make "full" catalog for data
+mkclusdat = True #make "clustering" catalog for data
+mkclusran = True #make clustering catalog for randoms
+
 
 #standard python
 import sys
@@ -102,4 +110,19 @@ if matchtar:
 	rmax=nrun-1
 	e2e.matchtar(program,rmax)
 	e2e.matchzcattar(program,rmax)
+	
+if mkfullran:
+    e2e.mkfullran(type='LRG',program='dark')
+
+if mkfulldat:
+    e2e.mkfulldat(type='LRG',program='dark')
+
+#needs to happen before randoms so randoms can get z and weights
+if mkclusdat:
+    e2e.mkclusdat(type='LRG',program='dark')
+
+if mkclusran:
+    e2e.mkclusran(type='LRG',program='dark')
+
+   	
 		
