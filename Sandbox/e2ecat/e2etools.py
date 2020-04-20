@@ -642,7 +642,7 @@ def mkclusran(type='LRG',program='dark'):
     	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
 
     ff.keep_columns(['RA','DEC','Z','WEIGHT'])
-    
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
        
 
