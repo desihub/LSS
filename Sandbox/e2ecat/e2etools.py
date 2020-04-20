@@ -632,6 +632,7 @@ def mkclusran(type='LRG',program='dark'):
     outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
     zeffdic = mkzprobvsntiledic(program='dark',type=tb)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
+    ff['WEIGHT']= np.ones(len(ff))
     ff['Z'] = np.zeros(len(ff))
     nd = len(ffd)
     for i in range(0,len(ff)):
