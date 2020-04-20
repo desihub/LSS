@@ -637,6 +637,7 @@ def mkclusran(type='LRG',program='dark'):
     for i in range(0,len(ff)):
     	ind = int(random()*nd)
     	ff['Z'][i] = ffd['Z'][ind]
+    	ff['WEIGHT'][i] = zeffdic[ff['NTILE'][i]]
     	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
 
     ff.keep_columns(['RA','DEC','Z','WEIGHT'])
