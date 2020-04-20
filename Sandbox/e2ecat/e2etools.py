@@ -21,7 +21,8 @@ tardir    = minisvdir+'targets/'
 dircat    = minisvdir+'LSScats/'
 
 # E2E
-e2ein     = os.environ['E2EDIR']
+#e2ein     = os.environ['E2EDIR']
+e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
 e2eout    = e2ein + '/run/catalogs/'
 print('end to end directory is')
 print(e2ein)
