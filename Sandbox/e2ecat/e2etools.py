@@ -23,7 +23,7 @@ dircat    = minisvdir+'LSScats/'
 # E2E
 #e2ein     = os.environ['E2EDIR']
 e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
-e2eout    = e2ein + '/run/catalogs/'
+e2eout    = e2ein + 'run/catalogs/'
 print('end to end directory is')
 print(e2ein)
 
@@ -613,7 +613,7 @@ def mkfullran(type='LRG',program='dark'):
     if type == 'LRG':
         bits = elgandlrgbits 
         tb = 0
-    tarf = Table.read(e2eout+program+'randoms_oneper_darktime_jmtl.fits')
+    tarf = Table.read(e2eout+program+'/randoms_oneper_darktime_jmtl.fits')
     tarf = cutphotmask(tarf,bits) 
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
