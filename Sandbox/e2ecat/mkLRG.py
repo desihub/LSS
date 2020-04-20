@@ -23,10 +23,10 @@ e2eout = E2EDIR + '/run/catalogs/'
 farandoms = False #run randoms through fiberassign
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
 combtar = False #concatenate target files and 
-matchtar = True #match targets to mtl info and to zcat info
+matchtar = False #match targets to mtl info and to zcat info
 mkfullran = True #make "full" catalog for randoms
-mkfulldat = True #make "full" catalog for data
-mkclusdat = True #make "clustering" catalog for data
+mkfulldat = False #make "full" catalog for data
+mkclusdat = False #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
 
 

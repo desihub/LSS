@@ -613,7 +613,7 @@ def mkfullran(type='LRG',program='dark'):
     if type == 'LRG':
         bits = elgandlrgbits 
         tb = 0
-    tarf = Table.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
+    tarf = Table.read(e2eout+program+'/randoms/randoms_oneper_darktime_jmtl.fits')
     tarf = cutphotmask(tarf,bits) 
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
