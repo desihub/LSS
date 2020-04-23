@@ -629,7 +629,10 @@ def mkfulldat(type,program,bits):
         tb = 0
     if type == 'QSO':
     	tb = 2    
-    tarf = Table.read(e2eout+ program+'/targets_oneper_darktime_jmtl_jzcat.fits')
+     if type == 'BGS':
+    	tb = 60    
+
+    tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
     tarf = cutphotmask(tarf,bits) 
     wt = tarf['DESI_TARGET'] & 2**tb > 0
     tt = tarf[wt]
@@ -662,7 +665,7 @@ def mkfullran(type,program,bits):
 
     '''    
         
-    tarf = Table.read(e2eout+program+'/randoms_oneper_darktime_jmtl.fits')
+    tarf = Table.read(e2eout+program+'/randoms_oneper_jmtl.fits')
     tarf = cutphotmask(tarf,bits) 
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
@@ -679,6 +682,8 @@ def mkclusran(type,program):
         tb = 0
     if type == 'QSO':
     	tb = 2    
+     if type == 'BGS':
+    	tb = 60    
 
     ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
