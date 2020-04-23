@@ -44,7 +44,7 @@ nrun = 7
 
 
 #list of independent tasks to perform
-mkrandoms = True #make randoms specific for type/observing program
+mkrandoms = False #make randoms specific for type/observing program
 farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
@@ -78,7 +78,7 @@ if mkrandoms:
 	e2e.mkran_type(type,program)
 
 if farandoms:
-	targetf = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
+	targetf = e2eout +program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 	#random are only for DARK right now, need to work something out for BRIGHT and GRAY
 
 	#use fiberassign tools to read in randoms to be assigned
