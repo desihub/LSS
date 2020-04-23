@@ -47,9 +47,10 @@ nrun = 5
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
-combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+matchran = False
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = True
 mkfullran = False #make "full" catalog for randoms
 mkfulldat = False #make "full" catalog for data
 mkclusdat = False #make "clustering" catalog for data
@@ -128,6 +129,10 @@ if matchtar:
 	rmax=nrun-1
 	e2e.matchtar(program,rmax)
 	e2e.matchzcattar(program,rmax)
+	
+if plotntile:
+	plotrntile(program)
+	plottntile(program)
 	
 if mkfullran:
     e2e.mkfullran('BGS','bright',elgandlrgbits)

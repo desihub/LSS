@@ -449,6 +449,10 @@ def plotzprobvsntile(program='dark',type=0):
         if type == 1:
                 plt.ylabel('fraction of ELG targets with good z')
 
+        if type == 60:
+                plt.ylabel('fraction of BGS targets with good z')
+
+
         plt.show()      
 
 def mkzprobvsntiledic(program='dark',type=0):
@@ -526,7 +530,7 @@ def comphistNT(program='dark'):
         plt.show()
 
 def plotrntile(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_darktime_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
@@ -539,7 +543,7 @@ def plotrntile(program='dark'):
         plt.show()
 
 def plottntile(program='dark'):
-        r = fitsio.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/targets_oneper_jmtl.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
