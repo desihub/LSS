@@ -423,7 +423,7 @@ def plotzprobvsntile(program='dark',type=0):
         '''
         Defaults to LRG.
         '''        
-        dz  = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+        dz  = fitsio.read(e2eout+program+'/targets_oneper_jmtl_jzcat.fits')
 
         # Shouldn't need this when setting target bit:  & (dz['NUMOBS_MORE_mtl'] > -1)
         wt  = (dz['DESI_TARGET'] & 2**type > 0)
@@ -456,7 +456,7 @@ def plotzprobvsntile(program='dark',type=0):
         plt.show()      
 
 def mkzprobvsntiledic(program='dark',type=0):
-	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+	dz = fitsio.read(e2eout+program+'/targets_oneper_jmtl_jzcat.fits')
 	dr = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
 	wt = (dz['DESI_TARGET'] & 2**type > 0) & (dz['NUMOBS_MORE_mtl'] > -1)
 	dz = dz[wt]
@@ -476,7 +476,7 @@ def mkzprobvsntiledic(program='dark',type=0):
 	return dict(zfl)
 
 def plotcompdr(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
@@ -518,9 +518,9 @@ def plotznz_nt(program='dark'):
 
 
 def comphistNT(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
         plt.hist(r['NTILE'],normed=True,histtype='step',color='k',label='randoms',bins=8,range=(0.5,8.5))
-        t = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+        t = fitsio.read(e2eout+program+'/targets_oneper_jmtl_jzcat.fits')
         w = t['NUMOBS_MORE_mtl'] > -1
         t = t[w]
         plt.hist(t['NTILE'],normed=True,histtype='step',color='r',label='targets',bins=8,range=(0.5,8.5))
@@ -530,7 +530,7 @@ def comphistNT(program='dark'):
         plt.show()
 
 def plotrntile(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
