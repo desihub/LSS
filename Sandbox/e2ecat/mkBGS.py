@@ -133,6 +133,7 @@ if matchtar:
 if plotntile:
 	e2e.plotrntile(program)
 	e2e.plottntile(program)
+	e2e.plotzprobvsntile(program,60)
 	
 if mkfullran:
     e2e.mkfullran('BGS','bright',elgandlrgbits)

@@ -216,7 +216,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
         
         # Glob fiberassign files in epoch 'srun'and read the first in list. 
         dir0   = e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/'
-        outf   = program+'/targets_oneper_darktime.fits'
+        outf   = program+'/targets_oneper.fits'
         fafls0 = glob.glob(dir0+'fiberassign-*.fits')
         fah    = fitsio.read_header(fafls0[0])
         tile   = fah['TILEID']
@@ -404,7 +404,7 @@ def matchzcattar(program='dark',rmax=6):
 
         '''
         
-        outf = program+'/targets_oneper_darktime_jmtl_jzcat.fits'
+        outf = program+'/targets_oneper_jmtl_jzcat.fits'
         
         mtl  = Table.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
         zc   = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
@@ -457,7 +457,7 @@ def plotzprobvsntile(program='dark',type=0):
 
 def mkzprobvsntiledic(program='dark',type=0):
 	dz = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
-	dr = fitsio.read(e2eout+program+'/randoms_oneper_darktime_jmtl.fits')
+	dr = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
 	wt = (dz['DESI_TARGET'] & 2**type > 0) & (dz['NUMOBS_MORE_mtl'] > -1)
 	dz = dz[wt]
 	ntl = np.unique(dr['NTILE'])
@@ -476,7 +476,7 @@ def mkzprobvsntiledic(program='dark',type=0):
 	return dict(zfl)
 
 def plotcompdr(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_darktime_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
@@ -518,7 +518,7 @@ def plotznz_nt(program='dark'):
 
 
 def comphistNT(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_darktime_jmtl.fits')
+        r = fitsio.read(e2eout+program+'/randoms/randoms_oneper_jmtl.fits')
         plt.hist(r['NTILE'],normed=True,histtype='step',color='k',label='randoms',bins=8,range=(0.5,8.5))
         t = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
         w = t['NUMOBS_MORE_mtl'] > -1
