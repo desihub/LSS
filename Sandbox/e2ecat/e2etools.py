@@ -629,7 +629,7 @@ def mkfulldat(type,program,bits):
         tb = 0
     if type == 'QSO':
     	tb = 2    
-     if type == 'BGS':
+    if type == 'BGS':
     	tb = 60    
 
     tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
@@ -682,7 +682,7 @@ def mkclusran(type,program):
         tb = 0
     if type == 'QSO':
     	tb = 2    
-     if type == 'BGS':
+    if type == 'BGS':
     	tb = 60    
 
     ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
