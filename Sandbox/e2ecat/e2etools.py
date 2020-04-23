@@ -77,8 +77,8 @@ def mkran_type(dt,program):
 	f.write(e2eout+program+'/randoms_mtl_cuttod.fits',format='fits', overwrite=True)
 
 def combran(srun=0,nrun=7,program='dark'):
-        dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(srun)+'/'
-        outf=program+'/randoms/randoms_oneper_darktime.fits'
+        dir0 = e2eout+program+'/randoms/'+str(srun)+'/'
+        outf=program+'/randoms/randoms_oneper.fits'
         fafls0 = glob.glob(dir0+'fba-*.fits')
         fah = fitsio.read_header(fafls0[0])
         tile = fah['TILEID']
@@ -157,7 +157,7 @@ def combran(srun=0,nrun=7,program='dark'):
         #return('ended test')
         print('run '+str(srun) +' done')
         for run in range(srun+1,srun+nrun):
-                dirr =  '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(run)+'/'
+                dirr =  e2eout+program+'/randoms/'+str(run)+'/'
                 faflsr = glob.glob(dirr+'fba-*.fits')
                 for i in range(0,len(faflsr)):
                         fah = fitsio.read_header(faflsr[i])
