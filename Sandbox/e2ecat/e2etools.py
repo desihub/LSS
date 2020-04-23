@@ -70,8 +70,10 @@ def mkran_type(dt,program):
 	if program == 'gray':
 		oc = 1
 	f = Table.read(e2eout+'dark/randoms_mtl_cuttod.fits') #this has things set for running dark time tiles
-	f['DESI_TARGET'] = np.ones(len(f),dtype=int)*dt
+	f['DESI_TARGET'] = np.ones(len(f),dtype=int)*2**dt
 	f['OBSCONDITIONS'] = np.ones(len(f),dtype=int)*oc
+	if program == 'bright':
+		f['BGS_TARGET'] = np.ones(len(f),dtype=int)*2
 	f.write(e2eout+program+'/randoms_mtl_cuttod.fits',format='fits', overwrite=True)
 
 def combran(srun=0,nrun=7,program='dark'):
@@ -703,8 +705,8 @@ def cutphotmask(aa,bits):
 
 
 def mke2etiles(run,program='dark'):
-        dirout=e2eout
-        fout = dirout+'e2etiles_run'+str(run)+'.fits'
+        dirout=e2eout+program
+        fout = dirout+'/e2etiles_run'+str(run)+'.fits'
         fafiles = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/*')
         atl = fitsio.read(e2ein+'run/survey/tiles/des.fits')
         tls = []

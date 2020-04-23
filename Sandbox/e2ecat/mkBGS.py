@@ -40,11 +40,11 @@ program = 'bright'
 srun = 0
 
 # number of epochs
-nrun = 7
+nrun = 5
 
 
 #list of independent tasks to perform
-mkrandoms = False #make randoms specific for type/observing program
+mkrandoms = True #make randoms specific for type/observing program
 farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
@@ -90,7 +90,7 @@ if farandoms:
 	for run in range(srun,srun+nrun):
 		#make the tile file for this run
 		e2e.mke2etiles(run,program=program)
-		tilef = e2eout+'e2etiles_run'+str(run)+'.fits'
+		tilef = e2eout+program+'/e2etiles_run'+str(run)+'.fits'
 
 
 		randir = e2eout+program+'/randoms/'+str(run)
