@@ -15,19 +15,34 @@ import desimodel.focalplane #
 targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
 ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 
-# mini SV
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
-tardir    = minisvdir+'targets/'
-dircat    = minisvdir+'LSScats/'
-
 # E2E
 #e2ein     = os.environ['E2EDIR']
 e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
 e2eout    = e2ein + 'run/catalogs/'
+
+
+
+def setglobals(e2einv,e2eoutv,targrootv,ranfv):
+    '''
+    set paths/files names for important inputs without relying on environment variables
+    goal is to always have explicit paths and file names set in the main
+    makes it easy to trace back to exact location of everything while ensuring consistency
+    has to be a better way, but this is working right now
+    '''
+    global e2ein
+    e2ein = e2einv #where survey files were generated, e.g., '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
+    global e2eout
+    e2eout = e2eoutv #where catalogs are output, e.g., e2ein + 'run/catalogs/'
+    global targroot
+    targroot = targrootv #where target files are e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
+    global ranf
+    ranf = ranfv #where randoms are, e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits'
+    #global bits
+    #bits = bitsv #the imaging mask bits to use
+
 print('end to end directory is')
 print(e2ein)
 
-elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs
 
 def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
         '''
@@ -179,7 +194,7 @@ def combran(srun=0,nrun=7,program='dark'):
 
 def combtargets(srun=0,nrun=7,program='dark'):
         '''
-        Catalogue of all TARGETIDs from e.g. parent MTL that could have been assigned
+        Catalog of all TARGETIDs from e.g. parent MTL that could have been assigned
         to at least one GOOD fiber in any tile, where GOOD is defined by FIBERSTATUS
         in the FIBERMAP.
         '''
@@ -578,13 +593,18 @@ def matchtar(program='dark',rmax=6):
 
         jran.write(e2eout+program+'/targets_oneper_darktime_jmtl.fits',format='fits', overwrite=True)
 
-def mkfulldat(type='LRG',program='dark'):
+def mkfulldat(type,program,bits):
     '''
     take targets, cut them to particular target type and mask for particular target type 
+    program is dark,gray, or bright
+    type is 'LRG', 'QSO', 'ELG', or 'BGS'
+    bits are imaging mask bits to apply
     '''    
     if type == 'LRG':
-        bits = elgandlrgbits 
+        #bits = elgandlrgbits 
         tb = 0
+    if type == 'QSO':
+    	tb = 2    
     tarf = Table.read(e2eout+ program+'/targets_oneper_darktime_jmtl_jzcat.fits')
     tarf = cutphotmask(tarf,bits) 
     wt = tarf['DESI_TARGET'] & 2**tb > 0
@@ -592,9 +612,12 @@ def mkfulldat(type='LRG',program='dark'):
     outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
     tt.write(outf,format='fits', overwrite=True)
     
-def mkclusdat(type='LRG',program='dark'):
+def mkclusdat(type,program):
     '''
     take full catalog, cut to ra,dec,z add any weight
+    program is dark,gray, or bright
+    type is 'LRG', 'QSO', 'ELG', or 'BGS'
+
     '''    
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
     outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
@@ -606,26 +629,26 @@ def mkclusdat(type='LRG',program='dark'):
     
        
     
-def mkfullran(type='LRG',program='dark'):
+def mkfullran(type,program,bits):
     '''
     take randoms, mask for particular target type 
+    program is dark,gray, or bright
+    type is 'LRG', 'QSO', 'ELG', or 'BGS'
+    bits are imaging mask bits to apply
+
     '''    
-    if type == 'LRG':
-        bits = elgandlrgbits 
-        tb = 0
+        
     tarf = Table.read(e2eout+program+'/randoms_oneper_darktime_jmtl.fits')
     tarf = cutphotmask(tarf,bits) 
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
 
-def mkclusran(type='LRG',program='dark'):
+def mkclusran(type,program):
     from random import random
     '''
     take full catalog, cut to ra,dec,z add any weight
+    assign redshifts by randomly sampling data clustering
     '''    
-    if type == 'LRG':
-        bits = elgandlrgbits 
-        tb = 0
 
     ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
@@ -654,58 +677,7 @@ def cutphotmask(aa,bits):
 	print(str(len(aa)) +' after imaging veto' )
 	return aa
         
-def randomtiles(tilef = minisvdir+'msvtiles.fits'):
-	tiles = fitsio.read(tilef)
-	rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-	print('loaded random file')
-	indsa = desimodel.footprint.find_points_in_tiles(tiles,rt['RA'], rt['DEC'])
-	print('got indexes')
-	for i in range(0,len(indsa)):
-			tile = tiles['TILEID']
-			fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
-			inds = indsa[i]
-			fitsio.write(fname,rt[inds],clobber=True)
-			print('wrote tile '+str(tile))
 
-def randomtilesi(tilef = minisvdir+'msvtiles.fits'):
-        tiles = fitsio.read(tilef)
-        trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-        print(trad)
-        rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-        print('loaded random file')     
-        
-        for i in range(0,len(tiles)):
-                tile = tiles['TILEID'][i]
-                fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
-                tdec = tiles['DEC'][i]
-                decmin = tdec - trad
-                decmax = tdec + trad
-                wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-                print(len(rt[wdec]))
-                inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-                print('got indexes')
-                fitsio.write(fname,rt[wdec][inds],clobber=True)
-                print('wrote tile '+str(tile))
-
-def targtilesi(type,tilef = minisvdir+'msvtiles.fits'):
-        tiles = fitsio.read(tilef)
-        trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-        print(trad)
-        rt = fitsio.read(tardir+type+'allDR8targinfo.fits')
-        print('loaded random file')     
-        
-        for i in range(0,len(tiles)):
-                tile = tiles['TILEID'][i]
-                fname = tardir+type+str(tile)+'.fits'
-                tdec = tiles['DEC'][i]
-                decmin = tdec - trad
-                decmax = tdec + trad
-                wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-                print(len(rt[wdec]))
-                inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-                print('got indexes')
-                fitsio.write(fname,rt[wdec][inds],clobber=True)
-                print('wrote tile '+str(tile))
 
 def mke2etiles(run,dirout=e2eout,program='dark'):
         fout = dirout+'e2etiles_run'+str(run)+'.fits'
@@ -723,40 +695,7 @@ def mke2etiles(run,dirout=e2eout,program='dark'):
         print('writing to '+fout)
         fitsio.write(fout,rtl,clobber=True)
         
-def mkminisvtilef(dirout=minisvdir,fout='msvtiles.fits'):
-        '''
-        manually make tile fits file for sv tiles
-        '''
-        msvtiles = Table()
-        msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
-        msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
-        msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
-        msvtiles['PASS'] = np.zeros(7,dtype=int)
-        msvtiles['IN_DESI'] = np.ones(7,dtype=int)
-        msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
-        pa = []
-        for i in range(0,7):
-                pa.append(b'DARK')
-        msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
-        msvtiles.write(dirout+fout,format='fits', overwrite=True)
-        
-def plotdatran(type,tile,night):
-        df = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.dat.fits')
-        rf = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.ran.fits')
-        plt.plot(rf['RA'],rf['DEC'],'k,')                    
-        if type == 'LRG':
-                pc = 'r'
-                pt = 'o'
-        if type == 'ELG':
-                pc = 'b'
-                pt = '*'
-        plt.scatter(df['RA'],df['DEC'],s=df['WEIGHT']*3,c=pc,marker=pt)
-        plt.xlabel('RA')
-        plt.ylabel('DEC')
-        plt.title(type + ' '+tile+' '+night)
-        plt.savefig('dataran'+type+tile+night+'.png')
-        plt.show()
-                
+                        
 
 def gathertargets(type):
         fns      = glob.glob(targroot+'*.fits')

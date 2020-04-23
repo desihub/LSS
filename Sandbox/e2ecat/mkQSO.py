@@ -9,6 +9,8 @@ import numpy as np
 import fitsio
 import glob
 
+print('Need to account for quasar also elg targets observed on gray tiles that overlap and will get included here')
+
 #import from catalog code
 import e2etools as e2e
 
@@ -29,11 +31,10 @@ ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/ran
 #now the routines in e2etools that need these will have them as globals
 setglobals(e2ein,e2eout,targroot,ranf)
 
-elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs
-
+elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs, for simplicity using them again for quasars
 #run through steps to make LRG catalogs
 
-type = 0
+type = 2 #target bit for quasars
 program = 'dark'
 #epochs
 srun = 0
@@ -43,13 +44,13 @@ nrun = 7
 
 
 #list of independent tasks to perform
-farandoms = False #run randoms through fiberassign
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
-combtar = False #concatenate target files and 
-matchtar = False #match targets to mtl info and to zcat info
-mkfullran = False #make "full" catalog for randoms
-mkfulldat = False #make "full" catalog for data
-mkclusdat = False #make "clustering" catalog for data
+farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+mkfullran = True #make "full" catalog for randoms
+mkfulldat = True #make "full" catalog for data
+mkclusdat = True #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
 
 
@@ -122,17 +123,17 @@ if matchtar:
 	e2e.matchzcattar(program,rmax)
 	
 if mkfullran:
-    e2e.mkfullran('LRG',dark,elgandlrgbits)
+    e2e.mkfullran('QSO','dark',elgandlrgbits)
 
 if mkfulldat:
-    e2e.mkfulldat('LRG',dark,elgandlrgbits)
+    e2e.mkfulldat('QSO','dark',elgandlrgbits)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    e2e.mkclusdat(type='LRG',program='dark')
+    e2e.mkclusdat('QSO','dark')
 
 if mkclusran:
-    e2e.mkclusran(type='LRG',program='dark')
+    e2e.mkclusran('QSO','dark')
 
    	
 		
