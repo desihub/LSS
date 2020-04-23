@@ -686,7 +686,8 @@ def cutphotmask(aa,bits):
         
 
 
-def mke2etiles(run,dirout=e2eout,program='dark'):
+def mke2etiles(run,program='dark'):
+        dirout=e2eout
         fout = dirout+'e2etiles_run'+str(run)+'.fits'
         fafiles = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/*')
         atl = fitsio.read(e2ein+'run/survey/tiles/des.fits')
