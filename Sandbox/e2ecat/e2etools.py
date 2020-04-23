@@ -70,8 +70,8 @@ def mkran_type(dt,program):
 	if program == 'gray':
 		oc = 1
 	f = Table.read(e2eout+'dark/randoms_mtl_cuttod.fits') #this has things set for running dark time tiles
-	f['DESI_TARGET'] = np.ones(len(rall),dtype=int)*dt
-	f['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)*oc
+	f['DESI_TARGET'] = np.ones(len(f),dtype=int)*dt
+	f['OBSCONDITIONS'] = np.ones(len(f),dtype=int)*oc
 	f.write(e2eout+program+'/randoms_mtl_cuttod.fits',format='fits', overwrite=True)
 
 def combran(srun=0,nrun=7,program='dark'):
