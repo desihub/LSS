@@ -44,10 +44,11 @@ def setglobals(e2einv,e2eoutv,targrootv,ranfv):
 	print(e2ein)
 
 
-def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=e2eout+'random/'):
+def mkran4fa(N=2e8,fout='random_mtl.fits'):
         '''
         cut imaging random file to first N entries and add columns necessary for fiberassignment routines
         '''
+        dirout=e2eout+'random/'
         rall = fitsio.read(ranf,rows=np.arange(N))
         rmtl = Table()
         for name in rall.dtype.names:
