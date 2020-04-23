@@ -44,8 +44,8 @@ nrun = 5
 
 
 #list of independent tasks to perform
-mkrandoms = True #make randoms specific for type/observing program
-farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+mkrandoms = False #make randoms specific for type/observing program
+farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
