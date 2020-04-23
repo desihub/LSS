@@ -44,11 +44,11 @@ print('end to end directory is')
 print(e2ein)
 
 
-def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
+def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=e2eout+'random/'):
         '''
         cut imaging random file to first N entries and add columns necessary for fiberassignment routines
         '''
-        rall = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits',rows=np.arange(N))
+        rall = fitsio.read(ranf,rows=np.arange(N))
         rmtl = Table()
         for name in rall.dtype.names:
                 rmtl[name] = rall[name]
