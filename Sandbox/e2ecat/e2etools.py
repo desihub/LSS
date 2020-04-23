@@ -71,7 +71,7 @@ def mkran_type(dt,program):
 		oc = 1
 	f = Table.read(e2eout+'dark/randoms_mtl_cuttod.fits') #this has things set for running dark time tiles
 	f['DESI_TARGET'] = np.ones(len(f),dtype=int)*2**dt
-	f['OBSCONDITIONS'] = np.ones(len(f),dtype=int)*oc
+	f['OBSCONDITIONS'] = np.ones(len(f),dtype=int)*2**oc
 	if program == 'bright':
 		f['BGS_TARGET'] = np.ones(len(f),dtype=int)*2
 	f.write(e2eout+program+'/randoms_mtl_cuttod.fits',format='fits', overwrite=True)
