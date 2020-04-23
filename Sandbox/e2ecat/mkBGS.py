@@ -9,6 +9,8 @@ import numpy as np
 import fitsio
 import glob
 
+print('Need to account for "legacy" LRG redshifts')
+
 #import from catalog code
 import e2etools as e2e
 
@@ -27,14 +29,13 @@ targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/r
 ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 
 #now the routines in e2etools that need these will have them as globals
-setglobals(e2ein,e2eout,targroot,ranf)
+e2e.setglobals(e2ein,e2eout,targroot,ranf)
 
-elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs
-
+elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs, for simplicity using them again for quasars
 #run through steps to make LRG catalogs
 
-type = 0
-program = 'dark'
+type = 60 #target bit for BGS
+program = 'bright'
 #epochs
 srun = 0
 
@@ -43,14 +44,15 @@ nrun = 7
 
 
 #list of independent tasks to perform
-farandoms = False #run randoms through fiberassign
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID
-combtar = False #concatenate target files and 
-matchtar = False #match targets to mtl info and to zcat info
+mkrandoms = True #make randoms specific for type/observing program
+farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 mkfullran = False #make "full" catalog for randoms
 mkfulldat = False #make "full" catalog for data
 mkclusdat = False #make "clustering" catalog for data
-mkclusran = True #make clustering catalog for randoms
+mkclusran = False #make clustering catalog for randoms
 
 
 
@@ -72,8 +74,11 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
 import desimodel
 import desimodel.io as dmio
 
+if mkrandoms:
+	e2e.mkran_type(type,program)
+
 if farandoms:
-	targetf = e2eout+program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
+	targetf = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 	#random are only for DARK right now, need to work something out for BRIGHT and GRAY
 
 	#use fiberassign tools to read in randoms to be assigned
@@ -122,17 +127,17 @@ if matchtar:
 	e2e.matchzcattar(program,rmax)
 	
 if mkfullran:
-    e2e.mkfullran('LRG',dark,elgandlrgbits)
+    e2e.mkfullran('BGS','bright',elgandlrgbits)
 
 if mkfulldat:
-    e2e.mkfulldat('LRG',dark,elgandlrgbits)
+    e2e.mkfulldat('BGS','bright',elgandlrgbits)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    e2e.mkclusdat(type='LRG',program='dark')
+    e2e.mkclusdat('BGS','bright')
 
 if mkclusran:
-    e2e.mkclusran(type='LRG',program='dark')
+    e2e.mkclusran('BGS','bright')
 
    	
 		

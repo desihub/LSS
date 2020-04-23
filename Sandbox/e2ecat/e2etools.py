@@ -47,6 +47,7 @@ def setglobals(e2einv,e2eoutv,targrootv,ranfv):
 def mkran4fa(N=2e8,fout='random_mtl.fits'):
         '''
         cut imaging random file to first N entries and add columns necessary for fiberassignment routines
+        this made the initial big one for dark tiles
         '''
         dirout=e2eout+'random/'
         rall = fitsio.read(ranf,rows=np.arange(N))
@@ -62,6 +63,16 @@ def mkran4fa(N=2e8,fout='random_mtl.fits'):
         rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
         rmtl['SUBPRIORITY'] = np.random.random(len(rall))
         rmtl.write(dirout+fout,format='fits', overwrite=True)
+
+def mkran_type(dt,program):
+	if program == 'bright':
+		oc = 2
+	if program == 'gray':
+		oc = 1
+	f = Table.read(e2eout+'dark/randoms_mtl_cuttod.fits') #this has things set for running dark time tiles
+	f['DESI_TARGET'] = np.ones(len(rall),dtype=int)*dt
+	f['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)*oc
+	f.write(e2eout+program+'/randoms_mtl_cuttod.fits',format='fits', overwrite=True)
 
 def combran(srun=0,nrun=7,program='dark'):
         dir0 = '/project/projectdirs/desi/users/ajross/catalogs/e2eoneper/'+program+'/randoms/'+str(srun)+'/'
