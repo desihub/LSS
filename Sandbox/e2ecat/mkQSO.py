@@ -29,7 +29,7 @@ targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/r
 ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 
 #now the routines in e2etools that need these will have them as globals
-setglobals(e2ein,e2eout,targroot,ranf)
+e2e.setglobals(e2ein,e2eout,targroot,ranf)
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs, for simplicity using them again for quasars
 #run through steps to make LRG catalogs
