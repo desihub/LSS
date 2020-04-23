@@ -131,8 +131,8 @@ if matchtar:
 	e2e.matchzcattar(program,rmax)
 	
 if plotntile:
-	plotrntile(program)
-	plottntile(program)
+	e2e.plotrntile(program)
+	e2e.plottntile(program)
 	
 if mkfullran:
     e2e.mkfullran('BGS','bright',elgandlrgbits)
