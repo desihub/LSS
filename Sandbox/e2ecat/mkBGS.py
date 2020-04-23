@@ -22,7 +22,7 @@ print(E2EDIR)
 
 #directories for inputs and output
 e2ein  = E2EDIR                     # Most recent: f. 
-e2eout = E2EDIR + '/run/catalogs/'
+e2eout = E2EDIR + 'run/catalogs/'
 
 
 targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
@@ -46,7 +46,8 @@ nrun = 5
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = True
 combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 mkfullran = False #make "full" catalog for randoms
@@ -116,6 +117,8 @@ if farandoms:
 		
 if combran: #concatenate random files, match to mtl
 	e2e.combran(srun,nrun,program)
+
+if matchran:
 	e2e.matchran(program)
  
 if combtar: #concatenate target files, match to mtl and zcat info

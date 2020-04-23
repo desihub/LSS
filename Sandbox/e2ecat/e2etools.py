@@ -584,14 +584,14 @@ def testfavail(tile,epoch=6,program='dark'):
         print(np.unique(tj['NUMOBS_MORE']))
                 
 def matchran(program='dark'):
-        faran = Table.read(e2eout+program+'/randoms/randoms_oneper_darktime.fits')
+        faran = Table.read(e2eout+program+'/randoms/randoms_oneper.fits')
         faran['NTILE'] = np.char.count(faran['TILE'],'-')
         faran['NTILE'] += 1
         print(max(faran['NTILE']))
-        mtlran = Table.read(e2eout+program+'/randoms/randoms_mtl_cuttod.fits')
+        mtlran = Table.read(e2eout+program+'/randoms_mtl_cuttod.fits')
         jran = join(faran,mtlran,keys=['TARGETID'])
         print(len(jran),len(faran),len(mtlran))
-        jran.write(e2eout+program+'/randoms/randoms_oneper_darktime_jmtl.fits',format='fits', overwrite=True)
+        jran.write(e2eout+program+'/randoms_oneper_jmtl.fits',format='fits', overwrite=True)
 
 def matchtar(program='dark',rmax=6):
         '''
