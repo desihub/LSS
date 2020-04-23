@@ -12,36 +12,36 @@ import desimodel.footprint
 import desimodel.focalplane #
 
 
-targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
-ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
+#targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
+#ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
 
 # E2E
 #e2ein     = os.environ['E2EDIR']
-e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
-e2eout    = e2ein + 'run/catalogs/'
+#e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
+#e2eout    = e2ein + 'run/catalogs/'
 
 
 
 def setglobals(e2einv,e2eoutv,targrootv,ranfv):
-    '''
-    set paths/files names for important inputs without relying on environment variables
-    goal is to always have explicit paths and file names set in the main
-    makes it easy to trace back to exact location of everything while ensuring consistency
-    has to be a better way, but this is working right now
-    '''
-    global e2ein
-    e2ein = e2einv #where survey files were generated, e.g., '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
-    global e2eout
-    e2eout = e2eoutv #where catalogs are output, e.g., e2ein + 'run/catalogs/'
-    global targroot
-    targroot = targrootv #where target files are e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
-    global ranf
-    ranf = ranfv #where randoms are, e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits'
-    #global bits
-    #bits = bitsv #the imaging mask bits to use
+	'''
+	set paths/files names for important inputs without relying on environment variables
+	goal is to always have explicit paths and file names set in the main
+	makes it easy to trace back to exact location of everything while ensuring consistency
+	has to be a better way, but this is working right now
+	'''
+	global e2ein
+	e2ein = e2einv #where survey files were generated, e.g., '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
+	global e2eout
+	e2eout = e2eoutv #where catalogs are output, e.g., e2ein + 'run/catalogs/'
+	global targroot
+	targroot = targrootv #where target files are e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
+	global ranf
+	ranf = ranfv #where randoms are, e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits'
+	#global bits
+	#bits = bitsv #the imaging mask bits to use
 
-print('end to end directory is')
-print(e2ein)
+	print('end to end directory is')
+	print(e2ein)
 
 
 def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=e2eout+'random/'):
@@ -650,10 +650,16 @@ def mkclusran(type,program):
     assign redshifts by randomly sampling data clustering
     '''    
 
+    if type == 'LRG':
+        #bits = elgandlrgbits 
+        tb = 0
+    if type == 'QSO':
+    	tb = 2    
+
     ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
     outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
-    zeffdic = mkzprobvsntiledic(program='dark',type=tb)
+    zeffdic = mkzprobvsntiledic(program=program,type=tb)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
     ff['WEIGHT']= np.ones(len(ff))
     ff['Z'] = np.zeros(len(ff))
