@@ -419,6 +419,35 @@ def matchzcattar(program='dark',rmax=6):
 
         mtlj.write(e2eout+outf, format='fits', overwrite=True)   
 
+def plotcompvsntile(type,program='dark'):
+        '''
+        
+        '''        
+        dz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+        rz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+        normt = len(ra)/len(dz)
+
+        ntl = np.unique(rz['NTILE'])
+        zfl = []
+
+        for nt in ntl:
+                w    = dz['NTILE'] == nt
+                ntar = len(dz[w])
+
+                # (dz['NUMOBS_MORE_mtl'] == 0)
+                wz   = w & (dz['ZWARN'] == 0)
+                nz   = len(dz[wz])
+                wr = dr['NTILE'] == nt
+                nran = len(rz[wr])
+                print(nt,nz,ntar,nran)
+                zfl.append(nz/nran*normt)
+        plt.plot(ntl,zfl,'k-')
+        plt.xlabel('NTILES')
+        ptl.ylabel('N good z/N random for '+type)
+
+        plt.show()      
+
+
 def plotzprobvsntile(program='dark',type=0):
         '''
         Defaults to LRG.

@@ -112,12 +112,13 @@ combtar = False #concatenate target files; doesn't need to be done if already do
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
-plottilehist = True
+plottilehist = False
 mkfullran = False #make "full" catalog for randoms
 mkfulldat = False #make "full" catalog for data
 mkclusdat = False #make "clustering" catalog for data
 mkclusran = False #make clustering catalog for randoms
 plotfoot = False
+plottilecomp = True
 
 
 
@@ -186,5 +187,8 @@ if mkclusran:
     logf.write('ran mkclusran\n')
 
 if plotfoot:
-	e2e.plotcompdr_full(target_type,program)   	
+	e2e.plotcompdr_full(target_type,program)  
+	
+if plottilecomp:
+	e2e.plotcompvsntile(target_type,program)	 	
 		
