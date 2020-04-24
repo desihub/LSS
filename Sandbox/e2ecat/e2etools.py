@@ -443,7 +443,7 @@ def plotcompvsntile(type,program='dark'):
                 zfl.append(nz/nran*normt)
                 zftl.append(nz/ntar)
         plt.plot(ntl,zfl,'k-',label='compared to randoms')
-        plt.plot(ntl,zfl,'r-',label='compared to all targets')
+        plt.plot(ntl,zftl,'r-',label='compared to all targets')
         plt.xlabel('NTILES')
         plt.ylabel('N good z/N random for '+type)
         plt.legend()
