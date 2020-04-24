@@ -448,6 +448,8 @@ def plotcompvsntile(type,program='dark'):
         plt.show()      
 
 
+
+
 def plotzprobvsntile(program='dark',type=0):
         '''
         Defaults to LRG.
@@ -484,18 +486,16 @@ def plotzprobvsntile(program='dark',type=0):
 
         plt.show()      
 
-def mkzprobvsntiledic(program='dark',type=0):
-	dz = fitsio.read(e2eout+program+'/targets_oneper_jmtl_jzcat.fits')
-	dr = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
-	wt = (dz['DESI_TARGET'] & 2**type > 0) & (dz['NUMOBS_MORE_mtl'] > -1)
-	dz = dz[wt]
+def mkzprobvsntiledic(type,program='dark'):
+	dz = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+	dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
 	ntl = np.unique(dr['NTILE'])
 	zfl = []
 	for nt in ntl:
 		w = dz['NTILE'] == nt
 		ntar = len(dz[w])
 		if ntar > 0:
-			wz = w & ((dz['NUMOBS_MORE_mtl'] == 0) | (dz['ZWARN'] == 0))
+			wz = w &  (dz['ZWARN'] == 0)
 			nz = len(dz[wz])
 			print(nt,nz,ntar)
 			zfl.append((nt,nz/ntar))
@@ -706,18 +706,18 @@ def mkclusran(type,program):
     assign redshifts by randomly sampling data clustering
     '''    
 
-    if type == 'LRG':
-        #bits = elgandlrgbits 
-        tb = 0
-    if type == 'QSO':
-    	tb = 2    
-    if type == 'BGS':
-    	tb = 60    
+#     if type == 'LRG':
+#         #bits = elgandlrgbits 
+#         tb = 0
+#     if type == 'QSO':
+#     	tb = 2    
+#     if type == 'BGS':
+#     	tb = 60    
 
     ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
     outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
-    zeffdic = mkzprobvsntiledic(program=program,type=tb)
+    zeffdic = mkzprobvsntiledic(type,program=program)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
     ff['WEIGHT']= np.ones(len(ff))
     ff['Z'] = np.zeros(len(ff))
