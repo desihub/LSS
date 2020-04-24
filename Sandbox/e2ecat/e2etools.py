@@ -406,7 +406,7 @@ def matchzcattar(program='dark',rmax=6):
         
         outf = program+'/targets_oneper_jmtl_jzcat.fits'
         
-        mtl  = Table.read(e2eout+program+'/targets_oneper_darktime_jmtl.fits')
+        mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
         zc   = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
 
         # BUG:  Table names should be mtl, zcat?
@@ -602,7 +602,7 @@ def matchtar(program='dark',rmax=6):
         Read targets in the (one-percent) geometry - available to a GOOD fiber - and join to mtl.
         Tracking NTILE:  how many tiles a target COULD have been observed in.  
         '''
-        faran           = Table.read(e2eout+program+'/targets_oneper_darktime.fits')
+        faran           = Table.read(e2eout+program+'/targets_oneper.fits')
         faran['NTILE']  = np.char.count(faran['TILE'],'-')
 
         # Counting was - based. 
@@ -615,7 +615,7 @@ def matchtar(program='dark',rmax=6):
 
         print(len(jran),len(faran),len(mtlran))
 
-        jran.write(e2eout+program+'/targets_oneper_darktime_jmtl.fits',format='fits', overwrite=True)
+        jran.write(e2eout+program+'/targets_oneper_jmtl.fits',format='fits', overwrite=True)
 
 def mkfulldat(type,program,bits):
     '''

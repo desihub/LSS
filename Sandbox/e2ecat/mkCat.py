@@ -75,10 +75,10 @@ if target_type == 'BGS':
 
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
-combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
+farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = False
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = True
 mkfullran = True #make "full" catalog for randoms
