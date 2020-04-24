@@ -182,5 +182,5 @@ if mkclusran:
     logf.write('ran mkclusran\n')
 
 if plotfoot:
-	plotcompdr_full(target_type,program)   	
+	e2e.plotcompdr_full(target_type,program)   	
 		
