@@ -28,7 +28,7 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
 import desimodel
 import desimodel.io as dmio
 
-def mkfa(targetf,tiles,rd,fad,srun,nrun):
+def mkfa(targetf,tileff,rd,fad,srun,nrun):
 	'''
 	make the fiberassign files needed
 	'''
@@ -44,7 +44,7 @@ def mkfa(targetf,tiles,rd,fad,srun,nrun):
 	for run in range(srun,srun+nrun):
 		#make the tile file for this run
 		#e2e.mke2etiles(run,program=program)
-		tilef = tiles+str(run)+'.fits'
+		tilef = tileff+str(run)+'.fits'
 		#+str(run)+'.fits'
 
 
