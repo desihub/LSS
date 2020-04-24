@@ -409,12 +409,11 @@ def matchzcattar(program='dark',rmax=6):
         mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
         zc   = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
 
-        # BUG:  Table names should be mtl, zcat?
         mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['mtl', 'zcat'],join_type='left')
 
         w    = mtlj['ZWARN'] == 0
 
-        print('number of obs, number of good redshifts:')
+        print('number of targets, number of good redshifts:')
         print(len(mtlj),len(mtlj[w]))   
 
         mtlj.write(e2eout+outf, format='fits', overwrite=True)   
@@ -429,6 +428,7 @@ def plotcompvsntile(type,program='dark'):
 
         ntl = np.unique(rz['NTILE'])
         zfl = []
+        zftl = []
 
         for nt in ntl:
                 w    = dz['NTILE'] == nt
@@ -441,9 +441,12 @@ def plotcompvsntile(type,program='dark'):
                 nran = len(rz[wr])
                 print(nt,nz,ntar,nran)
                 zfl.append(nz/nran*normt)
-        plt.plot(ntl,zfl,'k-')
+                zftl.append(nz/ntar)
+        plt.plot(ntl,zfl,'k-',label='compared to randoms')
+        plt.plot(ntl,zfl,'r-',label='compared to all targets')
         plt.xlabel('NTILES')
         plt.ylabel('N good z/N random for '+type)
+        plt.legend()
 
         plt.show()      
 
