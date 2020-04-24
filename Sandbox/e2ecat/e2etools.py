@@ -425,7 +425,7 @@ def plotcompvsntile(type,program='dark'):
         '''        
         dz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
         rz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
-        normt = len(ra)/len(dz)
+        normt = len(rz)/len(dz)
 
         ntl = np.unique(rz['NTILE'])
         zfl = []
