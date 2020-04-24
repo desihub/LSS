@@ -51,7 +51,7 @@ def mkfa(targetf,tiles,rd,fad,srun,nrun):
 		randir = rd +str(run)
 		#+str(run)
 		if os.path.isdir(randir):
-			ofls = glob.glob(randir)
+			ofls = glob.glob(randir+'/*')
 			for fl in ofls:
 				os.remove(fl) #remove the old files if we are rerunning
 		else:	
