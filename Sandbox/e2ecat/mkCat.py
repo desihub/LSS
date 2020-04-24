@@ -3,7 +3,8 @@ one executable to make any of the four kinds of tracer, just setting type
 target_type can be LRG, QSO, BGS, or ELG
 '''
 
-target_type = 'BGS'
+#target_type = 'BGS'
+target_type = 'LRG'
 
 #standard python
 import sys
@@ -62,23 +63,34 @@ if target_type == 'BGS':
 	# number of epochs
 	nrun = 5
 	imbits =  elgandlrgbits #mask bits for imaging
-	logf.write('used following settings:\n')
-	logf.write("\
-	type = "+str(type)+"\n\
-	program = "+program+"\n\
-	srun = "+str(srun)+"\n\
-	nrun = "+str(nrun)+"\n\
-	imbits =  "+str(imbits)+"\n\
-	\n\
-	")
+
+if target_type == 'LRG':
+	type = 0 #target bit for BGS
+	program = 'dark'
+	#epochs
+	srun = 0
+	# number of epochs
+	nrun = 7
+	imbits =  elgandlrgbits #mask bits for imaging
+
+
+logf.write('used following settings:\n')
+logf.write("\
+type = "+str(type)+"\n\
+program = "+program+"\n\
+srun = "+str(srun)+"\n\
+nrun = "+str(nrun)+"\n\
+imbits =  "+str(imbits)+"\n\
+\n\
+")
 
 
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = False
-combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = True
+combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = True
 mkfullran = True #make "full" catalog for randoms
