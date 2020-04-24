@@ -28,7 +28,7 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
 import desimodel
 import desimodel.io as dmio
 
-def mkfa(targetf,tiles,rd,fad,dt):
+def mkfa(targetf,tiles,rd,fad):
 	'''
 	make the fiberassign files needed
 	'''
