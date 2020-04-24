@@ -4,7 +4,7 @@ target_type can be LRG, QSO, BGS, or ELG
 '''
 
 #target_type = 'BGS'
-target_type = 'LRG'
+target_type = 'QSO'
 
 #standard python
 import sys
@@ -65,7 +65,16 @@ if target_type == 'BGS':
 	imbits =  elgandlrgbits #mask bits for imaging
 
 if target_type == 'LRG':
-	type = 0 #target bit for BGS
+	type = 0 #target bit for LRG
+	program = 'dark'
+	#epochs
+	srun = 0
+	# number of epochs
+	nrun = 7
+	imbits =  elgandlrgbits #mask bits for imaging
+
+if target_type == 'QSO':
+	type = 2 #target bit for QSO
 	program = 'dark'
 	#epochs
 	srun = 0
@@ -87,12 +96,13 @@ imbits =  "+str(imbits)+"\n\
 
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
-combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = True
+farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = False
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = False
+plotzeff = True
 mkfullran = True #make "full" catalog for randoms
 mkfulldat = True #make "full" catalog for data
 mkclusdat = True #make "clustering" catalog for data
@@ -138,8 +148,11 @@ if matchtar:
 if plotntile:
 	e2e.plotrntile(program)
 	e2e.plottntile(program)
-	e2e.plotzprobvsntile(program,type)
 	logf.write('ran plotntile\n')
+
+if plotzeff:
+	e2e.plotzprobvsntile(program,type)
+	logf.write('ran plotzeff\n')
 	
 if mkfullran:
     e2e.mkfullran(target_type,program,imbits)
