@@ -39,7 +39,7 @@ else:
 
 	
 
-logf = open(e2eout+'/logfiles/mkCat'+str(datetime.datetime.today())+'.log','w')
+logf = open(e2eout+'/logfiles/mkCat'+str(datetime.today())+'.log','w')
 logf.write('mkCat.py run for type '+str(type)+'\n')
 logf.write('inputs root '+e2ein+'\n')
 logf.write('output root '+e2ein+'\n')
