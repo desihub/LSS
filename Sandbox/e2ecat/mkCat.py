@@ -102,7 +102,7 @@ if farandoms:
 	tiles = e2eout+program+'/e2etiles_run'
 	rd = e2eout+program+'/randoms/'
 	fad = e2ein+'run/quicksurvey/'+program+'/'
-	fa.mkfa(targetf,tiles,rd,fad)
+	fa.mkfa(targetf,tiles,rd,fad,srun,nrun)
 	logf.write('ran farandoms\n')
 		
 if combran: #concatenate random files, match to mtl
