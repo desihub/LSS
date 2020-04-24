@@ -443,7 +443,7 @@ def plotcompvsntile(type,program='dark'):
                 zfl.append(nz/nran*normt)
         plt.plot(ntl,zfl,'k-')
         plt.xlabel('NTILES')
-        ptl.ylabel('N good z/N random for '+type)
+        plt.ylabel('N good z/N random for '+type)
 
         plt.show()      
 
