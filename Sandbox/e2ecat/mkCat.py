@@ -23,7 +23,8 @@ import glob
 import e2etools as e2e
 import fatools as fa
 
-
+DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/desimodel/'
+os.environ['DESIMODEL'] = DESIMODEL
 E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/' # Most recent: f.
 #E2EDIR = os.environ['E2EDIR']
 print('end to end directory is')
@@ -105,20 +106,20 @@ imbits =  "+str(imbits)+"\n\
 
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = False
+farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = True
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = False
-plotzeff = False
-plottilehist = False
-mkfullran = False #make "full" catalog for randoms
+plotntile = True
+plotzeff = True
+plottilehist = True
+mkfullran = True #make "full" catalog for randoms
 mkfulldat = False #make "full" catalog for data
 mkclusdat = False #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
-plotfoot = False
-plottilecomp = False
+plotfoot = True
+plottilecomp = True
 
 
 
@@ -136,7 +137,7 @@ if farandoms:
 	tiles = e2eout+program+'/e2etiles_run'
 	rd = e2eout+program+'/randoms/'
 	fad = e2ein+'run/quicksurvey/'+program+'/'
-	fa.mkfa(targetf,tiles,rd,fad,srun,nrun)
+	fa.mkfa(targetf,tiles,rd,fad,srun,nrun,DESIMODEL)
 	logf.write('ran farandoms\n')
 		
 if combran: #concatenate random files, match to mtl

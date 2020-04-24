@@ -28,10 +28,11 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
 import desimodel
 import desimodel.io as dmio
 
-def mkfa(targetf,tileff,rd,fad,srun,nrun):
+def mkfa(targetf,tileff,rd,fad,srun,nrun,DESIMODEL):
 	'''
 	make the fiberassign files needed
 	'''
+	os.environ['DESIMODEL'] = DESIMODEL
 	#targetf = e2eout +program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 	#random are only for DARK right now, need to work something out for BRIGHT and GRAY
 
