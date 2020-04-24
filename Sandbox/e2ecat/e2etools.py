@@ -437,7 +437,7 @@ def plotcompvsntile(type,program='dark'):
                 # (dz['NUMOBS_MORE_mtl'] == 0)
                 wz   = w & (dz['ZWARN'] == 0)
                 nz   = len(dz[wz])
-                wr = dr['NTILE'] == nt
+                wr = rz['NTILE'] == nt
                 nran = len(rz[wr])
                 print(nt,nz,ntar,nran)
                 zfl.append(nz/nran*normt)
