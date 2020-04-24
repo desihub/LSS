@@ -475,25 +475,25 @@ def mkzprobvsntiledic(program='dark',type=0):
 			
 	return dict(zfl)
 
-def plotcompdr(program='dark'):
-        r = fitsio.read(e2eout+program+'/randoms_oneper_jmtl.fits')
+def plotcompdr_full(type,program='dark'):
+        r = fitsio.read(e2eout+program+'/'+type+'_oneper_full.ran.fits')
         rarw = r['RA']
         wr = rarw > 180
         rarw[wr] -= 360
         plt.plot(rarw,r['DEC'],'k,',label='randoms')
 
-        d = fitsio.read(e2eout+program+'/tarzcat'+program+'.fits')
+        d = fitsio.read(e2eout+program+'/'+type+'_oneper_full.dat.fits')
         w = d['ZWARN'] == 0
         dw = d[w]
         radw = dw['RA']
         wr = radw > 180
         radw[wr] -= 360
-        wt = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
-        plt.plot(radw[wt],dw[wt]['DEC'],'r,',label='data')
+        #wt = (dw['DESI_TARGET'] & 2**0 > 0) & (dw['DESI_TARGET'] & 2**1 == 0) #select LRG targets that are not ELGs
+        plt.plot(radw,dw['DEC'],'r,',label='data')
         plt.xlabel('RA')
         plt.ylabel('DEC')
         plt.legend()
-        plt.title('e2e one per cent survey LRGs')
+        plt.title('e2e one per cent survey '+type)
         plt.show()
 
 def plotznz_nt(program='dark'):
@@ -716,6 +716,8 @@ def cutphotmask(aa,bits):
 
 def mke2etiles(run,program='dark'):
         dirout=e2eout+program
+        if program == 'gray':
+        	program = 'dark'
         fout = dirout+'/e2etiles_run'+str(run)+'.fits'
         fafiles = glob.glob(e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/*')
         atl = fitsio.read(e2ein+'run/survey/tiles/des.fits')

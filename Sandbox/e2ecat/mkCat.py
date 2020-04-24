@@ -4,7 +4,7 @@ target_type can be LRG, QSO, BGS, or ELG
 '''
 
 #target_type = 'BGS'
-target_type = 'QSO'
+target_type = 'LRG'
 
 #standard python
 import sys
@@ -82,6 +82,15 @@ if target_type == 'QSO':
 	nrun = 7
 	imbits =  elgandlrgbits #mask bits for imaging
 
+if target_type == 'ELG':
+	type = 1 #target bit for ELG
+	program = 'gray'
+	#epochs
+	srun = 0
+	# number of epochs
+	nrun = 7
+	imbits =  elgandlrgbits #mask bits for imaging
+
 
 logf.write('used following settings:\n')
 logf.write("\
@@ -102,11 +111,12 @@ matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
-plotzeff = True
-mkfullran = True #make "full" catalog for randoms
-mkfulldat = True #make "full" catalog for data
-mkclusdat = True #make "clustering" catalog for data
-mkclusran = True #make clustering catalog for randoms
+plotzeff = False
+mkfullran = False #make "full" catalog for randoms
+mkfulldat = False #make "full" catalog for data
+mkclusdat = False #make "clustering" catalog for data
+mkclusran = False #make clustering catalog for randoms
+plotfoot = True
 
 
 
@@ -171,5 +181,6 @@ if mkclusran:
     e2e.mkclusran(target_type,program)
     logf.write('ran mkclusran\n')
 
-   	
+if plotfoot:
+	plotcompdr_full(target_type,program)   	
 		
