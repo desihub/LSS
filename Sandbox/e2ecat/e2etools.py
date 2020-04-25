@@ -285,7 +285,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	dir0   = e2ein+'run/quicksurvey/'+programf+'/'+str(srun)+'/fiberassign/'
 	outf   = program+'/targets_oneper.fits'
 	fafls0 = glob.glob(dir0+'fiberassign-*.fits')
-	tile = fitsio.read_header(fafls0[0])
+	tile = fitsio.read_header(fafls0[0])['TILEID']
 	
 
 	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
@@ -308,7 +308,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	i = 1
 	while len(exps[w]) == 0 and i < len(fafls0):
 		print(i,len(fafls0))
-		tile = fitsio.read_header(fafls0[i])
+		tile = fitsio.read_header(fafls0[i])['TILEID']
 		w = exps['TILEID'] == tile
 		i += 1
 	
@@ -316,11 +316,11 @@ def combtargets(srun=0,nrun=7,program='dark'):
 		srun += 1
 		dir0   = e2ein+'run/quicksurvey/'+programf+'/'+str(srun)+'/fiberassign/'
 		fafls0 = glob.glob(dir0+'fiberassign-*.fits')
-		tile = fitsio.read_header(fafls0[0])
+		tile = fitsio.read_header(fafls0[0])['TILEID']
 		w = exps['TILEID'] == tile
 		i = 1
 		while len(exps[w]) == 0 and i < len(fafls0):
-			tile = fitsio.read_header(fafls0[i])
+			tile = fitsio.read_header(fafls0[i])['TILEID']
 			w = exps['TILEID'] == tile
 			i += 1
 
