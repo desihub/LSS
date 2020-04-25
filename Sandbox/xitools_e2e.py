@@ -3,6 +3,7 @@ dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
 dirczpc = '/global/cscratch1/sd/ajross/cz/paircounts/'
 dircz = '/global/cscratch1/sd/ajross/cz/'
+dirxi = '/project/projectdirs/desi/users/ajross/e2exi/'
 import fitsio
 import numpy as np
 
@@ -207,12 +208,102 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
+def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1):
+	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
+	if rec == '':
+		
+		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
+		dr = np.loadtxt(froot+'.dr').transpose()[-1]#*drnorm
+		rr = np.loadtxt(froot+'.rr').transpose()[-1]
+
+	if rec == '_rec':
+		
+		#fn += '_rec'
+		dd = np.loadtxt(indir+fn+'.dd').transpose()[-1]#*ddnorm
+		dr = np.loadtxt(indir+fn+'.ds').transpose()[-1]#*drnorm
+		ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm	
+		rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]	
+
+	
+	
+	nb = (200-start)//bs
+	xil = np.zeros(nb)
+	xil2 = np.zeros(nb)
+	xil4 = np.zeros(nb)
+
+	nmub = 120
+	dmu = 1./float(nmub)
+	mubm = 0
+	if mumin != 0:
+		mubm = int(mumin*nmub)
+	mubx = nmub
+	if mumax != 1:
+		mubx = int(mumax*nmub)
+	for i in range(start,nb*bs+start,bs):
+		xib = 0
+		xib2 = 0
+		xib4 = 0
+		ddt = 0
+		drt = 0
+		rrt = 0
+		sst = 0
+		w = 0
+		w2 = 0
+		w4 = 0
+		mut = 0
+		rmin = i
+		rmax = rmin+bs
+		for m in range(mubm,mubx):
+			ddb = 0
+			drb = 0
+			rrb = 0
+			ssb = 0
+			mu = m/float(nmub) + 0.5/float(nmub)
+			for b in range(0,bs):
+				bin = nmub*(i+b)+m
+				if bin < 24000:
+					ddb += dd[bin]
+					drb += dr[bin]
+					rrb += rr[bin]
+					if rec == '_rec' or rec == 'shuff':
+						ssb += ss[bin]
+						sst += ss[bin]
+				ddt += dd[bin]
+				drt += dr[bin]
+				rrt += rr[bin]
+			if rec == '_rec' or rec == 'shuff':
+				xi = (ddb-2.*drb+ssb)/rrb
+			else:		
+				xi = (ddb-2.*drb+rrb)/rrb
+
+			xib += xi*dmu*(mu**mupow)
+			xib2 += xi*dmu*P2(mu)*5.
+			xib4 += xi*dmu*P4(mu)*9.		
+		xil[i//bs] = xib
+		xil2[i//bs] = xib2
+		xil4[i//bs] = xib4
+	fo = open(dirxi+'xi024'+type+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	for i in range(0,len(xil)):
+		r = bs/2.+i*bs+start
+		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
+	fo.close()
+	return True
+
+
 if __name__ == '__main__':
 	import subprocess
-	type = 'LRG'
-	prep4czxi(type,0.5,1.1)
+	#type = 'LRG'
+	#prep4czxi(type,0.5,1.1)
+	type = 'ELG'
+	prep4czxi(type,0.6,1.4,program='gray')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
+
+	type = 'QSO'
+	prep4czxi(type,0.8,2.2)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
