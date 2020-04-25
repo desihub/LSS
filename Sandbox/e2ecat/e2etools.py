@@ -585,6 +585,7 @@ def plotcompvsntile(type,program='dark'):
 	ntl = np.unique(rz['NTILE'])
 	zfl = []
 	zftl = []
+	ttl = []
 
 	for nt in ntl:
 		w    = dz['NTILE'] == nt
@@ -599,8 +600,9 @@ def plotcompvsntile(type,program='dark'):
 		if nran > 100:
 			zfl.append(nz/nran*normt)
 			zftl.append(nz/ntar)
-	plt.plot(ntl,zfl,'k-',label='compared to randoms')
-	plt.plot(ntl,zftl,'r-',label='compared to all targets')
+			ttl.append(nt)
+	plt.plot(ttl,zfl,'k-',label='compared to randoms')
+	plt.plot(ttl,zftl,'r-',label='compared to all targets')
 	plt.xlabel('NTILES')
 	plt.ylabel('N good z/N random for '+type)
 	plt.legend()
