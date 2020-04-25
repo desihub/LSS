@@ -208,7 +208,7 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=1):
+def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0):
 	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
 	if rec == '':
 		
@@ -294,12 +294,15 @@ def plotxi():
 	fl = dirxi+'xi024LRG0.51.15st0.dat'
 	fe = dirxi+'xi024ELG0.61.45st0.dat'
 	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	fb = dirxi+'xi024BGS0.10.45st0.dat'
 	dl = np.loadtxt(fl).transpose() 
 	de = np.loadtxt(fe).transpose()
 	dq = np.loadtxt(fq).transpose()
-	plt.plot(dl[0],dl[1]*dl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1')
-	plt.plot(dl[0],de[1]*dl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4')
-	plt.plot(dl[0],dq[1]*dl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2')
+	db = np.loadtxt(fb).transpose()
+	plt.plot(dl[0],dl[1]*dl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1$')
+	plt.plot(dl[0],de[1]*dl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4$')
+	plt.plot(dl[0],dq[1]*dl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2$')
+	plt.plot(dl[0],db[1]*dl[0]**2.,color='brown',label=r'BGS, $0.1 < z < 0.4$')
 	plt.legend()
 	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$\xi_0$')
@@ -310,19 +313,28 @@ def plotxi():
 
 if __name__ == '__main__':
 	import subprocess
-	#type = 'LRG'
+	type = 'LRG'
 	#prep4czxi(type,0.5,1.1)
+	calcxi_dataCZ(type,0.5,1.1)
+	
 	type = 'ELG'
-	prep4czxi(type,0.6,1.4,program='gray')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
+	#prep4czxi(type,0.6,1.4,program='gray')
+	#subprocess.run(['chmod','+x','czpc.sh'])
+	#subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4)
 
 	type = 'QSO'
-	prep4czxi(type,0.8,2.2)
+	#prep4czxi(type,0.8,2.2)
+	#subprocess.run(['chmod','+x','czpc.sh'])
+	#subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.8,2.2)
+
+	type = 'BGS'
+	prep4czxi(type,0.1,0.4)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.8,2.2)
+	calcxi_dataCZ(type,0.1,0.4)
+
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
