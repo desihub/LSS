@@ -212,7 +212,7 @@ if __name__ == '__main__':
 	type = 'LRG'
 	prep4czxi(type,0.5,1.1)
 	subprocess.run(['chmod','+x','czpc.sh'])
- 	subprocess.run('./czpc.sh')
+	subprocess.run('./czpc.sh')
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
