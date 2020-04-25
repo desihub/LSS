@@ -138,7 +138,7 @@ if farandoms:
 	rd = e2eout+program+'/randoms/'
 	if program == 'gray':
 		fad = e2ein+'run/quicksurvey/dark/'
-	else
+	else:
 		fad = e2ein+'run/quicksurvey/'+program+'/'
 	fa.mkfa(targetf,tiles,rd,fad,srun,nrun,DESIMODEL)
 	logf.write('ran farandoms\n')
