@@ -795,8 +795,11 @@ def matchtar(program='dark',rmax=6):
         faran['NTILE'] += 1
 
         print(max(faran['NTILE']))
+        programf = program
+        if program == 'gray':
+        	programf = 'dark'
 
-        mtlran          = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/mtl-'+program+'.fits')
+        mtlran          = Table.read(e2ein+'run/quicksurvey/'+programf+'/'+str(rmax)+'/mtl-'+programf+'.fits')
         jran            = join(faran,mtlran,keys=['TARGETID'],table_names=['fa', 'mtl'])
 
         print(len(jran),len(faran),len(mtlran))
