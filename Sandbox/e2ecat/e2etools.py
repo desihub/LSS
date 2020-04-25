@@ -818,6 +818,9 @@ def mkfulldat(type,program,bits):
     if type == 'LRG':
         #bits = elgandlrgbits 
         tb = 0
+    if type == 'ELG':
+        #bits = elgandlrgbits 
+        tb = 1
     if type == 'QSO':
     	tb = 2    
     if type == 'BGS':
