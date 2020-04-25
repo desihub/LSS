@@ -334,6 +334,8 @@ if __name__ == '__main__':
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.1,0.4)
+	
+	plotxi()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
