@@ -1,5 +1,4 @@
 e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/run/catalogs/'
-datadir = minisvdir+'LSScats/'
 dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
 dirpccz = '/global/cscratch1/sd/ajross/cz/paircounts/'
