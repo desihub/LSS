@@ -4,7 +4,7 @@ target_type can be LRG, QSO, BGS, or ELG
 '''
 
 #target_type = 'BGS'
-target_type = 'LRG'
+target_type = 'ELG'
 
 #standard python
 import sys
@@ -105,8 +105,8 @@ imbits =  "+str(imbits)+"\n\
 
 
 #list of independent tasks to perform
-mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
+mkrandoms = True #make randoms specific for type/observing program
+farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
@@ -119,7 +119,7 @@ mkfulldat = False #make "full" catalog for data
 mkclusdat = False #make "clustering" catalog for data
 mkclusran = False #make clustering catalog for randoms
 plotfoot = False
-plottilecomp = True
+plottilecomp = False
 
 
 
