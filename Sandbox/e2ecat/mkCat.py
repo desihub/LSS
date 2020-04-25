@@ -105,7 +105,7 @@ imbits =  "+str(imbits)+"\n\
 
 
 #list of independent tasks to perform
-mkrandoms = True #make randoms specific for type/observing program
+mkrandoms = False #make randoms specific for type/observing program
 farandoms = True #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False

@@ -205,6 +205,8 @@ def combran(srun=0,nrun=7,program='dark'):
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
+	if program == 'gray':
+		program = 'dark'
 	fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 def combtargets(srun=0,nrun=7,program='dark'):
