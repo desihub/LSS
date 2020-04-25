@@ -181,7 +181,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 
 def prep4czxi(type,zmin,zmax,program='dark'):
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper_clus.dat.fits')
-	ifiled = czdir+'ge2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
+	ifiled = dirdz+'ge2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
@@ -189,14 +189,15 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper_clus.ran.fits')
-	ifiler = czdir+'re2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
+	ifiler = dircz+'re2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiler,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
 	for i in range(0,len(df)):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
-	froot = czdir+'e2e_'+type+str(zmin)+str(zmax)
+	print(dirczpc)
+	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
 	cf = 'czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
