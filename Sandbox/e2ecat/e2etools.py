@@ -559,9 +559,11 @@ def matchzcattar(program='dark',rmax=6):
         '''
         
         outf = program+'/targets_oneper_jmtl_jzcat.fits'
-        
+        programf = program
+        if program == 'gray':
+        	programf = 'dark'
         mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
-        zc   = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(rmax)+'/zcat-'+program+'.fits')
+        zc   = Table.read(e2ein+'run/quicksurvey/'+programf+'/'+str(rmax)+'/zcat-'+programf+'.fits')
 
         mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['mtl', 'zcat'],join_type='left')
 
