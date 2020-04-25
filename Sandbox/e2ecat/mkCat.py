@@ -136,7 +136,10 @@ if farandoms:
 	targetf = e2eout +program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 	tiles = e2eout+program+'/e2etiles_run'
 	rd = e2eout+program+'/randoms/'
-	fad = e2ein+'run/quicksurvey/'+program+'/'
+	if program == 'gray':
+		fad = e2ein+'run/quicksurvey/dark/'
+	else
+		fad = e2ein+'run/quicksurvey/'+program+'/'
 	fa.mkfa(targetf,tiles,rd,fad,srun,nrun,DESIMODEL)
 	logf.write('ran farandoms\n')
 		
