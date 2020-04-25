@@ -290,6 +290,23 @@ def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=1):
 	fo.close()
 	return True
 
+def plotxi():
+	fl = dirxi+'xi024LRG0.51.15st0.dat'
+	fe = dirxi+'xi024ELG0.61.45st0.dat'
+	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	dl = np.loadtxt(fl).transpose() 
+	de = np.loadtxt(fe).transpose()
+	dq = np.loadtxt(fq).transpose()
+	plt.plot(fl[0],fl[1]*fl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1')
+	plt.plot(fl[0],fe[1]*fl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4')
+	plt.plot(fl[0],fq[1]*fl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2')
+	plt.legend()
+	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi_0$')
+	plt.title('e2e simulation')
+	plt.savefig(dirxi+'xi0e2e.png')
+	plt.show()
+
 
 if __name__ == '__main__':
 	import subprocess
