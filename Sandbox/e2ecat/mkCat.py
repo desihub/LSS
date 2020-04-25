@@ -110,16 +110,16 @@ farandoms = False #run randoms through fiberassign; doesn't need to be done if a
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = True
-plotzeff = True
-plottilehist = True
-mkfullran = False #make "full" catalog for randoms
-mkfulldat = False #make "full" catalog for data
-mkclusdat = False #make "clustering" catalog for data
-mkclusran = False #make clustering catalog for randoms
-plotfoot = False
-plottilecomp = False
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = False
+plotzeff = False
+plottilehist = False
+mkfullran = True #make "full" catalog for randoms
+mkfulldat = True #make "full" catalog for data
+mkclusdat = True #make "clustering" catalog for data
+mkclusran = True #make clustering catalog for randoms
+plotfoot = True
+plottilecomp = True
 
 
 
