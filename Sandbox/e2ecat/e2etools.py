@@ -280,23 +280,35 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	'''
 
 	# Glob fiberassign files in epoch 'srun'and read the first in list. 
-	dir0   = e2ein+'run/quicksurvey/'+program+'/'+str(srun)+'/fiberassign/'
+	if program == 'gray':
+		programf = 'dark'
+	dir0   = e2ein+'run/quicksurvey/'+programf+'/'+str(srun)+'/fiberassign/'
 	outf   = program+'/targets_oneper.fits'
 	fafls0 = glob.glob(dir0+'fiberassign-*.fits')
-	fah    = fitsio.read_header(fafls0[0])
-	tile   = fah['TILEID']
+	tile = fitsio.read_header(fafls0[0])
+	
 
 	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
 
 	# Exposure file complete with epoch that a given tile was completed in. 
-	exps = fitsio.read(e2ein+'run/quicksurvey/'+program+'/epochs-'+program+'.fits')
+	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
 
 	if program == 'dark':
-			we = exps['PROGRAM'] == b'DARK'
-			exps = exps[we]
+		we = exps['PROGRAM'] == b'DARK'
+		exps = exps[we]
+
+
+	if program == 'gray':
+		we = exps['PROGRAM'] == b'GRAY'
+		exps = exps[we]
 
 	# Exposure info. for this tile. 
 	w = exps['TILEID'] == tile
+	i = 1
+	while len(exps[w]) == 0:
+		tile = fitsio.read_header(fafls0[i])
+		w = exps['TILEID'] == tile
+		i += 1
 
 	if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
@@ -437,6 +449,12 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	fgu['PROGRAM'] = program
 	if program == 'gray':
 		program = 'dark'
+		exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+
+		if program == 'dark':
+			we = exps['PROGRAM'] == b'DARK'
+			exps = exps[we]
+
 		for run in range(srun,srun+nrun):
 
 			dirr =  e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/'
