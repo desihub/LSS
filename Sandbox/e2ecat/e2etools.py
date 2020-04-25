@@ -575,37 +575,37 @@ def matchzcattar(program='dark',rmax=6):
         mtlj.write(e2eout+outf, format='fits', overwrite=True)   
 
 def plotcompvsntile(type,program='dark'):
-        '''
-        
-        '''        
-        dz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
-        rz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
-        normt = len(rz)/len(dz)
+	'''
 
-        ntl = np.unique(rz['NTILE'])
-        zfl = []
-        zftl = []
+	'''        
+	dz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+	rz  = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+	normt = len(rz)/len(dz)
 
-        for nt in ntl:
-                w    = dz['NTILE'] == nt
-                ntar = len(dz[w])
+	ntl = np.unique(rz['NTILE'])
+	zfl = []
+	zftl = []
 
-                # (dz['NUMOBS_MORE_mtl'] == 0)
-                wz   = w & (dz['ZWARN'] == 0)
-                nz   = len(dz[wz])
-                wr = rz['NTILE'] == nt
-                nran = len(rz[wr])
-                print(nt,nz,ntar,nran)
-                if nran > 100:
-					zfl.append(nz/nran*normt)
-					zftl.append(nz/ntar)
-        plt.plot(ntl,zfl,'k-',label='compared to randoms')
-        plt.plot(ntl,zftl,'r-',label='compared to all targets')
-        plt.xlabel('NTILES')
-        plt.ylabel('N good z/N random for '+type)
-        plt.legend()
+	for nt in ntl:
+		w    = dz['NTILE'] == nt
+		ntar = len(dz[w])
 
-        plt.show()      
+		# (dz['NUMOBS_MORE_mtl'] == 0)
+		wz   = w & (dz['ZWARN'] == 0)
+		nz   = len(dz[wz])
+		wr = rz['NTILE'] == nt
+		nran = len(rz[wr])
+		print(nt,nz,ntar,nran)
+		if nran > 100:
+			zfl.append(nz/nran*normt)
+			zftl.append(nz/ntar)
+	plt.plot(ntl,zfl,'k-',label='compared to randoms')
+	plt.plot(ntl,zftl,'r-',label='compared to all targets')
+	plt.xlabel('NTILES')
+	plt.ylabel('N good z/N random for '+type)
+	plt.legend()
+
+	plt.show()      
 
 
 
