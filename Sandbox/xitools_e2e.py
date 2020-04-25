@@ -330,7 +330,7 @@ if __name__ == '__main__':
 	calcxi_dataCZ(type,0.8,2.2)
 
 	type = 'BGS'
-	prep4czxi(type,0.1,0.4)
+	prep4czxi(type,0.1,0.4,program='bright')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.1,0.4)
