@@ -282,6 +282,7 @@ def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=1):
 		xil[i//bs] = xib
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
+	muw = ''
 	fo = open(dirxi+'xi024'+type+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
