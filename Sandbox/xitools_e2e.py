@@ -181,7 +181,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 
 def prep4czxi(type,zmin,zmax,program='dark'):
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper_clus.dat.fits')
-	ifiled = dirdz+'ge2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
+	ifiled = dircz+'ge2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
