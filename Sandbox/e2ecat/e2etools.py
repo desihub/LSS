@@ -302,13 +302,26 @@ def combtargets(srun=0,nrun=7,program='dark'):
 		we = exps['PROGRAM'] == b'GRAY'
 		exps = exps[we]
 
+	print(len(exps))
 	# Exposure info. for this tile. 
 	w = exps['TILEID'] == tile
 	i = 1
-	while len(exps[w]) == 0:
+	while len(exps[w]) == 0 and i < len(fafls0):
 		tile = fitsio.read_header(fafls0[i])
 		w = exps['TILEID'] == tile
 		i += 1
+	
+	while i == len(fafls0):
+		srun += 1
+		dir0   = e2ein+'run/quicksurvey/'+programf+'/'+str(srun)+'/fiberassign/'
+		fafls0 = glob.glob(dir0+'fiberassign-*.fits')
+		tile = fitsio.read_header(fafls0[0])
+		w = exps['TILEID'] == tile
+		i = 1
+		while len(exps[w]) == 0 and i < len(fafls0):
+			tile = fitsio.read_header(fafls0[i])
+			w = exps['TILEID'] == tile
+			i += 1
 
 	if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
