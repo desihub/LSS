@@ -208,7 +208,7 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1):
+def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=1):
 	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
 	if rec == '':
 		
