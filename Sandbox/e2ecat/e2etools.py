@@ -596,8 +596,9 @@ def plotcompvsntile(type,program='dark'):
                 wr = rz['NTILE'] == nt
                 nran = len(rz[wr])
                 print(nt,nz,ntar,nran)
-                zfl.append(nz/nran*normt)
-                zftl.append(nz/ntar)
+                if nran > 100:
+					zfl.append(nz/nran*normt)
+					zftl.append(nz/ntar)
         plt.plot(ntl,zfl,'k-',label='compared to randoms')
         plt.plot(ntl,zftl,'r-',label='compared to all targets')
         plt.xlabel('NTILES')
