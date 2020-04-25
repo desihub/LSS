@@ -1,7 +1,7 @@
 e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/run/catalogs/'
 dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
-dirpccz = '/global/cscratch1/sd/ajross/cz/paircounts/'
+dirczpc = '/global/cscratch1/sd/ajross/cz/paircounts/'
 dircz = '/global/cscratch1/sd/ajross/cz/'
 import fitsio
 import numpy as np
