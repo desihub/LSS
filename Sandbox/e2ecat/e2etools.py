@@ -307,6 +307,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	w = exps['TILEID'] == tile
 	i = 1
 	while len(exps[w]) == 0 and i < len(fafls0):
+		print(i,len(fafls0))
 		tile = fitsio.read_header(fafls0[i])
 		w = exps['TILEID'] == tile
 		i += 1
