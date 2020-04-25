@@ -202,7 +202,7 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
 	rrf = froot+'.rr'
-	fo = open('czpc.sh')
+	fo = open('czpc.sh','w')
 	fo.write('#!/bin/bash\n')
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifilef+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
