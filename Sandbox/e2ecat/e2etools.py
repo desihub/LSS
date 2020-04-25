@@ -110,6 +110,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	aa = np.chararray(len(fgu),unicode=True,itemsize=100)
 	aa[:] = str(tile)
 	fgu['TILE'] = aa
+	
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
 		tile = fah['TILEID']
@@ -205,8 +206,64 @@ def combran(srun=0,nrun=7,program='dark'):
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
+	fgu['PROGRAM'] = program
 	if program == 'gray':
 		program = 'dark'
+	for run in range(srun,srun+nrun):
+		dirr =  e2eout+program+'/randoms/'+str(run)+'/'
+		faflsr = glob.glob(dirr+'fba-*.fits')
+		for i in range(0,len(faflsr)):
+			fah = fitsio.read_header(faflsr[i])
+			tile = fah['TILEID']
+			w = exps['TILEID'] == fah['TILEID']
+			#if exps[w]['EPOCH'][0] == run:
+
+	
+			if len(exps[w]) > 1:
+				return 'NEED to deal with multiple exposures of same tile'
+			if len(exps[w]) > 0:
+				expid = exps[w]['EXPID'][0]     
+				ep = exps[w]['EPOCH'][0]
+				fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+				#fmap['FIBERSTATUS'] = 0
+				#print('set fiberstatus all to 0; fix this once propagated to zcat')
+
+				wloc = fmap['FIBERSTATUS'] == 0
+				gloc = fmap[wloc]['LOCATION']
+				fa = Table.read(faflsr[i],hdu='FAVAIL')
+				wg = np.isin(fa['LOCATION'],gloc)
+				fg = fa[wg]
+				#print(len(fg),len(gloc))
+				fgun = unique(fg,keys='TARGETID')
+				aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+				aa[:] = str(tile)
+				fgun['TILE'] = aa
+				fgun['PROGRAM'] = program
+
+				fv = vstack([fgu,fgun])
+				#print(len(fv))
+				fgo = fgu
+				fgu = unique(fv,keys='TARGETID')
+				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+				aa[:] = '-'+str(tile)
+				#rint(aa)
+				ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+				print(ms)
+				fgu['TILE'][didsc] = ms #add the tile info
+
+				print(str(len(fgu))+' unique randoms')
+				#else:
+				#       print(str(tile)+' not observed in assigned epoch')      
+
+		print(np.unique(fgu['TILE']))
+		print('run '+str(run) +' done')
+	up = np.unique(fgu['PROGRAM'])
+	print(up)
+	for p in up:
+		w = fgu['PROGRAM'] == p
+		print(str(len(fgu[w]))+ ' '+p)	
 	fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 def combtargets(srun=0,nrun=7,program='dark'):
