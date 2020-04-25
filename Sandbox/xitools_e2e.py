@@ -299,11 +299,13 @@ if __name__ == '__main__':
 	prep4czxi(type,0.6,1.4,program='gray')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4)
 
 	type = 'QSO'
 	prep4czxi(type,0.8,2.2)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.8,2.2)
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
