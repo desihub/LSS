@@ -84,7 +84,12 @@ def combran(srun=0,nrun=7,program='dark'):
 	tile = fah['TILEID']
 	#
 	#exps = fitsio.read(e2ein+'run/survey/complete_exposures_surveysim_fix.fits')
-	exps = fitsio.read(e2ein+'run/quicksurvey/'+program+'/epochs-'+program+'.fits')
+	if program == 'gray':
+		exps = fitsio.read(e2ein+'run/quicksurvey/dark/epochs-dark.fits')
+		programf = 'dark'
+	else:
+		exps = fitsio.read(e2ein+'run/quicksurvey/'+program+'/epochs-'+program+'.fits')
+		programf = program
 	w = exps['TILEID'] == tile
 	if len(exps[w]) > 1:
 			return 'NEED to deal with multiple exposures of same tile'
@@ -97,7 +102,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	ep = exps[w]['EPOCH'][0]
 	#if expid < 100:
 	#       zer = '000000'
-	fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+	fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 	#fmap['FIBERSTATUS'] = 0
 	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 	wloc = fmap['FIBERSTATUS'] == 0
@@ -122,7 +127,7 @@ def combran(srun=0,nrun=7,program='dark'):
 				return 'NEED to deal with multiple exposures of same tile'
 		expid = exps[w]['EXPID'][0]     
 		ep = exps[w]['EPOCH'][0]
-		fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+		fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 		#fmap['FIBERSTATUS'] = 0
 		#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
@@ -172,7 +177,7 @@ def combran(srun=0,nrun=7,program='dark'):
 			if len(exps[w]) > 0:
 				expid = exps[w]['EXPID'][0]     
 				ep = exps[w]['EPOCH'][0]
-				fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+				fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 				#fmap['FIBERSTATUS'] = 0
 				#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
