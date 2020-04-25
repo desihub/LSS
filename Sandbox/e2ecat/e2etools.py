@@ -343,7 +343,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	#       zer = '000000'
 
 	# Find the fibermap for this first assigned tile using completion epoch.
-	fmap = fitsio.read(e2ein+'/run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+	fmap = fitsio.read(e2ein+'/run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 	#fmap['FIBERSTATUS'] = 0
 	#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
@@ -375,7 +375,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					return 'NEED to deal with multiple exposures of same tile'
 			expid = exps[w]['EXPID'][0]     
 			ep = exps[w]['EPOCH'][0]
-			fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+			fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 			#fmap['FIBERSTATUS'] = 0
 			#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
@@ -412,7 +412,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	print('run '+str(srun) +' done')
 
 	for run in range(srun+1,srun+nrun):
-		dirr =  e2ein+'run/quicksurvey/'+program+'/'+str(run)+'/fiberassign/'
+		dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
 		faflsr = glob.glob(dirr+'fiberassign-*.fits')
 		for i in range(0,len(faflsr)):
 			fah = fitsio.read_header(faflsr[i])
@@ -426,7 +426,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 						return 'NEED to deal with multiple exposures of same tile'
 				expid = exps[w]['EXPID'][0]     
 				ep = exps[w]['EPOCH'][0]
-				fmap = fitsio.read(e2ein+'run/quicksurvey/'+program+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+				fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
 				#fmap['FIBERSTATUS'] = 0
 				#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
