@@ -718,6 +718,7 @@ def get_tilelocweight(type,program):
 		else:
 			print(loclz[w],nt)	
 		wa = dz['TILELOCID'] == loc
+		print(nz/nt,len(dz[wa]))
 		probl[wa] = nz/nt	
 	return probl	
 
