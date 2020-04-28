@@ -699,6 +699,29 @@ def mkzprobvsntiledic(type,program='dark'):
 			
 	return dict(zfl)
 
+def get_tilelocweight(type,program):
+	dz = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+	wz = dz['ZWARN'] == 0
+	dzz = dz[wz]
+	probl = np.zeros(len(dz))
+	#dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+	locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+	loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+	print(len(locl))
+	for i in range(0,len(locl)):
+		nt = nlocl[i]
+		loc = locl[i]
+		w = np.isin(loc,loclz)
+		nz = 0
+		if len(loclz[w]) > 0:
+			nz = nloclz[w]
+		else:
+			print(nz,nt)	
+		wa = dz['TILELOCID'] == loc
+		probl[wz] = nz/nt	
+	return probl	
+
+
 def plotcompdr_full(type,program='dark'):
         r = fitsio.read(e2eout+program+'/'+type+'_oneper_full.ran.fits')
         rarw = r['RA']
