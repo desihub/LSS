@@ -121,7 +121,7 @@ mkfulldat = True #make "full" catalog for data
 mkclusdat = True #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
 plotfoot = False
-plottilecomp = True
+plottilecomp = False
 
 
 
