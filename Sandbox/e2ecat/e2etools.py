@@ -280,6 +280,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	'''
 
 	# Glob fiberassign files in epoch 'srun'and read the first in list. 
+	programf = program
 	if program == 'gray':
 		programf = 'dark'
 	dir0   = e2ein+'run/quicksurvey/'+programf+'/'+str(srun)+'/fiberassign/'

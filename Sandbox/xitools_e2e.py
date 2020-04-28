@@ -180,17 +180,17 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark'):
-	df = fitsio.read(e2edir+program+'/'+type+'_oneper_clus.dat.fits')
-	ifiled = dircz+'ge2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
+def prep4czxi(type,zmin,zmax,program='dark',truez=''):
+	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.dat.fits')
+	ifiled = dircz+'ge2e_'+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
 	for i in range(0,len(df)):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
-	df = fitsio.read(e2edir+program+'/'+type+'_oneper_clus.ran.fits')
-	ifiler = dircz+'re2e_'+type+str(zmin)+str(zmax)+'4xi.dat'
+	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.ran.fits')
+	ifiler = dircz+'re2e_'+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiler,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
@@ -198,7 +198,7 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
 	print(dirczpc)
-	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
+	froot = dirczpc+'e2e_'+type+truez+str(zmin)+str(zmax)
 	cf = 'czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
@@ -208,8 +208,8 @@ def prep4czxi(type,zmin,zmax,program='dark'):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0):
-	froot = dirczpc+'e2e_'+type+str(zmin)+str(zmax)
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0):
+	froot = dirczpc+'e2e_'+type+truez+str(zmin)+str(zmax)
 	if rec == '':
 		
 		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
@@ -283,7 +283,7 @@ def calcxi_dataCZ(type,zmin,zmax,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0):
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
 	muw = ''
-	fo = open(dirxi+'xi024'+type+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirxi+'xi024'+type+truez+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
@@ -310,32 +310,67 @@ def plotxi():
 	plt.savefig(dirxi+'xi0e2e.png')
 	plt.show()
 
+def plotxi_comptrue():
+	fl = dirxi+'xi024LRG0.51.15st0.dat'
+	flt = dirxi+'xi024LRG'+truez+'0.51.15st0.dat'
+	fet = dirxi+'xi024ELG'+truez+'0.61.45st0.dat'
+	fe = dirxi+'xi024ELG0.61.45st0.dat'
+	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	fqt = dirxi+'xi024QSO'+truez+'0.82.25st0.dat'
+	fb = dirxi+'xi024BGS0.10.45st0.dat'
+	fbt = dirxi+'xi024BGS'+truez+'0.10.45st0.dat'
+	dl = np.loadtxt(fl).transpose() 
+	de = np.loadtxt(fe).transpose()
+	dq = np.loadtxt(fq).transpose()
+	db = np.loadtxt(fb).transpose()
+	dlt = np.loadtxt(flt).transpose() 
+	det = np.loadtxt(fet).transpose()
+	dqt = np.loadtxt(fqt).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	plt.plot(dl[0],dl[1]*dl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1$')
+	plt.plot(dl[0],de[1]*dl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4$')
+	plt.plot(dl[0],dq[1]*dl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2$')
+	plt.plot(dl[0],db[1]*dl[0]**2.,color='brown',label=r'BGS, $0.1 < z < 0.4$')
+	plt.plot(dl[0],dlt[1]*dl[0]**2.,'--r',label='no fiber assignment')
+	plt.plot(dl[0],det[1]*dl[0]**2.,'--b')
+	plt.plot(dl[0],dqt[1]*dl[0]**2.,'--',color='purple')
+	plt.plot(dl[0],dbt[1]*dl[0]**2.,'--',color='brown')
+	plt.legend()
+	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi_0$')
+	plt.title('e2e simulation')
+	plt.savefig(dirxi+'xi0e2ecomptrue.png')
+	plt.show()
+
+
 
 if __name__ == '__main__':
 	import subprocess
 	type = 'LRG'
-	#prep4czxi(type,0.5,1.1)
-	calcxi_dataCZ(type,0.5,1.1)
-	
-	type = 'ELG'
-	#prep4czxi(type,0.6,1.4,program='gray')
-	#subprocess.run(['chmod','+x','czpc.sh'])
-	#subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4)
-
-	type = 'QSO'
-	#prep4czxi(type,0.8,2.2)
-	#subprocess.run(['chmod','+x','czpc.sh'])
-	#subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.8,2.2)
-
-	type = 'BGS'
-	prep4czxi(type,0.1,0.4,program='bright')
+	prep4czxi(type,0.5,1.1,truez='ztrue')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.1,0.4)
+	calcxi_dataCZ(type,0.5,1.1,truez='ztrue')
 	
-	plotxi()
+	type = 'ELG'
+	prep4czxi(type,0.6,1.4,program='gray',truez='ztrue')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez='ztrue')
+
+	type = 'QSO'
+	prep4czxi(type,0.8,2.2,truez='ztrue')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.8,2.2,truez='ztrue')
+
+	type = 'BGS'
+	prep4czxi(type,0.1,0.4,program='bright',truez='ztrue')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.1,0.4,truez='ztrue')
+	
+	plotxicomptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
