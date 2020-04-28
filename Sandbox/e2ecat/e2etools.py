@@ -707,7 +707,7 @@ def get_tilelocweight(type,program):
 	#dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
 	locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 	loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-	print(len(locl))
+	print(len(locl),len(nloclz))
 	for i in range(0,len(locl)):
 		nt = nlocl[i]
 		loc = locl[i]
@@ -719,7 +719,7 @@ def get_tilelocweight(type,program):
 			print(loclz[w],nt)	
 		if len(loclz[w]) < 2:
 			wa = dz['TILELOCID'] == loc
-			print(nz,nt,len(dz[wa]),len(loclz[w]),len(loclz[w]),len(nz))
+			print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz))
 			probl[wa] = nz/nt	
 
 	return probl	
