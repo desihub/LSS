@@ -574,7 +574,7 @@ def matchzcattar(program='dark',rmax=6):
 
         mtlj.write(e2eout+outf, format='fits', overwrite=True)
         
-def matchzcattar_nofa(program='dark',rmax=6):
+def matchzcattar_nofa(program='dark'):
         '''
 
         '''

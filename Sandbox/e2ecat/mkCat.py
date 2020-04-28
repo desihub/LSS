@@ -161,7 +161,9 @@ if matchtar:
 	rmax=nrun-1
 	if truez == False:
 		e2e.matchtar(program,rmax)
-	e2e.matchzcattar(program,rmax,truez=truez)
+		e2e.matchzcattar(program,rmax)
+	else:
+		matchzcattar_nofa(program)
 	logf.write('ran matchtar\n')
 	
 if plotntile:
