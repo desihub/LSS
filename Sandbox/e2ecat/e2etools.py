@@ -835,34 +835,34 @@ def matchtar(program='dark',rmax=6):
         jran.write(e2eout+program+'/targets_oneper_jmtl.fits',format='fits', overwrite=True)
 
 def mkfulldat(type,program,bits,truez=False):
-    '''
-    take targets, cut them to particular target type and mask for particular target type 
-    program is dark,gray, or bright
-    type is 'LRG', 'QSO', 'ELG', or 'BGS'
-    bits are imaging mask bits to apply
-    '''    
-    if type == 'LRG':
-        #bits = elgandlrgbits 
-        tb = 0
-    if type == 'ELG':
-        #bits = elgandlrgbits 
-        tb = 1
-    if type == 'QSO':
-    	tb = 2    
-    if type == 'BGS':
-    	tb = 60    
-    
-    if truez:
+	'''
+	take targets, cut them to particular target type and mask for particular target type 
+	program is dark,gray, or bright
+	type is 'LRG', 'QSO', 'ELG', or 'BGS'
+	bits are imaging mask bits to apply
+	'''    
+	if type == 'LRG':
+		#bits = elgandlrgbits 
+		tb = 0
+	if type == 'ELG':
+		#bits = elgandlrgbits 
+		tb = 1
+	if type == 'QSO':
+		tb = 2    
+	if type == 'BGS':
+		tb = 60    
+
+	if truez:
 		tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jztrue.fits')
 		outf = e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits'
-    else:
-    	tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
-    	outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
-    tarf = cutphotmask(tarf,bits) 
-    wt = tarf['DESI_TARGET'] & 2**tb > 0
-    tt = tarf[wt]
-    outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
-    tt.write(outf,format='fits', overwrite=True)
+	else:
+		tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
+		outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
+	tarf = cutphotmask(tarf,bits) 
+	wt = tarf['DESI_TARGET'] & 2**tb > 0
+	tt = tarf[wt]
+	outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
+	tt.write(outf,format='fits', overwrite=True)
     
 def mkclusdat(type,program,truez=False):
     '''
