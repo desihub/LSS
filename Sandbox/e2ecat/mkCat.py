@@ -159,7 +159,7 @@ if combtar: #concatenate target files, match to mtl and zcat info
 
 if matchtar:	
 	rmax=nrun-1
-	if truez == False
+	if truez == False:
 		e2e.matchtar(program,rmax)
 	e2e.matchzcattar(program,rmax,truez=truez)
 	logf.write('ran matchtar\n')
