@@ -5,7 +5,7 @@ target_type can be LRG, QSO, BGS, or ELG
 
 #target_type = 'BGS'
 target_type = 'ELG'
-truez=True
+truez=False
 
 #standard python
 import sys
@@ -117,9 +117,9 @@ plotntile = False
 plotzeff = False
 plottilehist = False
 mkfullran = False #make "full" catalog for randoms
-mkfulldat = False #make "full" catalog for data
-mkclusdat = True #make "clustering" catalog for data
-mkclusran = True #make clustering catalog for randoms
+mkfulldat = True #make "full" catalog for data
+mkclusdat = False #make "clustering" catalog for data
+mkclusran = False #make clustering catalog for randoms
 plotfoot = False
 plottilecomp = False
 
