@@ -184,8 +184,8 @@ if mkfullran:
 
 if mkfulldat:
 	print(truez)
-    e2e.mkfulldat(target_type,program,imbits,truez=truez)
-    logf.write('ran mkfulldat\n')
+	e2e.mkfulldat(target_type,program,imbits,truez=truez)
+	logf.write('ran mkfulldat\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
