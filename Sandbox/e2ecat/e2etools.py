@@ -726,6 +726,7 @@ def get_tilelocweight(type,program):
 			#print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
 			probl[wa] = nz/nt	
 	print(nm,nmt)
+	print(np.min(probl),np.max(probl))
 
 	return probl	
 
