@@ -3,8 +3,8 @@ one executable to make any of the four kinds of tracer, just setting type
 target_type can be LRG, QSO, BGS, or ELG
 '''
 
-#target_type = 'BGS'
-target_type = 'LRG'
+
+target_type = 'QSO'
 truez=True
 
 #standard python
@@ -112,7 +112,7 @@ farandoms = False #run randoms through fiberassign; doesn't need to be done if a
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
 plottilehist = False
