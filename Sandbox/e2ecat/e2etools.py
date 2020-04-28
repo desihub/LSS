@@ -586,6 +586,7 @@ def matchzcattar_nofa(program='dark'):
         mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
         
         zc   = Table.read(e2ein+'run/targets/truth-'+programf+'.fits') 
+        zc['Z'] = zc['TRUEZ']
         
         mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['mtl', 'zcat'],join_type='left')
         
