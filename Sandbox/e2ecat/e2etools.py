@@ -713,12 +713,12 @@ def get_tilelocweight(type,program):
 		loc = locl[i]
 		w = np.isin(loc,loclz)
 		nz = 0
-		if len(loclz[w]) > 0:
+		if len(loclz[w]) == 1:
 			nz = nloclz[w]
 		else:
-			print(nz,nt)	
+			print(loclz[w],nt)	
 		wa = dz['TILELOCID'] == loc
-		probl[wz] = nz/nt	
+		probl[wa] = nz/nt	
 	return probl	
 
 
