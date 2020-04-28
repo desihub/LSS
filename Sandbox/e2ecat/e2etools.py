@@ -115,6 +115,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	aa = np.chararray(len(fgu),unicode=True,itemsize=100)
 	aa[:] = str(tile)
 	fgu['TILE'] = aa
+	fgu['TILELOCID'] = 10000*tile +fgu['LOCATION']
 	
 	for i in range(1,len(fafls0)):
 		fah = fitsio.read_header(fafls0[i])
@@ -141,6 +142,7 @@ def combran(srun=0,nrun=7,program='dark'):
 			aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 			aa[:] = str(tile)
 			fgun['TILE'] = aa
+			fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 			#fgun['TILE'] = str(tile)
 			#print(len(fg),len(gloc))
@@ -192,6 +194,7 @@ def combran(srun=0,nrun=7,program='dark'):
 				aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 				aa[:] = str(tile)
 				fgun['TILE'] = aa
+				fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 				fv = vstack([fgu,fgun])
 				#print(len(fv))
@@ -245,6 +248,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					aa[:] = str(tile)
 					fgun['TILE'] = aa
 					fgun['PROGRAM'] = program
+					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 					fv = vstack([fgu,fgun])
 					#print(len(fv))
@@ -361,6 +365,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	aa = np.chararray(len(fgu),unicode=True,itemsize=100)
 	aa[:] = str(tile)
 	fgu['TILE'] = aa
+	fgu['TILELOCID'] = 10000*tile +fgu['LOCATION']
 
 	# Stack on the other fiberassign files. 
 	for i in range(1,len(fafls0)):
@@ -389,6 +394,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 			aa[:] = str(tile)
 			fgun['TILE'] = aa
+			fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 			#fgun['TILE'] = str(tile)
 			#print(len(fg),len(gloc))
@@ -441,6 +447,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 				aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 				aa[:] = str(tile)
 				fgun['TILE'] = aa
+				fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 				fv = vstack([fgu,fgun])
 				#print(len(fv))
@@ -501,6 +508,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					aa[:] = str(tile)
 					fgun['TILE'] = aa
 					fgun['PROGRAM'] = program
+					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 					fv = vstack([fgu,fgun])
 					#print(len(fv))
