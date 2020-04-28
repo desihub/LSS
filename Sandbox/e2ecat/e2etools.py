@@ -877,12 +877,12 @@ def mkclusdat(type,program,truez=False):
     if truez:
     	ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
     	outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
- 
+		wz = ff['ZWARN'] == 0
+		ff = ff[wz]
+
     else:
     	ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
     	outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
-    wz = ff['ZWARN'] == 0
-    ff = ff[wz]
     ff.keep_columns(['RA','DEC','Z'])
     ff['WEIGHT'] = np.ones(len(ff))
     ff.write(outf,format='fits', overwrite=True)
