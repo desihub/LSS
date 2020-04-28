@@ -864,7 +864,7 @@ def mkfulldat(type,program,bits,truez=False):
 	tarf = cutphotmask(tarf,bits) 
 	wt = tarf['DESI_TARGET'] & 2**tb > 0
 	tt = tarf[wt]
-	outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
+	
 	tt.write(outf,format='fits', overwrite=True)
     
 def mkclusdat(type,program,truez=False):
