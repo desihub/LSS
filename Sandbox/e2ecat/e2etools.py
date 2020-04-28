@@ -927,7 +927,7 @@ def mkclusran(type,program,truez=False):
     else:
     	ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     	outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
-    zeffdic = mkzprobvsntiledic(type,program=program)
+    	zeffdic = mkzprobvsntiledic(type,program=program)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
     ff['WEIGHT']= np.ones(len(ff))
     ff['Z'] = np.zeros(len(ff))
