@@ -189,7 +189,7 @@ if mkfulldat:
 	logf.write('ran mkfulldat\n')
 
 if testmkprob:
-	get_tilelocweight(target_type,program)
+	e2e.get_tilelocweight(target_type,program)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
