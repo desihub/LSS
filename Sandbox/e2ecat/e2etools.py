@@ -868,24 +868,24 @@ def mkfulldat(type,program,bits,truez=False):
 	tt.write(outf,format='fits', overwrite=True)
     
 def mkclusdat(type,program,truez=False):
-    '''
-    take full catalog, cut to ra,dec,z add any weight
-    program is dark,gray, or bright
-    type is 'LRG', 'QSO', 'ELG', or 'BGS'
+	'''
+	take full catalog, cut to ra,dec,z add any weight
+	program is dark,gray, or bright
+	type is 'LRG', 'QSO', 'ELG', or 'BGS'
 
-    '''    
-    if truez:
-    	ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
-    	outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
+	'''    
+	if truez:
+		ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
+		outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
 		wz = ff['ZWARN'] == 0
 		ff = ff[wz]
 
-    else:
-    	ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
-    	outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
-    ff.keep_columns(['RA','DEC','Z'])
-    ff['WEIGHT'] = np.ones(len(ff))
-    ff.write(outf,format='fits', overwrite=True)
+	else:
+		ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+		outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
+	ff.keep_columns(['RA','DEC','Z'])
+	ff['WEIGHT'] = np.ones(len(ff))
+	ff.write(outf,format='fits', overwrite=True)
     
        
     
