@@ -572,7 +572,30 @@ def matchzcattar(program='dark',rmax=6):
         print('number of targets, number of good redshifts:')
         print(len(mtlj),len(mtlj[w]))   
 
-        mtlj.write(e2eout+outf, format='fits', overwrite=True)   
+        mtlj.write(e2eout+outf, format='fits', overwrite=True)
+        
+def matchzcattar_nofa(program='dark',rmax=6):
+        '''
+
+        '''
+
+        outf = program+'/targets_oneper_jmtl_jztrue.fits'
+        programf = program
+        if program == 'gray':
+        	programf = 'dark'
+        mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
+        
+        zc   = Table.read(e2ein+'run/targets/truth-'+programf+'.fits') 
+        
+        mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['mtl', 'zcat'],join_type='left')
+        
+        w    = (mtlj['Z'] > 0) & (mtlj['Z'] < 5)
+        print('number of targets, number of good redshifts:')
+        print(len(mtlj),len(mtlj[w]))   
+
+        mtlj.write(e2eout+outf, format='fits', overwrite=True)
+
+
 
 def plotcompvsntile(type,program='dark'):
 	'''
@@ -811,7 +834,7 @@ def matchtar(program='dark',rmax=6):
 
         jran.write(e2eout+program+'/targets_oneper_jmtl.fits',format='fits', overwrite=True)
 
-def mkfulldat(type,program,bits):
+def mkfulldat(type,program,bits,truez=False):
     '''
     take targets, cut them to particular target type and mask for particular target type 
     program is dark,gray, or bright
@@ -828,23 +851,33 @@ def mkfulldat(type,program,bits):
     	tb = 2    
     if type == 'BGS':
     	tb = 60    
-
-    tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
+    
+    if truez:
+		tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jztrue.fits')
+		outf = e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits'
+    else:
+    	tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits')
+    	outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
     tarf = cutphotmask(tarf,bits) 
     wt = tarf['DESI_TARGET'] & 2**tb > 0
     tt = tarf[wt]
     outf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
     tt.write(outf,format='fits', overwrite=True)
     
-def mkclusdat(type,program):
+def mkclusdat(type,program,truez=False):
     '''
     take full catalog, cut to ra,dec,z add any weight
     program is dark,gray, or bright
     type is 'LRG', 'QSO', 'ELG', or 'BGS'
 
     '''    
-    ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
-    outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
+    if truez:
+    	ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
+    	outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
+ 
+    else:
+    	ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+    	outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
     wz = ff['ZWARN'] == 0
     ff = ff[wz]
     ff.keep_columns(['RA','DEC','Z'])
@@ -867,7 +900,7 @@ def mkfullran(type,program,bits):
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
 
-def mkclusran(type,program):
+def mkclusran(type,program,truez=False):
     from random import random
     '''
     take full catalog, cut to ra,dec,z add any weight
@@ -882,9 +915,14 @@ def mkclusran(type,program):
 #     if type == 'BGS':
 #     	tb = 60    
 
-    ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
-    outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
+    
+    if truez:
+    	ffd = Table.read(e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits')
+    	outf = e2eout+ program+'/'+type+'_oneperztrue_clus.ran.fits'
+    else:
+    	ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
+    	outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
     zeffdic = mkzprobvsntiledic(type,program=program)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
     ff['WEIGHT']= np.ones(len(ff))
@@ -893,8 +931,9 @@ def mkclusran(type,program):
     for i in range(0,len(ff)):
     	ind = int(random()*nd)
     	ff['Z'][i] = ffd['Z'][ind]
-    	ff['WEIGHT'][i] = zeffdic[ff['NTILE'][i]]
-    	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
+    	if truez == False:
+    		ff['WEIGHT'][i] = zeffdic[ff['NTILE'][i]]
+    		ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
 
     ff.keep_columns(['RA','DEC','Z','WEIGHT'])
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))

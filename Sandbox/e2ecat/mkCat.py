@@ -5,6 +5,7 @@ target_type can be LRG, QSO, BGS, or ELG
 
 #target_type = 'BGS'
 target_type = 'ELG'
+truez=True
 
 #standard python
 import sys
@@ -100,6 +101,7 @@ program = "+program+"\n\
 srun = "+str(srun)+"\n\
 nrun = "+str(nrun)+"\n\
 imbits =  "+str(imbits)+"\n\
+truez =  "+str(truez)+"\n\
 \n\
 ")
 
@@ -110,14 +112,14 @@ farandoms = False #run randoms through fiberassign; doesn't need to be done if a
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
 plottilehist = False
 mkfullran = False #make "full" catalog for randoms
-mkfulldat = False #make "full" catalog for data
-mkclusdat = False #make "clustering" catalog for data
-mkclusran = False #make clustering catalog for randoms
+mkfulldat = True #make "full" catalog for data
+mkclusdat = True #make "clustering" catalog for data
+mkclusran = True #make clustering catalog for randoms
 plotfoot = False
 plottilecomp = True
 
@@ -157,8 +159,9 @@ if combtar: #concatenate target files, match to mtl and zcat info
 
 if matchtar:	
 	rmax=nrun-1
-	e2e.matchtar(program,rmax)
-	e2e.matchzcattar(program,rmax)
+	if truez == False
+		e2e.matchtar(program,rmax)
+	e2e.matchzcattar(program,rmax,truez=truez)
 	logf.write('ran matchtar\n')
 	
 if plotntile:
@@ -178,16 +181,16 @@ if mkfullran:
     logf.write('ran mkfullran\n')
 
 if mkfulldat:
-    e2e.mkfulldat(target_type,program,imbits)
+    e2e.mkfulldat(target_type,program,imbits,truez=truez)
     logf.write('ran mkfulldat\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    e2e.mkclusdat(target_type,program)
+    e2e.mkclusdat(target_type,program,truez=truez)
     logf.write('ran mkclusdat\n')
 
 if mkclusran:
-    e2e.mkclusran(target_type,program)
+    e2e.mkclusran(target_type,program,truez=truez)
     logf.write('ran mkclusran\n')
 
 if plotfoot:
