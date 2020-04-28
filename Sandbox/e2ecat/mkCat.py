@@ -183,11 +183,13 @@ if mkfullran:
     logf.write('ran mkfullran\n')
 
 if mkfulldat:
+	print(truez)
     e2e.mkfulldat(target_type,program,imbits,truez=truez)
     logf.write('ran mkfulldat\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
+    print(truez)
     e2e.mkclusdat(target_type,program,truez=truez)
     logf.write('ran mkclusdat\n')
 

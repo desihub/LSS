@@ -853,7 +853,9 @@ def mkfulldat(type,program,bits,truez=False):
 	if type == 'BGS':
 		tb = 60    
 
+	print(truez)
 	if truez:
+		print('running truez full dat')
 		tarf = Table.read(e2eout+ program+'/targets_oneper_jmtl_jztrue.fits')
 		outf = e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits'
 	else:
