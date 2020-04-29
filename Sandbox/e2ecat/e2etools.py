@@ -920,7 +920,7 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 	for i in range(0,len(zl)):
 		zlo = i*sp
 		zh = (i+1)*sp
-		v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+		v = area/(360.*360./np.pi)*4.*np.pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
 		vl.append(v)
 		nbarz =  zl[i]/v    
 		nl.append(nbarz)
