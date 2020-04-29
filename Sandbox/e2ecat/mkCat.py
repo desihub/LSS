@@ -16,6 +16,8 @@ import numpy as np
 import fitsio
 import glob
 
+sys.path.append("../")
+
 try:
 	target_type = str(sys.argv[1])
 except:	
