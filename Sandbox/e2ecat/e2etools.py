@@ -938,7 +938,7 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 
 def fillNZ(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,truez=False):    
 	#put info into catalogs
-	 zw = ''
+	zw = ''
 	if truez:
 		zw += 'ztrue'
 
