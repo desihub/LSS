@@ -346,30 +346,30 @@ def plotxi_comptrue():
 
 if __name__ == '__main__':
 	import subprocess
-# 	type = 'LRG'
-# 	prep4czxi(type,0.5,1.1,truez='ztrue')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.5,1.1,truez='ztrue')
-# 	
-# 	type = 'ELG'
-# 	prep4czxi(type,0.6,1.4,program='gray',truez='ztrue')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.6,1.4,truez='ztrue')
-# 
-# 	type = 'QSO'
-# 	prep4czxi(type,0.8,2.2,truez='ztrue')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.8,2.2,truez='ztrue')
-# 
-# 	type = 'BGS'
-# 	prep4czxi(type,0.1,0.4,program='bright',truez='ztrue')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.1,0.4,truez='ztrue')
-	
+	type = 'LRG'
+	prep4czxi(type,0.5,1.1,truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.5,1.1,truez='')
+
+	type = 'ELG'
+	prep4czxi(type,0.6,1.4,program='gray',truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez='')
+
+	type = 'QSO'
+	prep4czxi(type,0.8,2.2,truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.8,2.2,truez='')
+
+	type = 'BGS'
+	prep4czxi(type,0.1,0.4,program='bright',truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.1,0.4,truez='')
+
 	plotxi_comptrue()
 
 
