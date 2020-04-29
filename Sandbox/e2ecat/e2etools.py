@@ -5,6 +5,7 @@ import os
 import numpy as np
 import fitsio
 import glob
+import scipy
 import astropy.io.fits as fits
 from astropy.table import Table,vstack,unique,join#,setdiff
 from matplotlib import pyplot as plt
