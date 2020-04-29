@@ -913,7 +913,7 @@ def mkfulldat(type,program,bits,truez=False):
 	
 	tt.write(outf,format='fits', overwrite=True)
     
-def mkclusdat(type,program,truez=False):
+def mkclusdat(type,program,truez=False,weighttileloc=True):
 	'''
 	take full catalog, cut to ra,dec,z add any weight
 	program is dark,gray, or bright
@@ -923,20 +923,24 @@ def mkclusdat(type,program,truez=False):
 	if truez:
 		ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
 		outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
+		ff['WEIGHT'] = np.ones(len(ff))
 
 	else:
 		ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
 		outf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
 		wz = ff['ZWARN'] == 0
 		ff = ff[wz]
+		ff['WEIGHT'] = np.ones(len(ff))
+		if weighttileloc:
+			ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
-	ff.keep_columns(['RA','DEC','Z'])
-	ff['WEIGHT'] = np.ones(len(ff))
+	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID'])
+	
 	ff.write(outf,format='fits', overwrite=True)
     
        
     
-def mkfullran(type,program,bits):
+def mkfullran(type,program,bits,masktileloc=True):
     '''
     take randoms, mask for particular target type 
     program is dark,gray, or bright
@@ -946,11 +950,19 @@ def mkfullran(type,program,bits):
     '''    
         
     tarf = Table.read(e2eout+program+'/randoms_oneper_jmtl.fits')
-    tarf = cutphotmask(tarf,bits) 
+    tarf = cutphotmask(tarf,bits)
+    if masktileloc:
+    	dd = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+    	wb = dd['FRACZ_TILELOCID'] == 0
+    	bl = np.unique(dd[wb]['TILELOCID'])
+    	badloc = np.isin(tarf['TILELOCID'],bl)
+    	print('number of randoms, number after masking bad tilelocid')
+    	print(len(tarf),len(tarf[~badloc]))
+    	tarf = tarf[~badloc] 
     outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
 
-def mkclusran(type,program,truez=False):
+def mkclusran(type,program,truez=False,weightcomp=False):
     from random import random
     '''
     take full catalog, cut to ra,dec,z add any weight
@@ -981,11 +993,11 @@ def mkclusran(type,program,truez=False):
     for i in range(0,len(ff)):
     	ind = int(random()*nd)
     	ff['Z'][i] = ffd['Z'][ind]
-    	if truez == False:
+    	if truez == False and weightcomp == True:
     		ff['WEIGHT'][i] = zeffdic[ff['NTILE'][i]]
-    		ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
+    	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
 
-    ff.keep_columns(['RA','DEC','Z','WEIGHT'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID'])
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
        
