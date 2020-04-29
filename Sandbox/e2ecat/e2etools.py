@@ -899,7 +899,6 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 		nr = float(len(rf))
 	nrt = float(len(rf))
 
-
 	area = (nr)/rdens
 	print('effective area is '+str(area))
 	print('total area is ' + str(nrt/rdens))
@@ -909,6 +908,7 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 		zw += 'ztrue'
 	fo = open(e2eout+ program+'/nbar_oneper'+zw+'_'+type+'.dat','w')
 	nb = int(zmax/sp)
+	bl = np.arange(zmin,zmax,sp)
 	h = np.histogram(df['Z'],bins=bl,weights=df['WEIGHT'])
 	zl = h[0]
 	print(sum(zl))
