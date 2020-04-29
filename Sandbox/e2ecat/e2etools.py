@@ -912,8 +912,6 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 	h = np.histogram(df['Z'],bins=bl,weights=df['WEIGHT'])
 	zl = h[0]
 	print(sum(zl))
-	sumw = sum(df['WEIGHT_CP'])
-	sumt = float(len(df))
 	vl = []
 	veffl = []
 	nl = []
