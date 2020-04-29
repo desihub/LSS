@@ -4,7 +4,7 @@ target_type can be LRG, QSO, BGS, or ELG
 '''
 
 
-target_type = 'QSO'
+target_type = 'ELG'
 truez=False
 
 #standard python
