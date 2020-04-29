@@ -371,6 +371,7 @@ def plotxi2_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s\xi_2$')
 	plt.title('e2e simulation, fiber weight correction')
+	plt.ylim(-10,10)
 	plt.savefig(dirxi+'xi2e2ecomptrue.png')
 	plt.show()
 
@@ -403,6 +404,7 @@ def plotxi4_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s\xi_4$')
 	plt.title('e2e simulation, fiber weight correction')
+	plt.ylim(-10,10)
 	plt.savefig(dirxi+'xi2e2ecomptrue.png')
 	plt.show()
 
@@ -434,7 +436,7 @@ if __name__ == '__main__':
 # 	subprocess.run('./czpc.sh')
 # 	calcxi_dataCZ(type,0.1,0.4,truez='')
 
-	plotxi_comptrue()
+	#plotxi_comptrue()
 	plotxi2_comptrue()
 	plotxi4_comptrue()
 
