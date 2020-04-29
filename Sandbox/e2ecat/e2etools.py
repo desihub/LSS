@@ -700,7 +700,8 @@ def mkzprobvsntiledic(type,program='dark'):
 	return dict(zfl)
 
 def get_tilelocweight(type,program):
-	dz = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
+	zf = e2eout+ program+'/'+type+'_oneper_full.dat.fits'
+	dz = fitsio.read(zf)
 	wz = dz['ZWARN'] == 0
 	dzz = dz[wz]
 	probl = np.zeros(len(dz))
@@ -725,10 +726,13 @@ def get_tilelocweight(type,program):
 			wa = dz['TILELOCID'] == loc
 			#print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
 			probl[wa] = nz/nt	
+	print('number of fibers with no good z, number targets on those fibers')
 	print(nm,nmt)
-	print(np.min(probl),np.max(probl))
+	#print(np.min(probl),np.max(probl))
+	dz['FRACZ_TILELOCID'] = probl
+	dz.write(zf,format='fits', overwrite=True)
 
-	return probl	
+		
 
 
 def plotcompdr_full(type,program='dark'):

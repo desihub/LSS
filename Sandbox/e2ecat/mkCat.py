@@ -118,7 +118,7 @@ plotzeff = False
 plottilehist = False
 mkfullran = False #make "full" catalog for randoms
 mkfulldat = False #make "full" catalog for data
-testmkprob = True
+mkprob = True #add fraction with good z at tileloc to full data
 mkclusdat = False #make "clustering" catalog for data
 mkclusran = False #make clustering catalog for randoms
 plotfoot = False
@@ -188,8 +188,9 @@ if mkfulldat:
 	e2e.mkfulldat(target_type,program,imbits,truez=truez)
 	logf.write('ran mkfulldat\n')
 
-if testmkprob:
+if mkprob:
 	e2e.get_tilelocweight(target_type,program)
+	logf.write('ran get_tilelocweight\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
