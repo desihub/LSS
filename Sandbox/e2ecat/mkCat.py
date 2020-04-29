@@ -4,8 +4,6 @@ target_type can be LRG, QSO, BGS, or ELG
 '''
 
 
-target_type = 'ELG'
-truez=False
 
 #standard python
 import sys
@@ -18,6 +16,11 @@ import numpy as np
 import fitsio
 import glob
 
+try:
+	target_type = str(sys.argv[1])
+except:	
+	target_type = 'ELG'
+truez=False
 
 
 #import from catalog code
@@ -56,6 +59,8 @@ e2e.setglobals(e2ein,e2eout,targroot,ranf)
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs, for simplicity using them again for quasars
 #run through steps to make LRG catalogs
 
+omega_matter = 0.31 # for Nbar and then FKP weights
+
 if target_type == 'BGS':
 	print('Need to account for "legacy" LRG redshifts')
 	type = 60 #target bit for BGS
@@ -65,6 +70,7 @@ if target_type == 'BGS':
 	# number of epochs
 	nrun = 5
 	imbits =  elgandlrgbits #mask bits for imaging
+	P0 = 2500.
 
 if target_type == 'LRG':
 	type = 0 #target bit for LRG
@@ -74,6 +80,7 @@ if target_type == 'LRG':
 	# number of epochs
 	nrun = 7
 	imbits =  elgandlrgbits #mask bits for imaging
+	P0 = 10000
 
 if target_type == 'QSO':
 	type = 2 #target bit for QSO
@@ -83,6 +90,7 @@ if target_type == 'QSO':
 	# number of epochs
 	nrun = 7
 	imbits =  elgandlrgbits #mask bits for imaging
+	P0 = 7000
 
 if target_type == 'ELG':
 	type = 1 #target bit for ELG
@@ -92,6 +100,7 @@ if target_type == 'ELG':
 	# number of epochs
 	nrun = 7
 	imbits =  elgandlrgbits #mask bits for imaging
+	P0 = 4000
 
 
 logf.write('used following settings:\n')
@@ -102,6 +111,8 @@ srun = "+str(srun)+"\n\
 nrun = "+str(nrun)+"\n\
 imbits =  "+str(imbits)+"\n\
 truez =  "+str(truez)+"\n\
+P0 =  "+str(P0)+"\n\
+omega_matter =  "+str(omega_matter)+"\n\
 \n\
 ")
 
@@ -109,18 +120,20 @@ truez =  "+str(truez)+"\n\
 #list of independent tasks to perform
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
-combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = False
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
 plottilehist = False
-mkfulldat = True #make "full" catalog for data
-mkprob = True #add fraction with good z at tileloc to full data
-mkfullran = True #make "full" catalog for randoms
-mkclusdat = True #make "clustering" catalog for data
-mkclusran = True #make clustering catalog for randoms
+mkfulldat = False #make "full" catalog for data
+mkprob = False #add fraction with good z at tileloc to full data
+mkfullran = False #make "full" catalog for randoms
+mkclusdat = False #make "clustering" catalog for data
+mkclusran = False #make clustering catalog for randoms
+mkNbar = True
+fillNZ = True
 plotfoot = False
 plottilecomp = False
 
@@ -201,6 +214,14 @@ if mkclusdat:
 if mkclusran:
     e2e.mkclusran(target_type,program,truez=truez)
     logf.write('ran mkclusran\n')
+    
+if mkNbar:
+	e2e.mkNbar(target_type,program,P0=P0,omega_matter=omega_matter,truez=truez)
+	logf.write('made nbar\n')
+
+if fillNZ:
+	e2e.fillNZ(target_type,program,P0=P0,truez=truez)	
+	logf.write('put NZ and weight_fkp into clustering catalogs\n')    
 
 if plotfoot:
 	e2e.plotcompdr_full(target_type,program)  

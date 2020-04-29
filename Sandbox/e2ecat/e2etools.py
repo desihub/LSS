@@ -20,6 +20,8 @@ import desimodel.focalplane #
 #e2ein = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/'
 #e2eout    = e2ein + 'run/catalogs/'
 
+dr8a = 20332.475 #square degrees of dr8 imaging, based on each imaging random file (not all) at 5000/deg2
+ranperdeg = 2.e8/dr8a #we just took 2e8 randoms from randoms all file, then cut those further
 
 
 def setglobals(e2einv,e2eoutv,targrootv,ranfv):
@@ -880,6 +882,113 @@ def matchtar(program='dark',rmax=6):
         print(len(jran),len(faran),len(mtlran))
 
         jran.write(e2eout+program+'/targets_oneper_jmtl.fits',format='fits', overwrite=True)
+
+def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=ranperdeg,truez=False):
+    from Cosmo import distance
+    d = distance(omega_matter,1.-omega_matter)
+    
+	if truez:
+		df = fitsio.read(e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits')
+		rf = fitsio.read(e2eout+ program+'/'+type+'_oneperztrue_clus.ran.fits')
+	else:
+		df = fitsio.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
+		rf = fitsio.read(e2eout+ program+'/'+type+'_oneper_clus.ran.fits')
+    nr = sum(rf['WEIGHT'])
+    nrt = float(len(rf))
+   
+    
+    area = (nr)/rdens
+    print('effective area is '+str(area))
+    print('total area is ' + str(nrt/rdens))
+    no = 0
+    zw = ''
+    if truez:
+    	zw += 'ztrue'
+    fo = open(e2eout+ program+'/nbar_oneper'+zw+'_'+sampl+'.dat','w')
+    nb = int(zmax/sp)
+    h = np.histogram(df['Z'],bins=bl,weights=df['WEIGHT'])
+    zl = h[0]
+    print(sum(zl))
+    sumw = sum(df['WEIGHT_CP'])
+    sumt = float(len(df))
+    vl = []
+    veffl = []
+    nl = []
+    meanzl = []
+    vefft = 0
+    for i in range(0,len(zl)):
+        zlo = i*sp
+        zh = (i+1)*sp
+        v = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+        vl.append(v)
+        nbarz =  zl[i]/v    
+        nl.append(nbarz)
+        veff = v*(nbarz*P0/(1.+nbarz*P0))**2.
+        veffl.append(veff)
+        vefft += veff
+    fo.write('# effective area (deg^2), effective volume (Mpc/h)^3: '+str(area)+' '+str(vefft)+'\n') 
+    fo.write('# zcen,zlow,zhigh,nbar,wfkp,shell_vol,total weighted gals\n')
+    for i in range(0,len(nl)):
+        z = sp/2.+sp*i
+        meanzl.append(z)
+        fo.write(str(z)+' '+str(z-sp/2.)+' '+str(z+sp/2.)+' '+str(nl[i])+' '+str(1./(1.+nl[i]*P0))+' '+str(vl[i])+' '+str(zl[i])+'\n')
+    
+    fo.close()
+    return True
+
+def fillNZ(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,truez=False):    
+    #put info into catalogs
+     zw = ''
+    if truez:
+    	zw += 'ztrue'
+   
+    zf = np.loadtxt(e2eout+ program+'/nbar_oneper'+zw+'_'+sampl+'.dat').transpose()
+    meanzl = zf[0]
+    nl = zf[3]
+	if truez:
+		dataf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
+		df = Table.read(dataf)
+		ranf = e2eout+ program+'/'+type+'_oneperztrue_clus.ran.fits'
+		rf = Table.read(ranf)
+	else:
+		dataf = e2eout+ program+'/'+type+'_oneper_clus.dat.fits'
+		df = Table.read(dataf)
+		ranf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
+		rf = Table.read(ranf)
+
+    Z = df['Z']
+    NZ = np.zeros((len(Z)))
+    for i in range(0,len(Z)):
+        zv = Z[i]
+        if zv*0 == 0:
+            ind = int(zv/sp)
+            if Z[i] < zmax:
+                NZ[i] = nl[ind]
+    df['NZ'] = NZ
+    if scipy.isnan(df['NZ']).any(): print('WARNING: For some reason, NZ has NaN values.')
+    df['WEIGHT_FKP'] = 1./(1.+df['NZ']*P0)
+
+    df.write(dataf, format='fits', overwrite=True)
+
+
+    Z = rf['Z']
+    NZ = np.zeros((len(Z)))
+    for i in range(0,len(Z)):
+        ind = int(Z[i]/sp)
+        if Z[i] < zmax:
+            #catalogue[i]['NZ'] = nl[ind]
+            NZ[i] = nl[ind]
+    rf['NZ'] = NZ
+
+    if scipy.isnan(rf['NZ']).any(): print('WARNING: For some reason, NZ has NaN values.')
+
+    ### FKP weights ###
+    rf['WEIGHT_FKP'] = 1./(1.+rf['NZ']*P0)
+
+    #hdu.writeto(dataf,overwrite=True)
+    rf.write(ranf, format='fits', overwrite=True)
+    return True
+
 
 def mkfulldat(type,program,bits,truez=False):
 	'''
