@@ -729,6 +729,7 @@ def get_tilelocweight(type,program):
 	print('number of fibers with no good z, number targets on those fibers')
 	print(nm,nmt)
 	#print(np.min(probl),np.max(probl))
+	dz['FRACZ_TILELOCID'] = np.ones(len(probl))
 	dz['FRACZ_TILELOCID'] = probl
 	dz.write(zf,format='fits', overwrite=True)
 
