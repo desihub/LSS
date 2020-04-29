@@ -883,7 +883,7 @@ def matchtar(program='dark',rmax=6):
 
         jran.write(e2eout+program+'/targets_oneper_jmtl.fits',format='fits', overwrite=True)
 
-def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=ranperdeg,truez=False):
+def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=ranperdeg,truez=False,compweight=False):
 	from Cosmo import distance
 	d = distance(omega_matter,1.-omega_matter)
 
@@ -893,7 +893,10 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 	else:
 		df = fitsio.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
 		rf = fitsio.read(e2eout+ program+'/'+type+'_oneper_clus.ran.fits')
-	nr = sum(rf['WEIGHT'])
+	if compweight:
+		nr = sum(rf['WEIGHT'])
+	else:
+		nr = float(len(rf))
 	nrt = float(len(rf))
 
 
@@ -904,7 +907,7 @@ def mkNbar(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,omega_matter=.31,rdens=r
 	zw = ''
 	if truez:
 		zw += 'ztrue'
-	fo = open(e2eout+ program+'/nbar_oneper'+zw+'_'+sampl+'.dat','w')
+	fo = open(e2eout+ program+'/nbar_oneper'+zw+'_'+type+'.dat','w')
 	nb = int(zmax/sp)
 	h = np.histogram(df['Z'],bins=bl,weights=df['WEIGHT'])
 	zl = h[0]
@@ -942,7 +945,7 @@ def fillNZ(type,program,sp=0.01,zmin=0,zmax=4.,P0=5000.,truez=False):
 	if truez:
 		zw += 'ztrue'
 
-	zf = np.loadtxt(e2eout+ program+'/nbar_oneper'+zw+'_'+sampl+'.dat').transpose()
+	zf = np.loadtxt(e2eout+ program+'/nbar_oneper'+zw+'_'+type+'.dat').transpose()
 	meanzl = zf[0]
 	nl = zf[3]
 	if truez:
