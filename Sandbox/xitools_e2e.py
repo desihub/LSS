@@ -336,41 +336,107 @@ def plotxi_comptrue():
 	plt.plot(dl[0],dqt[1]*dl[0]**2.,'--',color='purple')
 	plt.plot(dl[0],dbt[1]*dl[0]**2.,'--',color='brown')
 	plt.legend()
-	plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
-	plt.ylabel(r'$\xi_0$')
-	plt.title('e2e simulation')
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s^2\xi_0$')
+	plt.title('e2e simulation, fiber weight correction')
 	plt.savefig(dirxi+'xi0e2ecomptrue.png')
+	plt.show()
+
+def plotxi2_comptrue():
+	fl = dirxi+'xi024LRG0.51.15st0.dat'
+	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
+	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
+	fe = dirxi+'xi024ELG0.61.45st0.dat'
+	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
+	fb = dirxi+'xi024BGS0.10.45st0.dat'
+	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	dl = np.loadtxt(fl).transpose() 
+	de = np.loadtxt(fe).transpose()
+	dq = np.loadtxt(fq).transpose()
+	db = np.loadtxt(fb).transpose()
+	dlt = np.loadtxt(flt).transpose() 
+	det = np.loadtxt(fet).transpose()
+	dqt = np.loadtxt(fqt).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	plt.plot(dl[0],dl[2]*dl[0],color='r',label=r'LRGs, $0.5 < z < 1.1$')
+	plt.plot(dl[0],de[2]*dl[0],color='b',label=r'ELGs, $0.6 < z < 1.4$')
+	plt.plot(dl[0],dq[2]*dl[0],color='purple',label=r'quasars, $0.8 < z < 2.2$')
+	plt.plot(dl[0],db[2]*dl[0],color='brown',label=r'BGS, $0.1 < z < 0.4$')
+	plt.plot(dl[0],dlt[2]*dl[0],'--r',label='no fiber assignment')
+	plt.plot(dl[0],det[2]*dl[0],'--b')
+	plt.plot(dl[0],dqt[2]*dl[0],'--',color='purple')
+	plt.plot(dl[0],dbt[2]*dl[0],'--',color='brown')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_2$')
+	plt.title('e2e simulation, fiber weight correction')
+	plt.savefig(dirxi+'xi2e2ecomptrue.png')
+	plt.show()
+
+def plotxi4_comptrue():
+	fl = dirxi+'xi024LRG0.51.15st0.dat'
+	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
+	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
+	fe = dirxi+'xi024ELG0.61.45st0.dat'
+	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
+	fb = dirxi+'xi024BGS0.10.45st0.dat'
+	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	dl = np.loadtxt(fl).transpose() 
+	de = np.loadtxt(fe).transpose()
+	dq = np.loadtxt(fq).transpose()
+	db = np.loadtxt(fb).transpose()
+	dlt = np.loadtxt(flt).transpose() 
+	det = np.loadtxt(fet).transpose()
+	dqt = np.loadtxt(fqt).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	plt.plot(dl[0],dl[3]*dl[0],color='r',label=r'LRGs, $0.5 < z < 1.1$')
+	plt.plot(dl[0],de[3]*dl[0],color='b',label=r'ELGs, $0.6 < z < 1.4$')
+	plt.plot(dl[0],dq[3]*dl[0],color='purple',label=r'quasars, $0.8 < z < 2.2$')
+	plt.plot(dl[0],db[3]*dl[0],color='brown',label=r'BGS, $0.1 < z < 0.4$')
+	plt.plot(dl[0],dlt[3]*dl[0],'--r',label='no fiber assignment')
+	plt.plot(dl[0],det[3]*dl[0],'--b')
+	plt.plot(dl[0],dqt[3]*dl[0],'--',color='purple')
+	plt.plot(dl[0],dbt[3]*dl[0],'--',color='brown')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_4$')
+	plt.title('e2e simulation, fiber weight correction')
+	plt.savefig(dirxi+'xi2e2ecomptrue.png')
 	plt.show()
 
 
 
 if __name__ == '__main__':
 	import subprocess
-	type = 'LRG'
-	prep4czxi(type,0.5,1.1,truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.5,1.1,truez='')
-
-	type = 'ELG'
-	prep4czxi(type,0.6,1.4,program='gray',truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez='')
-
-	type = 'QSO'
-	prep4czxi(type,0.8,2.2,truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.8,2.2,truez='')
-
-	type = 'BGS'
-	prep4czxi(type,0.1,0.4,program='bright',truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.1,0.4,truez='')
+# 	type = 'LRG'
+# 	prep4czxi(type,0.5,1.1,truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.5,1.1,truez='')
+# 
+# 	type = 'ELG'
+# 	prep4czxi(type,0.6,1.4,program='gray',truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.6,1.4,truez='')
+# 
+# 	type = 'QSO'
+# 	prep4czxi(type,0.8,2.2,truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.8,2.2,truez='')
+# 
+# 	type = 'BGS'
+# 	prep4czxi(type,0.1,0.4,program='bright',truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.1,0.4,truez='')
 
 	plotxi_comptrue()
+	plotxi2_comptrue()
+	plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
