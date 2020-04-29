@@ -936,9 +936,9 @@ def mkclusdat(type,program,truez=False,weighttileloc=True):
 
 	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID'])
 	print('minimum,maximum weight')
-    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+	print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
-	
+
 	ff.write(outf,format='fits', overwrite=True)
     
        
