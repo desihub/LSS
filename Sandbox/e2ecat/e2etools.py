@@ -594,6 +594,8 @@ def matchzcattar(program='dark',rmax=6):
         	programf = 'dark'
         mtl  = Table.read(e2eout+program+'/targets_oneper_jmtl.fits')
         zc   = Table.read(e2ein+'run/quicksurvey/'+programf+'/'+str(rmax)+'/zcat-'+programf+'.fits')
+        wz = zc['ZWARN'] == 0
+        print('number of good redshifts in z file is '+str(len(zc[wz])))
 
         mtlj = join(mtl,zc,keys=['TARGETID'],table_names=['mtl', 'zcat'],join_type='left')
 
