@@ -320,12 +320,14 @@ def count_tarfavail(srun,nrun,program):
 		programf = 'dark'
 		
 	
+	print('epoch_tile,tile,Ntar,Nran,ngoodfib,expid,epoch_obs')
 
 
 	for run in range(srun,srun+nrun):
 		dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
 		faflsr = glob.glob(dirr+'fiberassign-*.fits')
-		print('epoch_tile,tile,len(favail),ngoodfib,expid,epoch_obs')
+		dira =  e2eout+program+'/randoms/'+str(run)+'/'
+
 		for i in range(0,len(faflsr)):
 			fah = fitsio.read_header(faflsr[i])
 			tile = fah['TILEID']
@@ -345,7 +347,8 @@ def count_tarfavail(srun,nrun,program):
 				fa = Table.read(faflsr[i],hdu='FAVAIL')
 				wg = np.isin(fa['LOCATION'],gloc)
 				fg = fa[wg]
-				print(run,tile,len(fa),len(gloc),expid,ep)
+				rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+				print(run,tile,len(fa),len(rf),len(gloc),expid,ep)
 	
 
 def combtargets(srun=0,nrun=7,program='dark'):
