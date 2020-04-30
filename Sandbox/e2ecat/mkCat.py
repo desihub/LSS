@@ -21,7 +21,7 @@ sys.path.append("../")
 try:
 	target_type = str(sys.argv[1])
 except:	
-	target_type = 'ELG'
+	target_type = 'LRG'
 truez=False
 
 
@@ -30,9 +30,9 @@ import e2etools as e2e
 import fatools as fa
 
 ver='g'
-DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+''-onepercent/desimodel/'
+DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/desimodel/'
 os.environ['DESIMODEL'] = DESIMODEL
-E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+''-onepercent/' # Most recent: g.
+E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/' # Most recent: g.
 #E2EDIR = os.environ['E2EDIR']
 print('end to end directory is')
 print(E2EDIR)
