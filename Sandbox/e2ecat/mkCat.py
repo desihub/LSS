@@ -174,7 +174,7 @@ if mkrandoms:
 if farandoms:
 	for run in range(srun,srun+nrun):
 		#make the tile file for this run
-		e2e.mke2etiles(run,program=program)
+		e2e.mke2etiles(run,program=program,ver=ver)
 
 	targetf = e2eout +program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
 	tiles = e2eout+program+'/e2etiles_run'
