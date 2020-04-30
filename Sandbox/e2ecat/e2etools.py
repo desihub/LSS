@@ -305,8 +305,11 @@ def count_tarfavail(srun,nrun,program):
 	
 	
 	programf = program
+	if program == 'gray':
+		programf = 'dark'
 	
-
+	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+	
 	if program == 'dark':
 		we = exps['PROGRAM'] == b'DARK'
 		exps = exps[we]
@@ -316,7 +319,7 @@ def count_tarfavail(srun,nrun,program):
 		exps = exps[we]
 		programf = 'dark'
 		
-	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+	
 
 
 	for run in range(srun,srun+nrun):
