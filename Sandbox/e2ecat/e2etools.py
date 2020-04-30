@@ -350,7 +350,7 @@ def count_tarfavail(srun,nrun,program):
 				fg = fa[wg]
 				#rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
 				#print(run,tile,len(fa),len(rf),len(gloc),expid,ep)
-				print(run,tile,len(fa),len(gloc),expid,ep)
+				print(run,tile,len(fa),len(gloc),expid,ep,fah['TILEDEC'])
 	
 
 def combtargets(srun=0,nrun=7,program='dark'):
