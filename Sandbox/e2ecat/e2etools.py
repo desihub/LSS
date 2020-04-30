@@ -302,7 +302,7 @@ def count_tarfavail(srun,nrun,program):
 	just go through each tile and print out the number of targets in the favail hdu
 	should be ~constant for dark time targets
 	'''
-	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+	
 	
 	programf = program
 	
@@ -315,6 +315,8 @@ def count_tarfavail(srun,nrun,program):
 		we = exps['PROGRAM'] == b'GRAY'
 		exps = exps[we]
 		programf = 'dark'
+		
+	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
 
 
 	for run in range(srun,srun+nrun):
