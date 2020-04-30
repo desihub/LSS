@@ -325,7 +325,7 @@ def count_tarfavail(srun,nrun,program):
 
 	for run in range(srun,srun+nrun):
 		#dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
-		dirr =  e2ein+'run/E2E/'+programf+'/'+str(run)+'/fiberassign/'
+		dirr =  e2ein+'run/E2E/'+programf+'/tmp/fiberassign/'
 		faflsr = glob.glob(dirr+'fiberassign-*.fits')
 		dira =  e2eout+program+'/randoms/'+str(run)+'/'
 
