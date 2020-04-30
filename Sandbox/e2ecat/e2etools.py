@@ -70,19 +70,20 @@ def mkran4fa(N=2e8,fout='random_mtl.fits'):
         rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def cutran(ver='g'):
-	fr = Table.read(ranfmtl)
+	fr = fitsio.read(ranfmtl)
 	raw = fr['RA']
 	wr = raw > 180
 	raw[wr] -= 360
+	
 	if ver == 'g':
-		w1 = (raw > -2.5) & (raw < 17.5) & (fr['DEC']) > 0 & (fr['DEC'] < 8)
+		w1 = (raw > -2.5) & (raw < 17.5) & (fr['DEC'] > 0) & (fr['DEC'] < 8)
 		w2 = (raw > 108) & 	(raw < 122) & (fr['DEC'] > 26) & (fr['DEC'] < 38)
 		wt = w1 | w2
 	plt.plot(raw[wt],fr['DEC'][wt],'k,')
 	plt.show()
 	fout = e2eout+'dark/randoms_mtl_cuttod.fits'
 	to = fr[wt]
-	to.write(fout,format='fits', overwrite=True)
+	fitsio.write(fout,to,clobber=True)
 
 def mkran_type(dt,program):
 	if program == 'bright':
