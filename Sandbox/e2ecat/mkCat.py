@@ -29,7 +29,7 @@ truez=False
 import e2etools as e2e
 import fatools as fa
 
-ver='f'
+ver='g'
 DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/desimodel/'
 os.environ['DESIMODEL'] = DESIMODEL
 E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/' # Most recent: g.
