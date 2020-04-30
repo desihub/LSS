@@ -348,8 +348,9 @@ def count_tarfavail(srun,nrun,program):
 				fa = Table.read(faflsr[i],hdu='FAVAIL')
 				wg = np.isin(fa['LOCATION'],gloc)
 				fg = fa[wg]
-				rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
-				print(run,tile,len(fa),len(rf),len(gloc),expid,ep)
+				#rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+				#print(run,tile,len(fa),len(rf),len(gloc),expid,ep)
+				print(run,tile,len(fa),len(gloc),expid,ep)
 	
 
 def combtargets(srun=0,nrun=7,program='dark'):
