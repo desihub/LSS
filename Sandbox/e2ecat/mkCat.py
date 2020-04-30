@@ -61,6 +61,21 @@ if os.path.isdir(E2EDIR + 'run/catalogs/gray'):
 	pass
 else:
 	os.mkdir(E2EDIR + 'run/catalogs/gray')	
+
+if os.path.isdir(E2EDIR + 'run/catalogs/bright/randoms'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/bright/randoms')	
+
+if os.path.isdir(E2EDIR + 'run/catalogs/dark/randoms'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/dark/randoms')	
+
+if os.path.isdir(E2EDIR + 'run/catalogs/gray/randoms'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/gray/randoms')	
 	
 
 logf = open(e2eout+'/logfiles/mkCat'+str(datetime.today())+'.log','w')
