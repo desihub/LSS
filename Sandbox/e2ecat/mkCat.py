@@ -157,14 +157,15 @@ omega_matter =  "+str(omega_matter)+"\n\
 
 
 #list of independent tasks to perform
+countfavail = True
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = True
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = False
 plotzeff = False
 plottilehist = False
 mkfulldat = False #make "full" catalog for data
@@ -178,6 +179,8 @@ plotfoot = False
 plottilecomp = False
 plotfatiledr = False
 
+if countfavail:
+	e2e.count_tarfavail(srun,nrun,program)
 
 if cutran:
 	e2e.cutran(ver)

@@ -297,6 +297,41 @@ def combran(srun=0,nrun=7,program='dark'):
 		print(str(len(fgu[w]))+ ' '+p)	
 	fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
+def count_tarfavail(srun,nrun,program):
+	'''
+	just go through each tile and print out the number of targets in the favail hdu
+	should be ~constant for dark time targets
+	'''
+	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+
+	if program == 'dark':
+		we = exps['PROGRAM'] == b'DARK'
+		exps = exps[we]
+	for run in range(srun,srun+nrun):
+		dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
+		faflsr = glob.glob(dirr+'fiberassign-*.fits')
+		for i in range(0,len(faflsr)):
+			fah = fitsio.read_header(faflsr[i])
+			tile = fah['TILEID']
+			w = exps['TILEID'] == fah['TILEID']
+			if len(exps[w]) > 0:
+				#if exps[w]['EPOCH'][0] == run:
+
+
+				if len(exps[w]) > 1:
+						return 'NEED to deal with multiple exposures of same tile'
+				expid = exps[w]['EXPID'][0]     
+				ep = exps[w]['EPOCH'][0]
+				fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
+
+				wloc = fmap['FIBERSTATUS'] == 0
+				gloc = fmap[wloc]['LOCATION']
+				fa = Table.read(faflsr[i],hdu='FAVAIL')
+				wg = np.isin(fa['LOCATION'],gloc)
+				fg = fa[wg]
+				print(run,tile,len(fg),len(gloc))
+	
+
 def combtargets(srun=0,nrun=7,program='dark'):
 	'''
 	Catalog of all TARGETIDs from e.g. parent MTL that could have been assigned
@@ -403,8 +438,6 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			expid = exps[w]['EXPID'][0]     
 			ep = exps[w]['EPOCH'][0]
 			fmap = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/'+str(ep)+'/fiberassign/fibermap-'+str(expid).zfill(8)+'.fits')
-			#fmap['FIBERSTATUS'] = 0
-			#print('set fiberstatus all to 0; fix this once propagated to zcat')
 
 			wloc = fmap['FIBERSTATUS'] == 0
 			gloc = fmap[wloc]['LOCATION']
