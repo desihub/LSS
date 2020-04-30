@@ -163,7 +163,7 @@ farandoms = False #run randoms through fiberassign; doesn't need to be done for 
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
 plottilehist = False
@@ -176,7 +176,7 @@ mkNbar = False
 fillNZ = False
 plotfoot = False
 plottilecomp = False
-plotfatiledr = True
+plotfatiledr = False
 
 
 if cutran:
@@ -215,7 +215,8 @@ if combtar: #concatenate target files, match to mtl and zcat info
 	logf.write('ran combtargets\n')
 
 if matchtar:	
-	rmax=nrun-1
+	rmax=0#nrun-1
+	print(rmax)
 	if truez == False:
 		e2e.matchtar(program,rmax)
 		e2e.matchzcattar(program,rmax)
