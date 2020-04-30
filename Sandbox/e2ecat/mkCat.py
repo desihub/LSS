@@ -162,11 +162,11 @@ omega_matter =  "+str(omega_matter)+"\n\
 
 
 #list of independent tasks to perform
-countfavail = True
+countfavail = False
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+farandoms = True #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
