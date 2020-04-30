@@ -879,7 +879,7 @@ def compfavail_dr(tile,epoch=6,program='dark'):
         tilefr = Table.read(e2eout+program+'/randoms/'+str(epoch)+'/fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
         tjr = join(tilefr,mtlr,keys=['TARGETID'],join_type='left')
         plt.plot(tjr['RA'],tjr['DEC'],'k,')
-        plt.plot(tj['RA'],tj['DEC'],'r,')
+        plt.plot(tj['RA'],tj['DEC'],'ro',markersize=1)
         plt.show()
        
 
