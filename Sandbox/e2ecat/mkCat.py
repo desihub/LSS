@@ -100,6 +100,11 @@ if ver == 'g':
 	nrundark = 17
 	nrunbright = 9
 
+if ver == 'f':
+	nrundark = 7
+	nrunbright = 5
+
+
 if target_type == 'BGS':
 	print('Need to account for "legacy" LRG redshifts')
 	type = 60 #target bit for BGS
