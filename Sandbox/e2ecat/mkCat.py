@@ -159,14 +159,14 @@ omega_matter =  "+str(omega_matter)+"\n\
 #list of independent tasks to perform
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = True #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
+farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = True
+plotntile = False
 plotzeff = False
-plottilehist = True
+plottilehist = False
 mkfulldat = False #make "full" catalog for data
 mkprob = False #add fraction with good z at tileloc to full data
 mkfullran = False #make "full" catalog for randoms
@@ -176,6 +176,7 @@ mkNbar = False
 fillNZ = False
 plotfoot = False
 plottilecomp = False
+plotfatiledr = True
 
 
 if cutran:
@@ -269,5 +270,9 @@ if plotfoot:
 	e2e.plotcompdr_full(target_type,program)  
 	
 if plottilecomp:
-	e2e.plotcompvsntile(target_type,program)	 	
+	e2e.plotcompvsntile(target_type,program)	
+
+if plotfatiledr:	
+	e2e.compfavail_dr(53478,epoch=14,program=program) 	
+	e2e.compfavail_dr(53457,epoch=14,program=program) 	
 		

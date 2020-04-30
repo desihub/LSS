@@ -869,6 +869,20 @@ def testfavail(tile,epoch=6,program='dark'):
         tilef = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/fiberassign/fiberassign-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
         tj = join(tilef,mtl,keys=['TARGETID'],join_type='left')
         print(np.unique(tj['NUMOBS_MORE'],return_counts=True))
+
+def compfavail_dr(tile,epoch=6,program='dark'):
+        mtl = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/mtl-'+program+'.fits')       
+        tilef = Table.read(e2ein+'run/quicksurvey/'+program+'/'+str(epoch)+'/fiberassign/fiberassign-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+        tj = join(tilef,mtl,keys=['TARGETID'],join_type='left')
+        #print(np.unique(tj['NUMOBS_MORE'],return_counts=True))
+        mtlr = Table.read(e2eout+program+'/'+str(epoch)+'/randoms_mtl_cuttod.fits')       
+        tilefr = Table.read(e2eout+program+'/randoms/'+str(epoch)+'/fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+        tjr = join(tilefr,mtlr,keys=['TARGETID'],join_type='left')
+        plt.plot(tjr['RA'],tjr['DEC'],'k,')
+        plt.plot(tj['RA'],tj['DEC'],'r,')
+        plt.show()
+       
+
                 
 def matchran(program='dark'):
         faran = Table.read(e2eout+program+'/randoms/randoms_oneper.fits')
