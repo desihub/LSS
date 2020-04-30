@@ -303,10 +303,20 @@ def count_tarfavail(srun,nrun,program):
 	should be ~constant for dark time targets
 	'''
 	exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
+	
+	programf = program
+	
 
 	if program == 'dark':
 		we = exps['PROGRAM'] == b'DARK'
 		exps = exps[we]
+
+	if program == 'gray':
+		we = exps['PROGRAM'] == b'GRAY'
+		exps = exps[we]
+		programf = 'dark'
+
+
 	for run in range(srun,srun+nrun):
 		dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
 		faflsr = glob.glob(dirr+'fiberassign-*.fits')
