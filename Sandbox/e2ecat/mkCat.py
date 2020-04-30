@@ -164,7 +164,7 @@ combran = False #concatenate random files and match randoms from FAVAIL back to 
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = False
+plotntile = True
 plotzeff = False
 plottilehist = False
 mkfulldat = False #make "full" catalog for data
@@ -219,6 +219,7 @@ if matchtar:
 	print(rmax)
 	if truez == False:
 		e2e.matchtar(program,rmax)
+		rmax = nrun-1
 		e2e.matchzcattar(program,rmax)
 	else:
 		e2e.matchzcattar_nofa(program)
