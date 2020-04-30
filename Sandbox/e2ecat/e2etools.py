@@ -25,7 +25,7 @@ dr8a = 20332.475 #square degrees of dr8 imaging, based on each imaging random fi
 ranperdeg = 2.e8/dr8a #we just took 2e8 randoms from randoms all file, then cut those further
 
 
-def setglobals(e2einv,e2eoutv,targrootv,ranfv):
+def setglobals(e2einv,e2eoutv,targrootv,ranfv,ranfmtlv):
 	'''
 	set paths/files names for important inputs without relying on environment variables
 	goal is to always have explicit paths and file names set in the main
@@ -40,6 +40,8 @@ def setglobals(e2einv,e2eoutv,targrootv,ranfv):
 	targroot = targrootv #where target files are e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
 	global ranf
 	ranf = ranfv #where randoms are, e.g., '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits'
+	global ranfmtl
+	ranfmtl = ranfmtlv
 	#global bits
 	#bits = bitsv #the imaging mask bits to use
 
@@ -66,6 +68,21 @@ def mkran4fa(N=2e8,fout='random_mtl.fits'):
         rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
         rmtl['SUBPRIORITY'] = np.random.random(len(rall))
         rmtl.write(dirout+fout,format='fits', overwrite=True)
+
+def cutran(ver='g'):
+	fr = Table.read(ranfmtl)
+	raw = fr['RA']
+	wr = raw > 180
+	raw[wr] -= 360
+	if ver == 'g':
+		w1 = (raw > -2.5) & (raw < 17.5) & (fr['DEC']) > 0 & (fr['DEC'] < 8)
+		w2 = (raw > 108) & 	(raw < 122) & (fr['DEC'] > 26) & (fr['DEC'] < 38)
+		wt = w1 | w2
+	plt.plot(raw[wt],fr['DEC'][wt],'k,')
+	plt.show()
+	fout = e2eout+'dark/randoms_mtl_cuttod.fits'
+	to = fr[wt]
+	to.write(fout,format='fits', overwrite=True)
 
 def mkran_type(dt,program):
 	if program == 'bright':

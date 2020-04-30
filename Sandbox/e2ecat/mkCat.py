@@ -29,9 +29,10 @@ truez=False
 import e2etools as e2e
 import fatools as fa
 
-DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/desimodel/'
+ver='g'
+DESIMODEL = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+''-onepercent/desimodel/'
 os.environ['DESIMODEL'] = DESIMODEL
-E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/' # Most recent: f.
+E2EDIR = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+''-onepercent/' # Most recent: g.
 #E2EDIR = os.environ['E2EDIR']
 print('end to end directory is')
 print(E2EDIR)
@@ -40,23 +41,40 @@ print(E2EDIR)
 e2ein  = E2EDIR                      
 e2eout = E2EDIR + 'run/catalogs/'
 
+#make these directories if they do not exist already
 if os.path.isdir(E2EDIR + 'run/catalogs/logfiles'):
 	pass
 else:
 	os.mkdir(E2EDIR + 'run/catalogs/logfiles')	
 
+if os.path.isdir(E2EDIR + 'run/catalogs/bright'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/bright')	
+
+if os.path.isdir(E2EDIR + 'run/catalogs/dark'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/dark')	
+
+if os.path.isdir(E2EDIR + 'run/catalogs/gray'):
+	pass
+else:
+	os.mkdir(E2EDIR + 'run/catalogs/gray')	
 	
 
 logf = open(e2eout+'/logfiles/mkCat'+str(datetime.today())+'.log','w')
+logf.write('using e2e onepercent version '+ver)
 logf.write('mkCat.py run for type '+str(type)+'\n')
 logf.write('inputs root '+e2ein+'\n')
 logf.write('output root '+e2ein+'\n')
 
 targroot  = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
 ranf      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits' #DR8 imaging randoms file
+ranfmtl = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/random/random_mtl.fits' #random file with 2e8 rows and columns needed for fiberassign
 
 #now the routines in e2etools that need these will have them as globals
-e2e.setglobals(e2ein,e2eout,targroot,ranf)
+e2e.setglobals(e2ein,e2eout,targroot,ranf,ranfmtl)
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed for LRGs and ELGs, for simplicity using them again for quasars
 #run through steps to make LRG catalogs
@@ -120,6 +138,7 @@ omega_matter =  "+str(omega_matter)+"\n\
 
 
 #list of independent tasks to perform
+cutran = True #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
@@ -134,13 +153,15 @@ mkprob = False #add fraction with good z at tileloc to full data
 mkfullran = False #make "full" catalog for randoms
 mkclusdat = False #make "clustering" catalog for data
 mkclusran = False #make clustering catalog for randoms
-mkNbar = True
-fillNZ = True
+mkNbar = False
+fillNZ = False
 plotfoot = False
 plottilecomp = False
 
 
-
+if cutran:
+	e2e.cutran(ver)
+	logf.write('ran cutran\n')
 
 if mkrandoms:
 	e2e.mkran_type(type,program)
