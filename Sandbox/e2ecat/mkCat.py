@@ -81,6 +81,10 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed fo
 
 omega_matter = 0.31 # for Nbar and then FKP weights
 
+if ver == 'g':
+	nrundark = 17
+	nrunbright = 9
+
 if target_type == 'BGS':
 	print('Need to account for "legacy" LRG redshifts')
 	type = 60 #target bit for BGS
@@ -88,7 +92,7 @@ if target_type == 'BGS':
 	#epochs
 	srun = 0
 	# number of epochs
-	nrun = 5
+	nrun = nrunbright
 	imbits =  elgandlrgbits #mask bits for imaging
 	P0 = 2500.
 
@@ -98,7 +102,7 @@ if target_type == 'LRG':
 	#epochs
 	srun = 0
 	# number of epochs
-	nrun = 7
+	nrun = nrundark
 	imbits =  elgandlrgbits #mask bits for imaging
 	P0 = 10000
 
@@ -108,7 +112,7 @@ if target_type == 'QSO':
 	#epochs
 	srun = 0
 	# number of epochs
-	nrun = 7
+	nrun = nrundark
 	imbits =  elgandlrgbits #mask bits for imaging
 	P0 = 7000
 
@@ -118,7 +122,7 @@ if target_type == 'ELG':
 	#epochs
 	srun = 0
 	# number of epochs
-	nrun = 7
+	nrun = nrundark
 	imbits =  elgandlrgbits #mask bits for imaging
 	P0 = 4000
 
@@ -138,14 +142,14 @@ omega_matter =  "+str(omega_matter)+"\n\
 
 
 #list of independent tasks to perform
-cutran = True #cut big random file to only occupy one percent footprint
+cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done if already done for LRGs
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = False
-combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = False
+farandoms = True #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = True
+combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = True
 plotzeff = False
 plottilehist = False
 mkfulldat = False #make "full" catalog for data
