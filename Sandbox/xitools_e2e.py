@@ -428,7 +428,7 @@ def plotxi4_comptrue():
 
 if __name__ == '__main__':
 	import subprocess
- 	type = 'LRG'
+	type = 'LRG'
 # 	prep4czxi(type,0.5,1.1,truez='')
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
