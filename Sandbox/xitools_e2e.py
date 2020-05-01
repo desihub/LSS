@@ -283,7 +283,7 @@ def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mu
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
 	muw = ''
-	fo = open(dirxi+'xi024'+type+truez+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirxi+'xi024oneper'+ver+type+truez+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
@@ -309,6 +309,40 @@ def plotxi():
 	plt.title('e2e simulation')
 	plt.savefig(dirxi+'xi0e2e.png')
 	plt.show()
+
+def plotxi_compgf(type,zmin,zmax):
+	fr = type+str(zmin)+str(zmax)
+	ff = dirxi+'xi024'+fr+'5st0.dat'
+	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
+	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
+	fe = dirxi+'xi024ELG0.61.45st0.dat'
+	fq = dirxi+'xi024QSO0.82.25st0.dat'
+	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
+	fb = dirxi+'xi024BGS0.10.45st0.dat'
+	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	dl = np.loadtxt(fl).transpose() 
+	de = np.loadtxt(fe).transpose()
+	dq = np.loadtxt(fq).transpose()
+	db = np.loadtxt(fb).transpose()
+	dlt = np.loadtxt(flt).transpose() 
+	det = np.loadtxt(fet).transpose()
+	dqt = np.loadtxt(fqt).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	plt.plot(dl[0],dl[1]*dl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1$')
+	plt.plot(dl[0],de[1]*dl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4$')
+	plt.plot(dl[0],dq[1]*dl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2$')
+	plt.plot(dl[0],db[1]*dl[0]**2.,color='brown',label=r'BGS, $0.1 < z < 0.4$')
+	plt.plot(dl[0],dlt[1]*dl[0]**2.,'--r',label='no fiber assignment')
+	plt.plot(dl[0],det[1]*dl[0]**2.,'--b')
+	plt.plot(dl[0],dqt[1]*dl[0]**2.,'--',color='purple')
+	plt.plot(dl[0],dbt[1]*dl[0]**2.,'--',color='brown')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s^2\xi_0$')
+	plt.title('e2e simulation, fiber weight correction')
+	plt.savefig(dirxi+'xi0e2ecomptrue.png')
+	plt.show()
+
 
 def plotxi_comptrue():
 	fl = dirxi+'xi024LRG0.51.15st0.dat'
