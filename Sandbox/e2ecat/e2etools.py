@@ -713,10 +713,11 @@ def plotcompvsntile(type,program='dark'):
 			ttl.append(nt)
 	#plt.plot(ttl,zfl,'k-',label='compared to randoms')
 	#plt.plot(ttl,zftl,'r-',label='compared to all targets')
-	plt.plot(ttl,zftl,'r-')
+	plt.plot(ttl,zftl,'k-')
 	plt.xlabel('NTILES')
-	plt.ylabel('N good z/N targets '+type)
-	plt.legend()
+	plt.ylabel('N good z/N targets ')
+	#plt.legend()
+	plt.title(type)
 
 	plt.show()      
 
