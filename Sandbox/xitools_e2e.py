@@ -358,7 +358,7 @@ def plotxi_compgf(type,zmin,zmax):
 
 def plotxi_compfkp(type,zmin,zmax):
 	fr = 'xi024'+type+str(zmin)+str(zmax)
-	ff = dirxi+fr+fkp+'5st0.dat'
+	ff = dirxi+fr+'fkp5st0.dat'
 	fg = dirxi+fr+'5st0.dat'
 	df = np.loadtxt(ff).transpose() 
 	dg = np.loadtxt(fg).transpose()
@@ -491,10 +491,10 @@ def plotxi4_comptrue():
 if __name__ == '__main__':
 	import subprocess
 	type = 'LRG'
-	prep4czxi(type,0.5,1.1,truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.5,1.1,truez='')
+# 	prep4czxi(type,0.5,1.1,truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.5,1.1,truez='')
 	plotxi_compfkp(type,0.5,1.1)
 # 
 	type = 'ELG'
