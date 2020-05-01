@@ -321,7 +321,7 @@ def plotxi_compgf(type,zmin,zmax):
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
-	plt.title(r'e2e simulation '+type +' '+str(zmin) '$<z<$'+str(zmax))
+	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
 	plt.savefig(dirxi+'xi0gf'+type+'.png')
 	plt.show()
 
