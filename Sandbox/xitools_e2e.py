@@ -357,9 +357,9 @@ def plotxi_compgf(type,zmin,zmax):
 	plt.show()
 
 def plotxi_compfkp(type,zmin,zmax):
-	fr = 'xi024'+type+str(zmin)+str(zmax)
-	ff = dirxi+fr+'fkp5st0.dat'
-	fg = dirxi+fr+'5st0.dat'
+	fr = 'xi024oneperg'+type
+	ff = dirxi+fr+'fkp'+str(zmin)+str(zmax)+'5st0.dat'
+	fg = dirxi+fr+str(zmin)+str(zmax)+'5st0.dat'
 	df = np.loadtxt(ff).transpose() 
 	dg = np.loadtxt(fg).transpose()
 	plt.plot(df[0],df[1]*df[0]**2.,'r-',label='FKP weight')
