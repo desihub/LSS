@@ -31,10 +31,17 @@ import desimodel.io as dmio
 def mkfa(targetf,tileff,rd,fad,srun,nrun,DESIMODEL):
 	'''
 	make the fiberassign files needed
+	targetf is the target file (e.g., an mtl file)
+	tilef is the root string for the tile files produced for each epoch
+	rd is the output directory
+	fad is the directory for the data fiberassign files
+	srun is the initial epoch
+	nrun is the number of epochs
+	DESIMODEL is the directory for where to find the focal plane model for running these
 	'''
 	os.environ['DESIMODEL'] = DESIMODEL
 	#targetf = e2eout +program+'/randoms_mtl_cuttod.fits' #above file, cut to ~e2e area with significant padding
-	#random are only for DARK right now, need to work something out for BRIGHT and GRAY
+	
 
 	#use fiberassign tools to read in randoms to be assigned
 	tgs = Targets()
