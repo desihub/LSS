@@ -174,14 +174,14 @@ plotntile = False
 plotzeff = False
 plottilehist = False
 mkfulldat = True #make "full" catalog for data
-mkprob = True #add fraction with good z at tileloc to full data
+mkprob = False #add fraction with good z at tileloc to full data
 mkfullran = True #make "full" catalog for randoms
 mkclusdat = True #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
 mkNbar = True
 fillNZ = True
 plotfoot = False
-plottilecomp = True
+plottilecomp = False
 plotfatiledr = False
 
 

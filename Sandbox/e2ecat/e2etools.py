@@ -1126,6 +1126,7 @@ def mkclusdat(type,program,truez=False,weighttileloc=True):
 		ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.dat.fits')
 		outf = e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits'
 		ff['WEIGHT'] = np.ones(len(ff))
+		
 
 	else:
 		ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
@@ -1133,7 +1134,7 @@ def mkclusdat(type,program,truez=False,weighttileloc=True):
 		wz = ff['ZWARN'] == 0
 		ff = ff[wz]
 		ff['WEIGHT'] = np.ones(len(ff))
-		if weighttileloc:
+		if weighttileloc == True and truez == False:
 			ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
 	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID'])
@@ -1145,7 +1146,7 @@ def mkclusdat(type,program,truez=False,weighttileloc=True):
     
        
     
-def mkfullran(type,program,bits,masktileloc=True):
+def mkfullran(type,program,bits,masktileloc=True,truez=False):
     '''
     take randoms, mask for particular target type 
     program is dark,gray, or bright
@@ -1156,7 +1157,7 @@ def mkfullran(type,program,bits,masktileloc=True):
         
     tarf = Table.read(e2eout+program+'/randoms_oneper_jmtl.fits')
     tarf = cutphotmask(tarf,bits)
-    if masktileloc:
+    if masktileloc == True and truez == False:
     	dd = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.dat.fits')
     	wb = dd['FRACZ_TILELOCID'] == 0
     	bl = np.unique(dd[wb]['TILELOCID'])
@@ -1164,7 +1165,10 @@ def mkfullran(type,program,bits,masktileloc=True):
     	print('number of randoms, number after masking bad tilelocid')
     	print(len(tarf),len(tarf[~badloc]))
     	tarf = tarf[~badloc] 
-    outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
+    if truez:
+    	outf = e2eout+ program+'/'+type+'_oneperztrue_full.ran.fits'    
+    else:
+    	outf = e2eout+ program+'/'+type+'_oneper_full.ran.fits'
     tarf.write(outf,format='fits', overwrite=True)
 
 def mkclusran(type,program,truez=False,weightcomp=False):
@@ -1182,15 +1186,18 @@ def mkclusran(type,program,truez=False,weightcomp=False):
 #     if type == 'BGS':
 #     	tb = 60    
 
-    ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+    
     
     if truez:
+    	ff = Table.read(e2eout+ program+'/'+type+'_oneperztrue_full.ran.fits')
     	ffd = Table.read(e2eout+ program+'/'+type+'_oneperztrue_clus.dat.fits')
     	outf = e2eout+ program+'/'+type+'_oneperztrue_clus.ran.fits'
     else:
+    	ff = Table.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
     	ffd = Table.read(e2eout+ program+'/'+type+'_oneper_clus.dat.fits')
     	outf = e2eout+ program+'/'+type+'_oneper_clus.ran.fits'
-    	zeffdic = mkzprobvsntiledic(type,program=program)
+    	if weightcomp:
+    		zeffdic = mkzprobvsntiledic(type,program=program)
     #ff['WEIGHT'] = zeffdic[ff['NTILE']]
     ff['WEIGHT']= np.ones(len(ff))
     ff['Z'] = np.zeros(len(ff))
