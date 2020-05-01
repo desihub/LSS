@@ -317,7 +317,7 @@ def plotxi_compgf(type,zmin,zmax):
 	df = np.loadtxt(ff).transpose() 
 	dg = np.loadtxt(fg).transpose()
 	plt.plot(df[0],df[1]*df[0]**2.,'r--',label='one per cent f')
-	plt.plot(df[0],dg[1]*df[0]**2.,'r--',label='one per cent g')
+	plt.plot(df[0],dg[1]*df[0]**2.,'-',color='firebrick',label='one per cent g')
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
@@ -428,11 +428,11 @@ def plotxi4_comptrue():
 
 if __name__ == '__main__':
 	import subprocess
-	type = 'LRG'
-	prep4czxi(type,0.5,1.1,truez='')
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.5,1.1,truez='')
+# 	type = 'LRG'
+# 	prep4czxi(type,0.5,1.1,truez='')
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.5,1.1,truez='')
 	plotxi_compgf(type,0.5,1.1)
 # 
 # 	type = 'ELG'
