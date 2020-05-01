@@ -417,6 +417,7 @@ def plotxi_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
 	plt.title('e2e simulation, fiber weight correction')
+	plt.ylim(-100,120)
 	plt.savefig(dirxi+'xi0e2egcomptrue.png')
 	plt.show()
 
@@ -502,7 +503,7 @@ if __name__ == '__main__':
 # 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+#	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 	#plotxi_compfkp(type,0.6,1.4)
 
 # 	type = 'QSO'
@@ -520,8 +521,8 @@ if __name__ == '__main__':
 # 	plotxi_compfkp(type,0.1,0.4)
 
 	plotxi_comptrue()
-	plotxi2_comptrue()
-	plotxi4_comptrue()
+	#plotxi2_comptrue()
+	#plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
