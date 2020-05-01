@@ -324,6 +324,22 @@ def plotxi_compgf(type,zmin,zmax):
 	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
 	plt.savefig(dirxi+'xi0gf'+type+'.png')
 	plt.show()
+	plt.plot(df[0],df[2]*df[0],'r--',label='one per cent f')
+	plt.plot(df[0],dg[2]*df[0],'-',color='firebrick',label='one per cent g')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_2$')
+	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi2gf'+type+'.png')
+	plt.show()
+	plt.plot(df[0],df[3]*df[0],'r--',label='one per cent f')
+	plt.plot(df[0],dg[3]*df[0],'-',color='firebrick',label='one per cent g')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_4$')
+	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi4gf'+type+'.png')
+	plt.show()
 
 
 def plotxi_comptrue():
