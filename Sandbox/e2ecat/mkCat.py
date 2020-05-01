@@ -165,14 +165,14 @@ omega_matter =  "+str(omega_matter)+"\n\
 countfavail = False
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = True #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
-combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = False
-combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = False
+farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
+combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+matchran = True
+combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
+matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = True
 plotzeff = False
-plottilehist = False
+plottilehist = True
 mkfulldat = False #make "full" catalog for data
 mkprob = False #add fraction with good z at tileloc to full data
 mkfullran = False #make "full" catalog for randoms
@@ -184,8 +184,6 @@ plotfoot = False
 plottilecomp = False
 plotfatiledr = False
 
-if countfavail:
-	e2e.count_tarfavail(srun,nrun,program)
 
 if cutran:
 	e2e.cutran(ver)
@@ -209,6 +207,10 @@ if farandoms:
 		fad = e2ein+'run/quicksurvey/'+program+'/'
 	fa.mkfa(targetf,tiles,rd,fad,srun,nrun,DESIMODEL)
 	logf.write('ran farandoms\n')
+
+if countfavail:
+	e2e.count_tarfavail(srun,nrun,program)
+
 		
 if combran: #concatenate random files, match to mtl
 	e2e.combran(srun,nrun,program)

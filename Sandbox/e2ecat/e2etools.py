@@ -320,12 +320,12 @@ def count_tarfavail(srun,nrun,program):
 		programf = 'dark'
 		
 	
-	print('epoch_tile,tile,Ntar,Nran,ngoodfib,expid,epoch_obs')
+	print('epoch_tile,tile,Ntar,Nran,ngoodfib,expid,epoch_obs,dec')
 
 
 	for run in range(srun,srun+nrun):
-		#dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
-		dirr =  e2ein+'run/E2E/'+programf+'/tmp/fiberassign/'
+		dirr =  e2ein+'run/quicksurvey/'+programf+'/'+str(run)+'/fiberassign/'
+		#dirr =  e2ein+'run/E2E/'+programf+'/tmp/fiberassign/'
 		faflsr = glob.glob(dirr+'fiberassign-*.fits')
 		dira =  e2eout+program+'/randoms/'+str(run)+'/'
 
@@ -348,9 +348,9 @@ def count_tarfavail(srun,nrun,program):
 				fa = Table.read(faflsr[i],hdu='FAVAIL')
 				wg = np.isin(fa['LOCATION'],gloc)
 				fg = fa[wg]
-				#rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
-				#print(run,tile,len(fa),len(rf),len(gloc),expid,ep)
-				print(run,tile,len(fa),len(gloc),expid,ep,fah['TILEDEC'])
+				rf = Table.read(dira+'fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+				print(run,tile,len(fa),len(rf),len(gloc),expid,ep,fah['TILEDEC'])
+				#print(run,tile,len(fa),len(gloc),expid,ep,fah['TILEDEC'])
 	
 
 def combtargets(srun=0,nrun=7,program='dark'):
