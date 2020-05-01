@@ -449,7 +449,7 @@ if __name__ == '__main__':
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
 # 	calcxi_dataCZ(type,0.5,1.1,truez='')
-	plotxi_compgf(type,0.5,1.1)
+#	plotxi_compgf(type,0.5,1.1)
 # 
 	type = 'ELG'
 	prep4czxi(type,0.6,1.4,program='gray',truez='')
