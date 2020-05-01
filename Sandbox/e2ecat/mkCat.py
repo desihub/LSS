@@ -169,19 +169,19 @@ farandoms = False #run randoms through fiberassign; doesn't need to be done for 
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
-matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
-plotntile = True
+matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
+plotntile = False
 plotzeff = False
-plottilehist = True
-mkfulldat = False #make "full" catalog for data
-mkprob = False #add fraction with good z at tileloc to full data
-mkfullran = False #make "full" catalog for randoms
-mkclusdat = False #make "clustering" catalog for data
-mkclusran = False #make clustering catalog for randoms
-mkNbar = False
-fillNZ = False
-plotfoot = False
-plottilecomp = False
+plottilehist = False
+mkfulldat = True #make "full" catalog for data
+mkprob = True #add fraction with good z at tileloc to full data
+mkfullran = True #make "full" catalog for randoms
+mkclusdat = True #make "clustering" catalog for data
+mkclusran = True #make clustering catalog for randoms
+mkNbar = True
+fillNZ = True
+plotfoot = True
+plottilecomp = True
 plotfatiledr = False
 
 
@@ -225,11 +225,11 @@ if combtar: #concatenate target files, match to mtl and zcat info
 	logf.write('ran combtargets\n')
 
 if matchtar:	
-	rmax=0#nrun-1
+	rmax=nrun-1
 	print(rmax)
 	if truez == False:
 		e2e.matchtar(program,rmax)
-		rmax = nrun-1
+		#rmax = nrun-1
 		e2e.matchzcattar(program,rmax)
 	else:
 		e2e.matchzcattar_nofa(program)
