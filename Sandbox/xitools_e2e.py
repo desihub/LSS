@@ -389,14 +389,14 @@ def plotxi_compfkp(type,zmin,zmax):
 
 
 def plotxi_comptrue():
-	fl = dirxi+'xi024LRG0.51.15st0.dat'
-	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
-	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
-	fe = dirxi+'xi024ELG0.61.45st0.dat'
-	fq = dirxi+'xi024QSO0.82.25st0.dat'
-	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
-	fb = dirxi+'xi024BGS0.10.45st0.dat'
-	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	fl = dirxi+'xi024onepergLRGfkp0.51.15st0.dat'
+	flt = dirxi+'xi024onepergLRGztruefkp0.51.15st0.dat'
+	fet = dirxi+'xi024onepergELGztruefkp0.61.45st0.dat'
+	fe = dirxi+'xi024onepergELGfkp0.61.45st0.dat'
+	fq = dirxi+'xi024onepergQSOfkp0.82.25st0.dat'
+	fqt = dirxi+'xi024onepergQSOztruefkp0.82.25st0.dat'
+	fb = dirxi+'xi024onepergBGSfkp0.10.45st0.dat'
+	fbt = dirxi+'xi024onepergBGSztruefkp0.10.45st0.dat'
 	dl = np.loadtxt(fl).transpose() 
 	de = np.loadtxt(fe).transpose()
 	dq = np.loadtxt(fq).transpose()
@@ -417,18 +417,18 @@ def plotxi_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
 	plt.title('e2e simulation, fiber weight correction')
-	plt.savefig(dirxi+'xi0e2ecomptrue.png')
+	plt.savefig(dirxi+'xi0e2egcomptrue.png')
 	plt.show()
 
 def plotxi2_comptrue():
-	fl = dirxi+'xi024LRG0.51.15st0.dat'
-	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
-	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
-	fe = dirxi+'xi024ELG0.61.45st0.dat'
-	fq = dirxi+'xi024QSO0.82.25st0.dat'
-	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
-	fb = dirxi+'xi024BGS0.10.45st0.dat'
-	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	fl = dirxi+'xi024onepergLRGfkp0.51.15st0.dat'
+	flt = dirxi+'xi024onepergLRGztruefkp0.51.15st0.dat'
+	fet = dirxi+'xi024onepergELGztruefkp0.61.45st0.dat'
+	fe = dirxi+'xi024onepergELGfkp0.61.45st0.dat'
+	fq = dirxi+'xi024onepergQSOfkp0.82.25st0.dat'
+	fqt = dirxi+'xi024onepergQSOztruefkp0.82.25st0.dat'
+	fb = dirxi+'xi024onepergBGSfkp0.10.45st0.dat'
+	fbt = dirxi+'xi024onepergBGSztruefkp0.10.45st0.dat'
 	dl = np.loadtxt(fl).transpose() 
 	de = np.loadtxt(fe).transpose()
 	dq = np.loadtxt(fq).transpose()
@@ -450,18 +450,18 @@ def plotxi2_comptrue():
 	plt.ylabel(r'$s\xi_2$')
 	plt.title('e2e simulation, fiber weight correction')
 	plt.ylim(-10,10)
-	plt.savefig(dirxi+'xi2e2ecomptrue.png')
+	plt.savefig(dirxi+'xi2e2egcomptrue.png')
 	plt.show()
 
 def plotxi4_comptrue():
-	fl = dirxi+'xi024LRG0.51.15st0.dat'
-	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
-	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
-	fe = dirxi+'xi024ELG0.61.45st0.dat'
-	fq = dirxi+'xi024QSO0.82.25st0.dat'
-	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
-	fb = dirxi+'xi024BGS0.10.45st0.dat'
-	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
+	fl = dirxi+'xi024onepergLRGfkp0.51.15st0.dat'
+	flt = dirxi+'xi024onepergLRGztruefkp0.51.15st0.dat'
+	fet = dirxi+'xi024onepergELGztruefkp0.61.45st0.dat'
+	fe = dirxi+'xi024onepergELGfkp0.61.45st0.dat'
+	fq = dirxi+'xi024onepergQSOfkp0.82.25st0.dat'
+	fqt = dirxi+'xi024onepergQSOztruefkp0.82.25st0.dat'
+	fb = dirxi+'xi024onepergBGSfkp0.10.45st0.dat'
+	fbt = dirxi+'xi024onepergBGSztruefkp0.10.45st0.dat'
 	dl = np.loadtxt(fl).transpose() 
 	de = np.loadtxt(fe).transpose()
 	dq = np.loadtxt(fq).transpose()
@@ -483,44 +483,45 @@ def plotxi4_comptrue():
 	plt.ylabel(r'$s\xi_4$')
 	plt.title('e2e simulation, fiber weight correction')
 	plt.ylim(-10,10)
-	plt.savefig(dirxi+'xi2e2ecomptrue.png')
+	plt.savefig(dirxi+'xi2e2egcomptrue.png')
 	plt.show()
 
 
 
 if __name__ == '__main__':
 	import subprocess
+	truez = 'ztrue'
 	type = 'LRG'
-# 	prep4czxi(type,0.5,1.1,truez='')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.5,1.1,truez='')
+	prep4czxi(type,0.5,1.1,truez=truez)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.5,1.1,truez=truez)
 	plotxi_compfkp(type,0.5,1.1)
 # 
 	type = 'ELG'
-	prep4czxi(type,0.6,1.4,program='gray',truez='')
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez='')
 	plotxi_compfkp(type,0.6,1.4)
 
 	type = 'QSO'
-	prep4czxi(type,0.8,2.2,truez='')
+	prep4czxi(type,0.8,2.2,truez=truez)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.8,2.2,truez='')
+	calcxi_dataCZ(type,0.8,2.2,truez=truez)
 	plotxi_compfkp(type,0.8,2.2)
 
 	type = 'BGS'
-	prep4czxi(type,0.1,0.4,program='bright',truez='')
+	prep4czxi(type,0.1,0.4,program='bright',truez=truez)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.1,0.4,truez='')
+	calcxi_dataCZ(type,0.1,0.4,truez=truez)
 	plotxi_compfkp(type,0.1,0.4)
 
-	#plotxi_comptrue()
-	#plotxi2_comptrue()
-	#plotxi4_comptrue()
+	plotxi_comptrue()
+	plotxi2_comptrue()
+	plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
