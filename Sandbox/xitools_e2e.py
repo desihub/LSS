@@ -198,7 +198,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g'):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
 	print(dirczpc)
-	froot = dirczpc+'e2e_'+type+truez+str(zmin)+str(zmax)
+	froot = dirczpc+'e2e_oneper'+ver+type+truez+str(zmin)+str(zmax)
 	cf = 'czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
@@ -313,34 +313,16 @@ def plotxi():
 def plotxi_compgf(type,zmin,zmax):
 	fr = type+str(zmin)+str(zmax)
 	ff = dirxi+'xi024'+fr+'5st0.dat'
-	flt = dirxi+'xi024LRGztrue0.51.15st0.dat'
-	fet = dirxi+'xi024ELGztrue0.61.45st0.dat'
-	fe = dirxi+'xi024ELG0.61.45st0.dat'
-	fq = dirxi+'xi024QSO0.82.25st0.dat'
-	fqt = dirxi+'xi024QSOztrue0.82.25st0.dat'
-	fb = dirxi+'xi024BGS0.10.45st0.dat'
-	fbt = dirxi+'xi024BGSztrue0.10.45st0.dat'
-	dl = np.loadtxt(fl).transpose() 
-	de = np.loadtxt(fe).transpose()
-	dq = np.loadtxt(fq).transpose()
-	db = np.loadtxt(fb).transpose()
-	dlt = np.loadtxt(flt).transpose() 
-	det = np.loadtxt(fet).transpose()
-	dqt = np.loadtxt(fqt).transpose()
-	dbt = np.loadtxt(fbt).transpose()
-	plt.plot(dl[0],dl[1]*dl[0]**2.,color='r',label=r'LRGs, $0.5 < z < 1.1$')
-	plt.plot(dl[0],de[1]*dl[0]**2.,color='b',label=r'ELGs, $0.6 < z < 1.4$')
-	plt.plot(dl[0],dq[1]*dl[0]**2.,color='purple',label=r'quasars, $0.8 < z < 2.2$')
-	plt.plot(dl[0],db[1]*dl[0]**2.,color='brown',label=r'BGS, $0.1 < z < 0.4$')
-	plt.plot(dl[0],dlt[1]*dl[0]**2.,'--r',label='no fiber assignment')
-	plt.plot(dl[0],det[1]*dl[0]**2.,'--b')
-	plt.plot(dl[0],dqt[1]*dl[0]**2.,'--',color='purple')
-	plt.plot(dl[0],dbt[1]*dl[0]**2.,'--',color='brown')
+	fg = dirxi+'xi024oneperg'+fr+'5st0.dat'
+	df = np.loadtxt(ff).transpose() 
+	dg = np.loadtxt(fg).transpose()
+	plt.plot(df[0],df[1]*df[0]**2.,'r--',label='one per cent f')
+	plt.plot(df[0],dg[1]*df[0]**2.,'r--',label='one per cent g')
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
-	plt.title('e2e simulation, fiber weight correction')
-	plt.savefig(dirxi+'xi0e2ecomptrue.png')
+	plt.title(r'e2e simulation '+type +' '+str(zmin) '$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi0gf'+type+'.png')
 	plt.show()
 
 
