@@ -1,4 +1,3 @@
-e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020f-onepercent/run/catalogs/'
 dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
 dirczpc = '/global/cscratch1/sd/ajross/cz/paircounts/'
@@ -180,9 +179,10 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark',truez=''):
+def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g'):
+	e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.dat.fits')
-	ifiled = dircz+'ge2e_'+type+truez+str(zmin)+str(zmax)+'4xi.dat'
+	ifiled = dircz+'ge2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
@@ -190,7 +190,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez=''):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
 	fo.close()
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.ran.fits')
-	ifiler = dircz+'re2e_'+type+truez+str(zmin)+str(zmax)+'4xi.dat'
+	ifiler = dircz+'re2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiler,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
@@ -208,8 +208,8 @@ def prep4czxi(type,zmin,zmax,program='dark',truez=''):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0):
-	froot = dirczpc+'e2e_'+type+truez+str(zmin)+str(zmax)
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g'):
+	froot = dirczpc+'e2e_oneper'+ver+type+truez+str(zmin)+str(zmax)
 	if rec == '':
 		
 		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
@@ -412,11 +412,11 @@ def plotxi4_comptrue():
 
 if __name__ == '__main__':
 	import subprocess
-# 	type = 'LRG'
-# 	prep4czxi(type,0.5,1.1,truez='')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.5,1.1,truez='')
+	type = 'LRG'
+	prep4czxi(type,0.5,1.1,truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.5,1.1,truez='')
 # 
 # 	type = 'ELG'
 # 	prep4czxi(type,0.6,1.4,program='gray',truez='')
@@ -437,8 +437,8 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.1,0.4,truez='')
 
 	#plotxi_comptrue()
-	plotxi2_comptrue()
-	plotxi4_comptrue()
+	#plotxi2_comptrue()
+	#plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
