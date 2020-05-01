@@ -97,7 +97,7 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #the combination of mask bits proposed fo
 omega_matter = 0.31 # for Nbar and then FKP weights
 
 if ver == 'g':
-	nrundark = 17
+	nrundark = 15
 	nrunbright = 9
 
 if ver == 'f':
@@ -167,8 +167,8 @@ cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
-matchran = True
-combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
+matchran = False
+combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = True
 plotzeff = False
