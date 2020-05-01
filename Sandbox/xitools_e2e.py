@@ -179,26 +179,37 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g'):
+def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True):
 	e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
+	fkpw = ''
+	if fkp:
+		fkpw = 'fkp'
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.dat.fits')
 	ifiled = dircz+'ge2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
+	wt = df['WEIGHT']
+	if fkp:
+		wt *= df['WEIGHT_FKP']
+
 	for i in range(0,len(df)):
-		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
+		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.ran.fits')
 	ifiler = dircz+'re2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
 	fo = open(ifiler,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax)
 	df = df[w]
+	wt = df['WEIGHT']
+	if fkp:
+		wt *= df['WEIGHT_FKP']
+
 	for i in range(0,len(df)):
-		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(df['WEIGHT'][i])+'\n')
+		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
 	print(dirczpc)
-	froot = dirczpc+'e2e_oneper'+ver+type+truez+str(zmin)+str(zmax)
+	froot = dirczpc+'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)
 	cf = 'czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
@@ -208,8 +219,12 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g'):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g'):
-	froot = dirczpc+'e2e_oneper'+ver+type+truez+str(zmin)+str(zmax)
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True):
+	fkpw = ''
+	if fkp:
+		fkpw = 'fkp'
+
+	froot = dirczpc+'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)
 	if rec == '':
 		
 		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
@@ -283,7 +298,7 @@ def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mu
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
 	muw = ''
-	fo = open(dirxi+'xi024oneper'+ver+type+truez+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirxi+'xi024oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
@@ -338,6 +353,37 @@ def plotxi_compgf(type,zmin,zmax):
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s\xi_4$')
 	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi4gf'+type+'.png')
+	plt.show()
+
+def plotxi_compfkp(type,zmin,zmax):
+	fr = 'xi024'+type+str(zmin)+str(zmax)
+	ff = dirxi+fr+fkp+'5st0.dat'
+	fg = dirxi+fr+'5st0.dat'
+	df = np.loadtxt(ff).transpose() 
+	dg = np.loadtxt(fg).transpose()
+	plt.plot(df[0],df[1]*df[0]**2.,'r-',label='FKP weight')
+	plt.plot(df[0],dg[1]*df[0]**2.,'--',color='firebrick',label='no FKP weight')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s^2\xi_0$')
+	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi0gf'+type+'.png')
+	plt.show()
+	plt.plot(df[0],df[2]*df[0],'r--',label='FKP weight')
+	plt.plot(df[0],dg[2]*df[0],'-',color='firebrick',label='no FKP weight')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_2$')
+	plt.title(r'e2e simulation '+type +' '+str(zmin) +'$<z<$'+str(zmax))
+	plt.savefig(dirxi+'xi2gf'+type+'.png')
+	plt.show()
+	plt.plot(df[0],df[3]*df[0],'r--',label='FKP weight')
+	plt.plot(df[0],dg[3]*df[0],'-',color='firebrick',label='no FKP weight')
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s\xi_4$')
+	plt.title(r'e2e one per cent simulation version g '+type +' '+str(zmin) +'$<z<$'+str(zmax))
 	plt.savefig(dirxi+'xi4gf'+type+'.png')
 	plt.show()
 
@@ -445,32 +491,32 @@ def plotxi4_comptrue():
 if __name__ == '__main__':
 	import subprocess
 	type = 'LRG'
-# 	prep4czxi(type,0.5,1.1,truez='')
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.5,1.1,truez='')
-#	plotxi_compgf(type,0.5,1.1)
+	prep4czxi(type,0.5,1.1,truez='')
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.5,1.1,truez='')
+	plotxi_compfkp(type,0.5,1.1)
 # 
 	type = 'ELG'
 	prep4czxi(type,0.6,1.4,program='gray',truez='')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez='')
-	plotxi_compgf(type,0.6,1.4)
+	plotxi_compfkp(type,0.6,1.4)
 
 	type = 'QSO'
 	prep4czxi(type,0.8,2.2,truez='')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.8,2.2,truez='')
-	plotxi_compgf(type,0.8,2.2)
+	plotxi_compfkp(type,0.8,2.2)
 
 	type = 'BGS'
 	prep4czxi(type,0.1,0.4,program='bright',truez='')
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.1,0.4,truez='')
-	plotxi_compgf(type,0.1,0.4)
+	plotxi_compfkp(type,0.1,0.4)
 
 	#plotxi_comptrue()
 	#plotxi2_comptrue()
