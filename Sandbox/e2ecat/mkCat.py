@@ -257,7 +257,7 @@ if mkprob:
 	logf.write('ran get_tilelocweight\n')
 
 if mkfullran:
-    e2e.mkfullran(target_type,program,imbits)
+    e2e.mkfullran(target_type,program,imbits,truez=truez)
     logf.write('ran mkfullran\n')
 
 #needs to happen before randoms so randoms can get z and weights
