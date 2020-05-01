@@ -450,7 +450,7 @@ def plotxi2_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s\xi_2$')
 	plt.title('e2e simulation, fiber weight correction')
-	plt.ylim(-10,10)
+	plt.ylim(-8,4)
 	plt.savefig(dirxi+'xi2e2egcomptrue.png')
 	plt.show()
 
@@ -483,7 +483,7 @@ def plotxi4_comptrue():
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s\xi_4$')
 	plt.title('e2e simulation, fiber weight correction')
-	plt.ylim(-10,10)
+	plt.ylim(-4,4)
 	plt.savefig(dirxi+'xi2e2egcomptrue.png')
 	plt.show()
 
@@ -521,8 +521,8 @@ if __name__ == '__main__':
 # 	plotxi_compfkp(type,0.1,0.4)
 
 	plotxi_comptrue()
-	#plotxi2_comptrue()
-	#plotxi4_comptrue()
+	plotxi2_comptrue()
+	plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
