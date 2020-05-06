@@ -1280,6 +1280,16 @@ def gathertargets(type):
         hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
         hdu.writeto(outf,overwrite=True)
         print('wrote to '+outf)
+
+def plotran1tile(tile,epoch,dir='/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020g-onepercent/run/catalogs/dark/'):
+	f = Table.read(dir+'randoms/'+str(epoch)+'/fba-'+str(tile).zfill(6)+'.fits',hdu='FAVAIL')
+	mtlran = Table.read(dir+'/randoms_mtl_cuttod.fits')
+	jran = join(f,mtlran,keys=['TARGETID'])
+	plt.plot(jran['RA'],jran['DEC'],'k,')
+	plt.show()
+	plt.title('randoms on tile '+str(tile))
+	plt.show()
+	
         
 if __name__ == '__main__':
         #combran()      
