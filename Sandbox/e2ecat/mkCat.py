@@ -40,10 +40,12 @@ print(E2EDIR)
 #directories for inputs and output
 e2ein  = E2EDIR
 test = True
-if test
+if test:
 	e2eout = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 else:                      
 	e2eout = E2EDIR + 'run/catalogs/'
+	
+print('output director is '+e2eout)	
 
 #make these directories if they do not exist already
 if os.path.isdir(e2eout + 'logfiles'):
