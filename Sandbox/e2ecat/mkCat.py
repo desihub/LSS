@@ -22,7 +22,12 @@ try:
 	target_type = str(sys.argv[1])
 except:	
 	target_type = 'LRG'
-truez=True
+
+Truez=False
+
+if Truez:
+	print('using true redshifts, whether assigned or not')
+
 
 
 #import from catalog code
@@ -45,7 +50,7 @@ if test:
 else:                      
 	e2eout = E2EDIR + 'run/catalogs/'
 	
-print('output director is '+e2eout)	
+print('output directory is '+e2eout)	
 
 #make these directories if they do not exist already
 if os.path.isdir(e2eout + 'logfiles'):
