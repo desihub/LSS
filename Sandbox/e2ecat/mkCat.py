@@ -23,11 +23,10 @@ try:
 except:	
 	target_type = 'LRG'
 
-Truez=False
+truez=False
 
-if Truez:
+if truez:
 	print('using true redshifts, whether assigned or not')
-
 
 
 #import from catalog code
