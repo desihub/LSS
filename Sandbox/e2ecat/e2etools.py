@@ -443,6 +443,14 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	aa[:] = str(tile)
 	fgu['TILE'] = aa
 	fgu['TILELOCID'] = 10000*tile +fgu['LOCATION']
+	fa = Table.read(fafls0[0],hdu='FIBERASSIGN')
+	fa.keep_columns(['TARGETID','LOCATION'])
+	#now mark assigned fiber locations
+	fj = join(fgu,fa,keys=['TARGETID'],join_type='left',table_names=['', 'ASSIGNED'])
+	wm = np.ma.getmaskarray(fj['LOCATION_ASSIGNED'])
+	fgu['TILELOCID_ASSIGNED'] = 0
+	fgu['TILELOCID_ASSIGNED'][~wm] = tile*10000+fj['LOCATION_ASSIGNED'][~wm]
+	
 
 	# Stack on the other fiberassign files. 
 	for i in range(1,len(fafls0)):
@@ -470,6 +478,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			aa[:] = str(tile)
 			fgun['TILE'] = aa
 			fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
+			fgun['TILELOCID_ASSIGNED'] = 0
 
 			#fgun['TILE'] = str(tile)
 			#print(len(fg),len(gloc))
@@ -477,6 +486,12 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			#print(len(fv))
 			fgo = fgu
 			fgu = unique(fv,keys='TARGETID')
+			fa = Table.read(fafls0[i],hdu='FIBERASSIGN')
+			fa.keep_columns(['TARGETID','LOCATION'])
+			fj = join(fgu,fa,keys=['TARGETID'],join_type='left',table_names=['', 'ASSIGNED'])
+			wm = np.ma.getmaskarray(fj['LOCATION_ASSIGNED'])
+			fgu['TILELOCID_ASSIGNED'][~wm] = tile*10000+fj['LOCATION_ASSIGNED'][~wm]
+
 			#fguc = setdiff((fgun,fgu))
 			dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 			didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
@@ -523,11 +538,19 @@ def combtargets(srun=0,nrun=7,program='dark'):
 				aa[:] = str(tile)
 				fgun['TILE'] = aa
 				fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
+				fgun['TILELOCID_ASSIGNED'] = 0
 
 				fv = vstack([fgu,fgun])
 				#print(len(fv))
 				fgo = fgu
 				fgu = unique(fv,keys='TARGETID')
+				fa = Table.read(faflsr[i],hdu='FIBERASSIGN')
+				fa.keep_columns(['TARGETID','LOCATION'])
+				fj = join(fgu,fa,keys=['TARGETID'],join_type='left',table_names=['', 'ASSIGNED'])
+				wm = np.ma.getmaskarray(fj['LOCATION_ASSIGNED'])
+				fgu['TILELOCID_ASSIGNED'][~wm] = tile*10000+fj['LOCATION_ASSIGNED'][~wm]
+
+
 				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
@@ -585,10 +608,18 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					fgun['PROGRAM'] = program
 					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
+					fgun['TILELOCID_ASSIGNED'] = 0
+
 					fv = vstack([fgu,fgun])
 					#print(len(fv))
 					fgo = fgu
 					fgu = unique(fv,keys='TARGETID')
+					fa = Table.read(faflsr[i],hdu='FIBERASSIGN')
+					fa.keep_columns(['TARGETID','LOCATION'])
+					fj = join(fgu,fa,keys=['TARGETID'],join_type='left',table_names=['', 'ASSIGNED'])
+					wm = np.ma.getmaskarray(fj['LOCATION_ASSIGNED'])
+					fgu['TILELOCID_ASSIGNED'][~wm] = tile*10000+fj['LOCATION_ASSIGNED'][~wm]
+
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
@@ -601,6 +632,9 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					print(str(len(fgu))+' unique targets')
 					#else:
 					#       print(str(tile)+' not observed in assigned epoch')      
+	#change TILELOCID to the assigned one for assigned targets
+	w = fgu['TILELOCID_ASSIGNED'] != 0
+	fgu['TILELOCID'][w] = fgu['TILELOCID_ASSIGNED'][w]
 	up = np.unique(fgu['PROGRAM'])
 	print(up)
 	for p in up:
@@ -786,7 +820,8 @@ def get_tilelocweight(type,program):
 	probl = np.zeros(len(dz))
 	#dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
 	locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-	loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+	loclz,nloclz = np.unique(dzz['TILELOCID_ASSIGNED'],return_counts=True)
+	print(np.max(nloclz),np.min(loclz))
 	print(len(locl),len(nloclz))
 	nm = 0
 	nmt =0
@@ -1286,7 +1321,6 @@ def plotran1tile(tile,epoch,dir='/global/homes/m/mjwilson/desi/survey-validation
 	mtlran = Table.read(dir+'/randoms_mtl_cuttod.fits')
 	jran = join(f,mtlran,keys=['TARGETID'])
 	plt.plot(jran['RA'],jran['DEC'],'k,')
-	plt.show()
 	plt.title('randoms on tile '+str(tile))
 	plt.show()
 	

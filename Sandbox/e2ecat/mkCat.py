@@ -38,44 +38,48 @@ print('end to end directory is')
 print(E2EDIR)
 
 #directories for inputs and output
-e2ein  = E2EDIR                      
-e2eout = E2EDIR + 'run/catalogs/'
+e2ein  = E2EDIR
+test = True
+if test
+	e2eout = '/project/projectdirs/desi/users/ajross/catalogs/test/'
+else:                      
+	e2eout = E2EDIR + 'run/catalogs/'
 
 #make these directories if they do not exist already
-if os.path.isdir(E2EDIR + 'run/catalogs/logfiles'):
+if os.path.isdir(e2eout + 'logfiles'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/logfiles')	
+	os.mkdir(e2eout + 'logfiles')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/bright'):
+if os.path.isdir(e2eout + 'bright'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/bright')	
+	os.mkdir(e2eout + 'bright')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/dark'):
+if os.path.isdir(e2eout + 'dark'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/dark')	
+	os.mkdir(e2eout + 'dark')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/gray'):
+if os.path.isdir(e2eout + 'gray'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/gray')	
+	os.mkdir(e2eout + 'gray')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/bright/randoms'):
+if os.path.isdir(e2eout + 'bright/randoms'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/bright/randoms')	
+	os.mkdir(e2eout + 'bright/randoms')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/dark/randoms'):
+if os.path.isdir(e2eout + 'dark/randoms'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/dark/randoms')	
+	os.mkdir(e2eout + 'dark/randoms')	
 
-if os.path.isdir(E2EDIR + 'run/catalogs/gray/randoms'):
+if os.path.isdir(e2eout + 'gray/randoms'):
 	pass
 else:
-	os.mkdir(E2EDIR + 'run/catalogs/gray/randoms')	
+	os.mkdir(e2eout + 'gray/randoms')	
 	
 
 logf = open(e2eout+'/logfiles/mkCat'+str(datetime.today())+'.log','w')
@@ -168,13 +172,13 @@ mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
 combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
-combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
+combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = True #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
 plotntile = False
 plotzeff = False
 plottilehist = False
 mkfulldat = True #make "full" catalog for data
-mkprob = False #add fraction with good z at tileloc to full data
+mkprob = True #add fraction with good z at tileloc to full data
 mkfullran = True #make "full" catalog for randoms
 mkclusdat = True #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
