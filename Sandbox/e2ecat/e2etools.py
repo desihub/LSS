@@ -170,10 +170,12 @@ def combran(srun=0,nrun=7,program='dark'):
 			fv = vstack([fgu,fgun])
 			#print(len(fv))
 			fgo = fgu
-			fgu = unique(fv,keys='TARGETID')
+			fgu = unique(fv,keys='TARGETID') 
 			#fguc = setdiff((fgun,fgu))
 			dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 			didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+			fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
 			aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 			aa[:] = '-'+str(tile)
 			#rint(aa)
@@ -220,9 +222,10 @@ def combran(srun=0,nrun=7,program='dark'):
 				fv = vstack([fgu,fgun])
 				#print(len(fv))
 				fgo = fgu
-				fgu = unique(fv,keys='TARGETID')
+				fgu = unique(fv,keys='TARGETID') #keeps the original rows so that the tile can keep getting added
 				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+				fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 				aa[:] = '-'+str(tile)
 				#rint(aa)
@@ -277,6 +280,8 @@ def combran(srun=0,nrun=7,program='dark'):
 					fgu = unique(fv,keys='TARGETID')
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
 					#rint(aa)
@@ -495,6 +500,8 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			#fguc = setdiff((fgun,fgu))
 			dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 			didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+			fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
 			aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 			aa[:] = '-'+str(tile)
 			#rint(aa)
@@ -553,6 +560,8 @@ def combtargets(srun=0,nrun=7,program='dark'):
 
 				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+				fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
 				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 				aa[:] = '-'+str(tile)
 				#rint(aa)
@@ -622,6 +631,8 @@ def combtargets(srun=0,nrun=7,program='dark'):
 
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
 					#rint(aa)
