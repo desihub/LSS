@@ -1211,6 +1211,17 @@ def mkfullran(type,program,bits,masktileloc=True,truez=False):
     	print('number of randoms, number after masking bad tilelocid')
     	print(len(tarf),len(tarf[~badloc]))
     	tarf = tarf[~badloc] 
+    	wd = dd['TILELOCID_ASSIGNED'] != 0
+    	pdict = dict(zip(dd[wd]['TILELOCID'], dd[wd]['PRIORITY']))
+    	tids = tarf['TILELOCID']
+    	rp = np.zeros(len(tids))
+    	for i in range(0,len(tids)):
+    		rp[i] = pdict[tids[i]]
+    	maxp = np.max(dd[wd]['PRIORITY']))	
+    	hp = rp > maxp
+    	print('number of randoms at higher priority: '+str(len(rp[hp])) )
+    	tarf = tarf[~hp]
+    	print('there are '+str(len(tarf))+' randoms left after masking based on priority')
     if truez:
     	outf = e2eout+ program+'/'+type+'_oneperztrue_full.ran.fits'    
     else:
