@@ -1210,14 +1210,21 @@ def mkfullran(type,program,bits,masktileloc=True,truez=False):
     	badloc = np.isin(tarf['TILELOCID'],bl)
     	print('number of randoms, number after masking bad tilelocid')
     	print(len(tarf),len(tarf[~badloc]))
-    	tarf = tarf[~badloc] 
-    	wd = dd['TILELOCID_ASSIGNED'] != 0
-    	pdict = dict(zip(dd[wd]['TILELOCID'], dd[wd]['PRIORITY']))
+    	tarf = tarf[~badloc]
+    	dall = fitsio.read(e2eout+ program+'/targets_oneper_jmtl_jztrue.fits') 
+    	wd = dall['TILELOCID_ASSIGNED'] != 0
+    	pdict = dict(zip(dall[wd]['TILELOCID'], dall[wd]['PRIORITY']))
     	tids = tarf['TILELOCID']
     	rp = np.zeros(len(tids))
+    	nnf = 0
     	for i in range(0,len(tids)):
+    		#try:
     		rp[i] = pdict[tids[i]]
-    	maxp = np.max(dd[wd]['PRIORITY'])	
+    		#except:
+    		#	nnf += 1
+    	print(str(nnf)+ ' tileloc in randoms not found to be assigned')	
+    	tarf['PRIORITY'] = rp
+    	maxp = np.max(dd['PRIORITY'])	
     	hp = rp > maxp
     	print('number of randoms at higher priority: '+str(len(rp[hp])) )
     	tarf = tarf[~hp]
