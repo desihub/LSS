@@ -1217,7 +1217,7 @@ def mkfullran(type,program,bits,masktileloc=True,truez=False):
     	rp = np.zeros(len(tids))
     	for i in range(0,len(tids)):
     		rp[i] = pdict[tids[i]]
-    	maxp = np.max(dd[wd]['PRIORITY']))	
+    	maxp = np.max(dd[wd]['PRIORITY'])	
     	hp = rp > maxp
     	print('number of randoms at higher priority: '+str(len(rp[hp])) )
     	tarf = tarf[~hp]
