@@ -1211,7 +1211,7 @@ def mkfullran(type,program,bits,masktileloc=True,truez=False):
     	print('number of randoms, number after masking bad tilelocid')
     	print(len(tarf),len(tarf[~badloc]))
     	tarf = tarf[~badloc]
-    	dall = fitsio.read(e2eout+ program+'/targets_oneper_jmtl_jztrue.fits') 
+    	dall = fitsio.read(e2eout+ program+'/targets_oneper_jmtl_jzcat.fits') 
     	wd = dall['TILELOCID_ASSIGNED'] != 0
     	pdict = dict(zip(dall[wd]['TILELOCID'], dall[wd]['PRIORITY']))
     	tids = tarf['TILELOCID']
