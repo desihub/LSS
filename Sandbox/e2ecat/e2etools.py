@@ -1218,10 +1218,10 @@ def mkfullran(type,program,bits,masktileloc=True,truez=False):
     	rp = np.zeros(len(tids))
     	nnf = 0
     	for i in range(0,len(tids)):
-    		#try:
-    		rp[i] = pdict[tids[i]]
-    		#except:
-    		#	nnf += 1
+    		try:
+    			rp[i] = pdict[tids[i]]
+    		except:
+    			nnf += 1
     	print(str(nnf)+ ' tileloc in randoms not found to be assigned')	
     	tarf['PRIORITY'] = rp
     	maxp = np.max(dd['PRIORITY'])	
