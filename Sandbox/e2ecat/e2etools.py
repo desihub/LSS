@@ -1146,6 +1146,16 @@ def mkfulldat(type,program,bits,truez=False):
 		tb = 2    
 	if type == 'BGS':
 		tb = 60    
+	if type == 'BGS_BRIGHT':
+		tb = 60 ; tb_bgs=1  
+	if type == 'BGS_FAINT':
+		tb = 60 ; tb_bgs=0  
+	if type == 'BGS_BRIGHT_HIP': 
+				#This is combination of BGS_BRIGHT and BGS_FAINT_HIP
+		tb = 60 ; tb_bgs=[1,3]  
+	if type == 'BGS_FAINT_HIP': 
+				#This is combination of BGS_FAINT and BGS_FAINT_HIP
+		tb = 60 ; tb_bgs=[0,3]  
 
 	print(truez)
 	if truez:
@@ -1158,6 +1168,15 @@ def mkfulldat(type,program,bits,truez=False):
 	tarf = cutphotmask(tarf,bits) 
 	wt = tarf['DESI_TARGET'] & 2**tb > 0
 	tt = tarf[wt]
+	#apply additional selection
+	if(type in ['BGS_BRIGHT','BGS_FAINT']):
+		wt=tarf['BGS_TARGET'] & 2**tb_bgs>0
+		tt=tarf[wt]
+	elif(type in ['BGS_BRIGHT_HIP','BGS_FAINT_HIP']):
+		wt1=tarf['BGS_TARGET'] & 2**tb_bgs[0]>0
+		wt2=tarf['BGS_TARGET'] & 2**tb_bgs[1]>0
+		print('sizes: ',np.sum(wt1),np.sum(wt2),np.sum(wt1+wt2))
+		tt=tarf[wt1+wt2]
 	
 	tt.write(outf,format='fits', overwrite=True)
     

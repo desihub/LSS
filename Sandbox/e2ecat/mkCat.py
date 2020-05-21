@@ -115,7 +115,7 @@ if ver == 'f':
 	nrunbright = 5
 
 
-if target_type == 'BGS':
+if target_type in ['BGS','BGS_BRIGHT','BGS_FAINT','BGS_BRIGHT_HIP','BGS_FAINT_HIP']:
 	print('Need to account for "legacy" LRG redshifts')
 	type = 60 #target bit for BGS
 	program = 'bright'
