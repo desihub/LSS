@@ -43,7 +43,8 @@ print(E2EDIR)
 
 #directories for inputs and output
 e2ein  = E2EDIR
-test = False#True
+
+test = True
 if test:
 	e2eout = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 else:                      
@@ -175,7 +176,7 @@ omega_matter =  "+str(omega_matter)+"\n\
 countfavail = False
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
-farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
+farandoms = True #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
 combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = True
 combtar = True #concatenate target files; doesn't need to be done if already done for LRGs 
