@@ -43,7 +43,7 @@ print(E2EDIR)
 
 #directories for inputs and output
 e2ein  = E2EDIR
-test = True
+test = False#True
 if test:
 	e2eout = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 else:                      
