@@ -1171,6 +1171,7 @@ def mkfulldat(type,program,bits,truez=False):
 	#apply additional selection
 	if(type in ['BGS_BRIGHT','BGS_FAINT']):
 		wt=tarf['BGS_TARGET'] & 2**tb_bgs>0
+		wt &= tarf['BGS_TARGET'] & 2**3 == 0 #do not select any HIP
 		tt=tarf[wt]
 	elif(type in ['BGS_BRIGHT_HIP','BGS_FAINT_HIP']):
 		wt1=tarf['BGS_TARGET'] & 2**tb_bgs[0]>0
