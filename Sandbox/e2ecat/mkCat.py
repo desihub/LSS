@@ -191,9 +191,9 @@ mkclusdat = True #make "clustering" catalog for data
 mkclusran = True #make clustering catalog for randoms
 mkNbar = True
 fillNZ = True
-plotfoot = False
-plottilecomp = False
-plotfatiledr = False
+plotfoot = True
+plottilecomp = True
+plotfatiledr = True
 
 
 if cutran:
