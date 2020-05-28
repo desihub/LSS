@@ -452,7 +452,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	fbt = dirxi+'xi024onepergELGztrue'+fl
 	db = np.loadtxt(fb).transpose()
 	dbt = np.loadtxt(fbt).transpose()
-	dbtt = np.loadtxt(fbtt).transpose()
+	#dbtt = np.loadtxt(fbtt).transpose()
 	plt.plot(db[0],db[1]/dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
 	plt.plot(db[0],dbt[1]/dbt[1],'--',color='b',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
