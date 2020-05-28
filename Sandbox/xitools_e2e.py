@@ -537,16 +537,16 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.8,2.2,truez=truez)
 # 	plotxi_compfkp(type,0.8,2.2)
 # 
- 	type = 'BGS'
- 	test = 'test'
- 	zmin =0.1
- 	zmax = 0.4
- 	prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
- 	subprocess.run(['chmod','+x','czpc.sh'])
- 	subprocess.run('./czpc.sh')
- 	calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
- 	#plotxi_compfkp(type,zmin,zmax)
- 	plotxiBGS_comptrue(zmin,zmax)
+	type = 'BGS'
+	test = 'test'
+	zmin =0.1
+	zmax = 0.4
+	prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
+	#plotxi_compfkp(type,zmin,zmax)
+	plotxiBGS_comptrue(zmin,zmax)
 
 	#plotxi_comptrue()
 	#plotxi2_comptrue()
