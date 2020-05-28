@@ -432,15 +432,16 @@ def plotxiBGS_comptrue(zmin=0.1,zmax=0.4):
 	db = np.loadtxt(fb).transpose()
 	dbt = np.loadtxt(fbt).transpose()
 	dbtt = np.loadtxt(fbtt).transpose()
-	plt.plot(db[0],db[1]*db[0]**2.,color='brown',label='BGS, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],dbt[1]*db[0]**2.,'--',color='brown',label='no fiber assignment')
-	plt.plot(db[0],dbtt[1]*db[0]**2.,':',color='brown',label='test')
+	plt.plot(db[0],db[1]/dbt[1],color='brown',label='BGS, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[1]/dbt[1],'--',color='brown',label='no fiber assignment')
+	plt.plot(db[0],dbtt[1]/dbt[1],':',color='brown',label='test')
 
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
 	plt.ylabel(r'$s^2\xi_0$')
 	plt.title('BGS e2e simulation, fiber weight correction')
-	plt.ylim(-100,120)
+	plt.ylim(.8,1.2)
+	plt.xlim(0,40)
 	plt.savefig(dirxi+'xi0e2egBGScomptrue.png')
 	plt.show()
 
@@ -541,10 +542,10 @@ if __name__ == '__main__':
 	test = 'test'
 	zmin =0.1
 	zmax = 0.4
-	prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
+	#prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
+	#subprocess.run(['chmod','+x','czpc.sh'])
+	#subprocess.run('./czpc.sh')
+	#calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
 	#plotxi_compfkp(type,zmin,zmax)
 	plotxiBGS_comptrue(zmin,zmax)
 
