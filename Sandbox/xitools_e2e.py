@@ -179,8 +179,11 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True):
-	e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
+def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
+	if test == 'test':
+		e2edir = '/project/projectdirs/desi/users/ajross/catalogs/test/'
+	else:
+		e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
@@ -219,7 +222,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True):
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test=''):
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
@@ -298,7 +301,7 @@ def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mu
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
 	muw = ''
-	fo = open(dirxi+'xi024oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirxi+'xi024oneper'+ver+test+type+truez+fkpw+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
@@ -421,6 +424,27 @@ def plotxi_comptrue():
 	plt.savefig(dirxi+'xi0e2egcomptrue.png')
 	plt.show()
 
+def plotxiBGS_comptrue(zmin=0.1,zmax=0.4):
+	fl = 'fkp'+str(zmin)+str(zmax)+'5st0.dat'
+	fb = dirxi+'xi024onepergBGS'+fl
+	fbtt = dirxi+'xi024onepergtestBGS'+fl
+	fbt = dirxi+'xi024onepergBGSztrue'+fl
+	db = np.loadtxt(fb).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	dbtt = np.loadtxt(fbtt).transpose()
+	plt.plot(db[0],db[1]*db[0]**2.,color='brown',label='BGS, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[1]*db[0]**2.,'--',color='brown',label='no fiber assignment')
+	plt.plot(db[0],dbtt[1]*db[0]**2.,':',color='brown',label='test')
+
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$s^2\xi_0$')
+	plt.title('BGS e2e simulation, fiber weight correction')
+	plt.ylim(-100,120)
+	plt.savefig(dirxi+'xi0e2egBGScomptrue.png')
+	plt.show()
+
+
 def plotxi2_comptrue():
 	fl = dirxi+'xi024onepergLRGfkp0.51.15st0.dat'
 	flt = dirxi+'xi024onepergLRGztruefkp0.51.15st0.dat'
@@ -491,7 +515,7 @@ def plotxi4_comptrue():
 
 if __name__ == '__main__':
 	import subprocess
-	truez = 'ztrue'
+	truez = ''
 # 	type = 'LRG'
 # 	prep4czxi(type,0.5,1.1,truez=truez)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
@@ -513,16 +537,20 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.8,2.2,truez=truez)
 # 	plotxi_compfkp(type,0.8,2.2)
 # 
-# 	type = 'BGS'
-# 	prep4czxi(type,0.1,0.4,program='bright',truez=truez)
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.1,0.4,truez=truez)
-# 	plotxi_compfkp(type,0.1,0.4)
+ 	type = 'BGS'
+ 	test = 'test'
+ 	zmin =0.1
+ 	zmax = 0.4
+ 	prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
+ 	subprocess.run(['chmod','+x','czpc.sh'])
+ 	subprocess.run('./czpc.sh')
+ 	calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
+ 	#plotxi_compfkp(type,zmin,zmax)
+ 	plotxiBGS_comptrue(zmin,zmax)
 
-	plotxi_comptrue()
-	plotxi2_comptrue()
-	plotxi4_comptrue()
+	#plotxi_comptrue()
+	#plotxi2_comptrue()
+	#plotxi4_comptrue()
 
 
 # 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
