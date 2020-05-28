@@ -466,6 +466,27 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	plt.savefig(dirxi+'xi0e2egELGcomptrue.png')
 	plt.show()
 
+def plotxiLRG_comptrue(zmin=0.8,zmax=1.6):
+	fl = 'fkp'+str(zmin)+str(zmax)+'5st0.dat'
+	fb = dirxi+'xi024onepergLRG'+fl
+	#fbtt = dirxi+'xi024onepergtestBGS'+fl
+	fbt = dirxi+'xi024onepergLRGztrue'+fl
+	db = np.loadtxt(fb).transpose()
+	dbt = np.loadtxt(fbt).transpose()
+	#dbtt = np.loadtxt(fbtt).transpose()
+	plt.plot(db[0],db[1]/dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[1]/dbt[1],'--',color='b',label='no fiber assignment')
+	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
+
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi_0/\xi_{0,{\rm no-fiber-assignment}}$')
+	plt.title('LRG e2e simulation, fiber weight correction')
+	plt.ylim(.8,1.2)
+	plt.xlim(0,100)
+	plt.savefig(dirxi+'xi0e2egLRGcomptrue.png')
+	plt.show()
+
 
 def plotxi2_comptrue():
 	fl = dirxi+'xi024onepergLRGfkp0.51.15st0.dat'
@@ -538,13 +559,17 @@ def plotxi4_comptrue():
 if __name__ == '__main__':
 	import subprocess
 	truez = ''
-# 	type = 'LRG'
+	type = 'LRG'
+	zmin=0.5
+	zmax=1.1
 # 	prep4czxi(type,0.5,1.1,truez=truez)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
 # 	calcxi_dataCZ(type,0.5,1.1,truez=truez)
 # 	plotxi_compfkp(type,0.5,1.1)
 # 
+	plotxiLRG_comptrue(zmin,zmax)
+	
 	type = 'ELG'
 	zmin=0.6
 	zmax=1.4
@@ -553,7 +578,7 @@ if __name__ == '__main__':
 # 	subprocess.run('./czpc.sh')
 #	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 	#plotxi_compfkp(type,0.6,1.4)
-	plotxiELG_comptrue(zmin,zmax)
+	#plotxiELG_comptrue(zmin,zmax)
 
 # 	type = 'QSO'
 # 	prep4czxi(type,0.8,2.2,truez=truez)
@@ -571,7 +596,7 @@ if __name__ == '__main__':
 	#subprocess.run('./czpc.sh')
 	#calcxi_dataCZ(type,zmin,zmax,truez=truez,test=test)
 	#plotxi_compfkp(type,zmin,zmax)
-	plotxiBGS_comptrue(zmin,zmax)
+	#plotxiBGS_comptrue(zmin,zmax)
 
 	#plotxi_comptrue()
 	#plotxi2_comptrue()
