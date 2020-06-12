@@ -239,7 +239,8 @@ def combran(srun=0,nrun=7,program='dark'):
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
-	fgu['PROGRAM'] = program
+	fgu['PROGRAM'] = 2
+	
 	if program == 'gray':
 		program = 'dark'
 		for run in range(srun,srun+nrun):
@@ -271,7 +272,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 					aa[:] = str(tile)
 					fgun['TILE'] = aa
-					fgun['PROGRAM'] = program
+					fgun['PROGRAM'] = 1
 					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 					fv = vstack([fgu,fgun])
@@ -281,6 +282,8 @@ def combran(srun=0,nrun=7,program='dark'):
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+					wp = (fgu['PROGRAM'][didsc] == 2) #find the duplicates that were gray time
+					fgu['PROGRAM'][didsc][wp] = 3 #these are gray and dark
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)

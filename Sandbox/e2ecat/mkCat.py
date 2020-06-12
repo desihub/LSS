@@ -23,7 +23,7 @@ try:
 except:	
 	target_type = 'LRG'
 
-truez=True
+truez=False
 
 if truez:
 	print('using true redshifts, whether assigned or not')
@@ -177,7 +177,7 @@ countfavail = False
 cutran = False #cut big random file to only occupy one percent footprint
 mkrandoms = False #make randoms specific for type/observing program
 farandoms = False #run randoms through fiberassign; doesn't need to be done for QSO if already done for LRGs
-combran = False #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
+combran = True #concatenate random files and match randoms from FAVAIL back to full info using targetID; doesn't need to be done if already done for LRGs
 matchran = False
 combtar = False #concatenate target files; doesn't need to be done if already done for LRGs 
 matchtar = False #match targets to mtl info and to zcat info; doesn't need to be done if already done for LRGs
@@ -187,10 +187,10 @@ plottilehist = False
 mkfulldat = False #make "full" catalog for data
 mkprob = False #add fraction with good z at tileloc to full data
 mkfullran = False #make "full" catalog for randoms
-mkclusdat = True #make "clustering" catalog for data
-mkclusran = True #make clustering catalog for randoms
-mkNbar = True
-fillNZ = True
+mkclusdat = False #make "clustering" catalog for data
+mkclusran = False #make clustering catalog for randoms
+mkNbar = False
+fillNZ = False
 plotfoot = False
 plottilecomp = False
 plotfatiledr = False
