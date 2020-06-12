@@ -499,18 +499,36 @@ def plotxiLRG_comptrue(zmin=0.8,zmax=1.6):
 	db = np.loadtxt(fb).transpose()
 	dbt = np.loadtxt(fbt).transpose()
 	#dbtt = np.loadtxt(fbtt).transpose()
-	plt.plot(db[0],db[1]/dbt[1],color='r',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],dbt[1]/dbt[1],'--',color='r',label='no fiber assignment')
+	plt.plot(db[0],db[1]-dbt[1],color='r',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[1]-dbt[1],'--',color='r',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
 
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
-	plt.ylabel(r'$\xi_0/\xi_{0,{\rm no-fiber-assignment}}$')
+	plt.ylabel(r'$\xi_0-\xi_{0,{\rm no-fiber-assignment}}$')
 	plt.title('LRG e2e simulation, fiber weight correction')
-	plt.ylim(.8,1.2)
+	plt.ylim(-0.02,0.01)
 	plt.xlim(0,100)
+	plt.tight_layout()
 	plt.savefig(dirxi+'xi0e2egLRGcomptrue.png')
 	plt.show()
+	
+	plt.clf()
+	
+	plt.plot(db[0],db[2]-dbt[2],color='r',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[2]-dbt[2],'--',color='r',label='no fiber assignment')
+	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
+
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi_2-\xi_{2,{\rm no-fiber-assignment}}$')
+	plt.title('LRG e2e simulation, fiber weight correction')
+	plt.ylim(-0.02,0.01)
+	plt.xlim(0,100)
+	plt.tight_layout()
+	plt.savefig(dirxi+'xi2e2egLRGcomptrue.png')
+	plt.show()
+	
 
 
 def plotxi2_comptrue():
@@ -594,7 +612,7 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.5,1.1,truez=truez)
 # 	plotxi_compfkp(type,0.5,1.1)
 # 
-	#plotxiLRG_comptrue(zmin,zmax)
+	plotxiLRG_comptrue(zmin,zmax)
 
 	type = 'ELG'
 # 	test = 'test'
@@ -615,7 +633,7 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
-	plotxiELG_comptrue(zmin,zmax)
+	#plotxiELG_comptrue(zmin,zmax)
 
 # 	type = 'QSO'
 # 	prep4czxi(type,0.8,2.2,truez=truez)
