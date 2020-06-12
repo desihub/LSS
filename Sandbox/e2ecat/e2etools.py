@@ -285,13 +285,15 @@ def combran(srun=0,nrun=7,program='dark'):
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 					fp = np.zeros(len(fgu),dtype=int)
 					fp[:] = fgu['PROGRAM'][:]
-					wp = (fp[didsc] == 2) #find the duplicates that were gray time
-					print(len(fgu[didsc][wp]))
+					wp = didsc & (fp == 2)#(fp[didsc] == 2) #find the duplicates that were gray time
+					print(len(fgu[wp]))
 					ll = 3*np.ones((len(fgu['PROGRAM'])),dtype=int)
-					fp[didsc][wp] = ll[didsc][wp] #these are gray and dark
-					print(len(fgu[didsc][wp]),np.unique(fp[didsc] ),len(ll[didsc][wp]),np.unique(ll[didsc][wp]))
+					#fp[didsc][wp] = ll[didsc][wp] #these are gray and dark
+					fp[wp] = ll[wp] #these are gray and dark
+					#print(len(fgu[didsc][wp]),np.unique(fp[didsc] ),len(ll[didsc][wp]),np.unique(ll[didsc][wp]))
+					print(len(fgu[wp]),np.unique(fp[wp] ),len(ll[wp]),np.unique(ll[wp]))
 					fgu['PROGRAM'] = fp
-					print(str(tile),len(fgu[didsc]),len(fp[didsc][wp]),np.unique(fp[didsc] ),np.unique(fgu['PROGRAM'][didsc] ))
+					#print(str(tile),len(fgu[didsc]),len(fp[didsc][wp]),np.unique(fp[didsc] ),np.unique(fgu['PROGRAM'][didsc] ))
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
