@@ -559,6 +559,7 @@ def plotxi4_comptrue():
 
 
 if __name__ == '__main__':
+	#export OMP_NUM_THREADS=64
 	import subprocess
 	truez = ''
 	type = 'LRG'
@@ -575,10 +576,20 @@ if __name__ == '__main__':
 	type = 'ELG'
 	zmin=0.6
 	zmax=1.4
-# 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-#	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+ 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+ 	subprocess.run(['chmod','+x','czpc.sh'])
+ 	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+ 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1)
+ 	subprocess.run(['chmod','+x','czpc.sh'])
+ 	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez=truez,mintile=1)
+ 	truez = 'ztrue'
+ 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+ 	subprocess.run(['chmod','+x','czpc.sh'])
+ 	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+
 	#plotxi_compfkp(type,0.6,1.4)
 	#plotxiELG_comptrue(zmin,zmax)
 
