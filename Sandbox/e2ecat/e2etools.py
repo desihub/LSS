@@ -588,7 +588,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
-	fgu['PROGRAM'] = program
+	fgu['PROGRAM'] = 2*np.ones(len(fgu),dtype=int)
 	if program == 'gray':
 		program = 'dark'
 		exps = fitsio.read(e2ein+'run/quicksurvey/'+programf+'/epochs-'+programf+'.fits')
@@ -645,6 +645,8 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+					wp = didsc & (fgu['PROGRAM']==2)
+					fgu['PROGRAM'][wp] = 3
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
