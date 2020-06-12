@@ -469,6 +469,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	plt.title('ELG e2e simulation, fiber weight correction')
 	plt.ylim(-0.02,0.01)
 	plt.xlim(0,100)
+	plt.tight_layout()
 	plt.savefig(dirxi+'xi0e2egELGcomptruentile.png')
 	plt.show()
 	
@@ -485,6 +486,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	plt.title('ELG e2e simulation, fiber weight correction')
 	plt.ylim(-0.05,0.01)
 	plt.xlim(0,100)
+	plt.tight_layout()
 	plt.savefig(dirxi+'xi2e2egELGcomptruentile.png')
 	plt.show()
 
