@@ -240,6 +240,7 @@ def combran(srun=0,nrun=7,program='dark'):
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
 	fgu['PROGRAM'] = 2
+	print(np.unique(fgu['PROGRAM']),len(fgu['PROGRAM']))
 	
 	if program == 'gray':
 		program = 'dark'
@@ -284,6 +285,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 					wp = (fgu['PROGRAM'][didsc] == 2) #find the duplicates that were gray time
 					fgu['PROGRAM'][didsc][wp] = 3 #these are gray and dark
+					print(str(tile),len(fgu[didsc]),len(fgu[didsc][wp]))
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
@@ -302,7 +304,7 @@ def combran(srun=0,nrun=7,program='dark'):
 	print(up)
 	for p in up:
 		w = fgu['PROGRAM'] == p
-		print(str(len(fgu[w]))+ ' '+p)	
+		print(str(len(fgu[w]))+ ' '+str(p))	
 	fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 def count_tarfavail(srun,nrun,program):
