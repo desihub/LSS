@@ -519,7 +519,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 			aa[:] = '-'+str(tile)
 			#rint(aa)
 			ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
-			print(ms)
+			#print(ms)
 			fgu['TILE'][didsc] = ms #add the tile info
 			print(str(len(fgu))+' unique targets')
 			#else:
@@ -579,7 +579,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 				aa[:] = '-'+str(tile)
 				#rint(aa)
 				ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
-				print(ms)
+				#print(ms)
 				fgu['TILE'][didsc] = ms #add the tile info
 
 				print(str(len(fgu))+' unique targets')
@@ -652,7 +652,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					aa[:] = '-'+str(tile)
 					#rint(aa)
 					ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
-					print(ms)
+					#print(ms)
 					fgu['TILE'][didsc] = ms #add the tile info
 
 					print(str(len(fgu))+' unique targets')
