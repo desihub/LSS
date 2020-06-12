@@ -458,19 +458,36 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	db1 = np.loadtxt(fb1).transpose()
 	dbt = np.loadtxt(fbt).transpose()
 	#dbtt = np.loadtxt(fbtt).transpose()
-	plt.plot(db[0],db[1]/dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],db1[1]/dbt[1],':',color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],dbt[1]/dbt[1],'--',color='b',label='no fiber assignment')
+	plt.plot(db[0],db[1]-dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],db1[1]-dbt[1],':',color='b',label='NTILE>1, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[1]-dbt[1],'--',color='b',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
 
 	plt.legend()
 	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
-	plt.ylabel(r'$\xi_0/\xi_{0,{\rm no-fiber-assignment}}$')
+	plt.ylabel(r'$\xi_0-\xi_{0,{\rm no-fiber-assignment}}$')
 	plt.title('ELG e2e simulation, fiber weight correction')
-	plt.ylim(.8,1.2)
+	#plt.ylim(.8,1.2)
 	plt.xlim(0,100)
 	plt.savefig(dirxi+'xi0e2egELGcomptruentile.png')
 	plt.show()
+	
+	plt.clf()
+
+	plt.plot(db[0],db[2]-dbt[2],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],db1[2]-dbt[2],':',color='b',label='NTILE>1, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],dbt[2]-dbt[2],'--',color='b',label='no fiber assignment')
+	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
+
+	plt.legend()
+	plt.xlabel(r'$s$ ($h^{-1}$Mpc)')
+	plt.ylabel(r'$\xi_2-\xi_{2,{\rm no-fiber-assignment}}$')
+	plt.title('ELG e2e simulation, fiber weight correction')
+	#plt.ylim(.8,1.2)
+	plt.xlim(0,100)
+	plt.savefig(dirxi+'xi2e2egELGcomptruentile.png')
+	plt.show()
+
 
 def plotxiLRG_comptrue(zmin=0.8,zmax=1.6):
 	fl = 'fkp'+str(zmin)+str(zmax)+'5st0.dat'
