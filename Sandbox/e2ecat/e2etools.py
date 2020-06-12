@@ -291,7 +291,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					#fp[didsc][wp] = ll[didsc][wp] #these are gray and dark
 					fp[wp] = ll[wp] #these are gray and dark
 					#print(len(fgu[didsc][wp]),np.unique(fp[didsc] ),len(ll[didsc][wp]),np.unique(ll[didsc][wp]))
-					print(len(fgu[wp]),np.unique(fp[wp] ),len(ll[wp]),np.unique(ll[wp]))
+					#print(len(fgu[wp]),np.unique(fp[wp] ),len(ll[wp]),np.unique(ll[wp]))
 					fgu['PROGRAM'] = fp
 					#print(str(tile),len(fgu[didsc]),len(fp[didsc][wp]),np.unique(fp[didsc] ),np.unique(fgu['PROGRAM'][didsc] ))
 
