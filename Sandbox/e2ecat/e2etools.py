@@ -286,7 +286,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					wp = (fgu['PROGRAM'][didsc] == 2) #find the duplicates that were gray time
 					ll = 3*np.ones((len(fgu['PROGRAM'])),dtype=int)
 					fgu['PROGRAM'][didsc][wp] = ll[didsc][wp] #these are gray and dark
-					print(str(tile),len(fgu[didsc]),len(fgu['PROGRAM'][didsc][wp]),np.unique(fgu['PROGRAM'][didsc][wp] ),np.unique(ll))
+					print(str(tile),len(fgu[didsc]),len(fgu['PROGRAM'][didsc]),np.unique(fgu['PROGRAM'][didsc] ))
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
 					aa[:] = '-'+str(tile)
