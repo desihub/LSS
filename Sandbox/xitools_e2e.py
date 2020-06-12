@@ -448,14 +448,18 @@ def plotxiBGS_comptrue(zmin=0.1,zmax=0.4):
 	plt.show()
 
 def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
-	fl = 'fkp'+str(zmin)+str(zmax)+'5st0.dat'
-	fb = dirxi+'xi024onepergELG'+fl
+	fl = 'fkp'+str(zmin)+str(zmax)
+	bs = '5st0.dat'
+	fb = dirxi+'xi024onepergELG'+fl+'0'+bs
+	fb1 = dirxi+'xi024onepergELG'+fl+'1'+bs
 	#fbtt = dirxi+'xi024onepergtestBGS'+fl
-	fbt = dirxi+'xi024onepergELGztrue'+fl
+	fbt = dirxi+'xi024onepergELGztrue'+fl+'0'+bs
 	db = np.loadtxt(fb).transpose()
+	db1 = np.loadtxt(fb1).transpose()
 	dbt = np.loadtxt(fbt).transpose()
 	#dbtt = np.loadtxt(fbtt).transpose()
 	plt.plot(db[0],db[1]/dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],db1[1]/dbt[1],':',color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
 	plt.plot(db[0],dbt[1]/dbt[1],'--',color='b',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
 
@@ -465,7 +469,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	plt.title('ELG e2e simulation, fiber weight correction')
 	plt.ylim(.8,1.2)
 	plt.xlim(0,100)
-	plt.savefig(dirxi+'xi0e2egELGcomptrue.png')
+	plt.savefig(dirxi+'xi0e2egELGcomptruentile.png')
 	plt.show()
 
 def plotxiLRG_comptrue(zmin=0.8,zmax=1.6):
@@ -591,7 +595,7 @@ if __name__ == '__main__':
 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
-	#plotxiELG_comptrue(zmin,zmax)
+	plotxiELG_comptrue(zmin,zmax)
 
 # 	type = 'QSO'
 # 	prep4czxi(type,0.8,2.2,truez=truez)
