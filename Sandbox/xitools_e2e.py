@@ -576,22 +576,22 @@ if __name__ == '__main__':
 # 	plotxi_compfkp(type,0.5,1.1)
 # 
 	plotxiLRG_comptrue(zmin,zmax)
-	
+
 	type = 'ELG'
 	zmin=0.6
 	zmax=1.4
- 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
- 	subprocess.run(['chmod','+x','czpc.sh'])
- 	subprocess.run('./czpc.sh')
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
- 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1)
- 	subprocess.run(['chmod','+x','czpc.sh'])
- 	subprocess.run('./czpc.sh')
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez,mintile=1)
- 	truez = 'ztrue'
- 	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
- 	subprocess.run(['chmod','+x','czpc.sh'])
- 	subprocess.run('./czpc.sh')
+	truez = 'ztrue'
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
