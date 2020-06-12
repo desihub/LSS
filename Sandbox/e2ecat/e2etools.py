@@ -283,7 +283,8 @@ def combran(srun=0,nrun=7,program='dark'):
 					dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
-					fp = fgu['PROGRAM']
+					fp = np.zeros(len(fgu))
+					fp[:] = fgu['PROGRAM'][:]
 					wp = (fp[didsc] == 2) #find the duplicates that were gray time
 					print(len(fgu[didsc][wp]))
 					ll = 3*np.ones((len(fgu['PROGRAM'])),dtype=int)
