@@ -179,7 +179,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
+def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mintile=0):
 	if test == 'test':
 		e2edir = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 	else:
@@ -188,9 +188,10 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
 	if fkp:
 		fkpw = 'fkp'
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.dat.fits')
-	ifiled = dircz+'ge2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
+	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)
+	ifiled = dircz+'g'+so+'4xi.dat'
 	fo = open(ifiled,'w')
-	w = (df['Z'] > zmin) & (df['Z'] < zmax)
+	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
 	df = df[w]
 	wt = df['WEIGHT']
 	if fkp:
@@ -200,9 +201,9 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.ran.fits')
-	ifiler = dircz+'re2e_oneper'+ver+type+truez+str(zmin)+str(zmax)+'4xi.dat'
+	ifiler = dircz+'r'+so+'4xi.dat'
 	fo = open(ifiler,'w')
-	w = (df['Z'] > zmin) & (df['Z'] < zmax)
+	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
 	df = df[w]
 	wt = df['WEIGHT']
 	if fkp:
@@ -212,7 +213,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
 	print(dirczpc)
-	froot = dirczpc+'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)
+	froot = dirczpc+so
 	cf = 'czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
@@ -222,12 +223,13 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test=''):
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test=''):
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test='',mintile=0):
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
+	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)
 
-	froot = dirczpc+'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)
+	froot = dirczpc+so
 	if rec == '':
 		
 		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
@@ -301,7 +303,7 @@ def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mu
 		xil2[i//bs] = xib2
 		xil4[i//bs] = xib4
 	muw = ''
-	fo = open(dirxi+'xi024oneper'+ver+test+type+truez+fkpw+str(zmin)+str(zmax)+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+	fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
 	for i in range(0,len(xil)):
 		r = bs/2.+i*bs+start
 		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')

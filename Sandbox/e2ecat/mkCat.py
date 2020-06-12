@@ -23,7 +23,7 @@ try:
 except:	
 	target_type = 'LRG'
 
-truez=False
+truez=True
 
 if truez:
 	print('using true redshifts, whether assigned or not')
