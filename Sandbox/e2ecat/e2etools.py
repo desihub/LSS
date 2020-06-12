@@ -239,7 +239,7 @@ def combran(srun=0,nrun=7,program='dark'):
 
 		print(np.unique(fgu['TILE']))
 		print('run '+str(run) +' done')
-	fgu['PROGRAM'] = 2
+	fgu['PROGRAM'] = 2*np.ones(len(fgu),dtype=int)
 	print(np.unique(fgu['PROGRAM']),len(fgu['PROGRAM']))
 	
 	if program == 'gray':
@@ -273,7 +273,7 @@ def combran(srun=0,nrun=7,program='dark'):
 					aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 					aa[:] = str(tile)
 					fgun['TILE'] = aa
-					fgun['PROGRAM'] = 1
+					fgun['PROGRAM'] = np.ones(len(fgun),dtype=int)
 					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 					fv = vstack([fgu,fgun])
