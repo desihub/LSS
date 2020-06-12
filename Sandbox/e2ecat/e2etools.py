@@ -665,7 +665,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 	print(up)
 	for p in up:
 		w = fgu['PROGRAM'] == p
-		print(str(len(fgu[w]))+ ' '+p)	
+		print(str(len(fgu[w]))+ ' '+str(p))	
 
 	fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
