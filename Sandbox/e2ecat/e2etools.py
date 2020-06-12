@@ -284,8 +284,8 @@ def combran(srun=0,nrun=7,program='dark'):
 					didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 					fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 					wp = (fgu['PROGRAM'][didsc] == 2) #find the duplicates that were gray time
-					ll = 3.*np.ones(len(fgu['PROGRAM'][didsc][wp]))
-					fgu['PROGRAM'][didsc][wp] += ll #these are gray and dark
+					ll = 3*np.ones((len(fgu['PROGRAM'][didsc][wp])),dtype=int)
+					fgu['PROGRAM'][didsc][wp] = ll #these are gray and dark
 					print(str(tile),len(fgu[didsc]),len(fgu[didsc][wp]),np.unique(fgu['PROGRAM'][didsc][wp] ))
 
 					aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
