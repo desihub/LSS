@@ -450,10 +450,10 @@ def plotxiBGS_comptrue(zmin=0.1,zmax=0.4):
 def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	fl = 'fkp'+str(zmin)+str(zmax)
 	bs = '5st0.dat'
-	fb = dirxi+'xi024onepergELG'+fl+'0'+bs
-	fb1 = dirxi+'xi024onepergELG'+fl+'1'+bs
+	fb = dirxi+'xi024e2e_onepergELG'+fl+'0'+bs
+	fb1 = dirxi+'xi024e2e_onepergELG'+fl+'1'+bs
 	#fbtt = dirxi+'xi024onepergtestBGS'+fl
-	fbt = dirxi+'xi024onepergELGztrue'+fl+'0'+bs
+	fbt = dirxi+'xi024e2e_onepergELGztrue'+fl+'0'+bs
 	db = np.loadtxt(fb).transpose()
 	db1 = np.loadtxt(fb1).transpose()
 	dbt = np.loadtxt(fbt).transpose()
@@ -578,22 +578,22 @@ if __name__ == '__main__':
 	#plotxiLRG_comptrue(zmin,zmax)
 
 	type = 'ELG'
-	test = 'test'
-	zmin=0.6
-	zmax=1.4
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez)
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez,mintile=1)
-	truez = 'ztrue'
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+# 	test = 'test'
+# 	zmin=0.6
+# 	zmax=1.4
+# 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+# 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.6,1.4,truez=truez,mintile=1)
+# 	truez = 'ztrue'
+# 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
+# 	subprocess.run(['chmod','+x','czpc.sh'])
+# 	subprocess.run('./czpc.sh')
+# 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
 	plotxiELG_comptrue(zmin,zmax)
