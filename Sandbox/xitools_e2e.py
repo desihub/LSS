@@ -579,8 +579,8 @@ if __name__ == '__main__':
 
 	type = 'ELG'
 # 	test = 'test'
- 	zmin=0.6
- 	zmax=1.4
+	zmin=0.6
+	zmax=1.4
 # 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
