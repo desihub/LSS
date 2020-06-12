@@ -627,7 +627,7 @@ def combtargets(srun=0,nrun=7,program='dark'):
 					aa = np.chararray(len(fgun),unicode=True,itemsize=100)
 					aa[:] = str(tile)
 					fgun['TILE'] = aa
-					fgun['PROGRAM'] = program
+					fgun['PROGRAM'] = 1
 					fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
 
 					fgun['TILELOCID_ASSIGNED'] = 0
