@@ -575,21 +575,22 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.5,1.1,truez=truez)
 # 	plotxi_compfkp(type,0.5,1.1)
 # 
-	plotxiLRG_comptrue(zmin,zmax)
+	#plotxiLRG_comptrue(zmin,zmax)
 
 	type = 'ELG'
+	test = 'test'
 	zmin=0.6
 	zmax=1.4
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1)
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez,mintile=1)
 	truez = 'ztrue'
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez)
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
@@ -605,7 +606,7 @@ if __name__ == '__main__':
 # 	plotxi_compfkp(type,0.8,2.2)
 # 
 	type = 'BGS'
-	test = 'test'
+	
 	zmin =0.1
 	zmax = 0.4
 	#prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
