@@ -852,6 +852,8 @@ def get_tilelocweight(type,program):
 	nm = 0
 	nmt =0
 	for i in range(0,len(locl)):
+		if i%10000 == 0:
+			print('at row '+str(i))
 		nt = nlocl[i]
 		loc = locl[i]
 		w = loclz == loc

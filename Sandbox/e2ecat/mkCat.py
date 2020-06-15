@@ -184,7 +184,7 @@ matchtar = False #match targets to mtl info and to zcat info; doesn't need to be
 plotntile = False
 plotzeff = False
 plottilehist = False
-mkfulldat = True #make "full" catalog for data
+mkfulldat = False #make "full" catalog for data
 mkprob = True #add fraction with good z at tileloc to full data
 mkfullran = True #make "full" catalog for randoms
 mkclusdat = True #make "clustering" catalog for data
@@ -262,32 +262,39 @@ if mkfulldat:
 	print(truez)
 	e2e.mkfulldat(target_type,program,imbits,truez=truez)
 	logf.write('ran mkfulldat\n')
+	print('ran mkfulldat\n')
 
 if mkprob:
 	e2e.get_tilelocweight(target_type,program)
 	logf.write('ran get_tilelocweight\n')
+	print('ran get_tilelocweight\n')
 
 if mkfullran:
     e2e.mkfullran(target_type,program,imbits,truez=truez)
     logf.write('ran mkfullran\n')
+    print('ran mkfullran\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     print(truez)
     e2e.mkclusdat(target_type,program,truez=truez)
     logf.write('ran mkclusdat\n')
+    print('ran mkclusdat\n'))
 
 if mkclusran:
     e2e.mkclusran(target_type,program,truez=truez)
     logf.write('ran mkclusran\n')
+    print('ran mkclusran\n')
     
 if mkNbar:
 	e2e.mkNbar(target_type,program,P0=P0,omega_matter=omega_matter,truez=truez)
 	logf.write('made nbar\n')
+	print('made nbar\n')
 
 if fillNZ:
 	e2e.fillNZ(target_type,program,P0=P0,truez=truez)	
 	logf.write('put NZ and weight_fkp into clustering catalogs\n')    
+	print('put NZ and weight_fkp into clustering catalogs\n')
 
 if plotfoot:
 	e2e.plotcompdr_full(target_type,program)  
