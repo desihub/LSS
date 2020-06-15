@@ -279,7 +279,7 @@ if mkclusdat:
     print(truez)
     e2e.mkclusdat(target_type,program,truez=truez)
     logf.write('ran mkclusdat\n')
-    print('ran mkclusdat\n'))
+    print('ran mkclusdat\n')
 
 if mkclusran:
     e2e.mkclusran(target_type,program,truez=truez)
