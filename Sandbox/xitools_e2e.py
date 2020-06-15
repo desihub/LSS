@@ -488,7 +488,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	plt.clf()
 
 	plt.plot(db[0],db[2]-dbt[2],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],db1[2]-dbt[2],':',color='b',label='NTILE>1, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],db1[2]-dbt[2],':',color='b',label='in dark area, '+str(zmin)+r'$ < z < $'+str(zmax))
 	plt.plot(db[0],dbt[2]-dbt[2],'--',color='b',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
 
@@ -630,7 +630,7 @@ if __name__ == '__main__':
 	test = 'test'
 	zmin=0.6
 	zmax=1.4
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=0)
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=-1)
 	subprocess.run(['chmod','+x','czpc.sh'])
 	subprocess.run('./czpc.sh')
 	calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=0)
