@@ -179,7 +179,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 	fo.close()		
 	return xil
 
-def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mintile=0):
+def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mintile=0,pg=-1):
 	if test == 'test':
 		e2edir = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 	else:
@@ -187,11 +187,16 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
+	pgw = ''
+	if pg != -1:
+		pgw += str(pg)	
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.dat.fits')
-	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)
+	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)+pgw
 	ifiled = dircz+'g'+so+'4xi.dat'
 	fo = open(ifiled,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
+	if pg != -1:
+		w &= (df['PROGRAM'] & 2**pg > 0)
 	df = df[w]
 	wt = df['WEIGHT']
 	if fkp:
@@ -204,6 +209,9 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	ifiler = dircz+'r'+so+'4xi.dat'
 	fo = open(ifiler,'w')
 	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
+	if pg != -1:
+		w &= (df['PROGRAM'] & 2**pg > 0)
+
 	df = df[w]
 	wt = df['WEIGHT']
 	if fkp:
@@ -223,11 +231,15 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
 	fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test='',mintile=0):
+def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test='',mintile=0,pg=-1):
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
-	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)
+	pgw = ''
+	if pg != -1:
+		pgw += str(pg)	
+
+	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)+pgw
 
 	froot = dirczpc+so
 	if rec == '':
@@ -451,7 +463,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	fl = 'fkp'+str(zmin)+str(zmax)
 	bs = '5st0.dat'
 	fb = dirxi+'xi024e2e_onepergELG'+fl+'0'+bs
-	fb1 = dirxi+'xi024e2e_onepergELG'+fl+'1'+bs
+	fb1 = dirxi+'xi024e2e_onepergELG'+fl+'00'+bs
 	#fbtt = dirxi+'xi024onepergtestBGS'+fl
 	fbt = dirxi+'xi024e2e_onepergELGztrue'+fl+'0'+bs
 	db = np.loadtxt(fb).transpose()
@@ -459,7 +471,7 @@ def plotxiELG_comptrue(zmin=0.8,zmax=1.6):
 	dbt = np.loadtxt(fbt).transpose()
 	#dbtt = np.loadtxt(fbtt).transpose()
 	plt.plot(db[0],db[1]-dbt[1],color='b',label='fiducial, '+str(zmin)+r'$ < z < $'+str(zmax))
-	plt.plot(db[0],db1[1]-dbt[1],':',color='b',label='NTILE>1, '+str(zmin)+r'$ < z < $'+str(zmax))
+	plt.plot(db[0],db1[1]-dbt[1],':',color='b',label='in dark area, '+str(zmin)+r'$ < z < $'+str(zmax))
 	plt.plot(db[0],dbt[1]-dbt[1],'--',color='b',label='no fiber assignment')
 	#plt.plot(db[0],dbtt[1]/dbt[1],':',color='b',label='test')
 
@@ -612,16 +624,16 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.5,1.1,truez=truez)
 # 	plotxi_compfkp(type,0.5,1.1)
 # 
-	plotxiLRG_comptrue(zmin,zmax)
+#	plotxiLRG_comptrue(zmin,zmax)
 
 	type = 'ELG'
-# 	test = 'test'
+	test = 'test'
 	zmin=0.6
 	zmax=1.4
-# 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test)
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
+	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=0)
+	subprocess.run(['chmod','+x','czpc.sh'])
+	subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=0)
 # 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
@@ -633,7 +645,7 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
-	#plotxiELG_comptrue(zmin,zmax)
+	plotxiELG_comptrue(zmin,zmax)
 
 # 	type = 'QSO'
 # 	prep4czxi(type,0.8,2.2,truez=truez)
