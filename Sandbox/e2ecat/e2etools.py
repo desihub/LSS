@@ -851,6 +851,7 @@ def get_tilelocweight(type,program):
 	print(len(locl),len(nloclz))
 	nm = 0
 	nmt =0
+	pd = []
 	for i in range(0,len(locl)):
 		if i%10000 == 0:
 			print('at row '+str(i))
@@ -865,9 +866,13 @@ def get_tilelocweight(type,program):
 			nm += 1.
 			nmt += nt
 		if len(loclz[w]) < 2:
-			wa = dz['TILELOCID'] == loc
+			#wa = dz['TILELOCID'] == loc
 			#print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
-			probl[wa] = nz/nt	
+			#probl[wa] = nz/nt
+			pd.append((loc,nz/nt))	
+	pd = dict(pd)
+	for i in range(0,len(dz)):
+		probl[i] = pd[dz[i][TILELOCID]]
 	print('number of fibers with no good z, number targets on those fibers')
 	print(nm,nmt)
 	#print(np.min(probl),np.max(probl))
