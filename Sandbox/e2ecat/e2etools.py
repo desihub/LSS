@@ -872,7 +872,7 @@ def get_tilelocweight(type,program):
 			pd.append((loc,nz/nt))	
 	pd = dict(pd)
 	for i in range(0,len(dz)):
-		probl[i] = pd[dz[i][TILELOCID]]
+		probl[i] = pd[dz['TILELOCID'][i]]
 	print('number of fibers with no good z, number targets on those fibers')
 	print(nm,nmt)
 	#print(np.min(probl),np.max(probl))
