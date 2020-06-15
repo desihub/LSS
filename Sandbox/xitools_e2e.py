@@ -630,10 +630,10 @@ if __name__ == '__main__':
 	test = 'test'
 	zmin=0.6
 	zmax=1.4
-	prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=-1)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=0)
+	#prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=-1)
+	#subprocess.run(['chmod','+x','czpc.sh'])
+	#subprocess.run('./czpc.sh')
+	calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=-1)
 # 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
