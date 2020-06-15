@@ -1218,7 +1218,7 @@ def mkclusdat(type,program,truez=False,weighttileloc=True):
 		if weighttileloc == True and truez == False:
 			ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
-	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE'])
+	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','PROGRAM'])
 	print('minimum,maximum weight')
 	print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
@@ -1308,7 +1308,7 @@ def mkclusran(type,program,truez=False,weightcomp=False):
     		ff['WEIGHT'][i] = zeffdic[ff['NTILE'][i]]
     	ff['WEIGHT'][i] *= ffd['WEIGHT'][ind]
 
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','PROGRAM'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
