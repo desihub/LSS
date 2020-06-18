@@ -860,17 +860,19 @@ def get_tilelocweight(type,program):
 		w = loclz == loc
 		nz = 0
 		if len(loclz[w]) == 1:
-			nz = nloclz[w]
-			pd.append((loc,nz/nt))
+			nz = 1.#nloclz[w]
+			
 		else:
 			#print(loclz[w],nt)	
 			nm += 1.
 			nmt += nt
-		#if len(loclz[w]) < 2:
+		if len(loclz[w]) > 1:
+			print('why is len(loclz[w]) > 1?')
 			#wa = dz['TILELOCID'] == loc
 			#print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
 			#probl[wa] = nz/nt
 			#pd.append((loc,nz/nt))	
+		pd.append((loc,nz/nt))	
 	pd = dict(pd)
 	for i in range(0,len(dz)):
 		probl[i] = pd[dz['TILELOCID'][i]]
