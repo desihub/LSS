@@ -135,7 +135,7 @@ def randomtiles(tilef ):
 		fitsio.write(fname,rt[inds],clobber=True)
 		print('wrote tile '+str(tile))
 
-def randomtilesi(tilef = minisvdir+'msvtiles.fits'):
+def randomtilesi(tilef ):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
@@ -155,7 +155,7 @@ def randomtilesi(tilef = minisvdir+'msvtiles.fits'):
 		fitsio.write(fname,rt[wdec][inds],clobber=True)
 		print('wrote tile '+str(tile))
 
-def ELGtilesi(tilef = minisvdir+'msv0tiles.fits'):
+def ELGtilesi(tilef ):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
@@ -176,7 +176,7 @@ def ELGtilesi(tilef = minisvdir+'msv0tiles.fits'):
 		print('wrote tile '+str(tile))
 
 
-def targtilesi(type,tilef = minisvdir+'msvtiles.fits'):
+def targtilesi(type,tilef ):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
@@ -198,7 +198,7 @@ def targtilesi(type,tilef = minisvdir+'msvtiles.fits'):
 
 
 	
-def mkminisvtilef(dirout=minisvdir,fout='msvtiles.fits'):
+def mkminisvtilef(dirout,fout='msvtiles.fits'):
 	'''
 	manually make tile fits file for sv tiles
 	'''
@@ -215,7 +215,7 @@ def mkminisvtilef(dirout=minisvdir,fout='msvtiles.fits'):
 	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
 	msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
-def mkminisvtilef_SV0(dirout=minisvdir,fout='msv0tiles.fits'):
+def mkminisvtilef_SV0(dirout,fout='msv0tiles.fits'):
 	'''
 	manually make tile fits file for minisv0 tiles
 	'''
