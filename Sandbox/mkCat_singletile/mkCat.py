@@ -16,6 +16,10 @@ import fitsio
 import glob
 import argparse
 
+#from this package
+import cattools as ct
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use")
@@ -26,50 +30,57 @@ type = args.type
 tile = args.tile
 night = args.night
 
+if type == 'LRG':
+	tarbit = 10 #targeting bit
+	pr = 4000 #priority; anything with higher priority vetos fiber in randoms
+if type == 'QSO':
+	tarbit = 12
+	pr = 10000
+if type == 'ELG':
+	tarbit = 11
+	pr = 10000
+
+
 print(type,tile,night)
+tp = 'CMX_TARGET'
+print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
+print(tarbit,pr,tp)
 
 sys.path.append("../")
 
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/test/'
 dirout = minisvdir+'LSScats/'
+randir = minisvdir+'random/'
+tardir = minisvdir+'targets/'
+fadir = tardir
+coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
-# try:
-# 	type = str(sys.argv[1])
-# 	print(type)
-# 	tile = int(sys.argv[2])
-# 	print(tile)
-# 	night = str(sys.argv[3])
-# 	print(night)
-# except:
-# 	print('requires three arguments: type=LRG/QSO/ELG, tile, night')	
+if type != 'ELG':
+	mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.37.0_all.fits'
+else:
+	mtlf = tardir+'MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'	
 
-# elgandlrgbits = [1,5,6,7,8,9,11,12,13]
-# 
-# 
-# def cutphotmask(aa):
-# 	keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
-# 	for biti in elgandlrgbits:
-# 		keep &= ((aa['MASKBITS'] & 2**biti)==0)
-# 	aa = aa[keep]
-# 	print(str(len(aa)) +' after imaging veto' )
-# 	return aa
-# 	
-# def countloc(aa):
-# 	locs = aa['LOCATION']
-# 	la = np.max(locs)+1
-# 	nl = np.zeros(la)
-# 	for i in range(0,len(aa)):
-# 		nl[locs[i]] += 1
-# 	return nl
-# 
-# def assignweights(aa,nl):
-# 	wts = np.ones(len(aa))
-# 	for i in range(0,len(aa)):
-# 		loc = aa[i]['LOCATION']
-# 		wts[i] = nl[loc]
-# 	return wts	
-# 
-# df = dirout+type +str(tile)+'_'+night+'_full.dat.fits'
+print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
+
+elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
+
+
+
+df = dirout+type +str(tile)+'_'+night+'_full.dat.fits'
+
+if mkfulldat:
+    tspec = ct.combspecdata(tile,night)
+    goodloc = ct.goodlocdict(tspec)
+    tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
+    
+    tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
+    wz = tout['ZWARN']*0 == 0
+    print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
+
+    fout = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
+    tout.write(fout,format='fits', overwrite=True) 
+    print('wrote matched targets/redshifts to '+fout)
+
 # dfout = dirout+type +str(tile)+'_'+night+'_clustering.dat.fits'
 # rf = dirout+type +str(tile)+'_'+night+'_full.ran.fits'
 # rfout = dirout+type +str(tile)+'_'+night+'_clustering.ran.fits'	
