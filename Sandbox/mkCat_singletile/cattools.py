@@ -55,7 +55,7 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
     print(len(tfa),len(tfa[wgt]))
     tfa = unique(tfa[wgt],keys=['TARGETID'])
     tt = Table.read(mtlf)
-    wtype = ((tt[tp] & 2**bit) > 0)
+    wtype = ((tt[tp] & 2**tarbit) > 0)
     tt = tt[wtype]
     tfa = join(tfa,tt,keys=['TARGETID'])
     tft = join(tft,tt,keys=['TARGETID'])
