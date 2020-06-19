@@ -43,7 +43,7 @@ def goodlocdict(tf):
     print(str(len(tf[wloc])) + ' locations with FIBERSTATUS 0')
     goodloc = tf[wloc]['LOCATION']
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
-    return pdict
+    return pdict,goodloc
 
 def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
     #get target info

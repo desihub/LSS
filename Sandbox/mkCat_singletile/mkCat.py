@@ -70,7 +70,7 @@ mkfulldat = True
 
 if mkfulldat:
     tspec = ct.combspecdata(tile,night,coaddir)
-    goodloc = ct.goodlocdict(tspec)
+    pdict,goodloc = ct.goodlocdict(tspec)
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
     
     tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
