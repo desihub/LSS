@@ -66,7 +66,7 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 
 
 
-df = dirout+type +str(tile)+'_'+night+'_full.dat.fits'
+mkfulldat = True
 
 if mkfulldat:
     tspec = ct.combspecdata(tile,night)
