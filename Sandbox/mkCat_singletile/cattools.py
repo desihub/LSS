@@ -19,8 +19,8 @@ def combspecdata(tile,night):
         try:
             fitsio.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits')
             specs.append(si)
-    except:
-        print('no spectrograph '+str(si)+ ' on night '+night)
+        except:
+            print('no spectrograph '+str(si)+ ' on night '+night)
     print('spectrographs with data:')
     print(specs)			
     tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
@@ -30,7 +30,10 @@ def combspecdata(tile,night):
         tnf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         tspec = vstack([tspec,tn])
         tf = vstack([tf,tnf])
-    return tspec,tf
+    tspec['LOCATION'] = tf['LOCATION']
+    tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
+    tspec['PRIORITY'] = tf['PRIORITY']
+    return tspec
 
 def goodlocdict(tf):
     '''
@@ -75,7 +78,6 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
 
     return tfa
 
-print(str(len(tfa)) +' unique targets with good locations out of '+str(len(tft))+ ' unique targets occupying ' +str(len(np.unique(tft['LOCATION']))) + ' unique locations ')
 
 
 def cutphotmask(aa,bits):
