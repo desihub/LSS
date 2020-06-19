@@ -64,7 +64,7 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
     #Mark targets that actually got assigned fibers
     tfall = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
     wgl = np.isin(tfall['LOCATION'],goodloc)
-    wtype = ((tfall[tp] & 2**bit) > 0)
+    wtype = ((tfall[tp] & 2**tarbit) > 0)
     wtfa = wgl & wtype
     print('number of assigned ' +type +' fibers at good locations '+str(len(tfall[wtfa])))
     tfall.keep_columns(['TARGETID','LOCATION'])
