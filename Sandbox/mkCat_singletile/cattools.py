@@ -11,7 +11,7 @@ import desimodel.footprint
 import desimodel.focalplane
 
 
-def combspecdata(tile,night):
+def combspecdata(tile,night,coaddir ):
     #put data from different spectrographs together, one table for fibermap, other for z
     specs = []
     #find out which spectrograph have data

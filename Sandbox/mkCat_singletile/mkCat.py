@@ -69,7 +69,7 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 mkfulldat = True
 
 if mkfulldat:
-    tspec = ct.combspecdata(tile,night)
+    tspec = ct.combspecdata(tile,night,coaddir)
     goodloc = ct.goodlocdict(tspec)
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
     
