@@ -48,8 +48,8 @@ print(tarbit,pr,tp)
 
 sys.path.append("../")
 
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/test/'
-dirout = minisvdir+'LSScats/'
+minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+dirout = minisvdir+'LSScats/test/'
 randir = minisvdir+'random/'
 tardir = minisvdir+'targets/'
 fadir = tardir
