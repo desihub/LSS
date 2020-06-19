@@ -104,7 +104,7 @@ def assignweights(aa,nl):
     return wts	
 
 
-def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=minisvdir+'random/'):
+def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=''):
 	'''
 	cut imaging random file to first N entries and add columns necessary for fiberassignment routines
 	'''
