@@ -122,7 +122,7 @@ def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=''):
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
-def randomtiles(tilef = minisvdir+'msvtiles.fits'):
+def randomtiles(tilef ):
 	tiles = fitsio.read(tilef)
 	rt = fitsio.read(minisvdir+'random/random_mtl.fits')
 	print('loaded random file')
