@@ -59,7 +59,7 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
     tt = tt[wtype]
     tfa = join(tfa,tt,keys=['TARGETID'])
     tft = join(tft,tt,keys=['TARGETID'])
-    print(str(len(tfa)) +' unique '+type+' targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique '+type +' targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
+    print(str(len(tfa)) +' unique targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 
     #Mark targets that actually got assigned fibers
     tfall = Table.read(fadir+'fiberassign-0'+str(tile)+'.fits',hdu='FIBERASSIGN')
