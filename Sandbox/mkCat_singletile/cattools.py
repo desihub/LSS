@@ -78,6 +78,35 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
 
     return tfa
 
+def mkfullran(tile,goodloc,pdict,randir):
+    ranf = randir+'fba-0'+str(tile)+'.fits'
+    f1 = fitsio.read(ranf)
+    f2 = fitsio.read(ranf,ext=2)
+    f3 = fitsio.read(ranf,ext=3)
+
+    goodranw = np.isin(f3['LOCATION'],goodloc)
+    goodranid = np.unique(f3[goodranw]['TARGETID'])
+
+    t2 = Table.read(ranf,hdu=2)
+    tj = Table()
+    tj['TARGETID'] = f3[goodranw]['TARGETID']
+    tj['LOCATION'] = f3[goodranw]['LOCATION']
+    tj['FIBER'] = f3[goodranw]['FIBER']
+    tj = unique(tj,keys=['TARGETID'])
+    t2.remove_columns(['PRIORITY','OBSCONDITIONS','SUBPRIORITY'])
+    rant = join(tj,t2,keys=['TARGETID'],join_type='left')    
+    #now match back to randoms with all columns
+
+    tall = Table.read(randir+'tilenofa-'+str(tile)+'.fits')
+    tall.remove_columns(['NUMOBS_MORE','PRIORITY','OBSCONDITIONS','SUBPRIORITY','NUMOBS_INIT'])
+
+    ranall = join(rant,tall,keys=['TARGETID'],join_type='left')
+    print('number of randoms:')
+    print(len(ranall))
+
+
+    ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
+    return ranall
 
 
 def cutphotmask(aa,bits):
