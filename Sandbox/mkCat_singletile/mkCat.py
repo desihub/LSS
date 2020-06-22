@@ -67,15 +67,15 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 
 
 
-mkfulldat = False
-mkfullran = True
+mkfulld = False
+mkfullr = True
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
 Not eager to add them in now since old data was observed with bugged version of fiberassign
 '''
 
-if mkfulldat:
+if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
@@ -88,10 +88,10 @@ if mkfulldat:
     tout.write(fout,format='fits', overwrite=True) 
     print('wrote matched targets/redshifts to '+fout)
     
-if mkfullran:
+if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
-    ranall = mkfullran(tile,goodloc,pdict,randir)
+    ranall = ct.mkfullran(tile,goodloc,pdict,randir)
     fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
     ranall.write(fout,format='fits', overwrite=True)
     
