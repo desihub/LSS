@@ -67,7 +67,8 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 
 
 
-mkfulldat = True
+mkfulldat = False
+mkfullran = True
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
