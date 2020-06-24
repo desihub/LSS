@@ -92,7 +92,7 @@ if mkfulld:
     tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
     wz = tout['ZWARN']*0 == 0
     print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
-    print(tout.dtype.names))
+    print(tout.dtype.names)
 
     
     tout.write(ffd,format='fits', overwrite=True) 
