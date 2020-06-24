@@ -56,6 +56,12 @@ tardir = minisvdir+'targets/'
 fadir = tardir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
+ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
+ffr = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
+fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
+fcr = dirout+type+str(tile)+'_'+night+'_clustering.ran.fits'
+
+
 if type != 'ELG':
 	mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.37.0_all.fits'
 else:
@@ -65,10 +71,13 @@ print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 
+zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
+weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 
 mkfulld = False
-mkfullr = True
+mkfullr = False
+mkclusd = True
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
@@ -84,17 +93,19 @@ if mkfulld:
     wz = tout['ZWARN']*0 == 0
     print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
 
-    fout = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
-    tout.write(fout,format='fits', overwrite=True) 
+    
+    tout.write(ffd,format='fits', overwrite=True) 
     print('wrote matched targets/redshifts to '+fout)
     
 if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
     ranall = ct.mkfullran(tile,goodloc,pdict,randir)
-    fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
-    ranall.write(fout,format='fits', overwrite=True)
-    
+    #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
+    ranall.write(ffr,format='fits', overwrite=True)
+
+if mkclusd:
+    ct.mkclusdat(ffd,fcd,zfailmd,weightmd)    
        
 
 # dfout = dirout+type +str(tile)+'_'+night+'_clustering.dat.fits'

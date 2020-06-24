@@ -108,6 +108,40 @@ def mkfullran(tile,goodloc,pdict,randir):
     ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
     return ranall
 
+def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc'):
+    dd = fitsio.read(ffd)	
+    ddm = cutphotmask(dd)
+    #print(np.unique(dd['ZWARN']))
+    maxp = np.max(dd['PRIORITY'])
+    if zfailmd == 'zwarn':
+        wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
+        wg = (ddm['ZWARN'] == 0) 
+    loc_fail = dd[wfail]['LOCATION']	
+    print(' number of redshift failures:')
+    print(len(loc_fail))
+# 
+    
+    nl = countloc(ddm)
+# 
+    
+    ddzg = ddm[wg]
+# 
+    print('clustering catalog will have '+str(len(ddzg))+ ' objects in it')
+# 
+    ddclus = Table()
+    ddclus['RA'] = ddzg['RA']
+    ddclus['DEC'] = ddzg['DEC']
+    ddclus['Z'] = ddzg['Z']
+    
+    if weightmd == 'wloc':
+        ddclus['WEIGHT'] = assignweights(ddzg,nl)
+# 
+    print('minimum,maximum weight')
+    print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))	
+# 
+    ddclus.write(fcd,format='fits',overwrite=True)
+    print('write clustering file to '+fcd)
+
 
 def cutphotmask(aa,bits):
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
