@@ -108,9 +108,10 @@ def mkfullran(tile,goodloc,pdict,randir):
     ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
     return ranall
 
-def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc'):
+def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
     dd = fitsio.read(ffd)	
-    ddm = cutphotmask(dd)
+    
+    ddm = cutphotmask(dd,maskbits)
     #print(np.unique(dd['ZWARN']))
     maxp = np.max(dd['PRIORITY'])
     if zfailmd == 'zwarn':

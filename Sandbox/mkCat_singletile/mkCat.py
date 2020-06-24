@@ -105,7 +105,7 @@ if mkfullr:
     ranall.write(ffr,format='fits', overwrite=True)
 
 if mkclusd:
-    ct.mkclusdat(ffd,fcd,zfailmd,weightmd)    
+    ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
        
 
 # dfout = dirout+type +str(tile)+'_'+night+'_clustering.dat.fits'
