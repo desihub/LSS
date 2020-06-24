@@ -145,6 +145,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
 
 
 def cutphotmask(aa,bits):
+    print(str(len(aa)) +' after before veto' )
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
     for biti in bits:
         keep &= ((aa['MASKBITS'] & 2**biti)==0)

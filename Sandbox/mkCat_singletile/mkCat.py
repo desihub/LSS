@@ -75,7 +75,7 @@ zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 
-mkfulld = False
+mkfulld = True
 mkfullr = False
 mkclusd = True
 
@@ -92,6 +92,7 @@ if mkfulld:
     tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
     wz = tout['ZWARN']*0 == 0
     print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
+    print(np.max(tout['PRIORITY']))
 
     
     tout.write(ffd,format='fits', overwrite=True) 
