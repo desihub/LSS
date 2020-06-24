@@ -77,7 +77,7 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkfulld = True
 mkfullr = False
-mkclusd = True
+mkclus = True
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
@@ -105,52 +105,10 @@ if mkfullr:
     #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
     ranall.write(ffr,format='fits', overwrite=True)
 
-if mkclusd:
-    ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
+if mkclus:
+    maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
        
-
-# dfout = dirout+type +str(tile)+'_'+night+'_clustering.dat.fits'
-# rf = dirout+type +str(tile)+'_'+night+'_full.ran.fits'
-# rfout = dirout+type +str(tile)+'_'+night+'_clustering.ran.fits'	
-# dd = fitsio.read(df)	
-# print(np.unique(dd['ZWARN']))
-# maxp = np.max(dd['PRIORITY'])
-# 
-# dchi2 = 0
-# 
-# if type != 'LRG':
-# 	wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
-# else:
-# 	wfail = (dd['ZWARN'] != 999999) & ((dd['DELTACHI2'] <= dchi2) | (dd['ZWARN'] > 0)	)
-# 
-# loc_fail = dd[wfail]['LOCATION']	
-# print(len(loc_fail))
-# 
-# ddm = cutphotmask(dd)
-# nl = countloc(ddm)
-# 
-# wg = (ddm['ZWARN'] == 0) 
-# if type == 'LRG':
-# 	wg &= ddm['DELTACHI2'] > dchi2
-# 
-# ddzg = ddm[wg]
-# 
-# print('clustering catalog will have '+str(len(ddzg))+ ' objects in it')
-# 
-# ddclus = Table()
-# ddclus['RA'] = ddzg['RA']
-# ddclus['DEC'] = ddzg['DEC']
-# ddclus['Z'] = ddzg['Z']
-# ddclus['WEIGHT'] = assignweights(ddzg,nl)
-# 
-# print('minimum,maximum weight')
-# print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))	
-# 
-# ddclus.write(dfout,format='fits',overwrite=True)
-# 
-# #plt.hist(ddclus['Z'],normed=True,bins=20,range=(0.5,1.1),histtype='step')
-# #plt.hist(ddclus['Z'],weights=ddclus['WEIGHT'],normed=True,bins=20,range=(0.5,1.1),histtype='step')
-# #plt.show()
+    ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
 # 
 # dr = fitsio.read(rf)
 # drm = cutphotmask(dr)
