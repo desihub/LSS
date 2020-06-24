@@ -174,7 +174,7 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
 
 
 def cutphotmask(aa,bits):
-    print(str(len(aa)) +' after before veto' )
+    print(str(len(aa)) +' before imaging veto' )
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
     for biti in bits:
         keep &= ((aa['MASKBITS'] & 2**biti)==0)
