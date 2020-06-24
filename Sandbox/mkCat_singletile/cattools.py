@@ -148,7 +148,7 @@ def cutphotmask(aa,bits):
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
     for biti in bits:
         keep &= ((aa['MASKBITS'] & 2**biti)==0)
-        aa = aa[keep]
+    aa = aa[keep]
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
