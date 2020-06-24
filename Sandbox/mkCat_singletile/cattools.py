@@ -145,7 +145,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
     print('write clustering data file to '+fcd)
     return maxp,loc_fail
 
-def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits):
+def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
     dr = fitsio.read(ffr)
     drm = cutphotmask(dr,maskbits)
 # 
