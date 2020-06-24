@@ -9,6 +9,7 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane
+from random import random
 
 
 def combspecdata(tile,night,coaddir ):
@@ -141,7 +142,35 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
     print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))	
 # 
     ddclus.write(fcd,format='fits',overwrite=True)
-    print('write clustering file to '+fcd)
+    print('write clustering data file to '+fcd)
+    return maxp,loc_fail
+
+def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits):
+    dr = fitsio.read(ffr)
+    drm = cutphotmask(dr,maskbits)
+# 
+    wpr = drm['PRIORITY'] <= maxp
+    wzf = np.isin(drm['LOCATION'],loc_fail)
+    wzt = wpr & ~wzf
+# 
+    drmz = drm[wzt]
+    print(str(len(drmz))+' after cutting based on failures and priority')
+    rclus = Table()
+    rclus['RA'] = drmz['RA']
+    rclus['DEC'] = drmz['DEC']
+    dd = fitsio.read(fcd) 
+    rclus['Z'] = 0
+    rclus['WEIGHT'] = 1
+    for i in range(0,len(rclus)):
+        ind = int(random()*len(dd))
+        zr = dd[ind]['Z']
+        wr = dd[ind]['WEIGHT']
+        rclus[i]['Z'] = zr
+        rclus[i]['WEIGHT'] = wr
+    
+    rclus.write(fcr,format='fits',overwrite=True)
+    print('write clustering random file to '+fcr)
+
 
 
 def cutphotmask(aa,bits):
