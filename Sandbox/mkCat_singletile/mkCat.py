@@ -89,14 +89,14 @@ if mkfulld:
     pdict,goodloc = ct.goodlocdict(tspec)
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
     
-    tout = join(tfa,tspec,keys=['TARGETID'],join_type='left')
+    tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
     wz = tout['ZWARN']*0 == 0
     print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
     print(tout.dtype.names)
 
     
     tout.write(ffd,format='fits', overwrite=True) 
-    print('wrote matched targets/redshifts to '+fout)
+    print('wrote matched targets/redshifts to '+ffd)
     
 if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
