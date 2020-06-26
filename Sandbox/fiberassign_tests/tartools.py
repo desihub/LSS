@@ -36,11 +36,11 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     # First select the science targets
 
-    input_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dir+"/"+tarver+"/targets/main/resolve"
+    input_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/targets/main/resolve"
 
     print('working with target data in '+input_dir+' IS THAT CORRECT???')
 
-    sky_file = "/global/cfs/projectdirs/desi/target/catalogs/"+dir+"/"+tarver+"/skies/skies-"+dr+"-"+tarver+".fits"
+    sky_file = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/skies/skies-"+dr+"-"+tarver+".fits"
 
     print('working with skies data in '+sky_file+' IS THAT CORRECT???')
 
