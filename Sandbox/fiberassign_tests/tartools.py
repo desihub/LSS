@@ -32,11 +32,11 @@ from desitarget.mtl import make_mtl
 
 
 
-def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.31.1',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/'):
+def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/',prog='dark'):
 
     # First select the science targets
 
-    input_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/targets/main/resolve"
+    input_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/targets/main/resolve/"+prog
 
     print('working with target data in '+input_dir+' IS THAT CORRECT???')
 
