@@ -99,31 +99,31 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
 
 def mkmtl():
-    '''
-    initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
-    '''
-    # Load the raw science / standard target sample and prune columns
+	'''
+	initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
+	'''
+	# Load the raw science / standard target sample and prune columns
 
-    keep_columns = [
-        'TARGETID', 
-        'RA', 
-        'DEC',
-        'RA_IVAR',
-        'DEC_IVAR',
-        'PMRA',
-        'PMDEC',
-        'PMRA_IVAR',
-        'PMDEC_IVAR',
-        'DESI_TARGET', 
-        'BGS_TARGET', 
-        'MWS_TARGET', 
-        'SUBPRIORITY', 
-        'BRICKNAME',
-        'BRICKID',
-        'BRICK_OBJID',
-        'PRIORITY_INIT', 
-        'NUMOBS_INIT'
-    ]
+	keep_columns = [
+		'TARGETID', 
+		'RA', 
+		'DEC',
+		'RA_IVAR',
+		'DEC_IVAR',
+		'PMRA',
+		'PMDEC',
+		'PMRA_IVAR',
+		'PMDEC_IVAR',
+		'DESI_TARGET', 
+		'BGS_TARGET', 
+		'MWS_TARGET', 
+		'SUBPRIORITY', 
+		'BRICKNAME',
+		'BRICKID',
+		'BRICK_OBJID',
+		'PRIORITY_INIT', 
+		'NUMOBS_INIT'
+	]
 
 	fd = fitsio.FITS(target_sample)
 	targets_raw = fd[1].read(columns=keep_columns)
