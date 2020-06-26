@@ -40,7 +40,7 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     print('working with target data in '+input_dir+' IS THAT CORRECT???')
 
-    sky_file = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/skies/skies-"+dr+"-"+tarver+".fits"
+    sky_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/skies"
 
     print('working with skies data in '+sky_file+' IS THAT CORRECT???')
 
@@ -77,22 +77,34 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     print("Working on sky...", flush=True)
 
+    input_files = glob.glob(os.path.join(sky_dir, "*.fits"))
+
+    sky_data = []
+
+    for file in input_files:
+        print("Working on {}".format(os.path.basename(file)), flush=True)
+        fd = fitsio.FITS(file, "r")
+        fdata = fd[1].read()
+        inside = np.where(
+            np.logical_and(
+                np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
+                np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
+            )
+        )[0]
+        sky_data.append(fdata[inside])
+        fd.close()
+
+    sky_data = np.concatenate(sky_data)
+
+
     out_file = outdir+"target_sky_sample.fits" 
     if os.path.isfile(out_file):
         os.remove(out_file)
 
-    fd = fitsio.FITS(sky_file, "r")
-    fdata = fd[1].read()
-    inside = np.where(
-        np.logical_and(
-            np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
-            np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
-        )
-    )[0]
 
     outfd = fitsio.FITS(out_file, "rw")
     outfd.write(None, header=None, extname="PRIMARY")
-    outfd.write(fdata[inside], header=None, extname="TARGETS")
+    outfd.write(sky_data, header=None, extname="TARGETS")
     outfd.close()
 
     fd.close()
