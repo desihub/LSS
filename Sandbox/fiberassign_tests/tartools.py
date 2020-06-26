@@ -42,7 +42,7 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     sky_dir = "/global/cfs/projectdirs/desi/target/catalogs/"+dr+"/"+tarver+"/skies"
 
-    print('working with skies data in '+sky_file+' IS THAT CORRECT???')
+    print('working with skies data in '+sky_dir+' IS THAT CORRECT???')
 
 
     input_files = glob.glob(os.path.join(input_dir, "*.fits"))
