@@ -28,6 +28,19 @@ from desitarget.targetmask import desi_mask, obsconditions
 
 from desitarget.mtl import make_mtl
 
+from fiberassign.targets import (
+    Targets,
+    TargetTree,
+    TargetsAvailable,
+    LocationsAvailable,
+    load_target_table,
+    default_target_masks,
+    TARGET_TYPE_SCIENCE, 
+    TARGET_TYPE_SKY,
+    TARGET_TYPE_SUPPSKY,
+    TARGET_TYPE_STANDARD
+)
+
 # (Change this whenever target samples update)
 
 
