@@ -44,10 +44,11 @@ from fiberassign.targets import (
 
 
 def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/tiles.fits'):
-    #tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
+    tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
+    footprint_data = fitsio.read(tfn)
     tilefile_pass = dict()
-    footprint_file = dm_findfile("footprint/desi-tiles.fits")
-    footprint_data = dm_load_tiles(tilesfile=footprint_file, cache=False)
+    #footprint_file = dm_findfile("footprint/desi-tiles.fits")
+    #footprint_data = dm_load_tiles(tilesfile=footprint_file, cache=False)
 
     tile_radius = 1.65 # degrees
     tile_cut = 2.0 # degrees
@@ -79,7 +80,7 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
 
     tiledata = footprint_data[inside]
     
-    tt = Table(tiledata)
+    #tt = Table(tiledata)
 
     # For each pass, write out a tile file.  Also write out the file for all passes.
 
@@ -91,11 +92,11 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     if os.path.isfile(tilefile_pass["ALL"]):
         os.remove(tilefile_pass["ALL"])
 
-    #outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
-    #outfd.write(None, header=None, extname="PRIMARY")
-    #outfd.write(tiledata, header=None, extname="TILES")
-    #outfd.close()
-    tt.write(tilefile_pass["ALL"],format='fits', overwrite=True)
+    outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
+    outfd.write(None, header=None, extname="PRIMARY")
+    outfd.write(tiledata, header=None, extname="TILES")
+    outfd.close()
+    #tt.write(tilefile_pass["ALL"],format='fits', overwrite=True)
 
 
     for ps in passes:
