@@ -332,31 +332,31 @@ def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-9
 def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'):
     # Now create the skies file.
 
-    std_file = outdir + 'mtl_sky.fits'
+    sky_file = outdir + 'mtl_sky.fits'
     
-#     keep_columns = [
-#         'TARGETID', 
-#         'RA', 
-#         'DEC', 
-#         'DESI_TARGET', 
-#         'BGS_TARGET', 
-#         'MWS_TARGET', 
-#         'SUBPRIORITY', 
-#         'BRICKNAME',
-#         'BRICKID',
-#         'BRICK_OBJID',
-#         'APFLUX_G',
-#         'APFLUX_R',
-#         'APFLUX_Z',
-#         'APFLUX_IVAR_G',
-#         'APFLUX_IVAR_R',
-#         'APFLUX_IVAR_Z',
-#         'OBSCONDITIONS'
-#     ]
+    keep_columns = [
+        'TARGETID', 
+        'RA', 
+        'DEC', 
+        'DESI_TARGET', 
+        'BGS_TARGET', 
+        'MWS_TARGET', 
+        'SUBPRIORITY', 
+        'BRICKNAME',
+        'BRICKID',
+        'BRICK_OBJID',
+        'FLUX_G',
+        'FLUX_R',
+        'FLUX_Z',
+        'FLUX_IVAR_G',
+        'FLUX_IVAR_R',
+        'FLUX_IVAR_Z',
+        'OBSCONDITIONS'
+    ]
 
 
     fd = fitsio.FITS(target_sample)
-    fdata = np.array(fd[1].read())#columns=keep_columns))
+    fdata = np.array(fd[1].read(columns=keep_columns))
 
     inside = np.where(
         np.logical_and(
