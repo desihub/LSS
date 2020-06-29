@@ -41,9 +41,6 @@ from fiberassign.targets import (
     TARGET_TYPE_STANDARD
 )
 
-# (Change this whenever target samples update)
-
-
 
 def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',prog='dark'):
 
@@ -125,27 +122,8 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     fd.close()
 
 
-def mkmtl_dt(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outf='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/mtl.fits',infl='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
 
-    fd = fitsio.FITS(infl, "r")
-    fdata = fd[1].read()
-    inside = np.where(
-        np.logical_and(
-            np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
-            np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
-        )
-    )[0]
-    target_data = fdata[inside]
-
-    mtl = make_mtl(target_data,obscon)
-
-    fd = fitsio.FITS(outf, "rw")
-    fd.write(None, header=None, extname="PRIMARY")
-    fd.write(mtl, header=None, extname="TARGETS")
-    fd.close()
-
-
-def mkmtl_tk(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
+def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
     '''
     initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
     
@@ -350,3 +328,83 @@ def mkmtl_tk(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min
     # the standards are constant so we'll keep those in memory.
 
     del science_mtl
+    
+def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'):
+	# Now create the skies file.
+
+	std_file = outdir + 'mtl_sky.fits'
+	
+	keep_columns = [
+		'TARGETID', 
+		'RA', 
+		'DEC', 
+		'DESI_TARGET', 
+		'BGS_TARGET', 
+		'MWS_TARGET', 
+		'SUBPRIORITY', 
+		'BRICKNAME',
+		'BRICKID',
+		'BRICK_OBJID',
+		'APFLUX_G',
+		'APFLUX_R',
+		'APFLUX_Z',
+		'APFLUX_IVAR_G',
+		'APFLUX_IVAR_R',
+		'APFLUX_IVAR_Z',
+		'OBSCONDITIONS'
+	]
+
+
+    fdata = np.array(fd[1].read(columns=keep_columns))
+
+    inside = np.where(
+        np.logical_and(
+            np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
+            np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
+        )
+    )[0]
+    sky_mtl = fdata[inside]
+
+
+	fd.close()
+	del fd
+
+	# Sanity check that these are all sky, supp_sky, or bad_sky
+
+	print("{} input targets in sky file".format(len(sky_mtl)))
+
+	sky_sky_rows = np.where(
+		np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SKY"].mask)
+	)[0]
+
+	print("  {} SKY targets".format(len(sky_sky_rows)))
+
+	sky_suppsky_rows = np.where(
+		np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SUPP_SKY"].mask)
+	)[0]
+
+	print("  {} SUPP_SKY targets".format(len(sky_suppsky_rows)))
+
+	sky_badsky_rows = np.where(
+		np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["BAD_SKY"].mask)
+	)[0]
+
+	print("  {} BAD_SKY targets".format(len(sky_badsky_rows)))
+
+	sky_mask = 0
+	sky_mask |= desi_mask["SKY"].mask
+	sky_mask |= desi_mask["SUPP_SKY"].mask
+	sky_mask |= desi_mask["BAD_SKY"].mask
+
+	sky_unknown_rows = np.where(
+		np.logical_not(
+			np.bitwise_and(sky_mtl["DESI_TAR 
+		)
+    )[0]
+
+	print("  {} targets are not one of the 3 recognized types".format(len(sky_unknown_rows)))
+
+	if os.path.isfile(sky_file):
+		os.remove(sky_file)
+	with fitsio.FITS(sky_file, "rw") as fd:
+		fd.write(sky_mtl)   
