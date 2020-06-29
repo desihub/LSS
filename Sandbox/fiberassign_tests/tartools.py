@@ -124,7 +124,7 @@ def mkmtl_dt(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min
     )[0]
     target_data = fdata[inside]
 
-    mtl = make_mtl(target_data)
+    mtl = make_mtl(target_data,obscon)
 
     fd = fitsio.FITS(outf, "rw")
     fd.write(None, header=None, extname="PRIMARY")
