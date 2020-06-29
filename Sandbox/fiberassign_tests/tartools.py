@@ -72,6 +72,8 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     fd.write(None, header=None, extname="PRIMARY")
     fd.write(target_data, header=None, extname="TARGETS")
     fd.close()
+    
+    del target_data
 
     # Now select the sky targets
 
