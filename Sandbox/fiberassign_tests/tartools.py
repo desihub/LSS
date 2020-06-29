@@ -68,7 +68,7 @@ from fiberassign.scripts.merge import (
 
 # Run the fba_run and fba_merge commandline entrypoints
 
-def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",utdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     footprint_file = indir+footprint
     science_file = indir + 'mtl_science.fits'
     std_file = indir + 'mtl_std.fits'
