@@ -114,7 +114,7 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
 def mkmtl_dt(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outf='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/mtl.fits',infl='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
 
-    fd = fitsio.FITS(file, "r")
+    fd = fitsio.FITS(infl, "r")
     fdata = fd[1].read()
     inside = np.where(
         np.logical_and(
