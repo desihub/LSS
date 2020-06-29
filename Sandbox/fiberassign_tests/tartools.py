@@ -138,8 +138,8 @@ def mkmtl_tk(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min
     
     '''
     
-	science_file = outdir + 'mtl_science.fits'
-	std_file = outdir + 'mtl_std.fits'
+    science_file = outdir + 'mtl_science.fits'
+    std_file = outdir + 'mtl_std.fits'
 
     
     # Load the raw science / standard target sample and prune columns
