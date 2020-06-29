@@ -32,7 +32,7 @@ from desitarget.mtl import make_mtl
 
 
 
-def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/',prog='dark'):
+def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',prog='dark'):
 
     # First select the science targets
 
@@ -112,9 +112,30 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     fd.close()
 
 
-def mkmtl():
+def mkmtl_dt(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outf='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/mtl.fits',infl='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
+
+	fd = fitsio.FITS(file, "r")
+	fdata = fd[1].read()
+	inside = np.where(
+		np.logical_and(
+			np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
+			np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
+		)
+	)[0]
+	target_data = fdata[inside]
+	
+	mtl = make_mtl(target_data)
+
+    fd = fitsio.FITS(outf, "rw")
+    fd.write(None, header=None, extname="PRIMARY")
+    fd.write(mtl, header=None, extname="TARGETS")
+    fd.close()
+
+
+def mkmtl_tk():
     '''
     initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
+    should probably use desitarget function instead?
     '''
     # Load the raw science / standard target sample and prune columns
 
