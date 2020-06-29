@@ -45,24 +45,28 @@ from fiberassign.targets import (
 
 # Run the fba_run and fba_merge commandline entrypoints
 
-def run_assignment(footprint, outdir, science):
+def run_assignment(footprint, outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+    footprint_file = indir+footprint
+    science_file = indir + 'mtl_science.fits'
+    std_file = indir + 'mtl_std.fits'
+    sky_file = indir +'mtl_sky.fits'
+
     opts = [
         "--rundate", assign_date,
         "--overwrite",
         "--write_all_targets",
-        "--footprint", footprint,
+        "--footprint", footprint_file,
         "--dir", outdir,
-        "--targets", science, std_file, sky_file
+        "--targets", science_file, std_file, sky_file
     ]
     print("  Running raw fiber assignment (fba_run)...")
-    print("    (Uncomment the 'wurlitzer' line at the top of the notebook to see the output here)")
     ag = parse_assign(opts)
     run_assign_full(ag)
     
     opts = [
         "--skip_raw",
         "--dir", outdir,
-        "--targets", science, std_file, sky_file
+        "--targets", science_file, std_file, sky_file
     ]
     print("  Merging input target data (fba_merge_results)...")
     print("    (Uncomment the 'wurlitzer' line at the top of the notebook to see the output here)")
