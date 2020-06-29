@@ -106,10 +106,12 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
         tilefile_pass[pstr] = outdir+'tile_'+str(ps)+'.fits'
         if os.path.isfile(tilefile_pass[pstr]):
             os.remove(tilefile_pass[pstr])
-        outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
-        outfd.write(None, header=None, extname="PRIMARY")
-        outfd.write(tiledata_pass, header=None, extname="TILES")
-        outfd.close()
+        #outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
+        #outfd.write(None, header=None, extname="PRIMARY")
+        #outfd.write(tiledata_pass, header=None, extname="TILES")
+        #outfd.close()
+        tt = Table(tiledata_pass)
+        tt.write(tilefile_pass[pstr],format='fits', overwrite=True)
 
     pstr = "2-4"
     ps_rows = np.where(tiledata["PASS"] > 1)[0]
@@ -118,10 +120,13 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     tilefile_pass[pstr] = outdir+'tile_'+pstr+'.fits'
     if os.path.isfile(tilefile_pass[pstr]):
         os.remove(tilefile_pass[pstr])
-    outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
-    outfd.write(None, header=None, extname="PRIMARY")
-    outfd.write(tiledata_pass, header=None, extname="TILES")
-    outfd.close()
+    #outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
+    #outfd.write(None, header=None, extname="PRIMARY")
+    #outfd.write(tiledata_pass, header=None, extname="TILES")
+    #outfd.close()
+	tt = Table(tiledata_pass)
+	tt.write(tilefile_pass[pstr],format='fits', overwrite=True)
+    
     
 def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',prog='dark'):
 
