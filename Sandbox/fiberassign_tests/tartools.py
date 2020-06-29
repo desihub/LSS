@@ -43,7 +43,35 @@ from fiberassign.targets import (
 )
 
 
-def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/tiles.fits'):
+# Run the fba_run and fba_merge commandline entrypoints
+
+def run_assignment(footprint, outdir, science):
+    opts = [
+        "--rundate", assign_date,
+        "--overwrite",
+        "--write_all_targets",
+        "--footprint", footprint,
+        "--dir", outdir,
+        "--targets", science, std_file, sky_file
+    ]
+    print("  Running raw fiber assignment (fba_run)...")
+    print("    (Uncomment the 'wurlitzer' line at the top of the notebook to see the output here)")
+    ag = parse_assign(opts)
+    run_assign_full(ag)
+    
+    opts = [
+        "--skip_raw",
+        "--dir", outdir,
+        "--targets", science, std_file, sky_file
+    ]
+    print("  Merging input target data (fba_merge_results)...")
+    print("    (Uncomment the 'wurlitzer' line at the top of the notebook to see the output here)")
+    ag = parse_merge(opts)
+    run_merge(ag)
+    
+    return
+
+def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
     footprint_data = fitsio.read(tfn)
     tilefile_pass = dict()
@@ -96,7 +124,6 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     outfd.write(None, header=None, extname="PRIMARY")
     outfd.write(tiledata, header=None, extname="TILES")
     outfd.close()
-    #tt.write(tilefile_pass["ALL"],format='fits', overwrite=True)
 
 
     for ps in passes:
@@ -111,8 +138,6 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
         outfd.write(None, header=None, extname="PRIMARY")
         outfd.write(tiledata_pass, header=None, extname="TILES")
         outfd.close()
-        #tt = Table(tiledata_pass)
-        #tt.write(tilefile_pass[pstr],format='fits', overwrite=True)
 
     pstr = "2-4"
     ps_rows = np.where(tiledata["PASS"] > 1)[0]
@@ -125,8 +150,6 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     outfd.write(None, header=None, extname="PRIMARY")
     outfd.write(tiledata_pass, header=None, extname="TILES")
     outfd.close()
-    #tt = Table(tiledata_pass)
-    #tt.write(tilefile_pass[pstr],format='fits', overwrite=True)
     
     
 def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',prog='dark'):
