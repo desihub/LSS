@@ -55,7 +55,7 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     tile_dec_min = target_dec_min + tile_cut
     tile_dec_max = target_dec_max - tile_cut
 
-    obskeep = obsconditions[program]
+    #obskeep = obsconditions[program]
 
     inside = np.where(
         np.logical_and(
