@@ -16,6 +16,7 @@ from numpy.lib.recfunctions import append_fields
 
 import matplotlib.pyplot as plt
 
+from astropy.table import Table
 
 from scipy.spatial import KDTree
 
@@ -77,6 +78,8 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     #inside &= np.isin(footprint_data['OBSCONDITIONS'],obscon)
 
     tiledata = footprint_data[inside]
+    
+    tt = Table(tiledata)
 
     # For each pass, write out a tile file.  Also write out the file for all passes.
 
@@ -88,10 +91,11 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     if os.path.isfile(tilefile_pass["ALL"]):
         os.remove(tilefile_pass["ALL"])
 
-    outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
-    outfd.write(None, header=None, extname="PRIMARY")
-    outfd.write(tiledata, header=None, extname="TILES")
-    outfd.close()
+    #outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
+    #outfd.write(None, header=None, extname="PRIMARY")
+    #outfd.write(tiledata, header=None, extname="TILES")
+    #outfd.close()
+    tt.write(tilefile_pass["ALL"],format='fits', overwrite=True)
 
 
     for ps in passes:
