@@ -44,77 +44,77 @@ from fiberassign.targets import (
 
 def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/tiles.fits'):
     tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
-	footprint_data = dm_load_tiles(tilesfile=footprint_file, cache=False)
+    footprint_data = dm_load_tiles(tilesfile=footprint_file, cache=False)
 
-	tile_radius = 1.65 # degrees
-	tile_cut = 2.0 # degrees
+    tile_radius = 1.65 # degrees
+    tile_cut = 2.0 # degrees
 
-	tile_ra_min = target_ra_min + tile_cut #this will work near equator...
-	tile_ra_max = target_ra_max - tile_cut
-	tile_dec_min = target_dec_min + tile_cut
-	tile_dec_max = target_dec_max - tile_cut
+    tile_ra_min = target_ra_min + tile_cut #this will work near equator...
+    tile_ra_max = target_ra_max - tile_cut
+    tile_dec_min = target_dec_min + tile_cut
+    tile_dec_max = target_dec_max - tile_cut
 
-	obskeep = obsconditions[program]
+    obskeep = obsconditions[program]
 
-	inside = np.where(
-		np.logical_and(
-			np.logical_and(
-				np.logical_and(
-					(footprint_data["RA"] > tile_ra_min), 
-					(footprint_data["RA"] < tile_ra_max)
-				), np.logical_and(
-					(footprint_data["DEC"] > tile_dec_min), 
-					(footprint_data["DEC"] < tile_dec_max)
-				)
-			)
-		)
-	)[0]
-	
-	inside &= np.isin(footprint_data['OBSCONDITIONS'],obscon)
+    inside = np.where(
+        np.logical_and(
+            np.logical_and(
+                np.logical_and(
+                    (footprint_data["RA"] > tile_ra_min), 
+                    (footprint_data["RA"] < tile_ra_max)
+                ), np.logical_and(
+                    (footprint_data["DEC"] > tile_dec_min), 
+                    (footprint_data["DEC"] < tile_dec_max)
+                )
+            )
+        )
+    )[0]
+    
+    inside &= np.isin(footprint_data['OBSCONDITIONS'],obscon)
 
-	tiledata = footprint_data[inside]
+    tiledata = footprint_data[inside]
 
-	# For each pass, write out a tile file.  Also write out the file for all passes.
+    # For each pass, write out a tile file.  Also write out the file for all passes.
 
-	passes = np.unique(tiledata["PASS"])    
+    passes = np.unique(tiledata["PASS"])    
 
-	print("Full footprint has {} tiles".format(len(tiledata)))
+    print("Full footprint has {} tiles".format(len(tiledata)))
 
-	tilefile_pass["ALL"] = outdir+'tile_ALL.fits'
-	if os.path.isfile(tilefile_pass["ALL"]):
-		os.remove(tilefile_pass["ALL"])
+    tilefile_pass["ALL"] = outdir+'tile_ALL.fits'
+    if os.path.isfile(tilefile_pass["ALL"]):
+        os.remove(tilefile_pass["ALL"])
 
-	outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
-	outfd.write(None, header=None, extname="PRIMARY")
-	outfd.write(tiledata, header=None, extname="TILES")
-	outfd.close()
+    outfd = fitsio.FITS(tilefile_pass["ALL"], "rw")
+    outfd.write(None, header=None, extname="PRIMARY")
+    outfd.write(tiledata, header=None, extname="TILES")
+    outfd.close()
 
 
-	for ps in passes:
-		pstr = "{}".format(ps)
-		ps_rows = np.where(tiledata["PASS"] == ps)[0]
-		tiledata_pass = tiledata[ps_rows]
-		print("Pass {} footprint has {} tiles".format(ps, len(tiledata_pass)))
-		tilefile_pass[pstr] = outdir+'tile_'+str(ps)+'.fits'
-		if os.path.isfile(tilefile_pass[pstr]):
-			os.remove(tilefile_pass[pstr])
-		outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
-		outfd.write(None, header=None, extname="PRIMARY")
-		outfd.write(tiledata_pass, header=None, extname="TILES")
-		outfd.close()
+    for ps in passes:
+        pstr = "{}".format(ps)
+        ps_rows = np.where(tiledata["PASS"] == ps)[0]
+        tiledata_pass = tiledata[ps_rows]
+        print("Pass {} footprint has {} tiles".format(ps, len(tiledata_pass)))
+        tilefile_pass[pstr] = outdir+'tile_'+str(ps)+'.fits'
+        if os.path.isfile(tilefile_pass[pstr]):
+            os.remove(tilefile_pass[pstr])
+        outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
+        outfd.write(None, header=None, extname="PRIMARY")
+        outfd.write(tiledata_pass, header=None, extname="TILES")
+        outfd.close()
 
-	pstr = "2-4"
-	ps_rows = np.where(tiledata["PASS"] > 1)[0]
-	tiledata_pass = tiledata[ps_rows]
-	print("Pass 2-4 footprint has {} tiles".format(len(tiledata_pass)))
-	tilefile_pass[pstr] = outdir+'tile_'+pstr+'.fits'
-	if os.path.isfile(tilefile_pass[pstr]):
-		os.remove(tilefile_pass[pstr])
-	outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
-	outfd.write(None, header=None, extname="PRIMARY")
-	outfd.write(tiledata_pass, header=None, extname="TILES")
-	outfd.close()
-	
+    pstr = "2-4"
+    ps_rows = np.where(tiledata["PASS"] > 1)[0]
+    tiledata_pass = tiledata[ps_rows]
+    print("Pass 2-4 footprint has {} tiles".format(len(tiledata_pass)))
+    tilefile_pass[pstr] = outdir+'tile_'+pstr+'.fits'
+    if os.path.isfile(tilefile_pass[pstr]):
+        os.remove(tilefile_pass[pstr])
+    outfd = fitsio.FITS(tilefile_pass[pstr], "rw")
+    outfd.write(None, header=None, extname="PRIMARY")
+    outfd.write(tiledata_pass, header=None, extname="TILES")
+    outfd.close()
+    
 def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,dr ='dr8',tarver = '0.39.0',outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',prog='dark'):
 
     # First select the science targets
