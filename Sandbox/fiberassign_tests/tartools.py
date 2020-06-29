@@ -132,11 +132,16 @@ def mkmtl_dt(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min
     fd.close()
 
 
-def mkmtl_tk():
+def mkmtl_tk(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
     '''
     initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
-    should probably use desitarget function instead?
+    
     '''
+    
+	science_file = outdir + 'mtl_science.fits'
+	std_file = outdir + 'mtl_std.fits'
+
+    
     # Load the raw science / standard target sample and prune columns
 
     keep_columns = [
@@ -161,7 +166,16 @@ def mkmtl_tk():
     ]
 
     fd = fitsio.FITS(target_sample)
-    targets_raw = fd[1].read(columns=keep_columns)
+    fdata = fd[1].read(columns=keep_columns)
+
+    inside = np.where(
+        np.logical_and(
+            np.logical_and((fdata["RA"] > target_ra_min), (fdata["RA"] < target_ra_max)),
+            np.logical_and((fdata["DEC"] > target_dec_min), (fdata["DEC"] < target_dec_max))
+        )
+    )[0]
+    targets_raw = fdata[inside]
+
 
     # Get the default target masks for this target file
 
