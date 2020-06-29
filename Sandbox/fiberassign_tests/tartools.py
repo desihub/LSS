@@ -44,6 +44,7 @@ from fiberassign.targets import (
 
 def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/tiles.fits'):
     #tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
+    tilefile_pass = dict()
     footprint_file = dm_findfile("footprint/desi-tiles.fits")
     footprint_data = dm_load_tiles(tilesfile=footprint_file, cache=False)
 
