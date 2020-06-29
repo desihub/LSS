@@ -58,7 +58,7 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     #obskeep = obsconditions[program]
 
     inside = np.where(
-        np.logical_and(
+        #np.logical_and(
             np.logical_and(
                 np.logical_and(
                     (footprint_data["RA"] > tile_ra_min), 
@@ -68,7 +68,7 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
                     (footprint_data["DEC"] < tile_dec_max)
                 )
             )
-        )
+        #)
     )[0]
     
     inside &= np.isin(footprint_data['OBSCONDITIONS'],obscon)
