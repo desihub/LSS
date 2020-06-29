@@ -355,6 +355,7 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     ]
 
 
+    fd = fitsio.FITS(target_sample)
     fdata = np.array(fd[1].read(columns=keep_columns))
 
     inside = np.where(
