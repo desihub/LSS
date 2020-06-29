@@ -398,7 +398,31 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     sky_unknown_rows = np.where(
         np.logical_not(
-            np.bitwise_and(sky_mtl["DESI_TAR 
+            np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SKY"].mask)
+    )[0]
+
+    print("  {} SKY targets".format(len(sky_sky_rows)))
+
+    sky_suppsky_rows = np.where(
+        np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SUPP_SKY"].mask)
+    )[0]
+
+    print("  {} SUPP_SKY targets".format(len(sky_suppsky_rows)))
+
+    sky_badsky_rows = np.where(
+        np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["BAD_SKY"].mask)
+    )[0]
+
+    print("  {} BAD_SKY targets".format(len(sky_badsky_rows)))
+
+    sky_mask = 0
+    sky_mask |= desi_mask["SKY"].mask
+    sky_mask |= desi_mask["SUPP_SKY"].mask
+    sky_mask |= desi_mask["BAD_SKY"].mask
+
+    sky_unknown_rows = np.where(
+        np.logical_not(
+            np.bitwise_and(sky_mtl["DESI_TARGET"], sky_mask)
         )
     )[0]
 
@@ -407,4 +431,4 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     if os.path.isfile(sky_file):
         os.remove(sky_file)
     with fitsio.FITS(sky_file, "rw") as fd:
-        fd.write(sky_mtl)   
+        fd.write(sky_mtl)
