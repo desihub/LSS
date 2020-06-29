@@ -42,10 +42,33 @@ from fiberassign.targets import (
     TARGET_TYPE_STANDARD
 )
 
+from fiberassign.tiles import (
+    load_tiles,
+)
+
+from fiberassign.assign import (
+    Assignment,
+)
+
+from fiberassign.vis import (
+    plot_assignment_tile,
+)
+
+from fiberassign.qa import qa_targets
+
+from fiberassign.scripts.assign import (
+    parse_assign,
+    run_assign_full
+)
+
+from fiberassign.scripts.merge import (
+    parse_merge,
+    run_merge
+)
 
 # Run the fba_run and fba_merge commandline entrypoints
 
-def run_assignment(footprint, outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",utdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     footprint_file = indir+footprint
     science_file = indir + 'mtl_science.fits'
     std_file = indir + 'mtl_std.fits'
