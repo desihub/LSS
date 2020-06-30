@@ -145,6 +145,7 @@ def update_mtl(obs,oldf='mtl_science_old.fits',science_input='mtl_science.fits',
     print("  Updating observation counts", flush=True)
     tdata["NUMOBS_MORE"][:] = [obs[x] for x in tdata["TARGETID"]]
     
+    science_output = science_input
     if os.path.isfile(science_output):
         os.remove(science_output)
         
