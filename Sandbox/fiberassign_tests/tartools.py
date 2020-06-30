@@ -68,6 +68,22 @@ from fiberassign.scripts.merge import (
 
 # Run the fba_run and fba_merge commandline entrypoints
 
+sky_mask = 0
+sky_mask |= desi_mask["SKY"].mask
+sky_mask |= desi_mask["SUPP_SKY"].mask
+sky_mask |= desi_mask["BAD_SKY"].mask
+
+science_mask = 0
+science_mask |= desi_mask["LRG"].mask
+science_mask |= desi_mask["ELG"].mask
+science_mask |= desi_mask["QSO"].mask
+
+std_mask = 0
+std_mask |= desi_mask["STD_FAINT"].mask
+std_mask |= desi_mask["STD_WD"].mask
+std_mask |= desi_mask["STD_BRIGHT"].mask
+
+
 def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     footprint_file = indir+footprint
     science_file = indir + 'mtl_science.fits'
@@ -543,15 +559,15 @@ def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-9
     # Force our science and std masks to a more restrictive set.  Only keep ELG, LRG and QSO targets.
     # Cut any targets with multiple of those set.
 
-    science_mask = 0
-    science_mask |= desi_mask["LRG"].mask
-    science_mask |= desi_mask["ELG"].mask
-    science_mask |= desi_mask["QSO"].mask
-
-    std_mask = 0
-    std_mask |= desi_mask["STD_FAINT"].mask
-    std_mask |= desi_mask["STD_WD"].mask
-    std_mask |= desi_mask["STD_BRIGHT"].mask
+#     science_mask = 0
+#     science_mask |= desi_mask["LRG"].mask
+#     science_mask |= desi_mask["ELG"].mask
+#     science_mask |= desi_mask["QSO"].mask
+# 
+#     std_mask = 0
+#     std_mask |= desi_mask["STD_FAINT"].mask
+#     std_mask |= desi_mask["STD_WD"].mask
+#     std_mask |= desi_mask["STD_BRIGHT"].mask
     
     elg_rows = np.where(
         np.logical_and(
@@ -751,10 +767,10 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     print("  {} BAD_SKY targets".format(len(sky_badsky_rows)))
 
-    sky_mask = 0
-    sky_mask |= desi_mask["SKY"].mask
-    sky_mask |= desi_mask["SUPP_SKY"].mask
-    sky_mask |= desi_mask["BAD_SKY"].mask
+#     sky_mask = 0
+#     sky_mask |= desi_mask["SKY"].mask
+#     sky_mask |= desi_mask["SUPP_SKY"].mask
+#     sky_mask |= desi_mask["BAD_SKY"].mask
 
     sky_unknown_rows = np.where(
         np.logical_not(
