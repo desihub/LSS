@@ -336,10 +336,10 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     tile_radius = 1.65 # degrees
     tile_cut = 2.0 # degrees
 
-    tile_ra_min = target_ra_min + tile_cut #this will work near equator...
-    tile_ra_max = target_ra_max - tile_cut
-    tile_dec_min = target_dec_min + tile_cut
-    tile_dec_max = target_dec_max - tile_cut
+    tile_ra_min = target_ra_min #+ tile_cut #this will work near equator...not really bothered if we end up have tiles with no targets on them
+    tile_ra_max = target_ra_max #- tile_cut
+    tile_dec_min = target_dec_min #+ tile_cut
+    tile_dec_max = target_dec_max #- tile_cut
 
     #obskeep = obsconditions[program]
 

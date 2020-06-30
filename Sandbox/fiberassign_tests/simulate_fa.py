@@ -36,7 +36,7 @@ if mkmtli:
     tt.mkmtl_sky(target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_sky_sample)
     tt.add_lya(frac=fraclya,indir=bdir)
 
-mktiles = False #make the tile files
+mktiles = True #make the tile files
 if mktiles:
    tt.mktilefile(obscon=obsconi,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir)
 
@@ -49,4 +49,8 @@ if runsurvey:
         oldf = 'mtl_science_pass'+str(ps)+'.fits'
         tt.update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
 
-       
+plotnumobs = True
+if plotnumobs:
+    f = fitsio.read(bdir+'mtl_science.fits')
+    plt.scatter(f['RA'],f['DEC'],c=f['NUMOBS_MORE'],s=.1)       
+    plt.show()
