@@ -135,6 +135,176 @@ def update_mtl(science_input, science_output, obs):
     del tdata
     return
 
+# Function to compute the assigned, available, and considered targets for a set of tiles
+
+def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fiberassign/',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/')#, qso_lyman_rows, qso_tracer_rows):
+    
+    footprint = indir+footprint
+    science_input = indir+science_input
+    fba_dir = indir+fba_dir
+    # Load the footprint
+    tile_data = None
+    with fitsio.FITS(footprint) as fd:
+        tile_data = np.array(fd[1].read())
+    
+    # Load the input science MTL and get the obs remaining for all targets
+    mtldata = None
+    with fitsio.FITS(science_input) as fd:
+        mtldata = fd[1].read()
+
+    obs = None
+    if "NUMOBS_MORE" in mtldata.dtype.names:
+        obs = {
+            x: y for x, y in zip(mtldata["TARGETID"], mtldata["NUMOBS_MORE"])
+        }
+    else:
+        obs = {
+            x: y for x, y in zip(mtldata["TARGETID"], mtldata["NUMOBS_INIT"])
+        }
+    qso_lyman_rows = mtldata['IS_LYA'] == 1
+    qso_rows = (mtldata['DESI_TARGET'] & desi_mask["QSO"].mask) > 0
+    qso_tracer_rows = qso_rows &  (mtldata['IS_LYA'] != 1)
+    print('all qso, lyman qso, tracer qso')
+    print(np.sum(qso_rows),np.sum(qso_lyman_rows),np.sum(qso_tracer_rows))
+    qso_lyman = mtldata["TARGETID"][qso_lyman_rows]
+    qso_tracer = mtldata["TARGETID"][qso_tracer_rows]
+
+    class_masks = {
+        "ELG": desi_mask["ELG"].mask,
+        "LRG": desi_mask["LRG"].mask,
+        "QSO-lyman": desi_mask["QSO"].mask,
+        "QSO-tracer": desi_mask["QSO"].mask,
+        "STD": std_mask,
+        "SKY": sky_mask
+    }
+    
+    # histogram data to return
+    hist_tgassign = dict()
+    hist_tgavail = dict()
+    hist_tgconsid = dict()
+    hist_tgfrac = dict()
+    for tgclass, mask in class_masks.items():
+        hist_tgassign[tgclass] = list()
+        hist_tgavail[tgclass] = list()
+        hist_tgconsid[tgclass] = list()
+        hist_tgfrac[tgclass] = list()
+    
+    print("  Accumulating assignment counts for {} tiles...".format(len(tile_data)), flush=True)
+
+    for tl in tile_data["TILEID"]:
+        # For each tile in order of assignment...
+        
+        # Load assignment and available targets and their properties.
+        # NOTE: because we used the --write_all_targets option to fba_run, we get the properties
+        # of all available targets in the FTARGETS HDU and have access to those here.
+        
+        fba_file = os.path.join(fba_dir, "fiberassign-{:06d}.fits".format(tl))
+        fassign = None
+        ftarget = None
+        favail = None
+        with fitsio.FITS(fba_file, "r") as fd:
+            fassign = fd["FIBERASSIGN"].read()
+            ftarget = fd["TARGETS"].read()
+            favail = fd["POTENTIAL_ASSIGNMENTS"].read()
+        
+        # The assigned target IDs
+        assign_valid_rows = np.where(fassign["TARGETID"] >= 0)[0]
+        assign_tgids = np.sort(fassign["TARGETID"][assign_valid_rows])
+        assign_target_rows = np.where(
+            np.isin(ftarget["TARGETID"], assign_tgids)
+        )[0]
+        
+        # The available target IDs
+        avail_tgids = np.sort(np.unique(favail["TARGETID"]))
+        avail_target_rows = np.where(
+            np.isin(ftarget["TARGETID"], avail_tgids)
+        )[0]
+        
+        # For the science classes, we must also look at the obs remaining
+        # in order to know which targets were actually considered for assignment
+        # (not just reachable).
+        
+        for tgclass, mask in class_masks.items():
+            # The assigned targets in this class
+            assign_class_rows = assign_target_rows[
+                np.where(
+                    np.bitwise_and(
+                        ftarget["DESI_TARGET"][assign_target_rows],
+                        mask
+                    )
+                )[0]
+            ]
+
+            if tgclass == "QSO-lyman":
+                assign_class_rows = assign_class_rows[
+                    np.where(
+                        np.isin(
+                            ftarget["TARGETID"][assign_class_rows], qso_lyman
+                        )
+                    )[0]
+                ]
+            elif tgclass == "QSO-tracer":
+                assign_class_rows = assign_class_rows[
+                    np.where(
+                        np.isin(
+                            ftarget["TARGETID"][assign_class_rows], qso_tracer
+                        )
+                    )[0]
+                ]
+            
+            hist_tgassign[tgclass].append(len(assign_class_rows))
+                
+            # The available targets in this class
+            avail_class_rows = avail_target_rows[
+                np.where(
+                    np.bitwise_and(
+                        ftarget["DESI_TARGET"][avail_target_rows],
+                        mask
+                    )
+                )[0]
+            ]
+            if tgclass == "QSO-lyman":
+                avail_class_rows = avail_class_rows[
+                    np.where(
+                        np.isin(
+                            ftarget["TARGETID"][avail_class_rows], qso_lyman
+                        )
+                    )[0]
+                ]
+            elif tgclass == "QSO-tracer":
+                avail_class_rows = avail_class_rows[
+                    np.where(
+                        np.isin(
+                            ftarget["TARGETID"][avail_class_rows], qso_tracer
+                        )
+                    )[0]
+                ]
+
+            hist_tgavail[tgclass].append(len(avail_class_rows))
+            
+            #print("  target class {}, {} assignments".format(tgclass, len(assign_class_rows)))
+            
+            if tgclass == "STD" or tgclass == "SKY":
+                # the considered targets are the same as the reachable
+                hist_tgconsid[tgclass].append(len(avail_class_rows))
+                hist_tgfrac[tgclass].append(len(assign_class_rows) / len(avail_class_rows))
+            else:
+                # compare to obs remaining
+                hist_tgconsid[tgclass].append(
+                    np.sum(
+                        [1 for x in ftarget["TARGETID"][avail_class_rows] if obs[x] > 0]
+                    )
+                )
+                hist_tgfrac[tgclass].append(len(assign_class_rows) / hist_tgconsid[tgclass][-1])
+
+                # Now reduce the obs remaining
+                for tgid in ftarget["TARGETID"][assign_class_rows]:
+                    obs[tgid] -= 1
+    
+    # Return our histogram of tile data and also the updated observation counts,
+    # which can be used to update the MTL NUMOBS_MORE in a separate function.
+    return (obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac)
+
 def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
     footprint_data = fitsio.read(tfn)
