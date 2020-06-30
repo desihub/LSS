@@ -113,12 +113,14 @@ def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",outdir='/globa
     
     return
 
-def update_mtl(science_input, science_output, obs):
+def update_mtl(obs,oldf='mtl_science_old.fits',science_input='mtl_science.fits',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/' ):
     """
     This takes the input MTL and sets the NUMOBS_MORE column based on the
     input dictionary of obs remaining for each target.
     """
-    
+    science_input = indir+science_input
+    tt = Table.read(science_input)
+    tt.write(indir+oldf)
     print("  Loading data from {}".format(science_input), flush=True)
     tdata = None
     with fitsio.FITS(science_input) as fd:
@@ -145,7 +147,7 @@ def update_mtl(science_input, science_output, obs):
         os.remove(science_output)
         
     print("  Writing updated MTL to {}".format(science_output), flush=True)
-    with fitsio.FITS(science_output, "rw") as fd:
+    with fitsio.FITS(science_input, "rw") as fd:
         fd.write(tdata)
 
     del tdata
