@@ -360,6 +360,7 @@ def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90
     inside = (footprint_data["RA"] > tile_ra_min) & (footprint_data["RA"] < tile_ra_max)
     inside &= (footprint_data["DEC"] > tile_dec_min) & (footprint_data["DEC"] < tile_dec_max)
     inside &= np.isin(footprint_data['OBSCONDITIONS'],obscon)
+    inside &= (footprint_data['IN_DESI']==1)
 
     tiledata = footprint_data[inside]
     

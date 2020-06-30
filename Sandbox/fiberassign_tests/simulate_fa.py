@@ -10,9 +10,9 @@ obsconi = [1,2]
 
 #footprint to consider
 ramin = 0
-ramax = 20
-decmin = 0
-decmax = 20
+ramax = 360
+decmin = -90
+decmax = 90
 
 fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
