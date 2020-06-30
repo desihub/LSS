@@ -84,11 +84,13 @@ std_mask |= desi_mask["STD_WD"].mask
 std_mask |= desi_mask["STD_BRIGHT"].mask
 
 
-def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/fiberassign', indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+def run_assignment(footprint, assign_date = "2020-01-01T00:00:00", indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
     footprint_file = indir+footprint
     science_file = indir + 'mtl_science.fits'
     std_file = indir + 'mtl_std.fits'
     sky_file = indir +'mtl_sky.fits'
+    
+    outdir=indir+'fiberassign'
 
     opts = [
         "--rundate", assign_date,
