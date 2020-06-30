@@ -44,9 +44,9 @@ runsurvey = True
 if runsurvey:
     for ps in passes:
         footprint = 'tile_'+str(ps)+'.fits'
-        run_assignment(footprint, assign_date = usedate, indir=bdir)
-        obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac = assignment_counts(footprint, science_input=sci_input, fba_dir='fiberassign/',indir=bdir)
+        tt.run_assignment(footprint, assign_date = usedate, indir=bdir)
+        obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac = tt.assignment_counts(footprint, science_input=sci_input, fba_dir='fiberassign/',indir=bdir)
         oldf = 'mtl_science_pass'+str(ps)+'.fits'
-        update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
+        tt.update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
 
        
