@@ -10,9 +10,9 @@ obsconi = [1,2]
 
 #footprint to consider
 ramin = 0
-ramax = 10
+ramax = 20
 decmin = 0
-decmax = 10
+decmax = 20
 
 fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
@@ -33,17 +33,17 @@ from matplotlib import pyplot as plt
 
 #toggle to run steps below or not
 
-mkmtli = False #make initial MTL file
+mkmtli = True #make initial MTL file
 if mkmtli:
     tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
     tt.mkmtl_sky(target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_sky_sample)
     tt.add_lya(frac=fraclya,indir=bdir)
 
-mktiles = False #make the tile files
+mktiles = True #make the tile files
 if mktiles:
    tt.mktilefile(obscon=obsconi,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir)
 
-runsurvey = False
+runsurvey = True
 if runsurvey:
     for ps in passes:
         footprint = 'tile_'+str(ps)+'.fits'
