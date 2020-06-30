@@ -17,7 +17,7 @@ decmax = 10
 fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
-target_sky_ sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
+target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/' #where outputs get written
 
 import tartools as tt
