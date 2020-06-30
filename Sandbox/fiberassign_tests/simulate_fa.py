@@ -29,6 +29,7 @@ sci_input='mtl_science.fits'
 import tartools as tt
 
 import fitsio
+from matplotlib import pyplot as plt
 
 #toggle to run steps below or not
 
