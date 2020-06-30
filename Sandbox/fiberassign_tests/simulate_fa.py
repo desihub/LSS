@@ -28,6 +28,8 @@ sci_input='mtl_science.fits'
 
 import tartools as tt
 
+import fitsio
+
 #toggle to run steps below or not
 
 mkmtli = False #make initial MTL file
@@ -36,11 +38,11 @@ if mkmtli:
     tt.mkmtl_sky(target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_sky_sample)
     tt.add_lya(frac=fraclya,indir=bdir)
 
-mktiles = True #make the tile files
+mktiles = False #make the tile files
 if mktiles:
    tt.mktilefile(obscon=obsconi,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir)
 
-runsurvey = True
+runsurvey = False
 if runsurvey:
     for ps in passes:
         footprint = 'tile_'+str(ps)+'.fits'
