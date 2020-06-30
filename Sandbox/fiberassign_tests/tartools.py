@@ -122,7 +122,7 @@ def update_mtl(obs,oldf='mtl_science_old.fits',science_input='mtl_science.fits',
     """
     science_input = indir+science_input
     tt = Table.read(science_input)
-    tt.write(indir+oldf)
+    tt.write(indir+oldf,format='fits', overwrite=True)
     print("  Loading data from {}".format(science_input), flush=True)
     tdata = None
     with fitsio.FITS(science_input) as fd:
