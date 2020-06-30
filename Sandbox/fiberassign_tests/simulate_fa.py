@@ -42,7 +42,7 @@ if mktiles:
 
 runsurvey = True
 if runsurvey:
-    for ps = passes:
+    for ps in passes:
         footprint = 'tile_'+str(ps)+'.fits'
         run_assignment(footprint, assign_date = usedate, indir=bdir):
         obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac = assignment_counts(footprint, science_input=sci_input, fba_dir='fiberassign/',indir=bdir)
