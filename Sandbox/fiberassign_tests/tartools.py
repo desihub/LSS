@@ -300,7 +300,7 @@ def add_lya(frac=0.2,indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducial
     ff = fitsio.read(science_file)
     isly = np.zeros(len(ff))
     isly1 = np.ones(len(ff))
-    wq = ff['DESI_TARGET'] & desi_mask["QSO"].mask
+    wq = (ff['DESI_TARGET'] & desi_mask["QSO"].mask) > 0
     rv = np.random.rand(len(ff))
     wly = wq & (rv < frac)
     isly[wly] = isly1[wly]
