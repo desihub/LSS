@@ -137,7 +137,7 @@ def update_mtl(science_input, science_output, obs):
 
 # Function to compute the assigned, available, and considered targets for a set of tiles
 
-def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fiberassign/',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/')#, qso_lyman_rows, qso_tracer_rows):
+def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fiberassign/',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):#, qso_lyman_rows, qso_tracer_rows):
     
     footprint = indir+footprint
     science_input = indir+science_input
