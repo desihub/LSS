@@ -92,10 +92,47 @@ def run_assignment(footprint, assign_date = "2020-01-01T00:00:00",outdir='/globa
         "--targets", science_file, std_file, sky_file
     ]
     print("  Merging input target data (fba_merge_results)...")
-    print("    (Uncomment the 'wurlitzer' line at the top of the notebook to see the output here)")
     ag = parse_merge(opts)
     run_merge(ag)
     
+    return
+
+def update_mtl(science_input, science_output, obs):
+    """
+    This takes the input MTL and sets the NUMOBS_MORE column based on the
+    input dictionary of obs remaining for each target.
+    """
+    
+    print("  Loading data from {}".format(science_input), flush=True)
+    tdata = None
+    with fitsio.FITS(science_input) as fd:
+        tdata = fd[1].read()
+    
+    if "NUMOBS_MORE" not in tdata.dtype.names:
+        # create this column based on NUMOBS_INIT
+        tdata = append_fields(tdata, "NUMOBS_MORE", tdata["NUMOBS_INIT"])
+        
+    # Sanity check
+    
+    if len(obs) != len(tdata):
+        msg = "The length of the MTL table ({}) does not match the obs dict ({})".format(
+            len(tdata), len(obs)
+        )
+        raise RuntimeError(msg)
+        
+    # Now assign the new obs remaining data
+    
+    print("  Updating observation counts", flush=True)
+    tdata["NUMOBS_MORE"][:] = [obs[x] for x in tdata["TARGETID"]]
+    
+    if os.path.isfile(science_output):
+        os.remove(science_output)
+        
+    print("  Writing updated MTL to {}".format(science_output), flush=True)
+    with fitsio.FITS(science_output, "rw") as fd:
+        fd.write(tdata)
+
+    del tdata
     return
 
 def mktilefile(obscon=[1,2],target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
@@ -258,7 +295,21 @@ def mktarfile(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
 
     fd.close()
 
-
+def add_lya(frac=0.2,indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+    science_file = indir + 'mtl_science.fits'
+    ff = fitsio.read(science_file)
+    isly = np.zeros(len(ff))
+    wq = ff['DESI_TARGET'] & desi_mask["QSO"].mask
+    rv = np.random.rand(len(ff))
+    wly = wq & (rv < frac)
+    isly[wly] = 1
+    print('number of targets selected to be lyman alpha:')
+    print(np.sum(isly))
+    del ff
+    tf = Table.read(science_file)
+    tf['IS_LYA'] = isly
+    tf.write(science_file,format='fits', overwrite=True)
+    return True
 
 def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
     '''
