@@ -513,18 +513,18 @@ def splitdarkgray(grayfrac=0.3,indir='/global/cscratch1/sd/ajross/fiberassigntes
     ft = fitsio.read(science_file)
     rv = np.random.rand(len(ft))
     we = ft['OBSCONDITIONS'] == 3
-    w1 = we & (rv >= grayfrac)
-    w2 = we & (rv < grayfrac)
-    ft[w1]['OBSCONDITIONS'] = 1
-    ft[w2]['OBSCONDITIONS'] = 2
+    #w1 = we & (rv >= grayfrac)
+    #w2 = we & (rv < grayfrac)
+    #ft[w1]['OBSCONDITIONS'] = 1
+    #ft[w2]['OBSCONDITIONS'] = 2
     print('number of targets that were allowed to be observed in either dark or gray')
     print(len(ft[we]))
-#     for i in range(0,len(ft)):
-#         if ft[i]['OBSCONDITIONS'] == 3:
-# 			if random() < grayfrac:
-# 				ft[i]['OBSCONDITIONS'] = 2
-# 			else:
-# 				ft[i]['OBSCONDITIONS'] = 1
+    for i in range(0,len(ft)):
+        if ft[i]['OBSCONDITIONS'] == 3:
+			if rv[i] < grayfrac:
+				ft[i]['OBSCONDITIONS'] = 2
+			else:
+				ft[i]['OBSCONDITIONS'] = 1
     we = ft['OBSCONDITIONS'] == 2
     print('number of targets that are now allowed to be observed only in gray')
     print(len(ft[we]))
