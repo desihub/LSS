@@ -42,7 +42,7 @@ from matplotlib import pyplot as plt
 
 mkmtli = True #make initial MTL file
 if mkmtli:
-    tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
+    #tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
     if fracgray != 0:
         tt.splitdarkgray(fracgray,indir=bdir)
     print('science mtl done')
