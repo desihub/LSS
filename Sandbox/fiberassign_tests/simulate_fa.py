@@ -35,17 +35,17 @@ from matplotlib import pyplot as plt
 
 #toggle to run steps below or not
 
-mkmtli = True #make initial MTL file
+mkmtli = False #make initial MTL file
 if mkmtli:
-    #tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
-    #print('science mtl done')
+    tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
+    print('science mtl done')
     if fullfoot != True:
     	tt.mkmtl_sky(target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_sky_sample)
     	print('sky mtl done')
     tt.add_lya(frac=fraclya,indir=bdir)
     print('lya added to science mtl')
 
-mktiles = True #make the tile files
+mktiles = False #make the tile files
 if mktiles:
    tt.mktilefile(obscon=obsconi,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir)
 
@@ -54,6 +54,8 @@ if runsurvey:
     for ps in passes:
         footprint = 'tile_'+str(ps)+'.fits'
         tt.run_assignment(footprint, assign_date = usedate, indir=bdir,fullfoot=fullfoot,fullsky=target_sky_sample)
+        print('\n')
+        print('FINISHED PASS '+str(ps))
         obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac = tt.assignment_counts(footprint, science_input=sci_input, fba_dir='fiberassign/',indir=bdir)
         oldf = 'mtl_science_pass'+str(ps)+'.fits'
         tt.update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
