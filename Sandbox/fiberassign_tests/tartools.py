@@ -825,3 +825,14 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
         os.remove(sky_file)
     with fitsio.FITS(sky_file, "rw") as fd:
         fd.write(sky_mtl)
+        
+def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+    science_file = indir + 'mtl_science.fits'
+    ff = fitsio.read(science_file)
+    types = ['LRG','ELG','QSO']
+    for type in types:
+        wt = (ff['DESI_TARGET'] & desi_mask[type]) > 0
+        ntar = len(ff[wt])
+        wtz = wt & (ff['NUMOBS_MORE'] == 0)
+        nass = len(ff[wtz])
+        print(type + ' total number of targets: '+str(ntar)+' , number assigned '+str(nass))
