@@ -185,8 +185,9 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
         obs = {
             x: y for x, y in zip(mtldata["TARGETID"], mtldata["NUMOBS_INIT"])
         }
-    qso_lyman_rows = mtldata['IS_LYA'] == 1
+    
     qso_rows = (mtldata['DESI_TARGET'] & desi_mask["QSO"].mask) > 0
+    qso_lyman_rows = qso_rows & (mtldata['IS_LYA'] == 1)
     qso_tracer_rows = qso_rows &  (mtldata['IS_LYA'] != 1)
     print('all qso, lyman qso, tracer qso')
     print(np.sum(qso_rows),np.sum(qso_lyman_rows),np.sum(qso_tracer_rows))
@@ -323,7 +324,10 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
 
                 # Now reduce the obs remaining
                 for tgid in ftarget["TARGETID"][assign_class_rows]:
-                    obs[tgid] -= 1
+                    if tgclass != 'QSO-lyman':
+                        obs[tgid] = 0
+                    else:    
+                        obs[tgid] -= 1
     
     # Return our histogram of tile data and also the updated observation counts,
     # which can be used to update the MTL NUMOBS_MORE in a separate function.
@@ -830,9 +834,24 @@ def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtarg
     science_file = indir + 'mtl_science.fits'
     ff = fitsio.read(science_file)
     types = ['LRG','ELG','QSO']
+    print('after 4 passes:')
     for type in types:
         wt = (ff['DESI_TARGET'] & desi_mask[type]) > 0
         ntar = len(ff[wt])
         wtz = wt & (ff['NUMOBS_MORE'] == 0)
         nass = len(ff[wtz])
-        print(type + ' total number of targets: '+str(ntar)+' , number assigned '+str(nass))
+        print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
+
+    for ps in range(0,4):
+		science_file = indir + 'mtl_science_pass'+str(ps+1)+'.fits'
+		ff = fitsio.read(science_file)
+		types = ['LRG','ELG','QSO']
+		print('after '+str(ps)+' passes:')
+		for type in types:
+			wt = (ff['DESI_TARGET'] & desi_mask[type]) > 0
+			ntar = len(ff[wt])
+			wtz = wt & (ff['NUMOBS_MORE'] == 0)
+			nass = len(ff[wtz])
+			print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
+
+    
