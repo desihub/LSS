@@ -24,8 +24,8 @@ target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_scie
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
 #mode = 'fiducialtargets'
-mode = 'ELG3070'
-fracgray = 0.3
+mode = 'ELG4060'
+fracgray = 0.4
 
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
 
@@ -72,3 +72,7 @@ if plotnumobs:
     f = fitsio.read(bdir+'mtl_science.fits')
     plt.scatter(f['RA'],f['DEC'],c=f['NUMOBS_MORE'],s=.1)       
     plt.show()
+
+getstats = True
+if getstats:
+    tt.get_mtlstats(bdir)    
