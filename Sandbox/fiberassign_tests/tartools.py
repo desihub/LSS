@@ -89,9 +89,9 @@ def run_assignment(footprint, assign_date = "2020-01-01T00:00:00", indir='/globa
     science_file = indir + 'mtl_science.fits'
     std_file = indir + 'mtl_std.fits'
     if fullfoot:
-    	sky_file = fullsky
+        sky_file = fullsky
     else:
-    	sky_file = indir +'mtl_sky.fits'
+        sky_file = indir +'mtl_sky.fits'
     
     outdir=indir+'fiberassign'
 
@@ -515,10 +515,10 @@ def splitdarkgray(grayfrac=0.3,indir='/global/cscratch1/sd/ajross/fiberassigntes
     print('number of targets that were allowed to be observed in either dark or gray')
     print(len(ft[we]))
     for i in range(0,len(ft[we])):
-    	if random() < grayfrac:
-    	    ft[we][i]['OBSCONDITIONS'] = 2
-    	else:
-    	    ft[we][i]['OBSCONDITIONS'] = 1
+        if random() < grayfrac:
+            ft[we][i]['OBSCONDITIONS'] = 2
+        else:
+            ft[we][i]['OBSCONDITIONS'] = 1
     we = ft['OBSCONDITIONS'] == 2
     print('number of targets that are now allowed to be observed only in gray')
     print(len(ft[we]))
@@ -701,11 +701,11 @@ def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-9
     # Make the MTLs
 
     
-	science_mtl = make_mtl(science_targets, "DARK|GRAY").as_array()
-	if len(science_mtl) != len(science_targets):
-		print("WARNING:  science MTL has {} rows, input has {}".format(len(science_mtl), len(science_targets)))
-	
-	    
+    science_mtl = make_mtl(science_targets, "DARK|GRAY").as_array()
+    if len(science_mtl) != len(science_targets):
+        print("WARNING:  science MTL has {} rows, input has {}".format(len(science_mtl), len(science_targets)))
+    
+        
 
     std_mtl = make_mtl(std_targets, "DARK|GRAY").as_array()
     if len(std_mtl) != len(std_targets):
