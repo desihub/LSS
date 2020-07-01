@@ -521,10 +521,10 @@ def splitdarkgray(grayfrac=0.3,indir='/global/cscratch1/sd/ajross/fiberassigntes
     print(len(ft[we]))
     for i in range(0,len(ft)):
         if ft[i]['OBSCONDITIONS'] == 3:
-			if rv[i] < grayfrac:
-				ft[i]['OBSCONDITIONS'] = 2
-			else:
-				ft[i]['OBSCONDITIONS'] = 1
+            if rv[i] < grayfrac:
+                ft[i]['OBSCONDITIONS'] = 2
+            else:
+                ft[i]['OBSCONDITIONS'] = 1
     we = ft['OBSCONDITIONS'] == 2
     print('number of targets that are now allowed to be observed only in gray')
     print(len(ft[we]))
