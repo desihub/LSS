@@ -24,7 +24,7 @@ target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_scie
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
 #mode = 'fiducialtargets'
-mode = 'ELG4060'
+mode = 'ELG3070'
 fracgray = 0.4
 
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
