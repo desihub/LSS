@@ -23,9 +23,16 @@ usedate = "2020-01-01T00:00:00"
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
-#mode = 'fiducialtargets'
-mode = 'ELG3070'
 fracgray = 0.3
+
+if fracgray == 0:
+    mode = 'fiducialtargets'
+
+if fracgray == 0.4:
+    mode = 'ELG4060'
+
+if fracgray == 0.3:
+    mode = 'ELG3070'
 
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
 
