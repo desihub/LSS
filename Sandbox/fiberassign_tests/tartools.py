@@ -507,6 +507,29 @@ def add_lya(frac=0.2,indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducial
     tf.write(science_file,format='fits', overwrite=True)
     return True
 
+def splitdarkgray(grayfrac=0.3,indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+    from random import random
+    science_file = indir + 'mtl_science.fits'
+    ft = fitsio.read(science_file)
+    we = ft['OBSCONDITIONS'] == 3
+    print('number of targets that were allowed to be observed in either dark or gray')
+    print(len(ft[we]))
+    for i in range(0,len(ft[we])):
+    	if random() < grayfrac:
+    	    ft[we][i]['OBSCONDITIONS'] = 2
+    	else:
+    	    ft[we][i]['OBSCONDITIONS'] = 1
+    we = ft['OBSCONDITIONS'] == 2
+    print('number of targets that are now allowed to be observed only in gray')
+    print(len(ft[we]))
+    # Write MTLs
+
+    if os.path.isfile(science_file):
+        os.remove(science_file)
+    with fitsio.FITS(science_file, "rw") as fd:
+        fd.write(ft)
+    
+
 def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_max=90,outdir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',target_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits'):
     '''
     initially copied from https://github.com/desihub/tutorials/blob/master/FiberAssignAlgorithms_Part2.ipynb
@@ -677,9 +700,12 @@ def mkmtl(obscon="DARK|GRAY",target_ra_min=0,target_ra_max=360,target_dec_min=-9
 
     # Make the MTLs
 
-    science_mtl = make_mtl(science_targets, "DARK|GRAY").as_array()
-    if len(science_mtl) != len(science_targets):
-        print("WARNING:  science MTL has {} rows, input has {}".format(len(science_mtl), len(science_targets)))
+    
+	science_mtl = make_mtl(science_targets, "DARK|GRAY").as_array()
+	if len(science_mtl) != len(science_targets):
+		print("WARNING:  science MTL has {} rows, input has {}".format(len(science_mtl), len(science_targets)))
+	
+	    
 
     std_mtl = make_mtl(std_targets, "DARK|GRAY").as_array()
     if len(std_mtl) != len(std_targets):

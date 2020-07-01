@@ -22,7 +22,12 @@ usedate = "2020-01-01T00:00:00"
 
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
-bdir = '/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/' #base directory for outputs and then downstream inputs
+
+#mode = 'fiducialtargets'
+mode = 'ELG3070'
+fracgray = 0.3
+
+bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
 
 sci_input='mtl_science.fits'
 
@@ -37,7 +42,9 @@ from matplotlib import pyplot as plt
 
 mkmtli = True #make initial MTL file
 if mkmtli:
-    tt.mkmtl(obscon=obscon,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
+    tt.mkmtl(obscon=obscon,fracgray=fracgray,target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_science_sample)
+    if fracgray != 0:
+        tt.splitdarkgray(fracgray,indir=bdir)
     print('science mtl done')
     if fullfoot != True:
     	tt.mkmtl_sky(target_ra_min=ramin,target_ra_max=ramax,target_dec_min=decmin,target_dec_max=decmax,outdir=bdir,target_sample=target_sky_sample)
