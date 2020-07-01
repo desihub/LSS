@@ -843,15 +843,15 @@ def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtarg
         print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
 
     for ps in range(0,4):
-		science_file = indir + 'mtl_science_pass'+str(ps+1)+'.fits'
-		ff = fitsio.read(science_file)
-		types = ['LRG','ELG','QSO']
-		print('after '+str(ps)+' passes:')
-		for type in types:
-			wt = (ff['DESI_TARGET'] & desi_mask[type]) > 0
-			ntar = len(ff[wt])
-			wtz = wt & (ff['NUMOBS_MORE'] == 0)
-			nass = len(ff[wtz])
-			print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
+        science_file = indir + 'mtl_science_pass'+str(ps+1)+'.fits'
+        ff = fitsio.read(science_file)
+        types = ['LRG','ELG','QSO']
+        print('after '+str(ps)+' passes:')
+        for type in types:
+            wt = (ff['DESI_TARGET'] & desi_mask[type]) > 0
+            ntar = len(ff[wt])
+            wtz = wt & (ff['NUMOBS_MORE'] == 0)
+            nass = len(ff[wtz])
+            print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
 
     
