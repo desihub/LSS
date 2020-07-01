@@ -1,0 +1,65 @@
+Fiducial:
+after 4 passes:
+LRG total number of targets: 234988 , number with nobs =0 202604
+ELG total number of targets: 871928 , number with nobs =0 593389
+QSO total number of targets: 72342 , number with nobs =0 31923
+after 0 passes:
+LRG total number of targets: 234988 , number with nobs =0 16133
+ELG total number of targets: 871928 , number with nobs =0 212886
+QSO total number of targets: 72342 , number with nobs =0 0
+after 1 passes:
+LRG total number of targets: 234988 , number with nobs =0 111307
+ELG total number of targets: 871928 , number with nobs =0 288665
+QSO total number of targets: 72342 , number with nobs =0 4
+after 2 passes:
+LRG total number of targets: 234988 , number with nobs =0 161563
+ELG total number of targets: 871928 , number with nobs =0 393890
+QSO total number of targets: 72342 , number with nobs =0 948
+after 3 passes:
+LRG total number of targets: 234988 , number with nobs =0 185622
+ELG total number of targets: 871928 , number with nobs =0 494391
+QSO total number of targets: 72342 , number with nobs =0 9058
+
+4060:
+after 4 passes:
+LRG total number of targets: 234988 , number with nobs =0 219844
+ELG total number of targets: 871928 , number with nobs =0 550326
+QSO total number of targets: 72342 , number with nobs =0 64930
+after 0 passes:
+LRG total number of targets: 234988 , number with nobs =0 16122
+ELG total number of targets: 871928 , number with nobs =0 160797
+QSO total number of targets: 72342 , number with nobs =0 2102
+after 1 passes:
+LRG total number of targets: 234988 , number with nobs =0 112087
+ELG total number of targets: 871928 , number with nobs =0 236349
+QSO total number of targets: 72342 , number with nobs =0 45013
+after 2 passes:
+LRG total number of targets: 234988 , number with nobs =0 175776
+ELG total number of targets: 871928 , number with nobs =0 350662
+QSO total number of targets: 72342 , number with nobs =0 54920
+after 3 passes:
+LRG total number of targets: 234988 , number with nobs =0 204662
+ELG total number of targets: 871928 , number with nobs =0 458566
+QSO total number of targets: 72342 , number with nobs =0 58533
+
+3070:
+after 4 passes:
+LRG total number of targets: 234988 , number with nobs =0 219835
+ELG total number of targets: 871928 , number with nobs =0 569420
+QSO total number of targets: 72342 , number with nobs =0 64878
+after 0 passes:
+LRG total number of targets: 234988 , number with nobs =0 16123
+ELG total number of targets: 871928 , number with nobs =0 137092
+QSO total number of targets: 72342 , number with nobs =0 2150
+after 1 passes:
+LRG total number of targets: 234988 , number with nobs =0 112126
+ELG total number of targets: 871928 , number with nobs =0 213948
+QSO total number of targets: 72342 , number with nobs =0 44993
+after 2 passes:
+LRG total number of targets: 234988 , number with nobs =0 175804
+ELG total number of targets: 871928 , number with nobs =0 337795
+QSO total number of targets: 72342 , number with nobs =0 54963
+after 3 passes:
+LRG total number of targets: 234988 , number with nobs =0 204665
+ELG total number of targets: 871928 , number with nobs =0 460010
+QSO total number of targets: 72342 , number with nobs =0 58550
