@@ -860,6 +860,7 @@ def get_graystats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtar
     wc = ff['OBSCONDITIONS'] == 2
     print('there were '+str(len(ff[wc]))+' target assigned to be gray time only')
     print(np.unique(ff[wc]['DESI_TARGET']))
+    print(np.unique(ff['DESI_TARGET']))
     wce = wc & (ff['DESI_TARGET'] & desi_mask['ELG']) > 0
     print(str(len(ff[wce]))+' are ELG targets')
     wcea = wce & (ff['NUMOBS_MORE'] == 0)
