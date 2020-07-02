@@ -10,9 +10,9 @@ obsconi = [1,2]
 
 #footprint to consider
 ramin = 0
-ramax = 40
+ramax = 20
 decmin = 0
-decmax = 40
+decmax = 20
 
 fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
@@ -23,7 +23,7 @@ usedate = "2020-01-01T00:00:00"
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
-fracgray = 0
+fracgray = 0.2
 
 if fracgray == 0:
     mode = 'fiducialtargets'
@@ -33,6 +33,9 @@ if fracgray == 0.4:
 
 if fracgray == 0.3:
     mode = 'ELG3070'
+    
+if fracgray == 0.2:
+    mode = 'ELG2080'    
 
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
 
