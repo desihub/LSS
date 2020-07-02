@@ -854,4 +854,13 @@ def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtarg
             nass = len(ff[wtz])
             print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
 
-    
+def get_graystats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+    science_file = indir + 'mtl_science.fits'
+    ff = fitsio.read(science_file)
+    wc = ff['OBSCONDITIONS'] == 2
+    print('there were '+str(len(ff[wc]))+' target assigned to be gray time only')
+    wce = wc & (ff['DESI_TARGET'] & desi_mask['ELG']) > 0
+    print(str(len(ff[wce]))+' are ELG targets')
+    wcea = wce & (ff['NUMOBS_MORE'] == 0)
+    print(str(len(ff[wcea]))+' were assigned')
+        
