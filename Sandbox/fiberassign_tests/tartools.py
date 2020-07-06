@@ -244,7 +244,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     
     wave = np.where(np.isin(tt['TARGETID'],availids))[0]
     print('number of available '+type)
-    print(len(tt[wave]['TARGETID']),len(availids))
+    print(len(tt[wave]['TARGETID']),len(availids),len(np.unique(tt[wave]['TARGETID'])))
     plt.plot(tt[wave]['RA'],tt[wave]['DEC'],'k.')
     plt.plot(tt[wass]['RA'],tt[wass]['DEC'],'r.')
     plt.show()
