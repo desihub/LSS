@@ -159,6 +159,84 @@ def update_mtl(obs,oldf='mtl_science_old.fits',science_input='mtl_science.fits',
     del tdata
     return
 
+def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fba_dir='fiberassign/',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):#, qso_lyman_rows, qso_tracer_rows):
+    #get the unique targetids for assigned and available targets from a set of tiles
+    footprint = indir+footprint
+    science_input = indir+science_input
+    fba_dir = indir+fba_dir
+    # Load the footprint
+    tile_data = None
+    with fitsio.FITS(footprint) as fd:
+        tile_data = np.array(fd[1].read())
+    
+
+    availids = np.array([])
+    assignids = np.array([])
+    for tl in tile_data["TILEID"]:
+        # For each tile in order of assignment...
+        
+        # Load assignment and available targets and their properties.
+        # NOTE: because we used the --write_all_targets option to fba_run, we get the properties
+        # of all available targets in the FTARGETS HDU and have access to those here.
+        
+        fba_file = os.path.join(fba_dir, "fiberassign-{:06d}.fits".format(tl))
+        fassign = None
+        ftarget = None
+        favail = None
+        with fitsio.FITS(fba_file, "r") as fd:
+            fassign = fd["FIBERASSIGN"].read()
+            ftarget = fd["TARGETS"].read()
+            favail = fd["POTENTIAL_ASSIGNMENTS"].read()
+        
+        # The assigned target IDs
+        assign_valid_rows = np.where(fassign["TARGETID"] >= 0)[0]
+
+        assign_tgids = np.sort(fassign["TARGETID"][assign_valid_rows])
+        assign_target_rows = np.where(
+            np.isin(ftarget["TARGETID"], assign_tgids)
+        )[0]
+
+		assign_class_rows = assign_target_rows[
+			np.where(
+				np.bitwise_and(
+					ftarget["DESI_TARGET"][assign_target_rows],
+					desi_mask[type]
+				)
+			)[0]
+		]
+
+
+        assignids = np.concatenate((assignids,ftarget["TARGETID"][assign_class_rows]))
+
+        avail_tgids = np.sort(np.unique(favail["TARGETID"]))
+        avail_target_rows = np.where(
+            np.isin(ftarget["TARGETID"], avail_tgids)
+        )[0]
+		avail_class_rows = avail_target_rows[
+			np.where(
+				np.bitwise_and(
+					ftarget["DESI_TARGET"][avail_target_rows],
+					desi_mask[type]
+				)
+			)[0]
+		]
+
+
+        availids = np.concatenate((availids,ftarget["TARGETID"][avail_class_rows]))
+        
+    tt = fitsio.read(science_input)
+    wass = np.isin(tt['TARGETID'],assignids)
+    print('number of assigned '+type)
+    print(len(tt[wass]))
+    
+    wave = np.isin(tt['TARGETID'],availids)
+    print('number of available '+type)
+    print(len(tt[wass]))
+    plt.plot(tt[wave]['RA'],tt[wave]['DEC'],'k.')
+    plt.plot(tt[wass]['RA'],tt[wass]['DEC'],'k.')
+    plt.show()
+
+
 # Function to compute the assigned, available, and considered targets for a set of tiles
 
 def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fiberassign/',indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):#, qso_lyman_rows, qso_tracer_rows):
@@ -337,7 +415,7 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
     print('number of unique available ELG targets:')
     print(len(np.unique(nuelg)))
     print('number of unique assigned ELG targets:')
-    print(len(np.unique(nuelg)))
+    print(len(np.unique(naelg)))
 
     # Return our histogram of tile data and also the updated observation counts,
     # which can be used to update the MTL NUMOBS_MORE in a separate function.
