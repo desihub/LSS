@@ -308,7 +308,7 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
 
             hist_tgavail[tgclass].append(len(avail_class_rows))
             if tgclass == 'ELG':
-                nuelg = np.concatentate((nuelg,ftarget["TARGETID"][avail_target_rows]))
+                nuelg = np.concatenate((nuelg,ftarget["TARGETID"][avail_target_rows]))
             
             #print("  target class {}, {} assignments".format(tgclass, len(assign_class_rows)))
             
