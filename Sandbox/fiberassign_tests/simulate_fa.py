@@ -46,13 +46,13 @@ if fracgray == 0.1:
     
 passes = [0,1,2,3,4]
 
-graylast = False
+graylast = True
 if graylast:
     passes = [1,2,3,4,0]
     if fracgray == 0:
         mode = 'graylastfid'   
 
-grayind = True
+grayind = False
 if grayind == True:
     if fracgray == 0:
         mode = 'grayindfid'         
