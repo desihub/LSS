@@ -216,6 +216,7 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
     
     print("  Accumulating assignment counts for {} tiles...".format(len(tile_data)), flush=True)
 
+    nuelg = np.array([])
     for tl in tile_data["TILEID"]:
         # For each tile in order of assignment...
         
@@ -306,6 +307,8 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
                 ]
 
             hist_tgavail[tgclass].append(len(avail_class_rows))
+            if tgclass == 'ELG':
+                nuelg = np.concatentate((nuelg,ftarget["TARGETID"][avail_target_rows]))
             
             #print("  target class {}, {} assignments".format(tgclass, len(assign_class_rows)))
             
@@ -329,6 +332,8 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
                     else:    
                         obs[tgid] -= 1
     
+    print('number of unique available ELG targets:')
+    print(len(np.unique(nuelg)))
     # Return our histogram of tile data and also the updated observation counts,
     # which can be used to update the MTL NUMOBS_MORE in a separate function.
     return (obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac)
