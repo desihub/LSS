@@ -16,7 +16,7 @@ from numpy.lib.recfunctions import append_fields
 
 import matplotlib.pyplot as plt
 
-from astropy.table import Table,join
+from astropy.table import Table,join,unique
 
 from scipy.spatial import KDTree
 
@@ -233,20 +233,25 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     print(len(tass))
     #assignids = Table(assignids,names=['TARGETID'])
     availids = np.unique(availids)
+    tav = Table()
+    tav['TARGETID'] = availids
     tt = Table.read(science_input)
     #print(len(tt),len(np.unique(tt['TARGETID'])))
     #wass = np.where(
     #    np.isin(tt['TARGETID'],assignids)
     #)[0]
     ttass = join(tass,tt,keys=['TARGETID'],join_type='left')
+    ttass = unique(ttass,keys=['TARGETID'])
     print('number of assigned '+type)
     print(len(ttass['TARGETID']),len(assignids),len(np.unique(ttass['TARGETID'])))
     
-    wave = np.where(np.isin(tt['TARGETID'],availids))[0]
+    ttav = join(tav,tt,keys=['TARGETID'],join_type='left')
+    ttav = unique(ttav,keys=['TARGETID'])
+    #wave = np.where(np.isin(tt['TARGETID'],availids))[0]
     print('number of available '+type)
-    print(len(tt[wave]['TARGETID']),len(availids),len(np.unique(tt[wave]['TARGETID'])))
-    plt.plot(tt[wave]['RA'],tt[wave]['DEC'],'k.')
-    plt.plot(tt[wass]['RA'],tt[wass]['DEC'],'r.')
+    print(len(ttav['TARGETID']),len(availids),len(np.unique(ttav['TARGETID'])))
+    plt.plot(ttav['RA'],ttav['DEC'],'k.')
+    plt.plot(ttass['RA'],ttass['DEC'],'r.')
     plt.show()
 
 
