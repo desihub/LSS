@@ -238,7 +238,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     #)[0]
     ttass = join(tass,tt,keys=['TARGETID'],join_type='left')
     print('number of assigned '+type)
-    print(len(ttass['TARGETID']),len(assignids))
+    print(len(ttass['TARGETID']),len(assignids),len(np.unique(ttass['TARGETID'])))
     
     wave = np.where(np.isin(tt['TARGETID'],availids))[0]
     print('number of available '+type)
