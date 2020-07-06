@@ -217,6 +217,7 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
     print("  Accumulating assignment counts for {} tiles...".format(len(tile_data)), flush=True)
 
     nuelg = np.array([])
+    naelg = np.array([])
     for tl in tile_data["TILEID"]:
         # For each tile in order of assignment...
         
@@ -309,6 +310,7 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
             hist_tgavail[tgclass].append(len(avail_class_rows))
             if tgclass == 'ELG':
                 nuelg = np.concatenate((nuelg,ftarget["TARGETID"][avail_class_rows]))
+                naelg = np.concatenate((naelg,ftarget["TARGETID"][assign_class_rows]))
             
             #print("  target class {}, {} assignments".format(tgclass, len(assign_class_rows)))
             
@@ -334,6 +336,9 @@ def assignment_counts(footprint, science_input='mtl_science.fits', fba_dir='fibe
     
     print('number of unique available ELG targets:')
     print(len(np.unique(nuelg)))
+    print('number of unique assigned ELG targets:')
+    print(len(np.unique(nuelg)))
+
     # Return our histogram of tile data and also the updated observation counts,
     # which can be used to update the MTL NUMOBS_MORE in a separate function.
     return (obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac)
@@ -835,7 +840,7 @@ def mkmtl_sky(target_ra_min=0,target_ra_max=360,target_dec_min=-90,target_dec_ma
     with fitsio.FITS(sky_file, "rw") as fd:
         fd.write(sky_mtl)
         
-def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/'):
+def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtargets/temp/',passes=[]):
     science_file = indir + 'mtl_science.fits'
     ff = fitsio.read(science_file)
     types = ['LRG','ELG','QSO']
@@ -847,8 +852,9 @@ def get_mtlstats(indir='/global/cscratch1/sd/ajross/fiberassigntest/fiducialtarg
         nass = len(ff[wtz])
         print(type + ' total number of targets: '+str(ntar)+' , number with nobs =0 '+str(nass))
 
-    for ps in range(0,4):
-        science_file = indir + 'mtl_science_pass'+str(ps+1)+'.fits'
+    for i in range(0,len(passes)):
+        ps = passes[i]
+        science_file = indir + 'mtl_science_pass'+str(passes[i+1])+'.fits'
         ff = fitsio.read(science_file)
         types = ['LRG','ELG','QSO']
         print('after '+str(ps)+' passes:')

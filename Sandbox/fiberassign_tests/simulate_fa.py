@@ -16,7 +16,7 @@ decmax = 40
 
 fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
-passes = [0,1,2,3,4]
+
 
 usedate = "2020-01-01T00:00:00"
 
@@ -43,6 +43,21 @@ if fracgray == 0.2:
 
 if fracgray == 0.1:
     mode = 'ELG1090' 
+    
+passes = [0,1,2,3,4]
+
+graylast = False
+if graylast:
+    passes = [1,2,3,4,0]
+    if fracgray == 0:
+        mode = 'graylastfid'   
+
+grayind = True
+if grayind == True:
+    if fracgray == 0:
+        mode = 'grayindfic'         
+
+print('mode is '+mode)
 
 bdir = '/global/cscratch1/sd/ajross/fiberassigntest/'+mode+'/temp/' #base directory for outputs and then downstream inputs
 
@@ -82,7 +97,12 @@ if runsurvey:
         print('FINISHED PASS '+str(ps))
         obs, hist_tgassign, hist_tgavail, hist_tgconsid, hist_tgfrac = tt.assignment_counts(footprint, science_input=sci_input, fba_dir='fiberassign/',indir=bdir)
         oldf = 'mtl_science_pass'+str(ps)+'.fits'
-        tt.update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
+        up = True
+        if ps == 0 and grayind == True:
+            up = False
+        if up == True:
+            print('updating MTL after pass '+str(ps))
+            tt.update_mtl(obs,oldf=oldf,science_input=sci_input,indir=bdir )
 
 plotnumobs = True
 if plotnumobs:
@@ -92,4 +112,4 @@ if plotnumobs:
 
 getstats = True
 if getstats:
-    tt.get_mtlstats(bdir)    
+    tt.get_mtlstats(bdir,passes)    
