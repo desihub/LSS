@@ -226,14 +226,16 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
         
     assignids = np.unique(assignids)
     print(assignids.dtype.names,assignids.dtype)
-    assignids = Table(assignids,names=['TARGETID'])
+    tass = Table()
+    tass['TARGETID'] = assignids
+    #assignids = Table(assignids,names=['TARGETID'])
     availids = np.unique(availids)
     tt = Table.read(science_input)
     #print(len(tt),len(np.unique(tt['TARGETID'])))
     #wass = np.where(
     #    np.isin(tt['TARGETID'],assignids)
     #)[0]
-    ttass = Table.join(assignids,tt,keys=['TARGETID'])
+    ttass = Table.join(tass,tt,keys=['TARGETID'])
     print('number of assigned '+type)
     print(len(ttass),len(assignids))
     
