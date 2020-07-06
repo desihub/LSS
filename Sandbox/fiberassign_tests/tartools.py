@@ -228,6 +228,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     print(assignids.dtype.names,assignids.dtype)
     tass = Table()
     tass['TARGETID'] = assignids
+    print(len(tass))
     #assignids = Table(assignids,names=['TARGETID'])
     availids = np.unique(availids)
     tt = Table.read(science_input)
@@ -237,7 +238,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     #)[0]
     ttass = join(tass,tt,keys=['TARGETID'])
     print('number of assigned '+type)
-    print(len(ttass),len(assignids))
+    print(len(ttass['TARGETID']),len(assignids))
     
     wave = np.where(np.isin(tt['TARGETID'],availids))[0]
     print('number of available '+type)
