@@ -236,7 +236,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     #wass = np.where(
     #    np.isin(tt['TARGETID'],assignids)
     #)[0]
-    ttass = join(tass,tt,keys=['TARGETID'])
+    ttass = join(tass,tt,keys=['TARGETID'],jointype='left')
     print('number of assigned '+type)
     print(len(ttass['TARGETID']),len(assignids))
     
