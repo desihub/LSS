@@ -212,14 +212,14 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
         avail_target_rows = np.where(
             np.isin(ftarget["TARGETID"], avail_tgids)
         )[0]
-		avail_class_rows = avail_target_rows[
-			np.where(
-				np.bitwise_and(
-					ftarget["DESI_TARGET"][avail_target_rows],
-					desi_mask[type]
-				)
-			)[0]
-		]
+        avail_class_rows = avail_target_rows[
+            np.where(
+                np.bitwise_and(
+                    ftarget["DESI_TARGET"][avail_target_rows],
+                    desi_mask[type]
+                )
+            )[0]
+        ]
 
 
         availids = np.concatenate((availids,ftarget["TARGETID"][avail_class_rows]))
