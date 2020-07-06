@@ -225,6 +225,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
         availids = np.concatenate((availids,ftarget["TARGETID"][avail_class_rows]))
         
     assignids = np.unique(assignids)
+    print(assignids.dtype.names,assignids.dtype)
     assignids = Table(assignids,names=['TARGETID'])
     availids = np.unique(availids)
     tt = Table.read(science_input)
