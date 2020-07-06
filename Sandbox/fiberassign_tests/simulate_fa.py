@@ -23,7 +23,7 @@ usedate = "2020-01-01T00:00:00"
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
-fracgray = 0.1
+fracgray = 0
 
 if fracgray == 0:
     mode = 'fiducialtargets'
@@ -55,7 +55,7 @@ if graylast:
 grayind = True
 if grayind == True:
     if fracgray == 0:
-        mode = 'grayindfic'         
+        mode = 'grayindfid'         
 
 print('mode is '+mode)
 
