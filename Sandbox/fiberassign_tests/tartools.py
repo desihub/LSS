@@ -196,14 +196,14 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
             np.isin(ftarget["TARGETID"], assign_tgids)
         )[0]
 
-		assign_class_rows = assign_target_rows[
-			np.where(
-				np.bitwise_and(
-					ftarget["DESI_TARGET"][assign_target_rows],
-					desi_mask[type]
-				)
-			)[0]
-		]
+        assign_class_rows = assign_target_rows[
+            np.where(
+                np.bitwise_and(
+                    ftarget["DESI_TARGET"][assign_target_rows],
+                    desi_mask[type]
+                )
+            )[0]
+        ]
 
 
         assignids = np.concatenate((assignids,ftarget["TARGETID"][assign_class_rows]))
