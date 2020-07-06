@@ -16,7 +16,7 @@ from numpy.lib.recfunctions import append_fields
 
 import matplotlib.pyplot as plt
 
-from astropy.table import Table
+from astropy.table import Table,join
 
 from scipy.spatial import KDTree
 
@@ -235,7 +235,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     #wass = np.where(
     #    np.isin(tt['TARGETID'],assignids)
     #)[0]
-    ttass = Table.join(tass,tt,keys=['TARGETID'])
+    ttass = join(tass,tt,keys=['TARGETID'])
     print('number of assigned '+type)
     print(len(ttass),len(assignids))
     
