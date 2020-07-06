@@ -227,6 +227,7 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     assignids = np.unique(assignids)
     availids = np.unique(availids)
     tt = fitsio.read(science_input)
+    print(len(tt),len(np.unique(tt['TARGETID'])))
     wass = np.where(np.isin(tt['TARGETID'],assignids))[0]
     print('number of assigned '+type)
     print(len(tt[wass]),len(assignids))
