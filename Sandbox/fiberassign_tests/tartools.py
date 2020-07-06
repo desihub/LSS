@@ -225,6 +225,8 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
         availids = np.concatenate((availids,ftarget["TARGETID"][avail_class_rows]))
         
     assignids = np.unique(assignids)
+    w = (assignids > 0) & (assignids*0 == 0)
+    assignids = assignids[w]
     print(assignids.dtype.names,assignids.dtype)
     tass = Table()
     tass['TARGETID'] = assignids
