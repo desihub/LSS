@@ -224,14 +224,16 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
 
         availids = np.concatenate((availids,ftarget["TARGETID"][avail_class_rows]))
         
+    assignids = np.unique(assignids)
+    availids = np.unique(availids)
     tt = fitsio.read(science_input)
     wass = np.isin(tt['TARGETID'],assignids)
     print('number of assigned '+type)
-    print(len(tt[wass]))
+    print(len(tt[wass]),len(assignids))
     
     wave = np.isin(tt['TARGETID'],availids)
     print('number of available '+type)
-    print(len(tt[wass]))
+    print(len(tt[ave]),len(availids))
     plt.plot(tt[wave]['RA'],tt[wave]['DEC'],'k.')
     plt.plot(tt[wass]['RA'],tt[wass]['DEC'],'k.')
     plt.show()
