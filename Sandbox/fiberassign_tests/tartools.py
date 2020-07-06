@@ -251,7 +251,9 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     print('number of available '+type)
     print(len(ttav['TARGETID']),len(availids),len(np.unique(ttav['TARGETID'])))
     plt.plot(ttav['RA'],ttav['DEC'],'k.')
-    plt.plot(ttass['RA'],ttass['DEC'],'r.')
+    plt.plot(ttass['RA'],ttass['DEC'],'r,')
+    plt.xlim(18,24)
+    plt.ylim(7,13)
     plt.show()
 
 
