@@ -422,7 +422,7 @@ sim_path = "/project/projectdirs/desi/datachallenge/surveysim2018/weather/081"
 footprint_path = "./footprint"
 #subsetnames = create_multi_footprint(sim_path, footprint_path, cadence=180)
 
-#prepare_tiles()
+prepare_tiles()
 
 #footprint_names = subsetnames + ['full']
 #pass_names = subsetnames  + ['full']
