@@ -264,10 +264,10 @@ def prepare_tiles():
     footprint['gray'].write(outdir+'footprint/subset_gray.fits', overwrite=True)
     footprint['dark0'].write(outdir+'footprint/subset_dark0.fits', overwrite=True)
     footprint['dark1'].write(outdir+'footprint/subset_dark1.fits', overwrite=True)
-    vstack([footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark2_dark3.fits', overwrite=True)
-    vstack([footprint['dark1'], footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark1_dark2_dark3.fits', overwrite=True)
-    vstack([footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark0_dark1_dark2_dark3.fits', overwrite=True)
-    vstack([footprint['gray'], footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write('footprint/subset_gray_dark0_dark1_dark2_dark3.fits', overwrite=True)
+    vstack([footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_dark2_dark3.fits', overwrite=True)
+    vstack([footprint['dark1'], footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_dark1_dark2_dark3.fits', overwrite=True)
+    vstack([footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_dark0_dark1_dark2_dark3.fits', overwrite=True)
+    vstack([footprint['gray'], footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_gray_dark0_dark1_dark2_dark3.fits', overwrite=True)
 
 def create_multi_footprint(surveysim_path, footprint_path, cadence=28):
     
