@@ -180,10 +180,11 @@ def write_initial_std_file(initial_mtl_file, initial_std_file):
 def write_initial_sky_file(initial_sky_file):
     sky_data = fitsio.read(sky_data_file)
     subset_ii = ra_dec_subset(sky_data)
+    sd = sky_data[subset_ii]
     print('writing sky')
     outfd = fitsio.FITS(outdir+initial_sky_file, "rw")
     outfd.write(None, header=None, extname="PRIMARY")
-    outfd.write(sky_data[subset_ii], header=None, extname="TARGETS")
+    outfd.write(sd, header=None, extname="TARGETS")
     outfd.close()
     print('done writing sky')
 
@@ -339,7 +340,7 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         zcat_filename = outdir+'{}/zcat/{}_zcat.fits'.format(strategy, pass_name)
     
         if i_pass == 0:
-            shutil.copyfile(outdir+initial_mtl_file, outdir+mtl_filename)
+            shutil.copyfile(outdir+initial_mtl_file, mtl_filename)
         
     
         # Run fiberassign
