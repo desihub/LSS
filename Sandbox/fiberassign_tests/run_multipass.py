@@ -16,6 +16,25 @@ from desitarget.targetmask import desi_mask, obsconditions
 from collections import Counter
 import subprocess
 
+
+#some hardcoded things that we need to un-hardcode at some point
+usedate = "2020-01-01T00:00:00"
+
+full_target_data='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here using tartools.py mktar
+sky_data='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
+
+path_to_targets = '/project/projectdirs/desi/target/catalogs/dr8/0.39.0/targets/main/resolve/'
+
+pixweight_file = "/project/projectdirs/desi/target/catalogs/dr8/0.31.1/pixweight/pixweight-dr8-0.31.1.fits"
+
+outdir = '/global/cscratch1/sd/ajross/fiberassigntest/'
+
+os.makedirs(outdir+'targets', exist_ok=True)
+os.makedirs(outdir+'footprint', exist_ok=True)
+
+
+
+
 def ra_dec_subset(data, ra_min=130, ra_max=180, dec_min=-10, dec_max=40):
     subset_ii = (data['RA']>ra_min) & (data['RA']<ra_max)
     subset_ii &= (data['DEC']>dec_min) & (data['DEC']<dec_max)
@@ -99,7 +118,7 @@ def assign_lya_qso(initial_mtl_file, pixweight_file):
     return is_lya_qso
 
 def write_initial_mtl_file(initial_mtl_file):
-    path_to_targets = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/'
+    
     target_files = glob.glob(os.path.join(path_to_targets, "targets*fits"))
     print('target files to read:', len(target_files))
     target_files.sort()
@@ -121,37 +140,58 @@ def write_initial_mtl_file(initial_mtl_file):
 
     print("Writing nothern cap")
     mtl_file = "targets/dr8_mtl_dark_gray_NGC.fits"
-    full_mtl[(ii_mtl_dark | ii_mtl_gray) & ii_north].write(mtl_file, overwrite=True)
+    full_mtl[(ii_mtl_dark | ii_mtl_gray) & ii_north].write(outdir+mtl_file, overwrite=True)
     
     print("Writing subset in the northern cap")
     mtl_data = Table.read(mtl_file)
     subset_ii = ra_dec_subset(mtl_data)
-    mtl_data[subset_ii].write(initial_mtl_file, overwrite=True)
+    mtl_data[subset_ii].write(outdir+initial_mtl_file, overwrite=True)
+
+def write_initial_mtl_file_AJR(initial_mtl_file):
+    
+    data = fitsio.FITS(full_target_data, 'r')
+    tmp_data = data[1].read(columns=['TARGETID', 'DESI_TARGET', 'MWS_TARGET', 'BGS_TARGET', 'SUBPRIORITY', 'NUMOBS_INIT', 'PRIORITY_INIT', 'RA', 'DEC', 'HPXPIXEL', 'BRICKNAME'])
+    full_mtl = desitarget.mtl.make_mtl(tmp_data, 'DARK|GRAY')
+
+    ii_mtl_dark = (full_mtl['OBSCONDITIONS'] & obsconditions.DARK)!=0
+    ii_mtl_gray = (full_mtl['OBSCONDITIONS'] & obsconditions.GRAY)!=0
+    ii_north = (full_mtl['RA']>85) & (full_mtl['RA']<300) & (full_mtl['DEC']>-15)
+
+    print("Writing nothern cap")
+    mtl_file = "targets/dr8_mtl_dark_gray_NGC.fits"
+    full_mtl[(ii_mtl_dark | ii_mtl_gray) & ii_north].write(outdir+mtl_file, overwrite=True)
+    
+    print("Writing subset in the northern cap")
+    mtl_data = Table.read(outdir+mtl_file)
+    subset_ii = ra_dec_subset(mtl_data)
+    mtl_data[subset_ii].write(outdir+initial_mtl_file, overwrite=True)
+    
+    print('NOTHING done yet in SGC')
+
 
 def write_initial_std_file(initial_mtl_file, initial_std_file):
-    mtl_data = Table.read(initial_mtl_file)
+    mtl_data = Table.read(outdir+initial_mtl_file)
     std_mask = desi_mask.STD_FAINT | desi_mask.STD_WD | desi_mask.STD_BRIGHT
     print('STDMASK', std_mask)
     std_ii = (mtl_data['DESI_TARGET'] & std_mask)!=0
     print(len(std_ii), np.count_nonzero(std_ii))
-    mtl_data[std_ii].write(initial_std_file, overwrite=True)
+    mtl_data[std_ii].write(outdir+initial_std_file, overwrite=True)
 
 def write_initial_sky_file(initial_sky_file):
-    sky_data = Table.read("/project/projectdirs/desi/target/catalogs/dr8/0.31.0/skies/skies-dr8-0.31.0.fits")
     subset_ii = ra_dec_subset(sky_data)
     print('writing sky')
-    sky_data[subset_ii].write(initial_sky_file, overwrite=True)
+    sky_data[subset_ii].write(outdir+initial_sky_file, overwrite=True)
     print('done writing sky')
 
 
 def write_initial_truth_file(initial_truth_file):
     import desitarget.mock.mockmaker as mb
     from desitarget.targetmask import desi_mask, bgs_mask, mws_mask
-    pixweight_file = "/project/projectdirs/desi/target/catalogs/dr8/0.31.1/pixweight/pixweight-dr8-0.31.1.fits"
-
-    is_lya_qso = assign_lya_qso(initial_mtl_file, pixweight_file)
     
-    targets = Table.read(initial_mtl_file)
+
+    is_lya_qso = assign_lya_qso(outdir+initial_mtl_file, pixweight_file)
+    
+    targets = Table.read(outdir+initial_mtl_file)
     colnames = list(targets.dtype.names)
     print(colnames)
     nobj = len(targets)
@@ -189,7 +229,7 @@ def write_initial_truth_file(initial_truth_file):
     assert np.count_nonzero(iii)==0
     
     print('writing truth')
-    truth.write(initial_truth_file, overwrite=True)
+    truth.write(outdir+initial_truth_file, overwrite=True)
     print('done truth')
     
 def prepare_tiles():
@@ -200,8 +240,8 @@ def prepare_tiles():
 
     
     tilefile = 'footprint/subset_tiles.fits'
-    tiles[ii_tiles&ii_subset].write(tilefile, overwrite='True')
-    tiles = Table.read(tilefile)
+    tiles[ii_tiles&ii_subset].write(outdir+tilefile, overwrite='True')
+    tiles = Table.read(outdir+tilefile)
 
     ii_gray = tiles['PROGRAM']=='GRAY'
     ii_dark_0 = (tiles['PROGRAM']=='DARK') & (tiles['PASS']==0)
@@ -216,9 +256,9 @@ def prepare_tiles():
     footprint['dark2'] = tiles[ii_dark_2]
     footprint['dark3'] = tiles[ii_dark_3]
 
-    footprint['gray'].write('footprint/subset_gray.fits', overwrite=True)
-    footprint['dark0'].write('footprint/subset_dark0.fits', overwrite=True)
-    footprint['dark1'].write('footprint/subset_dark1.fits', overwrite=True)
+    footprint['gray'].write(outdir+'footprint/subset_gray.fits', overwrite=True)
+    footprint['dark0'].write(outdir+'footprint/subset_dark0.fits', overwrite=True)
+    footprint['dark1'].write(outdir+'footprint/subset_dark1.fits', overwrite=True)
     vstack([footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark2_dark3.fits', overwrite=True)
     vstack([footprint['dark1'], footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark1_dark2_dark3.fits', overwrite=True)
     vstack([footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write('footprint/subset_dark0_dark1_dark2_dark3.fits', overwrite=True)
@@ -257,8 +297,8 @@ def create_multi_footprint(surveysim_path, footprint_path, cadence=28):
             subsetname = '{:02d}'.format(month)
             tilefile = os.path.join(footprint_path, 'subset_{}.fits'.format(subsetname))
             subsetnames.append(subsetname)
-            print('writing to', tilefile)
-            table_tiles.write(tilefile, overwrite=True)
+            print('writing to '+outdir+tilefile)
+            table_tiles.write(outdir+tilefile, overwrite=True)
     return subsetnames
     
 def consolidate_favail(fba_files):
@@ -281,21 +321,21 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         pass_name = pass_names[i_pass]
         new_pass_name = pass_names[i_pass+1]
     
-        os.makedirs('{}/fiberassign_{}'.format(strategy, pass_name), exist_ok=True)
-        os.makedirs('{}/targets'.format(strategy), exist_ok=True)
-        os.makedirs('{}/zcat'.format(strategy), exist_ok=True)
+        os.makedirs(outdir+'{}/fiberassign_{}'.format(strategy, pass_name), exist_ok=True)
+        os.makedirs(outdir+'{}/targets'.format(strategy), exist_ok=True)
+        os.makedirs(outdir+'{}/zcat'.format(strategy), exist_ok=True)
 
     
-        assign_footprint_filename = 'footprint/subset_{}.fits'.format(footprint_name)
-        zcat_footprint_filename = 'footprint/subset_{}.fits'.format(pass_name)
-        fiberassign_dir = '{}/fiberassign_{}/'.format(strategy, pass_name)
-        mtl_filename = '{}/targets/{}_subset_dr8_mtl_dark_gray_NGC.fits'.format(strategy, pass_name)
-        new_mtl_filename = '{}/targets/{}_subset_dr8_mtl_dark_gray_NGC.fits'.format(strategy, new_pass_name)
-        old_zcat_filename = '{}/zcat/{}_zcat.fits'.format(strategy, old_pass_name)
-        zcat_filename = '{}/zcat/{}_zcat.fits'.format(strategy, pass_name)
+        assign_footprint_filename = outdir+'footprint/subset_{}.fits'.format(footprint_name)
+        zcat_footprint_filename = outdir+'footprint/subset_{}.fits'.format(pass_name)
+        fiberassign_dir = outdir+'{}/fiberassign_{}/'.format(strategy, pass_name)
+        mtl_filename = outdir+'{}/targets/{}_subset_dr8_mtl_dark_gray_NGC.fits'.format(strategy, pass_name)
+        new_mtl_filename = outdir+'{}/targets/{}_subset_dr8_mtl_dark_gray_NGC.fits'.format(strategy, new_pass_name)
+        old_zcat_filename = outdir+'{}/zcat/{}_zcat.fits'.format(strategy, old_pass_name)
+        zcat_filename = outdir+'{}/zcat/{}_zcat.fits'.format(strategy, pass_name)
     
         if i_pass == 0:
-            shutil.copyfile(initial_mtl_file, mtl_filename)
+            shutil.copyfile(outdir+initial_mtl_file, outdir+mtl_filename)
         
     
         # Run fiberassign
@@ -315,13 +355,13 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         fba_files = np.sort(glob.glob(os.path.join(fiberassign_dir,"fiberassign*.fits")))
 
         # remove tilefiles that are not in the list of tiles to build zcat
-        footprint = Table.read(zcat_footprint_filename)
+        footprint = Table.read(outdir+zcat_footprint_filename)
         to_keep = []
         for i_file, fba_file in enumerate(fba_files):
             fibassign, header = fits.getdata(fba_file, header=True)
             tileid = int(header['TILEID'])
             if tileid in footprint['TILEID']:
-                print(tileid, 'in list', zcat_footprint_filename)
+                print(tileid, 'in list', outdir+zcat_footprint_filename)
                 print('keeping {}'.format(fba_file))
                 to_keep.append(i_file)
             else:
@@ -349,29 +389,27 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         mtl = desitarget.mtl.make_mtl(targets, obsconditions[i_pass], zcat=zcat)
         mtl.write(new_mtl_filename, overwrite=True)
 
-        
-os.makedirs('targets', exist_ok=True)
-os.makedirs('footprint', exist_ok=True)
-
-initial_mtl_file = "targets/subset_dr8_mtl_dark_gray_NGC.fits"
+ 
+initial_mtl_file = outdir+"targets/subset_dr8_mtl_dark_gray_NGC.fits"
 if not os.path.exists(initial_mtl_file):
     print("Preparing MTL file")
-    write_initial_mtl_file(initial_mtl_file)
+    write_initial_mtl_file_AJR(initial_mtl_file)
         
-initial_std_file = "targets/subset_dr8_std.fits"
+initial_std_file = outdir+"targets/subset_dr8_std.fits"
 if not os.path.exists(initial_std_file):
     print("Preparing the inital std file")
     write_initial_std_file(initial_mtl_file, initial_std_file)
     
-initial_truth_file = "targets/subset_truth_dr8_mtl_dark_gray_NGC.fits"
+initial_truth_file = outdir+"targets/subset_truth_dr8_mtl_dark_gray_NGC.fits"
 if not os.path.exists(initial_truth_file):
     print("Preparing Truth File")
     write_initial_truth_file(initial_truth_file)
 
-initial_sky_file = "targets/subset_dr8_sky.fits"
+initial_sky_file = outdir+"targets/subset_dr8_sky.fits"
 if not os.path.exists(initial_sky_file):
     print("Preparing the inital sky file")
     write_initial_sky_file(initial_sky_file)
+       
         
 #print("Preparing tiles")
 sim_path = "/project/projectdirs/desi/datachallenge/surveysim2018/weather/081"
