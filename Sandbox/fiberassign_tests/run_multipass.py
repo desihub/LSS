@@ -376,7 +376,7 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
     
         # Read targets and truth
         targets = Table.read(mtl_filename)
-        truth = Table.read(initial_truth_file)
+        truth = Table.read(outdir+initial_truth_file)
     
         # Compute zcat
         if i_pass==0:
@@ -390,22 +390,22 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         mtl.write(new_mtl_filename, overwrite=True)
 
  
-initial_mtl_file = outdir+"targets/subset_dr8_mtl_dark_gray_NGC.fits"
+initial_mtl_file = "targets/subset_dr8_mtl_dark_gray_NGC.fits"
 if not os.path.exists(initial_mtl_file):
     print("Preparing MTL file")
     write_initial_mtl_file_AJR(initial_mtl_file)
         
-initial_std_file = outdir+"targets/subset_dr8_std.fits"
+initial_std_file = "targets/subset_dr8_std.fits"
 if not os.path.exists(initial_std_file):
     print("Preparing the inital std file")
     write_initial_std_file(initial_mtl_file, initial_std_file)
     
-initial_truth_file = outdir+"targets/subset_truth_dr8_mtl_dark_gray_NGC.fits"
+initial_truth_file = "targets/subset_truth_dr8_mtl_dark_gray_NGC.fits"
 if not os.path.exists(initial_truth_file):
     print("Preparing Truth File")
     write_initial_truth_file(initial_truth_file)
 
-initial_sky_file = outdir+"targets/subset_dr8_sky.fits"
+initial_sky_file = "targets/subset_dr8_sky.fits"
 if not os.path.exists(initial_sky_file):
     print("Preparing the inital sky file")
     write_initial_sky_file(initial_sky_file)
