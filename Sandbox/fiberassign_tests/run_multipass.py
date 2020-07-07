@@ -181,7 +181,10 @@ def write_initial_sky_file(initial_sky_file):
     sky_data = fitsio.read(sky_data_file)
     subset_ii = ra_dec_subset(sky_data)
     print('writing sky')
-    sky_data[subset_ii].write(outdir+initial_sky_file, overwrite=True)
+    outfd = fitsio.FITS(outdir+initial_sky_file, "rw")
+    outfd.write(None, header=None, extname="PRIMARY")
+    outfd.write(sky_data[subset_ii], header=None, extname="TARGETS")
+    outfd.close()
     print('done writing sky')
 
 
