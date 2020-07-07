@@ -21,7 +21,7 @@ import subprocess
 usedate = "2020-01-01T00:00:00"
 
 full_target_data='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here using tartools.py mktar
-sky_data='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
+sky_data_file='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
 path_to_targets = '/project/projectdirs/desi/target/catalogs/dr8/0.39.0/targets/main/resolve/'
 
@@ -178,6 +178,7 @@ def write_initial_std_file(initial_mtl_file, initial_std_file):
     mtl_data[std_ii].write(outdir+initial_std_file, overwrite=True)
 
 def write_initial_sky_file(initial_sky_file):
+    sky_data = fitsio.read(sky_data_file)
     subset_ii = ra_dec_subset(sky_data)
     print('writing sky')
     sky_data[subset_ii].write(outdir+initial_sky_file, overwrite=True)
