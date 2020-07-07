@@ -392,22 +392,22 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
 
  
 initial_mtl_file = "targets/subset_dr8_mtl_dark_gray_NGC.fits"
-if not os.path.exists(initial_mtl_file):
+if not os.path.exists(outdir+initial_mtl_file):
     print("Preparing MTL file")
     write_initial_mtl_file_AJR(initial_mtl_file)
         
 initial_std_file = "targets/subset_dr8_std.fits"
-if not os.path.exists(initial_std_file):
+if not os.path.exists(outdir+initial_std_file):
     print("Preparing the inital std file")
     write_initial_std_file(initial_mtl_file, initial_std_file)
     
 initial_truth_file = "targets/subset_truth_dr8_mtl_dark_gray_NGC.fits"
-if not os.path.exists(initial_truth_file):
+if not os.path.exists(outdir+initial_truth_file):
     print("Preparing Truth File")
     write_initial_truth_file(initial_truth_file)
 
 initial_sky_file = "targets/subset_dr8_sky.fits"
-if not os.path.exists(initial_sky_file):
+if not os.path.exists(outdir+initial_sky_file):
     print("Preparing the inital sky file")
     write_initial_sky_file(initial_sky_file)
        
