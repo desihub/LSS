@@ -338,6 +338,7 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         new_mtl_filename = outdir+'{}/targets/{}_subset_dr8_mtl_dark_gray_NGC.fits'.format(strategy, new_pass_name)
         old_zcat_filename = outdir+'{}/zcat/{}_zcat.fits'.format(strategy, old_pass_name)
         zcat_filename = outdir+'{}/zcat/{}_zcat.fits'.format(strategy, pass_name)
+        sky_filename = outdir+'targets/subset_dr8_sky.fits'
     
         if i_pass == 0:
             shutil.copyfile(outdir+initial_mtl_file, mtl_filename)
@@ -350,7 +351,7 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
             cmd += ' --footprint {} --outdir {} --overwrite '.format(assign_footprint_filename, fiberassign_dir)
             cmd += ' --fibstatusfile fiberstatus.ecsv --starmask 60129542144'
         if legacy==False:
-            cmd = 'fiberassign --mtl {} --sky targets/subset_dr8_sky.fits '.format(mtl_filename)
+            cmd = 'fiberassign --mtl {} --sky {} '.format(mtl_filename,sky_filename)
             cmd +=' --footprint {} --outdir {} --overwrite'.format(assign_footprint_filename, fiberassign_dir)
             
         print(cmd)
@@ -360,7 +361,7 @@ def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_m
         fba_files = np.sort(glob.glob(os.path.join(fiberassign_dir,"fiberassign*.fits")))
 
         # remove tilefiles that are not in the list of tiles to build zcat
-        footprint = Table.read(outdir+zcat_footprint_filename)
+        footprint = Table.read(zcat_footprint_filename)
         to_keep = []
         for i_file, fba_file in enumerate(fba_files):
             fibassign, header = fits.getdata(fba_file, header=True)
