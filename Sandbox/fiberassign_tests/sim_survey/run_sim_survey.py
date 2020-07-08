@@ -1,6 +1,6 @@
 '''
 This essentially runs the same things as run_multipass one directory up, but with everything split
-out in order to allow more flexibility and tesing
+out in order to allow more flexibility and testing
 For now, alter the options at the top in order to run with different options
 '''
 
@@ -23,12 +23,6 @@ fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
 
 
 
-usedate = "2020-01-01T00:00:00"
-
-target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
-target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
-
-#some hardcoded things that we need to un-hardcode at some point
 usedate = "2020-01-01T00:00:00"
 
 full_target_data='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here using tartools.py mktar
