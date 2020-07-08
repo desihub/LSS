@@ -44,15 +44,15 @@ if obscon == 'DARK|GRAY':
 cap = 'NGC'
 dr = 'dr8'
 
-#initial_mtl_file = mf.write_initial_mtl_files(cap=cap,dr=dr, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir,full_target_data=full_target_data,obscon=obscon,sky_data_file=sky_data_file)
+initial_mtl_file = mf.write_initial_mtl_files(cap=cap,dr=dr, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir,full_target_data=full_target_data,obscon=obscon,sky_data_file=sky_data_file)
 
 initial_truth_file = "targets/subset_truth_"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
 
-#mf.write_initial_truth_file(initial_truth_file,initial_mtl_file,outdir,pixweight_file)
+mf.write_initial_truth_file(initial_truth_file,initial_mtl_file,outdir,pixweight_file)
 
 initial_sky_file = outdir+"targets/subset_"+dr+"_sky.fits"
 
-mf.write_initial_sky_file(initial_sky_file,sky_data_file=sky_data_file, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir)
+#mf.write_initial_sky_file(initial_sky_file,sky_data_file=sky_data_file, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir)
 
 
     
