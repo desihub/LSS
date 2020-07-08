@@ -365,7 +365,8 @@ def create_multi_footprint(sim_path, footprint_path, cadence=28,outdir='',ramin=
     dark_gray_tiles = tiles[not_bright]
     
     # create a "month" of "cadence" days.
-    exposures['MONTH'] = np.int_((exposures['MJD']-exposures['MJD'].min())/cadence)
+    #exposures['MONTH'] = np.int_((exposures['MJD']-exposures['MJD'].min())/cadence)
+    emonth = np.int_((exposures['MJD']-exposures['MJD'].min())/cadence)
    
     all_tiles_in_month = {}
     month_id = list(set(exposures['MONTH']))
