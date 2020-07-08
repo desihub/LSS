@@ -356,7 +356,7 @@ def create_multi_footprint(sim_path, footprint_path, cadence=28,outdir='',ramin=
     exposures = fitsio.read(os.path.join(sim_path,'exposures.fits'), ext=1)
     #tiles = desimodel.io.load_tiles() #seems slow
     tfn  = os.getenv('DESIMODEL')+'/data/footprint/desi-tiles.fits'
-    footprint_data = fitsio.read(tfn)
+    tiles = fitsio.read(tfn)
     
     # select tiles to be dark+gray in a special region of the sky
     ii_subset = ra_dec_subset(tiles,ramin,ramax,decmin,decmax) 
