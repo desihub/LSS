@@ -6,7 +6,7 @@ For now, alter the options at the top in order to run with different options
 
 import os
 
-import multipass_functions as mf
+import multipass_func as mf
 #variables we might want to change
 
 #observing conditions for initial mtl
