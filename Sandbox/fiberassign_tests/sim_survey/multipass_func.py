@@ -211,15 +211,69 @@ def write_initial_std_file(initial_mtl_file, initial_std_file):
 
 def write_initial_sky_file(initial_sky_file,sky_data_file='', ra_min=130, ra_max=180, dec_min=-10, dec_max=40,outdir=''):
     print('reading sky')
-    sky_data = fitsio.read(sky_data_file)
-    subset_ii = ra_dec_subset(sky_data,ra_min,ra_max,dec_min,dec_max)
-    sd = sky_data[subset_ii]
-    print('writing sky')
-    outfd = fitsio.FITS(outdir+initial_sky_file, "rw")
-    outfd.write(None, header=None, extname="PRIMARY")
-    outfd.write(sd, header=None, extname="TARGETS")
-    outfd.close()
-    print('done writing sky')
+    #sky_data = fitsio.read(sky_data_file)
+    #subset_ii = ra_dec_subset(sky_data,ra_min,ra_max,dec_min,dec_max)
+    #sd = sky_data[subset_ii]
+    #print('writing sky')
+    #outfd = fitsio.FITS(outdir+initial_sky_file, "rw")
+    #outfd.write(None, header=None, extname="PRIMARY")
+    #outfd.write(sd, header=None, extname="TARGETS")
+    #outfd.close()
+    #print('done writing sky')
+    fd = fitsio.FITS(sky_data_file)
+    fdata = np.array(fd[1].read())#(columns=keep_columns))
+
+    inside = np.where(
+        np.logical_and(
+            np.logical_and((fdata["RA"] > ra_min), (fdata["RA"] < ra_max)),
+            np.logical_and((fdata["DEC"] > dec_min), (fdata["DEC"] < dec_max))
+        )
+    )[0]
+    sky_mtl = fdata[inside]
+
+
+    fd.close()
+    del fd
+
+    # Sanity check that these are all sky, supp_sky, or bad_sky
+
+    print("{} input targets in sky file".format(len(sky_mtl)))
+
+    sky_sky_rows = np.where(
+        np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SKY"].mask)
+    )[0]
+
+    print("  {} SKY targets".format(len(sky_sky_rows)))
+
+    sky_suppsky_rows = np.where(
+        np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["SUPP_SKY"].mask)
+    )[0]
+
+    print("  {} SUPP_SKY targets".format(len(sky_suppsky_rows)))
+
+    sky_badsky_rows = np.where(
+        np.bitwise_and(sky_mtl["DESI_TARGET"], desi_mask["BAD_SKY"].mask)
+    )[0]
+
+    print("  {} BAD_SKY targets".format(len(sky_badsky_rows)))
+
+#     sky_mask = 0
+#     sky_mask |= desi_mask["SKY"].mask
+#     sky_mask |= desi_mask["SUPP_SKY"].mask
+#     sky_mask |= desi_mask["BAD_SKY"].mask
+
+    sky_unknown_rows = np.where(
+        np.logical_not(
+            np.bitwise_and(sky_mtl["DESI_TARGET"], sky_mask)
+        )
+    )[0]
+
+    print("  {} targets are not one of the 3 recognized types".format(len(sky_unknown_rows)))
+
+    if os.path.isfile(initial_sky_file):
+        os.remove(initial_sky_file)
+    with fitsio.FITS(initial_sky_file, "rw") as fd:
+        fd.write(sky_mtl)
 
 
 def write_initial_truth_file(initial_truth_file,initial_mtl_file='',outdir='',pixweight_file=''):
