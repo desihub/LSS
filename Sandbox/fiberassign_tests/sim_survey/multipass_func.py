@@ -404,7 +404,7 @@ def consolidate_favail(fba_files):
     return list(set(favail))
     
 def run_strategy(footprint_names, pass_names, obsconditions, strategy, initial_mtl_file, initial_sky_file, initial_std_file, 
-                 fiberassign_script='fiberassign_legacy', legacy=None):
+                 fiberassign_script='fiberassign_legacy', legacy=None,outdir=''):
     for i_pass in range(len(footprint_names)-1):
     
         footprint_name = footprint_names[i_pass]
