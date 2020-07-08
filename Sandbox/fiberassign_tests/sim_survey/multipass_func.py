@@ -167,9 +167,9 @@ def write_initial_mtl_files(cap='NGC',dr='dr8', ra_min=130, ra_max=180, dec_min=
         str_obscon = 'dark_gray'
 
     
-    mtl_file = "targets/"+dr+"_mtl_"+str_obscon"_"+cap+".fits"
+    mtl_file = "targets/"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
 
-    initial_mtl_file = "targets/subset_"+dr+"_mtl_"+str_obscon"_"+cap+".fits"
+    initial_mtl_file = "targets/subset_"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
         
     initial_std_file = "targets/subset_"+dr+"_std.fits"
     
