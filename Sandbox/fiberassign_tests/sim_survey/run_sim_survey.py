@@ -4,6 +4,8 @@ out in order to allow more flexibility and tesing
 For now, alter the options at the top in order to run with different options
 '''
 
+import os
+
 #variables we might want to change
 
 #observing conditions for initial mtl
