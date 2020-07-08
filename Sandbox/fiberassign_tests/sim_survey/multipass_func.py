@@ -369,13 +369,15 @@ def create_multi_footprint(sim_path, footprint_path, cadence=28,outdir='',ramin=
     emonth = np.int_((exposures['MJD']-exposures['MJD'].min())/cadence)
    
     all_tiles_in_month = {}
-    month_id = list(set(exposures['MONTH']))
+    #month_id = list(set(exposures['MONTH']))
+    month_id = list(set(emonth))
     month_id.sort()
     print(month_id)
     subsetnames = []
     for month in month_id:
         # gather all tiles available in a month from the surveysim file
-        all_tiles_in_month[month] = list(set(exposures['TILEID'][exposures['MONTH']==month]))
+        #all_tiles_in_month[month] = list(set(exposures['TILEID'][exposures['MONTH']==month]))
+        all_tiles_in_month[month] = list(set(exposures['TILEID'][emonth==month]))
         # check that the available tiles are in the subset of tiles we are interested in
         ii = np.in1d(dark_gray_tiles['TILEID'], all_tiles_in_month[month])
         n_tiles = np.count_nonzero(ii)
