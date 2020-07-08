@@ -49,7 +49,7 @@ dr = 'dr8'
 
 initial_mtl_file = write_initial_mtl_files(cap=cap,dr=dr, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir,full_target_data=full_target_data,obscon=obscon,sky_data_file=sky_data_file)
 
-initial_truth_file = "targets/subset_"+dr+"_mtl_"+str_obscon"_"+cap+".fits"
+initial_truth_file = "targets/subset_truth_"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
 
 initial_sky_file = "targets/subset_"+dr+"_sky.fits"
 
