@@ -50,7 +50,7 @@ initial_truth_file = "targets/subset_truth_"+dr+"_mtl_"+str_obscon+"_"+cap+".fit
 
 #mf.write_initial_truth_file(initial_truth_file,initial_mtl_file,outdir,pixweight_file)
 
-initial_sky_file = "targets/subset_"+dr+"_sky.fits"
+initial_sky_file = outdir+"targets/subset_"+dr+"_sky.fits"
 
 mf.write_initial_sky_file(initial_sky_file,sky_data_file=sky_data_file, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir)
 
