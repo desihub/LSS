@@ -70,6 +70,6 @@ pass_names = subsetnames  + ['full']
 obsconditions = [obscon] * len(pass_names)
 mf.run_strategy(footprint_names, pass_names, obsconditions, 'monthly_strategy_A_updated_fibassign_files', 
             initial_mtl_file, initial_sky_file, initial_std_file , legacy=False, 
-            fiberassign_script='fiberassign',outdir=outdir)
+            fiberassign_script='fiberassign',outdir=outdir,initial_truth_file=initial_truth_file)
 
     
