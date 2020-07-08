@@ -43,16 +43,33 @@ if obscon == 'DARK|GRAY':
 
 cap = 'NGC'
 dr = 'dr8'
+cadence=28 #days between updates
 
-initial_mtl_file = mf.write_initial_mtl_files(cap=cap,dr=dr, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir,full_target_data=full_target_data,obscon=obscon,sky_data_file=sky_data_file)
+#initial_mtl_file = mf.write_initial_mtl_files(cap=cap,dr=dr, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir,full_target_data=full_target_data,obscon=obscon,sky_data_file=sky_data_file)
+initial_mtl_file = "targets/subset_"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
+        
+initial_std_file = "targets/subset_"+dr+"_std.fits"
 
 initial_truth_file = "targets/subset_truth_"+dr+"_mtl_"+str_obscon+"_"+cap+".fits"
 
-mf.write_initial_truth_file(initial_truth_file,initial_mtl_file,outdir,pixweight_file)
+#mf.write_initial_truth_file(initial_truth_file,initial_mtl_file,outdir,pixweight_file)
 
 initial_sky_file = outdir+"targets/subset_"+dr+"_sky.fits"
 
 #mf.write_initial_sky_file(initial_sky_file,sky_data_file=sky_data_file, ra_min=ramin, ra_max=ramax, dec_min=decmin, dec_max=decmax,outdir=outdir)
 
+print("Preparing tiles")
+sim_path = "/project/projectdirs/desi/datachallenge/surveysim2018/weather/081"
+footprint_path = "footprint"
+subsetnames = mf.create_multi_footprint(sim_path, footprint_path, cadence,outdir)
+
+prepare_tiles()
+
+footprint_names = subsetnames + ['full']
+pass_names = subsetnames  + ['full']
+obsconditions = [obscon] * len(pass_names)
+mf.run_strategy(footprint_names, pass_names, obsconditions, 'monthly_strategy_A_updated_fibassign_files', 
+            initial_mtl_file, initial_sky_file, initial_std_file , legacy=False, 
+            fiberassign_script='fiberassign')
 
     
