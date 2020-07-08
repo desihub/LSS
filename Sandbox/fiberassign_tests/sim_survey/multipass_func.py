@@ -262,13 +262,6 @@ def write_initial_sky_file(initial_sky_file,sky_data_file='', ra_min=130, ra_max
 #     sky_mask |= desi_mask["SUPP_SKY"].mask
 #     sky_mask |= desi_mask["BAD_SKY"].mask
 
-    sky_unknown_rows = np.where(
-        np.logical_not(
-            np.bitwise_and(sky_mtl["DESI_TARGET"], sky_mask)
-        )
-    )[0]
-
-    print("  {} targets are not one of the 3 recognized types".format(len(sky_unknown_rows)))
 
     if os.path.isfile(initial_sky_file):
         os.remove(initial_sky_file)
