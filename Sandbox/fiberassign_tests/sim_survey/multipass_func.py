@@ -349,7 +349,7 @@ def prepare_tiles():
     vstack([footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_dark0_dark1_dark2_dark3.fits', overwrite=True)
     vstack([footprint['gray'], footprint['dark0'], footprint['dark1'], footprint['dark2'], footprint['dark3']]).write(outdir+'footprint/subset_gray_dark0_dark1_dark2_dark3.fits', overwrite=True)
 
-def create_multi_footprint(surveysim_path, footprint_path, cadence=28,outdir=''):
+def create_multi_footprint(sim_path, footprint_path, cadence=28,outdir=''):
     
     # load exposures and tiles
     exposures = Table.read(os.path.join(sim_path,'exposures.fits'), hdu=1)
