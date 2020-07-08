@@ -61,7 +61,7 @@ initial_sky_file = outdir+"targets/subset_"+dr+"_sky.fits"
 print("Preparing tiles")
 sim_path = "/project/projectdirs/desi/datachallenge/surveysim2018/weather/081"
 footprint_path = "footprint"
-subsetnames = mf.create_multi_footprint(sim_path, footprint_path, cadence,outdir,sim_path)
+subsetnames = mf.create_multi_footprint(sim_path, footprint_path, cadence,outdir)
 
 prepare_tiles()
 
