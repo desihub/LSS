@@ -17,6 +17,11 @@ from collections import Counter
 import subprocess
 
 
+def ra_dec_subset(data, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
+    subset_ii = (data['RA']>ra_min) & (data['RA']<ra_max)
+    subset_ii &= (data['DEC']>dec_min) & (data['DEC']<dec_max)
+    return subset_ii
+       
 
 
 def accurate_assign_lya_qso(initial_mtl_file, pixweight_file):
@@ -263,7 +268,7 @@ def make_global_DR8_truth(global_DR8_mtl_file, output_path='./', program='dark')
     return global_DR8_truth_file
     
 def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start_day=0, end_day=365, batch_cadence=7, 
-                        select_subset_sky=False, min_ra=130, max_ra=190, min_dec=-5, max_dec=15):
+                        select_subset_sky=False, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
     
     os.makedirs(output_path, exist_ok=True)
 
@@ -281,10 +286,7 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
         all_tiles = all_tiles[ii]
 
     if select_subset_sky:
-        ii = (all_tiles['RA']>min_ra)
-        ii &= (all_tiles['RA']<max_ra)
-        ii &= (all_tiles['DEC']>min_dec)
-        ii &= (all_tiles['DEC']<max_dec)
+        ii = ra_dec_subset(all_tiles, ra_min=ra_min, ra_max=ra_max, dec_min=dec_min, dec_max=dec_max)
         tiles = all_tiles[ii]
     else:
         tiles = all_tiles.copy()
@@ -316,11 +318,6 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
 
     return batch_id
  
-def ra_dec_subset(data, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
-    subset_ii = (data['RA']>ra_min) & (data['RA']<ra_max)
-    subset_ii &= (data['DEC']>dec_min) & (data['DEC']<dec_max)
-    return subset_ii
-       
 
 def make_patch_file(data_filename, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
     patch_filename = data_filename.replace("global", "patch")
