@@ -390,6 +390,7 @@ def create_multi_footprint(sim_path, footprint_path, cadence=28,outdir='',ramin=
             subsetnames.append(subsetname)
             print('writing to '+outdir+tilefile)
             table_tiles.write(outdir+tilefile, overwrite=True)
+            print('wrote')
     return subsetnames
     
 def consolidate_favail(fba_files):
