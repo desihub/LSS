@@ -1,1 +1,1 @@
-from multibatch import multibatch as mb
+from ..multibatch import multibatch as mb
