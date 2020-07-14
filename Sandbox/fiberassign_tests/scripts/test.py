@@ -5,8 +5,13 @@ import multibatch as mb
 
 make_targets = True
 if make_targets:
-    global_DR8_mtl_file_dark = mb.make_global_DR8_mtl(output_path='targets', program='dark')
-    global_DR8_mtl_file_bright = mb.make_global_DR8_mtl(output_path='targets', program='bright')
+    #global_DR8_mtl_file_dark = mb.make_global_DR8_mtl(output_path='targets', program='dark')
+    output_path='targets' 
+    program='dark'
+    global_DR8_mtl_file_dark = os.path.join(output_path, 'global_DR8_mtl_{}.fits'.format(program))
+    #global_DR8_mtl_file_bright = mb.make_global_DR8_mtl(output_path='targets', program='bright')
+    program = 'bright'
+    global_DR8_mtl_file_bright = os.path.join(output_path, 'global_DR8_mtl_{}.fits'.format(program))
     global_DR8_sky_file = mb.make_global_DR8_sky(output_path='targets')
     global_DR8_truth_file_dark = mb.make_global_DR8_truth(global_DR8_mtl_file_dark, output_path='targets', program='dark')
     global_DR8_truth_file_bright = mb.make_global_DR8_truth(global_DR8_mtl_file_bright, output_path='targets', program='bright')
