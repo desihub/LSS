@@ -133,10 +133,15 @@ def make_global_DR8_sky(output_path="./"):
         data.close()
         print('reading file', i, len(target_files), len(tmp_data))
 
-    target_data = Table(target_data)
+    #target_data = Table(target_data)
 
     print('Started writing file {}'.format(global_DR8_sky_file))
-    target_data.write(global_DR8_sky_file, overwrite=True)
+    #target_data.write(global_DR8_sky_file, overwrite=True)
+    outfd = fitsio.FITS(global_DR8_sky_file, "rw")
+    outfd.write(None, header=None, extname="PRIMARY")
+    outfd.write(target_data, header=None, extname="TARGETS")
+    outfd.close()
+
     print('Finished writing file {}'.format(global_DR8_sky_file))
     del target_data
     return global_DR8_sky_file
