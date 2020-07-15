@@ -60,4 +60,4 @@ if make_tiles:
 run_fa = True
 if run_fa:
     mb.run_strategy(global_DR8_mtl_file_dark,  global_DR8_truth_file_dark , global_DR8_sky_file,
-             output_path=darkout, batch_path=foot, program="dark",sbatch=4)
+             output_path=darkout, batch_path=foot, program="dark",sbatch=3)
