@@ -406,7 +406,8 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
             zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', perfect=True)
         else:
             old_zcat = Table.read(old_zcat_filename)
-            zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', zcat=old_zcat, perfect=True)        
+            zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', zcat=old_zcat, perfect=True)  
+            del old_zcat      
     
         zcat.write(zcat_filename, overwrite=True)
         mtl = desitarget.mtl.make_mtl(targets, obsconditions, zcat=zcat)
@@ -415,4 +416,6 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         del mtl
         del targets
         del zcat
+        
+        del
         
