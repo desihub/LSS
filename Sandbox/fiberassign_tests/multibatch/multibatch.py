@@ -348,7 +348,7 @@ def make_patch_file(data_filename, ra_min=130, ra_max=190, dec_min=-5, dec_max=1
     return patch_filename 
 
     
-def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch_path="./", program='dark',sbatch=0):
+def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch_path="./", program='dark',sbatch=0,mxbatch=100):
     os.makedirs(output_path, exist_ok=True)
     targets_path='{}/targets'.format(output_path)
     zcat_path = '{}/zcat'.format(output_path)
@@ -370,6 +370,8 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         obsconditions = 'BRIGHT'
     
     n_batch = len(batch_files)
+    if mxbatch < n_batch:
+        n_batch = mxbatch
     for i_batch in range(sbatch,n_batch):
         print()
         print("Batch {}".format(i_batch))

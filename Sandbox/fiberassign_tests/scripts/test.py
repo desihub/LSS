@@ -59,5 +59,7 @@ if make_tiles:
 
 run_fa = True
 if run_fa:
+    sbatch = int(sys.argv[1])
+    mxbatch = int(sys.argv[2])
     mb.run_strategy(global_DR8_mtl_file_dark,  global_DR8_truth_file_dark , global_DR8_sky_file,
-             output_path=darkout, batch_path=foot, program="dark",sbatch=3)
+             output_path=darkout, batch_path=foot, program="dark",sbatch=sbatch,mxbatch=mxbatch)
