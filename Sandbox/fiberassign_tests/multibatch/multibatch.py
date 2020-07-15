@@ -417,5 +417,6 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         del targets
         del zcat
         
-        
+    del targets
+    return True    
         
