@@ -38,6 +38,9 @@ if fracgray == 0.4:
 if fracgray == 0.3:
     mode = 'ELG3070'
     
+if fracgray == 0.25:
+    mode = 'ELG2575'      
+    
 if fracgray == 0.2:
     mode = 'ELG2080'    
 
@@ -46,7 +49,7 @@ if fracgray == 0.1:
     
 passes = [0,1,2,3,4]
 
-graylast = True
+graylast = False
 if graylast:
     passes = [1,2,3,4,0]
     if fracgray == 0:
