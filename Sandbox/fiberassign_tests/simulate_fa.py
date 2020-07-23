@@ -14,7 +14,7 @@ ramax = 40
 decmin = 0
 decmax = 40
 
-fraclya = 0.2 #fraction of quasar targets that we will want to observe 4 times
+fraclya = 1 #fraction of quasar targets that we will want to observe 4 times
 
 
 
@@ -23,7 +23,7 @@ usedate = "2020-01-01T00:00:00"
 target_science_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_science_sample.fits' # AJR wrote out the whole target sample here
 target_sky_sample='/project/projectdirs/desi/users/ajross/dr8tar/target_sky_sample.fits'
 
-fracgray = 0.25
+fracgray = 0
 
 if fracgray == 0:
     mode = 'fiducialtargets'
@@ -58,7 +58,10 @@ if graylast:
 grayind = False
 if grayind == True:
     if fracgray == 0:
-        mode = 'grayindfid'         
+        mode = 'grayindfid' 
+
+if fraclya == 1:
+    mode = 'lya1'                
 
 print('mode is '+mode)
 
