@@ -262,7 +262,7 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     next = 0
     for fl in fba_files:
     	fass = fitsio.read(fl,ext='FASSIGN')
-    	wv = (fass["TARGETID"] >= 0 ) & (f['DEVICE_TYPE'] == b'POS')
+    	wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
     	fass = fass[wv]
     	wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     	ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
