@@ -256,6 +256,24 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
     plt.ylim(7,13)
     plt.show()
 
+#just get all of the excess sky counts for the fiberassign files in a directory
+def sky_counts(indir,nskym=420,nscix = 4500):
+    fba_files = glob.glob(os.path.join(indir,"fba-*.fits"))
+    next = 0
+    for fl = fba_files:
+    	fass = fitsio.read(fl,ext='FASSIGN')
+    	wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
+    	ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
+    	nskyi = len(fass[wsk])
+    	nscii = len(fass[ws])
+    	nexti = nskyi-nskym
+    	nextis = nscix-nscii
+    	print(fl,nexti,nextis)
+    	next += nexti
+    print('total number of extra fibers '+str(next))
+    return next
+    	
+    
 
 # Function to compute the assigned, available, and considered targets for a set of tiles
 
