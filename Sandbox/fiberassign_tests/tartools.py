@@ -262,16 +262,18 @@ def sky_counts(indir,nskym=420,nscix = 4500):
     next = 0
     for fl in fba_files:
     	fass = fitsio.read(fl,ext='FASSIGN')
+    	wv = fass["TARGETID"] >= 0
+    	fass = fass[wv]
     	wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     	ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
     	nskyi = len(fass[wsk])
     	nscii = len(fass[ws])
     	nexti = nskyi-nskym
     	nextis = nscix-nscii
-    	print(fl,nexti,nextis)
+    	print(fl,nexti,nextis,len(fass))
     	next += nexti
-    print('total number of extra fibers '+str(next))
-    return next
+    print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_tiles))+' tiles')
+    return next,len(fba_tiles)
     	
     
 
