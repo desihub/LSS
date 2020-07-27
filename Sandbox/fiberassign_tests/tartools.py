@@ -266,14 +266,14 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     	wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
     	fass = fass[wv]
     	if len(fass) > 4900:
-			wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
-			ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
-			nskyi = len(fass[wsk])
-			nscii = len(fass[ws])
-			nexti = nskyi-nskym
-			nextis = nscix-nscii
-			print(fl,nexti,nextis,len(fass))
-			next += nexti
+            wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
+            ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
+            nskyi = len(fass[wsk])
+            nscii = len(fass[ws])
+            nexti = nskyi-nskym
+            nextis = nscix-nscii
+            print(fl,nexti,nextis,len(fass))
+            next += nexti
 		else:
 		    ni += 1
 		    print(fl,len(fass))	
