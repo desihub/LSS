@@ -262,10 +262,10 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     next = 0
     ni = 0
     for fl in fba_files:
-    	fass = fitsio.read(fl,ext='FASSIGN')
-    	wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
-    	fass = fass[wv]
-    	if len(fass) > 4900:
+        fass = fitsio.read(fl,ext='FASSIGN')
+        wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
+        fass = fass[wv]
+        if len(fass) > 4900:
             wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
             ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
             nskyi = len(fass[wsk])
@@ -274,11 +274,11 @@ def sky_counts(indir,nskym=400,nscix = 4500):
             nextis = nscix-nscii
             print(fl,nexti,nextis,len(fass))
             next += nexti
-		else:
+        else:
             ni += 1
             print(fl,len(fass)) 
-	print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
-	return next,len(fba_files)-ni
+    print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
+    return next,len(fba_files)-ni
 
 def getall_sky_counts(indir,nmonths=13):
     ne = 0
@@ -289,7 +289,7 @@ def getall_sky_counts(indir,nmonths=13):
         nf,nti = sky_counts(indir+m)
         ne += nf
         nt += nti
-        nsl.append(nf/(5000*nti))   	
+        nsl.append(nf/(5000*nti))       
     print(ne,nt)
     return nsl
 
