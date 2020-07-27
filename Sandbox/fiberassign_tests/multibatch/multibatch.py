@@ -27,7 +27,7 @@ def ra_dec_subset(data, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
 def accurate_assign_lya_qso(initial_mtl_file, pixweight_file):
     print("Finding targets that will be lya in the truth file")
     print('started reading targets')
-    targets = Table.read(initial_mtl_file)
+    targets = Table(fitsio.read(initial_mtl_file))
     print('finished reading targets')
 
     pixweight, header = fits.getdata(pixweight_file, 'PIXWEIGHTS', header=True)
@@ -218,7 +218,7 @@ def make_global_DR8_truth(global_DR8_mtl_file, output_path='./', program='dark')
         return global_DR8_truth_file
     
     print('Started reading file {}'.format(global_DR8_mtl_file))
-    targets = Table.read(global_DR8_mtl_file)
+    targets = Table(fitsio.read(global_DR8_mtl_file))
     print('Finished reading file {}'.format(global_DR8_mtl_file))
 
     # Find what targets will be associated to lya targets
@@ -272,13 +272,13 @@ def make_global_DR8_truth(global_DR8_mtl_file, output_path='./', program='dark')
     del truth
     return global_DR8_truth_file
     
-def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start_day=0, end_day=365, batch_cadence=7, 
+def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start_day=0, end_day=365, batch_cadence=None,
                         select_subset_sky=False, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
     
     os.makedirs(output_path, exist_ok=True)
-
-    all_exposures = Table.read(surveysim_file, hdu=1)
-    all_tiledata = Table.read(surveysim_file, hdu=2)
+    
+    all_exposures = Table(fitsio.read(surveysim_file, ext='EXPOSURES'))
+    all_tiledata = Table(fitsio.read(surveysim_file, ext='TILEDATA'))
     all_tiles = desimodel.io.load_tiles()
 
     all_exposures['MJD_OFFSET'] = all_exposures['MJD'] - all_exposures['MJD'].min()
@@ -305,7 +305,18 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
 
     i_day  = start_day 
     batch_id = 0
-    while (i_day + batch_cadence) < end_day:
+    
+    fixed_cadence=True
+    if batch_cadence is None:
+        avail_days = np.unique(all_tiledata['AVAIL'])
+        cadences = np.diff(avail_days)
+        batch_cadence = cadences[0]
+        cadence_id = 0
+        fixed_cadence=False
+        
+    f = open(os.path.join(output_path,'batch_cadences.txt'),'w')
+    f.write("# BATCH FILE | CADENCE | MIN DAY | MAX DAY \n")
+    while (i_day + batch_cadence) <= end_day:
         min_day  = i_day 
         max_day  = min_day + batch_cadence
         ii = (unique_dates>=min_day) & (unique_dates<max_day)
@@ -316,11 +327,17 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
             print('batch_{:04d} {}'.format(batch_id, len(tiles_in_batch)), max_day)
             jj = np.isin(tiles['TILEID'], tiles_in_batch)
             batch_filename = os.path.join(output_path, 'batch_{:04d}_{}.fits'.format(batch_id, program))
-            tiles[jj].write(batch_filename, overwrite=True)
+            f.write("{:20s} {:>5} {:>5} {:>5} \n".format(batch_filename,batch_cadence,min_day,max_day))
+            if not os.path.exists(batch_filename): # Skip batch files already generated
+                tiles[jj].write(batch_filename, overwrite=True)
             batch_id += 1
             
         i_day += batch_cadence
-
+        
+        if not fixed_cadence:
+            cadence_id += 1
+            batch_cadence = cadences[cadence_id]
+    f.close()
     return batch_id
  
 
@@ -332,7 +349,7 @@ def make_patch_file(data_filename, ra_min=130, ra_max=190, dec_min=-5, dec_max=1
     print('Creating file {}'.format(patch_filename))
     
     print('started reading targets')
-    data = Table.read(data_filename)
+    data = Table(fitsio.read(data_filename))
     print('finished reading targets')
     
     print('started patch selection')
@@ -348,7 +365,7 @@ def make_patch_file(data_filename, ra_min=130, ra_max=190, dec_min=-5, dec_max=1
     return patch_filename 
 
     
-def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch_path="./", program='dark',sbatch=0,mxbatch=100):
+def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch_path="./", program='dark',sbatch=0):
     os.makedirs(output_path, exist_ok=True)
     targets_path='{}/targets'.format(output_path)
     zcat_path = '{}/zcat'.format(output_path)
@@ -360,7 +377,8 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
     batch_files.sort()
     
     # Read targets and truth
-    truth = Table.read(truth_file)
+    print("Reading truth file {}".format(truth_file))
+    truth = Table(fitsio.read(truth_file))
     
     #obsconditions
     obsconditions = None
@@ -370,8 +388,6 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         obsconditions = 'BRIGHT'
     
     n_batch = len(batch_files)
-    if mxbatch < n_batch:
-        n_batch = mxbatch
     for i_batch in range(sbatch,n_batch):
         print()
         print("Batch {}".format(i_batch))
@@ -385,7 +401,11 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         zcat_filename = os.path.join(zcat_path, '{:04d}_zcat.fits'.format(i_batch))
         old_zcat_filename = os.path.join(zcat_path, '{:04d}_zcat.fits'.format(i_batch-1))
         
-        
+        # Added to resume interrupted runs
+        if os.path.exists(new_mtl_filename) and os.path.exists(zcat_filename):
+            print("Batch {} already done; skipping".format(i_batch))
+            continue
+            
         if i_batch == 0:
             shutil.copyfile(initial_mtl_file, mtl_filename)
         print(footprint)
@@ -399,16 +419,33 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         fba_files = np.sort(glob.glob(os.path.join(fiberassign_path,"fba-*.fits")))
         
         # read the current mtl file
-        targets = Table.read(mtl_filename)
+        targets = Table(fitsio.read(mtl_filename))
 
         # Compute zcat
         if i_batch==0:
             zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', perfect=True)
         else:
-            old_zcat = Table.read(old_zcat_filename)
-            zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', zcat=old_zcat, perfect=True)  
-            del old_zcat      
-    
+            old_zcat = Table(fitsio.read(old_zcat_filename))
+            zcat = desisim.quickcat.quickcat(fba_files, targets, truth, fassignhdu='FASSIGN', zcat=old_zcat, perfect=True) 
+        
+        # Add ZWARN TO CONTAMINANTS 
+        # NOTE: THIS WILL BE DONE IN QUICKCAT
+        
+        #zcat.sort('TARGETID')
+        #truth.sort('TARGETID')
+        #targets.sort('TARGETID')
+        
+        #ii = np.isin(targets['TARGETID'],zcat['TARGETID']) 
+        #assert np.all(targets['TARGETID'][ii]==zcat['TARGETID'])
+        #assert np.all(truth['TARGETID'][ii]==zcat['TARGETID'])
+        
+        #templatetype = np.char.strip(truth['TEMPLATETYPE'][ii])
+        #contam_LRG = (targets['DESI_TARGET'][ii]&desi_mask.LRG!=0) & (templatetype!=b'LRG')
+        #contam_ELG = (targets['DESI_TARGET'][ii]&desi_mask.ELG!=0) & (templatetype!=b'ELG')
+        #contam_QSO = (targets['DESI_TARGET'][ii]&desi_mask.QSO!=0) & (templatetype!=b'QSO')
+        
+        #zcat['ZWARN'][contam_QSO|contam_ELG|contam_LRG]=2**8        
+        
         zcat.write(zcat_filename, overwrite=True)
         mtl = desitarget.mtl.make_mtl(targets, obsconditions, zcat=zcat)
         mtl.write(new_mtl_filename, overwrite=True)
@@ -416,7 +453,4 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         del mtl
         del targets
         del zcat
-        
-    
-    return True    
         
