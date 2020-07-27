@@ -275,10 +275,10 @@ def sky_counts(indir,nskym=400,nscix = 4500):
             print(fl,nexti,nextis,len(fass))
             next += nexti
 		else:
-		    ni += 1
-		    print(fl,len(fass))	
-    print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
-    return next,len(fba_files)-ni
+            ni += 1
+            print(fl,len(fass)) 
+	print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
+	return next,len(fba_files)-ni
 
 def getall_sky_counts(indir,nmonths=13):
     ne = 0
