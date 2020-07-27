@@ -274,8 +274,19 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     	next += nexti
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return next,len(fba_files)
-    	
-    
+
+def getall_sky_counts(indir,nmonths=13):
+    ne = 0
+    nt = 0
+    nsl = []
+    for i in range(0,13): 
+        m = str.zfill(str(i),4)
+        nf,nti = sky_counts(indir+m)
+        ne += nf
+        nt += nti
+        nsl.append(nf/(5000*nti))   	
+    print(ne,nt)
+    return nsl
 
 # Function to compute the assigned, available, and considered targets for a set of tiles
 
