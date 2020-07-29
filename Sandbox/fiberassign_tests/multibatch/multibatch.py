@@ -304,7 +304,10 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
     unique_dates = exposures['MJD_OFFSET'][np.sort(b)]
 
     i_day  = start_day 
-    batch_id = 0
+    batch_id = int(start_day/batch_cadence)
+    if start_day/batch_cadence - batch_id != 0:
+        print('mismatch between starting day and initial batch id')
+        print(start_day/batch_cadence,batch_id)
     while (i_day + batch_cadence) < end_day:
         min_day  = i_day 
         max_day  = min_day + batch_cadence
