@@ -360,8 +360,9 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
     batch_files.sort()
     
     # Read targets and truth
+    print('reading truth file')
     truth = Table.read(truth_file)
-    
+    print('done readying truth file')
     #obsconditions
     obsconditions = None
     if program=='dark':
@@ -411,11 +412,14 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
     
         zcat.write(zcat_filename, overwrite=True)
         mtl = desitarget.mtl.make_mtl(targets, obsconditions, zcat=zcat)
-        mtl.write(new_mtl_filename, overwrite=True)
         
-        del mtl
         del targets
         del zcat
+        print('writing mtl ')
+
+        mtl.write(new_mtl_filename, overwrite=True)
+        print('wrote mtl')
+        del mtl
         
     
     return True    
