@@ -47,7 +47,7 @@ if make_tiles:
     
 
     # batches for the first year of the survey (all the footprint is available) with different cadences
-    n = mb.prepare_tile_batches(surveysim_file, output_path=foot, program='dark', start_day=729, end_day=1094, batch_cadence=batch_cadence) 
+    n = mb.prepare_tile_batches(surveysim_file, output_path=foot, program='dark', start_day=729, end_day=1826, batch_cadence=batch_cadence) 
     #n = mb.prepare_tile_batches(surveysim_file, output_path=foot, program='bright', start_day=365, end_day=730, batch_cadence=batch_cadence) 
 
     # batches for the whole duration of the survey, restricted to a small region on the sky.
