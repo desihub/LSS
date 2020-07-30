@@ -280,17 +280,30 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return next,len(fba_files)-ni
 
-def getall_sky_counts(indir,nmonths=13):
+def getall_sky_counts(indir,nmonths=13,splot=True):
     ne = 0
     nt = 0
     nsl = []
+    tl = []
+    nel = []
     for i in range(0,nmonths): 
         m = str.zfill(str(i),4)
         nf,nti = sky_counts(indir+m)
         ne += nf
+        nel.append(nf)
         nt += nti
-        nsl.append(nf/(5000*nti))       
+        nsl.append(nf/(5000*nti))    
+        tl.append((i+1)/13.)   
     print(ne,nt)
+    if splot:
+    	plt.plot(tl,nel,'k-')
+    	plt.xlabel('time (years)')
+    	plt.ylabel('cumulative number of spare fibers')
+    	plt.show()
+    	plt.plot(tl,nsl,'k-')
+    	plt.xlabel('time (years)')
+    	plt.ylabel('fraction of spare fibers in previous 28 days')
+    	plt.show()
     return nsl
 
 # Function to compute the assigned, available, and considered targets for a set of tiles
