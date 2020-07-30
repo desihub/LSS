@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import glob
 import os
 import fitsio
+import gc
 import desimodel.io
 import desitarget.mtl
 import desisim.quickcat
@@ -423,6 +424,7 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         mtl.write(new_mtl_filename, overwrite=True)
         print('wrote mtl')
         del mtl
+        gc.collect()
         
     
     return True    
