@@ -296,16 +296,17 @@ def getall_sky_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cad
         tl.append((i+1)/13.)   
     print(ne,nt)
     if splot:
-    	plt.plot(tl,nel,'k-')
-    	plt.xlabel('time (years)')
-    	plt.ylabel('cumulative number of spare fibers')
-    	plt.title(title)
-    	plt.show()
-    	plt.plot(tl,nsl,'k-')
-    	plt.xlabel('time (years)')
-    	plt.ylabel('fraction of spare fibers in previous 28 days')
-    	plt.title(title)
-    	plt.show()
+        plt.ticklabel_format(style='sci')
+        plt.plot(tl,nel,'k-')
+        plt.xlabel('time (years)')
+        plt.ylabel('cumulative number of spare fibers')
+        plt.title(title)
+        plt.show()
+        plt.plot(tl,nsl,'k-')
+        plt.xlabel('time (years)')
+        plt.ylabel('fraction of spare fibers in previous 28 days')
+        plt.title(title)
+        plt.show()
     return nsl
 
 # Function to compute the assigned, available, and considered targets for a set of tiles
