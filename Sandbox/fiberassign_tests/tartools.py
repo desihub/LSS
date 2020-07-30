@@ -296,8 +296,8 @@ def getall_sky_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cad
         tl.append((i+1)/13.)   
     print(ne,nt)
     if splot:
-        plt.ticklabel_format(style='sci')
         plt.plot(tl,nel,'k-')
+        plt.ticklabel_format(style='sci', scilimits=(3,3))
         plt.xlabel('time (years)')
         plt.ylabel('cumulative number of spare fibers')
         plt.title(title)
