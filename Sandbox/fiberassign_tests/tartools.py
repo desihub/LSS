@@ -290,7 +290,7 @@ def getall_sky_counts(indir,nmonths=13,splot=True):
         m = str.zfill(str(i),4)
         nf,nti = sky_counts(indir+m)
         ne += nf
-        nel.append(nf)
+        nel.append(ne)
         nt += nti
         nsl.append(nf/(5000*nti))    
         tl.append((i+1)/13.)   
