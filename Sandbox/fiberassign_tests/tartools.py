@@ -280,7 +280,7 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return next,len(fba_files)-ni
 
-def getall_sky_counts(indir,nmonths=13,splot=True):
+def getall_sky_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cadence'):
     ne = 0
     nt = 0
     nsl = []
@@ -299,10 +299,12 @@ def getall_sky_counts(indir,nmonths=13,splot=True):
     	plt.plot(tl,nel,'k-')
     	plt.xlabel('time (years)')
     	plt.ylabel('cumulative number of spare fibers')
+    	plt.title(title)
     	plt.show()
     	plt.plot(tl,nsl,'k-')
     	plt.xlabel('time (years)')
     	plt.ylabel('fraction of spare fibers in previous 28 days')
+    	plt.title(title)
     	plt.show()
     return nsl
 
