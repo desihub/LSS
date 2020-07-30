@@ -272,11 +272,11 @@ def sky_counts(indir,nskym=400,nscix = 4500):
             nscii = len(fass[ws])
             nexti = nskyi-nskym
             nextis = nscix-nscii
-            print(fl,nexti,nextis,len(fass))
+            #print(fl,nexti,nextis,len(fass))
             next += nexti
         else:
             ni += 1
-            print(fl,len(fass)) 
+            print('not enough assignments',fl,len(fass)) 
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return next,len(fba_files)-ni
 
