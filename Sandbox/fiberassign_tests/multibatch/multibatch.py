@@ -274,7 +274,7 @@ def make_global_DR8_truth(global_DR8_mtl_file, output_path='./', program='dark')
     return global_DR8_truth_file
     
 def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start_day=0, end_day=365, batch_cadence=7, 
-                        select_subset_sky=False, ra_min=130, ra_max=190, dec_min=-5, dec_max=15):
+                        select_subset_sky=False, ra_min=130, ra_max=190, dec_min=-5, dec_max=15,use_last_date=False):
     
     os.makedirs(output_path, exist_ok=True)
 
@@ -303,6 +303,14 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
     a, b = np.unique(exposures['TILEID'], return_index=True)
     unique_tiles = exposures['TILEID'][np.sort(b)]
     unique_dates = exposures['MJD_OFFSET'][np.sort(b)]
+    if use_last_date:
+        for tile in unique_tiles:
+            wt = all_exposures['TILEID'] == tile
+            md = np.max(all_exposures['MJD_OFFSET'])
+            wt = unique_tiles['TILEID'] == tile
+            od = unique_dates[wt]
+            unique_dates[wt] = md
+            print(tile,md,od)
 
     i_day  = start_day 
     batch_id = int(start_day/batch_cadence)
