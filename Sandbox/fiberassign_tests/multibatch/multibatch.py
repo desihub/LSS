@@ -307,7 +307,7 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
         for tile in unique_tiles:
             wt = all_exposures['TILEID'] == tile
             md = np.max(all_exposures['MJD_OFFSET'])
-            wt = unique_tiles['TILEID'] == tile
+            wt = unique_tiles == tile
             od = unique_dates[wt]
             unique_dates[wt] = md
             print(tile,md,od)
