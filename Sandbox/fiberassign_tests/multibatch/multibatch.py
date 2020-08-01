@@ -309,10 +309,10 @@ def prepare_tile_batches(surveysim_file, output_path='./', program='dark', start
             wt = all_exposures['TILEID'] == tile
             md = np.max(all_exposures['MJD_OFFSET'][wt])
             wt = unique_tiles == tile
-            od = unique_datesi[wt]
-            unique_datesi[wt] = md
+            od = unique_dates[wt]
+            unique_dates[wt] = md
             print(tile,md,od)
-        unique_dates = unique_datesi
+        
 
     i_day  = start_day 
     batch_id = int(start_day/batch_cadence)
