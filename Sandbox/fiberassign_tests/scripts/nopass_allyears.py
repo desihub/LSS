@@ -42,7 +42,7 @@ if make_targets:
     patch_DR8_truth_file_bright = mb.make_patch_file(global_DR8_truth_file_bright,ra_min, ra_max, dec_min, dec_max)
 
 
-make_tiles = True
+make_tiles = False
 if make_tiles:
     
 
