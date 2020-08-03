@@ -260,7 +260,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     fba_files0 = glob.glob(os.path.join(indir+'0000/',"fba-*.fits"))
     fah = fitsio.read_header(fba_files0[0])
     tile = fah['TILEID']
-    fass = Table.read(fba_files0[0],ext='FASSIGN')
+    fass = Table.read(fba_files0[0],hdu='FASSIGN')
     if type == 'SKY':
         wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     fass = fass[wsk]
@@ -268,7 +268,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     for i in range(1,len(fba_files0)):
         fah = fitsio.read_header(fba_files0[i])
         tile = fah['TILEID']
-        fai = Table.read(fba_files0[i],ext='FASSIGN')
+        fai = Table.read(fba_files0[i],hdu='FASSIGN')
         if type == 'SKY':
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
         fai = fai[wsk]
@@ -284,7 +284,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         for i in range(0,len(fba_filesj)):
             fah = fitsio.read_header(fba_filesj[i])
             tile = fah['TILEID']
-            fai = Table.read(fba_filesj[i],ext='FASSIGN')
+            fai = Table.read(fba_filesj[i],hdu='FASSIGN')
             if type == 'SKY':
                 wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
             fai = fai[wsk]
