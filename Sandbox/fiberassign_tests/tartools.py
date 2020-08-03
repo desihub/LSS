@@ -258,16 +258,16 @@ def mkmtl_assignavail(footprint ,type='ELG',science_input='mtl_science.fits', fb
 
 def getall_fassign(type,indir,nmonths=70,cadence=28):
     fba_files0 = glob.glob(os.path.join(indir+'0000/',"fba-*.fits"))
-	fah = fitsio.read_header(fba_files0[0])
-	tile = fah['TILEID']
+    fah = fitsio.read_header(fba_files0[0])
+    tile = fah['TILEID']
     fass = Table.read(fba_files0[0],ext='FASSIGN')
     if type == 'SKY':
         wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     fass = fass[wsk]
     fass['TILE'] = tile
     for i in range(1,len(fba_files0)):
-	    fah = fitsio.read_header(fba_files0[i])
-	    tile = fah['TILEID']
+        fah = fitsio.read_header(fba_files0[i])
+        tile = fah['TILEID']
         fai = Table.read(fba_files0[i],ext='FASSIGN')
         if type == 'SKY':
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
@@ -281,20 +281,20 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         print('working on batch '+str(j))
         m = str.zfill(str(j),4)
         fba_filesj = glob.glob(os.path.join(indir+m,"/fba-*.fits"))
-		for i in range(0,len(fba_filesj)):
-			fah = fitsio.read_header(fba_filesj[i])
-			tile = fah['TILEID']
-			fai = Table.read(fba_filesj[i],ext='FASSIGN')
-			if type == 'SKY':
-				wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
-			fai = fai[wsk]
-			print(len(fai))
-			fai['TILE'] = tile
-			fass = vstack([fass,fai])
-		print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')	
-	fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
-	return True
-		
+        for i in range(0,len(fba_filesj)):
+            fah = fitsio.read_header(fba_filesj[i])
+            tile = fah['TILEID']
+            fai = Table.read(fba_filesj[i],ext='FASSIGN')
+            if type == 'SKY':
+                wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
+            fai = fai[wsk]
+            print(len(fai))
+            fai['TILE'] = tile
+            fass = vstack([fass,fai])
+        print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')  
+    fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
+    return True
+        
            
         
     
