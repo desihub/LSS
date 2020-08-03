@@ -280,7 +280,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     for j in range(1,nmonths):
         print('working on batch '+str(j))
         m = str.zfill(str(j),4)
-        fba_filesj = glob.glob(indir+m+"/fba-*.fits"))
+        fba_filesj = glob.glob(indir+m+"/fba-*.fits")
         for i in range(0,len(fba_filesj)):
             fah = fitsio.read_header(fba_filesj[i])
             tile = fah['TILEID']
