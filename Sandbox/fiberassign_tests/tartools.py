@@ -265,10 +265,10 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     if type == 'SKY':
         wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     fass = fass[wsk]
-    tl = np.ones(len(fass),dtype=int)
+    tl = np.ones(len(fass),dtype=int)*tile
     fass = append_fields(fass,'TILE',tl)
 
-    fass['TILE'] = tile
+    #fass['TILE'] = tile
     for i in range(1,len(fba_files0)):
         fah = fitsio.read_header(fba_files0[i])
         tile = fah['TILEID']
@@ -277,10 +277,12 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
         fai = fai[wsk]
         #print(len(fai))
-        tl = np.ones(len(fai),dtype=int)
+        tl = np.ones(len(fai),dtype=int)*tile
         fai = append_fields(fai,'TILE',tl)
         #fai['TILE'] = tile
         #fass = vstack([fass,fai],metadata_conflicts='silent')
+        print(fass.dtype.names)
+        print(fai.dtype.names)
         fass = np.vstack((fass,fai))
     fb = np.zeros(len(fass))
     fm = np.ones((len(fass)),dtype=int)*cadence
@@ -302,7 +304,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             fai = fai[wsk]
             #print(len(fai))
             #fai['TILE'] = tile
-            tl = np.ones(len(fai),dtype=int)
+            tl = np.ones(len(fai),dtype=int)*tile
             fai = append_fields(fai,'TILE',tl)
             fb = np.ones(len(fai))*j
             fai = append_fields(fai,'BATCH',fb)
