@@ -332,7 +332,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         os.remove(outf)
 
     with fitsio.FITS(outf, "rw") as fd:
-        fd.write(tdata)
+        fd.write(fass)
 
     return True
         
