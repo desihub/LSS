@@ -272,9 +272,9 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         if type == 'SKY':
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
         fai = fai[wsk]
-        print(len(fai))
+        #print(len(fai))
         fai['TILE'] = tile
-        fass = vstack([fass,fai])
+        fass = vstack([fass,fai],metadata_conflicts='silent')
     fass['BATCH'] = 0
     fass['MAXSURVEYMJD'] = cadence 
     for j in range(1,nmonths):
@@ -288,9 +288,12 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             if type == 'SKY':
                 wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
             fai = fai[wsk]
-            print(len(fai))
+            #print(len(fai))
             fai['TILE'] = tile
-            fass = vstack([fass,fai])
+            fass = vstack([fass,fai],metadata_conflicts='silent')
+		fass['BATCH'] = j
+		fass['MAXSURVEYMJD'] = cadence*(j+1) 
+
         print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')  
     fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
     return True
