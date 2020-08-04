@@ -290,8 +290,8 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     #fass['BATCH'] = 0
     #fass['MAXSURVEYMJD'] = cadence
     
-    fass = append_fields(fass, 'BATCH', fb, usemask=False) 
-    fass = append_fields(fass, 'MAXSURVEYMJD', fm, usemask=False) 
+    #fass = append_fields(fass, 'BATCH', fb, usemask=False) 
+    #fass = append_fields(fass, 'MAXSURVEYMJD', fm, usemask=False) 
     for j in range(1,nmonths):
         print('working on batch '+str(j))
         m = str.zfill(str(j),4)
