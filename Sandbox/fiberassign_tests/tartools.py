@@ -284,7 +284,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         #print(fass.dtype)
         #print(fai.dtype)
         fass = np.hstack((fass,fai))
-        tl = np.vstack((tl,tli))
+        tl = np.hstack((tl,tli))
     fb = np.zeros(len(fass))
     fm = np.ones((len(fass)),dtype=int)*cadence
     #fass['BATCH'] = 0
@@ -306,13 +306,13 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             #print(len(fai))
             #fai['TILE'] = tile
             tli = np.ones(len(fai),dtype=int)*tile
-            tl = np.vstack((tl,tli))
+            tl = np.hstack((tl,tli))
             #fai = append_fields(fai,'TILE',tl)
             fbi = np.ones(len(fai))*j
-            fb = np.vstack((fb,fbi))
+            fb = np.hstack((fb,fbi))
             #fai = append_fields(fai,'BATCH',fb)
             fmi = np.ones((len(fai)),dtype=int)*cadence*(j+1)
-            fm = np.vstack((fm,fmi))
+            fm = np.hstack((fm,fmi))
             #fai = append_fields(fai,'MAXSURVEYMJD',fm)
 
             #fass = vstack([fass,fai],metadata_conflicts='silent')
