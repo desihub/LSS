@@ -283,7 +283,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         #fass = vstack([fass,fai],metadata_conflicts='silent')
         #print(fass.dtype)
         #print(fai.dtype)
-        fass = np.vstack((fass,fai))
+        fass = np.hstack((fass,fai))
         tl = np.vstack((tl,tli))
     fb = np.zeros(len(fass))
     fm = np.ones((len(fass)),dtype=int)*cadence
@@ -316,7 +316,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             #fai = append_fields(fai,'MAXSURVEYMJD',fm)
 
             #fass = vstack([fass,fai],metadata_conflicts='silent')
-            fass = np.vstack((fass,fai))
+            fass = np.hstack((fass,fai))
 
         #fass['BATCH'] = j
         #fass['MAXSURVEYMJD'] = cadence*(j+1) 
