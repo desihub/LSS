@@ -266,7 +266,7 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     fass = fass[wsk]
     tl = np.ones(len(fass),dtype=int)*tile
-    fass = append_fields(fass,'TILE',tl)
+    #fass = append_fields(fass,'TILE',tl)
 
     #fass['TILE'] = tile
     for i in range(1,len(fba_files0)):
