@@ -277,13 +277,14 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
         fai = fai[wsk]
         #print(len(fai))
-        tl = np.ones(len(fai),dtype=int)*tile
-        fai = append_fields(fai,'TILE',tl)
+        tli = np.ones(len(fai),dtype=int)*tile
+        #fai = append_fields(fai,'TILE',tl)
         #fai['TILE'] = tile
         #fass = vstack([fass,fai],metadata_conflicts='silent')
-        print(fass.dtype)
-        print(fai.dtype)
+        #print(fass.dtype)
+        #print(fai.dtype)
         fass = np.vstack((fass,fai))
+        tl = np.vstack((tl,tli))
     fb = np.zeros(len(fass))
     fm = np.ones((len(fass)),dtype=int)*cadence
     #fass['BATCH'] = 0
@@ -304,12 +305,15 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             fai = fai[wsk]
             #print(len(fai))
             #fai['TILE'] = tile
-            tl = np.ones(len(fai),dtype=int)*tile
-            fai = append_fields(fai,'TILE',tl)
-            fb = np.ones(len(fai))*j
-            fai = append_fields(fai,'BATCH',fb)
-            fm = np.ones((len(fai)),dtype=int)*cadence*(j+1)
-            fai = append_fields(fai,'MAXSURVEYMJD',fm)
+            tli = np.ones(len(fai),dtype=int)*tile
+            tl = np.vstack((tl,tli))
+            #fai = append_fields(fai,'TILE',tl)
+            fbi = np.ones(len(fai))*j
+            fb = np.vstack((fb,fbi))
+            #fai = append_fields(fai,'BATCH',fb)
+            fmi = np.ones((len(fai)),dtype=int)*cadence*(j+1)
+            fm = np.vstack((fm,fmi))
+            #fai = append_fields(fai,'MAXSURVEYMJD',fm)
 
             #fass = vstack([fass,fai],metadata_conflicts='silent')
             fass = np.vstack((fass,fai))
@@ -318,6 +322,10 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         #fass['MAXSURVEYMJD'] = cadence*(j+1) 
 
         print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')  
+    fass = append_fields(fass,'TILE',tl, usemask=False)
+    fass = append_fields(fass,'BATCH',fb, usemask=False)
+    fass = append_fields(fass,'MAXSURVEYMJD',fm, usemask=False)
+    print(np.unique(fass['BATCH']))
     #fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
     outf = indir+'all_assigned_'+type+'.fits'
     if os.path.isfile(outf):
