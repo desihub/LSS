@@ -291,8 +291,8 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
             #print(len(fai))
             fai['TILE'] = tile
             fass = vstack([fass,fai],metadata_conflicts='silent')
-		fass['BATCH'] = j
-		fass['MAXSURVEYMJD'] = cadence*(j+1) 
+        fass['BATCH'] = j
+        fass['MAXSURVEYMJD'] = cadence*(j+1) 
 
         print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')  
     fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
