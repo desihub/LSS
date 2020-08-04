@@ -281,8 +281,8 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         fai = append_fields(fai,'TILE',tl)
         #fai['TILE'] = tile
         #fass = vstack([fass,fai],metadata_conflicts='silent')
-        print(fass.dtype.names)
-        print(fai.dtype.names)
+        print(fass.dtype)
+        print(fai.dtype)
         fass = np.vstack((fass,fai))
     fb = np.zeros(len(fass))
     fm = np.ones((len(fass)),dtype=int)*cadence
