@@ -260,23 +260,35 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
     fba_files0 = glob.glob(os.path.join(indir+'0000/',"fba-*.fits"))
     fah = fitsio.read_header(fba_files0[0])
     tile = fah['TILEID']
-    fass = Table.read(fba_files0[0],hdu='FASSIGN')
+    fass = fitsio.read(fba_files0[0],ext='FASSIGN')
+    
     if type == 'SKY':
         wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
     fass = fass[wsk]
+    tl = np.ones(len(fass),dtype=int)
+    fass = append_fields(fass,'TILE',tl)
+
     fass['TILE'] = tile
     for i in range(1,len(fba_files0)):
         fah = fitsio.read_header(fba_files0[i])
         tile = fah['TILEID']
-        fai = Table.read(fba_files0[i],hdu='FASSIGN')
+        fai = fitsio.read(fba_files0[i],ext='FASSIGN')
         if type == 'SKY':
             wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
         fai = fai[wsk]
         #print(len(fai))
-        fai['TILE'] = tile
-        fass = vstack([fass,fai],metadata_conflicts='silent')
-    fass['BATCH'] = 0
-    fass['MAXSURVEYMJD'] = cadence 
+        tl = np.ones(len(fai),dtype=int)
+        fai = append_fields(fai,'TILE',tl)
+        #fai['TILE'] = tile
+        #fass = vstack([fass,fai],metadata_conflicts='silent')
+        fass = np.vstack((fass,fai))
+    fb = np.zeros(len(fass))
+    fm = np.ones((len(fass)),dtype=int)*cadence
+    #fass['BATCH'] = 0
+    #fass['MAXSURVEYMJD'] = cadence
+    
+    fass = append_fields(fass, 'BATCH', fb, usemask=False) 
+    fass = append_fields(fass, 'MAXSURVEYMJD', fm, usemask=False) 
     for j in range(1,nmonths):
         print('working on batch '+str(j))
         m = str.zfill(str(j),4)
@@ -284,18 +296,34 @@ def getall_fassign(type,indir,nmonths=70,cadence=28):
         for i in range(0,len(fba_filesj)):
             fah = fitsio.read_header(fba_filesj[i])
             tile = fah['TILEID']
-            fai = Table.read(fba_filesj[i],hdu='FASSIGN')
+            fai = fitsio.read(fba_filesj[i],ext='FASSIGN')
             if type == 'SKY':
                 wsk = ((fai['FA_TARGET'] & 2**37) > 0) | ((fai['FA_TARGET'] & 2**36) > 0) | ((fai['FA_TARGET'] & 2**32) > 0)
             fai = fai[wsk]
             #print(len(fai))
-            fai['TILE'] = tile
-            fass = vstack([fass,fai],metadata_conflicts='silent')
-        fass['BATCH'] = j
-        fass['MAXSURVEYMJD'] = cadence*(j+1) 
+            #fai['TILE'] = tile
+            tl = np.ones(len(fai),dtype=int)
+            fai = append_fields(fai,'TILE',tl)
+            fb = np.ones(len(fai))*j
+            fai = append_fields(fai,'BATCH',fb)
+            fm = np.ones((len(fai)),dtype=int)*cadence*(j+1)
+            fai = append_fields(fai,'MAXSURVEYMJD',fm)
+
+            #fass = vstack([fass,fai],metadata_conflicts='silent')
+            fass = np.vstack((fass,fai))
+
+        #fass['BATCH'] = j
+        #fass['MAXSURVEYMJD'] = cadence*(j+1) 
 
         print('after batch '+str(j)+ ' there are '+str(len(fass))+' '+type+' assignments')  
-    fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
+    #fass.write(indir+'all_assigned_'+type+'.fits',format='fits', overwrite=True)
+    outf = indir+'all_assigned_'+type+'.fits'
+    if os.path.isfile(outf):
+        os.remove(outf)
+
+    with fitsio.FITS(outf, "rw") as fd:
+        fd.write(tdata)
+
     return True
         
            
