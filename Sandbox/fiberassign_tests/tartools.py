@@ -401,6 +401,7 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         nl1.append(nt1)
         nl2.append(nt2)
         tl.append((i+1)/13.)   
+    tl = np.array(tl)
     if splot:
         plt.plot(tl,nl1,'b-',label='ELGS')
         plt.plot(tl,nl0,'r-',label='LRGs')
