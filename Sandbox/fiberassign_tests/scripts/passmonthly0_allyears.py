@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath('multibatch'))
 import multibatch as mb
+import gc
 
 target_path='targets'
 #surveysim_file="/global/cfs/cdirs/desi/users/schlafly/surveysim/exposures_nopass7.fits"
@@ -66,3 +67,4 @@ if run_fa:
     for i in range(sbatch,mxbatch+1):
         mb.run_strategy(global_DR8_mtl_file_dark,  global_DR8_truth_file_dark , global_DR8_sky_file,
              output_path=darkout, batch_path=foot, program="dark",sbatch=i,mxbatch=i+1)
+        gc.collect()
