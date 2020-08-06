@@ -408,7 +408,7 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         plt.ticklabel_format(style='sci', scilimits=(3,3))
         plt.xlabel('time (years)')
         plt.ylabel('cumulative number of targets')
-        plt.yscale('log')
+        #plt.yscale('log')
         plt.title(title)
         plt.legend()
         plt.show()
