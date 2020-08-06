@@ -64,7 +64,5 @@ run_fa = True
 if run_fa:
     sbatch = int(sys.argv[1])
     mxbatch = int(sys.argv[2])
-    for i in range(sbatch,mxbatch+1):
-        mb.run_strategy(global_DR8_mtl_file_dark,  global_DR8_truth_file_dark , global_DR8_sky_file,
-             output_path=darkout, batch_path=foot, program="dark",sbatch=i,mxbatch=i+1)
-        gc.collect()
+    mb.run_strategy(global_DR8_mtl_file_dark,  global_DR8_truth_file_dark , global_DR8_sky_file,
+        output_path=darkout, batch_path=foot, program="dark",sbatch=sbatch,mxbatch=mxbatch)

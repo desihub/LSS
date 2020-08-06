@@ -429,7 +429,7 @@ def run_strategy(initial_mtl_file, truth_file, sky_file, output_path="./", batch
         
         del targets
         del zcat
-        gc.collect()
+        #gc.collect()
         print('writing mtl ')
 
         mtl.write(new_mtl_filename, overwrite=True)
