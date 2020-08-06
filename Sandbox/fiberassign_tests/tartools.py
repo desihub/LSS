@@ -364,6 +364,57 @@ def sky_counts(indir,nskym=400,nscix = 4500):
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return next,len(fba_files)-ni
 
+def science_counts(indir):
+    fba_files = glob.glob(os.path.join(indir,"fba-*.fits"))
+    n0 = 0
+    n1 = 0
+    n2 = 0
+   
+    for fl in fba_files:
+        fass = fitsio.read(fl,ext='FASSIGN')
+        wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
+        fass = fass[wv]
+		w0 = ((fass['FA_TARGET'] & 2**0) > 0) 
+		w1 = ((fass['FA_TARGET'] & 2**1) > 0) 
+		w2 = ((fass['FA_TARGET'] & 2**2) > 0)
+		n0 += len(fass[w0])
+		n1 += len(fass[w1])
+		n2 += len(fass[w2])
+    print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
+    return n0,n1,n2
+
+def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cadence'):
+    nt0 = 0
+    nt1 = 0
+    nt2 = 0
+    tl = []
+    nl0 = []
+    nl1 = []
+    nl2 = []
+    for i in range(0,nmonths): 
+        m = str.zfill(str(i),4)
+        n0,n1,n2 = science_counts(indir+m)
+        nt0 += n0
+        nt1 += n1
+        nt2 += n2
+        nl0.append(n0)
+        nl1.append(n1)
+        nl2.append(n2)
+        tl.append((i+1)/13.)   
+    if splot:
+        plt.plot(tl,nl0,'b-',label='ELGS')
+        plt.plot(tl,nl1,'r-',label='LRGs')
+        plt.plot(tl,nl2,'-',color='purple',label='QSOs')
+        plt.ticklabel_format(style='sci', scilimits=(3,3))
+        plt.xlabel('time (years)')
+        plt.ylabel('cumulative number of targets')
+        plt.yscale('log')
+        plt.title(title)
+        plt.legend()
+        plt.show()
+    return True
+
+
 def getall_sky_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cadence'):
     ne = 0
     nt = 0
