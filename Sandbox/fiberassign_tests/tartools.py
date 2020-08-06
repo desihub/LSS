@@ -422,6 +422,7 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         plt.plot(tl,nl1/nt1,'b-',label='ELGS')
         plt.plot(tl,nl0/nt0,'r-',label='LRGs')
         plt.plot(tl,nl2/nt2,'-',color='purple',label='QSOs')
+        plt.plot(tl,tl*.24,'k--',label='0.24/year')
         plt.ticklabel_format(style='sci', scilimits=(3,3))
         plt.xlabel('time (years)')
         plt.ylabel('fraction completed')
