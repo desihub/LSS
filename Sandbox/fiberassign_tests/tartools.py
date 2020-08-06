@@ -374,12 +374,12 @@ def science_counts(indir):
         fass = fitsio.read(fl,ext='FASSIGN')
         wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
         fass = fass[wv]
-		w0 = ((fass['FA_TARGET'] & 2**0) > 0) 
-		w1 = ((fass['FA_TARGET'] & 2**1) > 0) 
-		w2 = ((fass['FA_TARGET'] & 2**2) > 0)
-		n0 += len(fass[w0])
-		n1 += len(fass[w1])
-		n2 += len(fass[w2])
+        w0 = ((fass['FA_TARGET'] & 2**0) > 0) 
+        w1 = ((fass['FA_TARGET'] & 2**1) > 0) 
+        w2 = ((fass['FA_TARGET'] & 2**2) > 0)
+        n0 += len(fass[w0])
+        n1 += len(fass[w1])
+        n2 += len(fass[w2])
     print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
     return n0,n1,n2
 
