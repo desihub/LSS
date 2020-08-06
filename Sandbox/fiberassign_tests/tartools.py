@@ -380,7 +380,7 @@ def science_counts(indir):
         n0 += len(fass[w0])
         n1 += len(fass[w1])
         n2 += len(fass[w2])
-    print('total number of extra fibers '+str(next)+ ' across '+str(len(fba_files))+' tiles')
+    print('total number of science assignments '+str(n0+n1+n2)+ ' across '+str(len(fba_files))+' tiles')
     return n0,n1,n2
 
 def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day cadence'):
@@ -397,13 +397,13 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         nt0 += n0
         nt1 += n1
         nt2 += n2
-        nl0.append(n0)
-        nl1.append(n1)
-        nl2.append(n2)
+        nl0.append(nt0)
+        nl1.append(nt1)
+        nl2.append(nt2)
         tl.append((i+1)/13.)   
     if splot:
-        plt.plot(tl,nl0,'b-',label='ELGS')
-        plt.plot(tl,nl1,'r-',label='LRGs')
+        plt.plot(tl,nl1,'b-',label='ELGS')
+        plt.plot(tl,nl0,'r-',label='LRGs')
         plt.plot(tl,nl2,'-',color='purple',label='QSOs')
         plt.ticklabel_format(style='sci', scilimits=(3,3))
         plt.xlabel('time (years)')
