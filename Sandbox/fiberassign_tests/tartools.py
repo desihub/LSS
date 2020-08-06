@@ -402,6 +402,9 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         nl2.append(nt2)
         tl.append((i+1)/13.)   
     tl = np.array(tl)
+    nl1 = np.array(nl1)
+    nl2 = np.array(nl2)
+    nl0 = np.array(nl0)
     if splot:
         plt.plot(tl,nl1,'b-',label='ELGS')
         plt.plot(tl,nl0,'r-',label='LRGs')
@@ -416,6 +419,17 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         plt.title(title)
         plt.legend()
         plt.show()
+        plt.plot(tl,nl1/sum(nl1),'b-',label='ELGS')
+        plt.plot(tl,nl0/sum(nl0),'r-',label='LRGs')
+        plt.plot(tl,nl2/sum(nl2),'-',color='purple',label='QSOs')
+        plt.ticklabel_format(style='sci', scilimits=(3,3))
+        plt.xlabel('time (years)')
+        plt.ylabel('fraction completed')
+        #plt.yscale('log')
+        plt.title(title)
+        plt.legend()
+        plt.show()
+
     return True
 
 
