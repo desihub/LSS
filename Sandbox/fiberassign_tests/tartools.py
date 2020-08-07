@@ -372,7 +372,7 @@ def science_counts(indir):
    
     for fl in fba_files:
         fass = fitsio.read(fl,ext='FASSIGN')
-        wv = (fass["TARGETID"] >= 0 ) & (fass['DEVICE_TYPE'] == b'POS')
+        wv = (fass["TARGETID"] >= 0 ) & ((fass['DEVICE_TYPE'] == b'POS') | (fass['DEVICE_TYPE'] == 'POS'))
         fass = fass[wv]
         w0 = ((fass['FA_TARGET'] & 2**0) > 0) 
         w1 = ((fass['FA_TARGET'] & 2**1) > 0) 
