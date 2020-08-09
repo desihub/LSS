@@ -351,6 +351,7 @@ def sky_counts(indir,nskym=400,nscix = 4500):
         fass = fass[wv]
         if len(fass) > 4800:
             wsk = ((fass['FA_TARGET'] & 2**37) > 0) | ((fass['FA_TARGET'] & 2**36) > 0) | ((fass['FA_TARGET'] & 2**32) > 0)
+            wsk &= ((fass['FA_TARGET'] & 2**61) > 0) & ((fass['FA_TARGET'] & 2**2) == 0) & ((fass['FA_TARGET'] & 2**1) == 0) & ((fass['FA_TARGET'] & 2**0) > 0)
             ws = ((fass['FA_TARGET'] & 2**2) > 0) | ((fass['FA_TARGET'] & 2**1) > 0) | ((fass['FA_TARGET'] & 2**0) > 0) | ((fass['FA_TARGET'] & 2**60) > 0) | ((fass['FA_TARGET'] & 2**61) > 0)
             nskyi = len(fass[wsk])
             nscii = len(fass[ws])
@@ -412,7 +413,7 @@ def getall_science_counts(indir,nmonths=13,splot=True,title='no pass with 28 day
         plt.plot(tl,tl*10.e6,'k-',label='10e6/year')
         plt.plot(tl,tl*3.e6,'k--',label='3e6/year')
         plt.plot(tl,tl*5.e6,'k:',label='5e6/year')
-        plt.ticklabel_format(style='sci', scilimits=(3,3))
+        #plt.ticklabel_format(style='sci', scilimits=(3,3))
         plt.xlabel('time (years)')
         plt.ylabel('cumulative number of targets')
         #plt.yscale('log')
