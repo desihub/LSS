@@ -49,7 +49,7 @@ def gather_targets(type,fo='targetDR9m42.fits'):
 		
 	print(str(len(mydict['RA']))+' '+type)
 	
-	outf = dirout+'/'+type +fo 
+	outf = outdir+'/'+type +fo 
 	collist = []
 	for key in keys:
 		fmt = fits.open(fns[0])[1].columns[key].format
