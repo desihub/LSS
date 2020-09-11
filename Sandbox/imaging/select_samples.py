@@ -47,7 +47,7 @@ def gather_targets(type,fo='targetDR9m42.fits'):
 			mydict[key] += data[key].tolist()
 		print(i)
 		
-	print(len(mydict['RA'])+' '+type)
+	print(str(len(mydict['RA']))+' '+type)
 	
 	outf = dirout+'/'+type +fo 
 	collist = []
