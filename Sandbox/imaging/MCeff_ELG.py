@@ -63,19 +63,6 @@ cg = cg.transpose()
 
 
 
-selmed = ELGeffcalcExt(0.023,0.041,.06,1.,1.,1.,rsel=True) #slightly worse than median, no extinction, one could improve this
-
-def getrelnz(sigg,sigr,sigz,wtg,wtr,wtz,bs=0.05,zmin=0.6,zmax=1.4,south=True):
-    nb = int((zmax*1.001-zmin)/bs)
-    print(nb)
-    zbe = np.linspace(zmin,zmax,nb+1) #bin edges for histogram, so nb +1
-    zl = np.arange(zmin+bs/2.,zmax,bs) #bin centers
-    nzmed = np.histogram(photz[selmed],range=(zmin,zmax),bins=zbe)
-    sel = ELGeffcalcExt(sigg,sigr,sigz,wtg,wtr,wtz,south=south,rsel=True)
-    nztest = np.histogram(photz[sel],range=(zmin,zmax),bins=zbe)
-    nzrel = nztest[0]/nzmed[0]
-    
-    return zl,nzrel
 
 def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,rsel=False):
     '''
@@ -128,6 +115,20 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     efficiency=np.mean(selection.astype(float))/true_mean
     
     return efficiency
+
+selmed = ELGeffcalcExt(0.023,0.041,.06,1.,1.,1.,rsel=True) #slightly worse than median, no extinction, one could improve this
+
+def getrelnz(sigg,sigr,sigz,wtg,wtr,wtz,bs=0.05,zmin=0.6,zmax=1.4,south=True):
+    nb = int((zmax*1.001-zmin)/bs)
+    print(nb)
+    zbe = np.linspace(zmin,zmax,nb+1) #bin edges for histogram, so nb +1
+    zl = np.arange(zmin+bs/2.,zmax,bs) #bin centers
+    nzmed = np.histogram(photz[selmed],range=(zmin,zmax),bins=zbe)
+    sel = ELGeffcalcExt(sigg,sigr,sigz,wtg,wtr,wtz,south=south,rsel=True)
+    nztest = np.histogram(photz[sel],range=(zmin,zmax),bins=zbe)
+    nzrel = nztest[0]/nzmed[0]
+    
+    return zl,nzrel
 
 
 def thphi2radec(theta,phi):
