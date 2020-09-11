@@ -18,15 +18,15 @@ if dr == '9':
     sdir = '/project/projectdirs/desi/users/ajross/dr9/'
 
 def mask(dd,mb=[1,5,6,7,11,12,13]):
-	keep = (dd['NOBS_G']>0) & (dd['NOBS_R']>0) & (dd['NOBS_Z']>0)
-	print(len(dd[keep]))
-	
-	keepelg = keep
-	for bit in mb:
-		keepelg &= ((dd['MASKBITS'] & 2**bit)==0)
-	print(len(dd[keepelg]))
-	dd = dd[keepelg] 
-	return dd       
+    keep = (dd['NOBS_G']>0) & (dd['NOBS_R']>0) & (dd['NOBS_Z']>0)
+    print(len(dd[keep]))
+    
+    keepelg = keep
+    for bit in mb:
+        keepelg &= ((dd['MASKBITS'] & 2**bit)==0)
+    print(len(dd[keepelg]))
+    dd = dd[keepelg] 
+    return dd       
 
 def radec2thphi(ra,dec):
     return (-dec+90.)*np.pi/180.,ra*np.pi/180.
@@ -40,10 +40,10 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     print(len(ft))
     rall = mask(rall)
     if reg:
-    	wr = rall['PHOTSYS'] == reg
-    	rall = rall[wr]
-    	wd = ft['PHOTSYS'] == reg
-    	ft = ft[wd]
+        wr = rall['PHOTSYS'] == reg
+        rall = rall[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
     rth,rphi = radec2thphi(relg['RA'],relg['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
     dth,dphi = radec2thphi(felg['RA'],felg['DEC'])
@@ -55,18 +55,18 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     print('randoms done')
     for pix in dpix:
         pixlg[pix] += 1.
-	wp = pixlr > 0
-	pixls = []
-	for i in range(0,len(pixlr)):
-		if pixlr[i] > 0:
-			pixls.append(i)
-	pixls = np.array(pixls).astype(int)        
-	th,phi = hp.pix2ang(nside,pixls,nest=nest)
-	od = pixlg[wp]/pixlr[wp]
-	od = od/np.mean(od)
-	ra,dec = thphi2radec(th,phi)
-	plt.scatter(ra,np.sin(dec*pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
-	plt.show()
+    wp = pixlr > 0
+    pixls = []
+    for i in range(0,len(pixlr)):
+        if pixlr[i] > 0:
+            pixls.append(i)
+    pixls = np.array(pixls).astype(int)        
+    th,phi = hp.pix2ang(nside,pixls,nest=nest)
+    od = pixlg[wp]/pixlr[wp]
+    od = od/np.mean(od)
+    ra,dec = thphi2radec(th,phi)
+    plt.scatter(ra,np.sin(dec*pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.show()
 
 
     
