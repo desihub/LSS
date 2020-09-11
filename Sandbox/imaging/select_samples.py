@@ -224,6 +224,7 @@ def puttype(type,south=True,ebvfac=1.,Rv=3.1):
 if __name__ == '__main__':
 	#fluxlim = float(str(sys.argv[1]))
 	#putstar(fluxlim)
+	#this was meant to test dependence with changes to extinction parameters explicitly
 	ebf = 1
 	rv = 2.6
 	puttype('LRG',ebvfac=ebf,Rv=rv)
