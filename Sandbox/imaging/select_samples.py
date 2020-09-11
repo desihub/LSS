@@ -16,8 +16,9 @@ if dr == '8':
 if dr == '9':
     outdir = '/project/projectdirs/desi/users/ajross/dr9/'
     targroot = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/targets/main/resolve/dark/'
-sfs = glob.glob(dirsweeps+'sweep*')
-sfn = glob.glob(dirsweepn+'sweep*')
+if dr == '8':
+    sfs = glob.glob(dirsweeps+'sweep*')
+    sfn = glob.glob(dirsweepn+'sweep*')
 
 def gather_targets(type,fo='targetDR9m42.fits'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
