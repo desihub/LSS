@@ -5,7 +5,7 @@ import glob
 import os
 import sys
 from desitarget import cuts
-from desitarget.data import targetmask
+from desitarget import targetmask
 import astropy.io.fits as fits
 
 dr = '9'
