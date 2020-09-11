@@ -29,6 +29,8 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
     dd = dd[keepelg] 
     return dd       
 
+rall = mask(rall)    
+
 def radec2thphi(ra,dec):
     return (-dec+90.)*np.pi/180.,ra*np.pi/180.
     
@@ -39,15 +41,15 @@ def thphi2radec(theta,phi):
 def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rall = mask(rall)
+    rl = rall
     if reg:
         wr = rall['PHOTSYS'] == reg
-        rall = rall[wr]
+        rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
-    rth,rphi = radec2thphi(relg['RA'],relg['DEC'])
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-    dth,dphi = radec2thphi(felg['RA'],felg['DEC'])
+    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
