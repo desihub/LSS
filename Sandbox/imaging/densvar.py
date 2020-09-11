@@ -15,6 +15,7 @@ dr = '9'
 if dr == '9':
     #this will be needed no matter the sample, might want more
     rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/randoms/resolve/randoms-randomized-1.fits')
+    print(len(rall))
     sdir = '/project/projectdirs/desi/users/ajross/dr9/'
 
 def mask(dd,mb=[1,5,6,7,11,12,13]):
