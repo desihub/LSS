@@ -138,6 +138,10 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     ep = np.sqrt(dh)/rh*norm
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+
     plt.errorbar(bc,sv-1.,ep,fmt='ko')
     plt.hist(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
     plt.ylim(-.3,.3)
