@@ -93,7 +93,7 @@ def densvsimpar_ran(type,par,reg=False,ff='targetDR9m42.fits',vmin=None,vmax=Non
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    plt.errorbar(bc,rf,ep,fmt='ko')
+    plt.errorbar(bc,sv,ep,fmt='ko')
     plt.hist(rl[par],bins=nbin,range=(vmin,vmax),density=True)
     plt.show()
         
