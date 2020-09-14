@@ -96,6 +96,9 @@ def densvsimpar_ran(type,par,reg=False,ff='targetDR9m42.fits',vmin=None,vmax=Non
     plt.errorbar(bc,sv,ep,fmt='ko')
     plt.hist(rl[par],bins=nbin,range=(vmin,vmax),weights=np.ones(len(rl))/np.max(rh))
     plt.show()
+    wv = (rl[par]>vmin) & (rl[par] < vmax)
+    frac = len(rl[~wv])/len(rl)
+    print('fraction of randoms not included in plot: '+str(frac))
         
 
     
