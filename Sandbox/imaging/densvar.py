@@ -71,11 +71,13 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
-def densvsimpar_ran(type,par,reg=False,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):
+def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
-    if reg:
+    if reg == None:
+        reg = 'All'
+    else:    
         wr = rall['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
@@ -93,8 +95,12 @@ def densvsimpar_ran(type,par,reg=False,ff='targetDR9m42.fits',vmin=None,vmax=Non
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    plt.errorbar(bc,sv,ep,fmt='ko')
-    plt.hist(rl[par],bins=nbin,range=(vmin,vmax),weights=np.ones(len(rl))/np.max(rh))
+    plt.errorbar(bc,sv-1.,ep,fmt='ko')
+    plt.hist(rl[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(rl))/np.max(rh))
+    plt.ylim(-.3,.3)
+    plt.xlabel(par)
+    plt.ylabel('Ngal/<Ngal> - 1')
+    plt.title(type+' in '+reg + ' footprint')
     plt.show()
     wv = (rl[par]>vmin) & (rl[par] < vmax)
     frac = len(rl[~wv])/len(rl)
