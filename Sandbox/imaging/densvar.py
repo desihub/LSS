@@ -149,8 +149,8 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     plt.ylabel('Ngal/<Ngal> - 1')
     plt.title(type+' in '+reg + ' footprint, using pixelized map')
     plt.show()
-    wv = (rl[par]>vmin) & (rl[par] < vmax)
-    frac = len(rl[~wv])/len(rl)
+    wv = (parv[wp]>vmin) & (parv[wp] < vmax)
+    frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
     print('fraction of randoms not included in plot: '+str(frac))
    
             
