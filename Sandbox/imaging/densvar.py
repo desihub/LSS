@@ -71,6 +71,32 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
+def densvsimpar_ran(type,par,reg=False,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    rl = rall
+    if reg:
+        wr = rall['PHOTSYS'] == reg
+        rl = rl[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    if vmin is None:
+    	vmin = np.min(rl[par])
+    if vmax is None:
+        vmax = np.max(rl[par])    
+        
+    rh,bn = np.histogram(rl[par],bins=nbin,range=(vmin,vmax))
+    dh,db = np.histogram(ft[par],bins=bn)
+    rf = len(rl)/len(ft)
+    sv = dh/rh*rf
+    ep = np.sqrt(dh)/rh*rf
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+    plt.errorbar(bc,rf,ep,fmt='ko')
+    plt.hist(rl[par],bins=nbin,range=(vmin,vmax),density=True)
+    plt.show()
+        
 
     
     
