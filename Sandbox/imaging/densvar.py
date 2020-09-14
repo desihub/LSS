@@ -134,7 +134,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     if vmax is None:
         vmax = np.max(parv[wp])
     rh,bn = np.histogram(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-    dh,db = np.histogram(parv[wp],ft[par],bins=bn,weights=pixlg[wp])
+    dh,db = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     ep = np.sqrt(dh)/rh*norm
