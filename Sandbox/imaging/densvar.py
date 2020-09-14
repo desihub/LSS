@@ -4,7 +4,7 @@ import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
 
-pixfn      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/pixweight/pixweight-dr8-0.31.1.fits'
+pixfn      = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/pixweight/main/resolve/dark/pixweight-dark.fits'
 hdr        = fits.getheader(pixfn,1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 print(nside,nest)
@@ -105,7 +105,51 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     wv = (rl[par]>vmin) & (rl[par] < vmax)
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
-        
+
+def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):        
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    rl = rall
+    if reg:
+        wr = rall['PHOTSYS'] == reg
+        rl = rl[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    pixlg = np.zeros(12*nside*nside)
+    for pix in rpix:
+        pixlr[pix] += 1.
+    print('randoms done')
+    for pix in dpix:
+        pixlg[pix] += 1.
+    parv = fitsio.read(pixfn)
+    parv = parv[par]
+    wp = pixlr > 0
+    if vmin is None:
+    	vmin = np.min(parv[wp][par])
+    if vmax is None:
+        vmax = np.max(parv[wp][par])
+    rh,bn = np.histogram(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
+    dh,db = np.histogram(parv[wp],ft[par],bins=bn,weights=pixlg[wp])
+    norm = sum(rh)/sum(dh)
+    sv = dh/rh*norm
+    ep = np.sqrt(dh)/rh*norm
+    plt.errorbar(bc,sv-1.,ep,fmt='ko')
+    plt.hist(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
+    plt.ylim(-.3,.3)
+    plt.xlabel(par)
+    plt.ylabel('Ngal/<Ngal> - 1')
+    plt.title(type+' in '+reg + ' footprint, using pixelized map')
+    plt.show()
+    wv = (rl[par]>vmin) & (rl[par] < vmax)
+    frac = len(rl[~wv])/len(rl)
+    print('fraction of randoms not included in plot: '+str(frac))
+   
+            
 
     
     
