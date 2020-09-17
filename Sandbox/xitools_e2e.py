@@ -606,7 +606,7 @@ def plotxi4_comptrue():
 	plt.ylabel(r'$s\xi_4$')
 	plt.title('e2e simulation, fiber weight correction')
 	plt.ylim(-4,4)
-	plt.savefig(dirxi+'xi2e2egcomptrue.png')
+	plt.savefig(dirxi+'xi4e2egcomptrue.png')
 	plt.show()
 
 
