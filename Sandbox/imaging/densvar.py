@@ -63,7 +63,7 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     wp = (pixlr > 0) & (weights*0 == 0)
     pixls = []
     for i in range(0,len(pixlr)):
-        if pixlr[i] > 0:
+        if pixlr[i] > 0 and weights[i]*0 == 0:
             pixls.append(i)
     pixls = np.array(pixls).astype(int)        
     th,phi = hp.pix2ang(nside,pixls,nest=nest)
