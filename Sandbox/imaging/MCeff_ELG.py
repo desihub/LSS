@@ -19,7 +19,8 @@ rmag  = truth["r"]
 zmag  = truth["z"]
 photz = truth['hsc_mizuki_photoz_best']
 
-pixfn      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/pixweight/pixweight-dr8-0.31.1.fits' #update this to be more recent
+#pixfn      = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/pixweight/pixweight-dr8-0.31.1.fits' #update this to be more recent
+pixfn = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/pixweight/main/resolve/dark/pixweight-dark.fits' #dr9m version
 
 
 def mag2flux(mag) :
@@ -135,7 +136,7 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
-def mkeffmap(south=True,outf='/ELGMCeffHSCHPext.fits'):
+def mkeffmap(south=True,outf='/DR9mELGMCeffHSCHPext.fits'):
     #read in DR8 properties map
     
     pix,header=fitsio.read(pixfn,header=True)
