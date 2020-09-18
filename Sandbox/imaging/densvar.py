@@ -67,7 +67,7 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
             pixls.append(i)
     pixls = np.array(pixls).astype(int)        
     th,phi = hp.pix2ang(nside,pixls,nest=nest)
-    od = pixlg[wp]/pixlr[wp]*weights
+    od = pixlg[wp]/pixlr[wp]*weights[wp]
     od = od/np.mean(od)
     ra,dec = thphi2radec(th,phi)
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
