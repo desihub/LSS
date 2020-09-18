@@ -153,7 +153,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):        
+def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10,weights=None):        
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -168,6 +168,8 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
+    if weights is not None:
+        weights = np.ones(len(pixlr))
     for pix in rpix:
         pixlr[pix] += 1.
     print('randoms done')
@@ -175,13 +177,13 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         pixlg[pix] += 1.
     parv = fitsio.read(pixfn)
     parv = parv[par]
-    wp = pixlr > 0
+    wp = (pixlr > 0) & (weights*0 == 0)
     if vmin is None:
     	vmin = np.min(parv[wp])
     if vmax is None:
         vmax = np.max(parv[wp])
     rh,bn = np.histogram(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-    dh,db = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+    dh,db = np.histogram(parv[wp],bins=bn,weights=pixlg[wp]*weights[wp])
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     ep = np.sqrt(dh)/rh*norm
