@@ -98,15 +98,17 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     flatmap = mgflux/(gsig)**2+mrflux/(rsig)**2+mzflux/(zsig)**2
     fdiv = 1./(gsig)**2+1./rsig**2+1./(zsig)**2
     flatmap   /= np.maximum(1.e-16, fdiv)
-    combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
-
-    selection_snr = selection_snr | (combined_snr > 6)
+    #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
+    combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snr > 6)
+    selection_snr = selection_snr | (combined_snr2 > 36)
     redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
     sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
     redmap   /= np.maximum(1.e-16, sediv)
-    combined_snrred = redmap * np.sqrt(sediv) #combined signal to noise; red sed
-    selection_snr = selection_snr | (combined_snrred>6.)
-    
+    #combined_snrred = redmap * np.sqrt(sediv) #combined signal to noise; red sed
+    combined_snrred2 = redmap**2. * (sediv) #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snrred>6.)
+    selection_snr = selection_snr | (combined_snrred2>36.)
     if snrc:
         selection *= selection_snr
     
