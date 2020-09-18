@@ -168,7 +168,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
-    if weights is not None:
+    if weights is None:
         weights = np.ones(len(pixlr))
     for pix in rpix:
         pixlr[pix] += 1.
