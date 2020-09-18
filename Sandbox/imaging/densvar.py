@@ -60,7 +60,7 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     print('randoms done')
     for pix in dpix:
         pixlg[pix] += 1.
-    wp = pixlr > 0
+    wp = (pixlr > 0) & (weights*0 == 0)
     pixls = []
     for i in range(0,len(pixlr)):
         if pixlr[i] > 0:
