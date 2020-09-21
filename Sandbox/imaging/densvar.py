@@ -235,7 +235,7 @@ def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,
     w &= ws*0 == 0
     w &= mcl*0 == 0
     #if useMCeff:
-    #    w &= dmcse > 0
+    w &= mcl > 0
     if sys != 'gdc' and sys != 'rdc' and sys != 'zdc' and sys != 'dg' and sys != 'dr' and sys != 'dz' and sys != 'dgr' and sys != 'drz' and sys != 'dgz':
         sm = hpq[w][sys]
         xlab = sys
