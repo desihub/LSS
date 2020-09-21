@@ -232,7 +232,7 @@ def plotvshp_compmc(type,sys,rng,dmcse,ws,reg=None,ff='targetDR9m42.fits',gdzm=2
 
     w = hpq['GALDEPTH_Z'] > gdzm
     w &= hpq['EBV'] < ebvm
-    w &= ds*0 == 0
+    w &= ws*0 == 0
     w &= dmcse*0 == 0
     if useMCeff:
         w &= dmcse > 0
