@@ -236,6 +236,8 @@ def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,
     w &= mcl*0 == 0
     #if useMCeff:
     w &= mcl > 0
+    w &= r1 > 0
+    #w 
     if sys != 'gdc' and sys != 'rdc' and sys != 'zdc' and sys != 'dg' and sys != 'dr' and sys != 'dz' and sys != 'dgr' and sys != 'drz' and sys != 'dgz':
         sm = hpq[w][sys]
         xlab = sys
@@ -274,6 +276,9 @@ def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,
     hdnoc = np.histogram(sm,weights=d1[w],range=rng)
     #print(hd1)
     hr1 = np.histogram(sm,weights=r1[w],bins=hdnoc[1],range=rng)
+
+
+
     xl = []
     for i in range(0,len(hr1[0])):
         xl.append((hr1[1][i]+hr1[1][i+1])/2.)
