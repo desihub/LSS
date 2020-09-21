@@ -206,7 +206,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     print('fraction of randoms not included in plot: '+str(frac))
    
 #plot density vs depth with healpix values
-def plotvshp_compmc(type,sys,rng,dmcse,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,ebvm=0.15,useMCeff=True,correctstar=True,title='',effac=1.,south=True):
+def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,ebvm=0.15,useMCeff=True,correctstar=True,title='',effac=1.,south=True):
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -233,7 +233,7 @@ def plotvshp_compmc(type,sys,rng,dmcse,ws,reg=None,ff='targetDR9m42.fits',gdzm=2
     w = hpq['GALDEPTH_Z'] > gdzm
     w &= hpq['EBV'] < ebvm
     w &= ws*0 == 0
-    w &= dmcse*0 == 0
+    w &= mcl*0 == 0
     if useMCeff:
         w &= dmcse > 0
     if sys != 'gdc' and sys != 'rdc' and sys != 'zdc' and sys != 'dg' and sys != 'dr' and sys != 'dz' and sys != 'dgr' and sys != 'drz' and sys != 'dgz':
