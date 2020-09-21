@@ -9,6 +9,9 @@ hdr        = fits.getheader(pixfn,1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 print(nside,nest)
 
+R_G=3.214 # http://legacysurvey.org/dr8/catalogs/#galactic-extinction-coefficients
+R_R=2.165
+R_Z=1.211
 
 dr = '9'
 
@@ -153,7 +156,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10,weights=None):        
+def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10,weights=None,titl=''):        
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -196,12 +199,111 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     plt.ylim(-.3,.3)
     plt.xlabel(par)
     plt.ylabel('Ngal/<Ngal> - 1')
-    plt.title(type+' in '+reg + ' footprint, using pixelized map')
+    plt.title(type+' in '+reg + ' footprint, using pixelized map'+titl)
     plt.show()
     wv = (parv[wp]>=vmin) & (parv[wp] <=vmax)
     frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
     print('fraction of randoms not included in plot: '+str(frac))
    
+#plot density vs depth with healpix values
+def plotvshp_compmc(type,sys,rng,dmcse,ds,reg=None,ff='targetDR9m42.fits',gdzm=20,ebvm=0.15,useMCeff=True,correctstar=True,title='',effac=1.,south=True):
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    rl = rall
+    if reg:
+        wr = rall['PHOTSYS'] == reg
+        rl = rl[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    r1 = np.zeros(12*nside*nside)
+    d1= np.zeros(12*nside*nside)
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    for pix in rpix:
+        r1[pix] += 1.
+    print('randoms done')
+    for pix in dpix:
+        d1[pix] += 1.
+
+    hpq = fitsio.read(pixfn)
+    hpq = parv[par]
+
+    w = hpq['GALDEPTH_Z'] > gdzm
+    w &= hpq['EBV'] < ebvm
+    w &= ds*0 == 0
+    w &= dmcse*0 == 0
+    if useMCeff:
+        w &= mcl > 0
+    if sys != 'gdc' and sys != 'rdc' and sys != 'zdc' and sys != 'dg' and sys != 'dr' and sys != 'dz' and sys != 'dgr' and sys != 'drz' and sys != 'dgz':
+        sm = hpq[w][sys]
+        xlab = sys
+    else:
+        if sys == 'gdc':
+            print('g band depth, extinction corrected')
+            sm = hpq[w]['GALDEPTH_G']*10.**(-0.4*R_G*hpq[w]['EBV'])
+            xlab = 'g band depth, extinction corrected'
+        if sys == 'rdc':
+            sm = hpq[w]['GALDEPTH_R']*10.**(-0.4*R_R*hpq[w]['EBV'])
+            xlab = 'r band depth, extinction corrected'
+        if sys == 'zdc':
+            sm = hpq[w]['GALDEPTH_Z']*10.**(-0.4*R_Z*hpq[w]['EBV'])
+            xlab = 'z band depth, extinction corrected'
+        if sys == 'dg':
+            sm = dg[w]
+            xlab = 'g band PS1 residual'
+        if sys == 'dr':
+            sm = dr[w]
+            xlab = 'r band PS1 residual'
+        if sys == 'dz':
+            sm = dz[w]
+            xlab = 'z band PS1 residual'
+        if sys == 'dgr':
+            sm = dg[w]-dr[w]
+            xlab = 'g-r band PS1 residual'
+        if sys == 'drz':
+            sm = dr[w]-dz[w]
+            xlab = 'r-z band PS1 residual'
+        if sys == 'dgz':
+            sm = dg[w]-dz[w]
+            xlab = 'g-z band PS1 residual'
+
+    ds = np.ones(len(d1))
+    print(len(ds),len(d1),len(w),len(sm))
+    hdnoc = np.histogram(sm,weights=d1[w],range=rng)
+    #print(hd1)
+    hr1 = np.histogram(sm,weights=r1[w],bins=hdnoc[1],range=rng)
+    xl = []
+    for i in range(0,len(hr1[0])):
+        xl.append((hr1[1][i]+hr1[1][i+1])/2.)
+
+    plt.errorbar(xl,hdnoc[0]/hr1[0]/(sum(d1[w])/sum(r1[w])),np.sqrt(hdnoc[0])/hr1[0]/(lelg/len(relg)),fmt='ko',label='raw')
+    ds = ws
+    #hd1 = np.histogram(sm,weights=d1[w]*ds[w],bins=hdnoc[1],range=rng)
+    #plt.plot(xl,hd1[0]/hr1[0]/(sum(d1[w]*ds[w])/sum(r1[w])),'k--',label='with stellar density weights')
+    dmcse = mcl**effac
+    hd1 = np.histogram(sm,weights=d1[w]/dmcse[w],bins=hdnoc[1],range=rng)
+    plt.plot(xl,hd1[0]/hr1[0]/(sum(d1[w]/dmcse[w])/sum(r1[w])),'r-',label='+MC weights')
+    hd1 = np.histogram(sm,weights=d1[w]*ds[w]/dmcse[w],bins=hdnoc[1],range=rng)
+    plt.plot(xl,hd1[0]/hr1[0]/(sum(d1[w]*ds[w]/dmcse[w])/sum(r1[w])),'b-',label='+MC weights + EBV weights')
+    #dmcs = mcls**effac
+    #hd1 = np.histogram(sm,weights=d1[w]*ds[w]/dmcs[w],bins=hdnoc[1],range=rng)
+    #plt.plot(xl,hd1[0]/hr1[0]/(sum(d1[w]*ds[w]/dmcs[w])/sum(r1[w])),'b-',label='+MC; sed w ext sigma')
+    #dmco = mclo**effac
+    #hd1 = np.histogram(sm,weights=d1[w]*ds[w]/dmco[w],bins=hdnoc[1],range=rng)
+    #plt.plot(xl,hd1[0]/hr1[0]/(sum(d1[w]*ds[w]/dmco[w])/sum(r1[w])),'-',color='purple',label='old MC')
+    
+    #plt.title(str(mp)+reg)
+    plt.plot(xl,np.ones(len(xl)),'k:',label='null')
+    plt.legend()#(['raw','with stellar density weights','+sed ext MC','just sed MC','old MC','null']))
+    plt.ylabel('relative density')
+    plt.xlabel(xlab)
+    plt.ylim(0.7,1.3)
+    plt.title(title)
+    plt.show()    
             
 
     
