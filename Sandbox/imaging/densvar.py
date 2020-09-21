@@ -221,8 +221,6 @@ def plotvshp_compmc(type,sys,rng,dmcse,ds,reg=None,ff='targetDR9m42.fits',gdzm=2
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     r1 = np.zeros(12*nside*nside)
     d1= np.zeros(12*nside*nside)
-    if weights is None:
-        weights = np.ones(len(pixlr))
     for pix in rpix:
         r1[pix] += 1.
     print('randoms done')
