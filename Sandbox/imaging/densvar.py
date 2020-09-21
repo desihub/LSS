@@ -228,7 +228,7 @@ def plotvshp_compmc(type,sys,rng,dmcse,ds,reg=None,ff='targetDR9m42.fits',gdzm=2
         d1[pix] += 1.
 
     hpq = fitsio.read(pixfn)
-    hpq = parv[par]
+    #hpq = parv[par]
 
     w = hpq['GALDEPTH_Z'] > gdzm
     w &= hpq['EBV'] < ebvm
