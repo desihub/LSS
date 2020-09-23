@@ -156,7 +156,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,gfluxcut=None,rfluxcut=None,nbin=10,weights=None,titl=''):        
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -165,6 +165,15 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
+    if gfluxcut:
+    	wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
+    	print(len(ft))    	
+    	ft = ft[wg]
+    	print(len(ft))
+    if rfluxcut:
+    	wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
+    	ft = ft[wg]
+
     rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
     dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
