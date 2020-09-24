@@ -158,6 +158,7 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=N
     if vm == None:
         vx = np.min(od)    
     #od = od/np.mean(od)
+    print(vm,vx)
     decp = np.array(decp)
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title(prop +' averaged in bricks')
