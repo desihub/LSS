@@ -317,7 +317,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
-    if par.split('_')[0] == 'VAR':
+    if par.split('-')[0] == 'VAR':
         pixlp = np.zeros(12*nside*nside)
         pixlv = np.zeros(12*nside*nside)
     if weights is None:
