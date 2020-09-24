@@ -131,7 +131,7 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
     nbd = np.max(ft['BRICKID'])
-    nbx = nbd
+    nbx = nbd+1
     print('maximum brickid is '+str(nbx))
     pixlr = np.zeros(nbx)
     pixlg = np.zeros(nbx)
