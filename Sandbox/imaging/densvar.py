@@ -232,7 +232,7 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
         pixlr[id] += 1.
         pixlg[id] += ft[i][prop]
         pixlv[id] += ft[i][prop]**2.
-    wp = pixlr > 0
+    wp = pixlr > 10
     pixls = []
     for i in range(0,len(pixlr)):
         if pixlr[i] > 0:
