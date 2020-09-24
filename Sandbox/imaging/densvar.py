@@ -156,7 +156,7 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=N
     if vx == None:
         vx = np.max(od)
     if vm == None:
-        vx = np.min(od)    
+        vm = np.min(od)    
     #od = od/np.mean(od)
     print(vm,vx)
     decp = np.array(decp)
