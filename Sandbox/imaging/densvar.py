@@ -317,16 +317,27 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
+    if par.split('_')[0] == 'VAR':
+        pixlp = np.zeros(12*nside*nside)
+        pixlv = np.zeros(12*nside*nside)
     if weights is None:
         weights = np.ones(len(pixlr))
     for pix in rpix:
         pixlr[pix] += 1.
     print('randoms done')
-    for pix in dpix:
+    for i in range(0,len(dpix)): 
+        pix = dpix[i]
         pixlg[pix] += 1.
+        if par.split('_')[0] == 'VAR':
+            pixlp[pix] += ft[i][par.split('_')[1]]
+            pixlv[pix] += ft[i][par.split('_')[1]]**2.
     parv = fitsio.read(pixfn)
-    parv = parv[par]
     wp = (pixlr > 0) & (weights*0 == 0)
+    if par.split('_')[0] == 'VAR':
+        parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+    else:
+        parv = parv[par]
+
     if vmin is None:
     	vmin = np.min(parv[wp])
     if vmax is None:
