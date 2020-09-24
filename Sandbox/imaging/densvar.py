@@ -357,13 +357,13 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         bc.append((bn[i]+bn[i+1])/2.)
 
     plt.errorbar(bc,sv-1.,ep,fmt='ko')
-    plt.hist(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
+    plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
     plt.ylim(-.3,.3)
     plt.xlabel(par)
     plt.ylabel('Ngal/<Ngal> - 1')
     plt.title(type+' in '+reg + ' footprint, using pixelized map'+titl)
     plt.show()
-    wv = (parv[wp]>=vmin) & (parv[wp] <=vmax)
+    wv = (parv[>=vmin) & (parv <=vmax)
     frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
     print('fraction of randoms not included in plot: '+str(frac))
    
