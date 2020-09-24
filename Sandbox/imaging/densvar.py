@@ -210,6 +210,53 @@ def plot_brickpropvar(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,v
     plt.title('variance in ' +prop +' per brick')
     plt.show()
 
+def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None):
+    brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
+    brickdictrd = {}
+    for i in range(0,len(brickf)):
+        brickdictrd[brickf[i]['BRICKID']] = (brickf[i]['RA'],brickf[i]['DEC'])
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    if reg:
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    nbd = np.max(ft['BRICKID'])
+    nbx = nbd+1
+    print('maximum brickid is '+str(nbx))
+    pixlr = np.zeros(nbx)
+    pixlg = np.zeros(nbx)
+    pixlv = np.zeros(nbx)
+
+    for i in range(0,len(ft)):
+        id = ft[i]['BRICKID']
+        pixlr[id] += 1.
+        pixlg[id] += ft[i][prop]
+        pixlv[id] += ft[i][prop]**2.
+    wp = pixlr > 0
+    pixls = []
+    for i in range(0,len(pixlr)):
+        if pixlr[i] > 0:
+            pixls.append(i)
+    pixls = np.array(pixls).astype(int) 
+    rap = []
+    decp = []
+    for id in pixls:
+        rai,deci = brickdictrd[id]
+        rap.append(rai)
+        decp.append(deci)   
+    od = (pixlv[wp]/pixlr[wp]-(pixlg[wp]/pixlr[wp])**2.)**.5/(pixlg[wp]/pixlr[wp])
+    if vx == None:
+        vx = np.max(od)
+    if vm == None:
+        vm = np.min(od)    
+    #od = od/np.mean(od)
+    print(vm,vx)
+    decp = np.array(decp)
+    plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
+    plt.title('variance in ' +prop +' per brick')
+    plt.show()
+
+
 
 def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):
     ft = fitsio.read(sdir+type+ff)
