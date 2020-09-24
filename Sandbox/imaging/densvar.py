@@ -120,7 +120,7 @@ def plot_brickdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
-def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
+def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -153,9 +153,13 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
         rap.append(rai)
         decp.append(deci)   
     od = pixlg[wp]/pixlr[wp]
+    if vx == None:
+        vx = np.max(od)
+    if vm == None:
+        vx = np.min(od)    
     #od = od/np.mean(od)
     decp = np.array(decp)
-    plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title(prop +' averaged in bricks')
     plt.show()
 
