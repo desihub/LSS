@@ -255,6 +255,7 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
     #od = od/np.mean(od)
     print(vm,vx)
     decp = np.array(decp)
+    rap = np.array(rap)
     plt.scatter(rap[wo],np.sin(decp[wo]*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title('variance in ' +prop +' per brick')
     plt.show()
@@ -341,10 +342,11 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     else:
         parv = parv[wp][par]
 
+    wo = parv*0 == 0
     if vmin is None:
-    	vmin = np.min(parv)
+    	vmin = np.min(parv[wo])
     if vmax is None:
-        vmax = np.max(parv)
+        vmax = np.max(parv[wo])
     rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
     dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
     norm = sum(rh)/sum(dh)
