@@ -210,7 +210,7 @@ def plot_brickpropvar(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,v
     plt.title('variance in ' +prop +' per brick')
     plt.show()
 
-def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None):
+def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None,minn = 10):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -232,10 +232,11 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
         pixlr[id] += 1.
         pixlg[id] += ft[i][prop]
         pixlv[id] += ft[i][prop]**2.
-    wp = pixlr > 10
+    
+    wp = pixlr > minn
     pixls = []
     for i in range(0,len(pixlr)):
-        if pixlr[i] > 0:
+        if pixlr[i] > minn:
             pixls.append(i)
     pixls = np.array(pixls).astype(int) 
     rap = []
@@ -245,6 +246,8 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
         rap.append(rai)
         decp.append(deci)   
     od = (pixlv[wp]/pixlr[wp]-(pixlg[wp]/pixlr[wp])**2.)**.5/(pixlg[wp]/pixlr[wp])
+    wo = od*0 == 0
+    od = od[wo]
     if vx == None:
         vx = np.max(od)
     if vm == None:
@@ -252,7 +255,7 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
     #od = od/np.mean(od)
     print(vm,vx)
     decp = np.array(decp)
-    plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
+    plt.scatter(rap[wo],np.sin(decp[wo]*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title('variance in ' +prop +' per brick')
     plt.show()
 
@@ -336,14 +339,14 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     if par.split('-')[0] == 'VAR':
         parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
     else:
-        parv = parv[par]
+        parv = parv[wp][par]
 
     if vmin is None:
-    	vmin = np.min(parv[wp])
+    	vmin = np.min(parv)
     if vmax is None:
-        vmax = np.max(parv[wp])
-    rh,bn = np.histogram(parv[wp],bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-    dh,db = np.histogram(parv[wp],bins=bn,weights=pixlg[wp]*weights[wp])
+        vmax = np.max(parv)
+    rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
+    dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     ep = np.sqrt(dh)/rh*norm
