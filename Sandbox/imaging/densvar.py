@@ -329,11 +329,11 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         pix = dpix[i]
         pixlg[pix] += 1.
         if par.split('_')[0] == 'VAR':
-            pixlp[pix] += ft[i][par.split('_')[1]]
-            pixlv[pix] += ft[i][par.split('_')[1]]**2.
+            pixlp[pix] += ft[i][par.split('-')[1]]
+            pixlv[pix] += ft[i][par.split('-')[1]]**2.
     parv = fitsio.read(pixfn)
     wp = (pixlr > 0) & (weights*0 == 0)
-    if par.split('_')[0] == 'VAR':
+    if par.split('-')[0] == 'VAR':
         parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
     else:
         parv = parv[par]
