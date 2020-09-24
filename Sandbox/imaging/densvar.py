@@ -139,7 +139,7 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     for i in range(0,len(ft)):
         id = ft[i]['BRICKID']
         pixlr[id] += 1.
-        pixlg[id] += ft[prop]
+        pixlg[id] += ft[i][prop]
     wp = pixlr > 0
     pixls = []
     for i in range(0,len(pixlr)):
