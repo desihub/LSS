@@ -321,7 +321,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     pixlg = np.zeros(12*nside*nside)
-    if par.split('-')[0] == 'VAR':
+    if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
         pixlp = np.zeros(12*nside*nside)
         pixlv = np.zeros(12*nside*nside)
     if weights is None:
@@ -332,13 +332,16 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     for i in range(0,len(dpix)): 
         pix = dpix[i]
         pixlg[pix] += 1.
-        if par.split('-')[0] == 'VAR':
+        if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
             pixlp[pix] += ft[i][par.split('-')[1]]
             pixlv[pix] += ft[i][par.split('-')[1]]**2.
     parv = fitsio.read(pixfn)
     wp = (pixlr > 0) & (weights*0 == 0)
     if par.split('-')[0] == 'VAR':
         parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+    elif par.split('-')[0] == 'STDPER':
+        var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
+        parv = var**.5/(pixlp[wp]/pixlg[wp])
     else:
         parv = parv[wp][par]
 
