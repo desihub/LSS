@@ -373,7 +373,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     print('fraction of randoms not included in plot: '+str(frac))
    
 #plot density vs depth with healpix values
-def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,ebvm=0.15,useMCeff=True,correctstar=True,title='',effac=1.,south=True):
+def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=0,ebvm=100,useMCeff=True,correctstar=True,title='',effac=1.,mingd=0,maxgd=1.e6,south=True):
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -397,13 +397,18 @@ def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=20,
     hpq = fitsio.read(pixfn)
     #hpq = parv[par]
 
-    w = hpq['GALDEPTH_Z'] > gdzm
+    
+	w = r1 > 0
+	print(len(hpq[w]))
+	w &= hpq['GALDEPTH_Z'] > gdzm
+    w &= hpq['GALDEPTH_G'] > mingd
+    w &= hpq['GALDEPTH_G'] < maxgd
     w &= hpq['EBV'] < ebvm
     w &= ws*0 == 0
     w &= mcl*0 == 0
     #if useMCeff:
     w &= mcl > 0
-    w &= r1 > 0
+    print(len(hpq[w]))
     #w 
     if sys != 'gdc' and sys != 'rdc' and sys != 'zdc' and sys != 'dg' and sys != 'dr' and sys != 'dz' and sys != 'dgr' and sys != 'drz' and sys != 'dgz':
         sm = hpq[w][sys]
