@@ -138,7 +138,7 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
-def mkeffmap(south=True,outf='/DR9mELGMCeffHSCHPext.fits'):
+def mkeffmap(south=True,outf='/DR9mELGMCeffHSCHPextnocorr.fits',corr=False):
     #read in DR8 properties map
     
     pix,header=fitsio.read(pixfn,header=True)
@@ -169,7 +169,7 @@ def mkeffmap(south=True,outf='/DR9mELGMCeffHSCHPext.fits'):
         zsig = zsigma[j]
         ebv = pix["EBV"][j]
         #do for three redshift ranges and for overall
-        eff = ELGeffcalcExt(gsig,rsig,zsig,wtgp[j],wtrp[j],wtzp[j],south=True)    
+        eff = ELGeffcalcExt(gsig,rsig,zsig,wtgp[j],wtrp[j],wtzp[j],south=True,corr=corr)    
         efficiency[j]=eff
     outf = os.getenv('SCRATCH')+outf
     
