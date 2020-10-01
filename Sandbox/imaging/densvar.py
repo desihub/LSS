@@ -274,7 +274,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
     if vmin is None:
-    	vmin = np.min(rl[par])
+        vmin = np.min(rl[par])
     if vmax is None:
         vmax = np.max(rl[par])    
         
@@ -307,13 +307,13 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
     if gfluxcut:
-    	wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
-    	print(len(ft))    	
-    	ft = ft[wg]
-    	print(len(ft))
+        wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
+        print(len(ft))      
+        ft = ft[wg]
+        print(len(ft))
     if rfluxcut:
-    	wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
-    	ft = ft[wg]
+        wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
+        ft = ft[wg]
 
     rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
@@ -349,7 +349,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
 
     wo = parv*0 == 0
     if vmin is None:
-    	vmin = np.min(parv[wo])
+        vmin = np.min(parv[wo])
     if vmax is None:
         vmax = np.max(parv[wo])
     rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
@@ -398,9 +398,9 @@ def plotvshp_compmc(type,sys,rng,mcl,ws,reg=None,ff='targetDR9m42.fits',gdzm=0,e
     #hpq = parv[par]
 
     
-	w = r1 > 0
-	print(len(hpq[w]))
-	w &= hpq['GALDEPTH_Z'] > gdzm
+    w = r1 > 0
+    print(len(hpq[w]))
+    w &= hpq['GALDEPTH_Z'] > gdzm
     w &= hpq['GALDEPTH_G'] > mingd
     w &= hpq['GALDEPTH_G'] < maxgd
     w &= hpq['EBV'] < ebvm
