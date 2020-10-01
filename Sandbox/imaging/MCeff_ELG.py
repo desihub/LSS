@@ -167,7 +167,7 @@ def mkeffmap(south=True,outf='/DR9mELGMCeffHSCHPextnocorr.fits',corr=False):
         gsig = gsigma[j]
         rsig = rsigma[j]
         zsig = zsigma[j]
-        ebv = pix["EBV"][j]
+        #ebv = pix["EBV"][j]
         #do for three redshift ranges and for overall
         eff = ELGeffcalcExt(gsig,rsig,zsig,wtgp[j],wtrp[j],wtzp[j],south=True,corr=corr)    
         efficiency[j]=eff
