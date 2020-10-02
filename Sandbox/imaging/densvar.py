@@ -100,7 +100,10 @@ def plot_hpprop(par,type='ELG',reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weigh
         pixlg[pix] += 1.
     wp = (pixlr > 0) & (weights*0 == 0)
     parv = fitsio.read(pixfn)
-    parv = parv[wp][par]
+    if par == 'PSFTOT':
+        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+    else:    
+        parv = parv[wp][par]
     pixls = []
     for i in range(0,len(pixlr)):
         if pixlr[i] > 0 and weights[i]*0 == 0:
