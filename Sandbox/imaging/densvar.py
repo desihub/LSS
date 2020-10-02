@@ -76,7 +76,7 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
-def plot_hpprop(par,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
+def plot_hpprop(par,type='ELG',reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
