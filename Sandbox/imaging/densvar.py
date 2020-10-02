@@ -379,13 +379,13 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     parv = fitsio.read(pixfn)
     wp = (pixlr > 0) & (weights*0 == 0)
     if len(par.split('-')) > 0: 
-		if par.split('-')[0] == 'VAR':
-			parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
-		elif par.split('-')[0] == 'STDPER':
-			var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
-			parv = var**.5/(pixlp[wp]/pixlg[wp])
-		elif par.split('-')[1] == 'X':
-			parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+        if par.split('-')[0] == 'VAR':
+            parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+        elif par.split('-')[0] == 'STDPER':
+            var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
+            parv = var**.5/(pixlp[wp]/pixlg[wp])
+        elif par.split('-')[1] == 'X':
+            parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
     elif par == 'PSFTOT':
         parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
     else:
