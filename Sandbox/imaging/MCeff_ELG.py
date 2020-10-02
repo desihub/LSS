@@ -88,11 +88,11 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
    
     selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south) 
     selection_snr   = np.zeros_like(mgflux, dtype=bool)
-    snrg = mgflux/gsig
-    selection_snr = selection_snr | (snrg > 6.)
-    snrr = mrflux/rsig
-    selection_snr = selection_snr | (snrr > 6.)
+    snrg = mgflux/gsig    
+    snrr = mrflux/rsig    
     snrz = mzflux/zsig
+    selection_snr = selection_snr | (snrr > 6.)
+    selection_snr = selection_snr | (snrg > 6.)
     selection_snr = selection_snr | (snrz > 6.)
 
     flatmap = mgflux/(gsig)**2+mrflux/(rsig)**2+mzflux/(zsig)**2
@@ -109,6 +109,7 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     combined_snrred2 = redmap**2. * (sediv) #faster to remove sqrt?
     #selection_snr = selection_snr | (combined_snrred>6.)
     selection_snr = selection_snr | (combined_snrred2>36.)
+    selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
     if snrc:
         selection *= selection_snr
     
