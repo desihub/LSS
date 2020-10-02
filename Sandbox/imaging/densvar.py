@@ -76,6 +76,44 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
+def plot_hpprop(par,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    rl = rall
+    if reg:
+        wr = rall['PHOTSYS'] == reg
+        rl = rl[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    pixlg = np.zeros(12*nside*nside)
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    for pix in rpix:
+        pixlr[pix] += 1.
+    print('randoms done')
+    for pix in dpix:
+        pixlg[pix] += 1.
+    wp = (pixlr > 0) & (weights*0 == 0)
+    parv = fitsio.read(pixfn)
+    parv = parv[wp][par]
+    pixls = []
+    for i in range(0,len(pixlr)):
+        if pixlr[i] > 0 and weights[i]*0 == 0:
+            pixls.append(i)
+    pixls = np.array(pixls).astype(int)        
+    th,phi = hp.pix2ang(nside,pixls,nest=nest)
+    od = parv
+    
+    ra,dec = thphi2radec(th,phi)
+    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.show()
+
+
 def plot_brickdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
