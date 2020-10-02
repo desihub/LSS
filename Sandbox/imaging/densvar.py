@@ -384,7 +384,9 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
         parv = var**.5/(pixlp[wp]/pixlg[wp])
     elif par.split('-')[1] == 'X':
-         parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+        parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+    elif par == 'PSFTOT':
+        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
     else:
         parv = parv[wp][par]
 
