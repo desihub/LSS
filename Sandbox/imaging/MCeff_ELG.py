@@ -65,7 +65,7 @@ cg = cg.transpose()
 
 
 
-def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,rsel=False):
+def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,rsel=False,vis=False):
     '''
     calculate the ELG efficiency for given g,r,z flux uncertainties and a given region's selection
     gsig, rsig, zsig are 1sigma flux uncertainties for g,r,z
@@ -118,6 +118,14 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     
     efficiency=np.mean(selection.astype(float))/true_mean
     
+    if vis:
+        plt.hist(snrg[selection],bins=100,range=(0,15))
+        plt.xlabel('g S/N')
+        plt.hist(snrr[selection],bins=100,range=(0,15))
+        plt.xlabel('r S/N')
+        plt.hist(snrz[selection],bins=100,range=(0,15))
+        plt.xlabel('z S/N')
+   
     return efficiency
 
 def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=1.,rf=1.,zf=1.,rsel=False):
