@@ -132,6 +132,8 @@ def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=
     gf,rf,zf allow one to test what happens if the flux is multiplied by these factors
     rsel toggles whether the selection or the efficiency is returned
     '''
+    
+    wz = (photz > zmin) & (photz <= zmax)
     mgflux = gflux[wz]*wtg*gf 
     mrflux = rflux[wz]*wtr*rf 
     mzflux = zflux[wz]*wtz*zf 
