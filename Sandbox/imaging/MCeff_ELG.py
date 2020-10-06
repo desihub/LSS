@@ -162,8 +162,8 @@ def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=
     #selection_snr = selection_snr | (combined_snrred>6.)
     selection_snr = selection_snr | (combined_snrred2>36.)
     selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
-    if snrc:
-        selection *= selection_snr
+    
+    selection *= selection_snr
     
     if rsel:
         return selection #just return the selection if rsel is True    
