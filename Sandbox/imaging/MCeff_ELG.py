@@ -119,11 +119,11 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     efficiency=np.mean(selection.astype(float))/true_mean
     
     if vis:
-        plt.hist(snrg[selection],bins=100,range=(0,15),label='g')
+        plt.hist(snrg[selection],bins=100,range=(0,15),label='g',histtype='step')
         plt.xlabel('S/N')
-        plt.hist(snrr[selection],bins=100,range=(0,15),label='r')
+        plt.hist(snrr[selection],bins=100,range=(0,15),label='r',histtype='step')
         plt.xlabel('S/N')
-        plt.hist(snrz[selection],bins=100,range=(0,15),label='z')
+        plt.hist(snrz[selection],bins=100,range=(0,15),label='z',histtype='step')
         plt.xlabel('S/N')
         plt.legend()
         plt.show()
