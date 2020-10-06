@@ -101,7 +101,7 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
     combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
     #selection_snr = selection_snr | (combined_snr > 6)
-    selection_snr = selection_snr | (combined_snr2 > 36)
+    #selection_snr = selection_snr | (combined_snr2 > 36)
     redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
     sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
     redmap   /= np.maximum(1.e-16, sediv)
