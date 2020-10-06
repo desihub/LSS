@@ -120,6 +120,57 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     
     return efficiency
 
+def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=1.,rf=1.,zf=1.,rsel=False):
+    '''
+    calculate the ELG efficiency for given g,r,z flux uncertainties and a given region's selection
+    only consider effect of needing 6sigma detection
+    gsig, rsig, zsig are 1sigma flux uncertainties for g,r,z
+    wtg,wtr,wtz are Milky Way transmission coefficients (i.e. Galactic extinction < 1 multiplied by flux to account for loss)
+    South toggles whether north or south target selection cuts get used (truth data is DECaLS, so maybe should always be south until that is updated)
+    zmin,zmax control redshift range of photozs from truth
+    corr toggles whether or not correlation is assumed between flux measurements
+    gf,rf,zf allow one to test what happens if the flux is multiplied by these factors
+    rsel toggles whether the selection or the efficiency is returned
+    '''
+    mgflux = gflux[wz]*wtg*gf 
+    mrflux = rflux[wz]*wtr*rf 
+    mzflux = zflux[wz]*wtz*zf 
+   
+    selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south) 
+    selection_snr   = np.zeros_like(mgflux, dtype=bool)
+    snrg = mgflux/gsig    
+    snrr = mrflux/rsig    
+    snrz = mzflux/zsig
+    selection_snr = selection_snr | (snrr > 6.)
+    selection_snr = selection_snr | (snrg > 6.)
+    selection_snr = selection_snr | (snrz > 6.)
+
+    flatmap = mgflux/(gsig)**2+mrflux/(rsig)**2+mzflux/(zsig)**2
+    fdiv = 1./(gsig)**2+1./rsig**2+1./(zsig)**2
+    flatmap   /= np.maximum(1.e-16, fdiv)
+    #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
+    combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snr > 6)
+    selection_snr = selection_snr | (combined_snr2 > 36)
+    redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
+    sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
+    redmap   /= np.maximum(1.e-16, sediv)
+    #combined_snrred = redmap * np.sqrt(sediv) #combined signal to noise; red sed
+    combined_snrred2 = redmap**2. * (sediv) #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snrred>6.)
+    selection_snr = selection_snr | (combined_snrred2>36.)
+    selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
+    if snrc:
+        selection *= selection_snr
+    
+    if rsel:
+        return selection #just return the selection if rsel is True    
+    
+    efficiency=np.mean(selection.astype(float))/true_mean
+    
+    return efficiency
+
+
 selmed = ELGeffcalcExt(0.023,0.041,.06,1.,1.,1.,rsel=True) #slightly worse than median, no extinction, one could improve this
 
 def getrelnz(sigg,sigr,sigz,wtg,wtr,wtz,bs=0.05,zmin=0.6,zmax=1.4,south=True):
