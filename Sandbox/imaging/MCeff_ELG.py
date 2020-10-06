@@ -122,12 +122,20 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
         plt.hist(snrg[selection],bins=100,range=(0,15),label='g',histtype='step')
         plt.xlabel('S/N')
         plt.hist(snrr[selection],bins=100,range=(0,15),label='r',histtype='step')
-        plt.xlabel('S/N')
+        #plt.xlabel('S/N')
         plt.hist(snrz[selection],bins=100,range=(0,15),label='z',histtype='step')
-        plt.xlabel('S/N')
+        #plt.xlabel('S/N')
         plt.legend()
         plt.show()
-   
+        plt.hist(mgflux[selection],bins=100,range=(0,2),label='g',histtype='step')
+        plt.xlabel('flux')
+        plt.hist(mrflux[selection],bins=100,range=(0,2),label='r',histtype='step')
+        #plt.xlabel('S/N')
+        plt.hist(mzflux[selection],bins=100,range=(0,2),label='z',histtype='step')
+        #plt.xlabel('S/N')
+        plt.legend()
+        plt.show()
+  
     return efficiency
 
 def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=1.,rf=1.,zf=1.,rsel=False):
