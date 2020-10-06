@@ -108,7 +108,7 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     #combined_snrred = redmap * np.sqrt(sediv) #combined signal to noise; red sed
     combined_snrred2 = redmap**2. * (sediv) #faster to remove sqrt?
     #selection_snr = selection_snr | (combined_snrred>6.)
-    selection_snr = selection_snr | (combined_snrred2>36.)
+    #selection_snr = selection_snr | (combined_snrred2>36.)
     selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
     if snrc:
         selection *= selection_snr
