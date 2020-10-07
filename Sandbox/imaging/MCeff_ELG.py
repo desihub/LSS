@@ -219,7 +219,7 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
     gsigs = np.ones(len(mgflux))*gsig
     rsigs = np.ones(len(mgflux))*rsig
     zsigs = np.ones(len(mgflux))*zsig
-    arrtot = np.array([gflux,rflux,zflux,mgflux,mrflux,zflux,ebvs,gsigs,rsigs,zsigs])
+    arrtot = np.array([gflux,rflux,zflux,mgflux/wtg,mrflux/wtr,mzflux/wtz,ebvs,gsigs,rsigs,zsigs])
     dt = [('True_g_flux', float), ('True_r_flux', float), ('True_z_flux', float),('g_flux', float), ('r_flux', float), ('z_flux', float),('EBV', float),('sigma_g_flux', float), ('sigma_r_flux', float), ('sigma_z_flux', float)]
     arrtot = np.rec.fromarrays(arrtot,dtype=dt) 
     arrtot = arrtot[selection]
