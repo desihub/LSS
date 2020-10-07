@@ -190,6 +190,41 @@ def ELGeffcalcExt_dect(gsig,rsig,zsig,wtg,wtr,wtz,south=True,zmin=-1,zmax=20,gf=
     
     return efficiency
 
+def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.):
+    '''
+    get truth and perturbed fluxes for given g,r,z flux uncertainties and a given region's selection
+    gsig, rsig, zsig are 1sigma flux uncertainties for g,r,z
+    ebv is Milky Way E(B-V) dust extinction
+    South toggles whether north or south target selection cuts get used (truth data is DECaLS, so maybe should always be south until that is updated)
+    zmin,zmax control redshift range of photozs from truth
+    corr toggles whether or not correlation is assumed between flux measurements
+    gf,rf,zf allow one to test what happens if the flux is multiplied by these factors
+    rsel toggles whether the selection or the efficiency is returned
+    '''
+    wtg = 10.**(-0.4*R_G*ebv)
+    wtr = 10.**(-0.4*R_R*ebv)
+    wtz = 10.**(-0.4*R_Z*ebv)
+    wz = (photz > zmin) & (photz <= zmax)
+    if corr:
+        mgflux = gflux[wz]*wtg*gf + cg[0][wz]*gsig
+        mrflux = rflux[wz]*wtr*rf + cg[1][wz]*rsig
+        mzflux = zflux[wz]*wtz*zf + cg[2][wz]*zsig
+    else:
+        mgflux = gflux[wz]*wtg*gf + grand[wz]*gsig
+        mrflux = rflux[wz]*wtr*rf + rrand[wz]*rsig
+        mzflux = zflux[wz]*wtz*zf + zrand[wz]*zsig
+   
+    selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south)
+    ebvs = np.ones(len(mgflux))*ebv
+    gsigs = np.ones(len(mgflux))*gsig
+    rsigs = np.ones(len(mgflux))*rsig
+    zsigs = np.ones(len(mgflux))*zsig
+    arrtot = np.array([gflux,rflux,zflux,mgflux,mrflux,zflux,ebvs,gsigs,rsigs,zsigs])
+    arrtot = arrtot[selection]
+    dt = [('True_g_flux', float), ('True_r_flux', float), ('True_z_flux', float),('g_flux', float), ('r_flux', float), ('z_flux', float),('EBV', float),('sigma_g_flux', float), ('sigma_r_flux', float), ('sigma_z_flux', float)]
+    arrtot = np.rec.fromarrays(arrtot,dtype=dt) 
+    return arrtot
+
 
 selmed = ELGeffcalcExt(0.023,0.041,.06,1.,1.,1.,rsel=True) #slightly worse than median, no extinction, one could improve this
 
