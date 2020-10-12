@@ -219,11 +219,41 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
     gsigs = np.ones(len(mgflux))*gsig
     rsigs = np.ones(len(mgflux))*rsig
     zsigs = np.ones(len(mgflux))*zsig
-    arrtot = np.array([gflux,rflux,zflux,mgflux/wtg,mrflux/wtr,mzflux/wtz,ebvs,gsigs,rsigs,zsigs])
+    arrtot = np.array([gflux,rflux,zflux,mgflux,mrflux,mzflux,ebvs,gsigs,rsigs,zsigs])
     dt = [('True_g_flux', float), ('True_r_flux', float), ('True_z_flux', float),('g_flux', float), ('r_flux', float), ('z_flux', float),('EBV', float),('sigma_g_flux', float), ('sigma_r_flux', float), ('sigma_z_flux', float)]
     arrtot = np.rec.fromarrays(arrtot,dtype=dt) 
     arrtot = arrtot[selection]
     return arrtot
+
+def cutSN(inl):
+    selection_snr   = np.zeros_like(inl['g_flux'], dtype=bool)
+    mgflux = inl['g_flux']
+    mrflux = inl['r_flux']
+    mzflux = inl['z_flux']
+    snrg = mgflux/inl['sigma_g_flux']    
+    snrr = mrflux/inl['sigma_r_flux']       
+    snrz = mzflux/inl['sigma_z_flux']   
+    selection_snr = selection_snr | (snrr > 6.)
+    selection_snr = selection_snr | (snrg > 6.)
+    selection_snr = selection_snr | (snrz > 6.)
+
+    flatmap = mgflux/(gsig)**2+mrflux/(rsig)**2+mzflux/(zsig)**2
+    fdiv = 1./(gsig)**2+1./rsig**2+1./(zsig)**2
+    flatmap   /= np.maximum(1.e-16, fdiv)
+    #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
+    combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snr > 6)
+    selection_snr = selection_snr | (combined_snr2 > 36)
+    redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
+    sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
+    redmap   /= np.maximum(1.e-16, sediv)
+    #combined_snrred = redmap * np.sqrt(sediv) #combined signal to noise; red sed
+    combined_snrred2 = redmap**2. * (sediv) #faster to remove sqrt?
+    #selection_snr = selection_snr | (combined_snrred>6.)
+    selection_snr = selection_snr | (combined_snrred2>36.)
+    selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
+    
+    return inl[selection_snr]
 
 
 selmed = ELGeffcalcExt(0.023,0.041,.06,1.,1.,1.,rsel=True) #slightly worse than median, no extinction, one could improve this
