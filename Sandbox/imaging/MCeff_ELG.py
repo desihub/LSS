@@ -205,6 +205,14 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
     wtr = 10.**(-0.4*R_R*ebv)
     wtz = 10.**(-0.4*R_Z*ebv)
     wz = (photz > zmin) & (photz <= zmax)
+
+    if South == False:
+        #shifting the true flux to north from south, using negative exponent compared to https://github.com/desihub/desitarget/blob/master/py/desitarget/cuts.py#L72
+        gflux = gflux * 10**(0.4*0.004) * (gflux/rflux)**(0.059)
+        rflux = rflux * 10**(-0.4*0.003) * (rflux/zflux)**(0.024)
+        zflux = zflux * 10**(-0.4*0.013) * (rflux/zflux)**(-0.015)
+
+    
     if corr:
         mgflux = gflux[wz]*wtg*gf + cg[0][wz]*gsig
         mrflux = rflux[wz]*wtr*rf + cg[1][wz]*rsig
@@ -214,6 +222,7 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
         mrflux = rflux[wz]*wtr*rf + rrand[wz]*rsig
         mzflux = zflux[wz]*wtz*zf + zrand[wz]*zsig
    
+
     selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south)
     ebvs = np.ones(len(mgflux))*ebv
     gsigs = np.ones(len(mgflux))*gsig
@@ -230,9 +239,12 @@ def cutSN(inl):
     mgflux = inl['g_flux']
     mrflux = inl['r_flux']
     mzflux = inl['z_flux']
-    snrg = mgflux/inl['sigma_g_flux']    
-    snrr = mrflux/inl['sigma_r_flux']       
-    snrz = mzflux/inl['sigma_z_flux']   
+    gsig = inl['sigma_g_flux']
+    rsig = inl['sigma_r_flux']
+    zsig = inl['sigma_z_flux']
+    snrg = mgflux/gsig   
+    snrr = mrflux/rsig       
+    snrz = mzflux/zsig  
     selection_snr = selection_snr | (snrr > 6.)
     selection_snr = selection_snr | (snrg > 6.)
     selection_snr = selection_snr | (snrz > 6.)
@@ -243,7 +255,7 @@ def cutSN(inl):
     #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
     combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
     #selection_snr = selection_snr | (combined_snr > 6)
-    selection_snr = selection_snr | (combined_snr2 > 36)
+    #selection_snr = selection_snr | (combined_snr2 > 36)
     redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
     sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
     redmap   /= np.maximum(1.e-16, sediv)
@@ -253,6 +265,7 @@ def cutSN(inl):
     selection_snr = selection_snr | (combined_snrred2>36.)
     selection_snr = selection_snr & ((snrg>0) & (snrr>0) & (snrz > 0))
     
+    #selection_snr = selection_snr & (snrg > 6.)
     return inl[selection_snr]
 
 
