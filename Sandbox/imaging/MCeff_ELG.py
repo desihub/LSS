@@ -206,21 +206,25 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
     wtz = 10.**(-0.4*R_Z*ebv)
     wz = (photz > zmin) & (photz <= zmax)
 
-    if South == False:
+    if south == False:
         #shifting the true flux to north from south, using negative exponent compared to https://github.com/desihub/desitarget/blob/master/py/desitarget/cuts.py#L72
-        gflux = gflux * 10**(0.4*0.004) * (gflux/rflux)**(0.059)
-        rflux = rflux * 10**(-0.4*0.003) * (rflux/zflux)**(0.024)
-        zflux = zflux * 10**(-0.4*0.013) * (rflux/zflux)**(-0.015)
+        gfluxc = gflux * 10**(0.4*0.004) * (gflux/rflux)**(0.059)
+        rfluxc = rflux * 10**(-0.4*0.003) * (rflux/zflux)**(0.024)
+        zfluxc = zflux * 10**(-0.4*0.013) * (rflux/zflux)**(-0.015)
+    else:
+        gfluxc = gflux
+        rfluxc = rflux
+        zfluxc = zflux
 
     
     if corr:
-        mgflux = gflux[wz]*wtg*gf + cg[0][wz]*gsig
-        mrflux = rflux[wz]*wtr*rf + cg[1][wz]*rsig
-        mzflux = zflux[wz]*wtz*zf + cg[2][wz]*zsig
+        mgflux = gfluxc[wz]*wtg*gf + cg[0][wz]*gsig
+        mrflux = rfluxc[wz]*wtr*rf + cg[1][wz]*rsig
+        mzflux = zfluxc[wz]*wtz*zf + cg[2][wz]*zsig
     else:
-        mgflux = gflux[wz]*wtg*gf + grand[wz]*gsig
-        mrflux = rflux[wz]*wtr*rf + rrand[wz]*rsig
-        mzflux = zflux[wz]*wtz*zf + zrand[wz]*zsig
+        mgflux = gfluxc[wz]*wtg*gf + grand[wz]*gsig
+        mrflux = rfluxc[wz]*wtr*rf + rrand[wz]*rsig
+        mzflux = zfluxc[wz]*wtz*zf + zrand[wz]*zsig
    
 
     selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south)
@@ -228,7 +232,7 @@ def getELGdist(gsig,rsig,zsig,ebv,south=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=
     gsigs = np.ones(len(mgflux))*gsig
     rsigs = np.ones(len(mgflux))*rsig
     zsigs = np.ones(len(mgflux))*zsig
-    arrtot = np.array([gflux,rflux,zflux,mgflux,mrflux,mzflux,ebvs,gsigs,rsigs,zsigs])
+    arrtot = np.array([gfluxc,rfluxc,zfluxc,mgflux,mrflux,mzflux,ebvs,gsigs,rsigs,zsigs])
     dt = [('True_g_flux', float), ('True_r_flux', float), ('True_z_flux', float),('g_flux', float), ('r_flux', float), ('z_flux', float),('EBV', float),('sigma_g_flux', float), ('sigma_r_flux', float), ('sigma_z_flux', float)]
     arrtot = np.rec.fromarrays(arrtot,dtype=dt) 
     arrtot = arrtot[selection]
@@ -255,7 +259,7 @@ def cutSN(inl):
     #combined_snr = flatmap * np.sqrt(fdiv) #combined signal to noise matching Dustin's vode for flat sed
     combined_snr2 = flatmap**2.*fdiv #faster to remove sqrt?
     #selection_snr = selection_snr | (combined_snr > 6)
-    #selection_snr = selection_snr | (combined_snr2 > 36)
+    selection_snr = selection_snr | (combined_snr2 > 36)
     redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
     sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
     redmap   /= np.maximum(1.e-16, sediv)

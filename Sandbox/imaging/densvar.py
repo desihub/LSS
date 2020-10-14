@@ -15,6 +15,8 @@ R_Z=1.211
 
 dr = '9'
 
+print('test')
+
 if dr == '9':
     #this will be needed no matter the sample, might want more
     rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/randoms/resolve/randoms-randomized-1.fits')
@@ -102,6 +104,19 @@ def plot_hpprop(par,type='ELG',reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weigh
     parv = fitsio.read(pixfn)
     if par == 'PSFTOT':
         parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+    elif par == 'SN2TOT_FLAT':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+
+    elif par == 'fracPSF':
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        parv = pixlgp[wp]/pixlg[wp]
+
     else:    
         parv = parv[wp][par]
     pixls = []
@@ -338,7 +353,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,gfluxcut=None,rfluxcut=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,nbin=10,weights=None,titl=''):        
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -356,6 +371,9 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
         ft = ft[wg]
 
+    
+            
+        
     rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
     dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
@@ -376,8 +394,34 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
             pixlp[pix] += ft[i][par.split('-')[1]]
             pixlv[pix] += ft[i][par.split('-')[1]]**2.
-    parv = fitsio.read(pixfn)
+    
     wp = (pixlr > 0) & (weights*0 == 0)
+
+    parv = fitsio.read(pixfn)
+    ebv = parv['EBV']
+    sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+    print(len(parv[wp]))
+    if sn2cut:
+        wp &= (sn2tf > sn2cut)
+        
+    if fpsfcut:
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        fpsf = pixlgp/pixlg
+        wp &= (fpsf < fpsfcut)
+    if ebvcut:
+        wp &= (parv['EBV'] < ebvcut)
+
+    if edscut:
+        eds = parv['EBV']/parv['STARDENS']
+        wp &= (eds < edscut)
+
+        
+    print(len(parv[wp]))
     if len(par.split('-')) > 1: 
         
         if par.split('-')[0] == 'VAR':
@@ -387,8 +431,21 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
             parv = var**.5/(pixlp[wp]/pixlg[wp])
         elif par.split('-')[1] == 'X':
             parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+        elif par.split('-')[1] == 'DIV':
+            parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
     elif par == 'PSFTOT':
         parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+    elif par == 'SN2TOT_FLAT':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+    elif par == 'fracPSF':
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        parv = pixlgp[wp]/pixlg[wp]
     else:
         parv = parv[wp][par]
 
