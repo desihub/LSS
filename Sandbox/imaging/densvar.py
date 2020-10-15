@@ -147,7 +147,7 @@ def plot_brickdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
         ft = ft[wd]
     nbr = np.max(rl['BRICKID'])
     nbd = np.max(ft['BRICKID'])
-    nbx = np.max([nbr,nbd])
+    nbx = np.max([nbr,nbd])+1
     print('maximum brickid is '+str(nbx))
     pixlr = np.zeros(nbx)
     pixlg = np.zeros(nbx)
@@ -438,6 +438,11 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     elif par == 'SN2TOT_FLAT':
         ebv = parv[wp]['EBV']
         parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+
+    elif par == 'SN2TOT_G':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
+
     elif par == 'fracPSF':
         wpsf = ft['MORPHTYPE'] == 'PSF'
         pixlgp = np.zeros(12*nside*nside)
