@@ -478,6 +478,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     wv = (parv>=vmin) & (parv <=vmax)
     frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
     print('fraction of randoms not included in plot: '+str(frac))
+    return bc,sv,ep
    
 #plot density vs depth with healpix values
 def plotvshp_compmc(type,sys,rng,mcl=None,ws=None,reg=None,ff='targetDR9m42.fits',gdzm=0,ebvm=100,title='',effac=1.,mingd=0,maxgd=1.e6,minpsfg=0,maxpsfg=100,south=True):

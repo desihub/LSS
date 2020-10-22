@@ -101,7 +101,7 @@ def typesel(f,type,south=True,ebvfac=1.,Rv=3.1):
 		rflux = f['FLUX_R']/wtr 
 		zflux = f['FLUX_Z']/wtz
 		w1flux = f['FLUX_W1']/wtw
-		zfiberflux = f['FIBERFLUX_Z']/wtw
+		zfiberflux = f['FIBERFLUX_Z']/wtz
 	if type == 'LRG':
 		w = cuts.isLRG_colors(gflux, rflux, zflux, w1flux,zfiberflux, south=south)
 	if type == 'ELG':

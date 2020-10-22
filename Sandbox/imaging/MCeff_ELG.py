@@ -5,6 +5,7 @@ from desitarget import cuts
 import fitsio
 import astropy.io.fits as fits
 import healpy as hp
+from scipy.special import erf
 
 colorcuts_function = cuts.isELG_colors
 
@@ -65,7 +66,7 @@ cg = cg.transpose()
 
 
 
-def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,gfluxcut=None,rsel=False,vis=False):
+def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,dg=0,dr=0,dz=0,sg=0,gfluxcut=None,rsel=False,vis=False,gefac=0):
     '''
     calculate the ELG efficiency for given g,r,z flux uncertainties and a given region's selection
     gsig, rsig, zsig are 1sigma flux uncertainties for g,r,z
@@ -78,13 +79,13 @@ def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=2
     '''
     wz = (photz > zmin) & (photz <= zmax)
     if corr:
-        mgflux = gflux[wz]*wtg*gf + cg[0][wz]*gsig
-        mrflux = rflux[wz]*wtr*rf + cg[1][wz]*rsig
-        mzflux = zflux[wz]*wtz*zf + cg[2][wz]*zsig
+        mgflux = gflux[wz]*wtg*(gf+(1.-gf)*erf(gflux[wz]*gefac)) + cg[0][wz]*gsig+dg
+        mrflux = rflux[wz]*wtr*rf + cg[1][wz]*rsig+dr
+        mzflux = zflux[wz]*wtz*zf + cg[2][wz]*zsig+dz
     else:
-        mgflux = gflux[wz]*wtg*gf + grand[wz]*gsig
-        mrflux = rflux[wz]*wtr*rf + rrand[wz]*rsig
-        mzflux = zflux[wz]*wtz*zf + zrand[wz]*zsig
+        mgflux = gflux[wz]*wtg*gf + grand[wz]*gsig+dg
+        mrflux = rflux[wz]*wtr*rf + rrand[wz]*rsig+dr
+        mzflux = zflux[wz]*wtz*zf + zrand[wz]*zsig+dz
    
     selection = colorcuts_function(gflux=mgflux/wtg, rflux=mrflux/wtr, zflux=mzflux/wtz, w1flux=w1flux, w2flux=w2flux, south=south) 
     selection_snr   = np.zeros_like(mgflux, dtype=bool)
