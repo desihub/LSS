@@ -49,5 +49,6 @@ def getran_brick(brick,maxg=25):
     to['pa'] = np.random.uniform(0,180.,size=len(rb))
     outf = outdir+'brick_'+brick+'.fits'
     to.write(outf,format='fits',overwrite=True)
+    print('wrote '+str(len(rb))+' imaging randoms in obiwan format to '+outf)
     
      
