@@ -1,6 +1,8 @@
 import fitsio
 import numpy as np
-from astropy.table import Table
+from astropy.table import Column, Table
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 
 truthf = '/project/projectdirs/desi/users/ajross/MCdata/seed.fits'
 
@@ -9,7 +11,15 @@ ranf = '/global/cscratch1/sd/adamyers/dr9m-sep26-2020/0.42.0/randoms/resolve/ran
 
 #obiout = os.environ['obiwan_out'] #get this setup at some point
 
-outdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/divided_randoms/'
+
+#assert(name_for_randoms is not None);assert(startid is not None);assert(nobj is not None)
+topdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/'
+#topdir_tractor = os.environ['obiwan_out']+'/output/'
+topdir_tractor = topdir + 'output/'
+#sim_topdir = os.environ['obiwan_out']+'/divided_randoms/'
+sim_topdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/divided_randoms/'
+matched_dir = topdir+'matched_obiwan/'
+
 
 def getran_brick(brick,maxg=25):
     #columns to consider from imaging randoms
@@ -47,8 +57,54 @@ def getran_brick(brick,maxg=25):
     to['n'] = ntype
     to['ba'] = np.random.uniform(0.2,1.,size=len(rb))
     to['pa'] = np.random.uniform(0,180.,size=len(rb))
-    outf = outdir+'brick_'+brick+'.fits'
+    outf = sim_topdir+'brick_'+brick+'.fits'
     to.write(outf,format='fits',overwrite=True)
     print('wrote '+str(len(rb))+' imaging randoms in obiwan format to '+outf)
+    
+def SV_brick_match(brickname, name_for_randoms = 'matched_', startid = 0, nobj = 200, angle = 1.5/3600):
+    #initial code copied from https://raw.githubusercontent.com/DriftingPig/Obi-Metallica/master/collect/SV_collect.py
+    print(brickname,rs_type)
+    rs_type= 'rs'+str(startid)
+    fn_tractor = os.path.join(topdir_tractor,'tractor',brickname[:3],brickname,rs_type,'tractor-%s.fits' %brickname)
+    fn_sim = os.path.join(topdir_tractor,'obiwan',brickname[:3],brickname,rs_type,'simcat-elg-%s.fits' %brickname)
+    fn_original_sim = sim_topdir+'/brick_'+brickname+'.fits'
+    
+    tractor = Table.read(fn_tractor)
+    sim = Table.read(fn_sim)
+    
+    original_sim = Table.read(fn_original_sim)[startid:startid+nobj] 
+    
+    #import pdb;pdb.set_trace()
+    c1 = SkyCoord(ra=sim['ra']*u.degree, dec=sim['dec']*u.degree)
+    c2 = SkyCoord(ra=np.array(tractor['ra'])*u.degree, dec=np.array(tractor['dec'])*u.degree)
+    c3 = SkyCoord(ra=original_sim['ra']*u.degree, dec=original_sim['dec']*u.degree)
+
+    idx1, d2d, d3d = c1.match_to_catalog_sky(c2)
+    idx2, d2d2, d3d2 = c1.match_to_catalog_sky(c3)
+
+    matched = d2d.value <= angle
+    distance = d2d.value
+    tc = tractor[idx1]
+
+    ors = original_sim[idx2]
+    
+    tc.add_column(sim['gflux'],name = 'sim_gflux')
+    tc.add_column(sim['rflux'],name='sim_rflux')
+    tc.add_column(sim['zflux'],name='sim_zflux')
+    tc.add_column(ors['redshift'],name='sim_redshift')
+    tc.add_column(ors['id'],name='TARGETID')
+    tc.add_column(sim['rhalf'],name='sim_rhalf')
+    tc.add_column(sim['e1'],name='sim_e1')
+    tc.add_column(sim['e2'],name='sim_e2')
+    tc.add_column(sim['x'],name='sim_bx')
+    tc.add_column(sim['y'],name='sim_by')
+    
+    tc['detected'] = np.array(matched,dtype=np.bool)
+    tc.add_column(sim['n'],name='sim_sersic_n')
+    outf = matched_dir+name_for_randoms+brickname+'.fits'
+    tc.write(outf,format='fits',overwrite=True)
+    print('wrote matched output to '+outf)
+    #return tc
+
     
      
