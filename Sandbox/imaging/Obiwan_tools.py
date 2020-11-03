@@ -63,8 +63,9 @@ def getran_brick(brick,maxg=25):
     
 def SV_brick_match(brickname, name_for_randoms = 'matched_', startid = 0, nobj = 200, angle = 1.5/3600):
     #initial code copied from https://raw.githubusercontent.com/DriftingPig/Obi-Metallica/master/collect/SV_collect.py
-    print(brickname,rs_type)
+    
     rs_type= 'rs'+str(startid)
+    #print(brickname,rs_type)
     fn_tractor = os.path.join(topdir_tractor,'tractor',brickname[:3],brickname,rs_type,'tractor-%s.fits' %brickname)
     fn_sim = os.path.join(topdir_tractor,'obiwan',brickname[:3],brickname,rs_type,'simcat-elg-%s.fits' %brickname)
     fn_original_sim = sim_topdir+'/brick_'+brickname+'.fits'
