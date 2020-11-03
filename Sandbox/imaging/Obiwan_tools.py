@@ -1,3 +1,4 @@
+import os
 import fitsio
 import numpy as np
 from astropy.table import Column, Table
