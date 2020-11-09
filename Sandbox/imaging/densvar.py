@@ -420,7 +420,8 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
     parv = np.zeros(12*nside*nside)
     for i in range(0,len(rf)):
         px = rf['hp_idx'][i]
-        parv[px] = rf[par][i]    
+        parv[px] = rf[par][i]  
+    parv = hp.reorder(parv,r2n=True)      
 
     wp &= parv !=0
     wp &= parv*0 == 0
