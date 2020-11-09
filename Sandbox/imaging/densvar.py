@@ -429,6 +429,7 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
         vmin = np.min(parv[wp])
     if vmax is None:
         vmax = np.max(parv[wp])
+    parv = parv[wp]
     rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
     dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
     norm = sum(rh)/sum(dh)
