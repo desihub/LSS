@@ -425,6 +425,7 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
 
     wp &= parv !=0
     wp &= parv*0 == 0
+    print(len(parv[wp]))
     
     if vmin is None:
         vmin = np.min(parv[wp])
