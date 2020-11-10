@@ -535,7 +535,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
             gb[px] = rf['g_blobsky'][i]  
         gb = hp.reorder(gb,r2n=True)    
         wp &= (gb != 0)  
-        wp &= (gb > gbcut)    
+        wp &= (gb < gbcut)    
 
         
     print(len(parv[wp]))
