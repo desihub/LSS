@@ -524,7 +524,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         eds = parv['EBV']/parv['STARDENS']
         wp &= (eds < edscut)
 
-    if gbcut:
+    if gbcut is not None:
         
 
         print('applying background cut of '+str(gbcut))
@@ -532,7 +532,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         gb = np.zeros(12*nside*nside)
         for i in range(0,len(rf)):
             px = rf['hp_idx'][i]
-            gb[px] = rf[par][i]  
+            gb[px] = rf['g_blobsky'][i]  
         gb = hp.reorder(gb,r2n=True)    
         wp &= (gb != 0)  
         wp &= (gb > gbcut)    
