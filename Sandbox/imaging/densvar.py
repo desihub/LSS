@@ -532,7 +532,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
         for i in range(0,len(rf)):
             px = rf['hp_idx'][i]
             gb[px] = rf[par][i]  
-            gb = hp.reorder(parv,r2n=True)    
+        gb = hp.reorder(gb,r2n=True)    
         wp &= (gb != 0)  
         wp &= (gb > gbcut)    
 
