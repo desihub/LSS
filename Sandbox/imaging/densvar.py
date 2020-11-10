@@ -527,6 +527,7 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     if gbcut:
         
 
+        print('applying background cut of '+str(gbcut))
         rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
         gb = np.zeros(12*nside*nside)
         for i in range(0,len(rf)):
