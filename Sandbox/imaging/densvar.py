@@ -353,7 +353,7 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,nbin=10,weights=None,titl=''):        
+def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     #test against Rongpu's residuals
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
@@ -371,6 +371,7 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
     if rfluxcut:
         wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
         ft = ft[wg]
+        
 
     
             
@@ -415,6 +416,9 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
     if edscut:
         eds = parv['EBV']/parv['STARDENS']
         wp &= (eds < edscut)
+    
+
+        
 
     rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
     parv = np.zeros(12*nside*nside)
@@ -519,6 +523,18 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     if edscut:
         eds = parv['EBV']/parv['STARDENS']
         wp &= (eds < edscut)
+
+    if gbcut:
+        
+
+        rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
+        gb = np.zeros(12*nside*nside)
+        for i in range(0,len(rf)):
+            px = rf['hp_idx'][i]
+            gb[px] = rf[par][i]  
+            gb = hp.reorder(parv,r2n=True)    
+        wp &= (gb != 0)  
+        wp &= (gb > gbcut)    
 
         
     print(len(parv[wp]))
