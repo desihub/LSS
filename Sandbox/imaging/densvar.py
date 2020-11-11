@@ -353,6 +353,107 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
+def densvsinput_pix(type,parl,wsel,reg=None,ff='targetDR9m42.fits',xlab='',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+    #input custom map/mask
+    ft = fitsio.read(sdir+type+ff)
+    print(len(ft))
+    rl = rall
+    if reg:
+        wr = rall['PHOTSYS'] == reg
+        rl = rl[wr]
+        wd = ft['PHOTSYS'] == reg
+        ft = ft[wd]
+    if gfluxcut:
+        wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
+        print(len(ft))      
+        ft = ft[wg]
+        print(len(ft))
+    if rfluxcut:
+        wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
+        ft = ft[wg]
+        
+
+    
+            
+        
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    pixlg = np.zeros(12*nside*nside)
+
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    for pix in rpix:
+        pixlr[pix] += 1.
+    print('randoms done')
+    for i in range(0,len(dpix)): 
+        pix = dpix[i]
+        pixlg[pix] += 1.
+    
+    wp = wsel
+    wp &= (pixlr > 0) & (weights*0 == 0)
+
+    parv = fitsio.read(pixfn)
+    ebv = parv['EBV']
+    sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+    print(len(parv[wp]))
+    if sn2cut:
+        wp &= (sn2tf > sn2cut)
+        
+    if fpsfcut:
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        fpsf = pixlgp/pixlg
+        wp &= (fpsf < fpsfcut)
+    if ebvcut:
+        wp &= (parv['EBV'] < ebvcut)
+
+    if edscut:
+        eds = parv['EBV']/parv['STARDENS']
+        wp &= (eds < edscut)
+    
+
+        
+
+    parv = parl 
+
+    wp &= parv !=0
+    wp &= parv*0 == 0
+    print(len(parv[wp]))
+    
+    if vmin is None:
+        vmin = np.min(parv[wp])
+    if vmax is None:
+        vmax = np.max(parv[wp])
+    parv = parv[wp]
+    rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
+    dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
+    norm = sum(rh)/sum(dh)
+    sv = dh/rh*norm
+    ep = np.sqrt(dh)/rh*norm
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+
+    plt.errorbar(bc,sv-1.,ep,fmt='ko')
+    plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
+    plt.ylim(-.3,.3)
+    plt.xlabel(xlab)
+    plt.ylabel('Ngal/<Ngal> - 1')
+    plt.title(type+' in '+reg + ' footprint, using pixelized map'+titl)
+    plt.show()
+    wv = (parv>=vmin) & (parv <=vmax)
+    frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
+    print('fraction of randoms not included in plot: '+str(frac))
+    return bc,sv,ep
+
+
 def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     #test against Rongpu's residuals
     ft = fitsio.read(sdir+type+ff)
