@@ -7,8 +7,8 @@ from astropy import units as u
 
 truthf = '/project/projectdirs/desi/users/ajross/MCdata/seed.fits'
 
-ranf = '/global/cscratch1/sd/adamyers/dr9m-sep26-2020/0.42.0/randoms/resolve/randoms-1-0.fits'
-#file has 63283969 entries
+ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/randoms/resolve/randoms-randomized-1.fits'
+
 
 #obiout = os.environ['obiwan_out'] #get this setup at some point
 
