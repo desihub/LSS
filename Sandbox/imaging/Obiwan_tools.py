@@ -22,6 +22,26 @@ sim_topdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/divided_ra
 matched_dir = topdir+'matched_obiwan/'
 
 
+def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0,ebvx=0.15):
+    kr = ['PHOTSYS','BRICKNAME','EBV']
+    rall = fitsio.read(ranf,columns=kr)
+    wr = rall['PHOTSYS'] == reg
+    print(len(rall))
+    rall = rall[wr]
+    print(len(rall))
+    bl = []
+    es = (ebvx-ebvm)/nbrick
+    for i in range(0,nbrick):
+        we = rall['EBV'] > i*es
+        we &= rall['EBV'] < (i+1)*es
+        re = rall[we]
+        bn = re[0]['BRICKNAME']
+        print(bn)
+        bl.append(bn)
+        
+    
+    
+
 def getran_brick(brick,maxg=25):
     #columns to consider from imaging randoms
     kr = ['RA','DEC','TARGETID','BRICKNAME'] #minimum number needed for now
