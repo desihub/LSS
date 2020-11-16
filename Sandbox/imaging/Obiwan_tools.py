@@ -22,7 +22,7 @@ sim_topdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/divided_ra
 matched_dir = topdir+'matched_obiwan/'
 
 
-def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0,ebvx=0.15):
+def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
     kr = ['PHOTSYS','BRICKNAME','EBV']
     rall = fitsio.read(ranf,columns=kr)
     wr = rall['PHOTSYS'] == reg
