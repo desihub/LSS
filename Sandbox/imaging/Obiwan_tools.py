@@ -41,7 +41,8 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
         	bl.append(bn)
         else:
             print(i*es)
-       
+    outf = 'bricklist_100ebv.txt'
+    numpy.savetxt(outf, bl)   
         
         
     
