@@ -32,10 +32,13 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0,ebvx=0.15):
     bl = []
     es = (ebvx-ebvm)/nbrick
     for i in range(0,nbrick):
-        we = rall['EBV'] > i*es
-        we &= rall['EBV'] < (i+1)*es
+        we = rall['EBV'] > i*es+ebvm
+        we &= rall['EBV'] < (i+1)*es+ebmv
         re = rall[we]
-        bn = re[0]['BRICKNAME']
+        if len(re) > 0:
+        	bn = re[0]['BRICKNAME']
+        else:
+            print(i*es)
         print(bn)
         bl.append(bn)
         
