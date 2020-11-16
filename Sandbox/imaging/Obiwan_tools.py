@@ -51,7 +51,7 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
     
     
 
-def getran_brick(brick,maxg=25):
+def getran_brick(brick,maxg=24,ming=22):
     #columns to consider from imaging randoms
     kr = ['RA','DEC','TARGETID','BRICKNAME'] #minimum number needed for now
     #kr = ['RELEASE','BRICKID','BRICKNAME','RA','DEC','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R',\
@@ -68,6 +68,7 @@ def getran_brick(brick,maxg=25):
     tf = fitsio.read(truthf,columns=knames)
     #cut faint objects from truth
     w = tf['g'] < maxg
+    w &= tf['g'] > ming
     tf = tf[w]
     #select a random selection form the truth data
     tb = np.random.choice(tf,len(rb))
