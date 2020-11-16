@@ -31,6 +31,8 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
     print(len(rall))
     bl = []
     es = (ebvx-ebvm)/nbrick
+    outf = 'bricklist_100ebv.txt'
+    fo = open(outf,'w')
     for i in range(0,nbrick):
         we = rall['EBV'] > i*es+ebvm
         we &= rall['EBV'] < (i+1)*es+ebvm
@@ -39,10 +41,11 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
         	bn = re[0]['BRICKNAME']
         	print(bn)
         	bl.append(bn)
+        	fo.write(bn+'\n')
         else:
             print(i*es)
-    outf = 'bricklist_100ebv.txt'
-    np.savetxt(outf, bl)   
+    
+    fo.close()   
         
         
     
