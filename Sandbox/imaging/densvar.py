@@ -44,7 +44,7 @@ def sel_reg(ra,dec,reg):
         w &= wra
     if reg == 'DS':
         w = ~wra
-        w &= dec > -30
+        w &= dec > -25
     return w        
 
 #def split_reg():
@@ -58,7 +58,7 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
-def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
+def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
     if fnc is None:
         ff = fidf
     else:
@@ -108,9 +108,16 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
     if reg == 'DS':
         wr = ra > 250
         ra[wr] -=360
-    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    if vx == None:
+        vx = np.max(od)
+    if vm == None:
+        vm = np.min(od)    
+
+    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
+    plt.colorbar()
+    plt.title('relative '+type+' density')
     plt.show()
 
 def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
