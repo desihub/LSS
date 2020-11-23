@@ -15,7 +15,7 @@ R_Z=1.211
 
 dr = '9'
 
-fidf = 'targetDR9m42.fits'
+fidf = 'targetDR9m44.fits'
 ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits'
 
 if dr == '9':
