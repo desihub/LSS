@@ -35,7 +35,7 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
     dd = dd[keepelg] 
     return dd       
 
-rall = mask(rall)    
+#rall = mask(rall)    
 
 def radec2thphi(ra,dec):
     return (-dec+90.)*np.pi/180.,ra*np.pi/180.
@@ -335,8 +335,11 @@ def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
         ff = fnc    
 
     ft = fitsio.read(sdir+type+ff)
+    ft = mask(ft)
     print(len(ft))
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par])
+    rl = mask(rl)
+    print(len(rl))
     if reg == None:
         reg = 'All'
     else:    
@@ -590,7 +593,12 @@ def densvsimpar_pix(type,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,e
         ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
+    ft = mask(ft)
+    print(len(ft))
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
+    print(len(rl))
+    rl = mask(rl)
+    print(len(rl))
     if reg:
         wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
