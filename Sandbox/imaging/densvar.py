@@ -60,7 +60,7 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
         ff = fidf
     else:
         ff = fnc    
-    ft = fitsio.read(sdir+type+ff)
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS'])
     print(len(ft))
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
@@ -97,6 +97,8 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
     od = od/np.mean(od)
     ra,dec = thphi2radec(th,phi)
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
     plt.show()
 
 def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
@@ -155,6 +157,9 @@ def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
     
     ra,dec = thphi2radec(th,phi)
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+
     plt.show()
 
 
@@ -204,6 +209,9 @@ def plot_brickdens(type,reg=False,sz=.2,vx=2):
     od = od/np.mean(od)
     decp = np.array(decp)
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+
     plt.show()
 
 def plot_brickprop(type,prop,reg=False,sz=.2,vx=None,vm=None):
@@ -248,6 +256,9 @@ def plot_brickprop(type,prop,reg=False,sz=.2,vx=None,vm=None):
     decp = np.array(decp)
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title(prop +' averaged in bricks')
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+
     plt.show()
 
 def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
@@ -294,6 +305,9 @@ def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
     decp = np.array(decp)
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title('variance in ' +prop +' per brick')
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+
     plt.show()
 
 def plot_brickprop_stdper(type,prop,reg=False,sz=.2,vx=None,vm=None,minn = 10):
@@ -344,6 +358,9 @@ def plot_brickprop_stdper(type,prop,reg=False,sz=.2,vx=None,vm=None,minn = 10):
     rap = np.array(rap)
     plt.scatter(rap[wo],np.sin(decp[wo]*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
     plt.title('variance in ' +prop +' per brick')
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+
     plt.show()
 
 
