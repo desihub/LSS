@@ -35,7 +35,7 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 		   print(key+' not in target file!')
 	bs = targetmask.desi_mask[type]  
 	
-	outf = outdir+'/'+type +fo   
+	outf = outdir+type +fo   
 	print('file will be written to '+outf)  
 	
 	data = fitsio.read(fns[0],columns=keys)
