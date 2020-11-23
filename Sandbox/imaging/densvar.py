@@ -35,6 +35,17 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
     dd = dd[keepelg] 
     return dd       
 
+
+def sel_reg(ra,dec,reg):
+    wra = (ra > 100-dec)
+    wra &= (ra < 280 +20)
+    if reg == 'DN':
+        w = dec < 32.375
+        w &= wra
+    if reg == 'DS':
+        w = ~wra
+    return w        
+
 #rall = mask(rall)    
 
 def radec2thphi(ra,dec):
@@ -53,9 +64,14 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
     print(len(ft))
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
-        wr = rl['PHOTSYS'] == reg
-        rl = rl[wr]
-        wd = ft['PHOTSYS'] == reg
+        if reg == 'S' or reg == 'N':
+            wr = rl['PHOTSYS'] == reg
+            wd = ft['PHOTSYS'] == reg
+        else:
+            wr = selreg(rl['RA'],rl['DEC'],reg)
+            wd = selreg(rt['RA'],rt['DEC'],reg)
+            
+        rl = rl[wr]        
         ft = ft[wd]
     rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
