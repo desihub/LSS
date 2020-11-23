@@ -38,7 +38,7 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	    print(i)
 	    datan = fitsio.read(fns[i],columns=keys)
 	    datan = datan[(datan['DESI_TARGET'] & bs)>0]
-	    data = np.hstack((data,datan)
+	    data = np.hstack((data,datan))
 	
 	outf = outdir+'/'+type +fo
 	fitsio.write(outf,data,clobber=True)
