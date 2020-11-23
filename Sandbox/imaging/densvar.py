@@ -68,8 +68,8 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
             wr = rl['PHOTSYS'] == reg
             wd = ft['PHOTSYS'] == reg
         else:
-            wr = selreg(rl['RA'],rl['DEC'],reg)
-            wd = selreg(rt['RA'],rt['DEC'],reg)
+            wr = sel_reg(rl['RA'],rl['DEC'],reg)
+            wd = sel_reg(rt['RA'],rt['DEC'],reg)
             
         rl = rl[wr]        
         ft = ft[wd]
