@@ -10,7 +10,7 @@ import astropy.io.fits as fits
 
 dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
 dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
-targroot = '/project/projectdirs/desi/target/catalogs/dr9m/0.44.0/main/resolve/'
+targroot = '/project/projectdirs/desi/target/catalogs/dr9m/0.44.0/targets/main/resolve/'
 
 sfs = glob.glob(dirsweeps+'sweep*')
 sfn = glob.glob(dirsweepn+'sweep*')
