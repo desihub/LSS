@@ -44,6 +44,7 @@ def sel_reg(ra,dec,reg):
         w &= wra
     if reg == 'DS':
         w = ~wra
+        w &= dec > -30
     return w        
 
 #rall = mask(rall)    
