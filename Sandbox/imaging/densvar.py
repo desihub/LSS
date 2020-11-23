@@ -51,9 +51,9 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
         ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rl = rall
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
-        wr = rall['PHOTSYS'] == reg
+        wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
@@ -147,11 +147,15 @@ def plot_brickdens(type,reg=False,sz=.2,vx=2):
     brickdictrd = {}
     for i in range(0,len(brickf)):
         brickdictrd[brickf[i]['BRICKID']] = (brickf[i]['RA'],brickf[i]['DEC'])
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rl = rall
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
-        wr = rall['PHOTSYS'] == reg
+        wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
@@ -337,7 +341,7 @@ def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
     ft = fitsio.read(sdir+type+ff)
     ft = mask(ft)
     print(len(ft))
-    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par])
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par,'NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     rl = mask(rl)
     print(len(rl))
     if reg == None:
@@ -595,7 +599,7 @@ def densvsimpar_pix(type,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,e
     print(len(ft))
     ft = mask(ft)
     print(len(ft))
-    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     print(len(rl))
     rl = mask(rl)
     print(len(rl))
