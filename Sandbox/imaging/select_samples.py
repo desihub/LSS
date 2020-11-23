@@ -15,6 +15,8 @@ targroot = '/project/projectdirs/desi/target/catalogs/dr9m/0.44.0/targets/main/r
 sfs = glob.glob(dirsweeps+'sweep*')
 sfn = glob.glob(dirsweepn+'sweep*')
 
+outdir = '/project/projectdirs/desi/users/ajross/dr9/'
+
 def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
 	print(targroot+prog)
@@ -31,7 +33,10 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 		   d = f[key]
 	   except:
 		   print(key+' not in target file!')
-	bs = targetmask.desi_mask[type]       
+	bs = targetmask.desi_mask[type]  
+	
+	outf = outdir+'/'+type +fo   
+	print('file will be written to '+outf)  
 	
 	data = fitsio.read(fns[0],columns=keys)
 	data = data[(data['DESI_TARGET'] & bs)>0]
@@ -40,8 +45,9 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	    datan = fitsio.read(fns[i],columns=keys)
 	    datan = datan[(datan['DESI_TARGET'] & bs)>0]
 	    data = np.hstack((data,datan))
+	    print(len(data))
 	
-	outf = outdir+'/'+type +fo
+	
 	fitsio.write(outf,data,clobber=True)
 	print('wrote to '+outf)
 	del data
