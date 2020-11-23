@@ -38,7 +38,7 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
 
 def sel_reg(ra,dec,reg):
     wra = (ra > 100-dec)
-    wra &= (ra < 280 +20)
+    wra &= (ra < 280 +dec)
     if reg == 'DN':
         w = dec < 32.375
         w &= wra
