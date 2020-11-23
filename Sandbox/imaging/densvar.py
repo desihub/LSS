@@ -47,6 +47,8 @@ def sel_reg(ra,dec,reg):
         w &= dec > -30
     return w        
 
+#def split_reg():
+
 #rall = mask(rall)    
 
 def radec2thphi(ra,dec):
@@ -61,9 +63,15 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
         ff = fidf
     else:
         ff = fnc    
-    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS'])
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    
     print(len(ft))
-    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
+    ft = mask(ft)
+    print(len(ft))
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    print(len(rl))
+    rl = mask(rl)
+    print(len(rl))
     if reg:
         if reg == 'S' or reg == 'N':
             wr = rl['PHOTSYS'] == reg
