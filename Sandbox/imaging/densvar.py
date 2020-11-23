@@ -97,7 +97,7 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
     od = pixlg[wp]/pixlr[wp]*weights[wp]
     od = od/np.mean(od)
     ra,dec = thphi2radec(th,phi)
-    if reg 'DS':
+    if reg == 'DS':
         wr = ra > 250
         ra[wr] -=360
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
