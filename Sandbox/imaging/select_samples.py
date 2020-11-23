@@ -10,14 +10,15 @@ import astropy.io.fits as fits
 
 dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
 dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
-targroot = '/project/projectdirs/desi/target/catalogs/dr9m/0.44.0/targets/'
+targroot = '/project/projectdirs/desi/target/catalogs/dr9m/0.44.0/main/resolve/'
 
 sfs = glob.glob(dirsweeps+'sweep*')
 sfn = glob.glob(dirsweepn+'sweep*')
 
-def gather_targets(type,fo='targetDR9m44.fits'):
+def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
-	fns = glob.glob(targroot+'*.fits')
+	
+	fns = glob.glob(targroot+prog'*.fits')
 	keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
 	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
 	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET']
