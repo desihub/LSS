@@ -120,19 +120,25 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
     plt.title('relative '+type+' density')
     plt.show()
 
-def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
-    if fnc is None:
-        ff = fidf
-    else:
-        ff = fnc    
-
-    ft = fitsio.read(sdir+type+ff)
+def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    
     print(len(ft))
-    rl = rall
+    ft = mask(ft)
+    print(len(ft))
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    print(len(rl))
+    rl = mask(rl)
+    print(len(rl))
     if reg:
-        wr = rall['PHOTSYS'] == reg
-        rl = rl[wr]
-        wd = ft['PHOTSYS'] == reg
+        if reg == 'S' or reg == 'N':
+            wr = rl['PHOTSYS'] == reg
+            wd = ft['PHOTSYS'] == reg
+        else:
+            wr = sel_reg(rl['RA'],rl['DEC'],reg)
+            wd = sel_reg(ft['RA'],ft['DEC'],reg)
+            
+        rl = rl[wr]        
         ft = ft[wd]
     rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
@@ -173,11 +179,17 @@ def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
     pixls = np.array(pixls).astype(int)        
     th,phi = hp.pix2ang(nside,pixls,nest=nest)
     od = parv
+    if vx == None:
+        vx = np.max(od)
+    if vm == None:
+        vm = np.min(od)    
     
     ra,dec = thphi2radec(th,phi)
-    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
+    plt.colorbar()
+    plt.title('relative '+par)
 
     plt.show()
 
