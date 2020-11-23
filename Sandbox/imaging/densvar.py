@@ -337,6 +337,7 @@ def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
         ff = fidf
     else:
         ff = fnc    
+    print('using '+sdir+type+ff)    
 
     ft = fitsio.read(sdir+type+ff)
     ft = mask(ft)
