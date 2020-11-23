@@ -8,19 +8,14 @@ from desitarget import cuts
 from desitarget import targetmask
 import astropy.io.fits as fits
 
-dr = '9'
-if dr == '8':
-    dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/sweep/8.0/'
-    dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr8/north/sweep/8.0/'
-    targroot = '/project/projectdirs/desi/target/catalogs/dr8/0.31.1/targets/main/resolve/targets-dr8'
-if dr == '9':
-    outdir = '/project/projectdirs/desi/users/ajross/dr9/'
-    targroot = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/targets/main/resolve/dark/'
-if dr == '8':
-    sfs = glob.glob(dirsweeps+'sweep*')
-    sfn = glob.glob(dirsweepn+'sweep*')
+dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
+dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
+targroot = '/project/projectdirs/desi/target/catalogs/drm/0.44.0/targets/
 
-def gather_targets(type,fo='targetDR9m42wivar.fits'):
+sfs = glob.glob(dirsweeps+'sweep*')
+sfn = glob.glob(dirsweepn+'sweep*')
+
+def gather_targets(type,fo='targetDR9m44.fits'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
 	fns = glob.glob(targroot+'*.fits')
 	keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
@@ -222,16 +217,20 @@ def puttype(type,south=True,ebvfac=1.,Rv=3.1):
   
     
 if __name__ == '__main__':
+	#get target catalogs for the main dark time programs
+	gather_targets('ELG')
+	gather_targets('LRG')
+	gather_targets('QSO')
 	#fluxlim = float(str(sys.argv[1]))
 	#putstar(fluxlim)
 	#this was meant to test dependence with changes to extinction parameters explicitly
-	ebf = 1
-	rv = 2.6
-	puttype('LRG',ebvfac=ebf,Rv=rv)
-	print('LRG south done') 
-	puttype('LRG',south=False,ebvfac=ebf,Rv=rv)  
-	print('LRG north done')
-	puttype('ELG',ebvfac=ebf,Rv=rv)
-	print('ELG south done') 
-	puttype('ELG',south=False,ebvfac=ebf,Rv=rv)  
-	print('ELG north done')	
+	#ebf = 1
+	#rv = 2.6
+	#puttype('LRG',ebvfac=ebf,Rv=rv)
+	#print('LRG south done') 
+	#puttype('LRG',south=False,ebvfac=ebf,Rv=rv)  
+	#print('LRG north done')
+	#puttype('ELG',ebvfac=ebf,Rv=rv)
+	#print('ELG south done') 
+	#puttype('ELG',south=False,ebvfac=ebf,Rv=rv)  
+	#print('ELG north done')	
