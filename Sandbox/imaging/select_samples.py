@@ -19,6 +19,7 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
 	print(targroot+prog)
 	fns = glob.glob(targroot+prog+'/*.fits')
+	print('data is split into '+len(fns)+' healpix files')
 	keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
 	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
 	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET']
@@ -28,34 +29,47 @@ def gather_targets(type,fo='targetDR9m44.fits',prog='dark'):
 	   try:
 		   d = f[key]
 	   except:
-		   print(key)
+		   print(key+' not in target file!')
 	bs = targetmask.desi_mask[type]       
-	#put information together, takes a couple of minutes
-	ncat     = len(fns)
-	mydict   = {}
-	for key in keys:
-		mydict[key] = []
 	
-	for i in range(0,ncat):
-		data = fitsio.read(fns[i],columns=keys)
-		data = data[(data['DESI_TARGET'] & bs)>0]
-		for key in keys:
-			mydict[key] += data[key].tolist()
-		print(i)
-		
-	print(str(len(mydict['RA']))+' '+type)
+	data = fitsio.read(fns[0],columns=keys)
+	data = data[(data['DESI_TARGET'] & bs)>0]
+	for i in range(1,ncat):
+	    print(i)
+	    datan = fitsio.read(fns[i],columns=keys)
+	    datan = datan[(datan['DESI_TARGET'] & bs)>0]
+	    data = np.hstack((data,datan)
 	
-	outf = outdir+'/'+type +fo 
-	collist = []
-	for key in keys:
-		fmt = fits.open(fns[0])[1].columns[key].format
-		collist.append(fits.Column(name=key,format=fmt,array=mydict[key]))
-		print(key)
-	hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
-	hdu.writeto(outf,overwrite=True)
+	outf = outdir+'/'+type +fo
+	fitsio.write(outf,data,clobber=True)
 	print('wrote to '+outf)
-	del collist
-	del mydict
+	del data
+# 	put information together, takes a couple of minutes
+# 	ncat     = len(fns)
+# 	mydict   = {}
+# 	for key in keys:
+# 		mydict[key] = []
+# 	
+# 	for i in range(0,ncat):
+# 		data = fitsio.read(fns[i],columns=keys)
+# 		data = data[(data['DESI_TARGET'] & bs)>0]
+# 		for key in keys:
+# 			mydict[key] += data[key].tolist()
+# 		print(i)
+# 		
+# 	print(str(len(mydict['RA']))+' '+type)
+# 	
+# 	 
+# 	collist = []
+# 	for key in keys:
+# 		fmt = fits.open(fns[0])[1].columns[key].format
+# 		collist.append(fits.Column(name=key,format=fmt,array=mydict[key]))
+# 		print(key)
+# 	hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
+# 	hdu.writeto(outf,overwrite=True)
+# 	print('wrote to '+outf)
+# 	del collist
+# 	del mydict
 	
 def starsel_sweep(f,gfluxmin):
     w = f['TYPE'] == 'PSF '
