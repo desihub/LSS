@@ -16,11 +16,12 @@ R_Z=1.211
 dr = '9'
 
 fidf = 'targetDR9m42.fits'
+ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits'
 
 if dr == '9':
     #this will be needed no matter the sample, might want more
-    rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
-    print(len(rall))
+    #rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
+    #print(len(rall))
     sdir = '/project/projectdirs/desi/users/ajross/dr9/'
 
 def mask(dd,mb=[1,5,6,7,11,12,13]):
@@ -335,11 +336,11 @@ def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
 
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rl = rall
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par])
     if reg == None:
         reg = 'All'
     else:    
-        wr = rall['PHOTSYS'] == reg
+        wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
@@ -376,9 +377,9 @@ def densvsinput_pix(type,parl,wsel,reg=None,fnc=None,xlab='',vmin=None,vmax=None
 
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rl = rall
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
-        wr = rall['PHOTSYS'] == reg
+        wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
@@ -589,9 +590,9 @@ def densvsimpar_pix(type,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,e
         ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
-    rl = rall
+    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS'])
     if reg:
-        wr = rall['PHOTSYS'] == reg
+        wr = rl['PHOTSYS'] == reg
         rl = rl[wr]
         wd = ft['PHOTSYS'] == reg
         ft = ft[wd]
