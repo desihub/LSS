@@ -121,6 +121,10 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
     plt.show()
 
 def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
     ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     
     print(len(ft))
