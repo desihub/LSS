@@ -4,7 +4,7 @@ import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
 
-pixfn      = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/pixweight/main/resolve/dark/pixweight-dark.fits'
+pixfn      = '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/pixweight/main/resolve/dark/pixweight-dark.fits'
 hdr        = fits.getheader(pixfn,1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 print(nside,nest)
@@ -15,11 +15,11 @@ R_Z=1.211
 
 dr = '9'
 
-print('test')
+fidf = 'targetDR9m42.fits'
 
 if dr == '9':
     #this will be needed no matter the sample, might want more
-    rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.42.0/randoms/resolve/randoms-randomized-1.fits')
+    rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
     print(len(rall))
     sdir = '/project/projectdirs/desi/users/ajross/dr9/'
 
@@ -43,7 +43,11 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
-def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
+def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=2,weights=None):
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -78,7 +82,12 @@ def plot_hpdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
-def plot_hpprop(par,type='ELG',reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weights=None):
+def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=2,weights=None):
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -132,7 +141,7 @@ def plot_hpprop(par,type='ELG',reg=False,ff='targetDR9m42.fits',sz=.2,vx=2,weigh
     plt.show()
 
 
-def plot_brickdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
+def plot_brickdens(type,reg=False,sz=.2,vx=2):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -176,7 +185,7 @@ def plot_brickdens(type,reg=False,ff='targetDR9m42.fits',sz=.2,vx=2):
     plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
     plt.show()
 
-def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None):
+def plot_brickprop(type,prop,reg=False,sz=.2,vx=None,vm=None):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -220,7 +229,7 @@ def plot_brickprop(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=N
     plt.title(prop +' averaged in bricks')
     plt.show()
 
-def plot_brickpropvar(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None):
+def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -266,7 +275,7 @@ def plot_brickpropvar(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,v
     plt.title('variance in ' +prop +' per brick')
     plt.show()
 
-def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=None,vm=None,minn = 10):
+def plot_brickprop_stdper(type,prop,reg=False,sz=.2,vx=None,vm=None,minn = 10):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -318,7 +327,12 @@ def plot_brickprop_stdper(type,prop,reg=False,ff='targetDR9m42.fits',sz=.2,vx=No
 
 
 
-def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,nbin=10):
+def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -353,8 +367,13 @@ def densvsimpar_ran(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     frac = len(rl[~wv])/len(rl)
     print('fraction of randoms not included in plot: '+str(frac))
 
-def densvsinput_pix(type,parl,wsel,reg=None,ff='targetDR9m42.fits',xlab='',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsinput_pix(type,parl,wsel,reg=None,fnc=None,xlab='',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     #input custom map/mask
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -454,8 +473,13 @@ def densvsinput_pix(type,parl,wsel,reg=None,ff='targetDR9m42.fits',xlab='',vmin=
     return bc,sv,ep
 
 
-def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsskyres_pix(type,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     #test against Rongpu's residuals
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -558,7 +582,11 @@ def densvsskyres_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=Non
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
-def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(type,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
@@ -699,7 +727,11 @@ def densvsimpar_pix(type,par,reg=None,ff='targetDR9m42.fits',vmin=None,vmax=None
     return bc,sv,ep
    
 #plot density vs depth with healpix values
-def plotvshp_compmc(type,sys,rng,mcl=None,ws=None,reg=None,ff='targetDR9m42.fits',gdzm=0,ebvm=100,title='',effac=1.,mingd=0,maxgd=1.e6,minpsfg=0,maxpsfg=100,south=True):
+def plotvshp_compmc(type,sys,rng,mcl=None,ws=None,reg=None,fnc=None,gdzm=0,ebvm=100,title='',effac=1.,mingd=0,maxgd=1.e6,minpsfg=0,maxpsfg=100,south=True):
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
     ft = fitsio.read(sdir+type+ff)
     print(len(ft))
     rl = rall
