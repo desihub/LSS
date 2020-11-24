@@ -189,11 +189,14 @@ def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=
         vm = np.min(od)    
     
     ra,dec = thphi2radec(th,phi)
+    if reg == 'DS':
+        wr = ra > 250
+        ra[wr] -= 360
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
     plt.colorbar()
-    plt.title('relative '+par)
+    plt.title(par)
 
     plt.show()
 
