@@ -252,12 +252,16 @@ def plot_brickdens(type,reg=False,sz=.2,vx=2):
 
     plt.show()
 
-def plot_brickprop(type,prop,reg=False,sz=.2,vx=None,vm=None):
+def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
         brickdictrd[brickf[i]['BRICKID']] = (brickf[i]['RA'],brickf[i]['DEC'])
-    ft = fitsio.read(sdir+type+ff)
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     print(len(ft))
     if reg:
         wd = ft['PHOTSYS'] == reg
