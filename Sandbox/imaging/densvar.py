@@ -261,7 +261,7 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None):
         ff = fidf
     else:
         ff = fnc    
-    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','BRICKID'])
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','BRICKID',prop])
     print(len(ft))
     if reg:
         wd = ft['PHOTSYS'] == reg
