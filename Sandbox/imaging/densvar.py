@@ -300,6 +300,7 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None):
     plt.title(prop +' averaged in bricks')
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
+    plt.colorbar()
 
     plt.show()
 
@@ -349,6 +350,7 @@ def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
     plt.title('variance in ' +prop +' per brick')
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
+    plt.colobar()
 
     plt.show()
 
@@ -399,7 +401,7 @@ def plot_brickprop_stdper(type,prop,reg=False,sz=.2,vx=None,vm=None,minn = 10):
     decp = np.array(decp)
     rap = np.array(rap)
     plt.scatter(rap[wo],np.sin(decp[wo]*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
-    plt.title('variance in ' +prop +' per brick')
+    plt.title('variance/mean in ' +prop +' per brick')
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
 
