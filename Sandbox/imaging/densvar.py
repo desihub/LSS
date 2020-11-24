@@ -304,12 +304,16 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None):
 
     plt.show()
 
-def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
+def plot_brickpropvar(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
         brickdictrd[brickf[i]['BRICKID']] = (brickf[i]['RA'],brickf[i]['DEC'])
-    ft = fitsio.read(sdir+type+ff)
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','BRICKID',prop])
     print(len(ft))
     if reg:
         wd = ft['PHOTSYS'] == reg
@@ -354,12 +358,16 @@ def plot_brickpropvar(type,prop,reg=False,sz=.2,vx=None,vm=None):
 
     plt.show()
 
-def plot_brickprop_stdper(type,prop,reg=False,sz=.2,vx=None,vm=None,minn = 10):
+def plot_brickprop_stdper(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,minn = 10):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
         brickdictrd[brickf[i]['BRICKID']] = (brickf[i]['RA'],brickf[i]['DEC'])
-    ft = fitsio.read(sdir+type+ff)
+    if fnc is None:
+        ff = fidf
+    else:
+        ff = fnc    
+    ft = fitsio.read(sdir+type+ff,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','BRICKID',prop])
     print(len(ft))
     if reg:
         wd = ft['PHOTSYS'] == reg
