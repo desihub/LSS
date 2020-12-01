@@ -298,19 +298,21 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90
     decp = np.array(decp)
     
     
-    plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
-    plt.title(prop +' averaged in bricks')
-    plt.xlabel('RA')
-    plt.ylabel('DEC')
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, .8, .8])
+    ax.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)
+    ax.set_title(prop +' averaged in bricks')
+    ax.set_xlabel('RA')
+    ax.set_ylabel('DEC')
     yt = np.arange(decmin,decmax,decsp)
     yl = []
     for i in range(0,len(yt)):
         yl.append(str(yt[i]))
-    plt.yticks(np.sin(yt),yl)
+    ax.set_yticks(np.sin(yt),yl)
     rarn = np.max(rap)/90.-np.min(rap)/90.
     ar = (np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))/rarn
     print(ar,rarn,np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))
-    plt.axes().set_aspect(ar*180)
+    ax.set_aspect(ar*180)
     plt.colorbar()
 
     plt.show()
