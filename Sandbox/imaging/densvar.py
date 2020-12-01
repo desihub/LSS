@@ -308,12 +308,13 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90
     yl = []
     for i in range(0,len(yt)):
         yl.append(str(yt[i]))
-    ax.set_yticks(np.sin(yt),yl)
+    ax.set_yticks(np.sin(yt))
+    ax.set_yticklabels(yl)
     rarn = np.max(rap)/90.-np.min(rap)/90.
     ar = (np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))/rarn
     print(ar,rarn,np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))
     ax.set_aspect(ar*180)
-    plt.colorbar()
+    ax.colorbar()
 
     plt.show()
 
