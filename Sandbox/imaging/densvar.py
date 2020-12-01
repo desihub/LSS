@@ -309,6 +309,7 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90
     plt.yticks(np.sin(yt),yl)
     rarn = np.max(rap)/90.-np.min(rap)/90.
     ar = (np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))/rarn
+    print(ar,rarn,np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmin))
     plt.axes().set_aspect(ar)
     plt.colorbar()
 
