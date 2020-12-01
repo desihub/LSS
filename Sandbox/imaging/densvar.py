@@ -252,7 +252,7 @@ def plot_brickdens(type,reg=False,sz=.2,vx=2):
 
     plt.show()
 
-def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90,decmax=90,decsp=30):
+def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90,decmax=91,decsp=30):
     brickf = fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-bricks.fits.gz') 
     brickdictrd = {}
     for i in range(0,len(brickf)):
@@ -306,7 +306,10 @@ def plot_brickprop(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,decmin=-90
     yl = []
     for i in range(0,len(yt)):
         yl.append(str(yt[i]))
-    plt.yticks(np.sin(np.pi/180*np.arange(-90,91,30)),yl)
+    plt.yticks(np.sin(yt),yl)
+    rarn = np.max(rap)/90.-np.min(rap)/90.
+    ar = (np.sin(np.pi/180.*decmax)-np.sin(np.pi/180.*decmax))/rarn
+    plt.axes().set_aspect(ar)
     plt.colorbar()
 
     plt.show()
