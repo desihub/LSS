@@ -183,7 +183,8 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	if test == 'test':
 		e2edir = '/project/projectdirs/desi/users/ajross/catalogs/test/'
 	else:
-		e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
+		e2edir ='/global/cfs/cdirs/desi/datachallenge/onepercent/catalogs/'
+		#e2edir = '/global/homes/m/mjwilson/desi/survey-validation/svdc-spring2020'+ver+'-onepercent/run/catalogs/'
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
@@ -194,7 +195,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)+pgw
 	ifiled = dircz+'g'+so+'4xi.dat'
 	fo = open(ifiled,'w')
-	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
+	w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 	if pg != -1:
 		w &= (df['PROGRAM'] & 2**pg > 0)
 	df = df[w]
@@ -208,7 +209,7 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	df = fitsio.read(e2edir+program+'/'+type+'_oneper'+truez+'_clus.ran.fits')
 	ifiler = dircz+'r'+so+'4xi.dat'
 	fo = open(ifiler,'w')
-	w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
+	w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 	if pg != -1:
 		w &= (df['PROGRAM'] & 2**pg > 0)
 
@@ -232,95 +233,102 @@ def prep4czxi(type,zmin,zmax,program='dark',truez='',ver='g',fkp=True,test='',mi
 	fo.close()
 
 def calcxi_dataCZ(type,zmin,zmax,truez='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='g',fkp=True,test='',mintile=0,pg=-1):
-	fkpw = ''
-	if fkp:
-		fkpw = 'fkp'
-	pgw = ''
-	if pg != -1:
-		pgw += str(pg)	
+    fkpw = ''
+    if fkp:
+        fkpw = 'fkp'
+    pgw = ''
+    if pg != -1:
+        pgw += str(pg)	
 
-	so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)+pgw
+    so = 'e2e_oneper'+ver+type+truez+fkpw+str(zmin)+str(zmax)+str(mintile)+pgw
 
-	froot = dirczpc+so
-	if rec == '':
-		
-		dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
-		dr = np.loadtxt(froot+'.dr').transpose()[-1]#*drnorm
-		rr = np.loadtxt(froot+'.rr').transpose()[-1]
+    froot = dirczpc+so
+    if rec == '':
 
-	if rec == '_rec':
-		
-		#fn += '_rec'
-		dd = np.loadtxt(indir+fn+'.dd').transpose()[-1]#*ddnorm
-		dr = np.loadtxt(indir+fn+'.ds').transpose()[-1]#*drnorm
-		ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm	
-		rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]	
+        dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
+        dr = np.loadtxt(froot+'.dr').transpose()[-1]#*drnorm
+        rr = np.loadtxt(froot+'.rr').transpose()[-1]
 
-	
-	
-	nb = (200-start)//bs
-	xil = np.zeros(nb)
-	xil2 = np.zeros(nb)
-	xil4 = np.zeros(nb)
+    if rec == '_rec':
 
-	nmub = 120
-	dmu = 1./float(nmub)
-	mubm = 0
-	if mumin != 0:
-		mubm = int(mumin*nmub)
-	mubx = nmub
-	if mumax != 1:
-		mubx = int(mumax*nmub)
-	for i in range(start,nb*bs+start,bs):
-		xib = 0
-		xib2 = 0
-		xib4 = 0
-		ddt = 0
-		drt = 0
-		rrt = 0
-		sst = 0
-		w = 0
-		w2 = 0
-		w4 = 0
-		mut = 0
-		rmin = i
-		rmax = rmin+bs
-		for m in range(mubm,mubx):
-			ddb = 0
-			drb = 0
-			rrb = 0
-			ssb = 0
-			mu = m/float(nmub) + 0.5/float(nmub)
-			for b in range(0,bs):
-				bin = nmub*(i+b)+m
-				if bin < 24000:
-					ddb += dd[bin]
-					drb += dr[bin]
-					rrb += rr[bin]
-					if rec == '_rec' or rec == 'shuff':
-						ssb += ss[bin]
-						sst += ss[bin]
-				ddt += dd[bin]
-				drt += dr[bin]
-				rrt += rr[bin]
-			if rec == '_rec' or rec == 'shuff':
-				xi = (ddb-2.*drb+ssb)/rrb
-			else:		
-				xi = (ddb-2.*drb+rrb)/rrb
+        #fn += '_rec'
+        dd = np.loadtxt(indir+fn+'.dd').transpose()[-1]#*ddnorm
+        dr = np.loadtxt(indir+fn+'.ds').transpose()[-1]#*drnorm
+        ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm	
+        rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]	
 
-			xib += xi*dmu*(mu**mupow)
-			xib2 += xi*dmu*P2(mu)*5.
-			xib4 += xi*dmu*P4(mu)*9.		
-		xil[i//bs] = xib
-		xil2[i//bs] = xib2
-		xil4[i//bs] = xib4
-	muw = ''
-	fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
-	for i in range(0,len(xil)):
-		r = bs/2.+i*bs+start
-		fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
-	fo.close()
-	return True
+
+
+    nb = (200-start)//bs
+    xil = np.zeros(nb)
+    xil2 = np.zeros(nb)
+    xil4 = np.zeros(nb)
+
+    nmub = 120
+    dmu = 1./float(nmub)
+    mubm = 0
+    if mumin != 0:
+        mubm = int(mumin*nmub)
+    mubx = nmub
+    if mumax != 1:
+        mubx = int(mumax*nmub)
+    for i in range(start,nb*bs+start,bs):
+        xib = 0
+        xib2 = 0
+        xib4 = 0
+        ddt = 0
+        drt = 0
+        rrt = 0
+        sst = 0
+        w = 0
+        w2 = 0
+        w4 = 0
+        mut = 0
+        rmin = i
+        rmax = rmin+bs
+        for m in range(mubm,mubx):
+            ddb = 0
+            drb = 0
+            rrb = 0
+            ssb = 0
+            mu = m/float(nmub) + 0.5/float(nmub)
+            for b in range(0,bs):
+                bin = nmub*(i+b)+m
+                if bin < 24000:
+                    ddb += dd[bin]
+                    drb += dr[bin]
+                    rrb += rr[bin]
+                    if rec == '_rec' or rec == 'shuff':
+                        ssb += ss[bin]
+                        sst += ss[bin]
+                ddt += dd[bin]
+                drt += dr[bin]
+                rrt += rr[bin]
+            if rec == '_rec' or rec == 'shuff':
+                xi = (ddb-2.*drb+ssb)/rrb
+            else:		
+                xi = (ddb-2.*drb+rrb)/rrb
+
+            xib += xi*dmu*(mu**mupow)
+            xib2 += xi*dmu*P2(mu)*5.
+            xib4 += xi*dmu*P4(mu)*9.		
+        xil[i//bs] = xib
+        xil2[i//bs] = xib2
+        xil4[i//bs] = xib4
+    muw = ''
+    fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+    rl = []
+    for i in range(0,len(xil)):
+        r = bs/2.+i*bs+start
+        rl.append(r)
+        fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
+    fo.close()
+    rl = np.array(rl)
+    plt.plot(rl,rl**2.*xil,'k-')
+    plt.xlabel(r'$s$ (Mpc/h)')
+    plt.ylabel(r'$s^2\xi$')
+    plt.show()
+    return True
 
 def plotxi():
 	fl = dirxi+'xi024LRG0.51.15st0.dat'
@@ -612,28 +620,29 @@ def plotxi4_comptrue():
 
 
 if __name__ == '__main__':
-	#export OMP_NUM_THREADS=64
-	import subprocess
-	truez = ''
-	type = 'LRG'
-	zmin=0.5
-	zmax=1.1
-# 	prep4czxi(type,0.5,1.1,truez=truez)
-# 	subprocess.run(['chmod','+x','czpc.sh'])
-# 	subprocess.run('./czpc.sh')
-# 	calcxi_dataCZ(type,0.5,1.1,truez=truez)
-# 	plotxi_compfkp(type,0.5,1.1)
+    #export OMP_NUM_THREADS=64
+    #module load gsl
+    import subprocess
+    truez = ''
+    type = 'LRG'
+    zmin=0.5
+    zmax=1.1
+    prep4czxi(type,0.5,1.1,truez=truez)
+    subprocess.run(['chmod','+x','czpc.sh'])
+    subprocess.run('./czpc.sh')
+    calcxi_dataCZ(type,0.5,1.1,truez=truez)
+    #plotxi_compfkp(type,0.5,1.1)
 # 
 #	plotxiLRG_comptrue(zmin,zmax)
 
-	type = 'ELG'
-	test = 'test'
-	zmin=0.6
-	zmax=1.4
+    type = 'ELG'
+    test = 'test'
+    zmin=0.6
+    zmax=1.4
 	#prep4czxi(type,0.6,1.4,program='gray',truez=truez,test=test,pg=-1)
 	#subprocess.run(['chmod','+x','czpc.sh'])
 	#subprocess.run('./czpc.sh')
-	calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=-1)
+#   calcxi_dataCZ(type,0.6,1.4,truez=truez,pg=-1)
 # 	prep4czxi(type,0.6,1.4,program='gray',truez=truez,mintile=1,test=test)
 # 	subprocess.run(['chmod','+x','czpc.sh'])
 # 	subprocess.run('./czpc.sh')
@@ -645,7 +654,7 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.6,1.4,truez=truez)
 
 	#plotxi_compfkp(type,0.6,1.4)
-	plotxiELG_comptrue(zmin,zmax)
+	#plotxiELG_comptrue(zmin,zmax)
 
 # 	type = 'QSO'
 # 	prep4czxi(type,0.8,2.2,truez=truez)
@@ -654,10 +663,10 @@ if __name__ == '__main__':
 # 	calcxi_dataCZ(type,0.8,2.2,truez=truez)
 # 	plotxi_compfkp(type,0.8,2.2)
 # 
-	type = 'BGS'
+	#type = 'BGS'
 	
-	zmin =0.1
-	zmax = 0.4
+	#zmin =0.1
+	#zmax = 0.4
 	#prep4czxi(type,zmin,zmax,program='bright',truez=truez,test=test)
 	#subprocess.run(['chmod','+x','czpc.sh'])
 	#subprocess.run('./czpc.sh')
