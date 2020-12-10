@@ -28,7 +28,7 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15,fn='test'):
     rall = fitsio.read(ranf,columns=kr)
     print('total # of randoms:')
     print(len(rall))
-    mask = rall.photsys == (reg)
+    mask = rall['PHOTSYS'] == reg
     print(' # of randoms after restricting to ' +reg)
     print(len(rall[mask]))
     for b in bands: mask &= randoms.get('nobs_%s' % b)>0
