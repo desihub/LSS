@@ -23,8 +23,8 @@ matched_dir = topdir+'matched_obiwan/'
 
 
 def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15,fn='test'):
-    bands = ['g','r','z']
-    kr = ['PHOTSYS','BRICKNAME','EBV']+ ['nobs_%s' % b for b in bands]
+    bands = ['G','R','Z']
+    kr = ['PHOTSYS','BRICKNAME','EBV']+ ['NOBS_%s' % b for b in bands]
     rall = fitsio.read(ranf,columns=kr)
     print('total # of randoms:')
     print(len(rall))
