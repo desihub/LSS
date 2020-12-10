@@ -48,7 +48,7 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15,fn='test'):
         	ind = 0
         	bn = re[0]['BRICKNAME']
         	while np.isin(re[ind]['BRICKNAME'],bl):
-        		ind ++
+        		ind += 1
         		bn = re[ind]['BRICKNAME']
         		if ind > 10:
         		    return('TOOK MORE THAN 10 interations, probably a bug')
