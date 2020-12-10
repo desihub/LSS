@@ -22,23 +22,36 @@ sim_topdir = '/global/cscratch1/sd/ajross/Obiwan/dr9m/obiwan_out/test/divided_ra
 matched_dir = topdir+'matched_obiwan/'
 
 
-def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15):
-    kr = ['PHOTSYS','BRICKNAME','EBV']
+def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15,fn='test'):
+    bands = ['g','r','z']
+    kr = ['PHOTSYS','BRICKNAME','EBV']+ ['nobs_%s' % b for b in bands]
     rall = fitsio.read(ranf,columns=kr)
-    wr = rall['PHOTSYS'] == reg
+    print('total # of randoms:')
     print(len(rall))
-    rall = rall[wr]
+    mask = rall.photsys == (reg)
+    print(' # of randoms after restricting to ' +reg)
+    print(len(rall[mask]))
+    for b in bands: mask &= randoms.get('nobs_%s' % b)>0
+    print(' # of randoms after restricting to nobs > 0')
+    print(len(rall[mask]))
+    rall = rall[mask]
     print(len(rall))
     bl = []
     es = (ebvx-ebvm)/nbrick
-    outf = 'bricklist_100ebv.txt'
+    outf = 'bricklist_'+fn+'.txt'
     fo = open(outf,'w')
     for i in range(0,nbrick):
         we = rall['EBV'] > i*es+ebvm
         we &= rall['EBV'] < (i+1)*es+ebvm
         re = rall[we]
         if len(re) > 0:
+        	ind = 0
         	bn = re[0]['BRICKNAME']
+        	while np.isin(re[ind]['BRICKNAME'],bl):
+        		ind ++
+        		bn = re[ind]['BRICKNAME']
+        		if ind > 10:
+        		    return('TOOK MORE THAN 10 interations, probably a bug')
         	print(bn)
         	bl.append(bn)
         	fo.write(bn+'\n')
