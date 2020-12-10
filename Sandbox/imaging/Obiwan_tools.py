@@ -32,7 +32,7 @@ def mkbricklist_sampebv(nbrick=100,reg='N',ebvm=0.002,ebvx=0.15,fn='test'):
     print(' # of randoms after restricting to ' +reg)
     print(len(rall[mask]))
     for b in bands: 
-        mask &= rall['nobs_' + b]>0
+        mask &= rall['NOBS_' + b]>0
     print(' # of randoms after restricting to nobs > 0')
     print(len(rall[mask]))
     rall = rall[mask]
