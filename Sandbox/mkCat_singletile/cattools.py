@@ -31,10 +31,13 @@ def combspecdata(tile,night,coaddir ):
         tnf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         tspec = vstack([tspec,tn])
         tf = vstack([tf,tnf])
+    tf = unique(tf,keys=['TARGETID'])
+    tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY'])
+    tspec = join(tspec,tf,keys=['TARGETID'])
     print(len(tspec),len(tf))
-    tspec['LOCATION'] = tf['LOCATION']
-    tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
-    tspec['PRIORITY'] = tf['PRIORITY']
+    #tspec['LOCATION'] = tf['LOCATION']
+    #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
+    #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
 def goodlocdict(tf):
