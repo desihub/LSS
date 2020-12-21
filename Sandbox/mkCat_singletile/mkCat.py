@@ -55,7 +55,7 @@ svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 dirout = svdir+'LSScats/test/'
 randir = svdir+'random/'
 
-fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate
+fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
 tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
