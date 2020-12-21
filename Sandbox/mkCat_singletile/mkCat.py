@@ -91,10 +91,9 @@ if mkfulld:
     tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
     print(tout.dtype.names)
     wz = tout['ZWARN']*0 == 0
-    print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
-    
-
-    
+    wzg = tout['ZWARN'] == 0
+    print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wz]))+' with zwarn=0')
+        
     tout.write(ffd,format='fits', overwrite=True) 
     print('wrote matched targets/redshifts to '+ffd)
     
