@@ -87,7 +87,7 @@ if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
-    
+    print(tspec.dtype.names)
     tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
     print(tout.dtype.names)
     wz = tout['ZWARN']*0 == 0
