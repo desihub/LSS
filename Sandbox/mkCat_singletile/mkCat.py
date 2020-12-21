@@ -89,9 +89,10 @@ if mkfulld:
     tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
     
     tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
+    print(tout.dtype.names)
     wz = tout['ZWARN']*0 == 0
     print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts')
-    print(tout.dtype.names)
+    
 
     
     tout.write(ffd,format='fits', overwrite=True) 
