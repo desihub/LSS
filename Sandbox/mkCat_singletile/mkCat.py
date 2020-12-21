@@ -56,7 +56,7 @@ dirout = svdir+'LSScats/test/'
 randir = svdir+'random/'
 
 fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate
-tardir = minisvdir+'targets/'
+tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
 ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
