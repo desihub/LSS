@@ -54,13 +54,14 @@ def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
     #get target info
     tfa = Table.read(fadir+'fba-0'+str(tile)+'.fits',hdu='FAVAIL')
     tft = unique(tfa,keys=['TARGETID'])
-    tft.remove_columns(['Z','ZWARN'])
+   
     wgt = (np.isin(tfa['LOCATION'],goodloc)) 
     print(str(len(np.unique(tfa[wgt]['LOCATION']))) + ' good locations')
     print('comparison of number targets, number of targets with good locations')
     print(len(tfa),len(tfa[wgt]))
     tfa = unique(tfa[wgt],keys=['TARGETID'])
     tt = Table.read(mtlf)
+    tt.remove_columns(['Z','ZWARN'])
     wtype = ((tt[tp] & 2**tarbit) > 0)
     tt = tt[wtype]
     tfa = join(tfa,tt,keys=['TARGETID'])
