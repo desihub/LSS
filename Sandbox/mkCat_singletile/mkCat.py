@@ -25,35 +25,38 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="date of observation")
+parser.add_argument("--fadate", help="date for fiberassign run")
 args = parser.parse_args()
 
 type = args.type
 tile = args.tile
 night = args.night
+fadate = args.fadate
 
 if type == 'LRG':
-	tarbit = 10 #targeting bit
+	tarbit = 0 #targeting bit
 	pr = 4000 #priority; anything with higher priority vetos fiber in randoms
 if type == 'QSO':
-	tarbit = 12
+	tarbit = 2
 	pr = 10000
 if type == 'ELG':
-	tarbit = 11
+	tarbit = 1
 	pr = 10000
 
 
 print(type,tile,night)
-tp = 'CMX_TARGET'
+tp = 'SV1_DESI_TARGET'
 print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
 
 sys.path.append("../")
 
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
-dirout = minisvdir+'LSScats/test/'
-randir = minisvdir+'random/'
+svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
+dirout = svdir+'LSScats/test/'
+randir = svdir+'random/'
+
+fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate
 tardir = minisvdir+'targets/'
-fadir = tardir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
 ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
@@ -61,11 +64,7 @@ ffr = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
 fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
 fcr = dirout+type+str(tile)+'_'+night+'_clustering.ran.fits'
 
-
-if type != 'ELG':
-	mtlf = tardir+'MTL_Tile_'+str(tile)+'_0.37.0_all.fits'
-else:
-	mtlf = tardir+'MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'	
+mtlf = fadir+'/0'+tile+'-targ.fits'
 
 print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
 
@@ -77,7 +76,7 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkfulld = True
 mkfullr = False
-mkclus = True
+mkclus = False
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
