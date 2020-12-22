@@ -54,7 +54,9 @@ sys.path.append("../")
 
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 dirout = svdir+'LSScats/test/'
-randir = svdir+'random/'
+randir = svdir+'random'
+for i in range(1,11):
+    os.mkdir(svdir+random+str(i))
 
 fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
 tardir = fadir
@@ -78,7 +80,7 @@ mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
 mkfulld = False
 mkfullr = False
-mkclus = True
+mkclus = False
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
