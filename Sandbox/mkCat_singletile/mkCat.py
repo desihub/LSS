@@ -91,7 +91,7 @@ if mkranmtl:
 if runrfa:
     fbah = fitsio.read_header(fbaf)
     dt = fbah['FA_RUN']
-    getfatiles(randir+'tilenofa-'+str(tile)+'.fits',tilef,dirout=randir,dt = dt)
+    fa.getfatiles(randir+'tilenofa-'+str(tile)+'.fits',tilef,dirout=randir,dt = dt)
 
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
