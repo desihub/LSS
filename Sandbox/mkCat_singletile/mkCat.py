@@ -37,14 +37,14 @@ night = args.night
 fadate = args.fadate
 
 if type == 'LRG':
-	tarbit = 0 #targeting bit
-	pr = 4000 #priority; anything with higher priority vetos fiber in randoms
+    tarbit = 0 #targeting bit
+    pr = 4000 #priority; anything with higher priority vetos fiber in randoms
 if type == 'QSO':
-	tarbit = 2
-	pr = 10000
+    tarbit = 2
+    pr = 10000
 if type == 'ELG':
-	tarbit = 1
-	pr = 10000
+    tarbit = 1
+    pr = 10000
 
 
 print(type,tile,night)
@@ -169,11 +169,11 @@ if doclus:
     subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
     subprocess.run('./dopc'+gf+'.sh')
     for i in range(rm+1,rx):
-		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
-		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-		subprocess.run('./dopc'+gf+'.sh')
- 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
- 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
+        gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
+        subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+        subprocess.run('./dopc'+gf+'.sh')
+    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
+    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
         
 # 
 # dr = fitsio.read(rf)
