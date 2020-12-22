@@ -154,6 +154,7 @@ if docatplots:
     plt.xlabel('redshift')
     plt.ylabel('# with zwarn == 0')
     plt.title(type+' on tile '+tile+' observed '+night)
+    plt.show()
     
 # 
 # dr = fitsio.read(rf)
