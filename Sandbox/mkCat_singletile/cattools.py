@@ -254,7 +254,7 @@ def randomtilesi(tilef ,dirout):
 	
 	for i in range(0,len(tiles)):
 		tile = tiles['TILEID'][i]
-		fname = dirout+'random/tilenofa-'+str(tile)+'.fits'
+		fname = dirout+'tilenofa-'+str(tile)+'.fits'
 		tdec = tiles['DEC'][i]
 		decmin = tdec - trad
 		decmax = tdec + trad
