@@ -56,7 +56,7 @@ svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 dirout = svdir+'LSScats/test/'
 randir = svdir+'random'
 for i in range(1,11):
-    os.mkdir(svdir+random+str(i))
+    os.mkdir(svdir+'random'+str(i))
 
 fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
 tardir = fadir
