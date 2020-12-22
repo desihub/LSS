@@ -215,6 +215,7 @@ def mkran4fa(N=None,fout='random_mtl.fits',dirout=''):
 	else:
 		rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits',rows=np.arange(N))
 	    
+	print('read '+str(len(rall))+ ' rows from random file')
 	rmtl = Table()
 	for name in rall.dtype.names:
 		rmtl[name] = rall[name]
@@ -226,6 +227,7 @@ def mkran4fa(N=None,fout='random_mtl.fits',dirout=''):
 	rmtl['PRIORITY'] = np.ones(len(rall),dtype=int)*3400
 	rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
+	print('added columns, writing to '+dirout+fout)
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def randomtiles(tilef ):
