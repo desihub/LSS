@@ -218,7 +218,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
             xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr        
         if i/bs < nbin:
             xil[i//bs] = xi
-        print ddt/DDnormt,drt/DRnormt,rrt/RRnormt
+        print(ddt/DDnormt,drt/DRnormt,rrt/RRnormt)
     rl = []
     for i in range(0,len(xil)):
         rl.append(start+bs/2.+bs*i)
