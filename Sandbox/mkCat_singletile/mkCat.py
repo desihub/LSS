@@ -160,6 +160,7 @@ if docatplots:
     plt.show()
 
 if doclus:
+	import subprocess
 	if type == 'ELG':
 		zmin = .8
 		zmax = 1.6
