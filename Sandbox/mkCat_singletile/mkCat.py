@@ -79,7 +79,9 @@ mkfullr = False
 mkclus = False
 
 if mkranmtl:
-    ct.mkran4fa(dirout=randir)
+    #ct.mkran4fa(dirout=randir)
+    tilef = fadir+'0'+tile+'-tiles.fits'
+    ct.randomtilesi(tilef ,randir)
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations

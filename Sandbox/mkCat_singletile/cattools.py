@@ -228,6 +228,7 @@ def mkran4fa(N=None,fout='random_mtl.fits',dirout=''):
 	rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
 	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
 	print('added columns, writing to '+dirout+fout)
+	del rall
 	rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def randomtiles(tilef ):
@@ -243,16 +244,17 @@ def randomtiles(tilef ):
 		fitsio.write(fname,rt[inds],clobber=True)
 		print('wrote tile '+str(tile))
 
-def randomtilesi(tilef ):
+def randomtilesi(tilef ,dirout):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
-	rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
+	#rt = fitsio.read(minisvdir+'random/random_mtl.fits')
 	print('loaded random file')	
 	
 	for i in range(0,len(tiles)):
 		tile = tiles['TILEID'][i]
-		fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
+		fname = dirout+'random/tilenofa-'+str(tile)+'.fits'
 		tdec = tiles['DEC'][i]
 		decmin = tdec - trad
 		decmax = tdec + trad
@@ -260,8 +262,23 @@ def randomtilesi(tilef ):
 		print(len(rt[wdec]))
 		inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
 		print('got indexes')
-		fitsio.write(fname,rt[wdec][inds],clobber=True)
-		print('wrote tile '+str(tile))
+		#fitsio.write(fname,rt[wdec][inds],clobber=True)
+		#print('wrote tile '+str(tile))
+		#rmtl = Table.read(fname)
+		rtw = rt[wdec][inds]
+		rmtl = Table(rtw)
+		rmtl['TARGETID'] = np.arange(len(rmtl))
+		rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+		rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+		rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+		rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+		rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+		rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
+		rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+		print('added columns, writing to '+dirout+fout)
+		rmtl.write(dirout+fout,format='fits', overwrite=True)
+
+
 
 def ELGtilesi(tilef ):
 	tiles = fitsio.read(tilef)
@@ -303,6 +320,24 @@ def targtilesi(type,tilef ):
 		print('got indexes')
 		fitsio.write(fname,rt[wdec][inds],clobber=True)
 		print('wrote tile '+str(tile))
+
+def mktilef_date(dirout,fout='msvtiles.fits'):
+	'''
+	make a tile file for a date that Anand made tiles
+	TBD
+	'''
+	msvtiles = Table()
+	msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
+	msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
+	msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
+	msvtiles['PASS'] = np.zeros(7,dtype=int)
+	msvtiles['IN_DESI'] = np.ones(7,dtype=int)
+	msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
+	pa = []
+	for i in range(0,7):
+		pa.append(b'DARK')
+	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
+	msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
 
 	
