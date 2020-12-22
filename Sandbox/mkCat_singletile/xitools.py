@@ -1,9 +1,10 @@
-minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
-datadir = minisvdir+'LSScats/'
+#minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+#datadir = minisvdir+'LSScats/'
 dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
 dirpc = '/global/cscratch1/sd/ajross/paircounts/'
 import fitsio
 import numpy as np
+import sys
 
 from matplotlib import pyplot as plt
 
@@ -22,7 +23,7 @@ def P8(mu):
 
 om = 0.31
 
-def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1):
+def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1,datadir=''):
 	'''
 	prepare sv files for paircounts
 	'''
@@ -84,12 +85,13 @@ def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1):
 	
 	return gf
 
-def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1):
+def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
 	'''
 	prepare sv files for paircounts
 	'''
 	#from healpix import healpix,radec2thphi
 	from random import random
+	sys.path.append("../")
 	from Cosmo import distance
 	d = distance(om,1.-om) #cosmology assumed in final BOSS analyses, make sure this conforms to current
 	#h = healpix()

@@ -53,6 +53,7 @@ print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
 
 sys.path.append("../")
+print(sys.path)
 
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 dirout = svdir+'LSScats/test/'
@@ -165,11 +166,11 @@ if doclus:
 	if type == 'LRG':
 		zmin = .5
 		zmax = 1.1
-	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax)
+	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
 	for i in range(rm+1,rx):
-		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
+		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
 		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 		subprocess.run('./dopc'+gf+'.sh')
 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
