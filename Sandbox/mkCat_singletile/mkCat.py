@@ -79,7 +79,7 @@ mkfullr = False
 mkclus = False
 
 if mkranmtl:
-    mkran4fa(dirout=randir)
+    ct.mkran4fa(dirout=randir)
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations
