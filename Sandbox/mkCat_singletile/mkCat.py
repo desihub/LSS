@@ -73,10 +73,13 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-
-mkfulld = True
+mkranmtl = True
+mkfulld = False
 mkfullr = False
 mkclus = False
+
+if mkranmtl:
+    mkran4fa(dirout=randir)
 
 '''
 Will need to add in lines for running fiber assign on randoms for future observations

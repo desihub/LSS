@@ -206,11 +206,15 @@ def assignweights(aa,nl):
     return wts	
 
 
-def mkran4fa(N=2e8,fout='random_mtl.fits',dirout=''):
+def mkran4fa(N=None,fout='random_mtl.fits',dirout=''):
 	'''
-	cut imaging random file to first N entries and add columns necessary for fiberassignment routines
+	cut imaging random file to first N (or take all if N is None) entries and add columns necessary for fiberassignment routines
 	'''
-	rall = fitsio.read('/project/projectdirs/desi/target/catalogs/dr8/0.31.0/randomsall/randoms-inside-dr8-0.31.0-all.fits',rows=np.arange(N))
+	if N is None:	
+		rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
+	else:
+		rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits',rows=np.arange(N))
+	    
 	rmtl = Table()
 	for name in rall.dtype.names:
 		rmtl[name] = rall[name]
