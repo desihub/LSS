@@ -167,8 +167,10 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
     rclus['RA'] = drmz['RA']
     rclus['DEC'] = drmz['DEC']
     dd = fitsio.read(fcd) 
-    rclus['Z'] = 0
-    rclus['WEIGHT'] = 1
+    #rclus['Z'] = 0
+    #rclus['WEIGHT'] = 1
+    zl = []
+    wl = []
     ndz = 0
     naz = 0
     for ii in range(0,len(rclus)):
@@ -178,8 +180,14 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
             ndz += 1.
         naz += 1    
         wr = dd[ind]['WEIGHT']
-        rclus[ii]['Z'] = zr
-        rclus[ii]['WEIGHT'] = wr
+        #rclus[ii]['Z'] = zr
+        #rclus[ii]['WEIGHT'] = wr
+        zl.append(zr)
+        wl.append(wr)
+    zl = np.array(zl)
+    wl = np.array(wl)
+    rclus['Z'] = zl
+    rclus['WEIGHT'] = wl
     wz = rclus['Z'] == 0
     print(ndz,naz,len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
