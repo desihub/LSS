@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 #from this package
 import cattools as ct
 import fa4lsscat as fa
+import xitools as xt
 
 
 parser = argparse.ArgumentParser()
@@ -84,7 +85,8 @@ runrfa = False #run randoms through fiberassign
 mkfulld = False
 mkfullr = False
 mkclus = False
-docatplots = True
+docatplots = False
+doclus = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
@@ -155,7 +157,24 @@ if docatplots:
     plt.ylabel('# with zwarn == 0')
     plt.title(type+' on tile '+tile+' observed '+night)
     plt.show()
-    
+
+if doclus:
+    if type == 'ELG':
+        zmin = .8
+        zmax = 1.6
+    if type == 'LRG':
+        zmin = .5
+        zmax = 1.1
+    gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax)
+    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+    subprocess.run('./dopc'+gf+'.sh')
+    for i in range(rm+1,rx):
+		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
+		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+		subprocess.run('./dopc'+gf+'.sh')
+ 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
+ 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
+        
 # 
 # dr = fitsio.read(rf)
 # drm = cutphotmask(dr)
