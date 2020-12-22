@@ -19,6 +19,7 @@ from astropy.table import Table,join,unique,vstack
 
 #from this package
 import cattools as ct
+import fa4lsscat as fa
 
 
 parser = argparse.ArgumentParser()
@@ -73,20 +74,24 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = True
+mkranmtl = False #make a mtl file of randoms
+runrfa = True #run randoms through fiberassign
 mkfulld = False
 mkfullr = False
 mkclus = False
 
+tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
+fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
+
 if mkranmtl:
     #ct.mkran4fa(dirout=randir)
-    tilef = fadir+'0'+tile+'-tiles.fits'
+    #this does it just for the one tile    
     ct.randomtilesi(tilef ,randir)
 
-'''
-Will need to add in lines for running fiber assign on randoms for future observations
-Not eager to add them in now since old data was observed with bugged version of fiberassign
-'''
+if runrfa:
+    fbah = fitsio.read_header(fbaf)
+    dt = fbah['FA_RUN']
+    getfatiles(randir+'tilenofa-'+str(tile)+'.fits',tilef,dirout=randir,dt = dt)
 
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
