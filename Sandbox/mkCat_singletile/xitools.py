@@ -111,6 +111,7 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
 	wl = np.ones(len(cdl))
 	print(str(len(cdl))+' random objects going out for paircounts')
 	zw = '_zm'+str(zmin)+'zx'+str(zmax)
+	gf ='g'+file+zw
 	rf = 'r'+file+str(ii)+zw
 	fdo = open(dirpcadw+rf +'pcadw.dat','w')
 	for i in range(0,len(cdl)):
