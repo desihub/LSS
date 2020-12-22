@@ -181,7 +181,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
             rp = float(fr[k])
             DRnl[k-1] += dr
             RRnl[k-1] += rp
-                    
+    print(DDnormt,DRnormt,RRnormt)                
     xil = np.zeros(int(nbin),'f')
     for i in range(start,rmax,bs):
         xi = 0
