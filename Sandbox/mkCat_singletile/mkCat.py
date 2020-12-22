@@ -16,6 +16,7 @@ import fitsio
 import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
+from matplotlib import pyplot as plt
 
 #from this package
 import cattools as ct
