@@ -78,11 +78,12 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = True #make a mtl file of randoms
-runrfa = True #run randoms through fiberassign
+mkranmtl = False #make a mtl file of randoms
+runrfa = False #run randoms through fiberassign
 mkfulld = False
-mkfullr = True
-mkclus = True
+mkfullr = False
+mkclus = False
+docatplots = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
@@ -128,6 +129,20 @@ if mkclus:
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
         ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+
+if docatplots:
+    ii = 0
+    ffr = fitsio.read(dirout+type+str(tile)+'_'+night+'_'+str(ii)+'_clustering.ran.fits')
+    plt.plot(ffr['RA'],ffr['DEC'],'k,',label='randoms')
+    fd = fitsio.read(ffd)
+    plt.plot(fd['RA'],fd['DEC'],'r.',label='potential targets')
+    fc = fitsio.read(fcd)
+    plt.plot(fc['RA'],fc['DEC'],'bo',label='good redshifts')
+    plt.xlabel('RA')
+    plt.ylabel('DEC')
+    plt.label(type+' on tile '+tile+' observed '+night)
+   
+    
 # 
 # dr = fitsio.read(rf)
 # drm = cutphotmask(dr)
