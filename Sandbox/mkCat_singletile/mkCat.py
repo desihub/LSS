@@ -159,21 +159,21 @@ if docatplots:
     plt.show()
 
 if doclus:
-    if type == 'ELG':
-        zmin = .8
-        zmax = 1.6
-    if type == 'LRG':
-        zmin = .5
-        zmax = 1.1
-    gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax)
-    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-    subprocess.run('./dopc'+gf+'.sh')
-    for i in range(rm+1,rx):
-        gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
-        subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-        subprocess.run('./dopc'+gf+'.sh')
-    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
-    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
+	if type == 'ELG':
+		zmin = .8
+		zmax = 1.6
+	if type == 'LRG':
+		zmin = .5
+		zmax = 1.1
+	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	for i in range(rm+1,rx):
+		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax)
+		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+		subprocess.run('./dopc'+gf+'.sh')
+	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
+	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
         
 # 
 # dr = fitsio.read(rf)
