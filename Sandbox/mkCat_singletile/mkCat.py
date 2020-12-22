@@ -141,8 +141,8 @@ if docatplots:
     plt.plot(fc['RA'],fc['DEC'],'bo',label='good redshifts')
     plt.xlabel('RA')
     plt.ylabel('DEC')
-    plt.label(type+' on tile '+tile+' observed '+night)
-   
+    plt.title(type+' on tile '+tile+' observed '+night)
+    plt.show()
     
 # 
 # dr = fitsio.read(rf)
