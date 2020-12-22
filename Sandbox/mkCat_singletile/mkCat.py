@@ -58,8 +58,9 @@ randir = svdir+'random'
 rm = 0
 rx = 10
 for i in range(rm,rx):
-    os.mkdir(svdir+'random'+str(i))
-
+    if not os.path.exists(svdir+'random'+str(i)):
+        os.mkdir(svdir+'random'+str(i))
+        print('made '+str(i)+' random directory')
 fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
 tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
