@@ -244,17 +244,17 @@ def randomtiles(tilef ):
 		fitsio.write(fname,rt[inds],clobber=True)
 		print('wrote tile '+str(tile))
 
-def randomtilesi(tilef ,dirout,i):
+def randomtilesi(tilef ,dirout,ii):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
-	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(i)+'.fits')
+	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits')
 	#rt = fitsio.read(minisvdir+'random/random_mtl.fits')
 	print('loaded random file')	
 	
 	for i in range(0,len(tiles)):
 		tile = tiles['TILEID'][i]
-		fname = dirout+str(i)+'/tilenofa-'+str(tile)+'.fits'
+		fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
 		tdec = tiles['DEC'][i]
 		decmin = tdec - trad
 		decmax = tdec + trad
