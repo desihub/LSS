@@ -169,13 +169,17 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
     dd = fitsio.read(fcd) 
     rclus['Z'] = 0
     rclus['WEIGHT'] = 1
+    ndz = 0
     for i in range(0,len(rclus)):
         ind = int(random()*len(dd))
         zr = dd[ind]['Z']
+        if zr == 0:
+            ndz += 1.
         wr = dd[ind]['WEIGHT']
         rclus[i]['Z'] = zr
         rclus[i]['WEIGHT'] = wr
-    
+    wz = rclus['Z'] == 0
+    print(ndz,len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 

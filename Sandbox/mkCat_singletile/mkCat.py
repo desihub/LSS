@@ -85,9 +85,9 @@ mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
 mkfulld = False
 mkfullr = False
-mkclus = False
+mkclus = True
 docatplots = False
-doclus = True
+doclus = False
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
@@ -167,10 +167,11 @@ if doclus:
 	if type == 'LRG':
 		zmin = .5
 		zmax = 1.1
+	rmax = 1
 	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
-	for i in range(rm+1,rx):
+	for i in range(rm+1,rmax):
 		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
 		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 		subprocess.run('./dopc'+gf+'.sh')
