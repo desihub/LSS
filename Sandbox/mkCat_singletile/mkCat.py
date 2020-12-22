@@ -55,7 +55,9 @@ sys.path.append("../")
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 dirout = svdir+'LSScats/test/'
 randir = svdir+'random'
-for i in range(1,11):
+rm = 0
+rx = 10
+for i in range(rm,rx):
     os.mkdir(svdir+'random'+str(i))
 
 fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
@@ -63,9 +65,8 @@ tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
 
 ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
-ffr = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
+
 fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
-fcr = dirout+type+str(tile)+'_'+night+'_clustering.ran.fits'
 
 mtlf = fadir+'/0'+tile+'-targ.fits'
 
@@ -76,11 +77,11 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = False #make a mtl file of randoms
-runrfa = False #run randoms through fiberassign
+mkranmtl = True #make a mtl file of randoms
+runrfa = True #run randoms through fiberassign
 mkfulld = False
-mkfullr = False
-mkclus = False
+mkfullr = True
+mkclus = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
@@ -88,12 +89,14 @@ fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
 if mkranmtl:
     #ct.mkran4fa(dirout=randir)
     #this does it just for the one tile    
-    ct.randomtilesi(tilef ,randir)
+    for i in range(rm,rx):
+        ct.randomtilesi(tilef ,randir,i)
 
 if runrfa:
     fbah = fitsio.read_header(fbaf)
     dt = fbah['FA_RUN']
-    fa.getfatiles(randir+'tilenofa-'+str(tile)+'.fits',tilef,dirout=randir,dt = dt)
+    for i in range(rm,rx):
+        fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
 
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
@@ -112,14 +115,18 @@ if mkfulld:
 if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
-    ranall = ct.mkfullran(tile,goodloc,pdict,randir)
-    #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
-    ranall.write(ffr,format='fits', overwrite=True)
+    for i in range(rm,rx):
+        ranall = ct.mkfullran(tile,goodloc,pdict,randir+str(i)+'/')
+        #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
+        ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
+        ranall.write(ffr,format='fits', overwrite=True)
 
 if mkclus:
     maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
-       
-    ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+    for i in range(rm,rx):
+        ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
+        fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
+        ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
 # 
 # dr = fitsio.read(rf)
 # drm = cutphotmask(dr)
