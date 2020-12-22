@@ -75,9 +75,9 @@ zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 mkranmtl = False #make a mtl file of randoms
-runrfa = True #run randoms through fiberassign
+runrfa = False #run randoms through fiberassign
 mkfulld = False
-mkfullr = False
+mkfullr = True
 mkclus = False
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
