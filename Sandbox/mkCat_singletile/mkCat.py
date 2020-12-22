@@ -142,7 +142,18 @@ if docatplots:
     plt.xlabel('RA')
     plt.ylabel('DEC')
     plt.title(type+' on tile '+tile+' observed '+night)
+    plt.legend()
     plt.show()
+    if type == 'ELG':
+        zr = (.3,2)
+    if type == 'LRG':
+        zr = (.4,1.7)
+    if type == 'QSO'
+        zr = (.1,4.5)    
+    plt.hist(fc['Z'],bins=100,range=zr,histtype='step')
+    plt.xlabel('redshift')
+    plt.ylabel('# with zwarn == 0')
+    plt.title(type+' on tile '+tile+' observed '+night)
     
 # 
 # dr = fitsio.read(rf)
