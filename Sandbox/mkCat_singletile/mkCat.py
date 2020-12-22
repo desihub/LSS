@@ -148,7 +148,7 @@ if docatplots:
         zr = (.3,2)
     if type == 'LRG':
         zr = (.4,1.7)
-    if type == 'QSO'
+    if type == 'QSO':
         zr = (.1,4.5)    
     plt.hist(fc['Z'],bins=100,range=zr,histtype='step')
     plt.xlabel('redshift')
