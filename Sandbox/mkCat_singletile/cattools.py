@@ -275,8 +275,8 @@ def randomtilesi(tilef ,dirout):
 		rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
 		rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
 		rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-		print('added columns, writing to '+dirout+fout)
-		rmtl.write(dirout+fout,format='fits', overwrite=True)
+		print('added columns, writing to '+fname)
+		rmtl.write(fname,format='fits', overwrite=True)
 
 
 
