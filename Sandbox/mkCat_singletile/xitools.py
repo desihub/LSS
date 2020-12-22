@@ -168,7 +168,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
 		DRnl[k-1] += dr
 		RRnl[k-1] += rp
 	for n in range(1,nran):
-	    flr0 = sample+tile+'_'+date+str(n)+'_zm'+str(zmin)+'zx'+str(zmax)
+		flr0 = sample+tile+'_'+date+str(n)+'_zm'+str(zmin)+'zx'+str(zmax)
 		fdnp = open(dirpc+'g'+fl+'r'+flr0+'2ptdmu.dat').readlines()
 		fr = open(dirpc+'r'+flr0+'r'+flr0+'2ptdmu.dat').readlines()
 		DRnormt += float(fdnp[0])
@@ -355,8 +355,8 @@ if __name__ == '__main__':
 # 	gf = createSourcesrd_ad(type,tile,night)
 # 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 # 	subprocess.run('./dopc'+gf+'.sh')
-# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
-# 	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
+#   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
+#   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
 	type = 'QSO'
 	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2)
