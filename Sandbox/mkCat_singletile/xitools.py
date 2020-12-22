@@ -91,7 +91,6 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
 	'''
 	#from healpix import healpix,radec2thphi
 	from random import random
-	sys.path.append("../")
 	from Cosmo import distance
 	d = distance(om,1.-om) #cosmology assumed in final BOSS analyses, make sure this conforms to current
 	#h = healpix()
@@ -111,6 +110,7 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
 	cdecl = np.cos(np.radians(fr[wz]['DEC']))
 	wl = np.ones(len(cdl))
 	print(str(len(cdl))+' random objects going out for paircounts')
+	zw = '_zm'+str(zmin)+'zx'+str(zmax)
 	rf = 'r'+file+str(ii)+zw
 	fdo = open(dirpcadw+rf +'pcadw.dat','w')
 	for i in range(0,len(cdl)):
