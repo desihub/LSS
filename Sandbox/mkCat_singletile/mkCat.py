@@ -167,7 +167,7 @@ if doclus:
 	if type == 'LRG':
 		zmin = .5
 		zmax = 1.1
-	rmax = 1
+	rmax = 10
 	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
 	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 	subprocess.run('./dopc'+gf+'.sh')
