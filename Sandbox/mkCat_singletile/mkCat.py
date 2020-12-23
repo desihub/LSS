@@ -85,9 +85,9 @@ mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
 mkfulld = False
 mkfullr = False
-mkclus = True
+mkclus = False
 docatplots = False
-doclus = False
+doclus = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
