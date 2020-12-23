@@ -83,11 +83,11 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
-mkfulld = True
-mkfullr = True
-mkclus = True
+mkfulld = False
+mkfullr = False
+mkclus = False
 docatplots = True
-doclus = True
+doclus = False
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
@@ -136,12 +136,13 @@ if mkclus:
 
 if docatplots:
     ii = 0
-    ffr = fitsio.read(dirout+type+str(tile)+'_'+night+'_'+str(ii)+'_clustering.ran.fits')
-    plt.plot(ffr['RA'],ffr['DEC'],'k,',label='randoms')
     fd = fitsio.read(ffd)
     plt.plot(fd['RA'],fd['DEC'],'r.',label='potential targets')
     fc = fitsio.read(fcd)
     plt.plot(fc['RA'],fc['DEC'],'bo',label='good redshifts')
+    ffr = fitsio.read(dirout+type+str(tile)+'_'+night+'_'+str(ii)+'_clustering.ran.fits')
+    plt.plot(ffr['RA'],ffr['DEC'],'k,',label='randoms')
+
     plt.xlabel('RA')
     plt.ylabel('DEC')
     plt.title(type+' on tile '+tile+' observed '+night)
