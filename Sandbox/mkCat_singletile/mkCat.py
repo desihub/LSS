@@ -175,8 +175,8 @@ if doclus:
 		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
 		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 		subprocess.run('./dopc'+gf+'.sh')
-	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rx)
-	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rx)
+	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
+	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
         
 # 
 # dr = fitsio.read(rf)
