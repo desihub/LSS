@@ -79,9 +79,9 @@ def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1,datadir=''):
     fdo.close()
     fo = open('dopc'+gf+'.sh','w')
     fo.write('#!/bin/bash\n')
-    fo.write('./pp2pt_Dmufb '+gf +' '+gf +' \n')
-    fo.write('./pp2pt_Dmufb '+gf +' '+rf +' \n')
-    fo.write('./pp2pt_Dmufb '+rf +' '+rf +' \n')
+    fo.write('/global/homes/a/ajross/pp2pt_Dmufb '+gf +' '+gf +' \n')#while in AJR's home directory, I think permissions allow it...?
+    fo.write('/global/homes/a/ajross/pp2pt_Dmufb '+gf +' '+rf +' \n')
+    fo.write('/global/homes/a/ajross/pp2pt_Dmufb '+rf +' '+rf +' \n')
     fo.close()
 
     
@@ -122,8 +122,8 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
     fdo.close()
     fo = open('dopc'+rf+'.sh','w')
     fo.write('#!/bin/bash\n')
-    fo.write('./pp2pt_Dmufb '+gf +' '+rf +' \n')
-    fo.write('./pp2pt_Dmufb '+rf +' '+rf +' \n')
+    fo.write('/global/homes/a/ajross/pp2pt_Dmufb '+gf +' '+rf +' \n')
+    fo.write('/global/homes/a/ajross/pp2pt_Dmufb '+rf +' '+rf +' \n')
     fo.close()
 
     return rf
