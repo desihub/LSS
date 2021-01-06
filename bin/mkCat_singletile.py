@@ -18,10 +18,12 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 
+sys.path.append('../py')
+
 #from this package
-import cattools as ct
-import fa4lsscat as fa
-import xitools as xt
+import LSS.mkCat_singletile.cattools as ct
+import LSS.mkCat_singletile.fa4lsscat as fa
+import LSS.mkCat_singletile.xitools as xt
 
 
 parser = argparse.ArgumentParser()
@@ -160,6 +162,13 @@ if docatplots:
 
 if doclus:
 	import subprocess
+    dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+    dirpc = os.environ['CSCRATCH']+'/paircounts/'
+    if not os.path.exists(dirpc):
+        os.mkdir(dirpcadw)
+    if not os.path.exists(dirpc):
+        os.mkdir(dirpc)
+
 	if type == 'ELG':
 		zmin = .8
 		zmax = 1.6

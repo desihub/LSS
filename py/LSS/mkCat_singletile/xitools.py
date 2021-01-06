@@ -1,10 +1,12 @@
-#minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
-#datadir = minisvdir+'LSScats/'
-dirpcadw = '/global/cscratch1/sd/ajross/pcadw/'
-dirpc = '/global/cscratch1/sd/ajross/paircounts/'
 import fitsio
 import numpy as np
 import sys
+import os
+try:
+    dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+    dirpc = os.environ['CSCRATCH']+'/paircounts/'
+except:
+    print('NEED TO BE ON NERSC, ARE YOU?')
 
 from matplotlib import pyplot as plt
 
@@ -29,7 +31,7 @@ def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1,datadir=''):
     '''
     #from healpix import healpix,radec2thphi
     from random import random
-    from Cosmo import distance
+    from LSS.Cosmo import distance
     d = distance(om,1.-om) #cosmology assumed in final BOSS analyses, make sure this conforms to current
     #h = healpix()
     file = sample+tile+'_'+date
@@ -91,7 +93,7 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
     '''
     #from healpix import healpix,radec2thphi
     from random import random
-    from Cosmo import distance
+    from LSS.Cosmo import distance
     d = distance(om,1.-om) #cosmology assumed in final BOSS analyses, make sure this conforms to current
     #h = healpix()
     file = sample+tile+'_'+date
@@ -235,9 +237,9 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
     print('wrote results to '+'xi'+fl+bsst+'.dat')  
     return xil
 
-def plotxi():
-    dl = np.loadtxt('/Users/ashleyross/Dropbox/DESI/xiLRG70003_20200219_zm0.5zx1.1bsc.dat').transpose() 
-    de = np.loadtxt('/Users/ashleyross/Dropbox/DESI/xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose()
+def plotxi(xidir=''):
+    dl = np.loadtxt(xidir+'xiLRG70003_20200219_zm0.5zx1.1bsc.dat').transpose() 
+    de = np.loadtxt(xidir+'xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose()
     ml = (dl[0]/7.78)**-1.98
     plt.loglog(dl[0],dl[1],'r-',label='MINI_SV_LRG, Tile 70003')
     plt.loglog(de[0],de[1],'b-',label='MINI_SV_ELG, Tile 70004')
@@ -246,13 +248,13 @@ def plotxi():
     plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
     plt.ylabel(r'$\xi$')
     plt.title('From 202200219')
-    plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSVxi.png')
+    plt.savefig(xidir+'miniSVxi.png')
     plt.show()
 
-def plot3ELG():
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.61st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70005_20200228_zm0.8zx1.61st0.dat').transpose()
-    d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70006_20200303_zm0.8zx1.61st0.dat').transpose()
+def plot3ELG(xidir=''):
+    d1 = np.loadtxt(xidir+'minisvxi/xiELG70004_20200219_zm0.8zx1.61st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG70005_20200228_zm0.8zx1.61st0.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiELG70006_20200303_zm0.8zx1.61st0.dat').transpose()
     plt.loglog(d1[0],d1[1],label='MINI_SV_ELG, Tile 70004')
     plt.loglog(d2[0],d2[1],label='MINI_SV_ELG, Tile 70005')
     plt.loglog(d3[0],d3[1],label='MINI_SV_ELG, Tile 70006')
@@ -262,9 +264,9 @@ def plot3ELG():
     plt.ylim(1.e-3,30)
     plt.show()
 
-def plotELG0():
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
+def plotELG0(xidir=''):
+    d1 = np.loadtxt(xidir+'xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
     plt.loglog(d1[0],d1[1],label='SV0_ELG, Tile 67142')
     plt.loglog(d2[0],d2[1],label='SV0_ELG, Tile 67230')
     dm = (d1[1]+d2[1])/2.
@@ -274,9 +276,9 @@ def plotELG0():
     plt.show()
 
 
-def plot2LRG():
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70002_20200304_zm0.5zx1.11st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70003_20200228_zm0.5zx1.11st0.dat').transpose()
+def plot2LRG(xidir=''):
+    d1 = np.loadtxt(xidir+'xiLRG70002_20200304_zm0.5zx1.11st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG70003_20200228_zm0.5zx1.11st0.dat').transpose()
     plt.loglog(d1[0],d1[1],label='MINI_SV_LRG, Tile 70002')
     plt.loglog(d2[0],d2[1],label='MINI_SV_LRG, Tile 70003')
     dm = (d1[1]+d2[1])/2.
@@ -285,9 +287,9 @@ def plot2LRG():
     plt.ylim(1.e-3,30)
     plt.show()
 
-def plotLRG0():
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68001_20200315_zm0.5zx1.11st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68002_20200315_zm0.5zx1.11st0.dat').transpose()
+def plotLRG0(xidir=''):
+    d1 = np.loadtxt(xidir+'xiLRG68001_20200315_zm0.5zx1.11st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG68002_20200315_zm0.5zx1.11st0.dat').transpose()
     plt.loglog(d1[0],d1[1],label='SV0_LRG, Tile 68001')
     plt.loglog(d2[0],d2[1],label='SV0_LRG, Tile 68002')
     dm = (d1[1]+d2[1])/2.
@@ -296,9 +298,9 @@ def plotLRG0():
     plt.ylim(1.e-3,30)
     plt.show()
 
-def plotQSO0():
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiQSO68001_20200315_zm0.8zx2.25st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiQSO68002_20200315_zm0.8zx2.25st0.dat').transpose()
+def plotQSO0(xidir=''):
+    d1 = np.loadtxt(xidir+'xiQSO68001_20200315_zm0.8zx2.25st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiQSO68002_20200315_zm0.8zx2.25st0.dat').transpose()
     plt.loglog(d1[0],d1[1],label='SV0_QSO, Tile 68001')
     plt.loglog(d2[0],d2[1],label='SV0_QSO, Tile 68002')
     dm = (d1[1]+d2[1])/2.
@@ -308,17 +310,17 @@ def plotQSO0():
     plt.show()
 
 
-def plotxicomb():
-    xilin = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70005_20200228_zm0.8zx1.6bsc.dat').transpose()
-    d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG70006_20200303_zm0.8zx1.6bsc.dat').transpose()
+def plotxicomb(xidir=''):
+    xilin = np.loadtxt(xidir+'xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiELG70004_20200219_zm0.8zx1.6bsc.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG70005_20200228_zm0.8zx1.6bsc.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiELG70006_20200303_zm0.8zx1.6bsc.dat').transpose()
     dme = (d1[1]+d2[1]+d3[1])/3.
 
     
     plt.loglog(d1[0],dme,'b-',label='MINI_SV_ELG, mean 70004,5,6')
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70002_20200304_zm0.5zx1.1bsc.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG70003_20200228_zm0.5zx1.1bsc.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiLRG70002_20200304_zm0.5zx1.1bsc.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG70003_20200228_zm0.5zx1.1bsc.dat').transpose()
     dml = (d1[1]+d2[1])/2.
     ml = (d1[0]/7.78)**-1.98
     plt.loglog(d1[0],dml,'r-',label='MINI_SV_LRG, mean 70002,3')
@@ -326,20 +328,20 @@ def plotxicomb():
     plt.legend()
     plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
     plt.ylabel(r'$\xi$')
-    plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSVxicomb.png')
+    plt.savefig(xidir+'miniSVxicomb.png')
     plt.show()
 
-def plotxicomb_dec(bs=1):
-    xilin = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiELG80606_20201216_zm0.8zx1.6'+str(bs)+'st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiELG80608_20201215_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
-    d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiELG80610_20201216_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+def plotxicomb_dec(bs=1,xidir=''):
+    xilin = np.loadtxt(xidir+'xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiELG80606_20201216_zm0.8zx1.6'+str(bs)+'st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG80608_20201215_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiELG80610_20201216_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
     dme = (d1[1]+d2[1]+d3[1])/3.    
     plt.loglog(d1[0],dme,'b-',label='DEC_SV1_ELG, mean 80606,08,10')
 
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiLRG80605_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiLRG80607_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
-    d3 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xiLRG80609_20201216_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiLRG80605_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG80607_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiLRG80609_20201216_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
     dml = (d1[1]+d2[1])/2.
     ml = (d1[0]/7.78)**-1.98
     plt.loglog(d1[0],dml,'r-',label='DEC_SV1_LRG, mean 80605,7,9')
@@ -352,19 +354,19 @@ def plotxicomb_dec(bs=1):
     plt.ylabel(r'$\xi$')
     plt.ylim(1.e-2,70)
     plt.xlim(0.25,60)
-    plt.savefig('/Users/ashleyross/Dropbox/DESI/SV_DEC20/xicomb'+str(bs)+'.png')
+    plt.savefig(xidir+'xicomb'+str(bs)+'.png')
     plt.show()
 
 
-def plotxicomb0():
-    xilin = np.loadtxt('/Users/ashleyross/GitHub/BAOfit/BAOtemplates/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
+def plotxicomb0(xidir=''):
+    xilin = np.loadtxt(xidir+'xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiELG67142_20200315_zm0.8zx1.61st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG67230_20200315_zm0.8zx1.61st0.dat').transpose()
     dme = (d1[1]+d2[1])/2.  
     plt.loglog(d1[0],dme,'b-',label='SV0_ELG, mean 67142,67230')
 
-    d1 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68001_20200315_zm0.5zx1.11st0fid.dat').transpose() 
-    d2 = np.loadtxt('/Users/ashleyross/Dropbox/DESI/minisvxi/xiLRG68002_20200315_zm0.5zx1.11st0fid.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiLRG68001_20200315_zm0.5zx1.11st0fid.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG68002_20200315_zm0.5zx1.11st0fid.dat').transpose()
     dml = (d1[1]+d2[1])/2.
     ml = (d1[0]/7.78)**-1.98
     plt.loglog(d1[0],dml,'r-',label='SV0_LRG, mean 68001,68002')
@@ -376,28 +378,31 @@ def plotxicomb0():
     plt.ylabel(r'$\xi$')
     plt.ylim(1.e-2,70)
     plt.xlim(0.25,60)
-    plt.savefig('/Users/ashleyross/Dropbox/DESI/miniSV0xicomb.png')
+    plt.savefig(xidir+'miniSV0xicomb.png')
     plt.show()
 
 
 if __name__ == '__main__':
-    import subprocess
-    night = '20200315'
-    type = 'LRG'
-    tile = '68001'
+	import subprocess
+	minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+	datadir = minisvdir+'LSScats/'
+
+	night = '20200315'
+	type = 'LRG'
+	tile = '68001'
 #   gf = createSourcesrd_ad(type,tile,night)
 #   subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 #   subprocess.run('./dopc'+gf+'.sh')
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
-    type = 'QSO'
-    gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2)
-    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-    subprocess.run('./dopc'+gf+'.sh')
-    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
-    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
-    tile = '68002'
+	type = 'QSO'
+	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+	tile = '68002'
 
 #   type = 'LRG'
 #   gf = createSourcesrd_ad(type,tile,night)
@@ -406,12 +411,12 @@ if __name__ == '__main__':
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
-    type = 'QSO'
-    gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2)
-    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-    subprocess.run('./dopc'+gf+'.sh')
-    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
-    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+	type = 'QSO'
+	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
 
 #   type = 'ELG'
 #   tile = '67230'
