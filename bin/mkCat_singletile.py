@@ -162,12 +162,12 @@ if docatplots:
 
 if doclus:
 	import subprocess
-    dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
-    dirpc = os.environ['CSCRATCH']+'/paircounts/'
-    if not os.path.exists(dirpc):
-        os.mkdir(dirpcadw)
-    if not os.path.exists(dirpc):
-        os.mkdir(dirpc)
+	dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+	dirpc = os.environ['CSCRATCH']+'/paircounts/'
+	if not os.path.exists(dirpc):
+		os.mkdir(dirpcadw)
+	if not os.path.exists(dirpc):
+		os.mkdir(dirpc)
 
 	if type == 'ELG':
 		zmin = .8
