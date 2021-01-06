@@ -6,6 +6,7 @@ import fitsio
 import astropy.io.fits as fits
 import healpy as hp
 from scipy.special import erf
+from astropy.table import Table
 
 colorcuts_function = cuts.isELG_colors
 
@@ -63,7 +64,58 @@ cg = np.random.default_rng().multivariate_normal(ml,cv,len(gflux))
 cg = cg.transpose()
 
 
+def perturb_flux(ina,outf='test.fits'):
+	'''
+	ina should be input array containing necessary columns
+	the idea here is that input photometry + flux errors and their cov given by cv an output distribution consistent with Obiwan could be produced
+	'''
 
+	vv = np.zeros(3)
+	cc = np.ones((3,3))
+	cc[0][0] = 1.86
+	cc[1][1] = 1.75
+	cc[2][2] = 1.64
+	cc[0][1] = 0.643
+	cc[1][0] = cc[0][1]
+	cc[0][2] = 0.321
+	cc[2][0] = 0.321
+	cc[1][2] = 0.341
+	cc[2][1] = cc[1][2]
+	pg = np.random.default_rng().multivariate_normal(vv,cc,len(ina)) #this provides correlated vectors for perturbing fluxes
+	gflux = ina['input_flux_g'] #column name from Obiwan file
+	rflux = ina['input_flux_r'] #column name from Obiwan file
+	zflux = ina['input_flux_z'] #column name from Obiwan file
+	wtg = ina['input_mw_transmission_g']
+	wtr = ina['input_mw_transmission_r']
+	wtz = ina['input_mw_transmission_z']
+	gsig = (1.35/ina['galdepth_g'])**.5 #factors are based on ivar/galdepth from obiwan output
+	rsig = (1.44/ina['galdepth_r'])**.5
+	zsig = (1.66/ina['galdepth_z'])**.5
+
+	mgflux = gflux*wtg + pg[0]*gsig
+	mrflux = rflux*wtr + pg[1]*rsig
+	mzflux = zflux*wtz + pg[2]*zsig
+
+	snrg = mgflux/gsig    
+	snrr = mrflux/rsig    
+	snrz = mzflux/zsig
+
+	flatmap = mgflux/(gsig)**2+mrflux/(rsig)**2+mzflux/(zsig)**2
+	fdiv = 1./(gsig)**2+1./rsig**2+1./(zsig)**2
+	flatmap   /= np.maximum(1.e-16, fdiv)
+	combined_snr2 = flatmap**2.*fdiv
+
+	redmap = mgflux/(gsig)**2/2.5+mrflux/rsig**2+mzflux/(zsig)**2/0.4
+	sediv = 1./(gsig*2.5)**2+1./rsig**2+1./(zsig*0.4)**2
+	redmap   /= np.maximum(1.e-16, sediv)
+	combined_snrred2 = redmap**2. * (sediv) 
+
+	to = Table([gflux,rflux,zflux,wtg,wtr,wtz,ina['galdepth_g'],ina['galdepth_r'],ina['galdepth_z'],snrg,snrr,snrz,combined_snr2,combined_snrred2],\
+			   names=('input_flux_g','input_flux_r','input_flux_z','input_mw_transmission_g','input_mw_transmission_r','input_mw_transmission_z','galdepth_g','galdepth_r','galdepth_z','snr_g','snr_r','snr_z','combined_snr2','combined_snrred2'))
+	to.write(outf,format='fits',overwrite=True)  
+	return True         
+    
+    
 
 
 def ELGeffcalcExt(gsig,rsig,zsig,wtg,wtr,wtz,south=True,snrc=True,zmin=-1,zmax=20,corr=True,gf=1.,rf=1.,zf=1.,dg=0,dr=0,dz=0,sg=0,gfluxcut=None,rsel=False,vis=False,gefac=0):
