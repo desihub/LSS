@@ -5,7 +5,7 @@
 #from math import sqrt,cos,log10,modf
 from math import *
 #from scipy.integrate import romberg
-from romberg import rom
+from LSS.romberg import rom
 #from scipy.special import gamma as gamfunc
 #from gamma import gamfunc
 #from scipy import interpolate
