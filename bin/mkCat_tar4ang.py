@@ -41,7 +41,7 @@ if not os.path.exists(outdir):
 
 dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
 dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
-targroot = '/project/projectdirs/desi/target/catalogs/dr9m/'+default+'/targets/main/resolve/'
+targroot = '/project/projectdirs/desi/target/catalogs/dr9m/'+tarver+'/targets/main/resolve/'
 
 sfs = glob.glob(dirsweeps+'sweep*')
 sfn = glob.glob(dirsweepn+'sweep*')
