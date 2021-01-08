@@ -77,7 +77,7 @@ if domaskr:
         #need to restrict columns on line above otherwise run out of memory
         rr = ss.mask(rr,elgandlrgbits)
         outf = outdir+'randomsDR9v'+tarver.strip('.')+'_'+str(ii)+'_masked.fits'
-        fitsio.write(outf,dd,clobber=True)
+        fitsio.write(outf,rr,clobber=True)
         print('wrote to '+outf)
            
 
