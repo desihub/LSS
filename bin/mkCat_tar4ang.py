@@ -73,7 +73,8 @@ if domaskd:
 
 if domaskr:     
     for ii in range(0,nran):
-        rr = fitsio.read(ranroot+str(ii)+'.fits')
+        rr = fitsio.read(ranroot+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']) 
+        #need to restrict columns on line above otherwise run out of memory
         rr = rr.mask(rr,elgandlrgbits)
         outf = outdir+'randomsDR9v'+tarver.strip('.')+'_'+str(ii)+'_masked.fits'
         fitsio.write(outf,dd,clobber=True)
