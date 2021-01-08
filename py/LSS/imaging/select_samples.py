@@ -9,6 +9,18 @@ from desitarget import targetmask
 import astropy.io.fits as fits
 
 
+def mask(dd,mb=[1,5,6,7,11,12,13]):
+    keep = (dd['NOBS_G']>0) & (dd['NOBS_R']>0) & (dd['NOBS_Z']>0)
+    print(len(dd[keep]))
+    
+    keepelg = keep
+    for bit in mb:
+        keepelg &= ((dd['MASKBITS'] & 2**bit)==0)
+    print(len(dd[keepelg]))
+    dd = dd[keepelg] 
+    return dd       
+
+
 def gather_targets(type,targroot,outdir,tarver,prog='dark'):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
 	print(targroot+prog)
@@ -44,6 +56,7 @@ def gather_targets(type,targroot,outdir,tarver,prog='dark'):
 	fitsio.write(outf,data,clobber=True)
 	print('wrote to '+outf)
 	del data
+	#return outf
 
 	
 def starsel_sweep(f,gfluxmin):
