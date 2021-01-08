@@ -65,18 +65,18 @@ if mkbsamp: #concatenate target files for given type, with column selection hard
     ss.gather_targets(type,targroot,outdir,tarver,prog)
 
 if domaskd:
-	dd = fitsio.read(outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'  )
-	dd = ss.mask(dd,elgandlrgbits)
-	outf = outdir+type +'targetsDR9v'+tarver.strip('.')+'_masked.fits'
-	fitsio.write(outf,dd,clobber=True)
-	print('wrote to '+outf)
+    dd = fitsio.read(outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'  )
+    dd = ss.mask(dd,elgandlrgbits)
+    outf = outdir+type +'targetsDR9v'+tarver.strip('.')+'_masked.fits'
+    fitsio.write(outf,dd,clobber=True)
+    print('wrote to '+outf)
 
 if domaskr:     
     for ii in range(0,nran):
-		rr = fitsio.read(ranroot+str(i)+'.fits')
-		rr = rr.mask(rr,elgandlrgbits)
-		outf = outdir+'randomsDR9v'+tarver.strip('.')+'_'+str(ii)+'_masked.fits'
-		fitsio.write(outf,dd,clobber=True)
-		print('wrote to '+outf)
+        rr = fitsio.read(ranroot+str(i)+'.fits')
+        rr = rr.mask(rr,elgandlrgbits)
+        outf = outdir+'randomsDR9v'+tarver.strip('.')+'_'+str(ii)+'_masked.fits'
+        fitsio.write(outf,dd,clobber=True)
+        print('wrote to '+outf)
            
 
