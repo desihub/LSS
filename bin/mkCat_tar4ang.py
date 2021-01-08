@@ -53,7 +53,7 @@ sfn = glob.glob(dirsweepn+'sweep*')
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
 
 mkbsamp = False #make the base sample
-domaskd = True #mask data based on mask bits above
+domaskd = False #mask data based on mask bits above
 domaskr = True #mask randoms
 
 print('type being used for bright/dark '+type[:3])
@@ -73,7 +73,7 @@ if domaskd:
 
 if domaskr:     
     for ii in range(0,nran):
-        rr = fitsio.read(ranroot+str(i)+'.fits')
+        rr = fitsio.read(ranroot+str(ii)+'.fits')
         rr = rr.mask(rr,elgandlrgbits)
         outf = outdir+'randomsDR9v'+tarver.strip('.')+'_'+str(ii)+'_masked.fits'
         fitsio.write(outf,dd,clobber=True)
