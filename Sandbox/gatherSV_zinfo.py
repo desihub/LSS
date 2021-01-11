@@ -69,7 +69,7 @@ for night in subsets:
                 fitsio.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits')
                 specs.append(si)
             except:
-                print('no spectrograph '+str(si)+ ' on subset '+d)
+                print('no spectrograph '+str(si)+ ' on subset '+night)
         tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
         tf = Table.read(coaddir+str(tile)+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         for i in range(1,len(specs)):
