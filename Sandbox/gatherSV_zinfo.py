@@ -67,7 +67,7 @@ for night in subsets:
         for si in range(0,10):
             try:
                 fl = coaddir+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
-                print(fl)
+                #print(fl)
                 fitsio.read(fl)
                 specs.append(si)
             except:
@@ -83,7 +83,7 @@ for night in subsets:
         wtype = ((tspec[tp] & 2**tarbit) > 0)
         print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type)
         tspec = tspec[wtype]
-        tspec[subset] = night
+        tspec['subset'] = night
         if ss == 0:
             tspect = tspec
             ss = 1
