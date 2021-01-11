@@ -83,7 +83,7 @@ for night in subsets:
             ss = 1
         else:
             tspect = vstack([tspect,tspec])
-        print('there are now '+str(len(tspect)) ' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+        print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
 
 tspect.sort('TARGETID')
 tspect.write(outf,format='fits', overwrite=True) 
