@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use") #eventually remove this and just gather everything
-
+args = parser.parse_args()
 type = args.type
 tile = args.tile
 
