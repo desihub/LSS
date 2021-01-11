@@ -66,7 +66,9 @@ for night in subsets:
         #find out which spectrograph have data
         for si in range(0,10):
             try:
-                fitsio.read(coaddir+'/'+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits')
+                fl = coaddir+'/'+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+                print(fl)
+                fitsio.read(fl)
                 specs.append(si)
             except:
                 print('no spectrograph '+str(si)+ ' on subset '+night)
