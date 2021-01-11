@@ -66,17 +66,17 @@ for night in subsets:
         #find out which spectrograph have data
         for si in range(0,10):
             try:
-                fl = coaddir+'/'+str(tile)+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+                fl = coaddir+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
                 print(fl)
                 fitsio.read(fl)
                 specs.append(si)
             except:
                 print('no spectrograph '+str(si)+ ' on subset '+night)
-        tspec = Table.read(coaddir+'/'+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-        tf = Table.read(coaddir+'/'+str(tile)+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+        tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         for i in range(1,len(specs)):
-            tn = Table.read(coaddir+'/'+str(tile)+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-            tnf = Table.read(coaddir+'/'+str(tile)+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+            tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+            tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
             tspec = vstack([tspec,tn])
             tf = vstack([tf,tnf])
         tspec = join(tspec,tf,keys=['TARGETID'])
