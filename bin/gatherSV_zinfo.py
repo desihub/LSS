@@ -106,34 +106,34 @@ for night in subsets:
                 tspec = vstack([tspec,tn])                      
                 tf = vstack([tf,tnf])
             
-    #             zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-    #             exps = np.unique(zfm['EXPID'])
-    #             bd = []
-    #             rd = []
-    #             zd = []
-    #             for exp in exps:
-    #                 info = exposures[exposures['EXPID'] == exp]
-    #                 bd.append(info['B_DEPTH'][0])
-    #                 rd.append(info['R_DEPTH'][0])
-    #                 zd.append(info['Z_DEPTH'][0])        
-    #             bdtn = np.zeros(500)
-    #             rdtn = np.zeros(500)
-    #             zdtn = np.zeros(500)
-    #             for i in range(0,len(exps)):
-    #                 sel = zfm[i*500:(i+1)*500]
-    #                 w = sel['FIBERSTATUS'] == 0
-    #                 bdtn[w] += bd[i]
-    #                 rdtn[w] += rd[i]
-    #                 zdtn[w] += zd[i]
-    #             bdt = np.concatenate([bdt,bdtn])
-    #             rdt = np.concatenate([rdt,rdtn])
-    #             zdt = np.concatenate([zdt,zdtn])    
+                zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+                exps = np.unique(zfm['EXPID'])
+                bd = []
+                rd = []
+                zd = []
+                for exp in exps:
+                    info = exposures[exposures['EXPID'] == exp]
+                    bd.append(info['B_DEPTH'][0])
+                    rd.append(info['R_DEPTH'][0])
+                    zd.append(info['Z_DEPTH'][0])        
+                bdtn = np.zeros(500)
+                rdtn = np.zeros(500)
+                zdtn = np.zeros(500)
+                for ii in range(0,len(exps)):
+                    sel = zfm[ii*500:(ii+1)*500]
+                    w = sel['FIBERSTATUS'] == 0
+                    bdtn[w] += bd[ii]
+                    rdtn[w] += rd[ii]
+                    zdtn[w] += zd[ii]
+                bdt = np.concatenate([bdt,bdtn])
+                rdt = np.concatenate([rdt,rdtn])
+                zdt = np.concatenate([zdt,zdtn])    
             
 
             tspec = join(tspec,tf,keys=['TARGETID'])
-    #         tspec['B_DEPTH'] = bdt
-    #         tspec['R_DEPTH'] = rdt
-    #         tspec['Z_DEPTH'] = zdt
+            tspec['B_DEPTH'] = bdt
+            tspec['R_DEPTH'] = rdt
+            tspec['Z_DEPTH'] = zdt
         
             wtype = ((tspec[tp] & 2**tarbit) > 0)
             print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
