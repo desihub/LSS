@@ -74,76 +74,77 @@ for night in subsets:
                 specs.append(si)
             except:
                 print('no spectrograph '+str(si)+ ' on subset '+night)
-        tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-        tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        if len(specs) > 2:
+			tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+			tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
 
-        #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
-        zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-        exps = np.unique(zfm['EXPID'])
-        bd = []
-        rd = []
-        zd = []
-        for exp in exps:
-            info = exposures[exposures['EXPID'] == exp]
-            print(info['B_DEPTH'])
-            bd.append(info['B_DEPTH'][0])
-            rd.append(info['R_DEPTH'][0])
-            zd.append(info['Z_DEPTH'][0])        
-        bdt = np.zeros(500)
-        rdt = np.zeros(500)
-        zdt = np.zeros(500)
-        for i in range(0,len(exps)):
-            sel = zfm[i*500:(i+1)*500]
-            w = sel['FIBERSTATUS'] == 0
-            bdt[w] += bd[i]
-            rdt[w] += rd[i]
-            zdt[w] += zd[i]
-        
-        for i in range(1,len(specs)):
-            tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-            tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
-            tspec = vstack([tspec,tn])                      
-            tf = vstack([tf,tnf])
-            
-#             zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-#             exps = np.unique(zfm['EXPID'])
-#             bd = []
-#             rd = []
-#             zd = []
-#             for exp in exps:
-#                 info = exposures[exposures['EXPID'] == exp]
-#                 bd.append(info['B_DEPTH'][0])
-#                 rd.append(info['R_DEPTH'][0])
-#                 zd.append(info['Z_DEPTH'][0])        
-#             bdtn = np.zeros(500)
-#             rdtn = np.zeros(500)
-#             zdtn = np.zeros(500)
-#             for i in range(0,len(exps)):
-#                 sel = zfm[i*500:(i+1)*500]
-#                 w = sel['FIBERSTATUS'] == 0
-#                 bdtn[w] += bd[i]
-#                 rdtn[w] += rd[i]
-#                 zdtn[w] += zd[i]
-#             bdt = np.concatenate([bdt,bdtn])
-#             rdt = np.concatenate([rdt,rdtn])
-#             zdt = np.concatenate([zdt,zdtn])    
-            
+			#this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
+			zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+			exps = np.unique(zfm['EXPID'])
+			bd = []
+			rd = []
+			zd = []
+			for exp in exps:
+				info = exposures[exposures['EXPID'] == exp]
+				print(info['B_DEPTH'])
+				bd.append(info['B_DEPTH'][0])
+				rd.append(info['R_DEPTH'][0])
+				zd.append(info['Z_DEPTH'][0])        
+			bdt = np.zeros(500)
+			rdt = np.zeros(500)
+			zdt = np.zeros(500)
+			for i in range(0,len(exps)):
+				sel = zfm[i*500:(i+1)*500]
+				w = sel['FIBERSTATUS'] == 0
+				bdt[w] += bd[i]
+				rdt[w] += rd[i]
+				zdt[w] += zd[i]
+		
+			for i in range(1,len(specs)):
+				tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+				tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
+				tspec = vstack([tspec,tn])                      
+				tf = vstack([tf,tnf])
+			
+	#             zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+	#             exps = np.unique(zfm['EXPID'])
+	#             bd = []
+	#             rd = []
+	#             zd = []
+	#             for exp in exps:
+	#                 info = exposures[exposures['EXPID'] == exp]
+	#                 bd.append(info['B_DEPTH'][0])
+	#                 rd.append(info['R_DEPTH'][0])
+	#                 zd.append(info['Z_DEPTH'][0])        
+	#             bdtn = np.zeros(500)
+	#             rdtn = np.zeros(500)
+	#             zdtn = np.zeros(500)
+	#             for i in range(0,len(exps)):
+	#                 sel = zfm[i*500:(i+1)*500]
+	#                 w = sel['FIBERSTATUS'] == 0
+	#                 bdtn[w] += bd[i]
+	#                 rdtn[w] += rd[i]
+	#                 zdtn[w] += zd[i]
+	#             bdt = np.concatenate([bdt,bdtn])
+	#             rdt = np.concatenate([rdt,rdtn])
+	#             zdt = np.concatenate([zdt,zdtn])    
+			
 
-        tspec = join(tspec,tf,keys=['TARGETID'])
-#         tspec['B_DEPTH'] = bdt
-#         tspec['R_DEPTH'] = rdt
-#         tspec['Z_DEPTH'] = zdt
-        
-        wtype = ((tspec[tp] & 2**tarbit) > 0)
-        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
-        tspec = tspec[wtype]
-        tspec['subset'] = night
-        if ss == 0:
-            tspect = tspec
-            ss = 1
-        else:
-            tspect = vstack([tspect,tspec])
-        print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+			tspec = join(tspec,tf,keys=['TARGETID'])
+	#         tspec['B_DEPTH'] = bdt
+	#         tspec['R_DEPTH'] = rdt
+	#         tspec['Z_DEPTH'] = zdt
+		
+			wtype = ((tspec[tp] & 2**tarbit) > 0)
+			print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+			tspec = tspec[wtype]
+			tspec['subset'] = night
+			if ss == 0:
+				tspect = tspec
+				ss = 1
+			else:
+				tspect = vstack([tspect,tspec])
+			print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
 
 tspect.sort('TARGETID')
 tspect.write(outf,format='fits', overwrite=True) 
