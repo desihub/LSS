@@ -78,26 +78,26 @@ for night in subsets:
         tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
 
         #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
-#         zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-#         exps = np.unique(zfm['EXPID'])
-#         bd = []
-#         rd = []
-#         zd = []
-#         for exp in exps:
-#             info = exposures[exposures['EXPID'] == exp]
-#             print(info['B_DEPTH'])
-#             bd.append(info['B_DEPTH'][0])
-#             rd.append(info['R_DEPTH'][0])
-#             zd.append(info['Z_DEPTH'][0])        
-#         bdt = np.zeros(500)
-#         rdt = np.zeros(500)
-#         zdt = np.zeros(500)
-#         for i in range(0,len(exps)):
-#             sel = zfm[i*500:(i+1)*500]
-#             w = sel['FIBERSTATUS'] == 0
-#             bdt[w] += bd[i]
-#             rdt[w] += rd[i]
-#             zdt[w] += zd[i]
+        zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        exps = np.unique(zfm['EXPID'])
+        bd = []
+        rd = []
+        zd = []
+        for exp in exps:
+            info = exposures[exposures['EXPID'] == exp]
+            print(info['B_DEPTH'])
+            bd.append(info['B_DEPTH'][0])
+            rd.append(info['R_DEPTH'][0])
+            zd.append(info['Z_DEPTH'][0])        
+        bdt = np.zeros(500)
+        rdt = np.zeros(500)
+        zdt = np.zeros(500)
+        for i in range(0,len(exps)):
+            sel = zfm[i*500:(i+1)*500]
+            w = sel['FIBERSTATUS'] == 0
+            bdt[w] += bd[i]
+            rdt[w] += rd[i]
+            zdt[w] += zd[i]
         
         for i in range(1,len(specs)):
             tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
