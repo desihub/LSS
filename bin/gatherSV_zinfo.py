@@ -98,30 +98,30 @@ for night in subsets:
         tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         for i in range(1,len(specs)):
             tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-			tspec = vstack([tspec,tn])
-			
-			zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-			exps = np.unique(zfm['EXPID'])
-			bd = []
-			rd = []
-			zd = []
-			for exp in exps:
-				info = exposures[exposures['EXPID'] == exp]
-				bd.append(info['B_DEPTH'][0])
-				rd.append(info['R_DEPTH'][0])
-				zd.append(info['Z_DEPTH'][0])        
-			bdtn = np.zeros(500)
-			rdtn = np.zeros(500)
-			zdtn = np.zeros(500)
-			for i in range(0,len(exps)):
-				sel = zfm[i*500:(i+1)*500]
-				w = sel['FIBERSTATUS'] == 0
-				bdtn[w] += bd[i]
-				rdtn[w] += rd[i]
-				zdtn[w] += zd[i]
-			bdt = np.concatenate([bdt,bdtn])
-			rdt = np.concatenate([rdt,rdtn])
-			zdt = np.concatenate([zdt,zdtn])	
+            tspec = vstack([tspec,tn])
+            
+            zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+            exps = np.unique(zfm['EXPID'])
+            bd = []
+            rd = []
+            zd = []
+            for exp in exps:
+                info = exposures[exposures['EXPID'] == exp]
+                bd.append(info['B_DEPTH'][0])
+                rd.append(info['R_DEPTH'][0])
+                zd.append(info['Z_DEPTH'][0])        
+            bdtn = np.zeros(500)
+            rdtn = np.zeros(500)
+            zdtn = np.zeros(500)
+            for i in range(0,len(exps)):
+                sel = zfm[i*500:(i+1)*500]
+                w = sel['FIBERSTATUS'] == 0
+                bdtn[w] += bd[i]
+                rdtn[w] += rd[i]
+                zdtn[w] += zd[i]
+            bdt = np.concatenate([bdt,bdtn])
+            rdt = np.concatenate([rdt,rdtn])
+            zdt = np.concatenate([zdt,zdtn])    
             
             tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')            
             tf = vstack([tf,tnf])
