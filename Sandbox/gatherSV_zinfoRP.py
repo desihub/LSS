@@ -103,7 +103,7 @@ fl = '/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/test/'+s
 td = Table.read(fl)
 td = td[td['subset']=='deep']
 
-tspec = join(tspec,td,keys='TARGETID')
+tspect = join(tspect,td,keys='TARGETID')
 
 
 tspect.sort('TARGETID')
