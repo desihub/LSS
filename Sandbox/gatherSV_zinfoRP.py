@@ -105,7 +105,7 @@ td = td[td['subset']=='deep']
 
 kc = []
 for col in tspect.columns:
-    col.append(col)
+    kc.append(col)
 
 td.keep_columns(kc)
 
