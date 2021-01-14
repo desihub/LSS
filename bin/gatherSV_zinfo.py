@@ -93,6 +93,7 @@ for night in subsets:
             bdt = np.zeros(500)
             rdt = np.zeros(500)
             zdt = np.zeros(500)
+            tid = zfm[0:500]['TARGETID']
             for i in range(0,len(exps)):
                 sel = zfm[i*500:(i+1)*500]
                 w = sel['FIBERSTATUS'] == 0
@@ -119,6 +120,7 @@ for night in subsets:
                 bdtn = np.zeros(500)
                 rdtn = np.zeros(500)
                 zdtn = np.zeros(500)
+                tidn = zfm[0:500]['TARGETID']
                 for ii in range(0,len(exps)):
                     sel = zfm[ii*500:(ii+1)*500]
                     w = sel['FIBERSTATUS'] == 0
@@ -127,13 +129,18 @@ for night in subsets:
                     zdtn[w] += zd[ii]
                 bdt = np.concatenate([bdt,bdtn])
                 rdt = np.concatenate([rdt,rdtn])
-                zdt = np.concatenate([zdt,zdtn])    
+                zdt = np.concatenate([zdt,zdtn])   
+                tid = np.concatenate([tid,tidn])
+                print(np.min(rdtn),np.max(rdtn)) 
+                print(np.min(rdt),np.max(rdt)) 
             
 
             tspec = join(tspec,tf,keys=['TARGETID'])
-            tspec['B_DEPTH'] = bdt
-            tspec['R_DEPTH'] = rdt
-            tspec['Z_DEPTH'] = zdt
+            td = Table([bdt,rdt,zdt,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','TARGETID'))
+            tspec = join(tspec,td,keys=['TARGETID'])
+            #tspec['B_DEPTH'] = bdt
+            #tspec['R_DEPTH'] = rdt
+            #tspec['Z_DEPTH'] = zdt
         
             wtype = ((tspec[tp] & 2**tarbit) > 0)
             print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
