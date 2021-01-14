@@ -131,8 +131,8 @@ for night in subsets:
                 rdt = np.concatenate([rdt,rdtn])
                 zdt = np.concatenate([zdt,zdtn])   
                 tid = np.concatenate([tid,tidn])
-                print(np.min(rdtn),np.max(rdtn)) 
-                print(np.min(rdt),np.max(rdt)) 
+                #print(np.min(rdtn),np.max(rdtn)) 
+                #print(np.min(rdt),np.max(rdt)) 
             
 
             tspec = join(tspec,tf,keys=['TARGETID'])
