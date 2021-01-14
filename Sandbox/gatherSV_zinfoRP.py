@@ -89,7 +89,7 @@ for ep in exps:
 	wtype = ((tspec[tp] & 2**tarbit) > 0)
 	print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
 	tspec = tspec[wtype]
-	tspec['subset'] = ep
+	tspec['subset'] = str(ep)
 	if ss == 0:
 		tspect = tspec
 		ss = 1
