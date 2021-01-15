@@ -56,7 +56,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         zd = []
         for exp in exps:
             info = exposures[exposures['EXPID'] == exp]
-            if len(info) == 0:
+            if len(info['B_DEPTH']) == 0:
                 print('did not find info for expid '+exp)
                 return None
             else:    
