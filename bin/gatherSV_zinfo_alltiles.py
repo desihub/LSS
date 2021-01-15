@@ -84,6 +84,7 @@ tiles = np.unique(exposures['TILEID'])
 print('looking for data in these tiles:')
 print(tiles)
 
+tilew = []
 for tile in tiles:
     if tile != 80615: #that tile used cmx target bits
         tile = str(tile)
@@ -96,10 +97,25 @@ for tile in tiles:
             try:
                 fitsio.FITS(outf)
                 print(outf+' exists already')
+                tilew.append(tile)
             except:
                 zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+                tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
       
 
-    #
+#combine all the tiles
+
+dt = Table.read(dirout +'/'+tilew[0]+'_'+type+'zinfo.fits')
+dt['TILEID'] = int(tilew[0])
+for i in range(1,len(tilew)):
+    dtn = Table.read(dirout +'/'+tilew[i]+'_'+type+'zinfo.fits')
+    dtn['TILEID'] = int(tilew[i])
+    dt = vstack([dt,dtn])
+
+#dt.sort('TARGETID')
+outfall = dirout +'/alltiles_'+type+'zinfo.fits'
+dt.write(outfall,format='fits', overwrite=True) 
+print('wrote to '+outfall)
+    
