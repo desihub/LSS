@@ -80,12 +80,15 @@ exposures = fitsio.read(expf) #this will be used in depth calculations
 #location of inputs
 tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles'
 
-tiles = [x[0][len(tiledir):].strip('/') for x in os.walk(tiledir)]
+tiles = np.unique(exposures['TILEID'])
 print(tiles)
 
 for tile in tiles:
+    tile = str(tile)
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
     subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
+    if len(subsets) > 1:
+        print(subsets)
     outf = dirout +'/'+tile+'_'+type+'zinfo.fits'  
 
     #zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
