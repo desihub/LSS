@@ -78,7 +78,7 @@ expf = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/sv1-exposures.fits
 exposures = fitsio.read(expf) #this will be used in depth calculations  
 
 #location of inputs
-tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles
+tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles'
 
 tiles = [x[0][len(tiledir):].strip('/') for x in os.walk(tiledir)]
 print(tiles)
