@@ -114,7 +114,7 @@ for i in range(1,len(tilew)):
     dtn['TILEID'] = int(tilew[i])
     dt = vstack([dt,dtn])
 
-#dt.sort('TARGETID')
+dt.sort('TARGETID')
 outfall = dirout +'/alltiles_'+type+'zinfo.fits'
 dt.write(outfall,format='fits', overwrite=True) 
 print('wrote to '+outfall)
