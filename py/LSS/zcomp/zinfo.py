@@ -1,6 +1,7 @@
 from astropy import Table,join
 import numpy as np
 
+'test'
 
 def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
     '''
