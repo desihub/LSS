@@ -65,4 +65,4 @@ if not os.path.exists(dirout):
 expf = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations    
 
-zi.comb_subset_vert(subsets,tile,coaddir,exposures,outf)
+zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)

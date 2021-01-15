@@ -4,7 +4,7 @@ import fitsio
 
 'test'
 
-def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
+def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf):
     '''
     performs a vertical concatenation of the data for a tile, so each targetid shows up N_subset times
     subsets is a list of the subsets (strings)
@@ -16,7 +16,7 @@ def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
     ss = 0 #use to switch from creating to concatenating
     for night in subsets:
         if len(night) > 0:
-            tspec = get_subset(night,tile,coaddir,exposures)
+            tspec = get_subset(tp,night,tile,coaddir,exposures)
             if ss == 0:
                 tspect = tspec
                 ss = 1
@@ -26,7 +26,7 @@ def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
     print('wrote to '+outf)
 
 
-def get_subset(night,tile,coaddir,exposures):
+def get_subset(tarbit,tp,night,tile,coaddir,exposures):
 
     print('going through subset '+night)
     specs = []
