@@ -68,7 +68,7 @@ if not os.path.exists(svdir+'redshift_comps/'+release):
 
 if not os.path.exists(svdir+'redshift_comps/'+release+'/'+version):
     os.mkdir(svdir+'redshift_comps/'+release+'/'+version)
-    print('made '+svdir+'redshift_comps/'+release+' directory')
+    print('made '+svdir+'redshift_comps/'+release+'/'+version+' directory')
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
@@ -81,6 +81,7 @@ exposures = fitsio.read(expf) #this will be used in depth calculations
 tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles'
 
 tiles = np.unique(exposures['TILEID'])
+print('looking for data in these tiles:')
 print(tiles)
 
 for tile in tiles:
@@ -90,8 +91,9 @@ for tile in tiles:
     if len(subsets) > 1:
         #print(subsets)
         outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
+        zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
     else:
         print('did not find data in '+release +' for tile '+tile)    
       
 
-    #zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+    #
