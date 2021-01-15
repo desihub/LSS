@@ -29,6 +29,7 @@ parser.add_argument("--release", help="what spectro release to use, e.g. blanc o
 args = parser.parse_args()
 type = args.type
 tile = args.tile
+release = args.release
 
 
 if type == 'LRG':
