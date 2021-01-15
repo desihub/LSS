@@ -56,10 +56,14 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         zd = []
         for exp in exps:
             info = exposures[exposures['EXPID'] == exp]
-            print(info['B_DEPTH'])
-            bd.append(info['B_DEPTH'][0])
-            rd.append(info['R_DEPTH'][0])
-            zd.append(info['Z_DEPTH'][0])        
+            if len(info) == 0:
+                print('did not find info for expid '+exp)
+                return None
+            else:    
+                print(info['B_DEPTH'])
+                bd.append(info['B_DEPTH'][0])
+                rd.append(info['R_DEPTH'][0])
+                zd.append(info['Z_DEPTH'][0])        
         bdt = np.zeros(500)
         rdt = np.zeros(500)
         zdt = np.zeros(500)
