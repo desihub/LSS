@@ -32,12 +32,16 @@ tile = args.tile
 release = args.release
 
 
-if type == 'LRG':
-    tarbit = 0 #targeting bit
-if type == 'QSO':
-    tarbit = 2
-if type == 'ELG':
-    tarbit = 1
+from desitarget.sv1 import sv1_targetmask
+
+tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
+
+#if type == 'LRG':
+#    tarbit = 0 #targeting bit
+#if type == 'QSO':
+#    tarbit = 2
+#if type == 'ELG':
+#    tarbit = 1
 
 print('gathering type,tile')
 print(type,tile)
