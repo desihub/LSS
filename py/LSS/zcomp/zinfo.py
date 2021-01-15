@@ -20,9 +20,9 @@ def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
                 tspect = tspec
                 ss = 1
                     
-	tspect.sort('TARGETID')
-	tspect.write(outf,format='fits', overwrite=True) 
-	print('wrote to '+outf)
+    tspect.sort('TARGETID')
+    tspect.write(outf,format='fits', overwrite=True) 
+    print('wrote to '+outf)
 
 
 def get_subset(night,tile,coaddir,exposures):
