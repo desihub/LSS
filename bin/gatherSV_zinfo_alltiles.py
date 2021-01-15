@@ -90,6 +90,7 @@ for tile in tiles:
     subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
     if len(subsets) > 1:
         #print(subsets)
+        print('going through tile '+tile)
         outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
         zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
     else:
