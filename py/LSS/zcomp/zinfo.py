@@ -1,4 +1,4 @@
-from astropy import Table,join
+from astropy.table import Table,join
 import numpy as np
 
 'test'
