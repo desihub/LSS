@@ -1,5 +1,6 @@
 from astropy.table import Table,join
 import numpy as np
+import fitsio
 
 'test'
 
@@ -36,7 +37,7 @@ def get_subset(night,tile,coaddir,exposures):
             fitsio.read(fl)
             specs.append(si)
         except:
-            print(fl,specs,si)
+            #print(fl,specs,si)
             print('no spectrograph '+str(si)+ ' on subset '+night)
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
         tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
