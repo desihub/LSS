@@ -56,7 +56,7 @@ version = 'test/'
 dirout = svdir+'redshift_comps/'+release+'/'+version
 outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
 
-if not os.path.exists(svdir+'redshift_comps'):
+if not os.path.exists(svdir+'redshift_comps'+release):
     os.mkdir(svdir+'redshift_comps/'+release)
     print('made '+svdir+'redshift_comps/'+release+' directory')
 
