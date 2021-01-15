@@ -20,9 +20,9 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf):
             if ss == 0:
                 tspect = tspec
                 ss = 1
-			else:
-				tspect = vstack([tspect,tspec])
-			print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+            else:
+                tspect = vstack([tspect,tspec])
+            print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     tspect.sort('TARGETID')
     tspect.write(outf,format='fits', overwrite=True) 
@@ -67,7 +67,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
             bdt[w] += bd[i]
             rdt[w] += rd[i]
             zdt[w] += zd[i]
-	
+    
         for i in range(1,len(specs)):
             tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
             tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
@@ -107,5 +107,5 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         tspec = tspec[wtype]
         tspec['subset'] = night
         return tspec
-		
-		
+        
+        
