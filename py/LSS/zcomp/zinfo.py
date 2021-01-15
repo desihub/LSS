@@ -15,8 +15,8 @@ def comb_subset_vert(subsets,tile,coaddir,exposures,outf):
     ss = 0 #use to switch from creating to concatenating
     for night in subsets:
         if len(night) > 0:
-			tspec = get_subset(night,tile,coaddir,exposures)
-			if ss == 0:
+            tspec = get_subset(night,tile,coaddir,exposures)
+            if ss == 0:
                 tspect = tspec
                 ss = 1
                     
