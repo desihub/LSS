@@ -20,6 +20,9 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf):
             if ss == 0:
                 tspect = tspec
                 ss = 1
+			else:
+				tspect = vstack([tspect,tspec])
+			print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     tspect.sort('TARGETID')
     tspect.write(outf,format='fits', overwrite=True) 
