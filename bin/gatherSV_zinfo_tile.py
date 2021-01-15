@@ -56,7 +56,7 @@ subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something 
 
 #outputs
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
-version = 'test/'
+version = 'test'
 dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+type
 outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
 
