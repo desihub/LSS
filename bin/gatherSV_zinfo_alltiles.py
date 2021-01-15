@@ -66,8 +66,8 @@ if not os.path.exists(svdir+'redshift_comps/'+release):
     os.mkdir(svdir+'redshift_comps/'+release)
     print('made '+svdir+'redshift_comps/'+release+' directory')
 
-if not os.path.exists(svdir+'redshift_comps/'+release+'/'+type):
-    os.mkdir(svdir+'redshift_comps/'+release+'/'+type)
+if not os.path.exists(svdir+'redshift_comps/'+release+'/'+version):
+    os.mkdir(svdir+'redshift_comps/'+release+'/'+version)
     print('made '+svdir+'redshift_comps/'+release+' directory')
 
 if not os.path.exists(dirout):
@@ -88,7 +88,10 @@ for tile in tiles:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
     subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
     if len(subsets) > 1:
-        print(subsets)
-    outf = dirout +'/'+tile+'_'+type+'zinfo.fits'  
+        #print(subsets)
+        outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
+    else:
+        print('did not find data in '+release +' for tile '+tile)    
+      
 
     #zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
