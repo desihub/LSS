@@ -17,12 +17,13 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf):
     for night in subsets:
         if len(night) > 0:
             tspec = get_subset(tarbit,tp,night,tile,coaddir,exposures)
-            if ss == 0:
-                tspect = tspec
-                ss = 1
-            else:
-                tspect = vstack([tspect,tspec])
-            print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+            if tspec is not None:
+				if ss == 0:
+					tspect = tspec
+					ss = 1
+				else:
+					tspect = vstack([tspect,tspec])
+				print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     tspect.sort('TARGETID')
     tspect.write(outf,format='fits', overwrite=True) 
@@ -107,5 +108,6 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         tspec = tspec[wtype]
         tspec['subset'] = night
         return tspec
+    return None    
         
         
