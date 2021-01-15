@@ -53,12 +53,17 @@ subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something 
 #outputs
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
 version = 'test/'
-dirout = svdir+'redshift_comps/'+version
+dirout = svdir+'redshift_comps/'+release+'/'+version
 outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
 
 if not os.path.exists(svdir+'redshift_comps'):
+    os.mkdir(svdir+'redshift_comps/'+release)
+    print('made '+svdir+'redshift_comps/'+release+' directory')
+
+if not os.path.exists(svdir+'redshift_comps'):
     os.mkdir(svdir+'redshift_comps')
-    print('made '+svdir+'redshift_comps random directory')
+    print('made '+svdir+'redshift_comps directory')
+
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
