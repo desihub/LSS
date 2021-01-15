@@ -100,7 +100,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         td = Table([bdt,rdt,zdt,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','TARGETID'))
         tspec = join(tspec,td,keys=['TARGETID'])
         wtype = ((tspec[tp] & 2**tarbit) > 0)
-        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are '+type+' entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
         tspec = tspec[wtype]
         tspec['subset'] = night
         return tspec
