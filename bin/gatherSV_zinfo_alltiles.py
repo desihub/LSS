@@ -85,16 +85,21 @@ print('looking for data in these tiles:')
 print(tiles)
 
 for tile in tiles:
-    tile = str(tile)
-    coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
-    subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
-    if len(subsets) > 1:
-        #print(subsets)
-        print('going through tile '+tile)
-        outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
-        zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
-    else:
-        print('did not find data in '+release +' for tile '+tile)    
+    if tile != 80615: #that tile used cmx target bits
+		tile = str(tile)
+		coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
+		subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
+		if len(subsets) > 1:
+			#print(subsets)
+			print('going through tile '+tile)
+			outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
+			try:
+			    fitsio.FITS(outf)
+			    print(outf+' exists already')
+			except:
+			    zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+		else:
+			print('did not find data in '+release +' for tile '+tile)    
       
 
     #
