@@ -43,8 +43,8 @@ tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
 #if type == 'ELG':
 #    tarbit = 1
 
-print('gathering type,tile')
-print(type,tile)
+print('gathering all tile data for type '+type +' in '+release)
+
 tp = 'SV1_DESI_TARGET'
 print('targeting bit,  target program type; CHECK THEY ARE CORRECT!')
 print(tarbit,tp)
