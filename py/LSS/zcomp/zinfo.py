@@ -1,4 +1,4 @@
-from astropy.table import Table,join
+from astropy.table import Table,join,vstack
 import numpy as np
 import fitsio
 
