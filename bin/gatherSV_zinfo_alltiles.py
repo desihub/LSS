@@ -99,8 +99,9 @@ for tile in tiles:
                 print(outf+' exists already')
                 tilew.append(tile)
             except:
-                zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
-                tilew.append(tile)
+                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+                if a:
+                    tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
       

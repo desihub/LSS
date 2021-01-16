@@ -29,8 +29,10 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf):
         tspect.sort('TARGETID')
         tspect.write(outf,format='fits', overwrite=True) 
         print('wrote to '+outf)
+        return True
     else:
         print('no data for tile '+tile)
+        return False
 
 
 def get_subset(tarbit,tp,night,tile,coaddir,exposures):
