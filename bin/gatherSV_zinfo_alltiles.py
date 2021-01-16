@@ -53,7 +53,7 @@ print(tarbit,tp)
 
 #outputs
 svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
-version = 'test'
+version = 'v0'
 dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+type
 
 
