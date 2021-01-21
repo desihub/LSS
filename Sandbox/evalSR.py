@@ -27,7 +27,7 @@ catfrac = {'LRG':0.05,'ELG':0.05,'QSOlz':0.05,'QSOly':0.02,'BGS':0.05}
 catthresh = 1000./3e5
 
 
-def add_truth(tp,release='blanc',depthfac=2):
+def add_truth(tp,release='blanc',depthfac=2,baseline=True):
     '''
     Add truth redshift values based on deep and return table; table is input to all functions below
     Any target missing a truth value has Z_TRUTH == 0 (probably should choose something better in the future)
@@ -36,6 +36,22 @@ def add_truth(tp,release='blanc',depthfac=2):
     depthfac sets the minimum depth to allow to give truth, current default is half the maximum deep depth value (could probably relax this?)
     '''
     f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+tp+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
+    if baseline:
+        #from desitarget import targetmask
+        #tarbit = targetmask.desi_mask[tp])
+        from desitarget.sv1 import sv1_targetmask
+        if tp == 'LRG':
+            tarbit = sv1_targetmask.desi_mask['LRG_OPT']
+        if tp == 'ELG':
+            tarbit = sv1_targetmask.desi_mask['ELG_GTOT']
+        if tp == 'QSO':
+            tarbit = sv1_targetmask.desi_mask['QSO_RF_4PASS']
+        if tp == 'BGS_ANY':
+            tarbit = sv1_targetmask.desi_mask['BGS_ANY']
+        sel = (f['SV1_DESI_TARGET'] & tarbit) > 0
+        print('fraction of targets in nominal selection is '+str(len(f[sel])/len(f)))
+        f = f[sel]
+        
     deep = f[f['subset']=='deep'] 
     min_depth = np.max(deep['R_DEPTH'])/depthfac
 
