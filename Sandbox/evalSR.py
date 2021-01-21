@@ -66,29 +66,29 @@ def effvsdepth(table,type,depth='R_DEPTH',nbin=20):
     nbin is number of depth bin
     '''
     #select out data for fair comparison
-	masknight = tf['subset'] != 'deep'
-	masknight &= tf['subset'] != 'all'
-	masknight &= tf['Z_TRUTH'] != 0
-	masknight &= tf['FIBERSTATUS']==0
-	masknight &= tf['ZWARN'] & 2**9==0
-	tcomp = tf[masknight]
-	dz = tcomp['Z'] - tcomp['Z_TRUTH']
-	gzsel = tcomp['ZWARN'] == 0
-	a = plt.hist(tcomp[depth],bins=nbin)
-	b = plt.hist(tcomp[gzsel][depth],bins=a[1])
-	plt.clf()
-	plt.plot(a[1][:-1],b[0]/a[0],'r-',label='zwarn==0')
-	zs = zr(type)
-	zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
-	c = plt.hist(tcomp[zrsel][depth],bins=a[1])
-	plt.plot(a[1][:-1],c[0]/a[0],'b--',label='zwarn==0 and '+str(zs[0])+'<z<'+str(zs[1]) )
-	bzsel = gzsel & (abs(dz) > catthresh)
-	d = plt.hist(tcomp[bzsel][depth],bins=a[1])
-	plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r'zwarn==0 and $\Delta z >$0.0033' )
-	catreq = catfrac(type)*np.ones(len(a[1][:-1])
-	plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
-	plt.legend()
-	plt.show()
-	
-	
+    masknight = tf['subset'] != 'deep'
+    masknight &= tf['subset'] != 'all'
+    masknight &= tf['Z_TRUTH'] != 0
+    masknight &= tf['FIBERSTATUS']==0
+    masknight &= tf['ZWARN'] & 2**9==0
+    tcomp = tf[masknight]
+    dz = tcomp['Z'] - tcomp['Z_TRUTH']
+    gzsel = tcomp['ZWARN'] == 0
+    a = plt.hist(tcomp[depth],bins=nbin)
+    b = plt.hist(tcomp[gzsel][depth],bins=a[1])
+    plt.clf()
+    plt.plot(a[1][:-1],b[0]/a[0],'r-',label='zwarn==0')
+    zs = zr(type)
+    zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
+    c = plt.hist(tcomp[zrsel][depth],bins=a[1])
+    plt.plot(a[1][:-1],c[0]/a[0],'b--',label='zwarn==0 and '+str(zs[0])+'<z<'+str(zs[1]) )
+    bzsel = gzsel & (abs(dz) > catthresh)
+    d = plt.hist(tcomp[bzsel][depth],bins=a[1])
+    plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r'zwarn==0 and $\Delta z >$0.0033' )
+    catreq = catfrac(type)*np.ones(len(a[1][:-1])
+    plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
+    plt.legend()
+    plt.show()
+    
+    
 
