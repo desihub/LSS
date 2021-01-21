@@ -20,7 +20,7 @@ plt.rcParams.update(params)
 #science requirements L2.2 - L2.5, from use dictionary for each type/tracer, BGS just copies LRGs where not obvious
 
 densRD = {'LRG':300,'ELG':1280,'QSOlz':120,'QSOly':50,'BGS':300}
-zr = {'LRG':(0.4,1.),'ELG':(0.6,1.6),'QSOlz':(0.01,2.1),'QSOly':(2.1,4.5),'BGS':(0.01,0.4)}
+zr = {'LRG':(0.4,1.),'ELG':(0.6,1.6),'QSOlz':(0.01,2.1),'QSOly':(2.1,4.5),'BGS':(0.01,0.5)}
 rerr = {'LRG':0.0005,'ELG':0.0005,'QSOlz':0.0025,'QSOly':0.0025,'BGS':0.0005}
 serr = {'LRG':0.0002,'ELG':0.0002,'QSOlz':0.0004,'QSOly':1,'BGS':0.0002} #no sys error requirement for lyman alpha
 catfrac = {'LRG':0.05,'ELG':0.05,'QSOlz':0.05,'QSOly':0.02,'BGS':0.05}
