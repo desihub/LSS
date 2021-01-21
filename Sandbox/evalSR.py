@@ -43,7 +43,7 @@ def add_truth(tp,release='blanc',depthfac=2,baseline=True):
         if tp == 'LRG':
             tarbit = sv1_targetmask.desi_mask['LRG_OPT']
         if tp == 'ELG':
-            tarbit = sv1_targetmask.desi_mask['ELG_GTOT']
+            tarbit = sv1_targetmask.desi_mask['ELG_FDR_GTOT']
         if tp == 'QSO':
             tarbit = sv1_targetmask.desi_mask['QSO_RF_4PASS']
         if tp == 'BGS_ANY':
