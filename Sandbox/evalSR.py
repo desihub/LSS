@@ -59,9 +59,9 @@ def add_truth(tp,release='blanc',depthfac=2):
     tf['Z_TRUTH'] = mzl
     return tf
 
-def effvsdepth(table,type,depth='R_DEPTH',nbin=20):
+def effvsdepth(tf,type,depth='R_DEPTH',nbin=20):
     '''
-    input table should be created in add_truth
+    input table tf should be created in add_truth
     type should be one of the ones in the above dictionaries
     nbin is number of depth bin
     '''
