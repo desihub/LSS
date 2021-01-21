@@ -59,7 +59,7 @@ def add_truth(tp,release='blanc',depthfac=2):
     tf['Z_TRUTH'] = mzl
     return tf
 
-def effvsdepth(tf,type,depth='R_DEPTH',nbin=10):
+def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     '''
     input table tf should be created in add_truth
     type should be one of the ones in the above dictionaries
@@ -88,12 +88,12 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10):
     plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r'zwarn==0 and $\Delta z >$0.0033' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
-    plt.legend()
+    plt.legend(loc='lower left', bbox_to_anchor=lplace)
     plt.grid(alpha=0.5)
     plt.xlabel(depth+' effective exposure time')
     plt.ylabel('fraction')
     plt.ylim(0,1) #to fit label in
-    plt.xlim(0,10000)
+    #plt.xlim(0,10000)
     plt.show()
     
     
