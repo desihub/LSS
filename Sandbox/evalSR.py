@@ -92,16 +92,18 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     gzsel = tcomp['ZWARN'] == 0
     zs = zr[type]
     zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
+    tzrsel = (tcomp['Z_TRUTH'] > zs[0]) & (tcomp['Z_TRUTH'] < zs[1])
     bzsel = zrsel & (abs(dz) > catthresh)
 
     a = plt.hist(tcomp[depth],bins=nbin)
     b = plt.hist(tcomp[gzsel][depth],bins=a[1])
     c = plt.hist(tcomp[zrsel][depth],bins=a[1])
     d = plt.hist(tcomp[bzsel][depth],bins=a[1])
+    e = plt.hist(tcomp[tzrsel][depth],bins=a[1])
     plt.clf()
-    plt.plot(a[1][:-1],b[0]/a[0],'r-',label='zwarn==0')
-    plt.plot(a[1][:-1],c[0]/a[0],'b--',label=' and '+str(zs[0])+'<z<'+str(zs[1]) )
-    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label=r' and $\Delta z >0.0033(1+z)$' )
+    plt.plot(a[1][:-1],c[0]/e[0],'r-',label='zwarn==0 & '+ str(zs[0])+r'$<z<$'+str(zs[1])+'/' + str(zs[0])+r'$<z_{\rm true}<$'+str(zs[1]) + ' (spectroscopic completenes)')
+    plt.plot(a[1][:-1],e[0]/a[0],'b--',label=str(zs[0])+r'$<z_{\rm true}<$'+str(zs[1])+'/all (targeting completeness)' )
+    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label=str(zs[0])+r'$<z<$'+str(zs[1])+r' & $\Delta z >0.0033(1+z)$/ '+str(zs[0])+r'$<z<$'+str(zs[1])+ ' (spectroscopic contamination)' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend(loc='lower left', bbox_to_anchor=lplace)
