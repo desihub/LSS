@@ -35,7 +35,7 @@ def add_truth(type,release='blanc',depthfac=2):
     only release that should work for now is blank (needs deep, so wouldn't work on nightly alone)
     depthfac sets the minimum depth to allow to give truth, current default is half the maximum deep depth value (could probably relax this?)
     '''
-    f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+tp+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
+    f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+type+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
     deep = f[f['subset']=='deep'] 
     min_depth = np.max(deep['R_DEPTH'])/depthfac
 
