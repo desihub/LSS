@@ -27,15 +27,15 @@ catfrac = {'LRG':0.05,'ELG':0.05,'QSOlz':0.05,'QSOly':0.02}
 catthresh = 1000./3e5
 
 
-def add_truth(type,release='blanc',depthfac=2):
+def add_truth(tp,release='blanc',depthfac=2):
     '''
     Add truth redshift values based on deep and return table; table is input to all functions below
     Any target missing a truth value has Z_TRUTH == 0 (probably should choose something better in the future)
-    type is LRG, ELG, QSO, or BGS_ANY (for currently available z files)
+    tp is LRG, ELG, QSO, or BGS_ANY (for currently available z files)
     only release that should work for now is blank (needs deep, so wouldn't work on nightly alone)
     depthfac sets the minimum depth to allow to give truth, current default is half the maximum deep depth value (could probably relax this?)
     '''
-    f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+type+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
+    f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+tp+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
     deep = f[f['subset']=='deep'] 
     min_depth = np.max(deep['R_DEPTH'])/depthfac
 
