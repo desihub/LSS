@@ -92,7 +92,8 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10):
     plt.grid(alpha=0.5)
     plt.xlabel(depth+' effective exposure time')
     plt.ylabel('fraction')
-    plt.ylim(0,2) #to fit label in
+    plt.ylim(0,1) #to fit label in
+    plt.xlim(0,10000)
     plt.show()
     
     
