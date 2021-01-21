@@ -85,7 +85,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     plt.clf()
     plt.plot(a[1][:-1],b[0]/a[0],'r-',label='zwarn==0')
     plt.plot(a[1][:-1],c[0]/a[0],'b--',label=' and '+str(zs[0])+'<z<'+str(zs[1]) )
-    plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r' and $\Delta z >$0.0033' )
+    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label=r' and $\Delta z >$0.0033' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend(loc='lower left', bbox_to_anchor=lplace)
