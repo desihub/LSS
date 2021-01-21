@@ -85,7 +85,7 @@ def effvsdepth(table,type,depth='R_DEPTH',nbin=20):
     bzsel = gzsel & (abs(dz) > catthresh)
     d = plt.hist(tcomp[bzsel][depth],bins=a[1])
     plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r'zwarn==0 and $\Delta z >$0.0033' )
-    catreq = catfrac(type)*np.ones(len(a[1][:-1])
+    catreq = catfrac(type)*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend()
     plt.show()
