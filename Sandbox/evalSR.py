@@ -59,7 +59,7 @@ def add_truth(tp,release='blanc',depthfac=2):
     tf['Z_TRUTH'] = mzl
     return tf
 
-def effvsdepth(tf,type,depth='R_DEPTH',nbin=20):
+def effvsdepth(tf,type,depth='R_DEPTH',nbin=10):
     '''
     input table tf should be created in add_truth
     type should be one of the ones in the above dictionaries
@@ -92,7 +92,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=20):
     plt.grid(alpha=0.5)
     plt.xlabel(depth+' effective exposure time')
     plt.ylabel('fraction')
-    plt.ylim(0,1.2)
+    plt.ylim(0,1.5) #to fit label in
     plt.show()
     
     
