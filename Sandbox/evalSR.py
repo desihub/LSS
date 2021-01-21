@@ -76,7 +76,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     gzsel = tcomp['ZWARN'] == 0
     zs = zr[type]
     zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
-    bzsel = gzsel & (abs(dz) > catthresh)
+    bzsel = zrsel & (abs(dz) > catthresh)
 
     a = plt.hist(tcomp[depth],bins=nbin)
     b = plt.hist(tcomp[gzsel][depth],bins=a[1])
@@ -84,8 +84,8 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     d = plt.hist(tcomp[bzsel][depth],bins=a[1])
     plt.clf()
     plt.plot(a[1][:-1],b[0]/a[0],'r-',label='zwarn==0')
-    plt.plot(a[1][:-1],c[0]/a[0],'b--',label='zwarn==0 and '+str(zs[0])+'<z<'+str(zs[1]) )
-    plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r'zwarn==0 and $\Delta z >$0.0033' )
+    plt.plot(a[1][:-1],c[0]/a[0],'b--',label=' and '+str(zs[0])+'<z<'+str(zs[1]) )
+    plt.plot(a[1][:-1],d[0]/a[0],'.-',color='purple',label=r' and $\Delta z >$0.0033' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend(loc='lower left', bbox_to_anchor=lplace)
@@ -94,6 +94,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     plt.ylabel('fraction')
     plt.ylim(0,1) #to fit label in
     #plt.xlim(0,10000)
+    plt.title(type)
     plt.show()
     
     
