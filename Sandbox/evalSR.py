@@ -42,16 +42,21 @@ def add_truth(tp,release='blanc',depthfac=2,baseline=True):
         from desitarget.sv1 import sv1_targetmask
         if tp == 'LRG':
             tarbit = sv1_targetmask.desi_mask['LRG_OPT']
+            print('Using the SV1 LRG_OPT selection')
         if tp == 'ELG':
             tarbit = sv1_targetmask.desi_mask['ELG_FDR_GTOT']
+            print('Using the SV1 ELG_FDR_GTOT selection')
         if tp == 'QSO':
             tarbit = sv1_targetmask.desi_mask['QSO_RF_4PASS']
+            print('Using the SV1 QSO_RF_4PASS selection')
         if tp == 'BGS_ANY':
             tarbit = sv1_targetmask.desi_mask['BGS_ANY']
+            print('Using the SV1 BGS_ANY selection')
         sel = (f['SV1_DESI_TARGET'] & tarbit) > 0
         print('fraction of targets in nominal selection is '+str(len(f[sel])/len(f)))
         f = f[sel]
-        
+    else:
+        print('using the SV1 '+tp+' selection    
     deep = f[f['subset']=='deep'] 
     min_depth = np.max(deep['R_DEPTH'])/depthfac
 
@@ -93,7 +98,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     zs = zr[type]
     zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
     tzrsel = (tcomp['Z_TRUTH'] > zs[0]) & (tcomp['Z_TRUTH'] < zs[1])
-    bzsel = zrsel & (abs(dz) > catthresh)
+    bzsel = zrsel & (abs(dz) > catthresh*(1+tcomp['Z_TRUTH'])
 
     a = plt.hist(tcomp[depth],bins=nbin)
     b = plt.hist(tcomp[gzsel][depth],bins=a[1])
@@ -101,9 +106,9 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     d = plt.hist(tcomp[bzsel][depth],bins=a[1])
     e = plt.hist(tcomp[tzrsel][depth],bins=a[1])
     plt.clf()
-    plt.plot(a[1][:-1],c[0]/e[0],'r-',label='zwarn==0 & '+ str(zs[0])+r'$<z<$'+str(zs[1])+'/' + str(zs[0])+r'$<z_{\rm true}<$'+str(zs[1]) + ' (spectroscopic completenes)')
-    plt.plot(a[1][:-1],e[0]/a[0],'b--',label=str(zs[0])+r'$<z_{\rm true}<$'+str(zs[1])+'/all (targeting completeness)' )
-    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label=str(zs[0])+r'$<z<$'+str(zs[1])+r' & $\Delta z >0.0033(1+z)$/ '+str(zs[0])+r'$<z<$'+str(zs[1])+ ' (spectroscopic contamination)' )
+    plt.plot(a[1][:-1],c[0]/e[0],'r-',label='spectroscopic completenes')
+    plt.plot(a[1][:-1],e[0]/a[0],'b--',label='targeting completeness' )
+    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label= 'spectroscopic contamination' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
     plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend(loc='lower left', bbox_to_anchor=lplace)
@@ -114,6 +119,10 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     #plt.xlim(0,10000)
     plt.title(type)
     plt.show()
+    print('the target redshift range is '+str(zs[0])+r'$<z<$'+str(zs[1]))
+    print('spectroscopic completeness is defined as the fraction of redshifts obained within the target range that have no zwarn flag, divided by the number of true redshifts within the target range (it does not exclude catastrophic failures)')
+    print('targeting completeness is defined as the fraction of targets with true redshifts within the target range, divided by the total number of targets; variations are only due to variations in target properties in different tiles')
+    print('spectroscopic contamination is defined as the fraction of redshifts, within the target range and with no zwarn flag, that are further than 0.0033(1+z_truth) from z_truth (cutting to the target redshift range and to zwarn == 0 in both numerator and denominator)')
     
     
 
