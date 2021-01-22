@@ -119,7 +119,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     #plt.xlim(0,10000)
     plt.title(type)
     plt.show()
-    print('the target redshift range is '+str(zs[0])+r'$<z<$'+str(zs[1]))
+    print('the target redshift range is '+str(zs[0])+'<z<'+str(zs[1]))
     print('spectroscopic completeness is defined as the fraction of redshifts obained within the target range that have no zwarn flag, divided by the number of true redshifts within the target range (it does not exclude catastrophic failures)')
     print('targeting completeness is defined as the fraction of targets with true redshifts within the target range, divided by the total number of targets; variations are only due to variations in target properties in different tiles')
     print('spectroscopic contamination is defined as the fraction of redshifts, within the target range and with no zwarn flag, that are further than 0.0033(1+z_truth) from z_truth (cutting to the target redshift range and to zwarn == 0 in both numerator and denominator)')
