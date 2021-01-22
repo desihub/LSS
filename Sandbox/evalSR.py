@@ -56,7 +56,7 @@ def add_truth(tp,release='blanc',depthfac=2,baseline=True):
         print('fraction of targets in nominal selection is '+str(len(f[sel])/len(f)))
         f = f[sel]
     else:
-        print('using the SV1 '+tp+' selection    
+        print('using the SV1 '+tp+' selection')    
     deep = f[f['subset']=='deep'] 
     min_depth = np.max(deep['R_DEPTH'])/depthfac
 
