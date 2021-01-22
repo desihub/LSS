@@ -98,7 +98,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     zs = zr[type]
     zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
     tzrsel = (tcomp['Z_TRUTH'] > zs[0]) & (tcomp['Z_TRUTH'] < zs[1])
-    bzsel = zrsel & (abs(dz) > catthresh*(1+tcomp['Z_TRUTH'])
+    bzsel = zrsel & (abs(dz) > catthresh*(1+tcomp['Z_TRUTH']))
 
     a = plt.hist(tcomp[depth],bins=nbin)
     b = plt.hist(tcomp[gzsel][depth],bins=a[1])
