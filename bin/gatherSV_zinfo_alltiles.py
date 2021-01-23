@@ -52,8 +52,8 @@ print(tarbit,tp)
 
 
 #outputs
-svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
-version = 'v0'
+svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/'
+version = 'test'
 dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+type
 
 
