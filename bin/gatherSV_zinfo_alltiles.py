@@ -74,7 +74,7 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
   
-expf = '/global/cfs/cdirs/desi/survey/fiberassign-sv1/sv1-exposures.fits'  
+expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
 
 #location of inputs
