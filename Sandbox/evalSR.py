@@ -161,7 +161,7 @@ def repeatvsdchi2(tf,type,nbin=1000,rng=(9,2000),mind=500,maxd=1500,chi2x=50):
     plt.xlim(7,chi2x)
     plt.xlabel('DELTACHI2 threshold')
     plt.ylabel(r'fraction with $\Delta z < 0.0033(1+z)$')
-    plt.title(type+' using data with R_DEPTH > '+str(mind))
+    plt.title(type+' using data with '+str(mind)+'< R_DEPTH < '+str(maxd))
     plt.show()
     
 
