@@ -59,14 +59,14 @@ dt.write(dirout+type+'alltiles_deep_clustering.dat.fits',overwrite=True,format='
 rm = 0
 rx = 10
 for i in range(rm,rx):
-    ffrs = glob.glob(dirout+type+'*_deep_'+str(i)+'_full.ran.fits'
+    ffrs = glob.glob(dirout+type+'*_deep_'+str(i)+'_full.ran.fits')
     dt = Table.read(fffs[0])
     for ii in range(1,len(ffrs)):
         dtn = Table.read(ffrs[ii])
         dt = vstack([dt,dtn])
     dt.write(dirout+type+'alltiles_deep_full.ran.fits',overwrite=True,format='fits')    
 
-    ffrs = glob.glob(dirout+type+'*_deep_'+str(i)+'_clustering.ran.fits'
+    ffrs = glob.glob(dirout+type+'*_deep_'+str(i)+'_clustering.ran.fits')
     dt = Table.read(fffs[0])
     for ii in range(1,len(ffrs)):
         dtn = Table.read(ffrs[ii])
