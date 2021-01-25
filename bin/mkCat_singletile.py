@@ -97,9 +97,9 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
-mkfulld = False
-mkfullr = False
-mkclus = False
+mkfulld = True
+mkfullr = True
+mkclus = True
 docatplots = False
 doclus = False
 mknz = True
