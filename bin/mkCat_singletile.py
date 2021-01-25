@@ -101,7 +101,8 @@ mkfulld = False
 mkfullr = False
 mkclus = False
 docatplots = False
-doclus = True
+doclus = False
+mknz = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
@@ -145,6 +146,19 @@ if mkclus:
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
         ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+
+if mknz:
+    subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
+    'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS']
+    subtl = []
+    for subt in subts:
+        if subt[:3] == type:
+            subtl.append(subt)
+    print(subtl)
+    fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
+    for subt in subtl:
+        fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
+        ct.mknz(ffd,fcd,fcr,subt,fout)
 
 if docatplots:
     ii = 0

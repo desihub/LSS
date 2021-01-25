@@ -11,6 +11,7 @@ import desimodel.footprint
 import desimodel.focalplane
 from random import random
 
+from LSS.Cosmo import distance
 
 def combspecdata(tile,night,coaddir ):
     #put data from different spectrographs together, one table for fibermap, other for z
@@ -117,7 +118,7 @@ def mkfullran(tile,goodloc,pdict,randir):
     ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
     return ranall
 
-def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
+def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET'):
     dd = fitsio.read(ffd)	
     
     ddm = cutphotmask(dd,maskbits)
@@ -142,6 +143,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[]):
     ddclus['RA'] = ddzg['RA']
     ddclus['DEC'] = ddzg['DEC']
     ddclus['Z'] = ddzg['Z']
+    ddclus[tc] = ddzg[tc]
     
     if weightmd == 'wloc':
         ddclus['WEIGHT'] = assignweights(ddzg,nl)
@@ -171,6 +173,7 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
     #rclus['WEIGHT'] = 1
     zl = []
     wl = []
+    tl = []
     ndz = 0
     naz = 0
     for ii in range(0,len(rclus)):
@@ -180,19 +183,54 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
             ndz += 1.
         naz += 1    
         wr = dd[ind]['WEIGHT']
+        tr = dd[ind][tc]
         #rclus[ii]['Z'] = zr
         #rclus[ii]['WEIGHT'] = wr
         zl.append(zr)
         wl.append(wr)
+        tl.append(tr)
     zl = np.array(zl)
     wl = np.array(wl)
+    tl = np.array(tl)
     rclus['Z'] = zl
     rclus['WEIGHT'] = wl
+    rclus[tc] = tl
     wz = rclus['Z'] == 0
     print(ndz,naz,len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 
+def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
+    
+    cd = distance(om,1-om)
+    ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
+    area = len(ranf)/5000.
+    print('area is '+area)
+    
+    df = fitsio.read(fcd)
+    
+    from desitarget.sv1 import sv1_targetmask
+    tarbit = sv1_targetmask.desi_mask[subtype]
+    wt = (df[tc] & tarbit) > 0
+    print('there were '+str(len(df))+' objects and now there are '+str(len(df[wt])+' after selecting subtype')
+    df = df[wt]
+    fdf = fitsio.read(ffd)
+    wt = (fdf[tc] & tarbit) > 0
+    fdf = fdf[wt]
+    fraca = sum(fdf['LOCATION_ASSIGNED'])/len(fdf)
+    print('fraction of '+subtype+' that were assigned is '+fraca)
+    nbin = int((zmax-zmin)/bs)
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax))
+    outf.write('area is '+str(area)+'\n')
+    outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+    for i in range(0,nbin):
+        zl = zhist[1][i]
+        zh = zhist[1][i+1]
+        zm = (zh+zl)/2.
+        voli = area/(360.*360./pi)*4.*pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+        nbarz =  zhist[0][i]/voli/fraca #upweight based on fraction not assigned
+        outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
+    outf.close()
 
 
 def cutphotmask(aa,bits):
