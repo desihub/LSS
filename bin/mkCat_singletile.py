@@ -38,18 +38,25 @@ tile = args.tile
 night = args.night
 fadate = args.fadate
 
-if type == 'LRG':
-    tarbit = 0 #targeting bit
-    pr = 4000 #priority; anything with higher priority vetos fiber in randoms
-if type == 'QSO':
-    tarbit = 2
-    pr = 10000
-if type == 'ELG':
-    tarbit = 1
-    pr = 10000
+release = 'blanc'
+version = 'test'
+
+tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
+
+pr = 10000
+
+if type[:3] == 'LRG':
+    #tarbit = 0 #targeting bit
+    pr = 3200 #priority; anything with higher priority vetos fiber in randoms
+if type[:3] == 'QSO':
+    #tarbit = 2
+    pr = 3400
+if type[:3] == 'ELG':
+    #tarbit = 1
+    pr = 3000
 
 
-print(type,tile,night)
+print(type,tile,night,pr)
 tp = 'SV1_DESI_TARGET'
 print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
@@ -57,8 +64,8 @@ print(tarbit,pr,tp)
 sys.path.append("../")
 #print(sys.path)
 
-svdir = '/project/projectdirs/desi/users/ajross/catalogs/SV/'
-dirout = svdir+'LSScats/test/'
+svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/'
+dirout = svdir+'LSScats/'+version+'/'
 randir = svdir+'random'
 rm = 0
 rx = 10
@@ -66,9 +73,11 @@ for i in range(rm,rx):
     if not os.path.exists(svdir+'random'+str(i)):
         os.mkdir(svdir+'random'+str(i))
         print('made '+str(i)+' random directory')
-fadir = '/global/cfs/cdirs/desi/users/raichoor/fiberassign-sv1/'+fadate+'/'
+
+
+fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
 tardir = fadir
-coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/'
+coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
 ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
 
@@ -83,16 +92,16 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = False #make a mtl file of randoms
-runrfa = False #run randoms through fiberassign
-mkfulld = False
-mkfullr = False
-mkclus = False
-docatplots = False
+mkranmtl = True #make a mtl file of randoms
+runrfa = True #run randoms through fiberassign
+mkfulld = True
+mkfullr = True
+mkclus = True
+docatplots = True
 doclus = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
-fbaf = fadir+'fba-0'+tile+'.fits' #the tile file
+fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
 
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
     for i in range(rm,rx):
