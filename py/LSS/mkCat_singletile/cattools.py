@@ -218,7 +218,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     wt = (fdf[tc] & tarbit) > 0
     fdf = fdf[wt]
     fraca = sum(fdf['LOCATION_ASSIGNED'])/len(fdf)
-    print('fraction of '+subtype+' that were assigned is '+fraca)
+    print('fraction of '+subtype+' that were assigned is '+str(fraca))
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax))
     outf.write('area is '+str(area)+'\n')
