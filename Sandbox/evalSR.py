@@ -157,6 +157,7 @@ def repeatvsdchi2(tf,type,nbin=100,range=(9,2000),mind=1000.):
         hv.append((a[1][i]+a[1][i+1])/2.)
 
     plt.plot(hv,b[0]/a[0],'r-',label='cumulative fraction not catastrophic')
+    plt.xlim(7,200)
     plt.xlabel('DELTACHI2')
     plt.ylabel('fraction')
     plt.show()
