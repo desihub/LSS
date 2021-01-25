@@ -128,7 +128,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     print('spectroscopic contamination is defined as the fraction of redshifts, within the target range and with no zwarn flag, that are further than 0.0033(1+z_truth) from z_truth (cutting to the target redshift range and to zwarn == 0 in both numerator and denominator)')
     
 
-def repeatvsdchi2(tf,type,nbin=1000,rng=(9,2000),mind=1000.,chi2x==50):    
+def repeatvsdchi2(tf,type,nbin=1000,rng=(9,2000),mind=1000.,chi2x=50):    
     '''
     input table tf should be created in add_truth
     type should be one of the ones in the above dictionaries
