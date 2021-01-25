@@ -64,14 +64,14 @@ for i in range(rm,rx):
     for ii in range(1,len(ffrs)):
         dtn = Table.read(ffrs[ii])
         dt = vstack([dt,dtn])
-    dt.write(dirout+type+'alltiles_deep_full.ran.fits',overwrite=True,format='fits')    
+    dt.write(dirout+type+'alltiles_deep_'+str(i)+'_full.ran.fits',overwrite=True,format='fits')    
 
     ffrs = glob.glob(dirout+type+'*_deep_'+str(i)+'_clustering.ran.fits')
     dt = Table.read(ffrs[0])
     for ii in range(1,len(ffrs)):
         dtn = Table.read(ffrs[ii])
         dt = vstack([dt,dtn])
-    dt.write(dirout+type+'alltiles_deep_clustering.ran.fits',overwrite=True,format='fits')
+    dt.write(dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits',overwrite=True,format='fits')
 
 subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
 'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS']
