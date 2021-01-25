@@ -205,7 +205,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     cd = distance(om,1-om)
     ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
     area = len(ranf)/5000.
-    print('area is '+area)
+    print('area is '+str(area))
     
     df = fitsio.read(fcd)
     
