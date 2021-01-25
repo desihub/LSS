@@ -41,6 +41,7 @@ fadate = args.fadate
 release = 'blanc'
 version = 'test'
 
+from desitarget.sv1 import sv1_targetmask
 tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
 
 pr = 10000
