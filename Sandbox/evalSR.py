@@ -147,6 +147,7 @@ def repeatvsdchi2(tf,type,nbin=10):
     ggzsel = zrsel & (abs(dz) < catthresh*(1+tcomp['Z_TRUTH']))
     a = plt.hist(tcomp[zrsel]['DELTACHI2'],bins=nbin,cumulative=True)
     b = plt.hist(tcomp[ggzsel]['DELTACHI2'],bins=a[1],cumulative=True)
+    plt.clf()
     plt.plot(a[1][:-1],b[0]/a[0],'r-',label='cumulative fraction not catastrophic')
     plt.xlabel('DELTACHI2')
     plt.ylabel('fraction')
