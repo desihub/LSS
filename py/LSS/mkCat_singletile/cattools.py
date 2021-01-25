@@ -212,7 +212,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     from desitarget.sv1 import sv1_targetmask
     tarbit = sv1_targetmask.desi_mask[subtype]
     wt = (df[tc] & tarbit) > 0
-    print('there were '+str(len(df))+' objects and now there are '+str(len(df[wt])+' after selecting subtype')
+    print('there were '+str(len(df))+' objects and now there are '+str(len(df[wt]))+' after selecting subtype')
     df = df[wt]
     fdf = fitsio.read(ffd)
     wt = (fdf[tc] & tarbit) > 0
