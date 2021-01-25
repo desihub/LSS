@@ -262,7 +262,7 @@ def randomtilesi(tilef ,dirout,ii):
 	tiles = fitsio.read(tilef)
 	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 	print(trad)
-	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits')
+	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
 	#rt = fitsio.read(minisvdir+'random/random_mtl.fits')
 	print('loaded random file')	
 	
