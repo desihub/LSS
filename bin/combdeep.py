@@ -80,8 +80,8 @@ for subt in subts:
 	if subt[:3] == type:
 		subtl.append(subt)
 print(subtl)
-ffd = dirout+type+'alltiles_deep_0_full.dat.fits'
-fcd = dirout+type+'alltiles_deep_0_clustering.dat.fits'
+ffd = dirout+type+'alltiles_deep_full.dat.fits'
+fcd = dirout+type+'alltiles_deep_clustering.dat.fits'
 fcr = dirout+type+'alltiles_deep_0_clustering.ran.fits'
 for subt in subtl:
 	fout = dirout+subt+'alltiles_deep_nz.dat'
