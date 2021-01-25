@@ -155,7 +155,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     print('write clustering data file to '+fcd)
     return maxp,loc_fail
 
-def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[]):
+def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[],tc='SV1_DESI_TARGET'):
     dr = fitsio.read(ffr)
     drm = cutphotmask(dr,maskbits)
 # 
