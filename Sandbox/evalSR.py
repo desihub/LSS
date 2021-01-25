@@ -153,8 +153,8 @@ def repeatvsdchi2(tf,type,nbin=100,range=(9,2000),mind=1000.):
     b = plt.hist(tcomp[ggzsel]['DELTACHI2'],bins=a[1],cumulative=-1)
     plt.clf()
     hv = []
-    print(len(a[1]))
-    for i in range(0,len(a[1])-1):
+    #print(len(a[1]))
+    for i in range(0,nbin):
         hv.append((a[1][i]+a[1][i+1])/2.)
 
     plt.plot(hv,b[0]/a[0],'r-',label='cumulative fraction not catastrophic')
