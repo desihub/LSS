@@ -97,10 +97,10 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
-mkfulld = True
-mkfullr = True
-mkclus = True
-docatplots = True
+mkfulld = False
+mkfullr = False
+mkclus = False
+docatplots = False
 doclus = True
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
