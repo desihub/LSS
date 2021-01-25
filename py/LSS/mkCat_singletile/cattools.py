@@ -228,7 +228,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
         zl = zhist[1][i]
         zh = zhist[1][i+1]
         zm = (zh+zl)/2.
-        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(d.dc(zh)**3.-d.dc(zlo)**3.)
+        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zlo)**3.)
         nbarz =  zhist[0][i]/voli/fraca #upweight based on fraction not assigned
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
