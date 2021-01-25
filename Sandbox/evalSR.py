@@ -124,5 +124,32 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     print('targeting completeness is defined as the fraction of targets with true redshifts within the target range, divided by the total number of targets; variations are only due to variations in target properties in different tiles')
     print('spectroscopic contamination is defined as the fraction of redshifts, within the target range and with no zwarn flag, that are further than 0.0033(1+z_truth) from z_truth (cutting to the target redshift range and to zwarn == 0 in both numerator and denominator)')
     
+
+def repeatvsdchi2(tf,type,nbin=10):    
+    '''
+    input table tf should be created in add_truth
+    type should be one of the ones in the above dictionaries
+    nbin is number of depth bin
+    '''
+    #select out data for fair comparison
+    masknight = tf['subset'] != 'deep'
+    masknight &= tf['subset'] != 'all'
+    masknight &= tf['Z_TRUTH'] != 0
+    masknight &= tf['FIBERSTATUS']==0
+    masknight &= tf['ZWARN'] & 2**9==0
+    tcomp = tf[masknight]
+    dz = tcomp['Z'] - tcomp['Z_TRUTH']
+    gzsel = tcomp['ZWARN'] == 0
+    zs = zr[type]
+    zrsel = gzsel & (tcomp['Z'] > zs[0]) & (tcomp['Z'] < zs[1])
+    tzrsel = (tcomp['Z_TRUTH'] > zs[0]) & (tcomp['Z_TRUTH'] < zs[1])
+    bzsel = zrsel & (abs(dz) > catthresh*(1+tcomp['Z_TRUTH']))
+    ggzsel = zrsel & (abs(dz) < catthresh*(1+tcomp['Z_TRUTH']))
+    a = plt.hist(tcomp[zrsel]['DELTACHI2'],bins=nbin,cumulative=True)
+    b = plt.hist(tcomp[ggzsel]['DELTACHI2'],bins=a[1,cumulative=True)
+    plt.plot(a[1][:-1],b[0]/a[0],'r-',label='cumulative fraction not catastrophic')
+    plt.xlabel('DELTACHI2')
+    plt.ylabel('fraction')
+    plt.show()
     
 
