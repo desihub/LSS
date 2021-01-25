@@ -200,7 +200,7 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[],tc='SV1_DESI_TARGET'):
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 
-def mknz(ffd,fcd,fcr,subtype,outf,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
+def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
     
     cd = distance(om,1-om)
     ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
@@ -221,6 +221,7 @@ def mknz(ffd,fcd,fcr,subtype,outf,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     print('fraction of '+subtype+' that were assigned is '+str(fraca))
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax))
+    outf = open(fout,'w')
     outf.write('area is '+str(area)+'\n')
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
     for i in range(0,nbin):
