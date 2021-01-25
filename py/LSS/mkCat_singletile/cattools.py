@@ -222,7 +222,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax))
     outf = open(fout,'w')
-    outf.write('area is '+str(area)+'\n')
+    outf.write('#area is '+str(area)+'square degrees\n')
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
     for i in range(0,nbin):
         zl = zhist[1][i]
