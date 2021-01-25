@@ -97,9 +97,9 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
-mkfulld = True
-mkfullr = True
-mkclus = True
+mkfulld = False
+mkfullr = False
+mkclus = False
 docatplots = False
 doclus = True
 
@@ -182,7 +182,7 @@ if doclus:
 		os.mkdir(dirpc)
 
 	if type[:3] == 'ELG':
-		zmin = .8
+		zmin = 1.2
 		zmax = 1.6
 	if type == 'LRG':
 		zmin = .5
