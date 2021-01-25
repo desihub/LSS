@@ -125,7 +125,7 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     print('spectroscopic contamination is defined as the fraction of redshifts, within the target range and with no zwarn flag, that are further than 0.0033(1+z_truth) from z_truth (cutting to the target redshift range and to zwarn == 0 in both numerator and denominator)')
     
 
-def repeatvsdchi2(tf,type,nbin=10,range=(200,9)):    
+def repeatvsdchi2(tf,type,nbin=10,range=(9,200)):    
     '''
     input table tf should be created in add_truth
     type should be one of the ones in the above dictionaries
@@ -145,8 +145,8 @@ def repeatvsdchi2(tf,type,nbin=10,range=(200,9)):
     tzrsel = (tcomp['Z_TRUTH'] > zs[0]) & (tcomp['Z_TRUTH'] < zs[1])
     bzsel = zrsel & (abs(dz) > catthresh*(1+tcomp['Z_TRUTH']))
     ggzsel = zrsel & (abs(dz) < catthresh*(1+tcomp['Z_TRUTH']))
-    a = plt.hist(tcomp[zrsel]['DELTACHI2'],bins=nbin,cumulative=True,range=range)
-    b = plt.hist(tcomp[ggzsel]['DELTACHI2'],bins=a[1],cumulative=True)
+    a = plt.hist(tcomp[zrsel]['DELTACHI2'],bins=nbin,cumulative=-1,range=range)
+    b = plt.hist(tcomp[ggzsel]['DELTACHI2'],bins=a[1],cumulative=-1)
     plt.clf()
     plt.plot(a[1][:-1],b[0]/a[0],'r-',label='cumulative fraction not catastrophic')
     plt.xlabel('DELTACHI2')
