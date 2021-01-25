@@ -106,11 +106,14 @@ def effvsdepth(tf,type,depth='R_DEPTH',nbin=10,lplace=(.15,.15)):
     d = plt.hist(tcomp[bzsel][depth],bins=a[1])
     e = plt.hist(tcomp[tzrsel][depth],bins=a[1])
     plt.clf()
-    plt.plot(a[1][:-1],c[0]/e[0],'r-',label='spectroscopic completenes')
-    plt.plot(a[1][:-1],e[0]/a[0],'b--',label='targeting completeness' )
-    plt.plot(a[1][:-1],d[0]/c[0],'.-',color='purple',label= 'spectroscopic contamination' )
+    hv = []
+    for i in range(0,len(a[1])-1):
+        hv.append((a[1][i]+a[1][i+1])/2.)
+    plt.plot(hv,c[0]/e[0],'r-',label='spectroscopic completenes')
+    plt.plot(hv,e[0]/a[0],'b--',label='targeting completeness' )
+    plt.plot(hv,d[0]/c[0],'.-',color='purple',label= 'spectroscopic contamination' )
     catreq = catfrac[type]*np.ones(len(a[1][:-1]))
-    plt.plot(a[1][:-1],catreq,'k:',label='catastrophic failure fraction req.')
+    plt.plot(hv,catreq,'k:',label='catastrophic failure fraction req.')
     plt.legend(loc='lower left', bbox_to_anchor=lplace)
     plt.grid(alpha=0.5)
     plt.xlabel(depth+' effective exposure time')
