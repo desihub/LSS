@@ -181,7 +181,7 @@ if doclus:
 	if not os.path.exists(dirpc):
 		os.mkdir(dirpc)
 
-	if type == 'ELG':
+	if type[:3] == 'ELG':
 		zmin = .8
 		zmax = 1.6
 	if type == 'LRG':
