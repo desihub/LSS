@@ -261,7 +261,7 @@ if doclus:
 		subprocess.run('./dopc'+gf+'.sh')
 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
-    logf.write('computed paircounts\n')
+	logf.write('computed paircounts\n')
         
 # 
 # dr = fitsio.read(rf)
