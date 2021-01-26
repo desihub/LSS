@@ -80,7 +80,7 @@ if not os.path.exists(dirout):
 randir = svdir+'random'
 rm = 0
 rx = 10
-logf.write('using random files '+str(rm) ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
+logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(svdir+'random'+str(i)):
         os.mkdir(svdir+'random'+str(i))
