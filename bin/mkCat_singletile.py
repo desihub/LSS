@@ -60,7 +60,7 @@ if not os.path.exists(svdir):
     
 if not os.path.exists(svdir+'/logs'):
     os.mkdir(svdir+'/logs')
-    print('made '+svdir+'/logs'
+    print('made '+svdir+'/logs')
 logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
 logf = open(logfn,'w')
 print('a log of what was run is going to '+logfn)
