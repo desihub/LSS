@@ -24,24 +24,22 @@ import LSS.zcomp.zinfo as zi
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-#parser.add_argument("--tile", help="observed tile to use") #eventually remove this and just gather everything
-parser.add_argument("--release", help="what spectro release to use, e.g. blanc or daily") #eventually remove this and just gather everything
+parser.add_argument("--release", help="what spectro release to use, e.g. blanc or daily",default='blanc') #eventually remove this and just gather everything
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 args = parser.parse_args()
+print(args)
+
 type = args.type
-#tile = args.tile
+basedir = args.basedir
 release = args.release
+version = args.version
+
 
 
 from desitarget.sv1 import sv1_targetmask
 
 tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
-
-#if type == 'LRG':
-#    tarbit = 0 #targeting bit
-#if type == 'QSO':
-#    tarbit = 2
-#if type == 'ELG':
-#    tarbit = 1
 
 print('gathering all tile data for type '+type +' in '+release)
 
@@ -52,11 +50,14 @@ print(tarbit,tp)
 
 
 #outputs
-svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/'
-version = 'v0'
+#basedir for official catalogs'/global/cfs/cdirs/desi/survey/catalogs
+svdir = basedir+'/SV1/'
+
 dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+type
 
-
+if not os.path.exists(svdir):
+    os.mkdir(svdir)
+    print('made '+svdir+' directory')
 
 if not os.path.exists(svdir+'redshift_comps'):
     os.mkdir(svdir+'redshift_comps')
@@ -73,6 +74,20 @@ if not os.path.exists(svdir+'redshift_comps/'+release+'/'+version):
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
+
+if not os.path.exists(svdir+'/redshift_comps/logs'):
+    os.mkdir(svdir+'/redshift_comps/logs')
+    print('made '+svdir+'/redshift_comps/logs')
+
+#set up log file
+logfn = svdir+'/redshift_comps/logs/log'+datetime.now().isoformat()+'.txt'
+logf = open(logfn,'w')
+print('a log of what was run is going to '+logfn)
+
+logf.write('running gatherSV_zinfo_alltiles.py from '+os.getcwd()+'\n\n')
+logf.write('arguments were:\n')
+logf.write(str(args)+'\n')
+
   
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
@@ -100,6 +115,7 @@ for tile in tiles:
                 tilew.append(tile)
             except:
                 a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+                logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
                     tilew.append(tile)
         else:
@@ -119,4 +135,5 @@ dt.sort('TARGETID')
 outfall = dirout +'/alltiles_'+type+'zinfo.fits'
 dt.write(outfall,format='fits', overwrite=True) 
 print('wrote to '+outfall)
+logf.write('combined all tiles, written to '+outfall)
     
