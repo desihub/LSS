@@ -18,8 +18,8 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 
-sys.path.append('../py')
-
+sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
+print('are you in LSS/bin?, if not, that is probably why the import failed')
 #from this package
 import LSS.mkCat_singletile.cattools as ct
 import LSS.mkCat_singletile.fa4lsscat as fa
@@ -32,6 +32,8 @@ parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="date of observation")
 parser.add_argument("--fadate", help="date for fiberassign run")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--release", help="version of the spectroscopic pipeline",default='blanc')
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 args = parser.parse_args()
 print(args)
 
@@ -40,8 +42,8 @@ tile = args.tile
 night = args.night
 fadate = args.fadate
 basedir = args.basedir
-
-#
+release = args.release
+version = args.version
 
 #make directories used in directory tree
 
@@ -61,17 +63,32 @@ if not os.path.exists(svdir):
 if not os.path.exists(svdir+'/logs'):
     os.mkdir(svdir+'/logs')
     print('made '+svdir+'/logs')
+
+if not os.path.exists(svdir+'/LSScats'):
+    os.mkdir(svdir+'/LSScats')
+    print('made '+svdir+'/LSScats')
+
+dirout = svdir+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+    
+randir = svdir+'random'
+rm = 0
+rx = 10
+for i in range(rm,rx):
+    if not os.path.exists(svdir+'random'+str(i)):
+        os.mkdir(svdir+'random'+str(i))
+        print('made '+str(i)+' random directory')
+
+
 logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
 logf = open(logfn,'w')
 print('a log of what was run is going to '+logfn)
 
 logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
 logf.write('arguments were:\n')
-
-
-
-release = 'blanc'
-version = 'test'
+logf.write(str(args))
 
 from desitarget.sv1 import sv1_targetmask
 tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
@@ -94,20 +111,7 @@ tp = 'SV1_DESI_TARGET'
 print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
 
-sys.path.append("../")
-#print(sys.path)
 
-
-dirout = svdir+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-randir = svdir+'random'
-rm = 0
-rx = 10
-for i in range(rm,rx):
-    if not os.path.exists(svdir+'random'+str(i)):
-        os.mkdir(svdir+'random'+str(i))
-        print('made '+str(i)+' random directory')
 
 
 fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
