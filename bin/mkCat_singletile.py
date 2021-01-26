@@ -76,7 +76,17 @@ dirout = svdir+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
-    
+
+#set up log file
+logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
+logf = open(logfn,'w')
+print('a log of what was run is going to '+logfn)
+
+logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
+logf.write('arguments were:\n')
+logf.write(str(args)+'\n')
+
+#random directories + info into log file    
 randir = svdir+'random'
 rm = 0
 rx = 10
@@ -85,15 +95,6 @@ for i in range(rm,rx):
     if not os.path.exists(svdir+'random'+str(i)):
         os.mkdir(svdir+'random'+str(i))
         print('made '+str(i)+' random directory')
-
-
-logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
-logf = open(logfn,'w')
-print('a log of what was run is going to '+logfn)
-
-logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
-logf.write('arguments were:\n')
-logf.write(str(args)+'\n')
 
 from desitarget.sv1 import sv1_targetmask
 tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
