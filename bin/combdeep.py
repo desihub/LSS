@@ -33,7 +33,7 @@ args = parser.parse_args()
 type = args.type
 
 release = 'blanc'
-version = 'test'
+version = 'v0'
 
 
 svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/'
@@ -87,7 +87,7 @@ for subt in subtl:
 	fout = dirout+subt+'alltiles_deep_nz.dat'
 	ct.mknz(ffd,fcd,fcr,subt,fout)
 
-doclus = True
+doclus = False
 if doclus:
 	import subprocess
 	dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
