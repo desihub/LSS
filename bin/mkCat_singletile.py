@@ -143,8 +143,8 @@ runrfa = False #run randoms through fiberassign
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 mkfullr = True #make the random files associated with the full data files
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
-docatplots = True #produce some validation plots
-doclus = False #get paircounts, only works for AJR
+docatplots = False #produce some validation plots
+doclus = True #get paircounts, only works for AJR
 mknz = True #get n(z) for type and all subtypes
 
 
@@ -243,7 +243,7 @@ if doclus:
 		os.mkdir(dirpc)
 
 	if type[:3] == 'ELG':
-		zmin = 1.2
+		zmin = .8
 		zmax = 1.6
 	if type == 'LRG':
 		zmin = .5
