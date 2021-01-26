@@ -86,3 +86,35 @@ fcr = dirout+type+'alltiles_deep_0_clustering.ran.fits'
 for subt in subtl:
 	fout = dirout+subt+'alltiles_deep_nz.dat'
 	ct.mknz(ffd,fcd,fcr,subt,fout)
+
+doclus = True
+if doclus:
+	import subprocess
+	dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+	dirpc = os.environ['CSCRATCH']+'/paircounts/'
+	if not os.path.exists(dirpc):
+		os.mkdir(dirpcadw)
+	if not os.path.exists(dirpc):
+		os.mkdir(dirpc)
+
+	if type[:3] == 'ELG':
+		zmin = 1.2
+		zmax = 1.6
+	if type == 'LRG':
+		zmin = .5
+		zmax = 1.1
+	if type == 'QSO':
+		zmin = 1.
+		zmax = 2.
+
+	rmax = 10
+	gf = xt.createSourcesrd_ad(type,'alltiles','deep',zmin=zmin,zmax=zmax,datadir=dirout)
+	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+	subprocess.run('./dopc'+gf+'.sh')
+	for i in range(rm+1,rmax):
+		gf = xt.createSourcesrd_ari(type,'alltiles','deep',i,zmin=zmin,zmax=zmax,datadir=dirout)
+		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+		subprocess.run('./dopc'+gf+'.sh')
+	xt.ppxilcalc_LSDfjack_bs(type,'alltiles','deep',zmin=zmin,zmax=zmax,nran=rmax)
+	xt.ppxilcalc_LSDfjack_bs(type,'alltiles','deep',zmin=zmin,zmax=zmax,bs=5,nran=rmax)
+	logf.write('computed paircounts\n')
