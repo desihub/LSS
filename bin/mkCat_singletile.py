@@ -67,9 +67,6 @@ print('a log of what was run is going to '+logfn)
 
 logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
 logf.write('arguments were:\n')
-for arg in args:
-    logf.write('--type '+type+'\n')
-
 
 
 
