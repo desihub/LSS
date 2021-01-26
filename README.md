@@ -3,7 +3,7 @@ Codes used to create LSS catalogs and randoms
 
 Versions developed for different specific settings are being created. These are in separate folders in the py/LSS directory. Common tools go in the LSS directory.
 
-Scripts meant to act like executables are in the bin directory. Currently, one should enter the bin directory to run everything (and then the paths work). Please edit these (in a new branch!) so that the output goes to one of your personal directories. (The code should be made better so that this is not necessary.)
+Scripts meant to act like executables are in the bin directory. Currently, one should enter the bin directory to run everything (and then the paths work). Please edit these (in a new branch!) so that the output goes to one of your personal directories. (The code should be made better so that this is not necessary. This has been done for mkCat_singletile.py already.)
 
 Some examples:
 
