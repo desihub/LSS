@@ -18,10 +18,14 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 
-sys.path.append('../py')
+sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
-import LSS.mkCat_singletile.cattools as ct
+try:
+    import LSS.mkCat_singletile.cattools as ct
+except:
+    print('import of LSS.mkCat_singletile.cattools failed')
+    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 import LSS.mkCat_singletile.fa4lsscat as fa
 import LSS.mkCat_singletile.xitools as xt
 
@@ -31,15 +35,66 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="date of observation")
 parser.add_argument("--fadate", help="date for fiberassign run")
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--release", help="version of the spectroscopic pipeline",default='blanc')
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 args = parser.parse_args()
+print(args)
 
 type = args.type
 tile = args.tile
 night = args.night
 fadate = args.fadate
+basedir = args.basedir
+release = args.release
+version = args.version
 
-release = 'blanc'
-version = 'test'
+#make directories used in directory tree
+
+if not os.path.exists(basedir):
+    print('!!!the base directory does not exist!!! ALL WILL FAIL')
+
+if not os.path.exists(basedir+'/SV1'):
+    os.mkdir(basedir+'/SV1')
+    print('made '+basedir+'/SV1')
+    
+svdir = basedir+'/SV1/LSS/'
+
+if not os.path.exists(svdir):
+    os.mkdir(svdir)
+    print('made '+svdir)
+    
+if not os.path.exists(svdir+'/logs'):
+    os.mkdir(svdir+'/logs')
+    print('made '+svdir+'/logs')
+
+if not os.path.exists(svdir+'/LSScats'):
+    os.mkdir(svdir+'/LSScats')
+    print('made '+svdir+'/LSScats')
+
+dirout = svdir+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+
+#set up log file
+logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
+logf = open(logfn,'w')
+print('a log of what was run is going to '+logfn)
+
+logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
+logf.write('arguments were:\n')
+logf.write(str(args)+'\n')
+
+#random directories + info into log file    
+randir = svdir+'random'
+rm = 0
+rx = 10
+logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
+for i in range(rm,rx):
+    if not os.path.exists(svdir+'random'+str(i)):
+        os.mkdir(svdir+'random'+str(i))
+        print('made '+str(i)+' random directory')
 
 from desitarget.sv1 import sv1_targetmask
 tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
@@ -62,60 +117,48 @@ tp = 'SV1_DESI_TARGET'
 print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
 
-sys.path.append("../")
-#print(sys.path)
-
-svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/'
-dirout = svdir+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-randir = svdir+'random'
-rm = 0
-rx = 10
-for i in range(rm,rx):
-    if not os.path.exists(svdir+'random'+str(i)):
-        os.mkdir(svdir+'random'+str(i))
-        print('made '+str(i)+' random directory')
-
-
+#where to find input data
 fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
 tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
-ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
+mtlf = fadir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
+print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
+tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
+fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
 
+#output files for the data (randoms defined below since there are 10 of them)
+ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
 fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
 
-mtlf = fadir+'/0'+tile+'-targ.fits'
-
-print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
+logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n') 
 
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = False #make a mtl file of randoms
-runrfa = False #run randoms through fiberassign
-mkfulld = True
-mkfullr = True
-mkclus = True
-docatplots = False
-doclus = False
-mknz = True
+mkranmtl = True #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
+runrfa = True #run randoms through fiberassign
+mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
+mkfullr = True #make the random files associated with the full data files
+mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+docatplots = True #produce some validation plots
+doclus = False #get paircounts, only works for AJR
+mknz = True #get n(z) for type and all subtypes
 
-tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
-fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
 
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
     for i in range(rm,rx):
         ct.randomtilesi(tilef ,randir,i)
+    logf.write('made per random mtl files cut to tile area\n')
 
 if runrfa:
     fbah = fitsio.read_header(fbaf)
     dt = fbah['FA_RUN']
     for i in range(rm,rx):
         fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+    logf.write('put randoms through fiberassign\n')
 
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
@@ -130,6 +173,7 @@ if mkfulld:
         
     tout.write(ffd,format='fits', overwrite=True) 
     print('wrote matched targets/redshifts to '+ffd)
+    logf.write('made full data files\n')
     
 if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
@@ -139,6 +183,7 @@ if mkfullr:
         #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         ranall.write(ffr,format='fits', overwrite=True)
+    logf.write('made full random files\n')
 
 if mkclus:
     maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
@@ -146,6 +191,7 @@ if mkclus:
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
         ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+    logf.write('made clustering data and random files\n')
 
 if mknz:
     subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
@@ -159,6 +205,7 @@ if mknz:
     for subt in subtl:
         fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
         ct.mknz(ffd,fcd,fcr,subt,fout)
+    logf.write('made n(z) for type and all subtypes\n')
 
 if docatplots:
     ii = 0
@@ -215,6 +262,7 @@ if doclus:
 		subprocess.run('./dopc'+gf+'.sh')
 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
 	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
+	logf.write('computed paircounts\n')
         
 # 
 # dr = fitsio.read(rf)
