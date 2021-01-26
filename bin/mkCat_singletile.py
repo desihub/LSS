@@ -31,12 +31,47 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="date of observation")
 parser.add_argument("--fadate", help="date for fiberassign run")
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 args = parser.parse_args()
+print(args)
 
 type = args.type
 tile = args.tile
 night = args.night
 fadate = args.fadate
+basedir = args.basedir
+
+#
+
+#make directories used in directory tree
+
+if not os.path.exists(basedir):
+    print('!!!the base directory does not exist!!! ALL WILL FAIL')
+
+if not os.path.exists(basedir+'/SV1'):
+    os.mkdir(basedir+'/SV1')
+    print('made '+basedir+'/SV1')
+    
+svdir = basedir+'/SV1/LSS/'
+
+if not os.path.exists(svdir):
+    os.mkdir(svdir)
+    print('made '+svdir)
+    
+if not os.path.exists(svdir+'/logs'):
+    os.mkdir(svdir+'/logs')
+    print('made '+svdir+'/logs'
+logfn = svdir + '/logs/log'+datetime.now().isoformat()+'.txt'
+logf = open(logfn,'w')
+print('a log of what was run is going to '+logfn)
+
+logf.write('running mkCat_singletile.py from '+os.getcwd()+'\n\n')
+logf.write('arguments were:\n')
+for arg in args:
+    logf.write('--type '+type+'\n')
+
+
+
 
 release = 'blanc'
 version = 'test'
@@ -65,7 +100,7 @@ print(tarbit,pr,tp)
 sys.path.append("../")
 #print(sys.path)
 
-svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/'
+
 dirout = svdir+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
@@ -97,12 +132,12 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms
 runrfa = False #run randoms through fiberassign
-mkfulld = True
-mkfullr = True
-mkclus = True
+mkfulld = False
+mkfullr = False
+mkclus = False
 docatplots = False
 doclus = False
-mknz = True
+mknz = False
 
 tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
