@@ -1,6 +1,12 @@
 from astropy.table import Table,join,vstack
 import numpy as np
 import fitsio
+# AR adding some imports
+from desitarget.sv1 import sv1_targetmask
+import os
+from glob import glob
+from astropy.io import fits
+import fitsio
 
 'test'
 
@@ -122,7 +128,51 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
         tspec = tspec[wtype]
         tspec['subset'] = night
+        # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
+        # AR to down-weight QSOs which are at a higher priority
+        # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
+        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile)
         return tspec
     return None    
-        
-        
+
+
+# AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
+# AR to down-weight QSOs which are at a higher priority
+# AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
+# AR returns 1 if not relevant..
+# AR weight calculation:
+# AR   n_elg : nb of elg targets in the tile (including elgxqso)
+# AR   n_elgqso : nb of elgxqso targets in the tile
+# AR   fracp : N(elg x qso) / N(elg) on the parent sample, i.e. the input targets to fiberassign
+# AR   (n_elgqso * w) / (n_elgqso * w + n_elg-n_elgqso) = fracp
+# AR   n_elgqso * w = fracp * (n_elgqso * w + n_elg-n_elgqso)
+# AR   (n_elgqso - fracp * n_elgqso) * w = fracp * (n_elg-n_elgqso)
+# AR   w = fracp * (n_elg-n_elgqso) / (n_elgqso - fracp * n_elgqso)
+def get_elgqso_weight(tarbit,tp,tile,fadir="{}/survey/fiberassign/SV1/".format(os.getenv("DESI_ROOT"))):
+    # AR setting weights=1 by default
+    weights = np.ones(len(tarbit),dtype=float)
+    # AR is the tile a QSO+ELG or QSO+LRG tile?
+    fafn = glob("{}/202?????/fiberassign-{}.fits.gz".format(fadir,tile.zfill(6)))[0]
+    targfn = glob("{}/202?????/{}-targ.fits".format(fadir,tile.zfill(6)))[0]
+    docompute = fits.getheader(fafn)["FAFLAVOR"] in ["cmxelgqso", "cmxlrgqso", "sv1lrgqso", "sv1elgqso"]
+    # AR compute only if ELG targets considered and SV1
+    docompute &= tarbit == int(np.log2(sv1_targetmask.desi_mask["ELG"]))
+    docompute &= tp == "SV1_DESI_TARGET"
+    # AR
+    if docompute:
+        # AR parent sample
+        tmpd = fitsio.read(targfn, columns = ["SV1_DESI_TARGET"])
+        elg = (tmpd["SV1_DESI_TARGET"] & sv1_targetmask.desi_mask["ELG"]) > 0
+        elgqso = (elg) & ((tmpd["SV1_DESI_TARGET"] & sv1_targetmask.desi_mask["QSO"]) > 0)
+        fracp = elgqso.sum() / float(elg.sum())
+        # AR assigned sample
+        tmpd = fitsio.read(fafn, columns = ["SV1_DESI_TARGET"])
+        elg = (tmpd["SV1_DESI_TARGET"] & sv1_targetmask.desi_mask["ELG"]) > 0
+        elgqso = (elg) & ((tmpd["SV1_DESI_TARGET"] & sv1_targetmask.desi_mask["QSO"]) > 0)
+        nelg, nelgqso = elg.sum(), elgqso.sum()
+        # AR weight for the ELGxQSO objects in the input sample
+        elgqso = ((tp & sv1_targetmask.desi_mask["ELG"]) > 0) & ((tp & sv1_targetmask.desi_mask["QSO"]) > 0)
+        weights[elgqso] = np.round(fracp * (nelg - nelgqso) / (nelgqso - fracp*nelgqso), 3)
+    # AR
+    return weights
+
