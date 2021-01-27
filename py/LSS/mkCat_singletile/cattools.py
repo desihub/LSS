@@ -4,6 +4,7 @@ python functions to do various useful date processing/manipulation
 import numpy as np
 import fitsio
 import glob
+import os
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
