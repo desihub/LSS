@@ -342,9 +342,39 @@ def plotxicomb_dec(bs=1,xidir=''):
     d1 = np.loadtxt(xidir+'xiLRG80605_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose() 
     d2 = np.loadtxt(xidir+'xiLRG80607_20201215_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
     d3 = np.loadtxt(xidir+'xiLRG80609_20201216_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
-    dml = (d1[1]+d2[1])/2.
+    dml = (d1[1]+d2[1]+d3[1])/3.
     ml = (d1[0]/7.78)**-1.98
     plt.loglog(d1[0],dml,'r-',label='DEC_SV1_LRG, mean 80605,7,9')
+
+    plt.loglog(d1[0],ml,'r--',label=r'$(r/7.78)^{-1.98}$ (Kitanidis et al.)')
+    plt.loglog(xilin[0],xilin[1]*1.4,'r:',label=r'3.1$\xi_{\rm lin}(z=0.8)$')
+    plt.loglog(xilin[0],xilin[1]*.7,'b:',label=r'2$\xi_{\rm lin}(z=1.1)$')
+    plt.legend()
+    plt.xlabel(r'$r$ ($h^{-1}$Mpc)')
+    plt.ylabel(r'$\xi$')
+    plt.ylim(1.e-2,70)
+    plt.xlim(0.25,60)
+    plt.savefig(xidir+'xicomb'+str(bs)+'.png')
+    plt.show()
+
+def plotxicomb_deep(bs=1,xidir=''):
+    xilin = np.loadtxt(os.environ[HOME]+'/BAOtemplates/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+    d1 = np.loadtxt(xidir+'xiELG80606_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiELG80608_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiELG80610_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+    d4 = np.loadtxt(xidir+'xiELG80621_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+    d5 = np.loadtxt(xidir+'xiELG80623_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
+    dme = (d1[1]+d2[1]+d3[1]+d4[1]+d5[1])/5.    
+    plt.loglog(d1[0],dme,'b-',label='DEEP_SV1_ELG, mean 80606,08,10,21,23')
+
+    d1 = np.loadtxt(xidir+'xiLRG80605_deep_zm0.5zx1.1'+str(bs)+'st0.dat').transpose() 
+    d2 = np.loadtxt(xidir+'xiLRG80607_deep_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    d3 = np.loadtxt(xidir+'xiLRG80609_deep_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    d4 = np.loadtxt(xidir+'xiLRG80620_deep_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    d5 = np.loadtxt(xidir+'xiLRG80622_deep_zm0.5zx1.1'+str(bs)+'st0.dat').transpose()
+    dml = (d1[1]+d2[1]+d3[1]+d4[1]+d5[1])/5.
+    ml = (d1[0]/7.78)**-1.98
+    plt.loglog(d1[0],dml,'r-',label='DEC_SV1_LRG, mean 80605,7,9,20,22')
 
     plt.loglog(d1[0],ml,'r--',label=r'$(r/7.78)^{-1.98}$ (Kitanidis et al.)')
     plt.loglog(xilin[0],xilin[1]*1.4,'r:',label=r'3.1$\xi_{\rm lin}(z=0.8)$')
