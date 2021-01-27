@@ -358,7 +358,7 @@ def plotxicomb_dec(bs=1,xidir=''):
     plt.show()
 
 def plotxicomb_deep(bs=1,xidir=''):
-    xilin = np.loadtxt(os.environ[HOME]+'/BAOtemplates/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
+    xilin = np.loadtxt(os.environ['HOME']+'/BAOtemplates/xi0Challenge_matterpower0.42.04915.00.dat').transpose()
     d1 = np.loadtxt(xidir+'xiELG80606_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose() 
     d2 = np.loadtxt(xidir+'xiELG80608_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
     d3 = np.loadtxt(xidir+'xiELG80610_deep_zm0.8zx1.6'+str(bs)+'st0.dat').transpose()
