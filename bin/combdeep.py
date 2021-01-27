@@ -77,7 +77,7 @@ subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_G
 'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']
 subtl = []
 for subt in subts:
-	if subt[:3] == type:
+	if subt[:3] == type or subt == type:
 		subtl.append(subt)
 print(subtl)
 ffd = dirout+type+'alltiles_deep_full.dat.fits'
