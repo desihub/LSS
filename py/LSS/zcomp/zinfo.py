@@ -131,7 +131,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
         # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
-        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile)
+        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
         return tspec
     return None    
 
@@ -148,9 +148,9 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
 # AR   n_elgqso * w = fracp * (n_elgqso * w + n_elg-n_elgqso)
 # AR   (n_elgqso - fracp * n_elgqso) * w = fracp * (n_elg-n_elgqso)
 # AR   w = fracp * (n_elg-n_elgqso) / (n_elgqso - fracp * n_elgqso)
-def get_elgqso_weight(tarbit,tp,tile,fadir="{}/survey/fiberassign/SV1/".format(os.getenv("DESI_ROOT"))):
+def get_elgqso_weight(tarbit,tp,tile,tpval,fadir="{}/survey/fiberassign/SV1/".format(os.getenv("DESI_ROOT"))):
     # AR setting weights=1 by default
-    weights = np.ones(len(tarbit),dtype=float)
+    weights = np.ones(len(tpval),dtype=float)
     # AR is the tile a QSO+ELG or QSO+LRG tile?
     fafn = glob("{}/202?????/fiberassign-{}.fits.gz".format(fadir,tile.zfill(6)))[0]
     targfn = glob("{}/202?????/{}-targ.fits".format(fadir,tile.zfill(6)))[0]
@@ -171,7 +171,7 @@ def get_elgqso_weight(tarbit,tp,tile,fadir="{}/survey/fiberassign/SV1/".format(o
         elgqso = (elg) & ((tmpd["SV1_DESI_TARGET"] & sv1_targetmask.desi_mask["QSO"]) > 0)
         nelg, nelgqso = elg.sum(), elgqso.sum()
         # AR weight for the ELGxQSO objects in the input sample
-        elgqso = ((tp & sv1_targetmask.desi_mask["ELG"]) > 0) & ((tp & sv1_targetmask.desi_mask["QSO"]) > 0)
+        elgqso = ((tpval & sv1_targetmask.desi_mask["ELG"]) > 0) & ((tpval & sv1_targetmask.desi_mask["QSO"]) > 0)
         weights[elgqso] = np.round(fracp * (nelg - nelgqso) / (nelgqso - fracp*nelgqso), 3)
     # AR
     return weights
