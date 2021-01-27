@@ -195,7 +195,7 @@ if mkclus:
 
 if mknz:
     subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
-    'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS']
+    'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']
     subtl = []
     for subt in subts:
         if subt[:3] == type:
@@ -204,7 +204,13 @@ if mknz:
     fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
     for subt in subtl:
         fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
-        ct.mknz(ffd,fcd,fcr,subt,fout)
+        if subt[:3] == 'QSO':
+            zmin = 0.6
+            zmax = 4.5
+            dz = 0.05
+            ct.mknz(ffd,fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
+        else:    
+            ct.mknz(ffd,fcd,fcr,subt,fout)
     logf.write('made n(z) for type and all subtypes\n')
 
 if docatplots:
@@ -242,6 +248,10 @@ if doclus:
 	if not os.path.exists(dirpc):
 		os.mkdir(dirpc)
 
+	if type[:3] == 'BGS':
+		zmin = .1
+		zmax = .5
+	
 	if type[:3] == 'ELG':
 		zmin = .8
 		zmax = 1.6
