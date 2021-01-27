@@ -74,7 +74,7 @@ for i in range(rm,rx):
     dt.write(dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits',overwrite=True,format='fits')
 
 subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
-'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS']
+'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']
 subtl = []
 for subt in subts:
 	if subt[:3] == type:
