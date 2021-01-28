@@ -224,7 +224,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
             xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr        
         else:
             xi *= 100./nmunz #correct for empty mu bins
-            if numunz != 100.:
+            if nmunz != 100.:
                 print('there were only '+str(nmunz)+' mu bins with rr counts in bin '+str(i)+' to '+str(i+bs)+' mpc/h')
         if i/bs < nbin:
             xil[i//bs] = xi
