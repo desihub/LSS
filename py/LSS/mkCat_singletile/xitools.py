@@ -230,7 +230,10 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
     plt.plot(rl,xil)
     plt.show()
     bsst = str(bs)+'st'+str(start)
-    fo = open('xi'+fl+bsst+'.dat','w')
+    if wmu == 'counts':
+    	fo = open('xi'+fl+bsst+'.dat','w')
+    else:
+        fo = open('xi'+str(2*mom)+fl+bsst+'.dat','w')
     for i in range(0,len(rl)):
         fo.write(str(rl[i])+' '+str(xil[i])+'\n')
     fo.close()  
