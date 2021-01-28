@@ -165,7 +165,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
     fr = open(dirpc+'r'+flr0+'r'+flr0+'2ptdmu.dat').readlines()
     DRnormt += float(fdnp[0])
     RRnormt += float(fr[0])
-    print(DRnormt,RRnormt)
+    #print(DRnormt,RRnormt)
     for k in range(1,len(fdp)):
         dp = float(fdp[k])
         dr = float(fdnp[k])
@@ -185,7 +185,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
             rp = float(fr[k])
             DRnl[k-1] += dr
             RRnl[k-1] += rp
-    print(DDnormt,DRnormt,RRnormt)                
+    #print(DDnormt,DRnormt,RRnormt)                
     xil = np.zeros(int(nbin),'f')
     for i in range(start,rmax,bs):
         xi = 0
@@ -196,6 +196,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
         ddt = 0
         drt = 0
         rrt = 0
+        nmunz = 0
         for j in range(0,nmubin):
             if wmu != 'counts':
                 dd = 0
@@ -216,13 +217,17 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
                     drt += dr
         
             #if rr != 0 and wm == 'muw':            
-            if wmu != 'counts':
+            if wmu != 'counts' and rr != 0:
                 xi += pl[j][mom]/float(nmut)*(dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr
+                nmunz += 1.
         if wmu == 'counts':
             xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr        
+        else:
+            xi *= 100./nmunz #correct for empty mu bins
+            print('there were '+str(nmunz)+' mu bins with rr counts')
         if i/bs < nbin:
             xil[i//bs] = xi
-        print(ddt/DDnormt,drt/DRnormt,rrt/RRnormt)
+        #print(ddt/DDnormt,drt/DRnormt,rrt/RRnormt)
     rl = []
     for i in range(0,len(xil)):
         rl.append(start+bs/2.+bs*i)
