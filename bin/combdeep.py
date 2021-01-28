@@ -87,7 +87,7 @@ for subt in subtl:
 	fout = dirout+subt+'alltiles_deep_nz.dat'
 	ct.mknz(ffd,fcd,fcr,subt,fout)
 
-doclus = False
+doclus = True
 if doclus:
 	import subprocess
 	dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
@@ -115,6 +115,6 @@ if doclus:
 		gf = xt.createSourcesrd_ari(type,'alltiles','deep',i,zmin=zmin,zmax=zmax,datadir=dirout)
 		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 		subprocess.run('./dopc'+gf+'.sh')
-	xt.ppxilcalc_LSDfjack_bs(type,'alltiles','deep',zmin=zmin,zmax=zmax,nran=rmax)
+	#xt.ppxilcalc_LSDfjack_bs(type,'alltiles','deep',zmin=zmin,zmax=zmax,nran=rmax)
 	xt.ppxilcalc_LSDfjack_bs(type,'alltiles','deep',zmin=zmin,zmax=zmax,bs=5,nran=rmax)
 	logf.write('computed paircounts\n')
