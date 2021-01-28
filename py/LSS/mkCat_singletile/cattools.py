@@ -52,7 +52,7 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='CMX_TARGET'):
+def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='SV1_DESI_TARGET'):
     #get target info
     tfa = Table.read(fadir+'fba-0'+str(tile)+'.fits',hdu='FAVAIL')
     tft = unique(tfa,keys=['TARGETID'])

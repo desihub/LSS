@@ -231,13 +231,15 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
     plt.show()
     bsst = str(bs)+'st'+str(start)
     if wmu == 'counts':
-    	fo = open('xi'+fl+bsst+'.dat','w')
+    	outf = 'xi'+fl+bsst+'.dat'
+    	
     else:
-        fo = open('xi'+str(2*mom)+fl+bsst+'.dat','w')
+        outf = 'xi'+str(2*mom)+fl+bsst+'.dat'
+    fo = open(outf,'w')    
     for i in range(0,len(rl)):
         fo.write(str(rl[i])+' '+str(xil[i])+'\n')
     fo.close()  
-    print('wrote results to '+'xi'+fl+bsst+'.dat')  
+    print('wrote results to '+outf)  
     return xil
 
 def plotxi(xidir=''):
