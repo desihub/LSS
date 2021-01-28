@@ -179,7 +179,7 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
         fr = open(dirpc+'r'+flrn+'r'+flrn+'2ptdmu.dat').readlines()
         DRnormt += float(fdnp[0])
         RRnormt += float(fr[0])
-        print(DRnormt,RRnormt)
+        #print(DRnormt,RRnormt)
         for k in range(1,len(fdp)):
             dr = float(fdnp[k])
             rp = float(fr[k])
@@ -224,7 +224,8 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
             xi = (dd/DDnormt-2*dr/DRnormt+rr/RRnormt)*RRnormt/rr        
         else:
             xi *= 100./nmunz #correct for empty mu bins
-            print('there were '+str(nmunz)+' mu bins with rr counts')
+            if numunz != 100.:
+                print('there were only '+str(nmunz)+' mu bins with rr counts in bin '+str(i)+' to '+str(i+bs)+' mpc/h')
         if i/bs < nbin:
             xil[i//bs] = xi
         #print(ddt/DDnormt,drt/DRnormt,rrt/RRnormt)
