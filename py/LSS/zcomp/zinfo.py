@@ -103,7 +103,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
             zdta[w] += zda[i]
     
         
-        tf['EXPS'] = ",".join(expids.astype(str))
+        tf['EXPS'] = ",".join(exps.astype(str))
         for i in range(1,len(specs)):
             zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
             exps = np.unique(zfm['EXPID'])
@@ -111,7 +111,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
 
             tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
             tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
-            tnf['EXPS'] = ",".join(expids.astype(str))
+            tnf['EXPS'] = ",".join(exps.astype(str))
             tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
             tf = vstack([tf,tnf], metadata_conflicts='silent')
             bd = []
