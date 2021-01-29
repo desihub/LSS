@@ -101,7 +101,7 @@ print(tiles)
 
 tilew = []
 for tile in tiles:
-    tt = np.unique(f['TARGETS'][f['TILEID']==tile])[0]
+    tt = np.unique(exposures['TARGETS'][exposures['TILEID']==tile])[0]
     if np.isin(tt,gt): #that tile used cmx target bits
         tile = str(tile)
         coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
