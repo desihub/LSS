@@ -91,7 +91,7 @@ logf.write(str(args)+'\n')
   
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
-
+gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG']
 #location of inputs
 tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles'
 
@@ -101,7 +101,8 @@ print(tiles)
 
 tilew = []
 for tile in tiles:
-    if tile != 80615: #that tile used cmx target bits
+    tt = np.unique(f['TARGETS'][f['TILEID']==tile])[0]
+    if np.isin(tt,gt): #that tile used cmx target bits
         tile = str(tile)
         coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
         subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
@@ -114,7 +115,7 @@ for tile in tiles:
                 print(outf+' exists already')
                 tilew.append(tile)
             except:
-                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf)
+                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
                 logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
                     tilew.append(tile)
