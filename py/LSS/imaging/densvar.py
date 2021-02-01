@@ -65,7 +65,7 @@ class densvar:
         print(len(self.rl))
         del rl
 
-    def plot_hpdens(self,type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None)
+    def plot_hpdens(self,type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
         if reg:
             if reg == 'S' or reg == 'N':
                 wr = rl['PHOTSYS'] == reg
