@@ -25,24 +25,35 @@ import LSS.imaging.select_samples as ss
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--tarver", help="version of targeting",default='0.44.0')
+parser.add_argument("--tarver", help="version of targeting",default='0.49.0')
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+
 args = parser.parse_args()
 
 type = args.type
 tarver = args.tarver
-version = '0' #integer for every tag that makes it to master
+version = args.version
 
 tp = 'DESI_TARGET'
 
-outdir = '/project/projectdirs/desi/users/ajross/dr9/tarcat/v'+version+'/tv'+tarver+'/'
+outdir = basedir+'/tarcat/v'+version+'/tv'+tarver+'/'
+if not os.path.exists( basedir+'/tarcat'):
+    os.mkdir(basedir+'/tarcat')
+    print('created '+basedir+'/tarcat')
+
+if not os.path.exists( basedir+'/tarcatv'+version):
+    os.mkdir(basedir+'/tarcatv'+version)
+    print('created '+basedir+'/tarcatv'+version)
+
 if not os.path.exists(outdir):
     os.mkdir(outdir)
     print('created '+outdir)
 
 dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
 dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
-targroot = '/project/projectdirs/desi/target/catalogs/dr9m/'+tarver+'/targets/main/resolve/'
-ranroot =  '/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'
+targroot = '/project/projectdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
+ranroot =  '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'
 nran = 10
 
 sfs = glob.glob(dirsweeps+'sweep*')
@@ -52,8 +63,8 @@ sfn = glob.glob(dirsweepn+'sweep*')
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
 
-mkbsamp = False #make the base sample
-domaskd = False #mask data based on mask bits above
+mkbsamp = True #make the base sample
+domaskd = True #mask data based on mask bits above
 domaskr = True #mask randoms
 
 print('type being used for bright/dark '+type[:3])
