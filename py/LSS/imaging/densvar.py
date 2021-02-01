@@ -110,7 +110,7 @@ def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,sdir='',
     plt.title('relative '+type+' density')
     plt.show()
 
-def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None,sdir=''):
+def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None,sdir='',tv='0.49.0',rel='DR9'):
     df = sdir+type+'targets'+rel+'v'+tv+'.fits'
     ft = fitsio.read(df,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     
