@@ -61,7 +61,7 @@ class densvar:
         del ft
         rl = fitsio.read(ranf,columns=columns)
         print(len(rl))
-        self.rl = mask(self.rl)
+        self.rl = mask(rl)
         print(len(self.rl))
         del rl
 
