@@ -43,7 +43,7 @@ if not os.path.exists( basedir+'/tarcat'):
     os.mkdir(basedir+'/tarcat')
     print('created '+basedir+'/tarcat')
 
-if not os.path.exists( basedir+'/tarcatv'+version):
+if not os.path.exists( basedir+'/tarcat/v'+version):
     os.mkdir(basedir+'/tarcatv'+version)
     print('created '+basedir+'/tarcatv'+version)
 
