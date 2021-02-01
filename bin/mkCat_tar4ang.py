@@ -66,7 +66,7 @@ elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area; com
 
 mkbsamp = True #make the base sample
 domaskd = True #mask data based on mask bits above
-domaskr = True #mask randoms
+domaskr = False #mask randoms
 
 print('type being used for bright/dark '+type[:3])
 
