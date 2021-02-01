@@ -29,7 +29,7 @@ def gather_targets(type,targroot,outdir,tarver,prog='dark'):
 	print('data is split into '+str(ncat)+' healpix files')
 	keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
 	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
-	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET']
+	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 	#check to make sure those were copied correctly
 	f = fitsio.read(fns[0])
 	for key in keys:

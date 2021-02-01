@@ -52,7 +52,7 @@ def thphi2radec(theta,phi):
 
 
 class densvar:
-    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']):
+    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']):
         df = sdir+type+'targets'+rel+'v'+tv+'.fits'
         ft = fitsio.read(df,columns=columns)
         print(len(ft))
