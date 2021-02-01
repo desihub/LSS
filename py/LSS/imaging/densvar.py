@@ -427,12 +427,15 @@ def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10,sdir=
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par,'NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     rl = mask(rl)
     print(len(rl))
-    if reg == None:
-        reg = 'All'
-    else:    
-        wr = rl['PHOTSYS'] == reg
-        rl = rl[wr]
-        wd = ft['PHOTSYS'] == reg
+    if reg:
+        if reg == 'S' or reg == 'N':
+            wr = rl['PHOTSYS'] == reg
+            wd = ft['PHOTSYS'] == reg
+        else:
+            wr = sel_reg(rl['RA'],rl['DEC'],reg)
+            wd = sel_reg(ft['RA'],ft['DEC'],reg)
+            
+        rl = rl[wr]        
         ft = ft[wd]
     if vmin is None:
         vmin = np.min(rl[par])
