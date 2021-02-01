@@ -421,7 +421,7 @@ def plot_brickprop_stdper(type,prop,reg=False,fnc=None,sz=.2,vx=None,vm=None,min
 
 def densvsimpar_ran(type,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10,sdir='',tv='0.49.0',rel='DR9'):
     df = sdir+type+'targets'+rel+'v'+tv+'.fits'
-    ft = fitsio.read(df,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    ft = fitsio.read(df,columns=['RA','DEC','PHOTSYS',par,'NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     ft = mask(ft)
     print(len(ft))
     rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS',par,'NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
