@@ -71,8 +71,8 @@ class densvar:
                 wr = self.rl['PHOTSYS'] == reg
                 wd = self.ft['PHOTSYS'] == reg
             else:
-                wr = self.sel_reg(rl['RA'],rl['DEC'],reg)
-                wd = self.sel_reg(ft['RA'],ft['DEC'],reg)
+                wr = sel_reg(self.rl['RA'],self.rl['DEC'],reg)
+                wd = sel_reg(self.ft['RA'],self.ft['DEC'],reg)
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
