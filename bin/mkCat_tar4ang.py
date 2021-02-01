@@ -34,6 +34,7 @@ args = parser.parse_args()
 type = args.type
 tarver = args.tarver
 version = args.version
+basedir = arg.basedir
 
 tp = 'DESI_TARGET'
 
