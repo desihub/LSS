@@ -52,18 +52,18 @@ def thphi2radec(theta,phi):
 
 
 class densvar:
-    def __init__(self,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R',,'GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']):
-    df = sdir+type+'targets'+rel+'v'+tv+'.fits')
-    ft = fitsio.read(df,columns=columns)
-    print(len(ft))
-    self.ft = mask(ft,mb=elgandlrgbits)
-    print(len(self.ft))
-    del ft
-    rl = fitsio.read(ranf,columns=columns)
-    print(len(rl))
-    self.rl = mask(self.rl)
-    print(len(self.rl))
-    del rl
+    def __init__(self,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']):
+        df = sdir+type+'targets'+rel+'v'+tv+'.fits')
+        ft = fitsio.read(df,columns=columns)
+        print(len(ft))
+        self.ft = mask(ft,mb=elgandlrgbits)
+        print(len(self.ft))
+        del ft
+        rl = fitsio.read(ranf,columns=columns)
+        print(len(rl))
+        self.rl = mask(self.rl)
+        print(len(self.rl))
+        del rl
 
     def plot_hpdens(self,type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None)
         if reg:
