@@ -52,7 +52,7 @@ def thphi2radec(theta,phi):
 
 
 def plot_hpdens(type,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,sdir='',tv='0.49.0',rel='DR9'):
-    df = sdir+type+'targets'+release+'v'+tv+'.fits'
+    df = sdir+type+'targets'+rel+'v'+tv+'.fits'
     ft = fitsio.read(df,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
     
     print(len(ft))
