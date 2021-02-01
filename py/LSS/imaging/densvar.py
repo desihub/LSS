@@ -52,7 +52,7 @@ def thphi2radec(theta,phi):
 
 
 class densvar:
-    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']):
+    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','BRICKID']):
         df = sdir+type+'targets'+rel+'v'+tv+'.fits'
         ft = fitsio.read(df,columns=columns)
         print(len(ft))
@@ -77,6 +77,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
@@ -126,6 +129,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
@@ -198,6 +204,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         nbr = np.max(rl['BRICKID'])
         nbd = np.max(ft['BRICKID'])
         nbx = np.max([nbr,nbd])+1
@@ -247,6 +256,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         nbd = np.max(ft['BRICKID'])
         nbx = nbd+1
         print('maximum brickid is '+str(nbx))
@@ -314,6 +326,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         nbd = np.max(ft['BRICKID'])
         nbx = nbd+1
         print('maximum brickid is '+str(nbx))
@@ -369,6 +384,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         nbd = np.max(ft['BRICKID'])
         nbx = nbd+1
         print('maximum brickid is '+str(nbx))
@@ -426,6 +444,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         if vmin is None:
             vmin = np.min(rl[par])
         if vmax is None:
@@ -462,6 +483,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
@@ -549,6 +573,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
@@ -595,7 +622,7 @@ class densvar:
         for i in range(0,len(rf)):
             px = rf['hp_idx'][i]
             parv[px] = rf[par][i]  
-        parv = hp.reorder(parv,r2n=True)      
+        #parv = hp.reorder(parv,r2n=True)      
 
         wp &= parv !=0
         wp &= parv*0 == 0
@@ -638,6 +665,10 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
+         
         if gfluxcut:
             wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
             print(len(ft))      
@@ -778,6 +809,9 @@ class densvar:
             
             rl = self.rl[wr]        
             ft = self.ft[wd]
+        else:
+            rl = self.rl       
+            ft = self.ft
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
