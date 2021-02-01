@@ -68,14 +68,14 @@ class densvar:
     def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
         if reg:
             if reg == 'S' or reg == 'N':
-                wr = rl['PHOTSYS'] == reg
-                wd = ft['PHOTSYS'] == reg
+                wr = self.rl['PHOTSYS'] == reg
+                wd = self.ft['PHOTSYS'] == reg
             else:
-                wr = sel_reg(rl['RA'],rl['DEC'],reg)
-                wd = sel_reg(ft['RA'],ft['DEC'],reg)
+                wr = self.sel_reg(rl['RA'],rl['DEC'],reg)
+                wd = self.sel_reg(ft['RA'],ft['DEC'],reg)
             
-            rl = rl[wr]        
-            ft = ft[wd]
+            rl = self.rl[wr]        
+            ft = self.ft[wd]
         rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
