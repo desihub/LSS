@@ -64,6 +64,7 @@ class densvar:
         self.rl = mask(rl)
         print(len(self.rl))
         del rl
+        self.type = type
 
     def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
         if reg:
@@ -111,85 +112,75 @@ class densvar:
         plt.xlabel('RA')
         plt.ylabel('sin(DEC)')
         plt.colorbar()
-        plt.title('relative '+type+' density')
+        plt.title('relative '+self.type+' density')
         plt.show()
 
-def plot_hpprop(par,type='ELG',reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None,sdir='',tv='0.49.0',rel='DR9'):
-    df = sdir+type+'targets'+rel+'v'+tv+'.fits'
-    ft = fitsio.read(df,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
-    
-    print(len(ft))
-    ft = mask(ft)
-    print(len(ft))
-    rl = fitsio.read(ranf,columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
-    print(len(rl))
-    rl = mask(rl)
-    print(len(rl))
-    if reg:
-        if reg == 'S' or reg == 'N':
-            wr = rl['PHOTSYS'] == reg
-            wd = ft['PHOTSYS'] == reg
-        else:
-            wr = sel_reg(rl['RA'],rl['DEC'],reg)
-            wd = sel_reg(ft['RA'],ft['DEC'],reg)
+	def plot_hpprop(self,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
+        if reg:
+            if reg == 'S' or reg == 'N':
+                wr = self.rl['PHOTSYS'] == reg
+                wd = self.ft['PHOTSYS'] == reg
+            else:
+                wr = sel_reg(self.rl['RA'],self.rl['DEC'],reg)
+                wd = sel_reg(self.ft['RA'],self.ft['DEC'],reg)
             
-        rl = rl[wr]        
-        ft = ft[wd]
-    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
-    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-    dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
-    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
-    pixlr = np.zeros(12*nside*nside)
-    pixlg = np.zeros(12*nside*nside)
-    if weights is None:
-        weights = np.ones(len(pixlr))
-    for pix in rpix:
-        pixlr[pix] += 1.
-    print('randoms done')
-    for pix in dpix:
-        pixlg[pix] += 1.
-    wp = (pixlr > 0) & (weights*0 == 0)
-    parv = fitsio.read(pixfn)
-    if par == 'PSFTOT':
-        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-    elif par == 'SN2TOT_FLAT':
-        ebv = parv[wp]['EBV']
-        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+            rl = self.rl[wr]        
+            ft = self.ft[wd]
+		rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+		rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+		dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+		dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+		pixlr = np.zeros(12*nside*nside)
+		pixlg = np.zeros(12*nside*nside)
+		if weights is None:
+			weights = np.ones(len(pixlr))
+		for pix in rpix:
+			pixlr[pix] += 1.
+		print('randoms done')
+		for pix in dpix:
+			pixlg[pix] += 1.
+		wp = (pixlr > 0) & (weights*0 == 0)
+		parv = fitsio.read(pixfn)
+		if par == 'PSFTOT':
+			parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+		elif par == 'SN2TOT_FLAT':
+			ebv = parv[wp]['EBV']
+			parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
 
-    elif par == 'fracPSF':
-        wpsf = ft['MORPHTYPE'] == 'PSF'
-        pixlgp = np.zeros(12*nside*nside)
-        dpixp = dpix[wpsf]
-        for i in range(0,len(dpixp)): 
-            pix = dpixp[i]
-            pixlgp[pix] += 1.
-        parv = pixlgp[wp]/pixlg[wp]
+		elif par == 'fracPSF':
+			wpsf = ft['MORPHTYPE'] == 'PSF'
+			pixlgp = np.zeros(12*nside*nside)
+			dpixp = dpix[wpsf]
+			for i in range(0,len(dpixp)): 
+				pix = dpixp[i]
+				pixlgp[pix] += 1.
+			parv = pixlgp[wp]/pixlg[wp]
 
-    else:    
-        parv = parv[wp][par]
-    pixls = []
-    for i in range(0,len(pixlr)):
-        if pixlr[i] > 0 and weights[i]*0 == 0:
-            pixls.append(i)
-    pixls = np.array(pixls).astype(int)        
-    th,phi = hp.pix2ang(nside,pixls,nest=nest)
-    od = parv
-    if vx == None:
-        vx = np.max(od)
-    if vm == None:
-        vm = np.min(od)    
-    
-    ra,dec = thphi2radec(th,phi)
-    if reg == 'DS':
-        wr = ra > 250
-        ra[wr] -= 360
-    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
-    plt.xlabel('RA')
-    plt.ylabel('sin(DEC)')
-    plt.colorbar()
-    plt.title(par)
+		else:    
+			parv = parv[wp][par]
+		pixls = []
+		for i in range(0,len(pixlr)):
+			if pixlr[i] > 0 and weights[i]*0 == 0:
+				pixls.append(i)
+		pixls = np.array(pixls).astype(int)        
+		th,phi = hp.pix2ang(nside,pixls,nest=nest)
+		od = parv
+		if vx == None:
+			vx = np.max(od)
+		if vm == None:
+			vm = np.min(od)    
+	
+		ra,dec = thphi2radec(th,phi)
+		if reg == 'DS':
+			wr = ra > 250
+			ra[wr] -= 360
+		plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
+		plt.xlabel('RA')
+		plt.ylabel('sin(DEC)')
+		plt.colorbar()
+		plt.title(par)
 
-    plt.show()
+		plt.show()
 
 
 def plot_brickdens(type,reg=False,sz=.2,vx=2):
