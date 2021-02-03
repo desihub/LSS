@@ -41,6 +41,34 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt):
         print('no data for tile '+tile)
         return False
 
+def get_tsnrinfo(exps,spec):
+    
+    es = []
+    bs = []
+    qs = []
+    ls = []
+    bands = ['b','r','z']
+    		
+	for exp in exps:
+	    esv = 0
+	    bsv = 0
+	    lsv = 0
+	    qsv = 0
+	    for band in bands:
+	        cinfo = fitsio.read('/global/cscratch1/sd/mjwilson/desi/tsnr/summary_'+band+str(spec)+'.fits')
+			info = cinfo[cinfo['EXPID'] == exp]    
+			if len(info) == 0:
+				print('did not find infob for expid '+str(exp))
+				return None
+			esv += info['ELGTSNR'][0] #just get total across bands per exposure
+			bsv += info['BGSTSNR'][0]
+			lsv += info['LRGTSNR'][0]
+			qsv += info['QSOTSNR'][0]
+		es.append(esv)    
+		bs.append(bsv)
+		ls.append(lsv) 
+		qs.append(qsv)
+    return es,bs,ls,qs        
 
 def get_subset(tarbit,tp,night,tile,coaddir,exposures):
 
@@ -82,7 +110,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                 bda.append(info['B_DEPTH_EBVAIR'][0])
                 rda.append(info['R_DEPTH_EBVAIR'][0])
                 zda.append(info['Z_DEPTH_EBVAIR'][0]) 
-                
+        es,bs,ls,qs = get_tsnrinfo(exps,specs[0])    
 
        
         bdt = np.zeros(500)
@@ -92,6 +120,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
         rdta = np.zeros(500)
         zdta = np.zeros(500)
         tid = zfm[0:500]['TARGETID']
+        est = np.zeros(500)
+        bst = np.zeros(500)
+        lst = np.zeros(500)
+        qst = np.zeros(500)
         for i in range(0,len(exps)):
             sel = zfm[i*500:(i+1)*500]
             w = sel['FIBERSTATUS'] == 0
@@ -101,6 +133,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
             bdta[w] += bda[i]
             rdta[w] += rda[i]
             zdta[w] += zda[i]
+            est[w] += es[i]
+            bst[w] += bs[i]
+            lst[w] += ls[i]
+            qst[w] += qs[i]
     
         
         tf['EXPS'] = ",".join(exps.astype(str))
@@ -132,12 +168,18 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                     bda.append(info['B_DEPTH_EBVAIR'][0])
                     rda.append(info['R_DEPTH_EBVAIR'][0])
                     zda.append(info['Z_DEPTH_EBVAIR'][0])        
+            es,bs,ls,qs = get_tsnrinfo(exps,specs[i]) 
             bdtn = np.zeros(500)
             rdtn = np.zeros(500)
             zdtn = np.zeros(500)
             bdtna = np.zeros(500)
             rdtna = np.zeros(500)
             zdtna = np.zeros(500)
+			estn = np.zeros(500)
+			bstn = np.zeros(500)
+			lstn = np.zeros(500)
+			qstn = np.zeros(500)
+
             tidn = zfm[0:500]['TARGETID']
             for ii in range(0,len(exps)):
                 sel = zfm[ii*500:(ii+1)*500]
@@ -148,17 +190,29 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                 bdtna[w] += bda[ii]
                 rdtna[w] += rda[ii]
                 zdtna[w] += zda[ii]
+				estn[w] += es[i]
+				bstn[w] += bs[i]
+				lstn[w] += ls[i]
+				qstn[w] += qs[i]
+
+
+
             bdt = np.concatenate([bdt,bdtn])
             rdt = np.concatenate([rdt,rdtn])
             zdt = np.concatenate([zdt,zdtn])   
             bdta = np.concatenate([bdta,bdtna])
             rdta = np.concatenate([rdta,rdtna])
             zdta = np.concatenate([zdta,zdtna])   
+            est = np.concatenate([est,estn])
+            lst = np.concatenate([lst,lstn])
+            qst = np.concatenate([qst,qstn])   
+            bst = np.concatenate([bst,bstn])
+
             tid = np.concatenate([tid,tidn])
             #print(np.min(rdtn),np.max(rdtn)) 
             #print(np.min(rdt),np.max(rdt)) 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
-        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','TARGETID'))
+        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         wtype = ((tspec[tp] & 2**tarbit) > 0)
         print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
