@@ -33,6 +33,6 @@ for i in range(0,len(types)):
     tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
     tj = join(tz,tt,join_type='left',keys='TARGETID')
     tj['N_VI'].fill_value = 0
-    tj['N_VI'] = tt['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
+    tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
     tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
     print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
