@@ -56,7 +56,7 @@ def get_tsnrinfo(exps,spec):
         qsv = 0
         for band in bands:
             cinfo = fitsio.read('/global/cscratch1/sd/mjwilson/desi/tsnr/summary_'+band+str(spec)+'.fits')
-            info = cinfo[cinfo['EXPID'] == exp]    
+            info = cinfo[cinfo['EXPID'] == '000'+str(exp)]    
             if len(info) == 0:
                 print('did not find infob for expid '+str(exp))
                 return None
