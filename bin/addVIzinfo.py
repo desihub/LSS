@@ -20,6 +20,7 @@ version = args.version
 
 types = ['ELG','LRG','BGS_ANY']#'QSO',
 tiles = ['80608','80609','80613']#'na',]
+dates = ['210203','21030','210202']
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 svdir = basedir+'/SV1/'
@@ -28,7 +29,8 @@ dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
 for i in range(0,len(types)):
     tp =types[i]
     tile = tiles[i]
-    tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_210203.csv',format='pandas.csv')
+    date = dates[i]
+    tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
     tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
     tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
     tj = join(tz,tt,join_type='left',keys='TARGETID')
