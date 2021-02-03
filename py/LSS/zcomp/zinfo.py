@@ -168,7 +168,12 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                     bda.append(info['B_DEPTH_EBVAIR'][0])
                     rda.append(info['R_DEPTH_EBVAIR'][0])
                     zda.append(info['Z_DEPTH_EBVAIR'][0])        
-            es,bs,ls,qs = get_tsnrinfo(exps,specs[i]) 
+            
+            tvs = get_tsnrinfo(exps,specs[i]) 
+            if tvs is not None:
+            	es,bs,ls,qs = tvs
+            else:
+                return tvs
             bdtn = np.zeros(500)
             rdtn = np.zeros(500)
             zdtn = np.zeros(500)
