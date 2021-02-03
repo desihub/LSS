@@ -48,26 +48,26 @@ def get_tsnrinfo(exps,spec):
     qs = []
     ls = []
     bands = ['b','r','z']
-    		
-	for exp in exps:
-	    esv = 0
-	    bsv = 0
-	    lsv = 0
-	    qsv = 0
-	    for band in bands:
-	        cinfo = fitsio.read('/global/cscratch1/sd/mjwilson/desi/tsnr/summary_'+band+str(spec)+'.fits')
-			info = cinfo[cinfo['EXPID'] == exp]    
-			if len(info) == 0:
-				print('did not find infob for expid '+str(exp))
-				return None
-			esv += info['ELGTSNR'][0] #just get total across bands per exposure
-			bsv += info['BGSTSNR'][0]
-			lsv += info['LRGTSNR'][0]
-			qsv += info['QSOTSNR'][0]
-		es.append(esv)    
-		bs.append(bsv)
-		ls.append(lsv) 
-		qs.append(qsv)
+            
+    for exp in exps:
+        esv = 0
+        bsv = 0
+        lsv = 0
+        qsv = 0
+        for band in bands:
+            cinfo = fitsio.read('/global/cscratch1/sd/mjwilson/desi/tsnr/summary_'+band+str(spec)+'.fits')
+            info = cinfo[cinfo['EXPID'] == exp]    
+            if len(info) == 0:
+                print('did not find infob for expid '+str(exp))
+                return None
+            esv += info['ELGTSNR'][0] #just get total across bands per exposure
+            bsv += info['BGSTSNR'][0]
+            lsv += info['LRGTSNR'][0]
+            qsv += info['QSOTSNR'][0]
+        es.append(esv)    
+        bs.append(bsv)
+        ls.append(lsv) 
+        qs.append(qsv)
     return es,bs,ls,qs        
 
 def get_subset(tarbit,tp,night,tile,coaddir,exposures):
@@ -175,10 +175,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
             bdtna = np.zeros(500)
             rdtna = np.zeros(500)
             zdtna = np.zeros(500)
-			estn = np.zeros(500)
-			bstn = np.zeros(500)
-			lstn = np.zeros(500)
-			qstn = np.zeros(500)
+            estn = np.zeros(500)
+            bstn = np.zeros(500)
+            lstn = np.zeros(500)
+            qstn = np.zeros(500)
 
             tidn = zfm[0:500]['TARGETID']
             for ii in range(0,len(exps)):
@@ -190,10 +190,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                 bdtna[w] += bda[ii]
                 rdtna[w] += rda[ii]
                 zdtna[w] += zda[ii]
-				estn[w] += es[i]
-				bstn[w] += bs[i]
-				lstn[w] += ls[i]
-				qstn[w] += qs[i]
+                estn[w] += es[i]
+                bstn[w] += bs[i]
+                lstn[w] += ls[i]
+                qstn[w] += qs[i]
 
 
 
