@@ -17,6 +17,7 @@ types = ['ELG','LRG','BGS_ANY']#'QSO',
 tiles = ['80608','80609','80613']#'na',]
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
+svdir = basedir+'/SV1/'
 dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
 
 for i in range(0,len(types)):
