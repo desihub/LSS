@@ -235,7 +235,15 @@ class densvar:
         od = pixlg[wp]/pixlr[wp]
         od = od/np.mean(od)
         decp = np.array(decp)
-        plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx)#,vmin=1.,vmax=2)
+        if reg == 'DS':
+            wr = rap > 250
+            rap[wr] -=360
+        if vx == None:
+            vx = np.max(od)
+        if vm == None:
+            vm = np.min(od)    
+
+        plt.scatter(rap,np.sin(decp*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
         plt.xlabel('RA')
         plt.ylabel('sin(DEC)')
 
@@ -289,6 +297,10 @@ class densvar:
         #od = od/np.mean(od)
         print(vm,vx)
         decp = np.array(decp)
+
+        if reg == 'DS':
+            wr = rap > 250
+            rap[wr] -=360
     
     
         fig = plt.figure()
@@ -563,6 +575,7 @@ class densvar:
 
     def densvsskyres_pix(self,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
         #test against Rongpu's residuals
+        print('SOMETHING SEEMS WRONG, DID YOU FIX IT??')
         if reg:
             if reg == 'S' or reg == 'N':
                 wr = self.rl['PHOTSYS'] == reg
