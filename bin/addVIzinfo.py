@@ -1,10 +1,4 @@
-import shutil
-import unittest
-from datetime import datetime
-import json
-import numpy as np
-import fitsio
-import glob
+import os
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
