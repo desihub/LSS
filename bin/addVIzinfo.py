@@ -13,6 +13,11 @@ parser.add_argument("--version", help="catalog version to load from",default='te
 args = parser.parse_args()
 print(args)
 
+basedir = args.basedir
+release = args.release
+version = args.version
+
+
 types = ['ELG','LRG','BGS_ANY']#'QSO',
 tiles = ['80608','80609','80613']#'na',]
 
