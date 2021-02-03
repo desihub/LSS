@@ -31,7 +31,7 @@ for i in range(0,len(types)):
     tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_210203.csv',format='pandas.csv')
     tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
     tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
-    tj = join(td,tt,join_type='left',keys='TARGETID')
+    tj = join(tz,tt,join_type='left',keys='TARGETID')
     tj['N_VI'].fill_value = 0
     tj['N_VI'] = tt['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
     tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
