@@ -199,10 +199,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
                 bdtna[w] += bda[ii]
                 rdtna[w] += rda[ii]
                 zdtna[w] += zda[ii]
-                estn[w] += es[i]
-                bstn[w] += bs[i]
-                lstn[w] += ls[i]
-                qstn[w] += qs[i]
+                estn[w] += es[ii]
+                bstn[w] += bs[ii]
+                lstn[w] += ls[ii]
+                qstn[w] += qs[ii]
 
 
 
