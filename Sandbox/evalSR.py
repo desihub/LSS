@@ -27,7 +27,7 @@ catfrac = {'LRG':0.05,'ELG':0.05,'QSOlz':0.05,'QSOly':0.02,'BGS':0.05,'ELGhiz':0
 catthresh = 1000./3e5
 
 
-def add_truth(tp,release='blanc',depthfac=2,baseline=True):
+def add_truth(tp,release='blanc',depthfac=2,baseline=True,version='v1',bdir = '/global/cscratch1/sd/ajross/SV1/redshift_comps'):
     '''
     Add truth redshift values based on deep and return table; table is input to all functions below
     Any target missing a truth value has Z_TRUTH == 0 (probably should choose something better in the future)
@@ -35,7 +35,8 @@ def add_truth(tp,release='blanc',depthfac=2,baseline=True):
     only release that should work for now is blank (needs deep, so wouldn't work on nightly alone)
     depthfac sets the minimum depth to allow to give truth, current default is half the maximum deep depth value (could probably relax this?)
     '''
-    f = fitsio.read('/project/projectdirs/desi/users/ajross/catalogs/SV/redshift_comps/'+release+'/v0/'+tp+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
+    
+    f = fitsio.read(bdir+'/'+release+'/'+version+'/'+tp+'/alltiles_'+tp+'zinfo.fits') #fitsio *much* faster than using Table here
     if baseline:
         #from desitarget import targetmask
         #tarbit = targetmask.desi_mask[tp])
