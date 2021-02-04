@@ -484,7 +484,9 @@ def plotdatran(type,tile,night):
 	plt.title(type + ' '+tile+' '+night)
 	plt.savefig('dataran'+type+tile+night+'.png')
 	plt.show()
-		
+
+def plot_layers(type,tile,night,version='v0',rootdir='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/LSScats/'):
+    fd = fitsio.read(rootdir+version+'/'+type+tile+'_'+night+'_full.dat.fits )		
 
 def gathertargets(type):
 	fns      = glob.glob(targroot+'*.fits')

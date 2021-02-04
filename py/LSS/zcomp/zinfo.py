@@ -10,7 +10,7 @@ import fitsio
 
 'test'
 
-def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt):
+def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.txt'):
     '''
     performs a vertical concatenation of the data for a tile, so each targetid shows up N_subset times
     subsets is a list of the subsets (strings)
@@ -22,7 +22,7 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt):
     ss = 0 #use to switch from creating to concatenating
     for night in subsets:
         if len(night) > 0:
-            tspec = get_subset(tarbit,tp,night,tile,coaddir,exposures)
+            tspec = get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn=mfn)
             if tspec is not None:
                 if ss == 0:
                     tspect = tspec
@@ -70,7 +70,7 @@ def get_tsnrinfo(exps,spec):
         qs.append(qsv)
     return es,bs,ls,qs        
 
-def get_subset(tarbit,tp,night,tile,coaddir,exposures):
+def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
     print('going through subset '+night)
     specs = []
@@ -101,6 +101,8 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures):
             info = exposures[exposures['EXPID'] == exp]
             if len(info) == 0:
                 print('did not find info for expid '+str(exp))
+                fo = open(mfn,'a')
+                fo.write(str(exp)+'\n')
                 return None
             else:    
                 print(info['B_DEPTH'])

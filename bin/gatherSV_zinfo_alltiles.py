@@ -99,6 +99,10 @@ tiles = np.unique(exposures['TILEID'])
 print('looking for data in these tiles:')
 print(tiles)
 
+mfn = svdir+'/redshift_comps/logs/missingexposures.txt'
+fo = open(svdir+'/redshift_comps/logs/missingexposures.txt','w')
+fo.close()
+
 tilew = []
 for tile in tiles:
     tt = np.unique(exposures['TARGETS'][exposures['TILEID']==tile])[0]
@@ -115,7 +119,7 @@ for tile in tiles:
                 print(outf+' exists already')
                 tilew.append(tile)
             except:
-                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
+                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn)
                 logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
                     tilew.append(tile)
