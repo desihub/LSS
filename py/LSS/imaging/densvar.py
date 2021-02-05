@@ -110,7 +110,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     plt.title('Obiwan ELGs in '+reg + ' footprint')
     plt.show()
     wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
-    frac = len(rl[~wv])/len(rl)
+    frac = len(obi_masked[~wv])/len(obi_masked)
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
