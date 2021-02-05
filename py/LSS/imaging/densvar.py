@@ -73,6 +73,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     if NS == None:
         print('!!!NS not set, you must have chose an invalid reg; should be N, DS, or DN!!!')
         return(None)
+    print(NS)
     obif = fitsio.read(obidir+NS+'/file0_rs0_skip0/merged/matched_input.fits')
     obi_masked = masklc(obif,mb=elgandlrgbits)
     if reg != 'N':
@@ -105,7 +106,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     plt.ylim(-.3,.3)
     plt.xlabel(par)
     plt.ylabel('Ngal/<Ngal> - 1')
-    plt.title(self.type+' in '+reg + ' footprint')
+    plt.title('Obiwan ELGs in '+reg + ' footprint')
     plt.show()
     wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
     frac = len(rl[~wv])/len(rl)
