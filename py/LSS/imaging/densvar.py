@@ -32,7 +32,7 @@ def mask(dd,mb=[1]):
     return dd       
 
 def masklc(dd,mb=[1]):
-    keep = (dd['nobs_g']>0) & (dd['nobs_r']>0) & (dd['nobs_z']>0)
+    keep = (dd['input_nobs_g']>0) & (dd['input_nobs_r']>0) & (dd['input_nobs_z']>0)
     print(len(dd[keep]))
     
     keepelg = keep
