@@ -81,7 +81,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     gflux = obi_masked['flux_g']/obi_masked['mw_transmission_g']
     rflux = obi_masked['flux_r']/obi_masked['mw_transmission_r']
     zflux = obi_masked['flux_z']/obi_masked['mw_transmission_z']
-    ws = cuts.isELG_colors(gfluxs, rfluxs, zfluxs,south=south)
+    ws = cuts.isELG_colors(gflux, rflux, zflux,south=south)
     print(len(obi_masked[ws])) 
     ws &= (obi_masked['ra']*0 == 0)
     print(len(obi_masked[ws])) 
