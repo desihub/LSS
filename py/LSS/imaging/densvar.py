@@ -94,7 +94,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
         
     rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
     dh,db = np.histogram(obi_elg[par],bins=bn)
-    rf = len(obimasked)/len(obi_elg)
+    rf = len(obi_masked)/len(obi_elg)
     sv = dh/rh*rf
     ep = np.sqrt(dh)/rh*rf
     bc = []
