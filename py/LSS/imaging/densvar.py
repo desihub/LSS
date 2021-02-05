@@ -509,7 +509,7 @@ class densvar:
 
 
 
-    def densvsimpar_ran(self,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10):
+    def densvsimpar_ran(self,par,reg=None,fnc=None,vmin=None,vmax=None,nbin=10,bl=None):
         if reg:
             if reg == 'S' or reg == 'N':
                 wr = self.rl['PHOTSYS'] == reg
@@ -528,6 +528,12 @@ class densvar:
         if vmax is None:
             vmax = np.max(rl[par])    
         
+        if bl is not None:
+            wr = np.isin(rl['BRICKID'],bl)
+            rl = rl[wr]
+            wd = np.isin[ft['BRICKID'],bl]
+            ft = ft[wd]
+            reg += ' Obiwan bricks'
         rh,bn = np.histogram(rl[par],bins=nbin,range=(vmin,vmax))
         dh,db = np.histogram(ft[par],bins=bn)
         rf = len(rl)/len(ft)
