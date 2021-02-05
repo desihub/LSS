@@ -101,7 +101,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
     plt.errorbar(bc,sv-1.,ep,fmt='ko')
-    plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(rl))/np.max(rh))
+    plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
     plt.ylim(-.3,.3)
     plt.xlabel(par)
     plt.ylabel('Ngal/<Ngal> - 1')
