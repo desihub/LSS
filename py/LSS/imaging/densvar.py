@@ -62,6 +62,7 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd/adematti/legacysim/dr9/ebv1000shaper/',elgandlrgbits = [1,5,6,7,8,9,11,12,13]):
+    from desitarget import cuts
     NS = None
     if reg == 'N':
         NS = 'north'
