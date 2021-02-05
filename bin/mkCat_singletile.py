@@ -50,6 +50,7 @@ release = args.release
 version = args.version
 
 #make directories used in directory tree
+#basedir for official catalogs'/global/cfs/cdirs/desi/survey/catalogs
 
 if not os.path.exists(basedir):
     print('!!!the base directory does not exist!!! ALL WILL FAIL')
@@ -140,11 +141,11 @@ weightmd = 'wloc' #only option so far, weight observed redshifts by number of ta
 
 mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
 runrfa = False #run randoms through fiberassign
-mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
-mkfullr = True #make the random files associated with the full data files
-mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+mkfulld = False #make the 'full' catalog containing info on everything physically reachable by a fiber
+mkfullr = False #make the random files associated with the full data files
+mkclus = False #make the data/random clustering files; these are cut to a small subset of columns
 docatplots = False #produce some validation plots
-doclus = True #get paircounts, only works for AJR
+doclus = False #get paircounts, only works for AJR
 mknz = True #get n(z) for type and all subtypes
 
 
