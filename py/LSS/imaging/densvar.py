@@ -77,7 +77,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     obi_masked = masklc(obif,mb=elgandlrgbits)
     if reg != 'N':
         wr = sel_reg(obi_masked['ra'],obi_masked['dec'],reg)
-    obi_masked = obi_masked[wr]    
+        obi_masked = obi_masked[wr]    
     gflux = obi_masked['flux_g']/obi_masked['mw_transmission_g']
     rflux = obi_masked['flux_r']/obi_masked['mw_transmission_r']
     zflux = obi_masked['flux_z']/obi_masked['mw_transmission_z']
