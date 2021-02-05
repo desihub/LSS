@@ -75,6 +75,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
         return(None)
     print(NS)
     obif = fitsio.read(obidir+NS+'/file0_rs0_skip0/merged/matched_input.fits')
+    print(len(obif))
     obi_masked = masklc(obif,mb=elgandlrgbits)
     if reg != 'N':
         wr = sel_reg(obi_masked['ra'],obi_masked['dec'],reg)
