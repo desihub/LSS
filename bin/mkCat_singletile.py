@@ -21,11 +21,11 @@ from matplotlib import pyplot as plt
 sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
-try:
-    import LSS.mkCat_singletile.cattools as ct
-except:
-    print('import of LSS.mkCat_singletile.cattools failed')
-    print('are you in LSS/bin?, if not, that is probably why the import failed')   
+#try:
+import LSS.mkCat_singletile.cattools as ct
+#except:
+#    print('import of LSS.mkCat_singletile.cattools failed')
+#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 import LSS.mkCat_singletile.fa4lsscat as fa
 import LSS.mkCat_singletile.xitools as xt
 
