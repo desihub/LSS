@@ -531,7 +531,7 @@ class densvar:
         if bl is not None:
             wr = np.isin(rl['BRICKID'],bl)
             rl = rl[wr]
-            wd = np.isin[ft['BRICKID'],bl]
+            wd = np.isin(ft['BRICKID'],bl)
             ft = ft[wd]
             reg += ' Obiwan bricks'
         rh,bn = np.histogram(rl[par],bins=nbin,range=(vmin,vmax))
