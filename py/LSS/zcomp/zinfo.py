@@ -280,7 +280,7 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
     #find out which spectrograph have data
     for si in range(0,10):
         try:
-            fl = coaddir+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-000'+str(exp)+'.fits'
+            fl = coaddir+'/exposures/zbest-'+str(si)+'-'+str(tile)+'-000'+str(exp)+'.fits'
             fitsio.read(fl)
             specs.append(si)
         except:
