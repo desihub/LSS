@@ -51,7 +51,7 @@ def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf):
     '''
     ss = 0 #use to switch from creating to concatenating
     tid = int(tile)
-    wt = exposures['TILEDID'] == tid
+    wt = exposures['TILEID'] == tid
     exps = np.unique(exposures[wt]['EXPID'])
     for exp in exps:
         tspec = get_exp(tarbit,tp,exp,tile,coaddir,exposures)
