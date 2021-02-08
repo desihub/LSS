@@ -95,7 +95,8 @@ def get_tsnrinfo(exps,spec,tsnrdir='/global/cscratch1/sd/mjwilson/desi/tsnr/blan
             cinfo = fitsio.read(tsnrdir+'/summary_'+band+str(spec)+'.fits')
             info = cinfo[cinfo['EXPID'] == '000'+str(exp)]    
             if len(info) == 0:
-                print('did not find infob for expid '+str(exp))
+                print('did not find tsnr info for band '+band+' for expid '+str(exp))
+                print(tsnrdir+'/summary_'+band+str(spec)+'.fits')
                 return None
             esv += info['ELGTSNR'][0] #just get total across bands per exposure
             bsv += info['BGSTSNR'][0]
@@ -305,7 +306,7 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
        
         for i in range(1,len(specs)):
             tnf = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
-            tn = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+            tn = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
             tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
             tf = vstack([tf,tnf], metadata_conflicts='silent')
             
