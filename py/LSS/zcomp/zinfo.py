@@ -92,7 +92,7 @@ def get_tsnrinfo(exps,spec,tsnrdir='/global/cscratch1/sd/mjwilson/desi/tsnr/blan
         lsv = 0
         qsv = 0
         for band in bands:
-            cinfo = fitsio.read(tnsrdir+'/summary_'+band+str(spec)+'.fits')
+            cinfo = fitsio.read(tsnrdir+'/summary_'+band+str(spec)+'.fits')
             info = cinfo[cinfo['EXPID'] == '000'+str(exp)]    
             if len(info) == 0:
                 print('did not find infob for expid '+str(exp))
