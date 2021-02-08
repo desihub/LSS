@@ -41,7 +41,7 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
         print('no data for tile '+tile)
         return False
 
-def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,tt,mfn='temp.txt'):
+def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf):
     '''
     performs a vertical concatenation of the exposure data for a tile, so each targetid shows up N_subset times
     tile is the particular tile (string)
@@ -68,7 +68,7 @@ def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,tt,mfn='temp.txt'):
                     
     if ss == 1:
         tspect.sort('TARGETID')
-        tspect['TARGETS'] = tt
+        #tspect['TARGETS'] = tt
         tspect.write(outf,format='fits', overwrite=True) 
         print('wrote to '+outf)
         return True
