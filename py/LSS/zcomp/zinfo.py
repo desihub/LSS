@@ -53,18 +53,18 @@ def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf):
     tid = int(tile)
     exps = np.unique(exposures[wt]['EXPID'])
     for exp in exps:
-		tspec = get_exp(tarbit,tp,exp,tile,coaddir,exposures)
-		if tspec is not None:
-		    info = exposures[exposures['EXPID'] == exp]
-		    for name in exposures.dtype.names:
-		        tspec[name] = info[name][0]
+        tspec = get_exp(tarbit,tp,exp,tile,coaddir,exposures)
+        if tspec is not None:
+            info = exposures[exposures['EXPID'] == exp]
+            for name in exposures.dtype.names:
+                tspec[name] = info[name][0]
 
-			if ss == 0:
-				tspect = tspec
-				ss = 1
-			else:
-				tspect = vstack([tspect,tspec], metadata_conflicts='silent')
-			print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+            if ss == 0:
+                tspect = tspec
+                ss = 1
+            else:
+                tspect = vstack([tspect,tspec], metadata_conflicts='silent')
+            print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     if ss == 1:
         tspect.sort('TARGETID')
@@ -213,7 +213,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             
             tvs = get_tsnrinfo(exps,specs[i]) 
             if tvs is not None:
-            	es,bs,ls,qs = tvs
+                es,bs,ls,qs = tvs
             else:
                 return tvs
             bdtn = np.zeros(500)
@@ -308,7 +308,7 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
             
             tvs = get_tsnrinfo([exp],specs[i]) 
             if tvs is not None:
-            	es,bs,ls,qs = tvs
+                es,bs,ls,qs = tvs
             else:
                 return tvs
             estn = onepet*es
