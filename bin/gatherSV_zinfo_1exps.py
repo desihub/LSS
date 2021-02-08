@@ -113,7 +113,7 @@ for tile in tiles:
             print(outf+' exists already')
             tilew.append(tile)
         except:
-            a = zi.comb_1exp_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
+            a = zi.comb_exps_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
             logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
             if a:
                 tilew.append(tile)
