@@ -285,7 +285,7 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
             specs.append(si)
         except:
             #print(fl,specs,si)
-            print('no spectrograph and/or coadd '+str(si)+ ' on subset '+night)
+            print('no spectrograph and/or coadd '+str(si)+ ' on exposure '+str(exp))
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
         tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
         tf = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
@@ -329,7 +329,7 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
         wtype = ((tspec[tp] & 2**tarbit) > 0)
         print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
         tspec = tspec[wtype]
-        tspec['subset'] = night
+        #tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
         # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
