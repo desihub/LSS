@@ -275,7 +275,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
 def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
 
-    print('going through subset '+night)
+    print('going through exposure '+str(exp))
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
