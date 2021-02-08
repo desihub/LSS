@@ -280,16 +280,17 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
     #find out which spectrograph have data
     for si in range(0,10):
         try:
-            fl = coaddir+'/exposures/zbest-'+str(si)+'-'+str(tile)+'-000'+str(exp)+'.fits'
-            print(fl)
+            fl = coaddir+'zbest-'+str(si)+'-'+str(tile)+'-000'+str(exp)+'.fits'
+            
             fitsio.read(fl)
             specs.append(si)
         except:
             #print(fl,specs,si)
+            print(fl)
             print('no spectrograph and/or coadd '+str(si)+ ' on exposure '+str(exp))
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
-        tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
-        tf = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
+        tspec = Table.read(coaddir+'zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
+        tf = Table.read(coaddir+'zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
         tvs = get_tsnrinfo([exp],specs[0])    
         if tvs is not None:
             es,bs,ls,qs = tvs
@@ -303,8 +304,8 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
         qst = onepet*qs
        
         for i in range(1,len(specs)):
-            tnf = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
-            tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+            tnf = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
+            tn = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
             tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
             tf = vstack([tf,tnf], metadata_conflicts='silent')
             
