@@ -105,16 +105,17 @@ for tile in tiles:
     if np.isin(tt,gt): #that tile used cmx target bits
         tile = str(tile)
         coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile+'/exposures/'
-		print('going through tile '+tile)
-		outf = dirout +'/'+tile+'_'+type+'zinfo_1exp.fits'
-		try:
-			fitsio.FITS(outf)
-			print(outf+' exists already')
-			tilew.append(tile)
-		except:
-			a = zi.comb_1exp_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
-			logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
-			if a:
-				tilew.append(tile)
+        print('going through tile '+tile)
+        
+        outf = dirout +'/'+tile+'_'+type+'zinfo_1exp.fits'
+        try:
+            fitsio.FITS(outf)
+            print(outf+' exists already')
+            tilew.append(tile)
+        except:
+            a = zi.comb_1exp_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt)
+            logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
+            if a:
+                tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
