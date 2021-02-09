@@ -74,7 +74,7 @@ def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,dirout):
         wd = deepf['subset'] == 'deep'
         deepf = deepf[wd]
         wd.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2'])
-        for name in ['Z','ZWARN','DELTACHI2']
+        for name in ['Z','ZWARN','DELTACHI2']:
             wd.rename_column(name,name+'_deep')
         tspect = join(tspect,wd,keys=['TARGETID'],jointype='left')
         tspect.write(outf,format='fits', overwrite=True) 
