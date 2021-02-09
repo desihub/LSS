@@ -122,3 +122,16 @@ for tile in tiles:
                 tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
+
+#combine all the tiles
+
+dt = Table.read(dirout +'/'+tilew[0]+'_'+type+'zinfo_1exp.fits')
+for i in range(1,len(tilew)):
+    dtn = Table.read(dirout +'/'+tilew[i]+'_'+type+'zinfo_1exp.fits')
+    dt = vstack([dt,dtn])
+
+dt.sort('TARGETID')
+outfall = dirout +'/alltiles_'+type+'zinfo_1exp.fits'
+dt.write(outfall,format='fits', overwrite=True) 
+print('wrote to '+outfall)
+logf.write('combined all tiles, written to '+outfall)
