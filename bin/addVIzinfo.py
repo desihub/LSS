@@ -20,7 +20,7 @@ version = args.version
 
 types = ['ELG','LRG','BGS_ANY']#'QSO',
 tiles = ['80608','80609','80613']#'na',]
-dates = ['210203','21030','210202']
+dates = ['210208','21030','210202']
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 svdir = basedir+'/SV1/'
