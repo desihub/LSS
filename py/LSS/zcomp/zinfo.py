@@ -271,14 +271,16 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
         td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
-        wtype = ((tspec[tp] & 2**tarbit) > 0)
-        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
-        tspec = tspec[wtype]
+        if tarbit != -1:
+			wtype = ((tspec[tp] & 2**tarbit) > 0)
+			print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+			tspec = tspec[wtype]
         tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
         # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
-        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
+        if tarbit != -1:
+            tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
         return tspec
     return None    
 
@@ -337,14 +339,16 @@ def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
         tf['QSOTSNR'] = qst  
 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
-        wtype = ((tspec[tp] & 2**tarbit) > 0)
-        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
-        tspec = tspec[wtype]
+        if tarbit != -1:
+            wtype = ((tspec[tp] & 2**tarbit) > 0)
+            print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+            tspec = tspec[wtype]
         #tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
         # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
-        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
+        if tarbit != -1:
+            tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
         return tspec
     return None    
 

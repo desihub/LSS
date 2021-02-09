@@ -39,7 +39,9 @@ version = args.version
 
 from desitarget.sv1 import sv1_targetmask
 
-tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
+tarbit = -1
+if type != 'All':
+    tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
 
 print('gathering all tile data for type '+type +' in '+release)
 
