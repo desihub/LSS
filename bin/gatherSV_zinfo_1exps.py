@@ -109,7 +109,7 @@ for tile in tiles:
         
         outf = dirout +'/'+tile+'_'+type+'zinfo'#_1exp.fits'
         try:
-            fitsio.FITS(outf)
+            fitsio.FITS(outf+'_1exp.fits')
             print(outf+' exists already')
             tilew.append(tile)
         except:
