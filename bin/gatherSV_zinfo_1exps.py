@@ -107,7 +107,7 @@ for tile in tiles:
         coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile+'/exposures/'
         print('going through tile '+tile)
         
-        outf = dirout +'/'+tile+'_'+type+'zinfo_1exp.fits'
+        outf = dirout +'/'+tile+'_'+type+'zinfo'#_1exp.fits'
         try:
             fitsio.FITS(outf)
             print(outf+' exists already')

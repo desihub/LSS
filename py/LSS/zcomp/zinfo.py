@@ -70,13 +70,14 @@ def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,dirout):
     if ss == 1:
         tspect.sort('TARGETID')
         #tspect['TARGETS'] = tt
-        deepf = Table.read(dirout+'/'+tile+'_'+tp+'zinfo.fits')
+        deepf = Table.read(outf+'.fits')
         wd = deepf['subset'] == 'deep'
         deepf = deepf[wd]
         wd.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2'])
         for name in ['Z','ZWARN','DELTACHI2']:
             wd.rename_column(name,name+'_deep')
         tspect = join(tspect,wd,keys=['TARGETID'],jointype='left')
+        outf += '_1exp.fits'
         tspect.write(outf,format='fits', overwrite=True) 
         print('wrote to '+outf)
         return True
