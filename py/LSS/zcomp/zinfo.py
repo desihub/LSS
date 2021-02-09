@@ -272,9 +272,9 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
         td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         if tarbit != -1:
-		    wtype = ((tspec[tp] & 2**tarbit) > 0)
-		    print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
-		    tspec = tspec[wtype]
+            wtype = ((tspec[tp] & 2**tarbit) > 0)
+            print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+            tspec = tspec[wtype]
         tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
