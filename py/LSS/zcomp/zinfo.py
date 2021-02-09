@@ -41,7 +41,52 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
         print('no data for tile '+tile)
         return False
 
-def get_tsnrinfo(exps,spec):
+def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,dirout):
+    '''
+    performs a vertical concatenation of the exposure data for a tile, so each targetid shows up N_subset times
+    tile is the particular tile (string)
+    coaddir is where the data comes from (string; e.g., the directory pointing to the Blanc release)
+    exposures is the file containing the information per exposure, used to get depth information (data array read by, e.g., fitsio)
+    outf is where the fits file gets written out (string)
+    '''
+    ss = 0 #use to switch from creating to concatenating
+    tid = int(tile)
+    wt = exposures['TILEID'] == tid
+    exps = np.unique(exposures[wt]['EXPID'])
+    for exp in exps:
+        tspec = get_exp(tarbit,tp,exp,tile,coaddir,exposures)
+        if tspec is not None:
+            info = exposures[exposures['EXPID'] == exp]
+            for name in exposures.dtype.names:
+                tspec[name] = info[name][0]
+
+            if ss == 0:
+                tspect = tspec
+                ss = 1
+            else:
+                tspect = vstack([tspect,tspec], metadata_conflicts='silent')
+            print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+                    
+    if ss == 1:
+        tspect.sort('TARGETID')
+        #tspect['TARGETS'] = tt
+        deepf = Table.read(outf+'.fits')
+        wd = deepf['subset'] == 'deep'
+        deepf = deepf[wd]
+        deepf.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2'])
+        for name in ['Z','ZWARN','DELTACHI2']:
+            deepf.rename_column(name,name+'_deep')
+        tspect = join(tspect,deepf,keys=['TARGETID'],join_type='left')
+        outf += '_1exp.fits'
+        tspect.write(outf,format='fits', overwrite=True) 
+        print('wrote to '+outf)
+        return True
+    else:
+        print('no data for tile '+tile)
+        return False
+
+
+def get_tsnrinfo(exps,spec,tsnrdir='/global/cscratch1/sd/mjwilson/desi/tsnr/blanc/exptables/v0'):
     
     es = []
     bs = []
@@ -55,10 +100,11 @@ def get_tsnrinfo(exps,spec):
         lsv = 0
         qsv = 0
         for band in bands:
-            cinfo = fitsio.read('/global/cscratch1/sd/mjwilson/desi/tsnr/blanc/summary_'+band+str(spec)+'.fits')
+            cinfo = fitsio.read(tsnrdir+'/summary_'+band+str(spec)+'.fits')
             info = cinfo[cinfo['EXPID'] == '000'+str(exp)]    
             if len(info) == 0:
-                print('did not find infob for expid '+str(exp))
+                print('did not find tsnr info for band '+band+' for expid '+str(exp))
+                print(tsnrdir+'/summary_'+band+str(spec)+'.fits')
                 return None
             esv += info['ELGTSNR'][0] #just get total across bands per exposure
             bsv += info['BGSTSNR'][0]
@@ -177,7 +223,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             
             tvs = get_tsnrinfo(exps,specs[i]) 
             if tvs is not None:
-            	es,bs,ls,qs = tvs
+                es,bs,ls,qs = tvs
             else:
                 return tvs
             bdtn = np.zeros(500)
@@ -225,16 +271,87 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
         td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
-        wtype = ((tspec[tp] & 2**tarbit) > 0)
-        print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
-        tspec = tspec[wtype]
+        if tarbit != -1:
+            wtype = ((tspec[tp] & 2**tarbit) > 0)
+            print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+            tspec = tspec[wtype]
         tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
         # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
-        tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
+        if tarbit != -1:
+            tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
         return tspec
     return None    
+
+def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
+
+    print('going through exposure '+str(exp))
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        try:
+            fl = coaddir+'zbest-'+str(si)+'-'+str(tile)+'-000'+str(exp)+'.fits'
+            
+            fitsio.read(fl)
+            specs.append(si)
+        except:
+            #print(fl,specs,si)
+            print(fl)
+            print('no spectrograph and/or coadd '+str(si)+ ' on exposure '+str(exp))
+    if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
+        tspec = Table.read(coaddir+'zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
+        tf = Table.read(coaddir+'zbest-'+str(specs[0])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
+        tvs = get_tsnrinfo([exp],specs[0])    
+        if tvs is not None:
+            es,bs,ls,qs = tvs
+        else:
+            return tvs
+
+        onepet = np.ones(500)
+        est = onepet*es
+        bst = onepet*bs
+        lst = onepet*ls
+        qst = onepet*qs
+       
+        for i in range(1,len(specs)):
+            tnf = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='FIBERMAP')
+            tn = Table.read(coaddir+'zbest-'+str(specs[i])+'-'+str(tile)+'-000'+str(exp)+'.fits',hdu='ZBEST')
+            tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
+            tf = vstack([tf,tnf], metadata_conflicts='silent')
+            
+            tvs = get_tsnrinfo([exp],specs[i]) 
+            if tvs is not None:
+                es,bs,ls,qs = tvs
+            else:
+                return tvs
+            estn = onepet*es
+            bstn = onepet*bs
+            lstn = onepet*ls
+            qstn = onepet*qs
+            est = np.concatenate([est,estn])
+            lst = np.concatenate([lst,lstn])
+            qst = np.concatenate([qst,qstn])   
+            bst = np.concatenate([bst,bstn])
+        tf['ELGTSNR'] =est
+        tf['BGSTSNR'] =bst
+        tf['LRGTSNR'] =lst
+        tf['QSOTSNR'] = qst  
+
+        tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
+        if tarbit != -1:
+            wtype = ((tspec[tp] & 2**tarbit) > 0)
+            print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+            tspec = tspec[wtype]
+        #tspec['subset'] = night
+        # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
+        # AR to down-weight QSOs which are at a higher priority
+        # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
+        if tarbit != -1:
+            tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
+        return tspec
+    return None    
+
 
 
 # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles

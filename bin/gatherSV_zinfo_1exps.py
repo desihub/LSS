@@ -1,5 +1,5 @@
 '''
-gather redshift info across all observations for a given target type
+gather single exposure redshift info across all observations for a given target type
 '''
 
 #standard python
@@ -39,9 +39,7 @@ version = args.version
 
 from desitarget.sv1 import sv1_targetmask
 
-tarbit = -1
-if type != 'All':
-    tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
+tarbit = int(np.log2(sv1_targetmask.desi_mask[type]))
 
 print('gathering all tile data for type '+type +' in '+release)
 
@@ -86,7 +84,7 @@ logfn = svdir+'/redshift_comps/logs/log'+datetime.now().isoformat()+'.txt'
 logf = open(logfn,'w')
 print('a log of what was run is going to '+logfn)
 
-logf.write('running gatherSV_zinfo_alltiles.py from '+os.getcwd()+'\n\n')
+logf.write('running gatherSV_zinfo_1exps.py from '+os.getcwd()+'\n\n')
 logf.write('arguments were:\n')
 logf.write(str(args)+'\n')
 
@@ -101,46 +99,24 @@ tiles = np.unique(exposures['TILEID'])
 print('looking for data in these tiles:')
 print(tiles)
 
-mfn = svdir+'/redshift_comps/logs/missingexposures.txt'
-fo = open(svdir+'/redshift_comps/logs/missingexposures.txt','w')
-fo.close()
-
 tilew = []
 for tile in tiles:
     tt = np.unique(exposures['TARGETS'][exposures['TILEID']==tile])[0]
     if np.isin(tt,gt): #that tile used cmx target bits
         tile = str(tile)
-        coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
-        subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
-        if len(subsets) > 1:
-            #print(subsets)
-            print('going through tile '+tile)
-            outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
-            try:
-                fitsio.FITS(outf)
-                print(outf+' exists already')
+        coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile+'/exposures/'
+        print('going through tile '+tile)
+        
+        outf = dirout +'/'+tile+'_'+type+'zinfo'#_1exp.fits'
+        try:
+            fitsio.FITS(outf+'_1exp.fits')
+            print(outf+' exists already')
+            tilew.append(tile)
+        except:
+            a = zi.comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,dirout)
+            
+            logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
+            if a:
                 tilew.append(tile)
-            except:
-                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn)
-                logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
-                if a:
-                    tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
-      
-
-#combine all the tiles
-
-dt = Table.read(dirout +'/'+tilew[0]+'_'+type+'zinfo.fits')
-dt['TILEID'] = int(tilew[0])
-for i in range(1,len(tilew)):
-    dtn = Table.read(dirout +'/'+tilew[i]+'_'+type+'zinfo.fits')
-    dtn['TILEID'] = int(tilew[i])
-    dt = vstack([dt,dtn])
-
-dt.sort('TARGETID')
-outfall = dirout +'/alltiles_'+type+'zinfo.fits'
-dt.write(outfall,format='fits', overwrite=True) 
-print('wrote to '+outfall)
-logf.write('combined all tiles, written to '+outfall)
-    
