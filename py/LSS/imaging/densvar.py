@@ -16,8 +16,8 @@ R_Z=1.211
 dr = '9'
 
 #fidf = 'targetDR9m44.fits'
-#ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
-ranf = '/global/cscratch1/sd/ajross/tarcat/vtest/tv0.49.0/randomsDR9v0.49.0_0_masked.fits'
+ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
+#ranf = '/global/cscratch1/sd/ajross/tarcat/vtest/tv0.49.0/randomsDR9v0.49.0_0_masked.fits'
 
  #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
 
@@ -126,7 +126,7 @@ class densvar:
         del ft
         rl = fitsio.read(ranf,columns=columns)
         print(len(rl))
-        self.rl = mask(rl)
+        self.rl = mask(rl,mb=elgandlrgbits)
         print(len(self.rl))
         del rl
         self.type = type
