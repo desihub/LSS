@@ -18,8 +18,8 @@ release = args.release
 version = args.version
 
 
-types = ['ELG','LRG','BGS_ANY']#'QSO',
-tiles = ['80608','80609','80613']#'na',]
+types = ['ELG','LRG','BGS_ANY','QSO']
+tiles = ['80608','80609','80613'.'80609']
 dates = ['210208','21030','210202']
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
