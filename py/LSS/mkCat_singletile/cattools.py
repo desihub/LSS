@@ -61,7 +61,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     if len(tt) != len(tfa):
         print('!!!mismatch between targets and potential assignments, aborting!!!')
         return None
-    tt = join(tt,tfa,keys=['TARGETID')    
+    tt = join(tt,tfa,keys=['TARGETID'])    
 
     tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
     
