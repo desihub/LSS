@@ -57,7 +57,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments
     tt = Table.read(faf,hdu='TARGETS')
     tt.keep_columns(['TARGETID','FA_TARGET','FA_TYPE','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
-    tfa = Table.read(faf,ext='POTENTIAL_ASSIGNMENTS')
+    tfa = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
     if len(tt) != len(tfa):
         print('!!!mismatch between targets and potential assignments, aborting!!!')
         return None
