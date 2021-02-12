@@ -119,15 +119,16 @@ print(tarbit,pr,tp)
 #where to find input data
 #fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
 fadir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+tile[:2]+'/'
-tardir = fadir
+fbaf = fadir+'fiberassign-0'+tile+'.fits.gz' #the fiberassign file
+fh = fitsio.read_header(fbaf)
+fadate = fh['OUTDIR'][-9:-1]
+#tardir = fadir
+tardir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
-#mtlf = fadir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
+mtlf = tardir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
 #print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
 #tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
-fbaf = fadir+'fiberassign-0'+tile+'.fits.gz' #the fiberassign file
-
-fh = fitsio.read_header(fbaf)
 
 print('making catalog for tile '+tile +' at '+str(fh['TILERA'])+','+str(fh['TILEDEC']))
 
@@ -142,8 +143,8 @@ logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n')
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = True #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
-runrfa = True #run randoms through fiberassign
+mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
+runrfa = False #run randoms through fiberassign
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 mkfullr = True #make the random files associated with the full data files
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
@@ -169,7 +170,7 @@ if runrfa:
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
-    tfa = ct.gettarinfo_type(fbaf,goodloc,tarbit,tp=tp)
+    tfa = ct.gettarinfo_type(fbaf,tarf,goodloc,tarbit,tp=tp)
     print(tspec.dtype.names)
     tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
     print(tout.dtype.names)

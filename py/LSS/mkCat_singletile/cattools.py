@@ -52,21 +52,28 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def gettarinfo_type(faf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
+def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     #get target info
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments
     tt = Table.read(faf,hdu='TARGETS')
-    tfa = fitsio.read(faf,ext='POTENTIAL_ASSIGNMENTS')
+    tt.keep_columns(['TARGETID','FA_TARGET','FA_TYPE','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    tfa = Table.read(faf,ext='POTENTIAL_ASSIGNMENTS')
     if len(tt) != len(tfa):
         print('!!!mismatch between targets and potential assignments, aborting!!!')
         return None
+    tt = join(tt,tfa,keys=['TARGETID')    
 
     tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
     
     wgt = (np.isin(tt['LOCATION'],goodloc)) 
     print(str(len(np.unique(tt[wgt]['LOCATION']))) + ' good locations')
     print('comparison of number targets, number of targets with good locations')
-    print(len(tt),len(tfa[wgt]))
+    print(len(tt),len(tt[wgt]))
+    
+    tars = Table.read(tarf)
+    tars.remove_columns(['Z','Z_WARN','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    
+    tt = join(tt,tars,keys=['TARGETID'])
     
     #tfa = unique(tfa[wgt],keys=['TARGETID'])
     wtype = ((tt[tp] & 2**tarbit) > 0)
