@@ -154,7 +154,7 @@ mknz = True #get n(z) for type and all subtypes
 
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
     tilef = randir+'/tile-'+tile+'.fits'
-    ct.mk1tilef(th,tilef)
+    ct.mk1tilef(fh,tilef)
     for i in range(rm,rx):
         ct.randomtilesi(tilef ,randir,i)
     logf.write('made per random mtl files cut to tile area\n')
