@@ -445,13 +445,13 @@ def mk1tilef(th,fout):
     '''
     tf = Table()
     
-    tf['TILEID'] = th['TILEID']
-    tf['RA'] = th['TILERA']
-    tf['DEC'] = th['TILEDEC']
-    tf['PASS'] = 0
-    tf['IN_DESI'] = 1
-    tf['OBSCONDITIONS'] = th['OBSCONDITIONS']
-    tf['PROGRAM'] = b'DARK'
+    tf['TILEID'] = th['TILEID']*np.ones(1,dtype=int)
+    tf['RA'] = th['TILERA']*np.ones(1)
+    tf['DEC'] = th['TILEDEC']*np.ones(1)
+    tf['PASS'] = np.zeros(1,dtype=int)
+    tf['IN_DESI'] = np.ones(1,dtype=int)
+    tf['OBSCONDITIONS'] = np.ones(1,dtype=int)*65535
+    tf['PROGRAM'] = np.array([b'DARK'],dtype='|S6')
     
     tf.write(fout,format='fits', overwrite=True)
     
