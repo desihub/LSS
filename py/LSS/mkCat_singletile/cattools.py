@@ -101,7 +101,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
-    print('number of assigned fibers '+str(len(tfa[wal]))+' (check to match agrees with above)')
+    print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
 
     return tt
 
