@@ -85,7 +85,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     #print(str(len(tfa)) +' unique targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 
     #Mark targets that actually got assigned fibers
-    tfall = Table.read(fadir+'fba-0'+str(tile)+'.fits',hdu='FASSIGN')
+    tfall = Table.read(faf,hdu='FASSIGN')
     
     tfall.keep_columns(['TARGETID','LOCATION'])
     
