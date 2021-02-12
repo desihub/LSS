@@ -125,7 +125,7 @@ coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 #mtlf = fadir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
 #print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
 #tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
-fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
+fbaf = fadir+'fiberassign-0'+tile+'.fits.gz' #the fiberassign file
 
 fh = fitsio.read_header(fbaf)
 
