@@ -34,7 +34,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="date of observation")
-parser.add_argument("--fadate", help="date for fiberassign run")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--release", help="version of the spectroscopic pipeline",default='blanc')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
@@ -44,7 +43,6 @@ print(args)
 type = args.type
 tile = args.tile
 night = args.night
-fadate = args.fadate
 basedir = args.basedir
 release = args.release
 version = args.version
@@ -119,14 +117,19 @@ print('targeting bit, priority, target type; CHECK THEY ARE CORRECT!')
 print(tarbit,pr,tp)
 
 #where to find input data
-fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
+#fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
+fadir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+tile[:2]+'/'
 tardir = fadir
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
-mtlf = fadir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
-print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
-tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
+#mtlf = fadir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
+#print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
+#tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 fbaf = fadir+'fba-0'+tile+'.fits' #the fiberassign file
+
+fh = fitsio.read_header(fbaf)
+
+print('making catalog for tile '+tile +' at '+str(fh['TILERA'])+','+str(fh['TILEDEC']))
 
 #output files for the data (randoms defined below since there are 10 of them)
 ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
@@ -139,17 +142,19 @@ logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n')
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
-runrfa = False #run randoms through fiberassign
-mkfulld = False #make the 'full' catalog containing info on everything physically reachable by a fiber
-mkfullr = False #make the random files associated with the full data files
-mkclus = False #make the data/random clustering files; these are cut to a small subset of columns
-docatplots = False #produce some validation plots
-doclus = False #get paircounts, only works for AJR
+mkranmtl = True #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
+runrfa = True #run randoms through fiberassign
+mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
+mkfullr = True #make the random files associated with the full data files
+mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+docatplots = True #produce some validation plots
+doclus = True #get paircounts, only works for AJR
 mknz = True #get n(z) for type and all subtypes
 
 
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
+    tilef = randir+'/tile-'+tile+'.fits'
+    ct.mk1tilef(th,tilef)
     for i in range(rm,rx):
         ct.randomtilesi(tilef ,randir,i)
     logf.write('made per random mtl files cut to tile area\n')
@@ -164,7 +169,7 @@ if runrfa:
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
-    tfa = ct.gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp=tp)
+    tfa = ct.gettarinfo_type(fbaf,goodloc,tarbit,tp=tp)
     print(tspec.dtype.names)
     tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
     print(tout.dtype.names)

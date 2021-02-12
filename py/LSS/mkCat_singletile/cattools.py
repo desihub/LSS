@@ -52,42 +52,50 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def gettarinfo_type(fadir,tile,goodloc,mtlf,tarbit,tp='SV1_DESI_TARGET'):
+def gettarinfo_type(faf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     #get target info
-    tfa = Table.read(fadir+'fba-0'+str(tile)+'.fits',hdu='FAVAIL')
-    tft = unique(tfa,keys=['TARGETID'])
-   
-    wgt = (np.isin(tfa['LOCATION'],goodloc)) 
-    print(str(len(np.unique(tfa[wgt]['LOCATION']))) + ' good locations')
+    #in current files on SVN, TARGETS has all of the necessary info on potential assignments
+    tt = Table.read(faf,hdu='TARGETS')
+    tfa = fitsio.read(faf,ext='POTENTIAL_ASSIGNMENTS')
+    if len(tt) != len(tfa):
+        print('!!!mismatch between targets and potential assignments, aborting!!!')
+        return None
+
+    tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
+    
+    wgt = (np.isin(tt['LOCATION'],goodloc)) 
+    print(str(len(np.unique(tt[wgt]['LOCATION']))) + ' good locations')
     print('comparison of number targets, number of targets with good locations')
-    print(len(tfa),len(tfa[wgt]))
-    tfa = unique(tfa[wgt],keys=['TARGETID'])
-    tt = Table.read(mtlf)
-    tt.remove_columns(['Z','ZWARN'])
+    print(len(tt),len(tfa[wgt]))
+    
+    #tfa = unique(tfa[wgt],keys=['TARGETID'])
     wtype = ((tt[tp] & 2**tarbit) > 0)
     tt = tt[wtype]
-    tfa = join(tfa,tt,keys=['TARGETID'])
-    tft = join(tft,tt,keys=['TARGETID'])
-    print(str(len(tfa)) +' unique targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
+    
+    #tfa = join(tfa,tt,keys=['TARGETID'])
+    #tft = join(tft,tt,keys=['TARGETID'])
+    #print(str(len(tfa)) +' unique targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 
     #Mark targets that actually got assigned fibers
     tfall = Table.read(fadir+'fba-0'+str(tile)+'.fits',hdu='FASSIGN')
     
     tfall.keep_columns(['TARGETID','LOCATION'])
-    tfa = join(tfa,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
-    wgl = np.isin(tfa['LOCATION_ASSIGNED'],goodloc)
-    wtype = ((tfa[tp] & 2**tarbit) > 0)
-    wtfa = wgl & wtype
-    print('number of assigned fibers at good locations '+str(len(tfa[wtfa])))
+    
+    tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
+    
+    #wgl = np.isin(tfa['LOCATION_ASSIGNED'],goodloc)
+    #wtype = ((tfa[tp] & 2**tarbit) > 0)
+    #wtfa = wgl & wtype
+    #print('number of assigned fibers at good locations '+str(len(tfa[wtfa])))
 
-    wal = tfa['LOCATION_ASSIGNED']*0 == 0
-    print('number of assigned fibers '+str(len(tfa[wal])))
-    tfa['LOCATION_ASSIGNED'] = np.zeros(len(tfa),dtype=int)
-    tfa['LOCATION_ASSIGNED'][wal] = 1
-    wal = tfa['LOCATION_ASSIGNED'] == 1
-    print('number of assigned fibers '+str(len(tfa[wal])))
+    wal = tt['LOCATION_ASSIGNED']*0 == 0
+    print('number of assigned fibers '+str(len(tt[wal])))
+    tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
+    tt['LOCATION_ASSIGNED'][wal] = 1
+    wal = tt['LOCATION_ASSIGNED'] == 1
+    print('number of assigned fibers '+str(len(tfa[wal]))+' (check to match agrees with above)')
 
-    return tfa
+    return tt
 
 def mkfullran(tile,goodloc,pdict,randir):
     ranf = randir+'fba-0'+str(tile)+'.fits'
@@ -431,7 +439,22 @@ def mktilef_date(dirout,fout='msvtiles.fits'):
 	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
 	msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
-
+def mk1tilef(th,fout):
+    '''
+    make a tile file for one tile
+    '''
+    tf = Table()
+    
+    tf['TILEID'] = th['TILEID']
+    tf['RA'] = th['TILERA']
+    tf['DEC'] = th['TILEDEC']
+    tf['PASS'] = 0
+    tf['IN_DESI'] = 1
+    tf['OBSCONDITIONS'] = th['OBSCONDITIONS']
+    tf['PROGRAM'] = b'DARK'
+    
+    tf.write(fout,format='fits', overwrite=True)
+    
 	
 def mkminisvtilef(dirout,fout='msvtiles.fits'):
 	'''
