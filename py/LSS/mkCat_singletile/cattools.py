@@ -72,7 +72,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     
     print(tarf)
     tars = Table.read(tarf)
-    tars.remove_columns(['Z','Z_WARN','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    tars.remove_columns(['Z','ZWARN','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     
     tt = join(tt,tars,keys=['TARGETID'])
     
