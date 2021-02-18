@@ -166,8 +166,8 @@ class densvar:
         wp &= (weights*0 == 0)
         pixls = []
         for i in range(0,len(pixlr)):
-            if pixlr[i] > 0 and weights[i]*0 == 0:
-                pixls.append(i)
+            #if pixlr[i] > 0 and weights[i]*0 == 0:
+            pixls.append(i)
         pixls = np.array(pixls).astype(int)        
         th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
         od = pixlg[wp]/pixlr[wp]*weights[wp]
