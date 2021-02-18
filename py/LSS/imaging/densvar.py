@@ -587,7 +587,8 @@ class densvar:
             pixlg[pix] += 1.
     
         wp = wsel
-        wp &= (pixlr > 0) & (weights*0 == 0)
+        wp &= (pixlr > 0) 
+        wp &= (weights*0 == 0)
 
         parv = fitsio.read(pixfn)
         ebv = parv['EBV']
@@ -739,7 +740,7 @@ class densvar:
         print('fraction of randoms not included in plot: '+str(frac))
         return bc,sv,ep
 
-    def densvsimpar_pix(self,par,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+    def densvsimpar_pix(self,par,reg=None,wsel=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
         if reg:
             if reg == 'S' or reg == 'N':
                 wr = self.rl['PHOTSYS'] == reg
@@ -784,6 +785,8 @@ class densvar:
                 pixlp[pix] += ft[i][par.split('-')[1]]
                 pixlv[pix] += ft[i][par.split('-')[1]]**2.
     
+        if wsel is not None:
+            wp = wsel
         wp = (pixlr > 0) & (weights*0 == 0)
 
         parv = fitsio.read(pixfn)
