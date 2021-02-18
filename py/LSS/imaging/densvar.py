@@ -133,7 +133,7 @@ class densvar:
         if ti is not None:
             wt = self.ft['TYPE'] != ti[0]
             for i in range(1,len(ti)):
-                wt &= self.ft['TYPE'] != ti[i]
+                wt &= self.ft['MORPHTYPE'] != ti[i]
             self.ft = self.ft[wt]    
 
     def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None):
