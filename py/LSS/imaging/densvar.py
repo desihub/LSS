@@ -122,6 +122,12 @@ class densvar:
         ft = fitsio.read(df,columns=columns)
         print(len(ft))
         self.ft = mask(ft,mb=elgandlrgbits)
+        if ti is not None:
+            wt = self.ft['TYPE'] != ti[0]
+            for i in range(1,len(ti)):
+                wt &= self.ft['MORPHTYPE'] != ti[i]
+            self.ft = self.ft[wt]    
+
         print(len(self.ft))
         del ft
         rl = fitsio.read(ranf,columns=columns)
@@ -130,11 +136,6 @@ class densvar:
         print(len(self.rl))
         del rl
         self.type = type
-        if ti is not None:
-            wt = self.ft['TYPE'] != ti[0]
-            for i in range(1,len(ti)):
-                wt &= self.ft['MORPHTYPE'] != ti[i]
-            self.ft = self.ft[wt]    
 
     def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None):
         if reg:
