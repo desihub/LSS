@@ -131,7 +131,7 @@ class densvar:
         del rl
         self.type = type
 
-    def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None):
+    def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None):
         if reg:
             if reg == 'S' or reg == 'N':
                 wr = self.rl['PHOTSYS'] == reg
@@ -158,7 +158,12 @@ class densvar:
         print('randoms done')
         for pix in dpix:
             pixlg[pix] += 1.
-        wp = (pixlr > 0) & (weights*0 == 0)
+        if wsel is not None:
+            wp = wsel
+            wp &= (pixlr > 0)
+        else:
+            wp = (pixlr > 0) 
+        wp =& (weights*0 == 0)
         pixls = []
         for i in range(0,len(pixlr)):
             if pixlr[i] > 0 and weights[i]*0 == 0:
