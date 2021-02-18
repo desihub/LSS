@@ -169,7 +169,7 @@ class densvar:
             if pixlr[i] > 0 and weights[i]*0 == 0:
                 pixls.append(i)
         pixls = np.array(pixls).astype(int)        
-        th,phi = hp.pix2ang(nside,pixls,nest=nest)
+        th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
         od = pixlg[wp]/pixlr[wp]*weights[wp]
         od = od/np.mean(od)
         ra,dec = thphi2radec(th,phi)
