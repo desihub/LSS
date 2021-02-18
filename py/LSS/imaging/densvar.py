@@ -117,7 +117,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
 
 
 class densvar:
-    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','BRICKID']):
+    def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',ti=None,elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','BRICKID']):
         df = sdir+type+'targets'+rel+'v'+tv+'.fits'
         ft = fitsio.read(df,columns=columns)
         print(len(ft))
@@ -130,6 +130,11 @@ class densvar:
         print(len(self.rl))
         del rl
         self.type = type
+        if ti is not None:
+            wt = self.ft['TYPE'] != ti[0]
+            for i in range(1,len(ti)):
+                wt &= self.ft['TYPE'] != ti[i]
+            self.ft = self.ft[wt]    
 
     def plot_hpdens(self,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None):
         if reg:
