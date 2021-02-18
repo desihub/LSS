@@ -123,7 +123,7 @@ class densvar:
         print(len(ft))
         self.ft = mask(ft,mb=elgandlrgbits)
         if ti is not None:
-            wt = self.ft['TYPE'] != ti[0]
+            wt = self.ft['MORPHTYPE'] != ti[0]
             for i in range(1,len(ti)):
                 wt &= self.ft['MORPHTYPE'] != ti[i]
             self.ft = self.ft[wt]    
