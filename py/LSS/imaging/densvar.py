@@ -787,7 +787,10 @@ class densvar:
     
         if wsel is not None:
             wp = wsel
-        wp = (pixlr > 0) & (weights*0 == 0)
+            wp &= (pixlr > 0) 
+        else:
+            wp = (pixlr > 0) 
+        wp &= (weights*0 == 0)
 
         parv = fitsio.read(pixfn)
         ebv = parv['EBV']
