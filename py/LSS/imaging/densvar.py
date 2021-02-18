@@ -163,7 +163,7 @@ class densvar:
             wp &= (pixlr > 0)
         else:
             wp = (pixlr > 0) 
-        wp =& (weights*0 == 0)
+        wp &= (weights*0 == 0)
         pixls = []
         for i in range(0,len(pixlr)):
             if pixlr[i] > 0 and weights[i]*0 == 0:
