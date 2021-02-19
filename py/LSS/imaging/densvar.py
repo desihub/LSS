@@ -244,7 +244,7 @@ def densvsinput_pix(rl,ft,parl,wsel=None,reg=None,fnc=None,vmin=None,vmax=None,e
     return bc,sv,ep
 
 
-def plot_pixdens1d(pixlg,pixlr,parv,wp,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl=''):
+def plot_pixdens1d(pixlg,pixlr,parv,wp,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10):
     if vmin is None:
         vmin = np.min(parv[wp])
     if vmax is None:
