@@ -122,7 +122,7 @@ def gethpmap(dl,reg=False):
         else:
             wr = sel_reg(dl['RA'],dl['DEC'],reg)
         dl = dl[wr]
-    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rth,rphi = radec2thphi(dl['RA'],dl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
     pixlr = np.zeros(12*nside*nside)
     for pix in rpix:
