@@ -129,6 +129,24 @@ def gethpmap(dl,reg=False):
         pixlr[pix] += 1.
     return pixlr
 
+def gethpmap_var(dl,reg=False):
+    if reg:
+        if reg == 'S' or reg == 'N':
+            wr = dl['PHOTSYS'] == reg
+        else:
+            wr = sel_reg(dl['RA'],dl['DEC'],reg)
+        dl = dl[wr]
+    rth,rphi = radec2thphi(dl['RA'],dl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+	pixlp = np.zeros(12*nside*nside)
+	pixlv = np.zeros(12*nside*nside)
+	for i in range(0,len(rpix)): 
+		pix = rpix[i]
+		pixlp[pix] += dl[i][par.split('-')[1]]
+		pixlv[pix] += dl[i][par.split('-')[1]]**2.
+    return pixlp,pixlv
+
+
 def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
     pixls = np.arange(12*nside*nside,dtype=int)
     th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
@@ -196,7 +214,7 @@ def plot_hpprop(rl,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
     od = parv
     plot_hpmap(wp,od,reg,sz,vx,vm,titl=par)
 
-def densvsinput_pix(rl,ft,parl,wsel=None,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsinput_pix(rl,ft,parl,xlab='',wsel=None,reg=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     pixlr = gethpmap(rl,reg)
     print('randoms done')
     pixlg = gethpmap(ft,reg)
@@ -240,11 +258,11 @@ def densvsinput_pix(rl,ft,parl,wsel=None,reg=None,fnc=None,vmin=None,vmax=None,e
     wp &= parv !=0
     wp &= parv*0 == 0
     print(len(parv[wp]))
-    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin,vmax,titl=titl)
+    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin,vmax,titl=titl,xlab=xlab)
     return bc,sv,ep
 
 
-def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10):
+def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10,xlab=''):
     if vmin is None:
         vmin = np.min(parv[wp])
     if vmax is None:
@@ -268,7 +286,7 @@ def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,ad
     if addhist:
         plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.66*rng*np.ones(len(pixlr[wp]))/np.max(rh))
     plt.ylim(1-rng-sb,1+rng-sb)
-    plt.xlabel(parv)
+    plt.xlabel(xlab)
     
     plt.title(titl)
     plt.show()
@@ -277,6 +295,102 @@ def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,ad
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep 
 
+def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+    pixlr = gethpmap(rl,reg)
+    print('randoms done')
+    pixlg = gethpmap(ft,reg)
+    print('data done')
+
+    if weights is None:
+        weights = np.ones(len(pixlr))
+
+    if wsel is not None:
+        wp = wsel
+        wp &= (pixlr > 0) 
+    else:
+        wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
+
+	if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
+		pixlp,pixlv = gethpmap_var(ft,reg)
+
+	if wsel is not None:
+		wp = wsel
+		wp &= (pixlr > 0) 
+	else:
+		wp = (pixlr > 0) 
+	wp &= (weights*0 == 0)
+
+	parv = fitsio.read(pixfn)
+	ebv = parv['EBV']
+	sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+	print(len(parv[wp]))
+	if sn2cut:
+		wp &= (sn2tf > sn2cut)
+	
+	if fpsfcut:
+		wpsf = ft['MORPHTYPE'] == 'PSF'
+		pixlgp = gethpmap(ft[wpsf],reg)
+		fpsf = pixlgp/pixlg
+		wp &= (fpsf < fpsfcut)
+	if ebvcut:
+		wp &= (parv['EBV'] < ebvcut)
+
+	if edscut:
+		eds = parv['EBV']/parv['STARDENS']
+		wp &= (eds < edscut)
+
+	if gbcut is not None:
+	
+
+		print('applying background cut of '+str(gbcut))
+		rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
+		gb = np.zeros(12*nside*nside)
+		for i in range(0,len(rf)):
+			px = rf['hp_idx'][i]
+			gb[px] = rf['g_blobsky'][i]  
+		gb = hp.reorder(gb,r2n=True)    
+		wp &= (gb != 0)  
+		wp &= (gb < gbcut)    
+
+	
+	print(len(parv[wp]))
+	if len(par.split('-')) > 1: 
+	
+		if par.split('-')[0] == 'VAR':
+			parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+		elif par.split('-')[0] == 'STDPER':
+			var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
+			parv = var**.5/(pixlp[wp]/pixlg[wp])
+		elif par.split('-')[1] == 'X':
+			parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+		elif par.split('-')[1] == 'DIV':
+			parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
+	elif par == 'PSFTOT':
+		parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+	elif par == 'SN2TOT_FLAT':
+		ebv = parv[wp]['EBV']
+		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+
+	elif par == 'SN2TOT_G':
+		ebv = parv[wp]['EBV']
+		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
+
+	elif par == 'fracPSF':
+		wpsf = ft['MORPHTYPE'] == 'PSF'
+		pixlgp = np.zeros(12*nside*nside)
+		dpixp = dpix[wpsf]
+		for i in range(0,len(dpixp)): 
+			pix = dpixp[i]
+			pixlgp[pix] += 1.
+		parv = pixlgp[wp]/pixlg[wp]
+	else:
+		parv = parv[wp][par]
+
+    wp &= parv*0 == 0
+    print(len(parv[wp]))
+    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin,vmax,titl=titl,xlab=xlab)
+    return bc,sv,ep
 
 
 
@@ -707,153 +821,6 @@ class densvar:
         print('fraction of randoms not included in plot: '+str(frac))
         return bc,sv,ep
 
-    def densvsimpar_pix(self,par,reg=None,wsel=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
-        if reg:
-            if reg == 'S' or reg == 'N':
-                wr = self.rl['PHOTSYS'] == reg
-                wd = self.ft['PHOTSYS'] == reg
-            else:
-                wr = sel_reg(self.rl['RA'],self.rl['DEC'],reg)
-                wd = sel_reg(self.ft['RA'],self.ft['DEC'],reg)
-            
-            rl = self.rl[wr]        
-            ft = self.ft[wd]
-        else:
-            rl = self.rl       
-            ft = self.ft
-         
-        if gfluxcut:
-            wg = ft['FLUX_G']/ft['MW_TRANSMISSION_G'] > gfluxcut
-            print(len(ft))      
-            ft = ft[wg]
-            print(len(ft))
-        if rfluxcut:
-            wg = ft['FLUX_R']/ft['MW_TRANSMISSION_R'] > rfluxcut
-            ft = ft[wg]
-        
-        rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
-        rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-        dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
-        dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
-        pixlr = np.zeros(12*nside*nside)
-        pixlg = np.zeros(12*nside*nside)
-        if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
-            pixlp = np.zeros(12*nside*nside)
-            pixlv = np.zeros(12*nside*nside)
-        if weights is None:
-            weights = np.ones(len(pixlr))
-        for pix in rpix:
-            pixlr[pix] += 1.
-        print('randoms done')
-        for i in range(0,len(dpix)): 
-            pix = dpix[i]
-            pixlg[pix] += 1.
-            if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
-                pixlp[pix] += ft[i][par.split('-')[1]]
-                pixlv[pix] += ft[i][par.split('-')[1]]**2.
-    
-        if wsel is not None:
-            wp = wsel
-            wp &= (pixlr > 0) 
-        else:
-            wp = (pixlr > 0) 
-        wp &= (weights*0 == 0)
-
-        parv = fitsio.read(pixfn)
-        ebv = parv['EBV']
-        sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-        print(len(parv[wp]))
-        if sn2cut:
-            wp &= (sn2tf > sn2cut)
-        
-        if fpsfcut:
-            wpsf = ft['MORPHTYPE'] == 'PSF'
-            pixlgp = np.zeros(12*nside*nside)
-            dpixp = dpix[wpsf]
-            for i in range(0,len(dpixp)): 
-                pix = dpixp[i]
-                pixlgp[pix] += 1.
-            fpsf = pixlgp/pixlg
-            wp &= (fpsf < fpsfcut)
-        if ebvcut:
-            wp &= (parv['EBV'] < ebvcut)
-
-        if edscut:
-            eds = parv['EBV']/parv['STARDENS']
-            wp &= (eds < edscut)
-
-        if gbcut is not None:
-        
-
-            print('applying background cut of '+str(gbcut))
-            rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
-            gb = np.zeros(12*nside*nside)
-            for i in range(0,len(rf)):
-                px = rf['hp_idx'][i]
-                gb[px] = rf['g_blobsky'][i]  
-            gb = hp.reorder(gb,r2n=True)    
-            wp &= (gb != 0)  
-            wp &= (gb < gbcut)    
-
-        
-        print(len(parv[wp]))
-        if len(par.split('-')) > 1: 
-        
-            if par.split('-')[0] == 'VAR':
-                parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
-            elif par.split('-')[0] == 'STDPER':
-                var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
-                parv = var**.5/(pixlp[wp]/pixlg[wp])
-            elif par.split('-')[1] == 'X':
-                parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
-            elif par.split('-')[1] == 'DIV':
-                parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
-        elif par == 'PSFTOT':
-            parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-        elif par == 'SN2TOT_FLAT':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
-
-        elif par == 'SN2TOT_G':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
-
-        elif par == 'fracPSF':
-            wpsf = ft['MORPHTYPE'] == 'PSF'
-            pixlgp = np.zeros(12*nside*nside)
-            dpixp = dpix[wpsf]
-            for i in range(0,len(dpixp)): 
-                pix = dpixp[i]
-                pixlgp[pix] += 1.
-            parv = pixlgp[wp]/pixlg[wp]
-        else:
-            parv = parv[wp][par]
-
-        wo = parv*0 == 0
-        if vmin is None:
-            vmin = np.min(parv[wo])
-        if vmax is None:
-            vmax = np.max(parv[wo])
-        rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-        dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
-        norm = sum(rh)/sum(dh)
-        sv = dh/rh*norm
-        ep = np.sqrt(dh)/rh*norm
-        bc = []
-        for i in range(0,len(bn)-1):
-            bc.append((bn[i]+bn[i+1])/2.)
-
-        plt.errorbar(bc,sv-1.,ep,fmt='ko')
-        plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.2*np.ones(len(pixlr[wp]))/np.max(rh))
-        plt.ylim(-.3,.3)
-        plt.xlabel(par)
-        plt.ylabel('Ngal/<Ngal> - 1')
-        plt.title(self.type+' in '+reg + ' footprint, using pixelized map'+titl)
-        plt.show()
-        wv = (parv>=vmin) & (parv <=vmax)
-        frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
-        print('fraction of randoms not included in plot: '+str(frac))
-        return bc,sv,ep
    
     #plot density vs depth with healpix values
     def plotvshp_compmc(self,sys,rng,mcl=None,ws=None,reg=None,fnc=None,gdzm=0,ebvm=100,title='',effac=1.,mingd=0,maxgd=1.e6,minpsfg=0,maxpsfg=100,south=True):
