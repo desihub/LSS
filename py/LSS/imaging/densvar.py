@@ -138,12 +138,12 @@ def gethpmap_var(dl,reg=False):
         dl = dl[wr]
     rth,rphi = radec2thphi(dl['RA'],dl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-	pixlp = np.zeros(12*nside*nside)
-	pixlv = np.zeros(12*nside*nside)
-	for i in range(0,len(rpix)): 
-		pix = rpix[i]
-		pixlp[pix] += dl[i][par.split('-')[1]]
-		pixlv[pix] += dl[i][par.split('-')[1]]**2.
+    pixlp = np.zeros(12*nside*nside)
+    pixlv = np.zeros(12*nside*nside)
+    for i in range(0,len(rpix)): 
+        pix = rpix[i]
+        pixlp[pix] += dl[i][par.split('-')[1]]
+        pixlv[pix] += dl[i][par.split('-')[1]]**2.
     return pixlp,pixlv
 
 
@@ -311,81 +311,81 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',fnc=None,vmin=None,vmax
         wp = (pixlr > 0) 
     wp &= (weights*0 == 0)
 
-	if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
-		pixlp,pixlv = gethpmap_var(ft,reg)
+    if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
+        pixlp,pixlv = gethpmap_var(ft,reg)
 
-	if wsel is not None:
-		wp = wsel
-		wp &= (pixlr > 0) 
-	else:
-		wp = (pixlr > 0) 
-	wp &= (weights*0 == 0)
+    if wsel is not None:
+        wp = wsel
+        wp &= (pixlr > 0) 
+    else:
+        wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
 
-	parv = fitsio.read(pixfn)
-	ebv = parv['EBV']
-	sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-	print(len(parv[wp]))
-	if sn2cut:
-		wp &= (sn2tf > sn2cut)
-	
-	if fpsfcut:
-		wpsf = ft['MORPHTYPE'] == 'PSF'
-		pixlgp = gethpmap(ft[wpsf],reg)
-		fpsf = pixlgp/pixlg
-		wp &= (fpsf < fpsfcut)
-	if ebvcut:
-		wp &= (parv['EBV'] < ebvcut)
+    parv = fitsio.read(pixfn)
+    ebv = parv['EBV']
+    sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+    print(len(parv[wp]))
+    if sn2cut:
+        wp &= (sn2tf > sn2cut)
+    
+    if fpsfcut:
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = gethpmap(ft[wpsf],reg)
+        fpsf = pixlgp/pixlg
+        wp &= (fpsf < fpsfcut)
+    if ebvcut:
+        wp &= (parv['EBV'] < ebvcut)
 
-	if edscut:
-		eds = parv['EBV']/parv['STARDENS']
-		wp &= (eds < edscut)
+    if edscut:
+        eds = parv['EBV']/parv['STARDENS']
+        wp &= (eds < edscut)
 
-	if gbcut is not None:
-	
+    if gbcut is not None:
+    
 
-		print('applying background cut of '+str(gbcut))
-		rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
-		gb = np.zeros(12*nside*nside)
-		for i in range(0,len(rf)):
-			px = rf['hp_idx'][i]
-			gb[px] = rf['g_blobsky'][i]  
-		gb = hp.reorder(gb,r2n=True)    
-		wp &= (gb != 0)  
-		wp &= (gb < gbcut)    
+        print('applying background cut of '+str(gbcut))
+        rf = fitsio.read('/global/u2/r/rongpu/share/desi/sky_residual_dr9_partial/sky_residual_dr9_north_256.fits')
+        gb = np.zeros(12*nside*nside)
+        for i in range(0,len(rf)):
+            px = rf['hp_idx'][i]
+            gb[px] = rf['g_blobsky'][i]  
+        gb = hp.reorder(gb,r2n=True)    
+        wp &= (gb != 0)  
+        wp &= (gb < gbcut)    
 
-	
-	print(len(parv[wp]))
-	if len(par.split('-')) > 1: 
-	
-		if par.split('-')[0] == 'VAR':
-			parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
-		elif par.split('-')[0] == 'STDPER':
-			var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
-			parv = var**.5/(pixlp[wp]/pixlg[wp])
-		elif par.split('-')[1] == 'X':
-			parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
-		elif par.split('-')[1] == 'DIV':
-			parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
-	elif par == 'PSFTOT':
-		parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-	elif par == 'SN2TOT_FLAT':
-		ebv = parv[wp]['EBV']
-		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+    
+    print(len(parv[wp]))
+    if len(par.split('-')) > 1: 
+    
+        if par.split('-')[0] == 'VAR':
+            parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+        elif par.split('-')[0] == 'STDPER':
+            var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
+            parv = var**.5/(pixlp[wp]/pixlg[wp])
+        elif par.split('-')[1] == 'X':
+            parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+        elif par.split('-')[1] == 'DIV':
+            parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
+    elif par == 'PSFTOT':
+        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+    elif par == 'SN2TOT_FLAT':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
 
-	elif par == 'SN2TOT_G':
-		ebv = parv[wp]['EBV']
-		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
+    elif par == 'SN2TOT_G':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
 
-	elif par == 'fracPSF':
-		wpsf = ft['MORPHTYPE'] == 'PSF'
-		pixlgp = np.zeros(12*nside*nside)
-		dpixp = dpix[wpsf]
-		for i in range(0,len(dpixp)): 
-			pix = dpixp[i]
-			pixlgp[pix] += 1.
-		parv = pixlgp[wp]/pixlg[wp]
-	else:
-		parv = parv[wp][par]
+    elif par == 'fracPSF':
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        parv = pixlgp[wp]/pixlg[wp]
+    else:
+        parv = parv[wp][par]
 
     wp &= parv*0 == 0
     print(len(parv[wp]))
