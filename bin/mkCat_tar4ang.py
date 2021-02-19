@@ -40,8 +40,10 @@ survey = args.survey
 
 if survey == 'main':
     tp = 'DESI_TARGET'
+    sw = ''
 if survey == 'sv1':
     tp = 'SV1_DESI_TARGET'
+    sw = 'sv1'
 
 outdir = basedir+'/tarcat/v'+version+'/tv'+tarver+'/'
 if not os.path.exists( basedir+'/tarcat'):
@@ -90,7 +92,7 @@ if mkbsamp: #concatenate target files for given type, with column selection hard
 if domaskd:
     dd = fitsio.read(outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'  )
     dd = ss.mask(dd,elgandlrgbits)
-    outf = outdir+type +'targetsDR9v'+tarver.strip('.')+'_masked.fits'
+    outf = outdir+type+sw +'targetsDR9v'+tarver.strip('.')+'_masked.fits'
     fitsio.write(outf,dd,clobber=True)
     print('wrote to '+outf)
 
