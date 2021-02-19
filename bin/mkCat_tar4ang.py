@@ -78,7 +78,7 @@ print('type being used for bright/dark '+type[:3])
 #columns to select from target sample
 keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','FLUX_W1','FLUX_W2','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z', 'MW_TRANSMISSION_W1', 'MW_TRANSMISSION_W2','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
 	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
-	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID',tp,'SHAPE_R','FITBITS']
+	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID',tp,'SHAPE_R']
 
 
 if mkbsamp: #concatenate target files for given type, with column selection hardcoded
