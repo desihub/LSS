@@ -115,6 +115,60 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
+def plot_hpdensnc(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None,titl=''):
+	if reg:
+		if reg == 'S' or reg == 'N':
+			wr = rl['PHOTSYS'] == reg
+			wd = ft['PHOTSYS'] == reg
+		else:
+			wr = sel_reg(rl['RA'],rl['DEC'],reg)
+			wd = sel_reg(ft['RA'],ft['DEC'],reg)
+		
+		rl = rl[wr]        
+		ft = ft[wd]
+	rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+	rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+	dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
+	dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+	pixlr = np.zeros(12*nside*nside)
+	pixlg = np.zeros(12*nside*nside)
+	if weights is None:
+		weights = np.ones(len(pixlr))
+	for pix in rpix:
+		pixlr[pix] += 1.
+	print('randoms done')
+	for pix in dpix:
+		pixlg[pix] += 1.
+	if wsel is not None:
+		wp = wsel
+		wp &= (pixlr > 0)
+	else:
+		wp = (pixlr > 0) 
+	wp &= (weights*0 == 0)
+	pixls = []
+	for i in range(0,len(pixlr)):
+		#if pixlr[i] > 0 and weights[i]*0 == 0:
+		pixls.append(i)
+	pixls = np.array(pixls).astype(int)        
+	th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
+	od = pixlg[wp]/pixlr[wp]*weights[wp]
+	od = od/np.mean(od)
+	ra,dec = thphi2radec(th,phi)
+	if reg == 'DS':
+		wr = ra > 250
+		ra[wr] -=360
+	if vx == None:
+		vx = np.max(od)
+	if vm == None:
+		vm = np.min(od)    
+
+	plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
+	plt.xlabel('RA')
+	plt.ylabel('sin(DEC)')
+	plt.colorbar()
+	plt.title(titl)
+	plt.show()
+
 
 class densvar:
     def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',ti=None,elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','BRICKID']):
