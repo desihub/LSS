@@ -202,80 +202,80 @@ def densvsinput_pix(rl,ft,parl,wsel=None,reg=None,fnc=None,vmin=None,vmax=None,e
     pixlg = gethpmap(ft,reg)
     print('data done')
 
-	if weights is None:
-		weights = np.ones(len(pixlr))
+    if weights is None:
+        weights = np.ones(len(pixlr))
 
-	if wsel is not None:
-	    wp = wsel
-	    wp &= (pixlr > 0) 
-	else:
-	    wp = (pixlr > 0) 
-	wp &= (weights*0 == 0)
+    if wsel is not None:
+        wp = wsel
+        wp &= (pixlr > 0) 
+    else:
+        wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
 
-	parv = fitsio.read(pixfn)
-	ebv = parv['EBV']
-	sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-	print(len(parv[wp]))
-	if sn2cut:
-		wp &= (sn2tf > sn2cut)
-	
-	if fpsfcut:
-		wpsf = ft['MORPHTYPE'] == 'PSF'
-		pixlgp = np.zeros(12*nside*nside)
-		dpixp = dpix[wpsf]
-		for i in range(0,len(dpixp)): 
-			pix = dpixp[i]
-			pixlgp[pix] += 1.
-		fpsf = pixlgp/pixlg
-		wp &= (fpsf < fpsfcut)
-	if ebvcut:
-		wp &= (parv['EBV'] < ebvcut)
+    parv = fitsio.read(pixfn)
+    ebv = parv['EBV']
+    sn2tf = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+    print(len(parv[wp]))
+    if sn2cut:
+        wp &= (sn2tf > sn2cut)
+    
+    if fpsfcut:
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        fpsf = pixlgp/pixlg
+        wp &= (fpsf < fpsfcut)
+    if ebvcut:
+        wp &= (parv['EBV'] < ebvcut)
 
-	if edscut:
-		eds = parv['EBV']/parv['STARDENS']
-		wp &= (eds < edscut)
+    if edscut:
+        eds = parv['EBV']/parv['STARDENS']
+        wp &= (eds < edscut)
 
-	parv = parl 
+    parv = parl 
 
-	wp &= parv !=0
-	wp &= parv*0 == 0
-	print(len(parv[wp]))
-	bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,vmin,vmax,titl)
-	return bc,sv,ep
+    wp &= parv !=0
+    wp &= parv*0 == 0
+    print(len(parv[wp]))
+    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,vmin,vmax,titl)
+    return bc,sv,ep
 
 
 def plot_pixdens1d(pixlg,pixlr,parv,wp,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl=''):
-	if vmin is None:
-		vmin = np.min(parv[wp])
-	if vmax is None:
-		vmax = np.max(parv[wp])
-	parv = parv[wp]
-	rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-	dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
-	norm = sum(rh)/sum(dh)
-	sv = dh/rh*norm
-	ep = np.sqrt(dh)/rh*norm
-	bc = []
-	for i in range(0,len(bn)-1):
-		bc.append((bn[i]+bn[i+1])/2.)
-	sb = 0
-	if smean:
-	    sb = 1
-	    plt.ylabel('Ngal/<Ngal> - 1')
-	else:
-	    plt.ylabel('Ngal/<Ngal> ')    
-	plt.errorbar(bc,sv-sb,ep,fmt='ko')
-	if addhist:
-	    plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.66*rng*np.ones(len(pixlr[wp]))/np.max(rh))
-	plt.ylim(1-rng-sb,1+rng-sb)
-	plt.xlabel(parv)
-	
-	plt.title(titl)
-	plt.show()
-	wv = (parv>=vmin) & (parv <=vmax)
-	frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
-	print('fraction of randoms not included in plot: '+str(frac))
-	return bc,sv,ep	
+    if vmin is None:
+        vmin = np.min(parv[wp])
+    if vmax is None:
+        vmax = np.max(parv[wp])
+    parv = parv[wp]
+    rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
+    dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
+    norm = sum(rh)/sum(dh)
+    sv = dh/rh*norm
+    ep = np.sqrt(dh)/rh*norm
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+    sb = 0
+    if smean:
+        sb = 1
+        plt.ylabel('Ngal/<Ngal> - 1')
+    else:
+        plt.ylabel('Ngal/<Ngal> ')    
+    plt.errorbar(bc,sv-sb,ep,fmt='ko')
+    if addhist:
+        plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.66*rng*np.ones(len(pixlr[wp]))/np.max(rh))
+    plt.ylim(1-rng-sb,1+rng-sb)
+    plt.xlabel(parv)
+    
+    plt.title(titl)
+    plt.show()
+    wv = (parv>=vmin) & (parv <=vmax)
+    frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
+    print('fraction of randoms not included in plot: '+str(frac))
+    return bc,sv,ep 
 
 
 
