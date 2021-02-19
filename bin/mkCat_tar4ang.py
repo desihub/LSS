@@ -26,6 +26,7 @@ import LSS.imaging.select_samples as ss
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--tarver", help="version of targeting",default='0.49.0')
+parser.add_argument("--survey", help="e.g., sv1 or main",default='main')
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 
@@ -35,8 +36,12 @@ type = args.type
 tarver = args.tarver
 version = args.version
 basedir = args.basedir
+survey = args.survey
 
-tp = 'DESI_TARGET'
+if survey == 'main':
+    tp = 'DESI_TARGET'
+if survey == 'sv1':
+    tp = 'SV1_DESI_TARGET'
 
 outdir = basedir+'/tarcat/v'+version+'/tv'+tarver+'/'
 if not os.path.exists( basedir+'/tarcat'):
@@ -53,7 +58,7 @@ if not os.path.exists(outdir):
 
 dirsweeps = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/south/sweep/9.0/'
 dirsweepn = '/global/project/projectdirs/cosmo/data/legacysurvey/dr9/north/sweep/9.0/'
-targroot = '/project/projectdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
+targroot = '/project/projectdirs/desi/target/catalogs/dr9/'+tarver+'/targets/'+survey+'/resolve/'
 ranroot =  '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'
 nran = 10
 
@@ -73,14 +78,14 @@ print('type being used for bright/dark '+type[:3])
 #columns to select from target sample
 keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','FLUX_W1','FLUX_W2','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z', 'MW_TRANSMISSION_W1', 'MW_TRANSMISSION_W2','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
 	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
-	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET','SHAPE_R']
+	   'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET','SHAPE_R','FITBITS']
 
 
 if mkbsamp: #concatenate target files for given type, with column selection hardcoded
     prog = 'dark'
     if type[:3] == 'BGS':
         prog = 'bright'
-    ss.gather_targets(type,targroot,outdir,tarver,prog,keys=keys)
+    ss.gather_targets(type,targroot,outdir,tarver,survey,prog,keys=keys)
 
 if domaskd:
     dd = fitsio.read(outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'  )

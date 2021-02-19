@@ -6,6 +6,7 @@ import os
 import sys
 from desitarget import cuts
 from desitarget import targetmask
+from desitarger.sv1 import sv1_targetmask
 import astropy.io.fits as fits
 
 
@@ -21,7 +22,7 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
     return dd       
 
 
-def gather_targets(type,targroot,outdir,tarver,prog='dark',keys=[]):
+def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
 	#just concatenate all of the targets for a given type, keeping only the columns quoted below
 	print(targroot+prog)
 	fns = glob.glob(targroot+prog+'/*.fits')
@@ -34,14 +35,21 @@ def gather_targets(type,targroot,outdir,tarver,prog='dark',keys=[]):
 		   d = f[key]
 	   except:
 		   print(key+' not in target file!')
-	bs = targetmask.desi_mask[type]  
+	if survey == 'main':
+	    bs = targetmask.desi_mask[type]
+	    tp = 'DESI_TARGET'  
+	    ws = '' 
+	if survey == 'sv1':
+	    bs = sv1_targetmask.desi_mask[type]
+	    tp = 'SV1_DESI_TARGET'
+	    ws = 'sv1'
 	print(type+' selection bit is '+str(bs))
 	
-	outf = outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'   
+	outf = outdir+type+ws +'targetsDR9v'+tarver.strip('.')+'.fits'   
 	print('file will be written to '+outf)  
 	
 	data = fitsio.read(fns[0],columns=keys)
-	data = data[(data['DESI_TARGET'] & bs)>0]
+	data = data[(data[tp] & bs)>0]
 	for i in range(1,ncat):
 	    print(i)
 	    datan = fitsio.read(fns[i],columns=keys)
