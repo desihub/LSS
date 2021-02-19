@@ -6,7 +6,7 @@ import os
 import sys
 from desitarget import cuts
 from desitarget import targetmask
-from desitarger.sv1 import sv1_targetmask
+from desitarget.sv1 import sv1_targetmask
 import astropy.io.fits as fits
 
 
