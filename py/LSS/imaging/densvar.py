@@ -171,30 +171,30 @@ def plot_hpprop(rl,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
     pixlr = gethpmap(rl,reg)
     print('randoms done')
 
-	if weights is None:
-		weights = np.ones(len(pixlr))
-	wp = (pixlr > 0) 
-	wp &= (weights*0 == 0)
-	parv = fitsio.read(pixfn)
-	if par == 'PSFTOT':
-		parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-	elif par == 'SN2TOT_FLAT':
-		ebv = parv[wp]['EBV']
-		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
+    parv = fitsio.read(pixfn)
+    if par == 'PSFTOT':
+        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+    elif par == 'SN2TOT_FLAT':
+        ebv = parv[wp]['EBV']
+        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
 
-	elif par == 'fracPSF':
-		wpsf = ft['MORPHTYPE'] == 'PSF'
-		pixlgp = np.zeros(12*nside*nside)
-		dpixp = dpix[wpsf]
-		for i in range(0,len(dpixp)): 
-			pix = dpixp[i]
-			pixlgp[pix] += 1.
-		parv = pixlgp[wp]/pixlg[wp]
+    elif par == 'fracPSF':
+        wpsf = ft['MORPHTYPE'] == 'PSF'
+        pixlgp = np.zeros(12*nside*nside)
+        dpixp = dpix[wpsf]
+        for i in range(0,len(dpixp)): 
+            pix = dpixp[i]
+            pixlgp[pix] += 1.
+        parv = pixlgp[wp]/pixlg[wp]
 
-	else:    
-		parv = parv[wp][par]
-	od = parv
-	plot_hpmap(wp,od,reg,sz,vx,vm,titl=par)
+    else:    
+        parv = parv[wp][par]
+    od = parv
+    plot_hpmap(wp,od,reg,sz,vx,vm,titl=par)
 
 
 
