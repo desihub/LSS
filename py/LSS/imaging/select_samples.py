@@ -53,7 +53,7 @@ def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
 	for i in range(1,ncat):
 	    print(i)
 	    datan = fitsio.read(fns[i],columns=keys)
-	    datan = datan[(datan['DESI_TARGET'] & bs)>0]
+	    datan = datan[(datan[tp] & bs)>0]
 	    data = np.hstack((data,datan))
 	    print(len(data))
 	
