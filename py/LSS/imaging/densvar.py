@@ -116,56 +116,56 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     return bc,sv,ep
 
 def gethpmap(dl,reg=False):
-	if reg:
-		if reg == 'S' or reg == 'N':
-			wr = dl['PHOTSYS'] == reg
-		else:
-			wr = sel_reg(dl['RA'],dl['DEC'],reg)
-		dl = dl[wr]
-	rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
-	rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-	pixlr = np.zeros(12*nside*nside)
-	for pix in rpix:
-		pixlr[pix] += 1.
-	return pixlr
+    if reg:
+        if reg == 'S' or reg == 'N':
+            wr = dl['PHOTSYS'] == reg
+        else:
+            wr = sel_reg(dl['RA'],dl['DEC'],reg)
+        dl = dl[wr]
+    rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    for pix in rpix:
+        pixlr[pix] += 1.
+    return pixlr
 
 def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
     pixls = np.arange(12*nside*nside,dtype=int)
-	th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
-	ra,dec = thphi2radec(th,phi)
-	if reg == 'DS':
-		wr = ra > 250
-		ra[wr] -=360
-	if vx == None:
-		vx = np.max(od)
-	if vm == None:
-		vm = np.min(od)    
+    th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
+    ra,dec = thphi2radec(th,phi)
+    if reg == 'DS':
+        wr = ra > 250
+        ra[wr] -=360
+    if vx == None:
+        vx = np.max(od)
+    if vm == None:
+        vm = np.min(od)    
 
-	plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
-	plt.xlabel('RA')
-	plt.ylabel('sin(DEC)')
-	plt.colorbar()
-	plt.title(titl)
-	plt.show()
+    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
+    plt.xlabel('RA')
+    plt.ylabel('sin(DEC)')
+    plt.colorbar()
+    plt.title(titl)
+    plt.show()
    
 
 def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None,titl=''):
-	pixlr = gethpmap(rl,reg)
-	print('randoms done')
-	pixlg = gethpmap(ft,reg)
-	print('data done')
-	
-	if weights is None:
-		weights = np.ones(len(pixlr))
-	if wsel is not None:
-		wp = wsel
-		wp &= (pixlr > 0)
-	else:
-		wp = (pixlr > 0) 
-	wp &= (weights*0 == 0)
-	od = pixlg[wp]/pixlr[wp]*weights[wp]
-	od = od/np.mean(od)
-	plot_hpmap(wp,od,reg,sz,vx,vm,titl)
+    pixlr = gethpmap(rl,reg)
+    print('randoms done')
+    pixlg = gethpmap(ft,reg)
+    print('data done')
+    
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    if wsel is not None:
+        wp = wsel
+        wp &= (pixlr > 0)
+    else:
+        wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
+    od = pixlg[wp]/pixlr[wp]*weights[wp]
+    od = od/np.mean(od)
+    plot_hpmap(wp,od,reg,sz,vx,vm,titl)
 
 
 
