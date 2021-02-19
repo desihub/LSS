@@ -119,8 +119,9 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
 class densvar:
     def __init__(self,type,sdir='',tv='0.49.0',rel='DR9',ti=None,elgandlrgbits = [1,5,6,7,8,9,11,12,13],columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','EBV','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','BRICKID']):
         df = sdir+type+'targets'+rel+'v'+tv+'.fits'
-        columnsg = columns
-        columnsr = columns
+        columnsg = columns.copy()
+        columnsr = columns.copy()
+        
         if ti is not None:
             columnsg.append('MORPHTYPE')
         print(columnsr)
