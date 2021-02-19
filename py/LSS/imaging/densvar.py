@@ -167,6 +167,34 @@ def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=No
     od = od/np.mean(od)
     plot_hpmap(wp,od,reg,sz,vx,vm,titl)
 
+def plot_hpprop(rl,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
+    pixlr = gethpmap(rl,reg)
+    print('randoms done')
+
+	if weights is None:
+		weights = np.ones(len(pixlr))
+	wp = (pixlr > 0) 
+	wp &= (weights*0 == 0)
+	parv = fitsio.read(pixfn)
+	if par == 'PSFTOT':
+		parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+	elif par == 'SN2TOT_FLAT':
+		ebv = parv[wp]['EBV']
+		parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+
+	elif par == 'fracPSF':
+		wpsf = ft['MORPHTYPE'] == 'PSF'
+		pixlgp = np.zeros(12*nside*nside)
+		dpixp = dpix[wpsf]
+		for i in range(0,len(dpixp)): 
+			pix = dpixp[i]
+			pixlgp[pix] += 1.
+		parv = pixlgp[wp]/pixlg[wp]
+
+	else:    
+		parv = parv[wp][par]
+	od = parv
+	plot_hpmap(wp,od,reg,sz,vx,vm,titl=par)
 
 
 
@@ -198,75 +226,6 @@ class densvar:
         self.type = type
 
 
-    def plot_hpprop(self,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
-        if reg:
-            if reg == 'S' or reg == 'N':
-                wr = self.rl['PHOTSYS'] == reg
-                wd = self.ft['PHOTSYS'] == reg
-            else:
-                wr = sel_reg(self.rl['RA'],self.rl['DEC'],reg)
-                wd = sel_reg(self.ft['RA'],self.ft['DEC'],reg)
-            
-            rl = self.rl[wr]        
-            ft = self.ft[wd]
-        else:
-            rl = self.rl       
-            ft = self.ft
-        rth,rphi = radec2thphi(rl['RA'],rl['DEC'])
-        rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-        dth,dphi = radec2thphi(ft['RA'],ft['DEC'])
-        dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
-        pixlr = np.zeros(12*nside*nside)
-        pixlg = np.zeros(12*nside*nside)
-        if weights is None:
-            weights = np.ones(len(pixlr))
-        for pix in rpix:
-            pixlr[pix] += 1.
-        print('randoms done')
-        for pix in dpix:
-            pixlg[pix] += 1.
-        wp = (pixlr > 0) & (weights*0 == 0)
-        parv = fitsio.read(pixfn)
-        if par == 'PSFTOT':
-            parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-        elif par == 'SN2TOT_FLAT':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
-
-        elif par == 'fracPSF':
-            wpsf = ft['MORPHTYPE'] == 'PSF'
-            pixlgp = np.zeros(12*nside*nside)
-            dpixp = dpix[wpsf]
-            for i in range(0,len(dpixp)): 
-                pix = dpixp[i]
-                pixlgp[pix] += 1.
-            parv = pixlgp[wp]/pixlg[wp]
-
-        else:    
-            parv = parv[wp][par]
-        pixls = []
-        for i in range(0,len(pixlr)):
-            if pixlr[i] > 0 and weights[i]*0 == 0:
-                pixls.append(i)
-        pixls = np.array(pixls).astype(int)        
-        th,phi = hp.pix2ang(nside,pixls,nest=nest)
-        od = parv
-        if vx == None:
-            vx = np.max(od)
-        if vm == None:
-            vm = np.min(od)    
-    
-        ra,dec = thphi2radec(th,phi)
-        if reg == 'DS':
-            wr = ra > 250
-            ra[wr] -= 360
-        plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
-        plt.xlabel('RA')
-        plt.ylabel('sin(DEC)')
-        plt.colorbar()
-        plt.title(par)
-
-        plt.show()
 
 
     def plot_brickdens(self,reg=False,sz=.2,vx=2):
