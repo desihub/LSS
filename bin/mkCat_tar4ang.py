@@ -71,7 +71,7 @@ sfn = glob.glob(dirsweepn+'sweep*')
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
 
-mkbsamp = True #make the base sample
+mkbsamp = False #make the base sample
 domaskd = True #mask data based on mask bits above
 domaskr = False #mask randoms
 
@@ -90,7 +90,7 @@ if mkbsamp: #concatenate target files for given type, with column selection hard
     ss.gather_targets(type,targroot,outdir,tarver,survey,prog,keys=keys)
 
 if domaskd:
-    dd = fitsio.read(outdir+type +'targetsDR9v'+tarver.strip('.')+'.fits'  )
+    dd = fitsio.read(outdir+type+sw +'targetsDR9v'+tarver.strip('.')+'.fits'  )
     dd = ss.mask(dd,elgandlrgbits)
     outf = outdir+type+sw +'targetsDR9v'+tarver.strip('.')+'_masked.fits'
     fitsio.write(outf,dd,clobber=True)
