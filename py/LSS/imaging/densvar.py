@@ -267,7 +267,7 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights,vmin=None,vmax=None,smean=True,addhi
         vmin = np.min(parv)
     if vmax is None:
         vmax = np.max(parv)
-    parv = parv[wp]
+    
     rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr)
     dh,db = np.histogram(parv,bins=bn,weights=pixlg*weights)
     norm = sum(rh)/sum(dh)
