@@ -258,18 +258,18 @@ def densvsinput_pix(rl,ft,parl,xlab='',wsel=None,reg=None,fnc=None,vmin=None,vma
     wp &= parv !=0
     wp &= parv*0 == 0
     print(len(parv[wp]))
-    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin,vmax,titl=titl,xlab=xlab)
+    bc,sv,ep = plot_pixdens1d(pixlg[wp],pixlr[wp],parv[wp],weights[wp],vmin,vmax,titl=titl,xlab=xlab)
     return bc,sv,ep
 
 
-def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10,xlab=''):
+def plot_pixdens1d(pixlg,pixlr,parv,weights,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10,xlab=''):
     if vmin is None:
-        vmin = np.min(parv[wp])
+        vmin = np.min(parv)
     if vmax is None:
-        vmax = np.max(parv[wp])
+        vmax = np.max(parv)
     parv = parv[wp]
-    rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp])
-    dh,db = np.histogram(parv,bins=bn,weights=pixlg[wp]*weights[wp])
+    rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr)
+    dh,db = np.histogram(parv,bins=bn,weights=pixlg*weights)
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     ep = np.sqrt(dh)/rh*norm
@@ -284,14 +284,14 @@ def plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin=None,vmax=None,smean=True,ad
         plt.ylabel('Ngal/<Ngal> ')    
     plt.errorbar(bc,sv-sb,ep,fmt='ko')
     if addhist:
-        plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr[wp]*0.66*rng*np.ones(len(pixlr[wp]))/np.max(rh))
+        plt.hist(parv,bins=nbin,range=(vmin,vmax),weights=pixlr*0.66*rng*np.ones(len(pixlr))/np.max(rh))
     plt.ylim(1-rng-sb,1+rng-sb)
     plt.xlabel(xlab)
     
     plt.title(titl)
     plt.show()
     wv = (parv>=vmin) & (parv <=vmax)
-    frac = sum(pixlr[wp][~wv])/sum(pixlr[wp])
+    frac = sum(pixlr[~wv])/sum(pixlr)
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep 
 
@@ -387,9 +387,8 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',fnc=None,vmin=None,vmax
     else:
         parv = parv[wp][par]
 
-    wp &= parv*0 == 0
-    print(len(parv[wp]))
-    bc,sv,ep = plot_pixdens1d(pixlg,pixlr,parv,wp,weights,vmin,vmax,titl=titl,xlab=xlab)
+    
+    bc,sv,ep = plot_pixdens1d(pixlg[wp],pixlr[wp],parv,weights[wp],vmin,vmax,titl=titl,xlab=xlab)
     return bc,sv,ep
 
 
