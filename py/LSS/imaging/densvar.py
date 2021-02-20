@@ -295,7 +295,14 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights,vmin=None,vmax=None,smean=True,addhi
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep 
 
-def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',bl=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+    if bl is not None:
+        wr = np.isin(rl['BRICKID'],bl)
+        rl = rl[wr]
+        wd = np.isin(ft['BRICKID'],bl)
+        ft = ft[wd]
+            #reg += ' Obiwan bricks'
+
     pixlr = gethpmap(rl,reg)
     print('randoms done')
     pixlg = gethpmap(ft,reg)
