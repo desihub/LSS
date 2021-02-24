@@ -18,14 +18,11 @@ release = args.release
 version = args.version
 
 
-types = ['ELG','LRG','BGS_ANY','QSO']#,'MWS']
+types = ['QSO','ELG','LRG','BGS_ANY']#,'MWS']
 
-tiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609]}
-dates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210]}
+tiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
+dates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
 
-
-#tiles = ['80608','80609','80613','80609']
-#dates = ['210208','21030','210202','210210']
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 svdir = basedir+'/SV1/'
