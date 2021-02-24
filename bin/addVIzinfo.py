@@ -18,9 +18,14 @@ release = args.release
 version = args.version
 
 
-types = ['ELG','LRG','BGS_ANY','QSO']
-tiles = ['80608','80609','80613','80609']
-dates = ['210208','21030','210202','210210']
+types = ['ELG','LRG','BGS_ANY','QSO']#,'MWS']
+
+tiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609]}
+dates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210]}
+
+
+#tiles = ['80608','80609','80613','80609']
+#dates = ['210208','21030','210202','210210']
 
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 svdir = basedir+'/SV1/'
@@ -28,13 +33,26 @@ dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
 
 for i in range(0,len(types)):
     tp =types[i]
-    tile = tiles[i]
-    date = dates[i]
-    tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
-    tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
-    tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
-    tj = join(tz,tt,join_type='left',keys='TARGETID')
-    tj['N_VI'].fill_value = 0
-    tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
-    tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
-    print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
+    tilet = tiles[type]
+    datet = dates[type]
+    for it in range(0,len(tilet)):
+		date = str(datet[it])
+		tile = str(tilet[it])
+		tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
+		tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
+		tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
+		tj = join(tz,tt,join_type='left',keys='TARGETID')
+		tj['N_VI'].fill_value = 0
+		tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
+		tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
+		print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
+	if len(tilet) > 1:
+		dt = Table.read(dirz+'/'+tp+'/'+tilet[0]+'_'+tp+'zinfo_wVI.fits')
+		for it in range(1,len(tilet)):
+			dtn = Table.read(dirz+'/'+tp+'/'+tilet[it]+'_'+tp+'zinfo_wVI.fits')
+			dt = vstack([dt,dtn])
+
+		#dt.sort('TARGETID')
+		outfall = dirout +'/alltiles_'+type+'zinfo_wVI.fits'
+		dt.write(outfall,format='fits', overwrite=True) 
+		print('wrote to '+outfall)
