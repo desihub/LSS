@@ -33,8 +33,8 @@ dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
 
 for i in range(0,len(types)):
     tp =types[i]
-    tilet = tiles[type]
-    datet = dates[type]
+    tilet = tiles[tp]
+    datet = dates[tp]
     for it in range(0,len(tilet)):
         date = str(datet[it])
         tile = str(tilet[it])
