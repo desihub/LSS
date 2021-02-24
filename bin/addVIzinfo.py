@@ -47,9 +47,9 @@ for i in range(0,len(types)):
         tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
         print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
     if len(tilet) > 1:
-        dt = Table.read(dirz+'/'+tp+'/'+tilet[0]+'_'+tp+'zinfo_wVI.fits')
+        dt = Table.read(dirz+'/'+tp+'/'+str(tilet[0])+'_'+tp+'zinfo_wVI.fits')
         for it in range(1,len(tilet)):
-            dtn = Table.read(dirz+'/'+tp+'/'+tilet[it]+'_'+tp+'zinfo_wVI.fits')
+            dtn = Table.read(dirz+'/'+tp+'/'+str(tilet[it])+'_'+tp+'zinfo_wVI.fits')
             dt = vstack([dt,dtn])
 
         #dt.sort('TARGETID')
