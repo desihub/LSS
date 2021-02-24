@@ -53,6 +53,6 @@ for i in range(0,len(types)):
             dt = vstack([dt,dtn])
 
         #dt.sort('TARGETID')
-        outfall = dirout +'/alltiles_'+type+'zinfo_wVI.fits'
+        outfall = dirz +'/allVItiles_'+type+'zinfo_wVI.fits'
         dt.write(outfall,format='fits', overwrite=True) 
         print('wrote to '+outfall)
