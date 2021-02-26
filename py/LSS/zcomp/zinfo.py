@@ -119,6 +119,8 @@ def get_tsnrinfo(exps,spec,tsnrdir='/global/cscratch1/sd/mjwilson/desi/tsnr/blan
 def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
     print('going through subset '+night)
+    cams = ['b','r','z']
+    tnsrcols = ['TSNR2_ELG_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z']
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
@@ -143,6 +145,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
         bda = []
         rda = []
         zda = []
+        ce = 0
         for exp in exps:
             info = exposures[exposures['EXPID'] == exp]
             if len(info) == 0:
@@ -158,11 +161,22 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 bda.append(info['B_DEPTH_EBVAIR'][0])
                 rda.append(info['R_DEPTH_EBVAIR'][0])
                 zda.append(info['Z_DEPTH_EBVAIR'][0]) 
-        tvs = get_tsnrinfo(exps,specs[0])    
-        if tvs is not None:
-            es,bs,ls,qs = tvs
-        else:
-            return tvs
+                for cam in cams:
+                    cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='SCORES')
+                    cf.keep_columns(tsnrcols)
+                    if ce ==0 and cam == 'b':
+                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                        tnsrt = cf.copy()
+                        tnsrt['TARGETID'] = tids
+                    else:
+                        for col in tsnrcols:
+                            tnsrt[col] += cf[col]         
+                ce += 1                 
+        #tvs = get_tsnrinfo(exps,specs[0])    
+        #if tvs is not None:
+        #    es,bs,ls,qs = tvs
+        #else:
+        #    return tvs
 
        
         bdt = np.zeros(500)
@@ -172,10 +186,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
         rdta = np.zeros(500)
         zdta = np.zeros(500)
         tid = zfm[0:500]['TARGETID']
-        est = np.zeros(500)
-        bst = np.zeros(500)
-        lst = np.zeros(500)
-        qst = np.zeros(500)
+        #est = np.zeros(500)
+        #bst = np.zeros(500)
+        #lst = np.zeros(500)
+        #qst = np.zeros(500)
         for i in range(0,len(exps)):
             sel = zfm[i*500:(i+1)*500]
             w = sel['FIBERSTATUS'] == 0
@@ -185,10 +199,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             bdta[w] += bda[i]
             rdta[w] += rda[i]
             zdta[w] += zda[i]
-            est[w] += es[i]
-            bst[w] += bs[i]
-            lst[w] += ls[i]
-            qst[w] += qs[i]
+            #est[w] += es[i]
+            #bst[w] += bs[i]
+            #lst[w] += ls[i]
+            #qst[w] += qs[i]
     
         
         tf['EXPS'] = ",".join(exps.astype(str))
@@ -220,22 +234,36 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     bda.append(info['B_DEPTH_EBVAIR'][0])
                     rda.append(info['R_DEPTH_EBVAIR'][0])
                     zda.append(info['Z_DEPTH_EBVAIR'][0])        
+
+					for cam in cams:
+						cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='SCORES')
+						cf.keep_columns(tsnrcols)
+						if ce ==0 and cam == 'b':
+							tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+							tnsrtn = cf.copy()
+							tnsrtn['TARGETID'] = tids
+						else:
+							for col in tsnrcols:
+								tnsrtn[col] += cf[col]         
+					ce += 1                 
+
             
-            tvs = get_tsnrinfo(exps,specs[i]) 
-            if tvs is not None:
-                es,bs,ls,qs = tvs
-            else:
-                return tvs
+            tnsrt = vstack([tnsrt,tnsrtn], metadata_conflicts='silent')
+            #tvs = get_tsnrinfo(exps,specs[i]) 
+            #if tvs is not None:
+            #    es,bs,ls,qs = tvs
+            #else:
+            #    return tvs
             bdtn = np.zeros(500)
             rdtn = np.zeros(500)
             zdtn = np.zeros(500)
             bdtna = np.zeros(500)
             rdtna = np.zeros(500)
             zdtna = np.zeros(500)
-            estn = np.zeros(500)
-            bstn = np.zeros(500)
-            lstn = np.zeros(500)
-            qstn = np.zeros(500)
+            #estn = np.zeros(500)
+            #bstn = np.zeros(500)
+            #lstn = np.zeros(500)
+            #qstn = np.zeros(500)
 
             tidn = zfm[0:500]['TARGETID']
             for ii in range(0,len(exps)):
@@ -247,10 +275,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 bdtna[w] += bda[ii]
                 rdtna[w] += rda[ii]
                 zdtna[w] += zda[ii]
-                estn[w] += es[ii]
-                bstn[w] += bs[ii]
-                lstn[w] += ls[ii]
-                qstn[w] += qs[ii]
+                #estn[w] += es[ii]
+                #bstn[w] += bs[ii]
+                #lstn[w] += ls[ii]
+                #qstn[w] += qs[ii]
 
 
 
@@ -260,16 +288,17 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             bdta = np.concatenate([bdta,bdtna])
             rdta = np.concatenate([rdta,rdtna])
             zdta = np.concatenate([zdta,zdtna])   
-            est = np.concatenate([est,estn])
-            lst = np.concatenate([lst,lstn])
-            qst = np.concatenate([qst,qstn])   
-            bst = np.concatenate([bst,bstn])
+            #est = np.concatenate([est,estn])
+            #lst = np.concatenate([lst,lstn])
+            #qst = np.concatenate([qst,qstn])   
+            #bst = np.concatenate([bst,bstn])
 
             tid = np.concatenate([tid,tidn])
             #print(np.min(rdtn),np.max(rdtn)) 
             #print(np.min(rdt),np.max(rdt)) 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
-        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
+        tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
+        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','TARGETID'))#,'ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR'
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         if tarbit != -1:
             wtype = ((tspec[tp] & 2**tarbit) > 0)
