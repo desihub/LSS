@@ -168,7 +168,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                         tcols.append(col+cam.upper())
                     cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                     cf.keep_columns(tcols)
-                    for col in tcols
+                    for col in tcols:
                         cf.rename_column(col, col[:-2])
                     if ce ==0 and cam == 'b':
                         tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
@@ -249,7 +249,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
                         cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                         cf.keep_columns(tcols)
-                        for col in tcols
+                        for col in tcols:
                             cf.rename_column(col, col[:-2])
 
                         if ce ==0 and cam == 'b':
