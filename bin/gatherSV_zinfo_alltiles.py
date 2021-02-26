@@ -116,7 +116,7 @@ for tile in tiles:
             #print(subsets)
             print('going through tile '+tile)
             outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
-            if os.path.isfile(outf) 
+            if os.path.isfile(outf): 
                 a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn)
                 logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
