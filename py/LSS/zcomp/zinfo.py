@@ -120,7 +120,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
     print('going through subset '+night)
     cams = ['b','r','z']
-    tnsrcols = ['TSNR2_ELG_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z']
+    tsnrcols = ['TSNR2_ELG_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z']
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
