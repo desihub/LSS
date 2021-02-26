@@ -171,7 +171,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     for col in tcols:
                         cf.rename_column(col, col[:-2])
                     if ce ==0 and cam == 'b':
-                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                        tids = fistio.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP',columns=['TARGETID'])
                         tnsrt = cf.copy()
                         tnsrt['TARGETID'] = tids
                     else:
@@ -253,7 +253,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                             cf.rename_column(col, col[:-2])
 
                         if ce ==0 and cam == 'b':
-                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                            tids = fitsio.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP',columns=['TARGETID'])
                             tnsrtn = cf.copy()
                             tnsrtn['TARGETID'] = tids
                         else:
