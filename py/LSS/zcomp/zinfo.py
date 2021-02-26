@@ -253,18 +253,18 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                         for col in tcols:
                             cf.rename_column(col, col[:-2])
 
-                        print(ce,cam)
+                        #print(ce,cam)
                         if ce ==0 and cam == 'b':
                             tids = fitsio.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP',columns=['TARGETID'])
-                            tnsrtn = cf.copy()
-                            tnsrtn['TARGETID'] = tids
+                            tsnrtn = cf.copy()
+                            tsnrtn['TARGETID'] = tids
                         else:
                             for col in tsnrcols:
                                 tsnrtn[col] += cf[col]         
                     ce += 1                 
 
             
-            tnsrt = vstack([tnsrt,tnsrtn], metadata_conflicts='silent')
+            tnsrt = vstack([tnsrt,tsnrtn], metadata_conflicts='silent')
             #tvs = get_tsnrinfo(exps,specs[i]) 
             #if tvs is not None:
             #    es,bs,ls,qs = tvs
