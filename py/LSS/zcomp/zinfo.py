@@ -258,7 +258,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                             tnsrtn['TARGETID'] = tids
                         else:
                             for col in tsnrcols:
-                                tnsrtn[col] += cf[col]         
+                                tsnrtn[col] += cf[col]         
                     ce += 1                 
 
             
