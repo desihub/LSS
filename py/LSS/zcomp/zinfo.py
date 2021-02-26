@@ -237,6 +237,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     print('did not find info for expid '+str(exp))
                     return None
                 else:
+                    nt = str(info['NIGHT'][0])
                     bd.append(info['B_DEPTH'][0])
                     rd.append(info['R_DEPTH'][0])
                     zd.append(info['Z_DEPTH'][0])        
