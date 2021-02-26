@@ -154,7 +154,9 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 fo.write(str(exp)+'\n')
                 return None
             else:    
-                print(info['B_DEPTH'])
+                
+                nt = str(info['NIGHT'][0])
+                print(info['B_DEPTH'],nt)
                 bd.append(info['B_DEPTH'][0])
                 rd.append(info['R_DEPTH'][0])
                 zd.append(info['Z_DEPTH'][0]) 
@@ -166,12 +168,12 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     tcols  =[]
                     for col in tsnrcols:
                         tcols.append(col+'_'+cam.upper())
-                    cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                    cf = Table.read(coaddir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                     cf.keep_columns(tcols)
                     for col in tcols:
                         cf.rename_column(col, col[:-2])
                     if ce ==0 and cam == 'b':
-                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                        tids = Table.read(coaddir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
                         tnsrt = cf.copy()
                         tnsrt['TARGETID'] = tids['TARGETID']
                     else:
@@ -248,14 +250,14 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                         for col in tsnrcols:
                             tcols.append(col+'_'+cam.upper())
 
-                        cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                        cf = Table.read(coaddir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                         cf.keep_columns(tcols)
                         for col in tcols:
                             cf.rename_column(col, col[:-2])
 
                         #print(ce,cam)
                         if ce ==0 and cam == 'b':
-                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                            tids = Table.read(coaddir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
                             tsnrtn = cf.copy()
                             tsnrtn['TARGETID'] = tids['TARGETID']
                         else:
