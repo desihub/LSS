@@ -116,15 +116,15 @@ for tile in tiles:
             #print(subsets)
             print('going through tile '+tile)
             outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
-            try:
-                fitsio.FITS(outf)
-                print(outf+' exists already')
-                tilew.append(tile)
-            except:
+            if os.path.isfile(outf) 
                 a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn)
                 logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
                     tilew.append(tile)
+
+            else:
+                print(outf+' exists already')
+                tilew.append(tile)
         else:
             print('did not find data in '+release +' for tile '+tile)    
       
