@@ -171,9 +171,9 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     for col in tcols:
                         cf.rename_column(col, col[:-2])
                     if ce ==0 and cam == 'b':
-                        tids = fitsio.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP',columns=['TARGETID'])
+                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP')
                         tnsrt = cf.copy()
-                        tnsrt['TARGETID'] = tids
+                        tnsrt['TARGETID'] = tids['TARGETID']
                     else:
                         for col in tsnrcols:
                             tnsrt[col] += cf[col]         
@@ -255,9 +255,9 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
 
                         #print(ce,cam)
                         if ce ==0 and cam == 'b':
-                            tids = fitsio.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP',columns=['TARGETID'])
+                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',ext='FIBERMAP')
                             tsnrtn = cf.copy()
-                            tsnrtn['TARGETID'] = tids
+                            tsnrtn['TARGETID'] = tids['TARGETID']
                         else:
                             for col in tsnrcols:
                                 tsnrtn[col] += cf[col]         
