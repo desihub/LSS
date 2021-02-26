@@ -314,7 +314,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             #print(np.min(rdt),np.max(rdt)) 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
         tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
-        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','TARGETID'))#,'ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR'
+        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','TARGETID'))#,'ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR'
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         if tarbit != -1:
             wtype = ((tspec[tp] & 2**tarbit) > 0)
