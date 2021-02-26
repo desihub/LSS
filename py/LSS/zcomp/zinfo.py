@@ -162,10 +162,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 rda.append(info['R_DEPTH_EBVAIR'][0])
                 zda.append(info['Z_DEPTH_EBVAIR'][0]) 
                 for cam in cams:
-                    cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(3)+'.fits',hdu='SCORES')
+                    cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                     cf.keep_columns(tsnrcols)
                     if ce ==0 and cam == 'b':
-                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                        tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
                         tnsrt = cf.copy()
                         tnsrt['TARGETID'] = tids
                     else:
@@ -236,10 +236,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     zda.append(info['Z_DEPTH_EBVAIR'][0])        
 
                     for cam in cams:
-                        cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(3)+'.fits',hdu='SCORES')
+                        cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                         cf.keep_columns(tsnrcols)
                         if ce ==0 and cam == 'b':
-                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
                             tnsrtn = cf.copy()
                             tnsrtn['TARGETID'] = tids
                         else:
