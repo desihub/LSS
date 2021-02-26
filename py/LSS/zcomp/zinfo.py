@@ -165,7 +165,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 for cam in cams:
                     tcols  =[]
                     for col in tsnrcols:
-                        tcols.append(col+cam.upper())
+                        tcols.append(col+'_'+cam.upper())
                     cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
                     cf.keep_columns(tcols)
                     for col in tcols:
