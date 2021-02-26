@@ -235,17 +235,17 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                     rda.append(info['R_DEPTH_EBVAIR'][0])
                     zda.append(info['Z_DEPTH_EBVAIR'][0])        
 
-					for cam in cams:
-						cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='SCORES')
-						cf.keep_columns(tsnrcols)
-						if ce ==0 and cam == 'b':
-							tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
-							tnsrtn = cf.copy()
-							tnsrtn['TARGETID'] = tids
-						else:
-							for col in tsnrcols:
-								tnsrtn[col] += cf[col]         
-					ce += 1                 
+                    for cam in cams:
+                        cf = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='SCORES')
+                        cf.keep_columns(tsnrcols)
+                        if ce ==0 and cam == 'b':
+                            tids = Table.read(coaddir+'/'+night+'/cframe-'+cam+str(exp).zfill(3)+'.fits',hdu='FIBERMAP',columns=['TARGETID'])
+                            tnsrtn = cf.copy()
+                            tnsrtn['TARGETID'] = tids
+                        else:
+                            for col in tsnrcols:
+                                tnsrtn[col] += cf[col]         
+                    ce += 1                 
 
             
             tnsrt = vstack([tnsrt,tnsrtn], metadata_conflicts='silent')
