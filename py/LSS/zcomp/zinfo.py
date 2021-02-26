@@ -228,6 +228,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             bda = []
             rda = []
             zda = []
+            ce = 0
             for exp in exps:
                 info = exposures[exposures['EXPID'] == exp]
                 if len(info) == 0:
