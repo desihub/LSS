@@ -8,7 +8,13 @@ from glob import glob
 from astropy.io import fits
 import fitsio
 
-'test'
+#'test'
+
+def get_zfits(tile,specn,subset,tid,release='blanc'):
+    fl = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+str(tile)+'/'+subset+'/redrock-'+str(specn)+'-'+str(tile)+'-'+subset+'.h5'
+    pt = 'zfit/'+str(tid)+'/zfit'
+    zfits = Table.read(fl,path=pt)
+    return zfits
 
 def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.txt'):
     '''
