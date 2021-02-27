@@ -2,7 +2,7 @@ import os
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
-import zinfo
+import LSS.zcomp.zinfo as zinfo
 
 
 #assumes gathSV_zinfo.py has been run for all tracer types for arguments below
