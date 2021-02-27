@@ -1,6 +1,8 @@
 import os
 import sys
+import numpy as np
 import argparse
+import fitsio
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 sys.path.append('../py')
