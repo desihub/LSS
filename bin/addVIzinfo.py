@@ -60,12 +60,12 @@ for i in range(0,len(types)):
         cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
         for i in range(1,5):
             
-            f['z_'+str(i)]=np.zeros(len(dt))
-            f['zwarn_'+str(i)]=np.zeros(len(dt))
-            f['chi2_'+str(i)]=np.zeros(len(dt))
-            f['deltachi2_'+str(i)]=np.zeros(len(dt))
-            f['spectype_'+str(i)] = 'GALAXY'
-            f['subtype_'+str(i)] = 'GALAXY'
+            dt['z_'+str(i)]=np.zeros(len(dt))
+            dt['zwarn_'+str(i)]=np.zeros(len(dt))
+            dt['chi2_'+str(i)]=np.zeros(len(dt))
+            dt['deltachi2_'+str(i)]=np.zeros(len(dt))
+            dt['spectype_'+str(i)] = 'GALAXY'
+            dt['subtype_'+str(i)] = 'GALAXY'
         for ii in range(0,len(dt)):
             ln = dt[ii]
             zfits = zinfo.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],release)
