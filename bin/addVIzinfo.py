@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
