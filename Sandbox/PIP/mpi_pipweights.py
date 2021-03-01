@@ -107,6 +107,8 @@ def main():
     # Append each input target file.  These target files must all be of the
     # same survey type, and will set the Targets object to be of that survey.
 
+    print(args.mtl)
+    print(args.sky)
     #for tgfile in args.targets:
     #    load_target_file(tgs, tgfile)
     load_target_file(tgs, args.mtl)
