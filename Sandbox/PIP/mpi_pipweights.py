@@ -186,9 +186,9 @@ def main():
     # buffer protocol.
 
     tgall = None
-    if mpi_rank == 0:
-        tgall = bitarray(tgarray)
-        tgall.setall(False)
+    #if mpi_rank == 0:
+    #    tgall = bitarray(tgarray)
+    #    tgall.setall(False)
 
     MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
 
