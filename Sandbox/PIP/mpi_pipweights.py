@@ -138,6 +138,8 @@ def main():
     
     # Target tree
     tree = TargetTree(tgs)
+    
+    hw = load_hardware()
 
     for realization in my_realizations:
         # Set the seed based on the realization, so that the result is reproducible
