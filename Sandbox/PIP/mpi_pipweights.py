@@ -48,12 +48,12 @@ def main():
                         " of when each fiber assignment was run and for which tiles, "
                         "along with the options that were used.")
 
-    parser.add_argument("--sky", type=str, required=False, nargs="+",
+    parser.add_argument("--sky", type=str, required=False,
                         help="Input file with sky or supp_sky targets.  "
                         "These target files are assumed to be constant and not "
                         "tracked by the MTL ledger.")
 
-    parser.add_argument("--mtl", type=str, required=True, nargs="+",
+    parser.add_argument("--mtl", type=str, required=True,
                         help="The MTL ledger.  This is still a work in progress and"
                         " I am not sure what the interface will be, but given the "
                         "fiber assignment dates in the survey log, we should be able"
