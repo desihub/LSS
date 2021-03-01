@@ -181,7 +181,7 @@ def main():
             run(asgn)
 
             # Update bit arrays for assigned science targets
-            for tile_id in tiles.ids():
+            for tile_id in tiles.ids:#():
                 adata = asgn.tile_location_target(tile_id)
                 for loc, tgid in adata.items():
                     try:
