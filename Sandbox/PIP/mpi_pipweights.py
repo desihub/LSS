@@ -107,8 +107,9 @@ def main():
     # Append each input target file.  These target files must all be of the
     # same survey type, and will set the Targets object to be of that survey.
 
-    for tgfile in args.targets:
-        load_target_file(tgs, tgfile)
+    #for tgfile in args.targets:
+    #    load_target_file(tgs, tgfile)
+    load_target_file(tgs, args.mtl)
 
     # Just the science target IDs
     tg_science = tgs.ids()
@@ -116,8 +117,9 @@ def main():
 
     # Now load the sky target files.
     survey = tgs.survey()
-    for tgfile in args.sky:
-        load_target_file(tgs, tgfile)
+    #for tgfile in args.sky:
+    #    load_target_file(tgs, tgfile)
+    load_target_file(tgs, args.sky)
 
     # Divide up realizations among the processes.
 
