@@ -11,7 +11,7 @@ import sys
 
 import argparse
 
-from bitarray import bitarray
+#from bitarray import bitarray
 
 import fitsio
 
