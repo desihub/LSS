@@ -12,6 +12,7 @@ import sys
 import argparse
 
 #from bitarray import bitarray
+import numpy as np
 
 import fitsio
 
