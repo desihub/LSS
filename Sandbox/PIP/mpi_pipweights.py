@@ -17,7 +17,7 @@ import fitsio
 
 import fiberassign
 
-from fiberassign.utils import Logger, distribute_discrete
+from fiberassign.utils import Logger#, distribute_discrete
 
 from fiberassign.hardware import load_hardware
 
@@ -126,9 +126,11 @@ def main():
     my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
 
     # Bitarray for all targets and realizations
-    tgarray = bitarray(len(tg_science) * n_realization)
-    tgarray.setall(False)
+    #tgarray = bitarray(len(tg_science) * n_realization)
+    #tgarray.setall(False)
+    tgarray = np.zeros(len(tg_science) * n_realization,dtype='bool')
 
+    
     # Target tree
     tree = TargetTree(tgs)
 
