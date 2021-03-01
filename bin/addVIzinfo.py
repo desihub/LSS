@@ -72,11 +72,11 @@ for i in range(0,len(types)):
             for jj in range(1,5):
                 for col in cols:
                     dt[col+'_'+str(jj)][ii] = zfits[jj][col]
-            if ii%100 == 0:
+            if ii%1000 == 0:
                 print(ii)
 
         #dt.sort('TARGETID')
-        outfall = dirz +'/allVItiles_'+tp+'zinfo_wVI.fits'
+        outfall = dirz +'/'+tp+'/allVItiles_'+tp+'zinfo_wVI.fits'
         dt.write(outfall,format='fits', overwrite=True) 
         print('wrote to '+outfall)
                 
