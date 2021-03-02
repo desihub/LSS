@@ -129,7 +129,7 @@ for tile in tiles:
                 tilew.append(tile)
 
             else:
-                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn)
+                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
                 logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
                 if a:
                     tilew.append(tile)
