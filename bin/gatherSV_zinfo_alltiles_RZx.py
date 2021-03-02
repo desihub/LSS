@@ -204,7 +204,7 @@ for i in range(1,5):
 	dt['subtype_'+str(i)] = 'GALAXY'
 for ii in range(0,len(dt)):
 	ln = dt[ii]
-	zfitdir = tiledir+'/'+str(tile)+'/'+release
+	zfitdir = tiledir+'/'+str(ln['TILEID'])+'/'+release
 	zfits = zi.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],zfitdir)
 	for jj in range(1,5):
 		for col in cols:
