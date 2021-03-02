@@ -179,6 +179,7 @@ for it in range(0,len(tilet)):
 		tj = join(tz,tt,join_type='left',keys='TARGETID')
 		tj['N_VI'].fill_value = 0
 		tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
+		tj['TILEID'] = tile
 		tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
 		print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
 		gt.append(tile)
