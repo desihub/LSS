@@ -148,7 +148,7 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
         tspec = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
         tf = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
-        zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        zfm = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         exps = np.unique(zfm['EXPID'])
         bd = []
         rd = []
