@@ -185,13 +185,14 @@ for it in range(0,len(tilet)):
 		gt.append(tile)
 	except:
 		print('didnt find data for tile '+tile) 
+print(gt)
 #if len(tilet) > 1:
 dt = Table.read(dirz+'/'+tp+'/'+str(gt[0])+'_'+tp+'zinfo_wVI.fits')
 for it in range(1,len(gt)):
 	dtn = Table.read(dirz+'/'+tp+'/'+str(gt[it])+'_'+tp+'zinfo_wVI.fits')
 	dt = vstack([dt,dtn])
 
-
+print(np.unique(dt['TILEID']))
 cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
 for i in range(1,5):
 	
