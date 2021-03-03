@@ -98,8 +98,8 @@ for tp in types:
     
     if tp != 'MWS_ANY':
         gt = []
-        tilet = tiles[tp]
-        datet = dates[tp]
+        tilet = vitiles[tp]
+        datet = vidates[tp]
         ft = Table.read(dirout +'/alltiles_'+tp+'zinfo.fits')
         for it in range(0,len(tilet)):
             date = str(datet[it])
