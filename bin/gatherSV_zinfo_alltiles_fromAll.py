@@ -109,7 +109,7 @@ for tp in types:
             tile = str(tilet[it])
             print(tile)
 
-            wz = ft['TILEID'] == tile
+            wz = ft['TILEID'] == int(tile)
             
             tz = ft[wz]
             print(len(tz))
