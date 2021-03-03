@@ -107,8 +107,10 @@ for tp in types:
         for it in range(0,len(tilet)):
             date = str(datet[it])
             tile = str(tilet[it])
+            print(tile)
 
-            wz = ft['TILEID'] == tilet
+            wz = ft['TILEID'] == tile
+            
             tz = ft[wz]
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
             tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
@@ -121,9 +123,7 @@ for tp in types:
             gt.append(tile)
 
 
-
-
-        
+        print(gt)
         dt = Table.read(dirz+'/'+tp+'/'+str(gt[0])+'_'+tp+'zinfo_wVI.fits')
         for it in range(1,len(gt)):
             dtn = Table.read(dirz+'/'+tp+'/'+str(gt[it])+'_'+tp+'zinfo_wVI.fits')
