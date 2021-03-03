@@ -101,6 +101,7 @@ for tp in types:
         tilet = vitiles[tp]
         datet = vidates[tp]
         ft = Table.read(dirout +'/alltiles_'+tp+'zinfo.fits')
+        dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
         for it in range(0,len(tilet)):
             date = str(datet[it])
             tile = str(tilet[it])
@@ -120,7 +121,7 @@ for tp in types:
 
 
 
-        dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
+        
         dt = Table.read(dirz+'/'+tp+'/'+str(gt[0])+'_'+tp+'zinfo_wVI.fits')
         for it in range(1,len(gt)):
             dtn = Table.read(dirz+'/'+tp+'/'+str(gt[it])+'_'+tp+'zinfo_wVI.fits')
