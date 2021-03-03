@@ -108,7 +108,7 @@ for tp in types:
             date = str(datet[it])
             tile = str(tilet[it])
 
-            wz = ft['TILEID'] == tile
+            wz = ft['TILEID'] == tilet
             tz = ft[wz]
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
             tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
