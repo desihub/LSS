@@ -81,7 +81,7 @@ gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG']
 
 for tp in types:
 
-    dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+type
+    dirout = svdir+'redshift_comps/'+release+'/'+version+'/'+tp
 
     if not os.path.exists(dirout):
         os.mkdir(dirout)
