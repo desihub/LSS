@@ -147,6 +147,8 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
         tspec = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
         tf = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        ts = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+        ts.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
         #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
         zfm = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         exps = np.unique(zfm['EXPID'])
@@ -175,22 +177,22 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
                 rda.append(info['R_DEPTH_EBVAIR'][0])
                 zda.append(info['Z_DEPTH_EBVAIR'][0]) 
                 
-                for cam in cams:
-                    tcols  =[]
-                    for col in tsnrcols:
-                        tcols.append(col+'_'+cam.upper())
-                    cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
-                    cf.keep_columns(tcols)
-                    for col in tcols:
-                        cf.rename_column(col, col[:-2])
-                    if ce ==0 and cam == 'b':
-                        tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
-                        tnsrt = cf.copy()
-                        tnsrt['TARGETID'] = tids['TARGETID']
-                    else:
-                        for col in tsnrcols:
-                            tnsrt[col] += cf[col]         
-                ce += 1                 
+#                 for cam in cams:
+#                     tcols  =[]
+#                     for col in tsnrcols:
+#                         tcols.append(col+'_'+cam.upper())
+#                     cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+#                     cf.keep_columns(tcols)
+#                     for col in tcols:
+#                         cf.rename_column(col, col[:-2])
+#                     if ce ==0 and cam == 'b':
+#                         tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+#                         tnsrt = cf.copy()
+#                         tnsrt['TARGETID'] = tids['TARGETID']
+#                     else:
+#                         for col in tsnrcols:
+#                             tnsrt[col] += cf[col]         
+#                 ce += 1                 
         #tvs = get_tsnrinfo(exps,specs[0])    
         #if tvs is not None:
         #    es,bs,ls,qs = tvs
@@ -228,7 +230,10 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
         for i in range(1,len(specs)):
             zfm = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
             exps = np.unique(zfm['EXPID'])
-            
+            tsn = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+            tsn.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+            ts = vstack([ts,tsn], metadata_conflicts='silent')
+           
 
             tn = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
             tnf = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
@@ -257,28 +262,28 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
                     zda.append(info['Z_DEPTH_EBVAIR'][0])    
                     
                         
-                    for cam in cams:
-                        tcols = []
-                        for col in tsnrcols:
-                            tcols.append(col+'_'+cam.upper())
-
-                        cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
-                        cf.keep_columns(tcols)
-                        for col in tcols:
-                            cf.rename_column(col, col[:-2])
-
-                        #print(ce,cam)
-                        if ce ==0 and cam == 'b':
-                            tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
-                            tsnrtn = cf.copy()
-                            tsnrtn['TARGETID'] = tids['TARGETID']
-                        else:
-                            for col in tsnrcols:
-                                tsnrtn[col] += cf[col]         
-                    ce += 1                 
+#                     for cam in cams:
+#                         tcols = []
+#                         for col in tsnrcols:
+#                             tcols.append(col+'_'+cam.upper())
+# 
+#                         cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+#                         cf.keep_columns(tcols)
+#                         for col in tcols:
+#                             cf.rename_column(col, col[:-2])
+# 
+#                         #print(ce,cam)
+#                         if ce ==0 and cam == 'b':
+#                             tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+#                             tsnrtn = cf.copy()
+#                             tsnrtn['TARGETID'] = tids['TARGETID']
+#                         else:
+#                             for col in tsnrcols:
+#                                 tsnrtn[col] += cf[col]         
+#                     ce += 1                 
 
             
-            tnsrt = vstack([tnsrt,tsnrtn], metadata_conflicts='silent')
+#            tnsrt = vstack([tnsrt,tsnrtn], metadata_conflicts='silent')
             #tvs = get_tsnrinfo(exps,specs[i]) 
             #if tvs is not None:
             #    es,bs,ls,qs = tvs
@@ -327,7 +332,8 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
             #print(np.min(rdtn),np.max(rdtn)) 
             #print(np.min(rdt),np.max(rdt)) 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
-        tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
+        #tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
+        tspec = join(tspec,ts,keys=['TARGETID'], metadata_conflicts='silent')
         td = Table([bdt,rdt,zdt,bdta,rdta,zdta,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','TARGETID'))#,'ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR'
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         if tarbit != -1:
