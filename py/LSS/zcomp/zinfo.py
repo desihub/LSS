@@ -187,21 +187,21 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
                 etback.append(info['EFFTIME_BACKUP'][0]) 
                 
                 if tsmd != 'fm':
-					for cam in cams:
-						tcols  =[]
-						for col in tsnrcols:
-							tcols.append(col+'_'+cam.upper())
-						cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
-						cf.keep_columns(tcols)
-						for col in tcols:
-							cf.rename_column(col, col[:-2])
-						if ce ==0 and cam == 'b':
-							tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
-							tnsrt = cf.copy()
-							tnsrt['TARGETID'] = tids['TARGETID']
-						else:
-							for col in tsnrcols:
-								tnsrt[col] += cf[col]         
+                    for cam in cams:
+                        tcols  =[]
+                        for col in tsnrcols:
+                            tcols.append(col+'_'+cam.upper())
+                        cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                        cf.keep_columns(tcols)
+                        for col in tcols:
+                            cf.rename_column(col, col[:-2])
+                        if ce ==0 and cam == 'b':
+                            tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                            tnsrt = cf.copy()
+                            tnsrt['TARGETID'] = tids['TARGETID']
+                        else:
+                            for col in tsnrcols:
+                                tnsrt[col] += cf[col]         
                 ce += 1                 
         #tvs = get_tsnrinfo(exps,specs[0])    
         #if tvs is not None:
@@ -287,24 +287,24 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
                     
                         
                     if tsmd != 'fm':
-						for cam in cams:
-							tcols = []
-							for col in tsnrcols:
-								tcols.append(col+'_'+cam.upper())
+                        for cam in cams:
+                            tcols = []
+                            for col in tsnrcols:
+                                tcols.append(col+'_'+cam.upper())
 
-							cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
-							cf.keep_columns(tcols)
-							for col in tcols:
-								cf.rename_column(col, col[:-2])
+                            cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                            cf.keep_columns(tcols)
+                            for col in tcols:
+                                cf.rename_column(col, col[:-2])
 
-							#print(ce,cam)
-							if ce ==0 and cam == 'b':
-								tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
-								tsnrtn = cf.copy()
-								tsnrtn['TARGETID'] = tids['TARGETID']
-							else:
-								for col in tsnrcols:
-									tsnrtn[col] += cf[col]         
+                            #print(ce,cam)
+                            if ce ==0 and cam == 'b':
+                                tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                                tsnrtn = cf.copy()
+                                tsnrtn['TARGETID'] = tids['TARGETID']
+                            else:
+                                for col in tsnrcols:
+                                    tsnrtn[col] += cf[col]         
                     ce += 1                 
 
             
