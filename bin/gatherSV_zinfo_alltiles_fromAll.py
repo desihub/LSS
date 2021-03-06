@@ -114,14 +114,14 @@ for tp in types:
             wz = ft['TILEID'] == int(tile)
             
             tz = ft[wz]
-            for rzdir in rzdirs:
-                rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
-                if os.path.isfile(outf):
-                    print('found '+rzf)
-                    fz = Table.read(rzf)
-                    fz['subset'] += rzdir
-                    print(np.unique(fz['subset']))
-                    tz = vstack([tz,fz])
+#             for rzdir in rzdirs:
+#                 rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
+#                 if os.path.isfile(outf):
+#                     print('found '+rzf)
+#                     fz = Table.read(rzf)
+#                     fz['subset'] += rzdir
+#                     print(np.unique(fz['subset']))
+#                     tz = vstack([tz,fz])
                 
             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
