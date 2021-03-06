@@ -128,11 +128,11 @@ for tile in tiles:
                 print(outf+' exists already')
                 tilew.append(tile)
 
-            else:			
-				a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
-				logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
-				if a:
-					tilew.append(tile)
+            else:           
+                a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
+                logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
+                if a:
+                    tilew.append(tile)
 
         else:
             print('did not find data in '+release +' for tile '+tile)    
@@ -170,50 +170,50 @@ tilet = tiles[tp]
 datet = dates[tp]
 gt = []
 for it in range(0,len(tilet)):
-	date = str(datet[it])
-	tile = str(tilet[it])
-	tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
-	tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
-	try:
-		tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
-		tj = join(tz,tt,join_type='left',keys='TARGETID')
-		tj['N_VI'].fill_value = 0
-		tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
-		tj['TILEID'] = tile
-		tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
-		print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
-		gt.append(tile)
-	except:
-		print('didnt find data for tile '+tile) 
+    date = str(datet[it])
+    tile = str(tilet[it])
+    tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
+    tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
+    try:
+        tz = Table.read(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits')
+        tj = join(tz,tt,join_type='left',keys='TARGETID')
+        tj['N_VI'].fill_value = 0
+        tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
+        tj['TILEID'] = tile
+        tj.write(dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits',format='fits',overwrite=True)
+        print('wrote file with VI info to '+dirz+'/'+tp+'/'+tile+'_'+tp+'zinfo_wVI.fits')
+        gt.append(tile)
+    except:
+        print('didnt find data for tile '+tile) 
 print(gt)
 #if len(tilet) > 1:
 dt = Table.read(dirz+'/'+tp+'/'+str(gt[0])+'_'+tp+'zinfo_wVI.fits')
 for it in range(1,len(gt)):
-	dtn = Table.read(dirz+'/'+tp+'/'+str(gt[it])+'_'+tp+'zinfo_wVI.fits')
-	dt = vstack([dt,dtn])
+    dtn = Table.read(dirz+'/'+tp+'/'+str(gt[it])+'_'+tp+'zinfo_wVI.fits')
+    dt = vstack([dt,dtn])
 
 print(np.unique(dt['TILEID']))
 cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
 for i in range(1,5):
-	
-	dt['z_'+str(i)]=np.zeros(len(dt))
-	dt['zwarn_'+str(i)]=np.zeros(len(dt))
-	dt['chi2_'+str(i)]=np.zeros(len(dt))
-	dt['deltachi2_'+str(i)]=np.zeros(len(dt))
-	dt['spectype_'+str(i)] = 'GALAXY'
-	dt['subtype_'+str(i)] = 'GALAXY'
+    
+    dt['z_'+str(i)]=np.zeros(len(dt))
+    dt['zwarn_'+str(i)]=np.zeros(len(dt))
+    dt['chi2_'+str(i)]=np.zeros(len(dt))
+    dt['deltachi2_'+str(i)]=np.zeros(len(dt))
+    dt['spectype_'+str(i)] = 'GALAXY'
+    dt['subtype_'+str(i)] = 'GALAXY'
 for ii in range(0,len(dt)):
-	ln = dt[ii]
-	zfitdir = tiledir+str(ln['TILEID'])
-	zfits = zi.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],zfitdir)
-	for jj in range(1,5):
-		for col in cols:
-			dt[col+'_'+str(jj)][ii] = zfits[jj][col]
-	if ii%1000 == 0:
-		print(ii)
+    ln = dt[ii]
+    zfitdir = tiledir+str(ln['TILEID'])
+    zfits = zi.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],zfitdir)
+    for jj in range(1,5):
+        for col in cols:
+            dt[col+'_'+str(jj)][ii] = zfits[jj][col]
+    if ii%1000 == 0:
+        print(ii)
 
 #dt.sort('TARGETID')
 outfall = dirz +'/'+tp+'/allVItiles_'+tp+'zinfo_wVI.fits'
 dt.write(outfall,format='fits', overwrite=True) 
 print('wrote to '+outfall)
-			
+            
