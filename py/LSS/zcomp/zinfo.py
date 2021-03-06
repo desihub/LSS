@@ -31,7 +31,7 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
         #if tile == '80607' and night == 'subset-1':
         #    pass
 
-        elif len(night) > 0:
+        if len(night) > 0:
             coaddiru = coaddir
             if md == 'rel':
                 coaddiru = coaddir+'/'+night
