@@ -119,6 +119,8 @@ for tp in types:
                 if os.path.isfile(outf):
                     print('found '+rzf)
                     fz = Table.read(rzf)
+                    fz['subset'] += rzdir
+                    print(np.unique(fz['subset']))
                     tz = vstack([tz,fz])
                 
             print(len(tz))
