@@ -27,7 +27,10 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
     '''
     ss = 0 #use to switch from creating to concatenating
     for night in subsets:
-        if len(night) > 0:
+        if tile == '80607' and night == '20201222':
+            pass
+
+        elif len(night) > 0:
             coaddiru = coaddir
             if md == 'rel':
                 coaddiru = coaddir+'/'+night

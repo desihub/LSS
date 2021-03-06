@@ -128,14 +128,11 @@ for tile in tiles:
                 print(outf+' exists already')
                 tilew.append(tile)
 
-            else:
-                if tile == '80607' and subset == '20201222':
-                    pass
-                else:
-                    a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
-                    logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
-                    if a:
-                        tilew.append(tile)
+            else:			
+				a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
+				logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
+				if a:
+					tilew.append(tile)
 
         else:
             print('did not find data in '+release +' for tile '+tile)    
