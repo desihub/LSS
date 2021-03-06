@@ -31,7 +31,9 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
             coaddiru = coaddir
             if md == 'rel':
                 coaddiru = coaddir+'/'+night
-            tspec = get_subset(tarbit,tp,night,tile,coaddiru,exposures,mfn=mfn)
+            if md == 'RZ':
+                tsmd = 'cf'
+            tspec = get_subset(tarbit,tp,night,tile,coaddiru,exposures,mfn=mfn,tsmd=tsmd)
             if tspec is not None:
                 if ss == 0:
                     tspect = tspec
