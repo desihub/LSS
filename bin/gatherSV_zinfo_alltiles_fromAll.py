@@ -116,7 +116,7 @@ for tp in types:
             tz = ft[wz]
             for rzdir in rzdirs:
                 rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
-                if os.path.isfile(outf):
+                if os.path.isfile(rzf):
                     print('found '+rzf)
                     fz = Table.read(rzf)
                     fz['subset'] += rzdir
