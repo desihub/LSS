@@ -110,33 +110,33 @@ tilew = []
 for tile in tiles:
     tt = np.unique(exposures['TARGETS'][exposures['TILEID']==tile])[0]
     if np.isin(tt,gt): #make sure tiles are type we want
-        tile = str(tile)
-        if tile != '80607':
-            coaddir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+release+'/'+tile
-            #subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
-            a = glob.glob(coaddir+'/*.fits')
-            b = []
-            for i in range(0,len(a)):
-                b.append(a[i][-13:-5])        
-            subsets = np.unique(b)
-            print(subsets)
-    
-            if len(subsets) > 0:
-                #print(subsets)
-                print('going through tile '+tile)
-                outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
-                if os.path.isfile(outf): 
-                    print(outf+' exists already')
-                    tilew.append(tile)
+        #tile = str(tile)
+        #if tile != '80607':
+		coaddir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+release+'/'+tile
+		#subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
+		a = glob.glob(coaddir+'/*.fits')
+		b = []
+		for i in range(0,len(a)):
+			b.append(a[i][-13:-5])        
+		subsets = np.unique(b)
+		print(subsets)
 
-                else:           
-                    a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
-                    logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
-                    if a:
-                        tilew.append(tile)
+		if len(subsets) > 0:
+			#print(subsets)
+			print('going through tile '+tile)
+			outf = dirout +'/'+tile+'_'+type+'zinfo.fits'
+			if os.path.isfile(outf): 
+				print(outf+' exists already')
+				tilew.append(tile)
 
-            else:
-                print('did not find data in '+release +' for tile '+tile)    
+			else:           
+				a = zi.comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn=mfn,md='RZ')
+				logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
+				if a:
+					tilew.append(tile)
+
+		else:
+			print('did not find data in '+release +' for tile '+tile)    
       
 
 #combine all the tiles
