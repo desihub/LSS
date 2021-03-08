@@ -68,28 +68,29 @@ logf.write(str(args)+'\n')
 
 allrzf = svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits'
 if os.path.isfile(allrzf): 
-    print('combined file '+rzf + 'exists')
+    print('combined file '+allrzf + 'exists')
+    tz = Table.read(allrzf)
 else:    
     tz = Table.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
     sl = np.full(len(tz),'N',dtype='U20')
     tz['RZR'] = sl
     rzdirs = ['3x_depth','4x_depth','single_exposures']
 
-for rzdir in rzdirs:
-    rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
+    for rzdir in rzdirs:
+        rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
 
-    fz = Table.read(rzf)
-    fz['RZR'] = rzdir
-    #fzs = np.array(fz['subset'],dtype='U20')
-    #fz['subset'] = np.core.defchararray.add(fzs,rzdir)
+        fz = Table.read(rzf)
+        fz['RZR'] = rzdir
+        #fzs = np.array(fz['subset'],dtype='U20')
+        #fz['subset'] = np.core.defchararray.add(fzs,rzdir)
 
-    tz = vstack([tz,fz])
-    if rzdir == '3x_depth':
-        print(np.unique(fz['RZR']))
-        print(np.unique(tz['RZR']))
-    print(len(tz))    
+        tz = vstack([tz,fz])
+        if rzdir == '3x_depth':
+            print(np.unique(fz['RZR']))
+            print(np.unique(tz['RZR']))
+        print(len(tz))    
 
-tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
+    tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
 
 types = ['QSO','ELG','LRG','BGS_ANY','MWS_ANY']
 
