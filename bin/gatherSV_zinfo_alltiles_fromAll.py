@@ -73,8 +73,8 @@ rzdirs = ['3x_depth','4x_depth']
 
 types = ['QSO','ELG','LRG','BGS_ANY','MWS_ANY']
 
-vitiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
-vidates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
+vitiles = {'LRG':[80605,80609],'ELG':[80606,80608,80610],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
+vidates = {'LRG':[210224,21030],'ELG':[210218,210208,210308],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
 dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
@@ -114,14 +114,14 @@ for tp in types:
             wz = ft['TILEID'] == int(tile)
             
             tz = ft[wz]
-#             for rzdir in rzdirs:
-#                 rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
-#                 if os.path.isfile(outf):
-#                     print('found '+rzf)
-#                     fz = Table.read(rzf)
-#                     fz['subset'] += rzdir
-#                     print(np.unique(fz['subset']))
-#                     tz = vstack([tz,fz])
+            for rzdir in rzdirs:
+                rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
+                if os.path.isfile(outf):
+                    print('found '+rzf)
+                    fz = Table.read(rzf)
+                    fz['subset'] += rzdir
+                    print(np.unique(fz['subset']))
+                    tz = vstack([tz,fz])
                 
             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
