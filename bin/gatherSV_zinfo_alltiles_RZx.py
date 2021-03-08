@@ -94,7 +94,7 @@ logf.write(str(args)+'\n')
   
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
-gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG']
+gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG','BACKUP','SSV']
 #location of inputs
 tiledir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+release+'/'
 
@@ -146,11 +146,16 @@ dt['TILEID'] = int(tilew[0])
 for i in range(1,len(tilew)):
     dtn = Table.read(dirout +'/'+tilew[i]+'_'+type+'zinfo.fits')
     dtn['TILEID'] = int(tilew[i])
-    dt = vstack([dt,dtn])
+    dt = vstack([dt,dtn], metadata_conflicts='silent')
+    print(tilew[i],len(dt))
 
 dt.sort('TARGETID')
 col2remove = ['NUMEXP','NUMTILE','LAMBDA_REF','OBJTYPE','NUMTARGET','FIBERFLUX_IVAR_G','FIBERFLUX_IVAR_R','FIBERFLUX_IVAR_Z','DESI_TARGET','BGS_TARGET','MWS_TARGET','HPXPIXEL','NUM_TILEID','NUM_FIBER']
-dt.remove_columns(col2remove)
+for col in col2remove:
+    try:
+        dt.remove_columns([col])
+    except:
+        print('didnt fine column to remove '+col)
 
 
 outfall = dirout +'/alltiles_'+type+'zinfo.fits'

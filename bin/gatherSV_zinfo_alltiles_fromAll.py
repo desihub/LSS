@@ -69,7 +69,22 @@ logf.write(str(args)+'\n')
 
 allf = fitsio.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
 
-rzdirs = ['3x_depth','4x_depth']
+rzdirs = ['3x_depth','4x_depth','single_exposures']
+
+for rzdir in rzdirs:
+	rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits
+	
+	fz = fitsio.read(rzf)
+	fzs = np.array(fz['subset'],dtype='U20')
+	fz['subset'] = np.core.defchararray.add(fzs,rzdir)
+	
+	tz = vstack([tz,fz])
+	if rzdir == '3x_depth':
+	    print(np.unique(fz['subset']))
+	    print(np.unique(tz['subset']))
+	print(len(tz))    
+
+tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
 
 types = ['QSO','ELG','LRG','BGS_ANY','MWS_ANY']
 
@@ -79,7 +94,6 @@ dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
 
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
-gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG']
 
 tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
@@ -93,8 +107,8 @@ for tp in types:
         
     tarbit = int(np.log2(sv1_targetmask.desi_mask[tp]))
     
-    wt = (allf['SV1_DESI_TARGET'] & sv1_targetmask.desi_mask[tp]) > 0
-    dt = allf[wt]
+    wt = (tz['SV1_DESI_TARGET'] & sv1_targetmask.desi_mask[tp]) > 0
+    dt = tz[wt]
 
     outfall = dirout +'/alltiles_'+tp+'zinfo.fits'
     fitsio.write(outfall,dt,clobber=True)
@@ -114,17 +128,17 @@ for tp in types:
             wz = ft['TILEID'] == int(tile)
             
             tz = ft[wz]
-            for rzdir in rzdirs:
-                rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+tile+'_'+tp+'zinfo.fits'
-                if os.path.isfile(rzf):
-                    print('found '+rzf)
-                    fz = Table.read(rzf)
-                    fz['subset'] = np.core.defchararray.add(f['subset'],rzdir)
-                    print(np.unique(fz['subset']))
-                    tz = vstack([tz,fz])
-                    print(np.unique(tz['subset']))
-                
-            print(len(tz))
+#             for rzdir in rzdirs:
+#                 rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits'
+#                 if os.path.isfile(rzf):
+#                     print('found '+rzf)
+#                     fz = Table.read(rzf)
+#                     fz['subset'] = np.core.defchararray.add(f['subset'],rzdir)
+#                     print(np.unique(fz['subset']))
+#                     tz = vstack([tz,fz])
+#                     print(np.unique(tz['subset']))
+#                 
+#             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
             tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
             tj = join(tz,tt,join_type='left',keys='TARGETID')
