@@ -298,7 +298,11 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
                             for col in tsnrcols:
                                 tcols.append(col+'_'+cam.upper())
 
-                            cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                            try:
+                                cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                            except:
+                                print('couldnt open '+cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits')
+                                return None
                             cf.keep_columns(tcols)
                             for col in tcols:
                                 cf.rename_column(col, col[:-2])
