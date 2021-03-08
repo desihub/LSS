@@ -140,6 +140,8 @@ for i in range(1,len(tilew)):
     dt = vstack([dt,dtn])
 
 dt.sort('TARGETID')
+col2remove = ['NUMEXP','NUMTILE','LAMBDA_REF','OBJTYPE','NUMTARGET','FIBERFLUX_IVAR_G','FIBERFLUX_IVAR_R','FIBERFLUX_IVAR_Z','DESI_TARGET','BGS_TARGET','MWS_TARGET','HPXPIXEL','NUM_TILEID','NUM_FIBER']
+dt.remove_columns(col2remove)
 outfall = dirout +'/alltiles_'+type+'zinfo.fits'
 dt.write(outfall,format='fits', overwrite=True) 
 print('wrote to '+outfall)

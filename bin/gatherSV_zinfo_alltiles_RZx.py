@@ -149,20 +149,24 @@ for i in range(1,len(tilew)):
     dt = vstack([dt,dtn])
 
 dt.sort('TARGETID')
+col2remove = ['NUMEXP','NUMTILE','LAMBDA_REF','OBJTYPE','NUMTARGET','FIBERFLUX_IVAR_G','FIBERFLUX_IVAR_R','FIBERFLUX_IVAR_Z','DESI_TARGET','BGS_TARGET','MWS_TARGET','HPXPIXEL','NUM_TILEID','NUM_FIBER']
+dt.remove_columns(col2remove)
+
+
 outfall = dirout +'/alltiles_'+type+'zinfo.fits'
 dt.write(outfall,format='fits', overwrite=True) 
 print('wrote to '+outfall)
 logf.write('combined all tiles, written to '+outfall)
 
-types = ['QSO','ELG','LRG','BGS_ANY']#,'MWS']
-
-tiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
-dates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
-
-
-dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
-svdir = basedir+'/SV1/'
-dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
+# types = ['QSO','ELG','LRG','BGS_ANY']#,'MWS']
+# 
+# tiles = {'LRG':[80605,80609],'ELG':[80606,80608],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
+# dates = {'LRG':[210224,21030],'ELG':[210218,210208],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
+# 
+# 
+# dirvi = '/global/cfs/cdirs/desi/sv/vi/TruthTables/Blanc/'
+# svdir = basedir+'/SV1/'
+# dirz = svdir+'redshift_comps/'+release+'/'+version+'/'
 
 #for i in range(0,len(types)):
 #    tp =types[i]

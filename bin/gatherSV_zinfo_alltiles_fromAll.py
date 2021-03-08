@@ -119,9 +119,10 @@ for tp in types:
                 if os.path.isfile(rzf):
                     print('found '+rzf)
                     fz = Table.read(rzf)
-                    fz['subset'] += rzdir
+                    fz['subset'] = np.core.defchararray.add(f['subset'],rzdir)
                     print(np.unique(fz['subset']))
                     tz = vstack([tz,fz])
+                    print(np.unique(tz['subset']))
                 
             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
