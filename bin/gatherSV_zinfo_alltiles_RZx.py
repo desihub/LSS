@@ -110,7 +110,7 @@ tilew = []
 for tile in tiles:
     tt = np.unique(exposures['TARGETS'][exposures['TILEID']==tile])[0]
     if np.isin(tt,gt): #make sure tiles are type we want
-        #tile = str(tile)
+        tile = str(tile)
         #if tile != '80607':
         coaddir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+release+'/'+tile
         #subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
