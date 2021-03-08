@@ -67,14 +67,14 @@ logf.write(str(args)+'\n')
 #print(tarbit,tp)
 
 
-allf = fitsio.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
+tz = Table.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
 
 rzdirs = ['3x_depth','4x_depth','single_exposures']
 
 for rzdir in rzdirs:
     rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
     
-    fz = fitsio.read(rzf)
+    fz = Table.read(rzf)
     fzs = np.array(fz['subset'],dtype='U20')
     fz['subset'] = np.core.defchararray.add(fzs,rzdir)
     
@@ -111,7 +111,8 @@ for tp in types:
     dt = tz[wt]
 
     outfall = dirout +'/alltiles_'+tp+'zinfo.fits'
-    fitsio.write(outfall,dt,clobber=True)
+    dt.write(outfall,overwrite=True,format='fits')
+    #fitsio.write(outfall,dt,clobber=True)
     print('wrote '+outfall)
     
     if tp != 'MWS_ANY':
