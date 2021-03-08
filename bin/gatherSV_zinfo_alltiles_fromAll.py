@@ -66,22 +66,27 @@ logf.write(str(args)+'\n')
 #print('targeting bit,  target program type; CHECK THEY ARE CORRECT!')
 #print(tarbit,tp)
 
-
+#allrzf = svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits'
+#if os.path.isfile(allrzf): 
+#    print('combined file '+rzf + 'exists')
+#else:    
 tz = Table.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
-
+sl = np.full(len(tz),'N',dtype='U20')
+tz['RZR'] = sl
 rzdirs = ['3x_depth','4x_depth','single_exposures']
 
 for rzdir in rzdirs:
     rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
-    
+
     fz = Table.read(rzf)
-    fzs = np.array(fz['subset'],dtype='U20')
-    fz['subset'] = np.core.defchararray.add(fzs,rzdir)
-    
+    fz['RZR'] = rzdir
+    #fzs = np.array(fz['subset'],dtype='U20')
+    #fz['subset'] = np.core.defchararray.add(fzs,rzdir)
+
     tz = vstack([tz,fz])
     if rzdir == '3x_depth':
-        print(np.unique(fz['subset']))
-        print(np.unique(tz['subset']))
+        print(np.unique(fz['RZR']))
+        print(np.unique(tz['RZR']))
     print(len(tz))    
 
 tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
@@ -170,8 +175,15 @@ for tp in types:
             dt['subtype_'+str(i)] = 'GALAXY'
         for ii in range(0,len(dt)):
             ln = dt[ii]
-            zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'
-            zfits = zi.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],zfitdir)
+           
+            if ln['RZR'] != 'N':
+                zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+tile
+            else:
+                zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
+            
+            fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(tile)+'-'+ln['subset']+'.h5'
+            
+            zfits = zi.get_zfits(ln['TARGETID'],fl)
             for jj in range(1,5):
                 for col in cols:
                     dt[col+'_'+str(jj)][ii] = zfits[jj][col]

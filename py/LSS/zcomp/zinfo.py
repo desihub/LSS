@@ -10,8 +10,8 @@ import fitsio
 
 #'test'
 
-def get_zfits(tile,specn,subset,tid,zfitdir='blanc'):
-    fl = zfitdir+'/redrock-'+str(specn)+'-'+str(tile)+'-'+subset+'.h5'
+def get_zfits(fl,tid):#tile,specn,subset,tid,zfitdir='blanc'):
+    #fl = zfitdir+'/redrock-'+str(specn)+'-'+str(tile)+'-'+subset+'.h5'
     pt = 'zfit/'+str(tid)+'/zfit'
     zfits = Table.read(fl,path=pt)
     return zfits
