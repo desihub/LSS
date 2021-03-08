@@ -72,17 +72,17 @@ allf = fitsio.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Al
 rzdirs = ['3x_depth','4x_depth','single_exposures']
 
 for rzdir in rzdirs:
-	rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits
-	
-	fz = fitsio.read(rzf)
-	fzs = np.array(fz['subset'],dtype='U20')
-	fz['subset'] = np.core.defchararray.add(fzs,rzdir)
-	
-	tz = vstack([tz,fz])
-	if rzdir == '3x_depth':
-	    print(np.unique(fz['subset']))
-	    print(np.unique(tz['subset']))
-	print(len(tz))    
+    rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
+    
+    fz = fitsio.read(rzf)
+    fzs = np.array(fz['subset'],dtype='U20')
+    fz['subset'] = np.core.defchararray.add(fzs,rzdir)
+    
+    tz = vstack([tz,fz])
+    if rzdir == '3x_depth':
+        print(np.unique(fz['subset']))
+        print(np.unique(tz['subset']))
+    print(len(tz))    
 
 tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
 
