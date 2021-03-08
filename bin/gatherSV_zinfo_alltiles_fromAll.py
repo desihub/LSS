@@ -66,14 +66,14 @@ logf.write(str(args)+'\n')
 #print('targeting bit,  target program type; CHECK THEY ARE CORRECT!')
 #print(tarbit,tp)
 
-#allrzf = svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits'
-#if os.path.isfile(allrzf): 
-#    print('combined file '+rzf + 'exists')
-#else:    
-tz = Table.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
-sl = np.full(len(tz),'N',dtype='U20')
-tz['RZR'] = sl
-rzdirs = ['3x_depth','4x_depth','single_exposures']
+allrzf = svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits'
+if os.path.isfile(allrzf): 
+    print('combined file '+rzf + 'exists')
+else:    
+    tz = Table.read(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo.fits')
+    sl = np.full(len(tz),'N',dtype='U20')
+    tz['RZR'] = sl
+    rzdirs = ['3x_depth','4x_depth','single_exposures']
 
 for rzdir in rzdirs:
     rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/All/alltiles_Allzinfo.fits'
@@ -183,7 +183,7 @@ for tp in types:
             
             fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(tile)+'-'+ln['subset']+'.h5'
             
-            zfits = zi.get_zfits(ln['TARGETID'],fl)
+            zfits = zi.get_zfits(fl,ln['TARGETID'])
             for jj in range(1,5):
                 for col in cols:
                     dt[col+'_'+str(jj)][ii] = zfits[jj][col]
