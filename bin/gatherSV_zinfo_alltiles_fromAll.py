@@ -92,7 +92,7 @@ else:
 
     tz.write(svdir+'redshift_comps/'+release+'/'+version+'/All/alltiles_Allzinfo_wrz.fits',overwrite=True,format='fits')
 
-types = ['QSO','ELG','LRG','BGS_ANY','MWS_ANY']
+types = ['ELG','LRG','BGS_ANY','MWS_ANY','QSO']
 
 vitiles = {'LRG':[80605,80609],'ELG':[80606,80608,80610],'QSO':[80605,80607,80609],'BGS_ANY':[80613]}
 vidates = {'LRG':[210224,21030],'ELG':[210218,210208,210308],'QSO':[210223,210214,210210],'BGS_ANY':[210202]}
@@ -118,6 +118,7 @@ for tp in types:
 
     outfall = dirout +'/alltiles_'+tp+'zinfo.fits'
     dt.write(outfall,overwrite=True,format='fits')
+    print(len(dt))
     #fitsio.write(outfall,dt,clobber=True)
     print('wrote '+outfall)
     
@@ -148,6 +149,7 @@ for tp in types:
 #             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
             tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
+            print(len(tt),len(tz))
             tj = join(tz,tt,join_type='left',keys='TARGETID')
             print(len(tj))
             tj['N_VI'].fill_value = 0
