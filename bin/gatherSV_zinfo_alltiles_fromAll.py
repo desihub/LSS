@@ -182,7 +182,7 @@ for tp in types:
             else:
                 zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
             
-            fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(tile)+'-'+ln['subset']+'.h5'
+            fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
             
             zfits = zi.get_zfits(fl,ln['TARGETID'])
             for jj in range(1,5):
