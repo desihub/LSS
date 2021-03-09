@@ -178,7 +178,7 @@ for tp in types:
             ln = dt[ii]
            
             if ln['RZR'] != 'N':
-                zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+tile
+                zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
             else:
                 zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
             
