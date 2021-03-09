@@ -135,7 +135,7 @@ for tp in types:
 
             wz = ft['TILEID'] == int(tile)
             
-            tz = ft[wz]
+            fz = ft[wz]
 #             for rzdir in rzdirs:
 #                 rzf = svdir+'redshift_comps/'+rzdir+'/'+version+'/'+tp+'/'+tile+'_'+tp+'zinfo.fits'
 #                 if os.path.isfile(rzf):
@@ -149,8 +149,8 @@ for tp in types:
 #             print(len(tz))
             tt=Table.read(dirvi+tp[:3]+'/'+'desi-vi_'+tp[:3]+'_tile'+tile+'_nightdeep_merged_all_'+date+'.csv',format='pandas.csv')
             tt.keep_columns(['TARGETID','best_z','best_quality','best_spectype','all_VI_issues','all_VI_comments','merger_comment','N_VI'])
-            print(len(tt),len(tz))
-            tj = join(tz,tt,join_type='left',keys='TARGETID')
+            print(len(tt),len(fz))
+            tj = join(fz,tt,join_type='left',keys='TARGETID')
             print(len(tj))
             tj['N_VI'].fill_value = 0
             tj['N_VI'] = tj['N_VI'].filled() #should easily be able to select rows with N_VI > 0 to get desired info
