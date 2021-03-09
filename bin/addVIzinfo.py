@@ -1,7 +1,14 @@
 import os
+import sys
+import numpy as np
 import argparse
+import fitsio
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
+sys.path.append('../py')
+
+#from this package
+import LSS.zcomp.zinfo as zinfo
 
 
 #assumes gathSV_zinfo.py has been run for all tracer types for arguments below
@@ -49,7 +56,27 @@ for i in range(0,len(types)):
             dtn = Table.read(dirz+'/'+tp+'/'+str(tilet[it])+'_'+tp+'zinfo_wVI.fits')
             dt = vstack([dt,dtn])
 
+    
+        cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
+        for i in range(1,5):
+            
+            dt['z_'+str(i)]=np.zeros(len(dt))
+            dt['zwarn_'+str(i)]=np.zeros(len(dt))
+            dt['chi2_'+str(i)]=np.zeros(len(dt))
+            dt['deltachi2_'+str(i)]=np.zeros(len(dt))
+            dt['spectype_'+str(i)] = 'GALAXY'
+            dt['subtype_'+str(i)] = 'GALAXY'
+        for ii in range(0,len(dt)):
+            ln = dt[ii]
+            zfits = zinfo.get_zfits(ln['TILEID'],ln['PETAL_LOC'],ln['subset'],ln['TARGETID'],release)
+            for jj in range(1,5):
+                for col in cols:
+                    dt[col+'_'+str(jj)][ii] = zfits[jj][col]
+            if ii%1000 == 0:
+                print(ii)
+
         #dt.sort('TARGETID')
-        outfall = dirz +'/allVItiles_'+tp+'zinfo_wVI.fits'
+        outfall = dirz +'/'+tp+'/allVItiles_'+tp+'zinfo_wVI.fits'
         dt.write(outfall,format='fits', overwrite=True) 
         print('wrote to '+outfall)
+                

@@ -8,9 +8,15 @@ from glob import glob
 from astropy.io import fits
 import fitsio
 
-'test'
+#'test'
 
-def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.txt'):
+def get_zfits(fl,tid):#tile,specn,subset,tid,zfitdir='blanc'):
+    #fl = zfitdir+'/redrock-'+str(specn)+'-'+str(tile)+'-'+subset+'.h5'
+    pt = 'zfit/'+str(tid)+'/zfit'
+    zfits = Table.read(fl,path=pt)
+    return zfits
+
+def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.txt',md='rel'):
     '''
     performs a vertical concatenation of the data for a tile, so each targetid shows up N_subset times
     subsets is a list of the subsets (strings)
@@ -21,8 +27,18 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
     '''
     ss = 0 #use to switch from creating to concatenating
     for night in subsets:
+        #print(tile,night)
+        #if tile == '80607' and night == 'subset-1':
+        #    pass
+
         if len(night) > 0:
-            tspec = get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn=mfn)
+            coaddiru = coaddir
+            if md == 'rel':
+                coaddiru = coaddir+'/'+night
+                tsmd='fm'
+            if md == 'RZ':
+                tsmd = 'cf'
+            tspec = get_subset(tarbit,tp,night,tile,coaddiru,exposures,mfn=mfn,tsmd=tsmd)
             if tspec is not None:
                 if ss == 0:
                     tspect = tspec
@@ -116,33 +132,46 @@ def get_tsnrinfo(exps,spec,tsnrdir='/global/cscratch1/sd/mjwilson/desi/tsnr/blan
         qs.append(qsv)
     return es,bs,ls,qs        
 
-def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
+def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascades',tsmd='fm'):
 
     print('going through subset '+night)
+    if tsmd != 'fm':
+        cfdir = '/global/cfs/cdirs/desi/spectro/redux/'+rel+'/tiles/'+str(tile) #defined here to allow flexibility dealing with Rongpu's files
+        print('using release '+str(rel)+' cframes, is that what you want?')
+        cams = ['b','r','z']
+        tsnrcols = ['TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
         try:
-            fl = coaddir+'/'+night+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+            fl = coaddir+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
             fitsio.read(fl)
-            fl = coaddir+'/'+night+'/coadd-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+            fl = coaddir+'/coadd-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
             fitsio.read(fl)
             specs.append(si)
         except:
             #print(fl,specs,si)
             print('no spectrograph and/or coadd '+str(si)+ ' on subset '+night)
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
-        tspec = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-        tf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        tspec = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+        tf = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        if tsmd == 'fm':
+            ts = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+            ts.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
         #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
-        zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        zfm = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
         exps = np.unique(zfm['EXPID'])
         bd = []
         rd = []
         zd = []
+        etdark = []
+        etbright = []
+        etback = []
+        
         bda = []
         rda = []
         zda = []
+        ce = 0
         for exp in exps:
             info = exposures[exposures['EXPID'] == exp]
             if len(info) == 0:
@@ -151,31 +180,58 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 fo.write(str(exp)+'\n')
                 return None
             else:    
-                print(info['B_DEPTH'])
+                
+                nt = str(info['NIGHT'][0])
+                print(info['B_DEPTH'],nt)
                 bd.append(info['B_DEPTH'][0])
                 rd.append(info['R_DEPTH'][0])
                 zd.append(info['Z_DEPTH'][0]) 
                 bda.append(info['B_DEPTH_EBVAIR'][0])
                 rda.append(info['R_DEPTH_EBVAIR'][0])
                 zda.append(info['Z_DEPTH_EBVAIR'][0]) 
-        tvs = get_tsnrinfo(exps,specs[0])    
-        if tvs is not None:
-            es,bs,ls,qs = tvs
-        else:
-            return tvs
+                etdark.append(info['EFFTIME_DARK'][0])
+                etbright.append(info['EFFTIME_BRIGHT'][0])
+                etback.append(info['EFFTIME_BACKUP'][0]) 
+                
+                if tsmd != 'fm':
+                    for cam in cams:
+                        tcols  =[]
+                        for col in tsnrcols:
+                            tcols.append(col+'_'+cam.upper())
+                        cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                        cf.keep_columns(tcols)
+                        for col in tcols:
+                            cf.rename_column(col, col[:-2])
+                        if ce ==0 and cam == 'b':
+                            tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                            tnsrt = cf.copy()
+                            tnsrt['TARGETID'] = tids['TARGETID']
+                        else:
+                            for col in tsnrcols:
+                                tnsrt[col] += cf[col]         
+                ce += 1                 
+        #tvs = get_tsnrinfo(exps,specs[0])    
+        #if tvs is not None:
+        #    es,bs,ls,qs = tvs
+        #else:
+        #    return tvs
 
        
         bdt = np.zeros(500)
         rdt = np.zeros(500)
         zdt = np.zeros(500)
+        etdarkt = np.zeros(500)
+        etbrightt = np.zeros(500)
+        etbackt = np.zeros(500)
+
         bdta = np.zeros(500)
         rdta = np.zeros(500)
         zdta = np.zeros(500)
         tid = zfm[0:500]['TARGETID']
-        est = np.zeros(500)
-        bst = np.zeros(500)
-        lst = np.zeros(500)
-        qst = np.zeros(500)
+        #est = np.zeros(500)
+        #bst = np.zeros(500)
+        #lst = np.zeros(500)
+        #qst = np.zeros(500)
         for i in range(0,len(exps)):
             sel = zfm[i*500:(i+1)*500]
             w = sel['FIBERSTATUS'] == 0
@@ -185,57 +241,105 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             bdta[w] += bda[i]
             rdta[w] += rda[i]
             zdta[w] += zda[i]
-            est[w] += es[i]
-            bst[w] += bs[i]
-            lst[w] += ls[i]
-            qst[w] += qs[i]
+            etdarkt[w] += etdark[i]
+            etbrightt[w] += etbright[i]
+            etbackt[w] += etback[i]
+            #est[w] += es[i]
+            #bst[w] += bs[i]
+            #lst[w] += ls[i]
+            #qst[w] += qs[i]
     
         
         tf['EXPS'] = ",".join(exps.astype(str))
         for i in range(1,len(specs)):
-            zfm = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+            zfm = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
             exps = np.unique(zfm['EXPID'])
-            
+            if tsmd == 'fm':
+                tsn = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+                tsn.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+                ts = vstack([ts,tsn], metadata_conflicts='silent')
+           
 
-            tn = Table.read(coaddir+'/'+night+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
-            tnf = Table.read(coaddir+'/'+night+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
+            tn = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+            tnf = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
             tnf['EXPS'] = ",".join(exps.astype(str))
             tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
             tf = vstack([tf,tnf], metadata_conflicts='silent')
             bd = []
             rd = []
             zd = []
+            etdark = []
+            etbright = []
+            etback = []
             bda = []
             rda = []
             zda = []
+            ce = 0
             for exp in exps:
                 info = exposures[exposures['EXPID'] == exp]
                 if len(info) == 0:
                     print('did not find info for expid '+str(exp))
                     return None
                 else:
+                    nt = str(info['NIGHT'][0])
                     bd.append(info['B_DEPTH'][0])
                     rd.append(info['R_DEPTH'][0])
                     zd.append(info['Z_DEPTH'][0])        
                     bda.append(info['B_DEPTH_EBVAIR'][0])
                     rda.append(info['R_DEPTH_EBVAIR'][0])
-                    zda.append(info['Z_DEPTH_EBVAIR'][0])        
+                    zda.append(info['Z_DEPTH_EBVAIR'][0])    
+                    etdark.append(info['EFFTIME_DARK'][0])
+                    etbright.append(info['EFFTIME_BRIGHT'][0])
+                    etback.append(info['EFFTIME_BACKUP'][0]) 
+                    
+                        
+                    if tsmd != 'fm':
+                        for cam in cams:
+                            tcols = []
+                            for col in tsnrcols:
+                                tcols.append(col+'_'+cam.upper())
+
+                            try:
+                                cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                            except:
+                                print('couldnt open '+cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits')
+                                return None
+                            cf.keep_columns(tcols)
+                            for col in tcols:
+                                cf.rename_column(col, col[:-2])
+
+                            #print(ce,cam)
+                            if ce ==0 and cam == 'b':
+                                tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[i])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                                tsnrtn = cf.copy()
+                                tsnrtn['TARGETID'] = tids['TARGETID']
+                            else:
+                                for col in tsnrcols:
+                                    tsnrtn[col] += cf[col]         
+                    ce += 1                 
+
             
-            tvs = get_tsnrinfo(exps,specs[i]) 
-            if tvs is not None:
-                es,bs,ls,qs = tvs
-            else:
-                return tvs
+            if tsmd != 'fm':
+                tnsrt = vstack([tnsrt,tsnrtn], metadata_conflicts='silent')
+            #tvs = get_tsnrinfo(exps,specs[i]) 
+            #if tvs is not None:
+            #    es,bs,ls,qs = tvs
+            #else:
+            #    return tvs
             bdtn = np.zeros(500)
             rdtn = np.zeros(500)
             zdtn = np.zeros(500)
             bdtna = np.zeros(500)
             rdtna = np.zeros(500)
             zdtna = np.zeros(500)
-            estn = np.zeros(500)
-            bstn = np.zeros(500)
-            lstn = np.zeros(500)
-            qstn = np.zeros(500)
+            etdarktn = np.zeros(500)
+            etbrighttn = np.zeros(500)
+            etbacktn = np.zeros(500)
+
+            #estn = np.zeros(500)
+            #bstn = np.zeros(500)
+            #lstn = np.zeros(500)
+            #qstn = np.zeros(500)
 
             tidn = zfm[0:500]['TARGETID']
             for ii in range(0,len(exps)):
@@ -247,10 +351,13 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
                 bdtna[w] += bda[ii]
                 rdtna[w] += rda[ii]
                 zdtna[w] += zda[ii]
-                estn[w] += es[ii]
-                bstn[w] += bs[ii]
-                lstn[w] += ls[ii]
-                qstn[w] += qs[ii]
+                etdarktn[w] += etdark[ii]
+                etbrighttn[w] += etbright[ii]
+                etbacktn[w] += etback[ii]
+                #estn[w] += es[ii]
+                #bstn[w] += bs[ii]
+                #lstn[w] += ls[ii]
+                #qstn[w] += qs[ii]
 
 
 
@@ -260,16 +367,24 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt'):
             bdta = np.concatenate([bdta,bdtna])
             rdta = np.concatenate([rdta,rdtna])
             zdta = np.concatenate([zdta,zdtna])   
-            est = np.concatenate([est,estn])
-            lst = np.concatenate([lst,lstn])
-            qst = np.concatenate([qst,qstn])   
-            bst = np.concatenate([bst,bstn])
+            etdarkt = np.concatenate([etdarkt,etdarktn])
+            etbrightt = np.concatenate([etbrightt,etbrighttn])
+            etbackt = np.concatenate([etbackt,etbacktn])   
+
+            #est = np.concatenate([est,estn])
+            #lst = np.concatenate([lst,lstn])
+            #qst = np.concatenate([qst,qstn])   
+            #bst = np.concatenate([bst,bstn])
 
             tid = np.concatenate([tid,tidn])
             #print(np.min(rdtn),np.max(rdtn)) 
             #print(np.min(rdt),np.max(rdt)) 
         tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
-        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,est,bst,lst,qst,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR','TARGETID'))
+        if tsmd != 'fm':
+            tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
+        else:
+            tspec = join(tspec,ts,keys=['TARGETID'], metadata_conflicts='silent')
+        td = Table([bdt,rdt,zdt,bdta,rdta,zdta,etdarkt,etbrightt,etbackt,tid],names=('B_DEPTH','R_DEPTH','Z_DEPTH','B_DEPTH_EBVAIR','R_DEPTH_EBVAIR','Z_DEPTH_EBVAIR','EFFTIME_DARK','EFFTIME_BRIGHT','EFFTIME_BACK','TARGETID'))#,'ELGTSNR','BGSTSNR','LRGTSNR','QSOTSNR'
         tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
         if tarbit != -1:
             wtype = ((tspec[tp] & 2**tarbit) > 0)
