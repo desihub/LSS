@@ -144,7 +144,7 @@ zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
-runrfa = False #run randoms through fiberassign
+runrfa = True #run randoms through fiberassign
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 mkfullr = True #make the random files associated with the full data files
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
