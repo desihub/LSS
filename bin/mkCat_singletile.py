@@ -152,7 +152,7 @@ docatplots = True #produce some validation plots
 doclus = True #get paircounts, only works for AJR
 mknz = True #get n(z) for type and all subtypes
 
-tilef = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random0/tile-'+tile+'.fits'
+tilef = tardir+'tile-'+tile+'.fits'
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
     
     ct.mk1tilef(fh,tilef)
@@ -164,7 +164,7 @@ if runrfa:
     fbah = fitsio.read_header(fbaf)
     dt = fbah['FA_RUN']
     for i in range(rm,rx):
-        fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+        fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
     logf.write('put randoms through fiberassign\n')
 
 if mkfulld:
