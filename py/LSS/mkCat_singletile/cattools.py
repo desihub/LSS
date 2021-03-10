@@ -105,7 +105,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
 
     return tt
 
-def mkfullran(tile,goodloc,pdict,randir):
+def mkfullran(tile,goodloc,pdict,randir,randirn=''):
     ranf = randir+'fba-0'+str(tile)+'.fits'
     f1 = fitsio.read(ranf)
     f2 = fitsio.read(ranf,ext=2)
@@ -124,7 +124,7 @@ def mkfullran(tile,goodloc,pdict,randir):
     rant = join(tj,t2,keys=['TARGETID'],join_type='left')    
     #now match back to randoms with all columns
 
-    tall = Table.read(randir+'tilenofa-'+str(tile)+'.fits')
+    tall = Table.read(randirn+'tilenofa-'+str(tile)+'.fits')
     tall.remove_columns(['NUMOBS_MORE','PRIORITY','OBSCONDITIONS','SUBPRIORITY','NUMOBS_INIT'])
 
     ranall = join(rant,tall,keys=['TARGETID'],join_type='left')

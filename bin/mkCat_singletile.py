@@ -144,8 +144,8 @@ zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
-runrfa = True #run randoms through fiberassign
-mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
+runrfa = False#run randoms through fiberassign
+mkfulld = False #make the 'full' catalog containing info on everything physically reachable by a fiber
 mkfullr = True #make the random files associated with the full data files
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
 docatplots = True #produce some validation plots
@@ -186,7 +186,7 @@ if mkfullr:
     tspec = ct.combspecdata(tile,night,coaddir)
     pdict,goodloc = ct.goodlocdict(tspec)
     for i in range(rm,rx):
-        ranall = ct.mkfullran(tile,goodloc,pdict,randir+str(i)+'/')
+        ranall = ct.mkfullran(tile,goodloc,pdict,randir+str(i)+'/',randirn='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/')
         #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         ranall.write(ffr,format='fits', overwrite=True)
