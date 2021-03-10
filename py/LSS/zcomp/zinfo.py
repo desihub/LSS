@@ -390,6 +390,8 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
             wtype = ((tspec[tp] & 2**tarbit) > 0)
             print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
             tspec = tspec[wtype]
+            if len(tspec[wtype]) == 0:
+                return None
         tspec['subset'] = night
         # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
         # AR to down-weight QSOs which are at a higher priority
