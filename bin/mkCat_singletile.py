@@ -152,7 +152,7 @@ docatplots = True #produce some validation plots
 doclus = True #get paircounts, only works for AJR
 mknz = True #get n(z) for type and all subtypes
 
-tilef = randir+'0/tile-'+tile+'.fits'
+tilef = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random00/tile-'+tile+'.fits'
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
     
     ct.mk1tilef(fh,tilef)
