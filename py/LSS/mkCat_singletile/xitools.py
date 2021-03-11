@@ -33,9 +33,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	fkpw = ''
 	if fkp:
 		fkpw = 'fkp'
-	pgw = ''
-	if pg != -1:
-		pgw += str(pg)	
+
 	df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clus.dat.fits')
 	so = 'SV1_'+ver+type+truez+fkpw+str(zmin)+str(zmax)
 	ifiled = dircz+'g'+so+'4xi.dat'
