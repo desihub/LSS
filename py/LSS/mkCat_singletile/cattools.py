@@ -25,7 +25,7 @@ def combspecdata(tile,night,coaddir ):
         except:
             print('no spectrograph '+str(si)+ ' on night '+night)
     print('spectrographs with data:')
-    print(specs)			
+    print(specs)            
     tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
     tf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
     for i in range(1,len(specs)):
@@ -73,7 +73,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     
     print(tarf)
     tars = Table.read(tarf)
-    tars.remove_columns(['Z','ZWARN']#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     
     tt = join(tt,tars,keys=['TARGETID'])
     
@@ -137,15 +137,15 @@ def mkfullran(tile,goodloc,pdict,randir,randirn=''):
     return ranall
 
 def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET'):
-    dd = fitsio.read(ffd)	
+    dd = fitsio.read(ffd)   
     
     ddm = cutphotmask(dd,maskbits)
     #print(np.unique(dd['ZWARN']))
     maxp = np.max(dd['PRIORITY'])
     if zfailmd == 'zwarn':
-        wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0)	
+        wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0) 
         wg = (ddm['ZWARN'] == 0) 
-    loc_fail = dd[wfail]['LOCATION']	
+    loc_fail = dd[wfail]['LOCATION']    
     print(' number of redshift failures:')
     print(len(loc_fail))
 # 
@@ -167,7 +167,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
         ddclus['WEIGHT'] = assignweights(ddzg,nl)
 # 
     print('minimum,maximum weight')
-    print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))	
+    print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))    
 # 
     ddclus.write(fcd,format='fits',overwrite=True)
     print('write clustering data file to '+fcd)
@@ -274,179 +274,179 @@ def assignweights(aa,nl):
     for i in range(0,len(aa)):
         loc = aa[i]['LOCATION']
         wts[i] = nl[loc]
-    return wts	
+    return wts  
 
 
 def mkran4fa(N=None,fout='random_mtl.fits',dirout=''):
-	'''
-	cut imaging random file to first N (or take all if N is None) entries and add columns necessary for fiberassignment routines
-	'''
-	if N is None:	
-		rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
-	else:
-		rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits',rows=np.arange(N))
-	    
-	print('read '+str(len(rall))+ ' rows from random file')
-	rmtl = Table()
-	for name in rall.dtype.names:
-		rmtl[name] = rall[name]
-	rmtl['TARGETID'] = np.arange(len(rall))
-	rmtl['DESI_TARGET'] = np.ones(len(rall),dtype=int)*2
-	rmtl['SV1_DESI_TARGET'] = np.ones(len(rall),dtype=int)*2
-	rmtl['NUMOBS_INIT'] = np.zeros(len(rall),dtype=int)
-	rmtl['NUMOBS_MORE'] = np.ones(len(rall),dtype=int)
-	rmtl['PRIORITY'] = np.ones(len(rall),dtype=int)*3400
-	rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
-	rmtl['SUBPRIORITY'] = np.random.random(len(rall))
-	print('added columns, writing to '+dirout+fout)
-	del rall
-	rmtl.write(dirout+fout,format='fits', overwrite=True)
+    '''
+    cut imaging random file to first N (or take all if N is None) entries and add columns necessary for fiberassignment routines
+    '''
+    if N is None:   
+        rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits')
+    else:
+        rall = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-0.fits',rows=np.arange(N))
+        
+    print('read '+str(len(rall))+ ' rows from random file')
+    rmtl = Table()
+    for name in rall.dtype.names:
+        rmtl[name] = rall[name]
+    rmtl['TARGETID'] = np.arange(len(rall))
+    rmtl['DESI_TARGET'] = np.ones(len(rall),dtype=int)*2
+    rmtl['SV1_DESI_TARGET'] = np.ones(len(rall),dtype=int)*2
+    rmtl['NUMOBS_INIT'] = np.zeros(len(rall),dtype=int)
+    rmtl['NUMOBS_MORE'] = np.ones(len(rall),dtype=int)
+    rmtl['PRIORITY'] = np.ones(len(rall),dtype=int)*3400
+    rmtl['OBSCONDITIONS'] = np.ones(len(rall),dtype=int)
+    rmtl['SUBPRIORITY'] = np.random.random(len(rall))
+    print('added columns, writing to '+dirout+fout)
+    del rall
+    rmtl.write(dirout+fout,format='fits', overwrite=True)
 
 def randomtiles(tilef ):
-	tiles = fitsio.read(tilef)
-	rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-	print('loaded random file')
-	indsa = desimodel.footprint.find_points_in_tiles(tiles,rt['RA'], rt['DEC'])
-	print('got indexes')
-	for i in range(0,len(indsa)):
-		tile = tiles['TILEID']
-		fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
-		inds = indsa[i]
-		fitsio.write(fname,rt[inds],clobber=True)
-		print('wrote tile '+str(tile))
+    tiles = fitsio.read(tilef)
+    rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+    print('loaded random file')
+    indsa = desimodel.footprint.find_points_in_tiles(tiles,rt['RA'], rt['DEC'])
+    print('got indexes')
+    for i in range(0,len(indsa)):
+        tile = tiles['TILEID']
+        fname = minisvdir+'random/tilenofa-'+str(tile)+'.fits'
+        inds = indsa[i]
+        fitsio.write(fname,rt[inds],clobber=True)
+        print('wrote tile '+str(tile))
 
 def randomtilesi(tilef ,dirout,ii):
-	tiles = fitsio.read(tilef)
-	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-	print(trad)
-	rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
-	#rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-	print('loaded random file')	
-	
-	for i in range(0,len(tiles)):
-		tile = tiles['TILEID'][i]
-		fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
-		tdec = tiles['DEC'][i]
-		decmin = tdec - trad
-		decmax = tdec + trad
-		wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-		print(len(rt[wdec]))
-		inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-		print('got indexes')
-		#fitsio.write(fname,rt[wdec][inds],clobber=True)
-		#print('wrote tile '+str(tile))
-		#rmtl = Table.read(fname)
-		rtw = rt[wdec][inds]
-		rmtl = Table(rtw)
-		rmtl['TARGETID'] = np.arange(len(rmtl))
-		rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-		rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-		rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
-		rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
-		rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-		rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
-		rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-		print('added columns, writing to '+fname)
-		rmtl.write(fname,format='fits', overwrite=True)
+    tiles = fitsio.read(tilef)
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+    #rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+    print('loaded random file') 
+    
+    for i in range(0,len(tiles)):
+        tile = tiles['TILEID'][i]
+        fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+        tdec = tiles['DEC'][i]
+        decmin = tdec - trad
+        decmax = tdec + trad
+        wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+        print(len(rt[wdec]))
+        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+        print('got indexes')
+        #fitsio.write(fname,rt[wdec][inds],clobber=True)
+        #print('wrote tile '+str(tile))
+        #rmtl = Table.read(fname)
+        rtw = rt[wdec][inds]
+        rmtl = Table(rtw)
+        rmtl['TARGETID'] = np.arange(len(rmtl))
+        rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+        rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+        rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+        rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+        rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+        rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
+        rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+        print('added columns, writing to '+fname)
+        rmtl.write(fname,format='fits', overwrite=True)
 
 def randomtiles_allSV1(dirout='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random',imin=0,imax=10):
-	ftiles = glob.glob('/global/cfs/cdirs/desi/survey/fiberassign/SV1/202*/*-tiles.fits')
-	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-	print(trad)
-	for ii in range(imin,imax):
-		rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
-		#rt = fitsio.read(minisvdir+'random/random_mtl.fits')
-		print('loaded random file')	
-	
-		for i in range(0,len(ftiles)):
-			tiles = fitsio.read(ftiles[i])
-			print('length of tile file is (expected to be 1):'+str(len(tiles)))
-			tile = tiles['TILEID'][0]
-			fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
-			if os.path.isfile(fname):
-				print(fname +' already exists')
-			else:
-				tdec = tiles['DEC'][0]
-				decmin = tdec - trad
-				decmax = tdec + trad
-				wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-				print(len(rt[wdec]))
-				inds = desimodel.footprint.find_points_radec(tiles['RA'][0], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-				print('got indexes')
-				rtw = rt[wdec][inds]
-				rmtl = Table(rtw)
-				rmtl['TARGETID'] = np.arange(len(rmtl))
-				rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-				rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-				rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
-				rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
-				rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-				rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][0]
-				rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-				rmtl.write(fname,format='fits', overwrite=True)
-				print('added columns, wrote to '+fname)
-			
+    ftiles = glob.glob('/global/cfs/cdirs/desi/survey/fiberassign/SV1/202*/*-tiles.fits')
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    for ii in range(imin,imax):
+        rt = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9m/0.44.0/randoms/resolve/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+        #rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+        print('loaded random file') 
+    
+        for i in range(0,len(ftiles)):
+            tiles = fitsio.read(ftiles[i])
+            print('length of tile file is (expected to be 1):'+str(len(tiles)))
+            tile = tiles['TILEID'][0]
+            fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+            if os.path.isfile(fname):
+                print(fname +' already exists')
+            else:
+                tdec = tiles['DEC'][0]
+                decmin = tdec - trad
+                decmax = tdec + trad
+                wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+                print(len(rt[wdec]))
+                inds = desimodel.footprint.find_points_radec(tiles['RA'][0], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+                print('got indexes')
+                rtw = rt[wdec][inds]
+                rmtl = Table(rtw)
+                rmtl['TARGETID'] = np.arange(len(rmtl))
+                rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+                rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+                rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+                rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+                rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][0]
+                rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+                rmtl.write(fname,format='fits', overwrite=True)
+                print('added columns, wrote to '+fname)
+            
 
 
 
 def ELGtilesi(tilef ):
-	tiles = fitsio.read(tilef)
-	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-	print(trad)
-	rt = fitsio.read(minisvdir+'targets/MTL_all_SV0_ELG_tiles_0.37.0.fits')
-	print('loaded random file')	
-	
-	for i in range(3,len(tiles)):
-		tile = tiles['TILEID'][i]
-		fname = minisvdir+'targets/MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'
-		tdec = tiles['DEC'][i]
-		decmin = tdec - trad
-		decmax = tdec + trad
-		wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-		print(len(rt[wdec]))
-		inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-		print('got indexes')
-		fitsio.write(fname,rt[wdec][inds],clobber=True)
-		print('wrote tile '+str(tile))
+    tiles = fitsio.read(tilef)
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    rt = fitsio.read(minisvdir+'targets/MTL_all_SV0_ELG_tiles_0.37.0.fits')
+    print('loaded random file') 
+    
+    for i in range(3,len(tiles)):
+        tile = tiles['TILEID'][i]
+        fname = minisvdir+'targets/MTL_TILE_ELG_'+str(tile)+'_0.37.0.fits'
+        tdec = tiles['DEC'][i]
+        decmin = tdec - trad
+        decmax = tdec + trad
+        wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+        print(len(rt[wdec]))
+        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+        print('got indexes')
+        fitsio.write(fname,rt[wdec][inds],clobber=True)
+        print('wrote tile '+str(tile))
 
 
 def targtilesi(type,tilef ):
-	tiles = fitsio.read(tilef)
-	trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-	print(trad)
-	rt = fitsio.read(tardir+type+'allDR8targinfo.fits')
-	print('loaded random file')	
-	
-	for i in range(0,len(tiles)):
-		tile = tiles['TILEID'][i]
-		fname = tardir+type+str(tile)+'.fits'
-		tdec = tiles['DEC'][i]
-		decmin = tdec - trad
-		decmax = tdec + trad
-		wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
-		print(len(rt[wdec]))
-		inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
-		print('got indexes')
-		fitsio.write(fname,rt[wdec][inds],clobber=True)
-		print('wrote tile '+str(tile))
+    tiles = fitsio.read(tilef)
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    rt = fitsio.read(tardir+type+'allDR8targinfo.fits')
+    print('loaded random file') 
+    
+    for i in range(0,len(tiles)):
+        tile = tiles['TILEID'][i]
+        fname = tardir+type+str(tile)+'.fits'
+        tdec = tiles['DEC'][i]
+        decmin = tdec - trad
+        decmax = tdec + trad
+        wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+        print(len(rt[wdec]))
+        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+        print('got indexes')
+        fitsio.write(fname,rt[wdec][inds],clobber=True)
+        print('wrote tile '+str(tile))
 
 def mktilef_date(dirout,fout='msvtiles.fits'):
-	'''
-	make a tile file for a date that Anand made tiles
-	TBD
-	'''
-	msvtiles = Table()
-	msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
-	msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
-	msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
-	msvtiles['PASS'] = np.zeros(7,dtype=int)
-	msvtiles['IN_DESI'] = np.ones(7,dtype=int)
-	msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
-	pa = []
-	for i in range(0,7):
-		pa.append(b'DARK')
-	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
-	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+    '''
+    make a tile file for a date that Anand made tiles
+    TBD
+    '''
+    msvtiles = Table()
+    msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
+    msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
+    msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
+    msvtiles['PASS'] = np.zeros(7,dtype=int)
+    msvtiles['IN_DESI'] = np.ones(7,dtype=int)
+    msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
+    pa = []
+    for i in range(0,7):
+        pa.append(b'DARK')
+    msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
+    msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
 def mk1tilef(th,fout):
     '''
@@ -464,87 +464,87 @@ def mk1tilef(th,fout):
     
     tf.write(fout,format='fits', overwrite=True)
     
-	
+    
 def mkminisvtilef(dirout,fout='msvtiles.fits'):
-	'''
-	manually make tile fits file for sv tiles
-	'''
-	msvtiles = Table()
-	msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
-	msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
-	msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
-	msvtiles['PASS'] = np.zeros(7,dtype=int)
-	msvtiles['IN_DESI'] = np.ones(7,dtype=int)
-	msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
-	pa = []
-	for i in range(0,7):
-		pa.append(b'DARK')
-	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
-	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+    '''
+    manually make tile fits file for sv tiles
+    '''
+    msvtiles = Table()
+    msvtiles['TILEID'] = np.array([70000,70001,70002,70003,70004,70005,70006],dtype=int)
+    msvtiles['RA'] = np.array([119.,133.,168.,214.75,116.,158.,214.75])
+    msvtiles['DEC'] = np.array([50.,26.5,27.6,53.4,20.7,25.,53.4])
+    msvtiles['PASS'] = np.zeros(7,dtype=int)
+    msvtiles['IN_DESI'] = np.ones(7,dtype=int)
+    msvtiles['OBSCONDITIONS'] = np.ones(7,dtype=int)*65535
+    pa = []
+    for i in range(0,7):
+        pa.append(b'DARK')
+    msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
+    msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
 def mkminisvtilef_SV0(dirout,fout='msv0tiles.fits'):
-	'''
-	manually make tile fits file for minisv0 tiles
-	'''
-	msvtiles = Table()
-	msvtiles['TILEID'] = np.array([68000,68001,68002,67142,67230],dtype=int)
-	msvtiles['RA'] = np.array([214.75,214.76384,202.,204.136476102484,138.997356099811])
-	msvtiles['DEC'] = np.array([53.4,53.408,8.25,5.90422737037591,0.574227370375913])
-	msvtiles['PASS'] = np.zeros(5,dtype=int)
-	msvtiles['IN_DESI'] = np.ones(5,dtype=int)
-	msvtiles['OBSCONDITIONS'] = np.ones(5,dtype=int)*65535
-	pa = []
-	for i in range(0,5):
-		pa.append(b'DARK')
-	msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
-	msvtiles.write(dirout+fout,format='fits', overwrite=True)
+    '''
+    manually make tile fits file for minisv0 tiles
+    '''
+    msvtiles = Table()
+    msvtiles['TILEID'] = np.array([68000,68001,68002,67142,67230],dtype=int)
+    msvtiles['RA'] = np.array([214.75,214.76384,202.,204.136476102484,138.997356099811])
+    msvtiles['DEC'] = np.array([53.4,53.408,8.25,5.90422737037591,0.574227370375913])
+    msvtiles['PASS'] = np.zeros(5,dtype=int)
+    msvtiles['IN_DESI'] = np.ones(5,dtype=int)
+    msvtiles['OBSCONDITIONS'] = np.ones(5,dtype=int)*65535
+    pa = []
+    for i in range(0,5):
+        pa.append(b'DARK')
+    msvtiles['PROGRAM'] = np.array(pa,dtype='|S6')
+    msvtiles.write(dirout+fout,format='fits', overwrite=True)
 
-	
+    
 def plotdatran(type,tile,night):
-	df = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.dat.fits')
-	rf = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.ran.fits')
-	plt.plot(rf['RA'],rf['DEC'],'k,')		     
-	if type == 'LRG':
-		pc = 'r'
-		pt = 'o'
-	if type == 'ELG':
-		pc = 'b'
-		pt = '*'
-	plt.scatter(df['RA'],df['DEC'],s=df['WEIGHT']*3,c=pc,marker=pt)
-	plt.xlabel('RA')
-	plt.ylabel('DEC')
-	plt.title(type + ' '+tile+' '+night)
-	plt.savefig('dataran'+type+tile+night+'.png')
-	plt.show()
+    df = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.dat.fits')
+    rf = fitsio.read(dircat+type +str(tile)+'_'+night+'_clustering.ran.fits')
+    plt.plot(rf['RA'],rf['DEC'],'k,')            
+    if type == 'LRG':
+        pc = 'r'
+        pt = 'o'
+    if type == 'ELG':
+        pc = 'b'
+        pt = '*'
+    plt.scatter(df['RA'],df['DEC'],s=df['WEIGHT']*3,c=pc,marker=pt)
+    plt.xlabel('RA')
+    plt.ylabel('DEC')
+    plt.title(type + ' '+tile+' '+night)
+    plt.savefig('dataran'+type+tile+night+'.png')
+    plt.show()
 
 def gathertargets(type):
-	fns      = glob.glob(targroot+'*.fits')
-	keys = ['RA', 'DEC', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
+    fns      = glob.glob(targroot+'*.fits')
+    keys = ['RA', 'DEC', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
         'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
         'MASKBITS', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET']
-	#put information together, takes a couple of minutes
-	ncat     = len(fns)
-	mydict   = {}
-	for key in keys:
-		mydict[key] = []
-	if type == 'ELG':
-		bit = 1 #target bit for ELGs
-	if type == 'LRG':
-		bit = 0
-	if type == 'QSO':
-		bit = 2
-	for i in range(0,ncat):
-		data = fitsio.read(fns[i],columns=keys)
-		data = data[(data['DESI_TARGET'] & 2**bit)>0]
-		for key in keys:
-			mydict[key] += data[key].tolist()
-		print(i)	
-	outf = tardir+type+'allDR8targinfo.fits'
-	collist = []
-	for key in keys:
-		fmt = fits.open(fns[0])[1].columns[key].format
-		collist.append(fits.Column(name=key,format=fmt,array=mydict[key]))
-		print(key)
-	hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
-	hdu.writeto(outf,overwrite=True)
-	print('wrote to '+outf)
+    #put information together, takes a couple of minutes
+    ncat     = len(fns)
+    mydict   = {}
+    for key in keys:
+        mydict[key] = []
+    if type == 'ELG':
+        bit = 1 #target bit for ELGs
+    if type == 'LRG':
+        bit = 0
+    if type == 'QSO':
+        bit = 2
+    for i in range(0,ncat):
+        data = fitsio.read(fns[i],columns=keys)
+        data = data[(data['DESI_TARGET'] & 2**bit)>0]
+        for key in keys:
+            mydict[key] += data[key].tolist()
+        print(i)    
+    outf = tardir+type+'allDR8targinfo.fits'
+    collist = []
+    for key in keys:
+        fmt = fits.open(fns[0])[1].columns[key].format
+        collist.append(fits.Column(name=key,format=fmt,array=mydict[key]))
+        print(key)
+    hdu  = fits.BinTableHDU.from_columns(fits.ColDefs(collist))
+    hdu.writeto(outf,overwrite=True)
+    print('wrote to '+outf)
