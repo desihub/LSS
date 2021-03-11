@@ -55,13 +55,14 @@ def goodlocdict(tf):
 def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     #get target info
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments
-    tt = Table.read(faf,hdu='TARGETS')
-    tt.keep_columns(['TARGETID','FA_TARGET','FA_TYPE','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
-    tfa = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
-    if len(tt) != len(tfa):
-        print('!!!mismatch between targets and potential assignments, aborting!!!')
-        return None
-    tt = join(tt,tfa,keys=['TARGETID'])    
+    #no more, so commented out
+    #tt = Table.read(faf,hdu='TARGETS')
+    #tt.keep_columns(['TARGETID','FA_TARGET','FA_TYPE','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
+    #if len(tt) != len(tfa):
+    #    print('!!!mismatch between targets and potential assignments, aborting!!!')
+    #    return None
+    #tt = join(tt,tfa,keys=['TARGETID'])    
 
     tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
     
@@ -72,7 +73,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     
     print(tarf)
     tars = Table.read(tarf)
-    tars.remove_columns(['Z','ZWARN','PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    tars.remove_columns(['Z','ZWARN']#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     
     tt = join(tt,tars,keys=['TARGETID'])
     
