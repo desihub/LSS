@@ -32,7 +32,7 @@ import LSS.mkCat_singletile.xitools as xt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--tile", help="observed tile to use")
+#parser.add_argument("--tile", help="observed tile to use")
 parser.add_argument("--night", help="redrock reduction, probably always use deep",default='deep')
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--release", help="version of the spectroscopic pipeline",default='cascades')
@@ -129,195 +129,195 @@ mknz = True #get n(z) for type and all subtypes
 
 
 def mkcat(tile):
-	#where to find input data
-	#fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
-	fadir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+tile[:2]+'/'
-	fbaf = fadir+'fiberassign-0'+tile+'.fits.gz' #the fiberassign file
-	fh = fitsio.read_header(fbaf)
-	fadate = fh['OUTDIR'][-9:-1]
-	#tardir = fadir
-	tardir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
+    #where to find input data
+    #fadir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
+    fadir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+tile[:2]+'/'
+    fbaf = fadir+'fiberassign-0'+tile+'.fits.gz' #the fiberassign file
+    fh = fitsio.read_header(fbaf)
+    fadate = fh['OUTDIR'][-9:-1]
+    #tardir = fadir
+    tardir = '/global/cfs/cdirs/desi/survey/fiberassign/SV1/'+fadate+'/'
 
-	mtlf = tardir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
-	#print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
-	#tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
+    mtlf = tardir+'/0'+tile+'-targ.fits' #mtl file that was input to fiberassign
+    #print('using '+mtlf +' as the mtl file; IS THAT CORRECT?')
+    #tilef = fadir+'0'+tile+'-tiles.fits' #the tile file
 
-	print('making catalog for tile '+tile +' at '+str(fh['TILERA'])+','+str(fh['TILEDEC']))
+    print('making catalog for tile '+tile +' at '+str(fh['TILERA'])+','+str(fh['TILEDEC']))
 
-	#output files for the data (randoms defined below since there are 10 of them)
-	ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
-	fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
+    #output files for the data (randoms defined below since there are 10 of them)
+    ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
+    fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
 
-	tilef = tardir+'0'+tile+'-tiles.fits'
+    tilef = tardir+'0'+tile+'-tiles.fits'
 
-	if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)	
-		ct.mk1tilef(fh,tilef)
-		for i in range(rm,rx):
-			ct.randomtilesi(tilef ,randir,i)
-		logf.write('made per random mtl files cut to tile area\n')
+    if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)  
+        ct.mk1tilef(fh,tilef)
+        for i in range(rm,rx):
+            ct.randomtilesi(tilef ,randir,i)
+        logf.write('made per random mtl files cut to tile area\n')
 
-	if runrfa:
-		testranf = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random0/tilenofa-'+str(tile)+'.fits'
-		if os.path.isfile(testranf): 
-		
-			fbah = fitsio.read_header(fbaf)
-			dt = fbah['FA_RUN']
-			for i in range(rm,rx):
-				fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
-			logf.write(tile+'put randoms through fiberassign\n')
-		else:
-		    print('did not find nofa random file for tile '+tile)
-		    return None	
+    if runrfa:
+        testranf = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random0/tilenofa-'+str(tile)+'.fits'
+        if os.path.isfile(testranf): 
+        
+            fbah = fitsio.read_header(fbaf)
+            dt = fbah['FA_RUN']
+            for i in range(rm,rx):
+                fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+            logf.write(tile+'put randoms through fiberassign\n')
+        else:
+            print('did not find nofa random file for tile '+tile)
+            return None 
 
-	if mkfulld:
-		tspec = ct.combspecdata(tile,night,coaddir)
-		if len(tspec) == 0:
-		    print('did not find and spectra for tile '+tile)
-		    return None
-		pdict,goodloc = ct.goodlocdict(tspec)
-		tfa = ct.gettarinfo_type(fbaf,mtlf,goodloc,tarbit,tp=tp)
-		print(tspec.dtype.names)
-		tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
-		print(tout.dtype.names)
-		wz = tout['ZWARN']*0 == 0
-		wzg = tout['ZWARN'] == 0
-		print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
-		
-		tout.write(ffd,format='fits', overwrite=True) 
-		print('wrote matched targets/redshifts to '+ffd)
-		logf.write('made full data files\n')
-	
-	if mkfullr:
-		tspec = ct.combspecdata(tile,night,coaddir)
-		pdict,goodloc = ct.goodlocdict(tspec)
-		for i in range(rm,rx):
-			ranall = ct.mkfullran(tile,goodloc,pdict,randir+str(i)+'/',randirn='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/')
-			#fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
-			ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
-			ranall.write(ffr,format='fits', overwrite=True)
-		logf.write('made full random files\n')
+    if mkfulld:
+        tspec = ct.combspecdata(tile,night,coaddir)
+        if len(tspec) == 0:
+            print('did not find and spectra for tile '+tile)
+            return None
+        pdict,goodloc = ct.goodlocdict(tspec)
+        tfa = ct.gettarinfo_type(fbaf,mtlf,goodloc,tarbit,tp=tp)
+        print(tspec.dtype.names)
+        tout = join(tfa,tspec,keys=['TARGETID','LOCATION','PRIORITY'],join_type='left') #targetid should be enough, but all three are in both and should be the same
+        print(tout.dtype.names)
+        wz = tout['ZWARN']*0 == 0
+        wzg = tout['ZWARN'] == 0
+        print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
+        
+        tout.write(ffd,format='fits', overwrite=True) 
+        print('wrote matched targets/redshifts to '+ffd)
+        logf.write('made full data files\n')
+    
+    if mkfullr:
+        tspec = ct.combspecdata(tile,night,coaddir)
+        pdict,goodloc = ct.goodlocdict(tspec)
+        for i in range(rm,rx):
+            ranall = ct.mkfullran(tile,goodloc,pdict,randir+str(i)+'/',randirn='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/')
+            #fout = dirout+type+str(tile)+'_'+night+'_full.ran.fits'
+            ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
+            ranall.write(ffr,format='fits', overwrite=True)
+        logf.write('made full random files\n')
 
-	if mkclus:
-		maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
-		for i in range(rm,rx):
-			ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
-			fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
-			ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
-		logf.write('made clustering data and random files\n')
+    if mkclus:
+        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
+        for i in range(rm,rx):
+            ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
+            fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
+            ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+        logf.write('made clustering data and random files\n')
 
-	if mknz:
-		subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
-		'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']
-		subtl = []
-		for subt in subts:
-			if subt[:3] == type:
-				subtl.append(subt)
-		print(subtl)
-		fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
-		for subt in subtl:
-			fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
-			if subt[:3] == 'QSO':
-				zmin = 0.6
-				zmax = 4.5
-				dz = 0.05
-				ct.mknz(ffd,fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
-			else:    
-				ct.mknz(ffd,fcd,fcr,subt,fout)
-		logf.write('made n(z) for type and all subtypes\n')
+    if mknz:
+        subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
+        'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']
+        subtl = []
+        for subt in subts:
+            if subt[:3] == type:
+                subtl.append(subt)
+        print(subtl)
+        fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
+        for subt in subtl:
+            fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
+            if subt[:3] == 'QSO':
+                zmin = 0.6
+                zmax = 4.5
+                dz = 0.05
+                ct.mknz(ffd,fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
+            else:    
+                ct.mknz(ffd,fcd,fcr,subt,fout)
+        logf.write('made n(z) for type and all subtypes\n')
 
-	if docatplots:
-		ii = 0
-		fd = fitsio.read(ffd)
-		plt.plot(fd['RA'],fd['DEC'],'r.',label='potential targets')
-		fc = fitsio.read(fcd)
-		plt.plot(fc['RA'],fc['DEC'],'bo',label='good redshifts')
-		ffr = fitsio.read(dirout+type+str(tile)+'_'+night+'_'+str(ii)+'_clustering.ran.fits')
-		plt.plot(ffr['RA'],ffr['DEC'],'k,',label='randoms')
+    if docatplots:
+        ii = 0
+        fd = fitsio.read(ffd)
+        plt.plot(fd['RA'],fd['DEC'],'r.',label='potential targets')
+        fc = fitsio.read(fcd)
+        plt.plot(fc['RA'],fc['DEC'],'bo',label='good redshifts')
+        ffr = fitsio.read(dirout+type+str(tile)+'_'+night+'_'+str(ii)+'_clustering.ran.fits')
+        plt.plot(ffr['RA'],ffr['DEC'],'k,',label='randoms')
 
-		plt.xlabel('RA')
-		plt.ylabel('DEC')
-		plt.title(type+' on tile '+tile+' observed '+night)
-		plt.legend()
-		plt.show()
-		if type == 'ELG':
-			zr = (.3,2)
-		if type == 'LRG':
-			zr = (.4,1.7)
-		if type == 'QSO':
-			zr = (.1,4.5)    
-		plt.hist(fc['Z'],bins=100,range=zr,histtype='step')
-		plt.xlabel('redshift')
-		plt.ylabel('# with zwarn == 0')
-		plt.title(type+' on tile '+tile+' observed '+night)
-		plt.show()
+        plt.xlabel('RA')
+        plt.ylabel('DEC')
+        plt.title(type+' on tile '+tile+' observed '+night)
+        plt.legend()
+        plt.show()
+        if type == 'ELG':
+            zr = (.3,2)
+        if type == 'LRG':
+            zr = (.4,1.7)
+        if type == 'QSO':
+            zr = (.1,4.5)    
+        plt.hist(fc['Z'],bins=100,range=zr,histtype='step')
+        plt.xlabel('redshift')
+        plt.ylabel('# with zwarn == 0')
+        plt.title(type+' on tile '+tile+' observed '+night)
+        plt.show()
 
-	if doclus:
-		import subprocess
-		dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
-		dirpc = os.environ['CSCRATCH']+'/paircounts/'
-		if not os.path.exists(dirpc):
-			os.mkdir(dirpcadw)
-		if not os.path.exists(dirpc):
-			os.mkdir(dirpc)
+    if doclus:
+        import subprocess
+        dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+        dirpc = os.environ['CSCRATCH']+'/paircounts/'
+        if not os.path.exists(dirpc):
+            os.mkdir(dirpcadw)
+        if not os.path.exists(dirpc):
+            os.mkdir(dirpc)
 
-		if type[:3] == 'BGS':
-			zmin = .1
-			zmax = .5
-	
-		if type[:3] == 'ELG':
-			zmin = .8
-			zmax = 1.6
-		if type == 'LRG':
-			zmin = .5
-			zmax = 1.1
-		if type == 'QSO':
-			zmin = 1.
-			zmax = 2.
+        if type[:3] == 'BGS':
+            zmin = .1
+            zmax = .5
+    
+        if type[:3] == 'ELG':
+            zmin = .8
+            zmax = 1.6
+        if type == 'LRG':
+            zmin = .5
+            zmax = 1.1
+        if type == 'QSO':
+            zmin = 1.
+            zmax = 2.
 
-		rmax = 10
-		gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
-		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-		subprocess.run('./dopc'+gf+'.sh')
-		for i in range(rm+1,rmax):
-			gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
-			subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-			subprocess.run('./dopc'+gf+'.sh')
-		xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
-		xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
-		logf.write('computed paircounts\n')
-		
-	# 
-	# dr = fitsio.read(rf)
-	# drm = cutphotmask(dr)
-	# 
-	# wpr = drm['PRIORITY'] <= maxp
-	# wzf = np.isin(drm['LOCATION'],loc_fail)
-	# wzt = wpr & ~wzf
-	# 
-	# drmz = drm[wzt]
-	# print(str(len(drmz))+' after cutting based on failures and priority')
-	# plt.plot(drmz['RA'],drmz['DEC'],'k,')
-	# plt.plot(drm[~wpr]['RA'],drm[~wpr]['DEC'],'b,')
-	# plt.plot(drm[wzf]['RA'],drm[wzf]['DEC'],'g,')
-	# plt.plot(ddclus['RA'],ddclus['DEC'],'r.')
-	# plt.show()
-	# rclus = Table()
-	# rclus['RA'] = drmz['RA']
-	# rclus['DEC'] = drmz['DEC']
-	# rclus['Z'] = drmz['Z']
-	# rclus['WEIGHT'] = np.ones(len(drmz))
-	# 
-	# rclus.write(rfout,format='fits',overwrite=True)
+        rmax = 10
+        gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
+        subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+        subprocess.run('./dopc'+gf+'.sh')
+        for i in range(rm+1,rmax):
+            gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
+            subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+            subprocess.run('./dopc'+gf+'.sh')
+        xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
+        xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
+        logf.write('computed paircounts\n')
+        
+    # 
+    # dr = fitsio.read(rf)
+    # drm = cutphotmask(dr)
+    # 
+    # wpr = drm['PRIORITY'] <= maxp
+    # wzf = np.isin(drm['LOCATION'],loc_fail)
+    # wzt = wpr & ~wzf
+    # 
+    # drmz = drm[wzt]
+    # print(str(len(drmz))+' after cutting based on failures and priority')
+    # plt.plot(drmz['RA'],drmz['DEC'],'k,')
+    # plt.plot(drm[~wpr]['RA'],drm[~wpr]['DEC'],'b,')
+    # plt.plot(drm[wzf]['RA'],drm[wzf]['DEC'],'g,')
+    # plt.plot(ddclus['RA'],ddclus['DEC'],'r.')
+    # plt.show()
+    # rclus = Table()
+    # rclus['RA'] = drmz['RA']
+    # rclus['DEC'] = drmz['DEC']
+    # rclus['Z'] = drmz['Z']
+    # rclus['WEIGHT'] = np.ones(len(drmz))
+    # 
+    # rclus.write(rfout,format='fits',overwrite=True)
 
 if __name__ == '__main__':
-	from multiprocessing import Pool
-	import sys
-	#N = int(sys.argv[2])
-	N = 25
-	p = Pool(N)
+    from multiprocessing import Pool
+    import sys
+    #N = int(sys.argv[2])
+    N = 25
+    p = Pool(N)
 
-	expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
-	exps = fitsio.read(expf)
+    expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
+    exps = fitsio.read(expf)
 
     if type == 'LRG' or type == 'QSO':
         tt = 'QSO+LRG'
@@ -329,9 +329,9 @@ if __name__ == '__main__':
     tiles = np.unique(exps[sel]['TILEID'])
     print('going through '+str(len(tiles))+' tiles')
 
-	for j in range(0,len(tiles),N):
-		inds = []
-		for i in range(j,j+N):
-			inds.append(tiles[i])
-		p.map(mkcat,inds)
+    for j in range(0,len(tiles),N):
+        inds = []
+        for i in range(j,j+N):
+            inds.append(tiles[i])
+        p.map(mkcat,inds)
 
