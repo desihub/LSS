@@ -165,7 +165,7 @@ def mkcat(tile):
             dt = fbah['FA_RUN']
             for i in range(rm,rx):
                 testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
-                if os.path.isfile(testranf):
+                if os.path.isfile(testfbaf):
                     print('fba file already made')
                 else:    
                     fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
