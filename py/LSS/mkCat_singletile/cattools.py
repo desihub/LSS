@@ -26,6 +26,8 @@ def combspecdata(tile,night,coaddir ):
             print('no spectrograph '+str(si)+ ' on night '+night)
     print('spectrographs with data:')
     print(specs)            
+    if len(specs) == 0:
+        return None
     tspec = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
     tf = Table.read(coaddir+str(tile)+'/'+night+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
     for i in range(1,len(specs)):
