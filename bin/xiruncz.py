@@ -2,6 +2,7 @@
 #export OMP_NUM_THREADS=64
 #module load gsl
 import subprocess
+import sys
 sys.path.append('../py')
 import LSS.mkCat_singletile.xitools as xt
 
