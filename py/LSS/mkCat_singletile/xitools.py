@@ -22,8 +22,153 @@ def P6(mu):
 def P8(mu):
     return 1./128.*(6435.*mu**8.-12012.*mu**6.+6930.*mu**4.-1260.*mu**2.+35.)
 
+dirxi = os.environ['CSCRATCH']+'/SV1xi/'
 
 om = 0.31
+
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False):
+	'''
+	prepare catalogs to be used by Cheng Zhao's paircount code
+	'''
+	fkpw = ''
+	if fkp:
+		fkpw = 'fkp'
+	pgw = ''
+	if pg != -1:
+		pgw += str(pg)	
+	df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clus.dat.fits')
+	so = 'SV1_'+ver+type+truez+fkpw+str(zmin)+str(zmax)
+	ifiled = dircz+'g'+so+'4xi.dat'
+	fo = open(ifiled,'w')
+	w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+	df = df[w]
+	wt = df['WEIGHT']
+	if fkp:
+		wt *= df['WEIGHT_FKP']
+
+	for i in range(0,len(df)):
+		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
+	fo.close()
+	
+	for nr in range(0,nran):
+		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clus.ran.fits')
+		ifiler = dircz+'r'+so+'4xi.dat'
+		fo = open(ifiler,'w')
+		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+
+		df = df[w]
+		wt = df['WEIGHT']
+		if fkp:
+			wt *= df['WEIGHT_FKP']
+
+		for i in range(0,len(df)):
+			fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
+	fo.close()
+	dirczpc = outdir + 'paircounts/'
+	froot = dirczpc+so
+	cf = 'czxi/fcfc_smu.conf'
+	ddf = froot+'.dd'
+	drf = froot+'.dr'
+	rrf = froot+'.rr'
+	fo = open('czpc.sh','w')
+	fo.write('#!/bin/bash\n')
+	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
+	fo.close()
+
+def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False):
+    fkpw = ''
+    if fkp:
+        fkpw = 'fkp'
+
+    so = so = 'SV1_'+ver+type+truez+fkpw+str(zmin)+str(zmax)
+
+    froot = dirczpc+so
+    if rec == '':
+
+        dd = np.loadtxt(froot+'.dd').transpose()[-1]#*ddnorm
+        dr = np.loadtxt(froot+'.dr').transpose()[-1]#*drnorm
+        rr = np.loadtxt(froot+'.rr').transpose()[-1]
+
+    if rec == '_rec':
+
+        #fn += '_rec'
+        dd = np.loadtxt(indir+fn+'.dd').transpose()[-1]#*ddnorm
+        dr = np.loadtxt(indir+fn+'.ds').transpose()[-1]#*drnorm
+        ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm	
+        rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]	
+
+    nb = (200-start)//bs
+    xil = np.zeros(nb)
+    xil2 = np.zeros(nb)
+    xil4 = np.zeros(nb)
+
+    nmub = 120
+    dmu = 1./float(nmub)
+    mubm = 0
+    if mumin != 0:
+        mubm = int(mumin*nmub)
+    mubx = nmub
+    if mumax != 1:
+        mubx = int(mumax*nmub)
+    for i in range(start,nb*bs+start,bs):
+        xib = 0
+        xib2 = 0
+        xib4 = 0
+        ddt = 0
+        drt = 0
+        rrt = 0
+        sst = 0
+        w = 0
+        w2 = 0
+        w4 = 0
+        mut = 0
+        rmin = i
+        rmax = rmin+bs
+        for m in range(mubm,mubx):
+            ddb = 0
+            drb = 0
+            rrb = 0
+            ssb = 0
+            mu = m/float(nmub) + 0.5/float(nmub)
+            for b in range(0,bs):
+                bin = nmub*(i+b)+m
+                if bin < 24000:
+                    ddb += dd[bin]
+                    drb += dr[bin]
+                    rrb += rr[bin]
+                    if rec == '_rec' or rec == 'shuff':
+                        ssb += ss[bin]
+                        sst += ss[bin]
+                ddt += dd[bin]
+                drt += dr[bin]
+                rrt += rr[bin]
+            if rec == '_rec' or rec == 'shuff':
+                xi = (ddb-2.*drb+ssb)/rrb
+            else:		
+                xi = (ddb-2.*drb+rrb)/rrb
+
+            xib += xi*dmu*(mu**mupow)
+            xib2 += xi*dmu*P2(mu)*5.
+            xib4 += xi*dmu*P4(mu)*9.		
+        xil[i//bs] = xib
+        xil2[i//bs] = xib2
+        xil4[i//bs] = xib4
+    muw = ''
+    fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+    rl = []
+    for i in range(0,len(xil)):
+        r = bs/2.+i*bs+start
+        rl.append(r)
+        fo.write(str(r)+' '+str(xil[i])+' '+str(xil2[i])+' '+str(xil4[i])+'\n')
+    fo.close()
+    rl = np.array(rl)
+    plt.plot(rl,rl**2.*xil,'k-')
+    plt.xlabel(r'$s$ (Mpc/h)')
+    plt.ylabel(r'$s^2\xi$')
+    plt.show()
+    return True
+
+
 
 def createSourcesrd_ad(sample,tile,date,ii=0,zmin=.5,zmax=1.1,datadir=''):
     '''
