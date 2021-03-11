@@ -332,6 +332,8 @@ if __name__ == '__main__':
     for j in range(0,len(tiles),N):
         inds = []
         for i in range(j,j+N):
+            if i == len(tiles):
+                break
             inds.append(str(tiles[i]))
         p.map(mkcat,inds)
 
