@@ -163,7 +163,11 @@ def mkcat(tile):
             fbah = fitsio.read_header(fbaf)
             dt = fbah['FA_RUN']
             for i in range(rm,rx):
-                fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+                testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
+                if os.path.isfile(testranf):
+                    print('fba file already made')
+                else:    
+                    fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
             logf.write(tile+'put randoms through fiberassign\n')
         else:
             print('did not find nofa random file for tile '+tile)
