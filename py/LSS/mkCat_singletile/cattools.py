@@ -163,7 +163,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     ddclus['RA'] = ddzg['RA']
     ddclus['DEC'] = ddzg['DEC']
     ddclus['Z'] = ddzg['Z']
-    ddclus[tc] = ddzg[tc]
+    
     
     if weightmd == 'wloc':
         ddclus['WEIGHT'] = assignweights(ddzg,nl)
@@ -171,6 +171,8 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     print('minimum,maximum weight')
     print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))    
 # 
+    ddclus[tc] = ddzg[tc]
+    ddclus['TARGETID'] = ddzg['TARGETID']
     ddclus.write(fcd,format='fits',overwrite=True)
     print('write clustering data file to '+fcd)
     return maxp,loc_fail
@@ -215,6 +217,7 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[],tc='SV1_DESI_TARGET'):
     rclus['Z'] = zl
     rclus['WEIGHT'] = wl
     rclus[tc] = tl
+    rclus['TARGETID'] = drmz['TARGETID']
     wz = rclus['Z'] == 0
     print(ndz,naz,len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
