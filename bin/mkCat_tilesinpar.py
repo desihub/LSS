@@ -313,7 +313,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     import sys
     #N = int(sys.argv[2])
-    N = 25
+    N = 32
     p = Pool(N)
 
     expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
@@ -332,6 +332,6 @@ if __name__ == '__main__':
     for j in range(0,len(tiles),N):
         inds = []
         for i in range(j,j+N):
-            inds.append(tiles[i])
+            inds.append(str(tiles[i]))
         p.map(mkcat,inds)
 
