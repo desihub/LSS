@@ -22,7 +22,7 @@ version = args.version
 
 
 lssdir = basedir+'/SV1/LSS/LSScats/'
-dirout = svdir+'LSScats/'+version+'/'
+#dirout = svdir+'LSScats/'+version+'/'
 
 
 if type == 'LRG':
