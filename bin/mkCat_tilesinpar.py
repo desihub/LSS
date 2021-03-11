@@ -175,7 +175,7 @@ def mkcat(tile):
 
     if mkfulld:
         tspec = ct.combspecdata(tile,night,coaddir)
-        if len(tspec) == 0:
+        if tspec == None:
             print('did not find and spectra for tile '+tile)
             return None
         pdict,goodloc = ct.goodlocdict(tspec)
