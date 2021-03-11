@@ -34,7 +34,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	if fkp:
 		fkpw = 'fkp'
 
-	df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clus.dat.fits')
+	df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clustering.dat.fits')
 	so = 'SV1_'+ver+type+truez+fkpw+str(zmin)+str(zmax)
 	ifiled = dircz+'g'+so+'4xi.dat'
 	fo = open(ifiled,'w')
@@ -49,7 +49,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	fo.close()
 	
 	for nr in range(0,nran):
-		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clus.ran.fits')
+		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
 		ifiler = dircz+'r'+so+'4xi.dat'
 		fo = open(ifiler,'w')
 		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
