@@ -110,6 +110,7 @@ if type[:3] == 'ELG':
     #tarbit = 1
     pr = 3000
 
+tp = 'SV1_DESI_TARGET'
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n') 
 
