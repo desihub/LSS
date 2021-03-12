@@ -207,8 +207,9 @@ def mkcat(tile):
             maskp = pr
         else:
             maskp = 1e5
+        
 
-        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=pr)    
+        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=maskp)    
         for i in range(rm,rx):
             ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
             fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
