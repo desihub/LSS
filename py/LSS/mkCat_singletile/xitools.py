@@ -47,10 +47,12 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	for i in range(0,len(df)):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
+	
+	ifiler = outdir+'r'+so+'4xi.dat'
 	fo = open(ifiler,'w')
 	for nr in range(0,nran):
 		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
-		ifiler = outdir+'r'+so+'4xi.dat'
+		
 		
 		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 
