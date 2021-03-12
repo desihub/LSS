@@ -193,7 +193,11 @@ if mkfullr:
     logf.write('made full random files\n')
 
 if mkclus:
-    maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=pr)    
+    if type == 'LRG': #LRGs share tiles with quasars and thus have a significant priority issue; not as relevant for the other types
+        maskp = pr
+    else:
+        maskp = 1e5
+    maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=maskp)    
     for i in range(rm,rx):
         ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
         fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
