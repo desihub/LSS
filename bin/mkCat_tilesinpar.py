@@ -203,7 +203,7 @@ def mkcat(tile):
         logf.write('made full random files\n')
 
     if mkclus:
-        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits)    
+        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=pr)    
         for i in range(rm,rx):
             ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
             fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      

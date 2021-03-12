@@ -138,12 +138,18 @@ def mkfullran(tile,goodloc,pdict,randir,randirn=''):
     ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
     return ranall
 
-def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET'):
+def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET',maskp=1e5):
     dd = fitsio.read(ffd)   
     
     ddm = cutphotmask(dd,maskbits)
     #print(np.unique(dd['ZWARN']))
-    maxp = np.max(dd['PRIORITY'])
+    maxp = np.max(ddm['PRIORITY'])
+    if maskp < maxp:
+        maxp = maskp
+        wm = ddm['PRIORITY'] <= maxp
+        print('cutting on priority')
+        print(len(ddm),len(ddm[wm]))
+        ddm = ddm[wm]
     if zfailmd == 'zwarn':
         wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0) 
         wg = (ddm['ZWARN'] == 0) 
