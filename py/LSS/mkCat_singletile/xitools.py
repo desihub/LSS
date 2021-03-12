@@ -274,7 +274,7 @@ def createSourcesrd_ari(sample,tile,date,ii,zmin=.5,zmax=1.1,datadir=''):
 
     return rf
 
-def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=250,rmax=50,mumin=0,mumax=1.,wmu='counts',mom=0,nran=1):
+def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=250,rmax=50,mumin=0,mumax=1.,wmu='',mom=0,nran=1,vis=False):
     fl = sample+tile+'_'+date+'_zm'+str(zmin)+'zx'+str(zmax)
     flr0 = sample+tile+'_'+date+'0_zm'+str(zmin)+'zx'+str(zmax)
     DDnl = []   
@@ -379,14 +379,15 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
     for i in range(0,len(xil)):
         rl.append(start+bs/2.+bs*i)
     rl = np.array(rl)
-    plt.plot(rl,xil)
-    plt.show()
+    if vis:
+        plt.plot(rl,xil)
+        plt.show()
     bsst = str(bs)+'st'+str(start)
     if wmu == 'counts':
-    	outf = 'xi'+fl+bsst+'.dat'
+    	outf = dirxi+'xi'+fl+bsst+'.dat'
     	
     else:
-        outf = 'xi'+str(2*mom)+fl+bsst+'.dat'
+        outf = dirxi+'xi'+str(2*mom)+fl+bsst+'.dat'
     fo = open(outf,'w')    
     for i in range(0,len(rl)):
         fo.write(str(rl[i])+' '+str(xil[i])+'\n')
