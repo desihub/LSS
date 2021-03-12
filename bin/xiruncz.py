@@ -29,6 +29,25 @@ if type == 'LRG':
     zmin=0.6
     zmax=1.
 
+if type == 'ELG':
+    zmin = 0.6
+    zmax = 1.6
+
+if type == 'ELGlz':
+    zmin = 0.6
+    zmax = 0.8
+    type = 'ELG'
+
+if type == 'ELGmz':
+    zmin = 0.8
+    zmax = 1.1
+    type = 'ELG'
+
+if type == 'ELGhz':
+    zmin = 1.1
+    zmax = 1.6
+    type = 'ELG'    
+
 xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/')
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
