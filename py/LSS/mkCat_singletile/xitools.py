@@ -47,11 +47,11 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	for i in range(0,len(df)):
 		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
 	fo.close()
-	
+	fo = open(ifiler,'w')
 	for nr in range(0,nran):
 		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
 		ifiler = outdir+'r'+so+'4xi.dat'
-		fo = open(ifiler,'w')
+		
 		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 
 		df = df[w]
@@ -78,7 +78,7 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     if fkp:
         fkpw = 'fkp'
 
-    so = so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
+    so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
 
     froot = dirczpc+so
     if rec == '':
