@@ -64,7 +64,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 	fo.close()
 	dirczpc = outdir + 'paircounts/'
 	froot = dirczpc+so
-	cf = os.environ['HOME']+'czxi/fcfc_smu.conf'
+	cf = os.environ['HOME']+'/czxi/fcfc_smu.conf'
 	ddf = froot+'.dd'
 	drf = froot+'.dr'
 	rrf = froot+'.rr'
