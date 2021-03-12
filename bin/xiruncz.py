@@ -48,6 +48,12 @@ if type == 'ELGhz':
     zmax = 1.6
     type = 'ELG'    
 
+if type == 'ELGmhz':
+    zmin = 0.6
+    zmax = 1.497
+    type = 'ELG'    
+
+
 xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/')
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
