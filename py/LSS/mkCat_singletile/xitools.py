@@ -27,57 +27,57 @@ dirxi = os.environ['CSCRATCH']+'/SV1xi/'
 om = 0.31
 
 def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False,ranwt1=False):
-	'''
-	prepare catalogs to be used by Cheng Zhao's paircount code
-	'''
-	fkpw = ''
-	if fkp:
-		fkpw = 'fkp'
+    '''
+    prepare catalogs to be used by Cheng Zhao's paircount code
+    '''
+    fkpw = ''
+    if fkp:
+        fkpw = 'fkp'
 
-	df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clustering.dat.fits')
-	so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
-	ifiled = outdir+'g'+so+'4xi.dat'
-	fo = open(ifiled,'w')
-	w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
-	df = df[w]
-	wt = df['WEIGHT']
-	if fkp:
-		wt *= df['WEIGHT_FKP']
+    df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clustering.dat.fits')
+    so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
+    ifiled = outdir+'g'+so+'4xi.dat'
+    fo = open(ifiled,'w')
+    w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+    df = df[w]
+    wt = df['WEIGHT']
+    if fkp:
+        wt *= df['WEIGHT_FKP']
 
-	for i in range(0,len(df)):
-		fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
-	fo.close()
-	
-	ifiler = outdir+'r'+so+'4xi.dat'
-	fo = open(ifiler,'w')
-	for nr in range(0,nran):
-		df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
-		
-		
-		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+    for i in range(0,len(df)):
+        fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
+    fo.close()
+    
+    ifiler = outdir+'r'+so+'4xi.dat'
+    fo = open(ifiler,'w')
+    for nr in range(0,nran):
+        df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
+        
+        
+        w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 
-		df = df[w]
-		if ranwt1:
-		    wt = np.ones(len(df))
-		else:    
-		    wt = df['WEIGHT']
-		if fkp:
-			wt *= df['WEIGHT_FKP']
-		print('maximum random weight is '+str(np.max(wt))	
+        df = df[w]
+        if ranwt1:
+            wt = np.ones(len(df))
+        else:    
+            wt = df['WEIGHT']
+        if fkp:
+            wt *= df['WEIGHT_FKP']
+        print('maximum random weight is '+str(np.max(wt)))  
 
-		for i in range(0,len(df)):
-			fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
-	fo.close()
-	dirczpc = outdir + 'paircounts/'
-	froot = dirczpc+so
-	cf = '../Sandbox/czxi/fcfc_smu.conf'
-	ddf = froot+'.dd'
-	drf = froot+'.dr'
-	rrf = froot+'.rr'
-	fo = open('czpc.sh','w')
-	fo.write('#!/bin/bash\n')
-	fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
-	fo.close()
+        for i in range(0,len(df)):
+            fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
+    fo.close()
+    dirczpc = outdir + 'paircounts/'
+    froot = dirczpc+so
+    cf = '../Sandbox/czxi/fcfc_smu.conf'
+    ddf = froot+'.dd'
+    drf = froot+'.dr'
+    rrf = froot+'.rr'
+    fo = open('czpc.sh','w')
+    fo.write('#!/bin/bash\n')
+    fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
+    fo.close()
 
 def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
     fkpw = ''
@@ -98,8 +98,8 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
         #fn += '_rec'
         dd = np.loadtxt(indir+fn+'.dd').transpose()[-1]#*ddnorm
         dr = np.loadtxt(indir+fn+'.ds').transpose()[-1]#*drnorm
-        ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm	
-        rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]	
+        ss = np.loadtxt(indir+fn+'.ss').transpose()[-1]#*rrnorm 
+        rr = np.loadtxt(indir+fnnorec+'.rr').transpose()[-1]    
 
     nb = (200-start)//bs
     xil = np.zeros(nb)
@@ -148,16 +148,16 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
                 rrt += rr[bin]
             xi = 0
             if rrb > 0:
-				if rec == '_rec' or rec == 'shuff':
-					xi = (ddb-2.*drb+ssb)/rrb
-				else:		
-					xi = (ddb-2.*drb+rrb)/rrb
-			else:
-			    print('rrb=0 at mu '+str(mu)+' s '+str((rmin+rmax)/2.))		
+                if rec == '_rec' or rec == 'shuff':
+                    xi = (ddb-2.*drb+ssb)/rrb
+                else:       
+                    xi = (ddb-2.*drb+rrb)/rrb
+            else:
+                print('rrb=0 at mu '+str(mu)+' s '+str((rmin+rmax)/2.))     
 
             xib += xi*dmu*(mu**mupow)
             xib2 += xi*dmu*P2(mu)*5.
-            xib4 += xi*dmu*P4(mu)*9.		
+            xib4 += xi*dmu*P4(mu)*9.        
         xil[i//bs] = xib
         xil2[i//bs] = xib2
         xil4[i//bs] = xib4
@@ -392,8 +392,8 @@ def ppxilcalc_LSDfjack_bs(sample,tile,date,zmin=.5,zmax=1.1,bs=1,start=0,rmaxf=2
         plt.show()
     bsst = str(bs)+'st'+str(start)
     if wmu == 'counts':
-    	outf = dirxi+'xi'+fl+bsst+'.dat'
-    	
+        outf = dirxi+'xi'+fl+bsst+'.dat'
+        
     else:
         outf = dirxi+'xi'+str(2*mom)+fl+bsst+'.dat'
     fo = open(outf,'w')    
@@ -579,26 +579,26 @@ def plotxicomb0(xidir=''):
 
 
 if __name__ == '__main__':
-	import subprocess
-	minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
-	datadir = minisvdir+'LSScats/'
+    import subprocess
+    minisvdir = '/project/projectdirs/desi/users/ajross/catalogs/minisv2/'
+    datadir = minisvdir+'LSScats/'
 
-	night = '20200315'
-	type = 'LRG'
-	tile = '68001'
+    night = '20200315'
+    type = 'LRG'
+    tile = '68001'
 #   gf = createSourcesrd_ad(type,tile,night)
 #   subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
 #   subprocess.run('./dopc'+gf+'.sh')
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
-	type = 'QSO'
-	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
-	tile = '68002'
+    type = 'QSO'
+    gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
+    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+    subprocess.run('./dopc'+gf+'.sh')
+    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+    tile = '68002'
 
 #   type = 'LRG'
 #   gf = createSourcesrd_ad(type,tile,night)
@@ -607,12 +607,12 @@ if __name__ == '__main__':
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1)
 #   ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.5,zmax=1.1,bs=5)
 
-	type = 'QSO'
-	gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
-	ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
+    type = 'QSO'
+    gf = createSourcesrd_ad(type,tile,night,zmin=.8,zmax=2.2,datadir=datadir)
+    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+    subprocess.run('./dopc'+gf+'.sh')
+    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2)
+    ppxilcalc_LSDfjack_bs(type,tile,night,zmin=.8,zmax=2.2,bs=5)
 
 #   type = 'ELG'
 #   tile = '67230'
