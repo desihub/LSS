@@ -26,7 +26,7 @@ dirxi = os.environ['CSCRATCH']+'/SV1xi/'
 
 om = 0.31
 
-def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False):
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False,ranwt1=False):
 	'''
 	prepare catalogs to be used by Cheng Zhao's paircount code
 	'''
@@ -57,9 +57,13 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 		w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 
 		df = df[w]
-		wt = df['WEIGHT']
+		if ranwt1:
+		    wt = np.ones(len(df))
+		else:    
+		    wt = df['WEIGHT']
 		if fkp:
 			wt *= df['WEIGHT_FKP']
+		print('maximum random weight is '+str(np.max(wt))	
 
 		for i in range(0,len(df)):
 			fo.write(str(df['RA'][i])+' '+str(df['DEC'][i])+' '+str(df['Z'][i])+' '+str(wt[i])+'\n')
@@ -142,10 +146,14 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
                 ddt += dd[bin]
                 drt += dr[bin]
                 rrt += rr[bin]
-            if rec == '_rec' or rec == 'shuff':
-                xi = (ddb-2.*drb+ssb)/rrb
-            else:		
-                xi = (ddb-2.*drb+rrb)/rrb
+            xi = 0
+            if rrb > 0:
+				if rec == '_rec' or rec == 'shuff':
+					xi = (ddb-2.*drb+ssb)/rrb
+				else:		
+					xi = (ddb-2.*drb+rrb)/rrb
+			else:
+			    print('rrb=0 at mu '+str(mu)+' s '+str((rmin+rmax)/2.))		
 
             xib += xi*dmu*(mu**mupow)
             xib2 += xi*dmu*P2(mu)*5.
