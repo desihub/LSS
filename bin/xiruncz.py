@@ -54,7 +54,7 @@ if type == 'ELGmhz':
     type = 'ELG'    
 
 
-xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=False)
+xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=True)
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
 xt.calcxi_dataCZ(type,zmin,zmax,ver=version)
