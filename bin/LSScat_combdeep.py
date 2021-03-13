@@ -62,7 +62,8 @@ for i in range(1,len(fcds)):
     dt = vstack([dt,dtn])
 print('number rows in clustering data, number of unique rows')
 print(len(dt),len(np.unique(dt['TARGETID'])))
-dt.write(dirout+type+'alltiles_deep_clustering.dat.fits',overwrite=True,format='fits')
+datf = dirout+type+'alltiles_deep_clustering.dat.fits'
+dt.write(datf,overwrite=True,format='fits')
 
 rm = 0
 rx = 10
@@ -82,7 +83,10 @@ for i in range(rm,rx):
     print('number rows in clustering ran, number of unique rows')
     print(len(dt),len(np.unique(dt['TARGETID'])))
 
-    dt.write(dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits',overwrite=True,format='fits')
+    ranf = dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits'
+    dt.write(ranf,overwrite=True,format='fits')
+    ct.ran_reassignz(ranf,datf)
+
 
 subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
 'QSO_RF_4PASS','QSO_COLOR_8PASS','QSO_RF_8PASS','BGS_ANY']

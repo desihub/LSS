@@ -229,6 +229,34 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[],tc='SV1_DESI_TARGET'):
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 
+def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
+    '''
+    re-assignes z for randoms assuming concatenated file
+    '''
+    dd = fitsio.read(fcd)
+    rclus = Table.read(fcr)
+    for ii in range(0,len(rclus)):
+        ind = int(random()*len(dd))
+        zr = dd[ind]['Z']
+        tr = dd[ind][tc]
+        wr = dd[ind]['WEIGHT']
+        
+        if zr == 0:
+            ndz += 1.
+        naz += 1    
+        zl.append(zr)
+        wl.append(wr)
+        tl.append(tr)
+    rclus['Z'] = zl
+    rclus['WEIGHT'] = wl
+    rclus[tc] = tl
+    wz = rclus['Z'] == 0
+    print(ndz,naz,len(rclus[wz]))
+    rclus.write(fcr,format='fits',overwrite=True)
+    print('write clustering random file with reassign redshifts to '+fcr)
+
+
+
 def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
     
     cd = distance(om,1-om)
