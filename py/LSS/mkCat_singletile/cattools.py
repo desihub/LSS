@@ -424,7 +424,8 @@ def randomtiles_allSV1(dirout='/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/ra
                 print('got indexes')
                 rtw = rt[wdec][inds]
                 rmtl = Table(rtw)
-                rmtl['TARGETID'] = np.arange(len(rmtl))
+                #rmtl['TARGETID'] = np.arange(len(rmtl))
+                print(len(rmtl['TARGETID'])) #checking this column is there
                 rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
                 rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
