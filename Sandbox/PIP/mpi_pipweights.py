@@ -6,34 +6,24 @@ Example of how one could compute PIP weights in parallel.
 
 from mpi4py import MPI
 
-import os
-import sys
-
+import os, sys
 import argparse
-
-#from bitarray import bitarray
+import h5py
 import numpy as np
-
-import fitsio
+from bitarray import bitarray
+from astropy.io import fits
 
 import fiberassign
-
 from fiberassign.utils import Logger#, distribute_discrete
-
 from fiberassign.hardware import load_hardware
-
 from fiberassign.tiles import load_tiles
-
-from fiberassign.targets import (
-    Targets,
-    TargetsAvailable,
-    TargetTree,
-    LocationsAvailable,
-    load_target_file
-)
-
+from fiberassign.targets import (Targets,
+                                 TargetsAvailable,
+                                 TargetTree,
+                                 LocationsAvailable,
+                                 load_target_file)
 from fiberassign.assign import Assignment, run
-
+from desitarget.targetmask import bgs_mask, desi_mask
 
 
 def main():
@@ -61,6 +51,9 @@ def main():
                         " to get the MTL state at that time.  For now, this option"
                         " is just one or more target files.")
 
+    parser.add_argument("--truth", type=str, required=True, nargs="+",
+                        help="Truth information used to access and output redshift.")
+
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
                         " not specified, the default footprint from desimodel"
@@ -71,7 +64,7 @@ def main():
                         " tile IDs to use in the footprint, one ID per line."
                         " Default uses all tiles in the footprint.")
 
-    parser.add_argument("--out", type=str, required=False, default=None,
+    parser.add_argument("--outdir", type=str, required=False, default=None,
                         help="Output directory.")
 
     parser.add_argument("--realizations", type=int, required=False, default=10,
@@ -124,16 +117,30 @@ def main():
     #    load_target_file(tgs, tgfile)
     load_target_file(tgs, args.sky)
 
-    # Divide up realizations among the processes.
+    # Get RA and DEC information from mtl file
+    mtl = fits.open(args.mtl)[1].data
+    ra = mtl['RA']
+    dec = mtl['DEC']
+    mtlid = mtl['TARGETID']
 
+    # Get redshift information from truth file
+    truth = fits.open(args.truth)[1].data
+    z = truth['TRUEZ']
+    truthid = truth['TARGETID']
+    templatetype = truth['TEMPLATETYPE']
+
+    # Make sure targets match
+    assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
+
+    # Divide up realizations among the processes.
     n_realization = args.realizations
     realizations = np.arange(n_realization, dtype=np.int32)
     my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
 
     # Bitarray for all targets and realizations
-    #tgarray = bitarray(len(tg_science) * n_realization)
-    #tgarray.setall(False)
-    tgarray = np.zeros(len(tg_science) * n_realization,dtype='bool')
+    tgarray = bitarray(len(tg_science) * n_realization)
+    tgarray.setall(False)
+    #tgarray = np.zeros(len(tg_science) * n_realization,dtype='bool')
 
     
     # Target tree
@@ -159,13 +166,10 @@ def main():
         # Dither tiles centers by the same
 
 
-
         # Compute available targets / locations
 
         tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
-
         favail = LocationsAvailable(tgsavail)
-
         asgn = Assignment(tgs, tgsavail, favail)
 
         # Replay the survey log for each time fiber assignment was run.  For now, this
@@ -195,13 +199,22 @@ def main():
     # buffer protocol.
 
     tgall = None
-    #if mpi_rank == 0:
-    #    tgall = bitarray(tgarray)
-    #    tgall.setall(False)
+    if mpi_rank == 0:
+        tgall = bitarray(tgarray)
+        tgall.setall(False)
 
     MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
 
     # Write it out
+    target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
+    for targ in target_types:
+        with h5py.File(args.outdir+'targeted_'+targ+'.hdf5', 'w') as f:
+            f.create_dataset("RA", data=ra)
+            f.create_dataset("DEC", data=dec)
+            f.create_dataset("Z", data=z)
+            # Set bit arrays to all -1 for now
+            f.create_dataset("BITWEIGHT0", data=-np.ones(len(z)))
+            f.create_dataset("BITWEIGHT1", data=-np.ones(len(z)))
 
     if mpi_rank == 0:
         #pass
