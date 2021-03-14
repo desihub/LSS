@@ -51,7 +51,7 @@ def main():
                         " to get the MTL state at that time.  For now, this option"
                         " is just one or more target files.")
 
-    parser.add_argument("--truth", type=str, required=True, nargs="+",
+    parser.add_argument("--truth", type=str, required=True,
                         help="Truth information used to access and output redshift.")
 
     parser.add_argument("--footprint", type=str, required=False, default=None,
@@ -76,7 +76,7 @@ def main():
         args.sky = list()
 
     # Set output directory
-    if args.out is None:
+    if args.outdir is None:
         args.out = "."
 
     # Read tiles we are using
@@ -115,7 +115,8 @@ def main():
     survey = tgs.survey()
     #for tgfile in args.sky:
     #    load_target_file(tgs, tgfile)
-    load_target_file(tgs, args.sky)
+    if args.sky:
+        load_target_file(tgs, args.sky)
 
     # Get RA and DEC information from mtl file
     mtl = fits.open(args.mtl)[1].data
@@ -208,13 +209,15 @@ def main():
     # Write it out
     target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
     for targ in target_types:
-        with h5py.File(args.outdir+'targeted_'+targ+'.hdf5', 'w') as f:
-            f.create_dataset("RA", data=ra)
-            f.create_dataset("DEC", data=dec)
-            f.create_dataset("Z", data=z)
-            # Set bit arrays to all -1 for now
-            f.create_dataset("BITWEIGHT0", data=-np.ones(len(z)))
-            f.create_dataset("BITWEIGHT1", data=-np.ones(len(z)))
+        outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'_'+str(args.realizations)+'.hdf5')
+        f = h5py.File(outfile, 'w')
+        f.create_dataset("RA", data=ra)
+        f.create_dataset("DEC", data=dec)
+        f.create_dataset("Z", data=z)
+        # Set bit arrays to all -1 for now
+        f.create_dataset("BITWEIGHT0", data=-np.ones(len(z)))
+        f.create_dataset("BITWEIGHT1", data=-np.ones(len(z)))
+        f.close()
 
     if mpi_rank == 0:
         #pass
