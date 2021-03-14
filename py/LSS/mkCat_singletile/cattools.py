@@ -234,11 +234,14 @@ def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
     re-assignes z for randoms assuming concatenated file
     '''
     dd = fitsio.read(fcd)
-    rclus = fitsio.read(fcr)
+    rclus = Table.read(fcr)
     nran = len(rclus)
     print(nran)
     ndz = 0
     naz = 0
+    zl = []
+    wl = []
+    tl = []
 
     for ii in range(0,nran):
         ind = int(random()*len(dd))
@@ -252,8 +255,8 @@ def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
         zl.append(zr)
         wl.append(wr)
         tl.append(tr)
-    del rclus
-    rclus = Table.read(fcd)
+    #del rclus
+    #rclus = Table.read(fcd)
     rclus['Z'] = zl
     rclus['WEIGHT'] = wl
     rclus[tc] = tl
