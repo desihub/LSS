@@ -206,17 +206,19 @@ def main():
 
     MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
 
-    # Write it out
+    # Write out hdf5 file per target type used to calculate correlation function
     target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
     for targ in target_types:
+        target = templatetype == targ
+
         outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'_'+str(args.realizations)+'.hdf5')
         f = h5py.File(outfile, 'w')
-        f.create_dataset("RA", data=ra)
-        f.create_dataset("DEC", data=dec)
-        f.create_dataset("Z", data=z)
+        f.create_dataset('RA', data=ra[target])
+        f.create_dataset('DEC', data=dec[target])
+        f.create_dataset('Z', data=z[target])
         # Set bit arrays to all -1 for now
-        f.create_dataset("BITWEIGHT0", data=-np.ones(len(z)))
-        f.create_dataset("BITWEIGHT1", data=-np.ones(len(z)))
+        f.create_dataset('BITWEIGHT0', data=-np.ones(len(z[target])))
+        f.create_dataset('BITWEIGHT1', data=-np.ones(len(z[target])))
         f.close()
 
     if mpi_rank == 0:
