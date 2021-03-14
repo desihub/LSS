@@ -237,6 +237,9 @@ def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
     rclus = fitsio.read(fcr)
     nran = len(rclus)
     print(nran)
+    ndz = 0
+    naz = 0
+
     for ii in range(0,nran):
         ind = int(random()*len(dd))
         zr = dd[ind]['Z']
