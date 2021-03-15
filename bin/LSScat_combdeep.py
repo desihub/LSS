@@ -45,8 +45,8 @@ version = args.version
 svdir = basedir+'/SV1/LSS/'
 dirout = svdir+'LSScats/'+version+'/'
 
-dodata = False
-doran = False
+dodata = True
+doran = True
 
 if dodata:
 	ffds = glob.glob(dirout+type+'8*_deep_full.dat.fits')
