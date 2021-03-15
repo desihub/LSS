@@ -106,7 +106,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,pdict,tp='SV1_DESI_TARGET'):
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
-    ranall['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
+    tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
 
