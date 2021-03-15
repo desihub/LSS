@@ -232,14 +232,25 @@ def main():
 
         target = templatetype[magcut] == targ
 
-        outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'.hdf5')
-        f = h5py.File(outfile, 'w')
-        f.create_dataset('RA', data=ra[target])
-        f.create_dataset('DEC', data=dec[target])
-        f.create_dataset('Z', data=z[target])
-        f.create_dataset('BITWEIGHT0', data=bitweight0)
-        f.create_dataset('BITWEIGHT1', data=bitweight1)
-        f.close()
+        # Output target file
+        targetfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'.hdf5')
+        tfile = h5py.File(targetfile, 'w')
+        tfile.create_dataset('RA', data=ra[target])
+        tfile.create_dataset('DEC', data=dec[target])
+        tfile.create_dataset('Z', data=z[target])
+        tfile.create_dataset('BITWEIGHT0', data=bitweight0)
+        tfile.create_dataset('BITWEIGHT1', data=bitweight1)
+        tfile.close()
+
+        # Output parent file
+        parentfile = os.path.join(args.outdir,'parent_'+targ.lower()+'.hdf5')
+        pfile = h5py.File(parentfile, 'w')
+        pfile.create_dataset('RA', data=ra[target])
+        pfile.create_dataset('DEC', data=dec[target])
+        pfile.create_dataset('Z', data=z[target])
+        pfile.create_dataset('BITWEIGHT0', data=-np.ones(len(bitweight0)))
+        pfile.create_dataset('BITWEIGHT1', data=-np.ones(len(bitweight1)))
+        pfile.close()
 
     if mpi_rank == 0:
         #pass
