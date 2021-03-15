@@ -9,10 +9,10 @@ from mpi4py import MPI
 import os, sys
 import argparse
 import h5py
-import random
 import numpy as np
-from bitarray import bitarray
-from astropy.io import fits
+from random import random
+from astropy.table import Table
+#from bitarray import bitarray
 
 import fiberassign
 from fiberassign.utils import Logger#, distribute_discrete
@@ -122,7 +122,7 @@ def main():
         load_target_file(tgs, args.sky)
 
     # Get RA and DEC information from mtl file
-    mtl = fits.open(args.mtl)[1].data
+    mtl = Table.read(args.mtl)
     ra = mtl['RA']
     dec = mtl['DEC']
     rflux = mtl['FLUX_R']
@@ -130,7 +130,7 @@ def main():
     mtlid = mtl['TARGETID']
 
     # Get redshift information from truth file
-    truth = fits.open(args.truth)[1].data
+    truth = Table.read(args.truth)
     z = truth['TRUEZ']
     truthid = truth['TARGETID']
     templatetype = truth['TEMPLATETYPE']
@@ -139,7 +139,7 @@ def main():
     assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
 
     # Get random information
-    randoms = fits.open(args.random)[1].data
+    randoms = Table.read(args.random)
     randoms['Z'] = np.zeros(len(randoms))
     nd=len(mtl)
     for i in range(len(randoms)):
