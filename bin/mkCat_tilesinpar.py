@@ -224,17 +224,21 @@ def mkcat(tile):
             if subt[:3] == type:
                 subtl.append(subt)
         print(subtl)
-        fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
-        for subt in subtl:
-            fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
-            if subt[:3] == 'QSO':
-                zmin = 0.6
-                zmax = 4.5
-                dz = 0.05
-                ct.mknz(ffd,fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
-            else:    
-                ct.mknz(ffd,fcd,fcr,subt,fout)
-        logf.write('made n(z) for type and all subtypes\n')
+        if os.path.isfile(fcd):
+        
+			fcr = dirout+type+str(tile)+'_'+night+'_0_clustering.ran.fits'
+			for subt in subtl:
+				fout = dirout+subt+str(tile)+'_'+night+'_nz.dat'
+				if subt[:3] == 'QSO':
+					zmin = 0.6
+					zmax = 4.5
+					dz = 0.05
+					ct.mknz(fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
+				else:    
+					ct.mknz(fcd,fcr,subt,fout)
+			logf.write('made n(z) for type and all subtypes\n')
+		else:
+		    print('no file '+fcd)	
 
     if docatplots:
         ii = 0
