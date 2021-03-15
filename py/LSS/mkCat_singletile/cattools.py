@@ -275,7 +275,7 @@ def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
 
 
 
-def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
+def mknz(fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
     
     cd = distance(om,1-om)
     ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
@@ -289,13 +289,13 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
     wt = (df[tc] & tarbit) > 0
     print('there were '+str(len(df))+' objects and now there are '+str(len(df[wt]))+' after selecting subtype')
     df = df[wt]
-    fdf = fitsio.read(ffd)
-    wt = (fdf[tc] & tarbit) > 0
-    fdf = fdf[wt]
-    fraca = sum(fdf['LOCATION_ASSIGNED'])/len(fdf)
-    print('fraction of '+subtype+' that were assigned is '+str(fraca))
+    #fdf = fitsio.read(ffd)
+    #wt = (fdf[tc] & tarbit) > 0
+    #fdf = fdf[wt]
+    #fraca = sum(fdf['LOCATION_ASSIGNED'])/len(fdf)
+    #print('fraction of '+subtype+' that were assigned is '+str(fraca))
     nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax))
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
     outf = open(fout,'w')
     outf.write('#area is '+str(area)+'square degrees\n')
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
@@ -304,7 +304,7 @@ def mknz(ffd,fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET
         zh = zhist[1][i+1]
         zm = (zh+zl)/2.
         voli = area/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zl)**3.)
-        nbarz =  zhist[0][i]/voli/fraca #upweight based on fraction not assigned
+        nbarz =  zhist[0][i]/voli#/fraca #don't upweight based on fraction not assigned any more
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 

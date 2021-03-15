@@ -45,47 +45,52 @@ version = args.version
 svdir = basedir+'/SV1/LSS/'
 dirout = svdir+'LSScats/'+version+'/'
 
+dodata = False
+doran = False
 
-ffds = glob.glob(dirout+type+'8*_deep_full.dat.fits')
+if dodata:
+	ffds = glob.glob(dirout+type+'8*_deep_full.dat.fits')
 
-dt = Table.read(ffds[0])
-for i in range(1,len(ffds)):
-    dtn = Table.read(ffds[i])
-    dt = vstack([dt,dtn])
-dt.write(dirout+type+'alltiles_deep_full.dat.fits',overwrite=True,format='fits')
+	dt = Table.read(ffds[0])
+	for i in range(1,len(ffds)):
+		dtn = Table.read(ffds[i])
+		dt = vstack([dt,dtn])
+	dt.write(dirout+type+'alltiles_deep_full.dat.fits',overwrite=True,format='fits')
 
 
-fcds = glob.glob(dirout+type+'8*_deep_clustering.dat.fits')
-dt = Table.read(fcds[0])
-for i in range(1,len(fcds)):
-    dtn = Table.read(fcds[i])
-    dt = vstack([dt,dtn])
-print('number rows in clustering data, number of unique rows')
-print(len(dt),len(np.unique(dt['TARGETID'])))
-datf = dirout+type+'alltiles_deep_clustering.dat.fits'
-dt.write(datf,overwrite=True,format='fits')
+	fcds = glob.glob(dirout+type+'8*_deep_clustering.dat.fits')
+	dt = Table.read(fcds[0])
+	for i in range(1,len(fcds)):
+		dtn = Table.read(fcds[i])
+		dt = vstack([dt,dtn])
+	print('number rows in clustering data, number of unique rows')
+	print(len(dt),len(np.unique(dt['TARGETID'])))
+	datf = dirout+type+'alltiles_deep_clustering.dat.fits'
+	dt.write(datf,overwrite=True,format='fits')
 
 rm = 0
 rx = 10
-for i in range(rm,rx):
-    ffrs = glob.glob(dirout+type+'8*_deep_'+str(i)+'_full.ran.fits')
-    dt = Table.read(ffrs[0])
-    for ii in range(1,len(ffrs)):
-        dtn = Table.read(ffrs[ii])
-        dt = vstack([dt,dtn])
-    dt.write(dirout+type+'alltiles_deep_'+str(i)+'_full.ran.fits',overwrite=True,format='fits')    
 
-    ffrs = glob.glob(dirout+type+'8*_deep_'+str(i)+'_clustering.ran.fits')
-    dt = Table.read(ffrs[0])
-    for ii in range(1,len(ffrs)):
-        dtn = Table.read(ffrs[ii])
-        dt = vstack([dt,dtn])
-    print('number rows in clustering ran, number of unique rows')
-    print(len(dt),len(np.unique(dt['TARGETID'])))
+if doran:
+	for i in range(rm,rx):
+		ffrs = glob.glob(dirout+type+'8*_deep_'+str(i)+'_full.ran.fits')
+		dt = Table.read(ffrs[0])
+		for ii in range(1,len(ffrs)):
+			dtn = Table.read(ffrs[ii])
+			dt = vstack([dt,dtn])
+		dt.write(dirout+type+'alltiles_deep_'+str(i)+'_full.ran.fits',overwrite=True,format='fits')    
 
-    ranf = dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits'
-    dt.write(ranf,overwrite=True,format='fits')
-    ct.ran_reassignz(ranf,datf)
+		ffrs = glob.glob(dirout+type+'8*_deep_'+str(i)+'_clustering.ran.fits')
+		dt = Table.read(ffrs[0])
+		for ii in range(1,len(ffrs)):
+			dtn = Table.read(ffrs[ii])
+			dt = vstack([dt,dtn])
+		print('number rows in clustering ran, number of unique rows')
+		print(len(dt),len(np.unique(dt['TARGETID'])))
+
+		ranf = dirout+type+'alltiles_deep_'+str(i)+'_clustering.ran.fits'
+		dt.write(ranf,overwrite=True,format='fits')
+		ct.ran_reassignz(ranf,datf)
 
 
 subts = ['LRG','ELG','QSO','LRG_IR','LRG_OPT','LRG_SV_OPT','LRG_SV_IR','ELG_SV_GTOT','ELG_SV_GFIB','ELG_FDR_GTOT','ELG_FDR_GFIB','QSO_COLOR_4PASS',\
