@@ -314,11 +314,14 @@ def cutphotmask(aa,bits):
 
 def countloc(aa):
     locs = aa['LOCATION']
+    locsa = aa['LOCATION_ASSIGNED']
     la = np.max(locs)+1
     nl = np.zeros(la)
+    nla = np.zeros(la)
     for i in range(0,len(aa)):
         nl[locs[i]] += 1
-    return nl
+        nla[locs[i]] += locsa[i]
+    return nl,nla
 
 def assignweights(aa,nl):
     wts = np.ones(len(aa))
