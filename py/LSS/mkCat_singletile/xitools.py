@@ -79,7 +79,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
     fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
+def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
     fkpw = ''
     if fkp:
         fkpw = 'fkp'
@@ -162,7 +162,7 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
         xil2[i//bs] = xib2
         xil4[i//bs] = xib4
     muw = ''
-    fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+'.dat','w')
+    fo = open(dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat','w')
     rl = []
     for i in range(0,len(xil)):
         r = bs/2.+i*bs+start
