@@ -73,6 +73,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     print('comparison of number targets, number of targets with good locations')
     print(len(tt),len(tt[wgt]))
     
+    tt = tt[wgt]
     print(tarf)
     tars = Table.read(tarf)
     tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
