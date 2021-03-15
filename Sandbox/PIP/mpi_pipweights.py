@@ -101,8 +101,6 @@ def main():
     # Append each input target file.  These target files must all be of the
     # same survey type, and will set the Targets object to be of that survey.
 
-    print(args.mtl)
-    print(args.sky)
     #for tgfile in args.targets:
     #    load_target_file(tgs, tgfile)
     load_target_file(tgs, args.mtl)
@@ -122,6 +120,8 @@ def main():
     mtl = fits.open(args.mtl)[1].data
     ra = mtl['RA']
     dec = mtl['DEC']
+    rflux = mtl['FLUX_R']
+    rmag = 22.5 - 2.5*np.log10(rflux)
     mtlid = mtl['TARGETID']
 
     # Get redshift information from truth file
@@ -130,7 +130,7 @@ def main():
     truthid = truth['TARGETID']
     templatetype = truth['TEMPLATETYPE']
 
-    # Make sure targets match
+    # Make sure targets from mtl and truth are the same
     assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
 
     # Divide up realizations among the processes.
@@ -186,7 +186,7 @@ def main():
             run(asgn)
 
             # Update bit arrays for assigned science targets
-            for tile_id in tiles.id:#():
+            for tile_id in tiles.id:
                 adata = asgn.tile_location_target(tile_id)
                 for loc, tgid in adata.items():
                     try:
@@ -209,7 +209,12 @@ def main():
     # Write out hdf5 file per target type used to calculate correlation function
     target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
     for targ in target_types:
-        target = templatetype == targ
+        magcut = rmag <= 25.
+        ra = ra[magcut]
+        dec = dec[magcut]
+        z = z[magcut]
+
+        target = templatetype[magcut] == targ
 
         outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'_'+str(args.realizations)+'.hdf5')
         f = h5py.File(outfile, 'w')
