@@ -108,6 +108,7 @@ def main():
     # Just the science target IDs
     tg_science = tgs.ids()
     tg_science2indx = {y: x for x, y in enumerate(tg_science)}
+    n_target = len(tg_science)
 
     # Now load the sky target files.
     survey = tgs.survey()
@@ -139,9 +140,9 @@ def main():
     my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
 
     # Bitarray for all targets and realizations
-    tgarray = bitarray(len(tg_science) * n_realization)
-    tgarray.setall(False)
-    #tgarray = np.zeros(len(tg_science) * n_realization,dtype='bool')
+    #tgarray = bitarray(len(tg_science) * n_realization)
+    #tgarray.setall(False)
+    tgarray = np.zeros(n_target * n_realization,dtype='bool')
 
     
     # Target tree
@@ -157,7 +158,7 @@ def main():
         # Comment out the next block to avoid randomizing subpriority
         # ----
         # Randomize science target subpriority for this realization
-        new_subpriority = np.random.random_sample(size=len(tg_science))
+        new_subpriority = np.random.random_sample(size=n_target)
         for indx, tgid in enumerate(tg_science):
             tg = tgs.get(tgid)
             tg.subpriority = new_subpriority[indx]
@@ -201,29 +202,43 @@ def main():
 
     tgall = None
     if mpi_rank == 0:
-        tgall = bitarray(tgarray)
-        tgall.setall(False)
+        #tgall = bitarray(tgarray)
+        #tgall.setall(False)
+        tgall = np.ones(n_target * n_realization,dtype='bool')
 
-    MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
+    #MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
+
+    # Get bit weights per target per realization
+    bitweights = np.zeros((n_target, n_realization),dtype='bool')
+    for t in range(n_target):
+        for r in range(n_realization):
+            bitweights[t][r] = tgarray[r*n_target]
+
+    # Pack bitweights per target into bits in a uint8 array
+    bitweight0, bitweight1 = [], []
+    for w in bitweights:
+        bitweight0.append(np.packbits(list(w)).view(np.int)[0])
+        bitweight1.append(np.packbits(list(w)).view(np.int)[1])
+    bitweight0, bitweight1 = np.array(bitweight0), np.array(bitweight1)
 
     # Write out hdf5 file per target type used to calculate correlation function
     target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
     for targ in target_types:
-        magcut = rmag <= 25.
+        # Only include positive flux targets and rmag < 25
+        magcut = (rflux >= 0.) & (rmag <= 25.)
         ra = ra[magcut]
         dec = dec[magcut]
         z = z[magcut]
 
         target = templatetype[magcut] == targ
 
-        outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'_'+str(args.realizations)+'.hdf5')
+        outfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'.hdf5')
         f = h5py.File(outfile, 'w')
         f.create_dataset('RA', data=ra[target])
         f.create_dataset('DEC', data=dec[target])
         f.create_dataset('Z', data=z[target])
-        # Set bit arrays to all -1 for now
-        f.create_dataset('BITWEIGHT0', data=-np.ones(len(z[target])))
-        f.create_dataset('BITWEIGHT1', data=-np.ones(len(z[target])))
+        f.create_dataset('BITWEIGHT0', data=bitweight0)
+        f.create_dataset('BITWEIGHT1', data=bitweight1)
         f.close()
 
     if mpi_rank == 0:
