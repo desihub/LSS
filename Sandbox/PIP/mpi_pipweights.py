@@ -232,16 +232,19 @@ def main():
         bitweight1.append(np.packbits(list(w)).view(np.int)[1])
     bitweight0, bitweight1 = np.array(bitweight0), np.array(bitweight1)
 
+    # Only include targets with positive flux and rmag < 25
+    cut = (rflux >= 0.) & (rmag <= 25.)
+    ra = ra[cut]
+    dec = dec[cut]
+    z = z[cut]
+    bitweight0 = bitweight0[cut]
+    bitweight1 = bitweight1[cut]
+    templatetype = templatetype[cut]
+
     # Write out hdf5 file per target type used to calculate correlation function
     target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
     for targ in target_types:
-        # Only include positive flux targets and rmag < 25
-        magcut = (rflux >= 0.) & (rmag <= 25.)
-        ra = ra[magcut]
-        dec = dec[magcut]
-        z = z[magcut]
-
-        target = templatetype[magcut] == targ
+        target = templatetype == targ
 
         # Output target file
         targetfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'.hdf5')
