@@ -9,6 +9,7 @@ from mpi4py import MPI
 import os, sys
 import argparse
 import h5py
+import random
 import numpy as np
 from bitarray import bitarray
 from astropy.io import fits
@@ -53,6 +54,9 @@ def main():
 
     parser.add_argument("--truth", type=str, required=True,
                         help="Truth information used to access and output redshift.")
+
+    parser.add_argument("--random", type=str, required=True,
+                        help="Random catalog for 2pcf.")
 
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
@@ -134,6 +138,14 @@ def main():
     # Make sure targets from mtl and truth are the same
     assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
 
+    # Get random information
+    randoms = fits.open(args.random)[1].data
+    randoms['Z'] = np.zeros(len(randoms))
+    nd=len(mtl)
+    for i in range(len(randoms)):
+        ind = int(nd*random())
+        randoms['Z'][i] = z[ind]
+
     # Divide up realizations among the processes.
     n_realization = args.realizations
     realizations = np.arange(n_realization, dtype=np.int32)
@@ -200,11 +212,10 @@ def main():
     # Reduce bitarrays to root process.  The bitarray type conforms to the
     # buffer protocol.
 
-    tgall = None
-    if mpi_rank == 0:
+    #tgall = None
+    #if mpi_rank == 0:
         #tgall = bitarray(tgarray)
         #tgall.setall(False)
-        tgall = np.ones(n_target * n_realization,dtype='bool')
 
     #MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
 
@@ -252,9 +263,19 @@ def main():
         pfile.create_dataset('BITWEIGHT1', data=-np.ones(len(bitweight1)))
         pfile.close()
 
-    if mpi_rank == 0:
+        # Output randoms file
+        randomfile = os.path.join(args.outdir,'randoms_'+targ.lower()+'.hdf5')
+        rfile = h5py.File(parentfile, 'w')
+        rfile.create_dataset('RA', data=randoms['RA'])
+        rfile.create_dataset('DEC', data=randoms['DEC'])
+        rfile.create_dataset('Z', data=randoms['Z'])
+        rfile.create_dataset('BITWEIGHT0', data=-np.ones(len(randoms)))
+        rfile.create_dataset('BITWEIGHT1', data=-np.ones(len(randoms)))
+        rfile.close()
+
+    #if mpi_rank == 0:
         #pass
-        print(len(tgall))
+        #print(len(tgall))
 
 
 if __name__ == "__main__":
