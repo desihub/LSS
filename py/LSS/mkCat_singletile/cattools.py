@@ -160,8 +160,13 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     print(len(loc_fail))
 # 
     
-    nl = countloc(ddm)
+    nl,nla = countloc(ddm)
 # 
+    #find the locations that were requested by LRGs but not assigned
+    locsna = []
+    for i in range(0,len(nla)):
+        if nla[i] == 0 and nl[i] > 0:
+            locsna.append(i)
     
     ddzg = ddm[wg]
 # 
@@ -183,15 +188,16 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     ddclus['TARGETID'] = ddzg['TARGETID']
     ddclus.write(fcd,format='fits',overwrite=True)
     print('write clustering data file to '+fcd)
-    return maxp,loc_fail
+    return maxp,loc_fail,locsna
 
-def mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=[],tc='SV1_DESI_TARGET'):
+def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],tc='SV1_DESI_TARGET'):
     dr = fitsio.read(ffr)
     drm = cutphotmask(dr,maskbits)
 # 
     wpr = drm['PRIORITY'] <= maxp
     wzf = np.isin(drm['LOCATION'],loc_fail)
-    wzt = wpr & ~wzf
+    wna = np.isin(drm['LOCATION'],locsna)
+    wzt = wpr & ~wzf & ~wna
 # 
     drmz = drm[wzt]
     print(str(len(drmz))+' after cutting based on failures and priority')

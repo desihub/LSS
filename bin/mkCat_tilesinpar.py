@@ -209,11 +209,11 @@ def mkcat(tile):
             maskp = 1e5
         
 
-        maxp,loc_fail = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=maskp)    
+        maxp,loc_fail,locsna = ct.mkclusdat(ffd,fcd,zfailmd,weightmd,maskbits=elgandlrgbits,maskp=maskp)    
         for i in range(rm,rx):
             ffr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_full.ran.fits'
             fcr = dirout+type+str(tile)+'_'+night+'_'+str(i)+'_clustering.ran.fits'      
-            ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,maskbits=elgandlrgbits)
+            ct.mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=elgandlrgbits)
         logf.write('made clustering data and random files\n')
 
     if mknz:
