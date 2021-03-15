@@ -349,6 +349,7 @@ def mknz_pdeg(fcd,fcr,subtype,bs=0.1,zmin=0.0,zmax=1.6,tc='SV1_DESI_TARGET',om=0
     plt.xlabel('redshift')
     plt.ylabel(r'number per deg$^2$')
     plt.show()
+    return za,nza
 
 
 def cutphotmask(aa,bits):
