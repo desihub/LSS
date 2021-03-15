@@ -268,7 +268,7 @@ def main():
 
         # Output randoms file
         randomfile = os.path.join(args.outdir,'randoms_'+targ.lower()+'.hdf5')
-        rfile = h5py.File(parentfile, 'w')
+        rfile = h5py.File(randomfile, 'w')
         rfile.create_dataset('RA', data=randoms['RA'])
         rfile.create_dataset('DEC', data=randoms['DEC'])
         rfile.create_dataset('Z', data=randoms['Z'])
