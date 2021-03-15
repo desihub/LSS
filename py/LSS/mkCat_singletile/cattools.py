@@ -308,6 +308,48 @@ def mknz(fcd,fcr,subtype,fout,bs=0.01,zmin=0.01,zmax=1.6,tc='SV1_DESI_TARGET',om
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
+def mknz_pdeg(fcd,fcr,subtype,bs=0.1,zmin=0.0,zmax=1.6,tc='SV1_DESI_TARGET',om=0.3):
+    
+    cd = distance(om,1-om)
+    ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
+    area = len(ranf)/5000.
+    print('area is '+str(area))
+    
+    df = fitsio.read(fcd)
+    
+    from desitarget.sv1 import sv1_targetmask
+    tarbit = sv1_targetmask.desi_mask[subtype]
+    wt = (df[tc] & tarbit) > 0
+    print('there were '+str(len(df))+' objects and now there are '+str(len(df[wt]))+' after selecting subtype')
+    df = df[wt]
+    #fdf = fitsio.read(ffd)
+    #wt = (fdf[tc] & tarbit) > 0
+    #fdf = fdf[wt]
+    #fraca = sum(fdf['LOCATION_ASSIGNED'])/len(fdf)
+    #print('fraction of '+subtype+' that were assigned is '+str(fraca))
+    nbin = int((zmax-zmin)/bs)
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
+    #outf = open(fout,'w')
+    #outf.write('#area is '+str(area)+'square degrees\n')
+    #outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+    za = []
+    nza = []
+    for i in range(0,nbin):
+        zl = zhist[1][i]
+        zh = zhist[1][i+1]
+        zm = (zh+zl)/2.
+        voli = area#/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zl)**3.)
+        nbarz =  zhist[0][i]/voli#/fraca #don't upweight based on fraction not assigned any more
+        #outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
+        za.append(zm)
+        nza.append(nbarz)
+    
+    #outf.close()
+    plt.plot(za,nza)
+    plt.xlabel('redshift')
+    plt.ylabel(r'number per deg$^2$')
+    plt.show()
+
 
 def cutphotmask(aa,bits):
     print(str(len(aa)) +' before imaging veto' )
