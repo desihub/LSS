@@ -54,7 +54,7 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
+def gettarinfo_type(faf,tarf,goodloc,tarbit,pdict,tp='SV1_DESI_TARGET'):
     #get target info
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments
     #no more, so commented out
@@ -106,6 +106,7 @@ def gettarinfo_type(faf,tarf,goodloc,tarbit,tp='SV1_DESI_TARGET'):
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
+    ranall['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
 
@@ -147,7 +148,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     maxp = np.max(ddm['PRIORITY'])
     if maskp < maxp:
         maxp = maskp
-        wm = ddm['PRIORITY'] <= maxp
+        wm = ddm['PRIORITY_ASSIGNED'] <= maxp
         print('cutting on priority')
         print(len(ddm),len(ddm[wm]))
         ddm = ddm[wm]
