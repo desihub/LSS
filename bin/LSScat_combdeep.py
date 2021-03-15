@@ -105,7 +105,7 @@ fcd = dirout+type+'alltiles_deep_clustering.dat.fits'
 fcr = dirout+type+'alltiles_deep_0_clustering.ran.fits'
 for subt in subtl:
     fout = dirout+subt+'alltiles_deep_nz.dat'
-    ct.mknz(ffd,fcd,fcr,subt,fout)
+    ct.mknz(fcd,fcr,subt,fout)
 
 doclus = False
 if doclus:
