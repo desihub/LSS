@@ -29,6 +29,19 @@ if type == 'LRG':
     zmin=0.6
     zmax=1.
 
+if type == 'LRG_OPT':
+    subt = type
+    zmin=0.6
+    zmax=1.
+    type = 'LRG'
+
+if type == 'LRG_IR':
+    subt = type
+    zmin=0.6
+    zmax=1.
+    type = 'LRG'
+
+
 if type == 'ELG':
     zmin = 0.6
     zmax = 1.6
