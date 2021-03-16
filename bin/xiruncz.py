@@ -62,6 +62,11 @@ if type == 'QSO':
     zmin = 1.
     zmax = 2.1
 
+if type == 'QSOhiz':
+    zmin = 1.6
+    zmax = 2.1
+
+
 if type == 'BGS_ANY':
     zmin = 0.1
     zmax = 0.5    
