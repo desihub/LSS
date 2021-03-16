@@ -45,8 +45,8 @@ version = args.version
 svdir = basedir+'/SV1/LSS/'
 dirout = svdir+'LSScats/'+version+'/'
 
-dodata = True
-doran = True
+dodata = False
+doran = False
 
 if dodata:
 	ffds = glob.glob(dirout+type+'8*_deep_full.dat.fits')
@@ -103,9 +103,16 @@ print(subtl)
 ffd = dirout+type+'alltiles_deep_full.dat.fits'
 fcd = dirout+type+'alltiles_deep_clustering.dat.fits'
 fcr = dirout+type+'alltiles_deep_0_clustering.ran.fits'
+
 for subt in subtl:
     fout = dirout+subt+'alltiles_deep_nz.dat'
-    ct.mknz(fcd,fcr,subt,fout)
+	if type[:3] == 'QSO':
+		zmin = 0.6
+		zmax = 4.5
+		dz = 0.05
+		ct.mknz(fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
+	else:	
+        ct.mknz(fcd,fcr,subt,fout)
 
 doclus = False
 if doclus:
