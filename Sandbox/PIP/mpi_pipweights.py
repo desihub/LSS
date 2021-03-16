@@ -253,8 +253,8 @@ def main():
         tfile.create_dataset('RA', data=ra[target])
         tfile.create_dataset('DEC', data=dec[target])
         tfile.create_dataset('Z', data=z[target])
-        tfile.create_dataset('BITWEIGHT0', data=bitweight0)
-        tfile.create_dataset('BITWEIGHT1', data=bitweight1)
+        tfile.create_dataset('BITWEIGHT0', data=bitweight0[target])
+        tfile.create_dataset('BITWEIGHT1', data=bitweight1[target])
         tfile.close()
 
         # Output parent file
@@ -263,8 +263,8 @@ def main():
         pfile.create_dataset('RA', data=ra[target])
         pfile.create_dataset('DEC', data=dec[target])
         pfile.create_dataset('Z', data=z[target])
-        pfile.create_dataset('BITWEIGHT0', data=-np.ones(len(bitweight0)))
-        pfile.create_dataset('BITWEIGHT1', data=-np.ones(len(bitweight1)))
+        pfile.create_dataset('BITWEIGHT0', data=-np.ones(len(bitweight0[target]), dtype=int))
+        pfile.create_dataset('BITWEIGHT1', data=-np.ones(len(bitweight1[target]), dtype=int))
         pfile.close()
 
         # Output randoms file
@@ -273,8 +273,8 @@ def main():
         rfile.create_dataset('RA', data=randoms['RA'])
         rfile.create_dataset('DEC', data=randoms['DEC'])
         rfile.create_dataset('Z', data=randoms['Z'])
-        rfile.create_dataset('BITWEIGHT0', data=-np.ones(len(randoms)))
-        rfile.create_dataset('BITWEIGHT1', data=-np.ones(len(randoms)))
+        rfile.create_dataset('BITWEIGHT0', data=-np.ones(len(randoms), dtype=int))
+        rfile.create_dataset('BITWEIGHT1', data=-np.ones(len(randoms), dtype=int))
         rfile.close()
 
     #if mpi_rank == 0:
