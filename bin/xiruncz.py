@@ -24,7 +24,7 @@ version = args.version
 lssdir = basedir+'/SV1/LSS/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
-
+subt = None
 if type == 'LRG':
     zmin=0.6
     zmax=1.
@@ -67,16 +67,30 @@ if type == 'QSOhiz':
     zmax = 2.1
     type = 'QSO'
 
+if type == 'QSO_RF_4PASS':
+    subt = type
+    zmin = 1.6
+    zmax = 2.1
+    type = 'QSO'
+
+if type == 'ELG_FDR_GFIB':
+    subt = type
+    zmin = 0.8
+    zmax = 1.6
+    type = 'ELG'
+   
 
 if type == 'BGS_ANY':
     zmin = 0.1
     zmax = 0.5    
 
 ranwt1=False
-xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1)
+xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
 fa = ''
 if ranwt1:
     fa = 'ranwt1'
+if subt is not None:
+    fa += subt    
 xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)

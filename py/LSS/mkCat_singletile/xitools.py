@@ -26,7 +26,7 @@ dirxi = os.environ['CSCRATCH']+'/SV1xi/'
 
 om = 0.31
 
-def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False,ranwt1=False):
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='alltiles',subset='deep',fkp=False,ranwt1=False,subt=None):
     '''
     prepare catalogs to be used by Cheng Zhao's paircount code
     '''
@@ -35,6 +35,11 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
         fkpw = 'fkp'
 
     df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clustering.dat.fits')
+    if subt is not None:
+        from desitarget.sv1 import sv1_targetmask
+        tb = sv1_targetmask.desi_mask[type]
+        sel = (df['SV1_DESI_TARGET'] & tb) > 0
+        df = df[sel]
     so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
     ifiled = outdir+'g'+so+'4xi.dat'
     fo = open(ifiled,'w')
@@ -53,6 +58,9 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     for nr in range(0,nran):
         df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_'+str(nr)+'_clustering.ran.fits')
         
+        if subt is not None:
+            sel = (df['SV1_DESI_TARGET'] & tb) > 0
+            df = df[sel]
         
         w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
 
