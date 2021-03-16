@@ -37,9 +37,10 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+subset+'_clustering.dat.fits')
     if subt is not None:
         from desitarget.sv1 import sv1_targetmask
-        tb = sv1_targetmask.desi_mask[type]
+        tb = sv1_targetmask.desi_mask[subt]
         sel = (df['SV1_DESI_TARGET'] & tb) > 0
         df = df[sel]
+        
     so = 'SV1_'+ver+type+fkpw+str(zmin)+str(zmax)
     ifiled = outdir+'g'+so+'4xi.dat'
     fo = open(ifiled,'w')
