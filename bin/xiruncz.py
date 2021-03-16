@@ -75,7 +75,7 @@ if type == 'QSO_RF_4PASS':
 
 if type == 'ELG_FDR_GFIB':
     subt = type
-    zmin = 0.8
+    zmin = 1.1
     zmax = 1.6
     type = 'ELG'
    
