@@ -114,7 +114,9 @@ tp = 'SV1_DESI_TARGET'
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
 logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n') 
 
-zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
+zfailmd = 'zwarn' #standard zwarn != 0 option
+if type[:3] == 'QSO':
+    zfailmd = 'qso' #adding this option, which is based entirely on spectype
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
 coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'

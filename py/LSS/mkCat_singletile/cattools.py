@@ -154,7 +154,12 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
         ddm = ddm[wm]
     if zfailmd == 'zwarn':
         wfail = (dd['ZWARN'] != 999999) & (dd['ZWARN'] > 0) 
-        wg = (ddm['ZWARN'] == 0) 
+        wg = (ddm['ZWARN'] == 0)
+    if zfailmd == 'qso':
+        wfail = (dd['ZWARN'] != 999999) & (dd['SPECTYPE'] != 'QSO') 
+        wg = (ddm['SPECTYPE'] == 'QSO')
+         
+   
     loc_fail = dd[wfail]['LOCATION']    
     print(' number of redshift failures:')
     print(len(loc_fail))
