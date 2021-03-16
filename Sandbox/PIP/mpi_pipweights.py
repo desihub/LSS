@@ -132,8 +132,9 @@ def main():
     # Get redshift information from truth file
     truth = Table.read(args.truth)
     z = truth['TRUEZ']
-    truthid = truth['TARGETID']
     templatetype = truth['TEMPLATETYPE']
+    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
+    truthid = truth['TARGETID']
 
     # Make sure targets from mtl and truth are the same
     assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
