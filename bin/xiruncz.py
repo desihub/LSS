@@ -65,6 +65,7 @@ if type == 'QSO':
 if type == 'QSOhiz':
     zmin = 1.6
     zmax = 2.1
+    type = 'QSO'
 
 
 if type == 'BGS_ANY':
