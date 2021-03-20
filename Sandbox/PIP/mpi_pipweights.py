@@ -8,9 +8,7 @@ from mpi4py import MPI
 
 import os, sys
 import argparse
-import h5py
 import numpy as np
-from random import random
 from astropy.table import Table
 #from bitarray import bitarray
 
@@ -54,9 +52,6 @@ def main():
 
     parser.add_argument("--truth", type=str, required=True,
                         help="Truth information used to access and output redshift.")
-
-    parser.add_argument("--random", type=str, required=True,
-                        help="Random catalog for 2pcf.")
 
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
@@ -121,31 +116,10 @@ def main():
     if args.sky:
         load_target_file(tgs, args.sky)
 
-    # Get RA and DEC information from mtl file
-    mtl = Table.read(args.mtl)
-    ra = mtl['RA']
-    dec = mtl['DEC']
-    rflux = mtl['FLUX_R']
-    rmag = 22.5 - 2.5*np.log10(rflux)
-    mtlid = mtl['TARGETID']
-
-    # Get redshift information from truth file
-    truth = Table.read(args.truth)
-    z = truth['TRUEZ']
-    templatetype = truth['TEMPLATETYPE']
-    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
-    truthid = truth['TARGETID']
-
     # Make sure targets from mtl and truth are the same
-    assert mtlid.all() == truthid.all(), 'MTL and truth targets are different'
-
-    # Get random information
-    randoms = Table.read(args.random)
-    randoms['Z'] = np.zeros(len(randoms))
-    nd=len(mtl)
-    for i in range(len(randoms)):
-        ind = int(nd*random())
-        randoms['Z'][i] = z[ind]
+    mtl = Table.read(args.mtl)
+    truth = Table.read(args.truth)
+    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
 
     # Divide up realizations among the processes.
     n_realization = args.realizations
@@ -155,12 +129,13 @@ def main():
     # Bitarray for all targets and realizations
     #tgarray = bitarray(len(tg_science) * n_realization)
     #tgarray.setall(False)
-    tgarray = np.zeros(n_target * n_realization,dtype='bool')
+    #tgarray = np.zeros(n_target * n_realization,dtype='bool')
 
-    
+    bitweights = np.zeros((n_target, n_realization),dtype=bool)
+
     # Target tree
     tree = TargetTree(tgs)
-    
+
     hw = load_hardware()
 
     for realization in my_realizations:
@@ -205,82 +180,48 @@ def main():
                 for loc, tgid in adata.items():
                     try:
                         idx = tg_science2indx[tgid]
-                        tgarray[idx * n_realization + realization] = True
+                        bitweights[idx][realization] = True
+                        #tgarray[idx * n_realization + realization] = True
                     except KeyError:
                         # Not a science target
                         pass
+
+    # Pack bits into 64 bit integers
+    bitvector0, bitvector1 = [], []
+    for w in bitweights:
+        bitvector0.append(np.packbits(list(w)).view(np.int)[0])
+        bitvector1.append(np.packbits(list(w)).view(np.int)[1])
+    bitvector0, bitvector1 = np.array(bitvector0), np.array(bitvector1)
+
+    # Get spectral type
+    templatetype = truth['TEMPLATETYPE']
+    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
+
+    # Write output
+    outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
+    output = Table()
+    output['TARGETID'] = mtl['TARGETID']
+    output['RA'] = mtl['RA']
+    output['DEC'] = mtl['DEC']
+    output['Z'] = truth['TRUEZ']
+    output['BITWEIGHT0'] = bitvector0
+    output['BITWEIGHT1'] = bitvector1
+    output['TEMPLATETYPE'] = templatetype
+    output.write(outfile)
 
     # Reduce bitarrays to root process.  The bitarray type conforms to the
     # buffer protocol.
 
     #tgall = None
     #if mpi_rank == 0:
-        #tgall = bitarray(tgarray)
-        #tgall.setall(False)
+    #    tgall = bitarray(tgarray)
+    #    tgall.setall(False)
 
     #MPI.COMM_WORLD.Reduce(tgarray, tgall, op=MPI.BOR, root=0)
 
-    # Get bit weights per target per realization
-    bitweights = np.zeros((n_target, n_realization),dtype='bool')
-    for t in range(n_target):
-        for r in range(n_realization):
-            bitweights[t][r] = tgarray[r*n_target]
-
-    # Pack bitweights per target into bits in a uint8 array
-    bitweight0, bitweight1 = [], []
-    for w in bitweights:
-        bitweight0.append(np.packbits(list(w)).view(np.int)[0])
-        bitweight1.append(np.packbits(list(w)).view(np.int)[1])
-    bitweight0, bitweight1 = np.array(bitweight0), np.array(bitweight1)
-
-    # Only include targets with positive flux and rmag < 25
-    cut = (rflux >= 0.) & (rmag <= 25.)
-    ra = ra[cut]
-    dec = dec[cut]
-    z = z[cut]
-    bitweight0 = bitweight0[cut]
-    bitweight1 = bitweight1[cut]
-    templatetype = templatetype[cut]
-
-    # Write out hdf5 file per target type used to calculate correlation function
-    target_types  = ['ELG', 'LRG', 'QSO', 'BGS']
-    for targ in target_types:
-        target = templatetype == targ
-
-        # Output target file
-        targetfile = os.path.join(args.outdir,'targeted_'+targ.lower()+'.hdf5')
-        tfile = h5py.File(targetfile, 'w')
-        tfile.create_dataset('RA', data=ra[target])
-        tfile.create_dataset('DEC', data=dec[target])
-        tfile.create_dataset('Z', data=z[target])
-        tfile.create_dataset('BITWEIGHT0', data=bitweight0[target])
-        tfile.create_dataset('BITWEIGHT1', data=bitweight1[target])
-        tfile.close()
-
-        # Output parent file
-        parentfile = os.path.join(args.outdir,'parent_'+targ.lower()+'.hdf5')
-        pfile = h5py.File(parentfile, 'w')
-        pfile.create_dataset('RA', data=ra[target])
-        pfile.create_dataset('DEC', data=dec[target])
-        pfile.create_dataset('Z', data=z[target])
-        pfile.create_dataset('BITWEIGHT0', data=-np.ones(len(bitweight0[target]), dtype=int))
-        pfile.create_dataset('BITWEIGHT1', data=-np.ones(len(bitweight1[target]), dtype=int))
-        pfile.close()
-
-        # Output randoms file
-        randomfile = os.path.join(args.outdir,'randoms_'+targ.lower()+'.hdf5')
-        rfile = h5py.File(randomfile, 'w')
-        rfile.create_dataset('RA', data=randoms['RA'])
-        rfile.create_dataset('DEC', data=randoms['DEC'])
-        rfile.create_dataset('Z', data=randoms['Z'])
-        rfile.create_dataset('BITWEIGHT0', data=-np.ones(len(randoms), dtype=int))
-        rfile.create_dataset('BITWEIGHT1', data=-np.ones(len(randoms), dtype=int))
-        rfile.close()
-
     #if mpi_rank == 0:
-        #pass
-        #print(len(tgall))
-
+    #    #pass
+    #    print(len(tgall))
 
 if __name__ == "__main__":
     main()
