@@ -208,13 +208,13 @@ if __name__ == '__main__':
         else:
             print('did not find file for tile '+str(tiles[i]))  
 
-	dt.sort('TARGETID')
-	col2remove = ['NUMEXP','NUMTILE','LAMBDA_REF','OBJTYPE','NUMTARGET','FIBERFLUX_IVAR_G','FIBERFLUX_IVAR_R','FIBERFLUX_IVAR_Z','DESI_TARGET','BGS_TARGET','MWS_TARGET','HPXPIXEL','NUM_TILEID','NUM_FIBER']
-	for col in col2remove:
-		try:
-			dt.remove_columns([col])
-		except:
-			print('didnt find column to remove '+col)
+    dt.sort('TARGETID')
+    col2remove = ['NUMEXP','NUMTILE','LAMBDA_REF','OBJTYPE','NUMTARGET','FIBERFLUX_IVAR_G','FIBERFLUX_IVAR_R','FIBERFLUX_IVAR_Z','DESI_TARGET','BGS_TARGET','MWS_TARGET','HPXPIXEL','NUM_TILEID','NUM_FIBER']
+    for col in col2remove:
+        try:
+            dt.remove_columns([col])
+        except:
+            print('didnt find column to remove '+col)
     outfall = dirout +'/alltiles_'+type+'zinfo_wh5.fits'
     dt.write(outfall,format='fits', overwrite=True) 
     print('wrote to '+outfall)
