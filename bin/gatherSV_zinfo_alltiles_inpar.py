@@ -95,7 +95,7 @@ expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'
 exposures = fitsio.read(expf) #this will be used in depth calculations  
 gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG','BACKUP','SSV']
 #location of inputs
-tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles'
+tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
 tiles = np.unique(exposures['TILEID'])
 print('looking for data in these tiles:')
