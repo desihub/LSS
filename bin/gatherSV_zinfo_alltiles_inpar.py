@@ -182,13 +182,13 @@ if __name__ == '__main__':
     print('going through '+str(len(tiles))+' tiles')
 
     for j in range(0,len(tiles),N):
-        get_tilezinfo(tiles[j])
-#         inds = []
-#         for i in range(j,j+N):
-#             if i == len(tiles):
-#                 break
-#             inds.append(str(tiles[i]))
-#         p.map(get_tilezinfo,inds)
+        #get_tilezinfo(tiles[j])
+        inds = []
+        for i in range(j,j+N):
+            if i == len(tiles):
+                break
+            inds.append(str(tiles[i]))
+        p.map(get_tilezinfo,inds)
 
 
     #combine all the tiles
