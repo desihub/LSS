@@ -176,7 +176,7 @@ if runrfa:
     else:
         print('did not find nofa random file for tile '+tile)
         print('PREPARE FOR ERRORS BELOW!')
-        return None 
+        
 
 
 
