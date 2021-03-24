@@ -161,11 +161,24 @@ if mkranmtl: #this cuts the random file to the tile and adds columns necessary f
     logf.write('made per random mtl files cut to tile area\n')
 
 if runrfa:
-    fbah = fitsio.read_header(fbaf)
-    dt = fbah['FA_RUN']
-    for i in range(rm,rx):
-        fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
-    logf.write('put randoms through fiberassign\n')
+    testranf = '/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random0/tilenofa-'+str(tile)+'.fits'
+    if os.path.isfile(testranf): 
+
+        fbah = fitsio.read_header(fbaf)
+        dt = fbah['FA_RUN']
+        for i in range(rm,rx):
+            testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
+            if os.path.isfile(testfbaf):
+                print('fba file already made')
+            else:   
+                fa.getfatiles('/global/cfs/cdirs/desi/survey/catalogs/SV1/LSS/random'+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+        logf.write('put randoms through fiberassign\n')
+    else:
+        print('did not find nofa random file for tile '+tile)
+        print('PREPARE FOR ERRORS BELOW!')
+        return None 
+
+
 
 if mkfulld:
     tspec = ct.combspecdata(tile,night,coaddir)
@@ -251,39 +264,39 @@ if docatplots:
     plt.show()
 
 if doclus:
-	import subprocess
-	dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
-	dirpc = os.environ['CSCRATCH']+'/paircounts/'
-	if not os.path.exists(dirpc):
-		os.mkdir(dirpcadw)
-	if not os.path.exists(dirpc):
-		os.mkdir(dirpc)
+    import subprocess
+    dirpcadw = os.environ['CSCRATCH']+'/pcadw/'
+    dirpc = os.environ['CSCRATCH']+'/paircounts/'
+    if not os.path.exists(dirpc):
+        os.mkdir(dirpcadw)
+    if not os.path.exists(dirpc):
+        os.mkdir(dirpc)
 
-	if type[:3] == 'BGS':
-		zmin = .1
-		zmax = .5
-	
-	if type[:3] == 'ELG':
-		zmin = .8
-		zmax = 1.6
-	if type == 'LRG':
-		zmin = .5
-		zmax = 1.1
-	if type == 'QSO':
-		zmin = 1.
-		zmax = 2.
+    if type[:3] == 'BGS':
+        zmin = .1
+        zmax = .5
+    
+    if type[:3] == 'ELG':
+        zmin = .8
+        zmax = 1.6
+    if type == 'LRG':
+        zmin = .5
+        zmax = 1.1
+    if type == 'QSO':
+        zmin = 1.
+        zmax = 2.
 
-	rmax = 10
-	gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
-	subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-	subprocess.run('./dopc'+gf+'.sh')
-	for i in range(rm+1,rmax):
-		gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
-		subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
-		subprocess.run('./dopc'+gf+'.sh')
-	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
-	xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
-	logf.write('computed paircounts\n')
+    rmax = 10
+    gf = xt.createSourcesrd_ad(type,tile,night,zmin=zmin,zmax=zmax,datadir=dirout)
+    subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+    subprocess.run('./dopc'+gf+'.sh')
+    for i in range(rm+1,rmax):
+        gf = xt.createSourcesrd_ari(type,tile,night,i,zmin=zmin,zmax=zmax,datadir=dirout)
+        subprocess.run(['chmod','+x','dopc'+gf+'.sh'])
+        subprocess.run('./dopc'+gf+'.sh')
+    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,nran=rmax)
+    xt.ppxilcalc_LSDfjack_bs(type,tile,night,zmin=zmin,zmax=zmax,bs=5,nran=rmax)
+    logf.write('computed paircounts\n')
         
 # 
 # dr = fitsio.read(rf)
