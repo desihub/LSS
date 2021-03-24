@@ -7,6 +7,12 @@ Scripts meant to act like executables are in the bin directory. Currently, one s
 
 Some examples:
 
+Make sure to be in the DESI environment, e.g., run
+
+source /project/projectdirs/desi/software/desi_environment.sh master
+
+before trying anything else (master should soon switch to main).
+
 python gatherSV_zinfo_alltiles.py --type ELG --release blanc #this gathers all of the redshift info for SV1 ELG targets in the blanc release (daily supported as release, LRG, QSO, BGS_ANY are additional supported types as should be anything in the SV1 DESIMASK)
 
 python mkCat_singletile.py --type ELG --tile 80623 --night deep #this creates clustering catalogs for ELGs (LRG, QSO, BGS_ANY all work) on tile 80623 (see https://desi.lbl.gov/trac/wiki/SurveyValidation/SV1#ObservedTiles for the initial list) using the deep coadd (other options are a particular night or all, though all is not recommended) from the blanc release redshift data (use --release cascades to update to the more recent data). Around line 147 in the executable there are some True/False choices (this needs to be changed); some of these might need to be toggled to get things working properly.
