@@ -232,9 +232,10 @@ if mknz:
             zmin = 0.6
             zmax = 4.5
             dz = 0.05
-            ct.mknz(ffd,fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
+            ct.mknz(fcd,fcr,subt,fout,bs=dz,zmin=zmin,zmax=zmax)
         else:    
-            ct.mknz(ffd,fcd,fcr,subt,fout)
+            ct.mknz(fcd,fcr,subt,fout)
+
     logf.write('made n(z) for type and all subtypes\n')
 
 if docatplots:
