@@ -44,6 +44,17 @@ def combspecdata(tile,night,coaddir ):
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
+def addQN(tile,tspec,qndir='/global/cfs/cdirs/desi/users/alxogm/desi/SV_analysis/QuasarNET/cascades_deep/'):
+    qnf = qndir+'qnAll-coadd-'+str(tile)+'.fits'
+    if os.path.isfile(qnf):
+        tqn = Table.read(qnf)
+        tqn.keep_columns(['TARGETID','ZBEST', 'IS_QSO', 'IN_TRAIN', 'C_LINES', 'Z_LINES', 'C_LINES_BAL', 'Z_LINES_BAL'])
+        tspec = join(tspec,tqn,keys=['TARGETID'])
+    else:
+        print('didnt find quasarNET file on tile '+str(tile))
+    
+    return tspec
+
 def goodlocdict(tf):
     '''
     Make a dictionary to map between location and priority
