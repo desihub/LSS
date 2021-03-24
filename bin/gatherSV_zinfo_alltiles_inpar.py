@@ -138,33 +138,33 @@ def get_tilezinfo(tile):
                 if os.path.isfile(outfall): 
                     print(outfall+' exists already')                
                 else:
-					dt = Table.read(outf)
-					cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
-					for i in range(1,5):
-	
-						dt['z_'+str(i)]=np.zeros(len(dt))
-						dt['zwarn_'+str(i)]=np.zeros(len(dt))
-						dt['chi2_'+str(i)]=np.zeros(len(dt))
-						dt['deltachi2_'+str(i)]=np.zeros(len(dt))
-						dt['spectype_'+str(i)] = 'GALAXY'
-						dt['subtype_'+str(i)] = 'GALAXY'
-					for ii in range(0,len(dt)):
-						ln = dt[ii]
-		   
-						#if ln['RZR'] != 'N':
-						#   zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
-						#else:
-						zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
-			
-						fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
-			
-						zfits = zi.get_zfits(fl,ln['TARGETID'])
-						for jj in range(1,5):
-							for col in cols:
-								dt[col+'_'+str(jj)][ii] = zfits[jj][col]
-				
-					dt.write(outfall,format='fits', overwrite=True) 
-					print('wrote to '+outfall)
+                    dt = Table.read(outf)
+                    cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
+                    for i in range(1,5):
+    
+                        dt['z_'+str(i)]=np.zeros(len(dt))
+                        dt['zwarn_'+str(i)]=np.zeros(len(dt))
+                        dt['chi2_'+str(i)]=np.zeros(len(dt))
+                        dt['deltachi2_'+str(i)]=np.zeros(len(dt))
+                        dt['spectype_'+str(i)] = 'GALAXY'
+                        dt['subtype_'+str(i)] = 'GALAXY'
+                    for ii in range(0,len(dt)):
+                        ln = dt[ii]
+           
+                        #if ln['RZR'] != 'N':
+                        #   zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
+                        #else:
+                        zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
+            
+                        fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
+            
+                        zfits = zi.get_zfits(fl,ln['TARGETID'])
+                        for jj in range(1,5):
+                            for col in cols:
+                                dt[col+'_'+str(jj)][ii] = zfits[jj][col]
+                
+                    dt.write(outfall,format='fits', overwrite=True) 
+                    print('wrote to '+outfall)
                 return a
 
 
@@ -215,8 +215,8 @@ if __name__ == '__main__':
                 dt.remove_columns([col])
             except:
                 print('didnt find column to remove '+col)
-	outfall = dirout +'/alltiles_'+type+'zinfo_wh5.fits'
-	dt.write(outfall,format='fits', overwrite=True) 
-	print('wrote to '+outfall)
-	logf.write('combined all tiles, written to '+outfall)
+    outfall = dirout +'/alltiles_'+type+'zinfo_wh5.fits'
+    dt.write(outfall,format='fits', overwrite=True) 
+    print('wrote to '+outfall)
+    logf.write('combined all tiles, written to '+outfall)
     
