@@ -202,7 +202,7 @@ if __name__ == '__main__':
     for i in range(1,len(tiles)):
         tf = dirout +'/'+str(tiles[i])+'_'+type+'zinfo_wh5.fits'
         if os.path.isfile(tf):    
-            dtn = Table.read(dirout +'/'+tilew[i]+'_'+type+'zinfo_wh5.fits')
+            dtn = Table.read(dirout +'/'+str(tiles[i])+'_'+type+'zinfo_wh5.fits')
             dtn['TILEID'] = int(tiles[i])
             dt = vstack([dt,dtn])
         else:
