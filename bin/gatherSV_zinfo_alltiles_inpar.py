@@ -182,17 +182,18 @@ if __name__ == '__main__':
     print('going through '+str(len(tiles))+' tiles')
 
     for j in range(0,len(tiles),N):
-        inds = []
-        for i in range(j,j+N):
-            if i == len(tiles):
-                break
-            inds.append(str(tiles[i]))
-        p.map(get_tilezinfo,inds)
+        get_tilezinfo(tiles[j])
+#         inds = []
+#         for i in range(j,j+N):
+#             if i == len(tiles):
+#                 break
+#             inds.append(str(tiles[i]))
+#         p.map(get_tilezinfo,inds)
 
 
     #combine all the tiles
 
-    dt = Table.read(dirout +'/'+tilew[0]+'_'+type+'zinfo_wh5.fits')
+    dt = Table.read(dirout +'/'+tiles[0]+'_'+type+'zinfo_wh5.fits')
     dt['TILEID'] = int(tiles[0])
     for i in range(1,len(tiles)):
         tf = dirout +'/'+tilew[i]+'_'+type+'zinfo_wh5.fits'
