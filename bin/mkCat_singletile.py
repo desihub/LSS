@@ -37,6 +37,17 @@ parser.add_argument("--night", help="date of observation")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--release", help="version of the spectroscopic pipeline",default='blanc')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
+parser.add_argument("--xi", help="run pair-counting code",default='n')
+parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
+parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
+parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
+parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
+
+
+
 args = parser.parse_args()
 print(args)
 
@@ -46,6 +57,31 @@ night = args.night
 basedir = args.basedir
 release = args.release
 version = args.version
+docatplots = False
+if args.vis == 'y':
+    docatplots = True
+doclus = False
+if args.xi == 'y':    
+    doclus = True
+mkranmtl = False
+if args.ranmtl == 'y':
+    mkranmtl = True
+runrfa = True#run randoms through fiberassign
+if args.rfa == 'n':
+    runrfa = False
+mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
+if args.fulld == 'n':
+    mkfulld = False
+mkfullr = True #make the random files associated with the full data files
+if args.fullr == 'n':
+    mkfullr = False
+mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+if args.clus == 'n':
+    mkclus = False
+mknz = True #get n(z) for type and all subtypes
+if args.nz == 'n':
+    mknz = False
+
 
 #make directories used in directory tree
 #basedir for official catalogs'/global/cfs/cdirs/desi/survey/catalogs
@@ -143,14 +179,6 @@ logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n')
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever
 weightmd = 'wloc' #only option so far, weight observed redshifts by number of targets that wanted fiber
 
-mkranmtl = False #make a mtl file of randoms, this is what takes the longest, make sure toggle to false once done
-runrfa = True#run randoms through fiberassign
-mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
-mkfullr = True #make the random files associated with the full data files
-mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
-docatplots = True #produce some validation plots
-doclus = True #get paircounts, only works for AJR
-mknz = True #get n(z) for type and all subtypes
 
 tilef = tardir+'0'+tile+'-tiles.fits'
 if mkranmtl: #this cuts the random file to the tile and adds columns necessary for fiberassign, done here it is very inefficient (would be better to do all tiles at once)
