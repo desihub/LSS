@@ -187,7 +187,7 @@ if __name__ == '__main__':
         for i in range(j,j+N):
             if i == len(tiles):
                 break
-            inds.append(str(tiles[i]))
+            inds.append(tiles[i])
         p.map(get_tilezinfo,inds)
 
 
