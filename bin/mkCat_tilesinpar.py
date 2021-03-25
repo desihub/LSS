@@ -336,13 +336,16 @@ if __name__ == '__main__':
     expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
     exps = fitsio.read(expf)
 
-    if type == 'LRG' or type == 'QSO':
+    if type == 'LRG':# or type == 'QSO':
         tt = 'QSO+LRG'
     if type == 'ELG':
         tt = 'ELG'
     if type == 'BGS_ANY':
         tt = 'BGS+MWS'        
-    sel = exps['TARGETS'] == tt
+    if type != 'QSO':
+        sel = exps['TARGETS'] == tt
+    if type == 'QSO':
+        sel = ((exps['TARGETS'] == 'QSO+LRG') | (exps['TARGETS'] == 'QSO+ELG'))
     tiles = np.unique(exps[sel]['TILEID'])
     print('going through '+str(len(tiles))+' tiles')
 
