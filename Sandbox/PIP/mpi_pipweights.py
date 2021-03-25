@@ -201,13 +201,15 @@ def main():
         bitvector1.append(np.packbits(list(w)).view(np.int)[1])
     bitvector0, bitvector1 = np.array(bitvector0), np.array(bitvector1)
 
-    # Get spectral type
+    # Get redshift and spectral type
+    z = truth['TRUEZ']
     templatetype = truth['TEMPLATETYPE']
     templatetype = np.array([t.strip() for t in templatetype], dtype=str)
 
-    match = np.intersect1d(truth['TARGETID'],mtl['TARGETID'],return_indices=True)[1]
-    z = truth['TRUEZ'][match]
-    templatetype = templatetype[match]
+    if len(truth['TARGETID']) != n_target:
+        match = np.intersect1d(truth['TARGETID'],tg_science,return_indices=True)[1]
+        z = z[match]
+        templatetype = templatetype[match]
 
     # Write output
     outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
@@ -215,7 +217,7 @@ def main():
     output['TARGETID'] = mtl['TARGETID']
     output['RA'] = mtl['RA']
     output['DEC'] = mtl['DEC']
-    output['Z'] = z #truth['TRUEZ']
+    output['Z'] = z
     output['BITWEIGHT0'] = bitvector0
     output['BITWEIGHT1'] = bitvector1
     output['TEMPLATETYPE'] = templatetype
