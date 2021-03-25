@@ -20,7 +20,7 @@ from fiberassign.targets import (Targets,
                                  TargetsAvailable,
                                  TargetTree,
                                  LocationsAvailable,
-                                 load_target_file)
+                                 load_target_table)
 from fiberassign.assign import Assignment, run
 from desitarget.targetmask import bgs_mask, desi_mask
 
@@ -100,9 +100,14 @@ def main():
     # Append each input target file.  These target files must all be of the
     # same survey type, and will set the Targets object to be of that survey.
 
+    # Load mtl and truth, make sure targets are the same
+    mtl = Table.read(args.mtl)
+    truth = Table.read(args.truth)
+    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
+
     #for tgfile in args.targets:
     #    load_target_file(tgs, tgfile)
-    load_target_file(tgs, args.mtl)
+    load_target_table(tgs, mtl)
 
     # Just the science target IDs
     tg_science = tgs.ids()
@@ -114,12 +119,8 @@ def main():
     #for tgfile in args.sky:
     #    load_target_file(tgs, tgfile)
     if args.sky:
-        load_target_file(tgs, args.sky)
-
-    # Make sure targets from mtl and truth are the same
-    mtl = Table.read(args.mtl)
-    truth = Table.read(args.truth)
-    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
+        sky = Table.read(args.sky)
+        load_target_table(tgs, sky)
 
     # Divide up realizations among the processes.
     n_realization = args.realizations
@@ -134,11 +135,12 @@ def main():
     bitweights = np.zeros((n_target, n_realization),dtype=bool)
 
     # Target tree
-    tree = TargetTree(tgs)
+    #tree = TargetTree(tgs)
 
     hw = load_hardware()
 
     for realization in my_realizations:
+        print(realization)
         # Set the seed based on the realization, so that the result is reproducible
         # regardless of which process is working on the realization.
         np.random.seed(realization)
@@ -146,10 +148,16 @@ def main():
         # Comment out the next block to avoid randomizing subpriority
         # ----
         # Randomize science target subpriority for this realization
-        new_subpriority = np.random.random_sample(size=n_target)
-        for indx, tgid in enumerate(tg_science):
-            tg = tgs.get(tgid)
-            tg.subpriority = new_subpriority[indx]
+        #new_subpriority = np.random.random_sample(size=n_target)
+        #for indx, tgid in enumerate(tg_science):
+        #    tg = tgs.get(tgid)
+        #    tg.subpriority = new_subpriority[0]
+
+        mtl['SUBPRIORITY'] = np.random.random_sample(size=n_target)
+
+        tgs = Targets()
+        load_target_table(tgs, mtl)
+        tree = TargetTree(tgs)
 
         # Comment out the next block to avoid dithering tiles
         # ----
@@ -197,13 +205,17 @@ def main():
     templatetype = truth['TEMPLATETYPE']
     templatetype = np.array([t.strip() for t in templatetype], dtype=str)
 
+    match = np.intersect1d(truth['TARGETID'],mtl['TARGETID'],return_indices=True)[1]
+    z = truth['TRUEZ'][match]
+    templatetype = templatetype[match]
+
     # Write output
     outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
     output = Table()
     output['TARGETID'] = mtl['TARGETID']
     output['RA'] = mtl['RA']
     output['DEC'] = mtl['DEC']
-    output['Z'] = truth['TRUEZ']
+    output['Z'] = z #truth['TRUEZ']
     output['BITWEIGHT0'] = bitvector0
     output['BITWEIGHT1'] = bitvector1
     output['TEMPLATETYPE'] = templatetype
