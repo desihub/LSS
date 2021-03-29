@@ -151,7 +151,7 @@ def mkfullran(tile,goodloc,pdict,randir,randirn=''):
     ranall['PRIORITY'] = np.vectorize(pdict.__getitem__)(ranall['LOCATION'])
     return ranall
 
-def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET',maskp=1e5):
+def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI_TARGET',maskp=1e5,adcols=['FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','MW_TRANSMISSION_G','MW_TRANSMISSION_R','MW_TRANSMISSION_Z','MW_TRANSMISSION_W1','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','MASKBITS','PHOTSYS','SV1_BGS_TARGET']):
     dd = fitsio.read(ffd)   
     
     ddm = cutphotmask(dd,maskbits)
@@ -201,12 +201,14 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     print(np.min(ddclus['WEIGHT']),np.max(ddclus['WEIGHT']))    
 # 
     ddclus[tc] = ddzg[tc]
+    for col in adcols:
+        ddclus[col] = ddzg[col]
     ddclus['TARGETID'] = ddzg['TARGETID']
     ddclus.write(fcd,format='fits',overwrite=True)
     print('write clustering data file to '+fcd)
     return maxp,loc_fail,locsna
 
-def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],tc='SV1_DESI_TARGET'):
+def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],tc=,rcols=['Z','WEIGHT','SV1_DESI_TARGET','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','MW_TRANSMISSION_G','MW_TRANSMISSION_R','MW_TRANSMISSION_Z','MW_TRANSMISSION_W1','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','MASKBITS','PHOTSYS','SV1_BGS_TARGET']):
     dr = fitsio.read(ffr)
     drm = cutphotmask(dr,maskbits)
 # 
@@ -221,35 +223,43 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],tc='SV1_DESI_TARGET')
     rclus['RA'] = drmz['RA']
     rclus['DEC'] = drmz['DEC']
     dd = fitsio.read(fcd) 
+    
+    #shuffle data using numpy random.choice
+    inds = np.random.choice(len(dd),len(rclus))
+    dshuf = dd[inds]
+    
+    for col in rcols:
+        rclus[col] = dshuf[col]
+    
     #rclus['Z'] = 0
     #rclus['WEIGHT'] = 1
-    zl = []
-    wl = []
-    tl = []
-    ndz = 0
-    naz = 0
-    for ii in range(0,len(rclus)):
-        ind = int(random()*len(dd))
-        zr = dd[ind]['Z']
-        if zr == 0:
-            ndz += 1.
-        naz += 1    
-        wr = dd[ind]['WEIGHT']
-        tr = dd[ind][tc]
-        #rclus[ii]['Z'] = zr
-        #rclus[ii]['WEIGHT'] = wr
-        zl.append(zr)
-        wl.append(wr)
-        tl.append(tr)
-    zl = np.array(zl)
-    wl = np.array(wl)
-    tl = np.array(tl)
-    rclus['Z'] = zl
-    rclus['WEIGHT'] = wl
-    rclus[tc] = tl
+#     zl = []
+#     wl = []
+#     tl = []
+#     ndz = 0
+#     naz = 0
+#     for ii in range(0,len(rclus)):
+#         ind = int(random()*len(dd))
+#         zr = dd[ind]['Z']
+#         if zr == 0:
+#             ndz += 1.
+#         naz += 1    
+#         wr = dd[ind]['WEIGHT']
+#         tr = dd[ind][tc]
+#         #rclus[ii]['Z'] = zr
+#         #rclus[ii]['WEIGHT'] = wr
+#         zl.append(zr)
+#         wl.append(wr)
+#         tl.append(tr)
+#     zl = np.array(zl)
+#     wl = np.array(wl)
+#     tl = np.array(tl)
+#     rclus['Z'] = zl
+#     rclus['WEIGHT'] = wl
+#     rclus[tc] = tl
     rclus['TARGETID'] = drmz['TARGETID']
     wz = rclus['Z'] == 0
-    print(ndz,naz,len(rclus[wz]))
+    print(len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 
