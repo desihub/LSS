@@ -239,10 +239,10 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','
 #     tl = []
 #     ndz = 0
 #     naz = 0
-     for ii in range(0,len(rclus)):
-         ind = inds[ii]
-         for col in rcols:
-             rclus[ii][col] = dd[ind][col]
+    for ii in range(0,len(rclus)):
+        ind = inds[ii]
+        for col in rcols:
+            rclus[ii][col] = dd[ind][col]
 
 #         ind = int(random()*len(dd))
 #         zr = dd[ind]['Z']
