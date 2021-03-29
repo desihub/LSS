@@ -228,8 +228,9 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','
     inds = np.random.choice(len(dd),len(rclus))
     dshuf = dd[inds]
     
-    for col in rcols:
-        rclus[col] = dshuf[col]
+    for col in rcols: 
+        #rclus[col] = dshuf[col] #why didn't this work!
+        rclus[col] = np.zeros(len(rclus))
     
     #rclus['Z'] = 0
     #rclus['WEIGHT'] = 1
@@ -238,7 +239,11 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','
 #     tl = []
 #     ndz = 0
 #     naz = 0
-#     for ii in range(0,len(rclus)):
+     for ii in range(0,len(rclus)):
+         ind = inds[ii]
+         for col in rcols:
+             rclus[ii][col] = dd[ind][col]
+
 #         ind = int(random()*len(dd))
 #         zr = dd[ind]['Z']
 #         if zr == 0:
