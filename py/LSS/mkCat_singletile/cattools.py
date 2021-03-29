@@ -209,6 +209,7 @@ def mkclusdat(ffd,fcd,zfailmd= 'zwarn',weightmd= 'wloc',maskbits=[],tc='SV1_DESI
     return maxp,loc_fail,locsna
 
 def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','SV1_DESI_TARGET','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','MW_TRANSMISSION_G','MW_TRANSMISSION_R','MW_TRANSMISSION_Z','MW_TRANSMISSION_W1','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','MASKBITS','SV1_BGS_TARGET']):
+    tc = 'SV1_DESI_TARGET'
     dr = fitsio.read(ffr)
     drm = cutphotmask(dr,maskbits)
 # 
