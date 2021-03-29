@@ -225,44 +225,48 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','
     dd = fitsio.read(fcd) 
     
     #shuffle data using numpy random.choice
-    inds = np.random.choice(len(dd),len(rclus))
-    dshuf = dd[inds]
+    #inds = np.random.choice(len(dd),len(rclus))
+    #dshuf = dd[inds]
     
-    for col in rcols: 
+    #for col in rcols: 
         #rclus[col] = dshuf[col] #why didn't this work!
-        rclus[col] = np.zeros(len(rclus))
+    #    rclus[col] = np.zeros(len(rclus))
     
     #rclus['Z'] = 0
     #rclus['WEIGHT'] = 1
-#     zl = []
-#     wl = []
-#     tl = []
+    zl = []
+    wl = []
+    tl = []
+    bl = []
 #     ndz = 0
 #     naz = 0
     for ii in range(0,len(rclus)):
         ind = inds[ii]
-        for col in rcols:
-            rclus[ii][col] = dd[ind][col]
+        #for col in rcols:
+        #   rclus[ii][col] = dd[ind][col]
 
-#         ind = int(random()*len(dd))
-#         zr = dd[ind]['Z']
+        ind = int(random()*len(dd))
+        zr = dd[ind]['Z']
 #         if zr == 0:
 #             ndz += 1.
 #         naz += 1    
-#         wr = dd[ind]['WEIGHT']
-#         tr = dd[ind][tc]
+        wr = dd[ind]['WEIGHT']
+        tr = dd[ind][tc]
 #         #rclus[ii]['Z'] = zr
 #         #rclus[ii]['WEIGHT'] = wr
-#         zl.append(zr)
-#         wl.append(wr)
-#         tl.append(tr)
-#     zl = np.array(zl)
-#     wl = np.array(wl)
-#     tl = np.array(tl)
-#     rclus['Z'] = zl
-#     rclus['WEIGHT'] = wl
-#     rclus[tc] = tl
+        zl.append(zr)
+        wl.append(wr)
+        tl.append(tr)
+        bl.append(dd[ind]['SV1_BGS_TARGET'])
+    zl = np.array(zl)
+    wl = np.array(wl)
+    tl = np.array(tl)
+    bl = np.array(bl)
+    rclus['Z'] = zl
+    rclus['WEIGHT'] = wl
+    rclus[tc] = tl
     rclus['TARGETID'] = drmz['TARGETID']
+    rclus['SV1_BGS_TARGET'] = bl
     wz = rclus['Z'] == 0
     print(len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
