@@ -273,7 +273,7 @@ def mkclusran(ffr,fcr,fcd,maxp,loc_fail,locsna,maskbits=[],rcols=['Z','WEIGHT','
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file to '+fcr)
 
-def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
+def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET',rcols=['Z','WEIGHT','SV1_DESI_TARGET','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','MW_TRANSMISSION_G','MW_TRANSMISSION_R','MW_TRANSMISSION_Z','MW_TRANSMISSION_W1','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','MASKBITS','SV1_BGS_TARGET']):
     '''
     re-assignes z for randoms assuming concatenated file
     '''
@@ -281,31 +281,39 @@ def ran_reassignz(fcr,fcd,tc='SV1_DESI_TARGET'):
     rclus = Table.read(fcr)
     nran = len(rclus)
     print(nran)
-    ndz = 0
-    naz = 0
-    zl = []
-    wl = []
-    tl = []
 
-    for ii in range(0,nran):
-        ind = int(random()*len(dd))
-        zr = dd[ind]['Z']
-        tr = dd[ind][tc]
-        wr = dd[ind]['WEIGHT']
-        
-        if zr == 0:
-            ndz += 1.
-        naz += 1    
-        zl.append(zr)
-        wl.append(wr)
-        tl.append(tr)
-    #del rclus
-    #rclus = Table.read(fcd)
-    rclus['Z'] = zl
-    rclus['WEIGHT'] = wl
-    rclus[tc] = tl
-    wz = rclus['Z'] == 0
-    print(ndz,naz,len(rclus[wz]))
+    #shuffle data using numpy random.choice
+    inds = np.random.choice(len(dd),len(rclus))
+    dshuf = dd[inds]
+
+    for col in rcols: 
+        rclus[col] = dshuf[col] 
+
+#     ndz = 0
+#     naz = 0
+#     zl = []
+#     wl = []
+#     tl = []
+# 
+#     for ii in range(0,nran):
+#         ind = int(random()*len(dd))
+#         zr = dd[ind]['Z']
+#         tr = dd[ind][tc]
+#         wr = dd[ind]['WEIGHT']
+#         
+#         if zr == 0:
+#             ndz += 1.
+#         naz += 1    
+#         zl.append(zr)
+#         wl.append(wr)
+#         tl.append(tr)
+#     #del rclus
+#     #rclus = Table.read(fcd)
+#     rclus['Z'] = zl
+#     rclus['WEIGHT'] = wl
+#     rclus[tc] = tl
+#     wz = rclus['Z'] == 0
+#     print(ndz,naz,len(rclus[wz]))
     rclus.write(fcr,format='fits',overwrite=True)
     print('write clustering random file with reassign redshifts to '+fcr)
 
