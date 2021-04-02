@@ -35,7 +35,7 @@ rx = 18
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv2dir+'random'+str(i)):
-        os.mkdir(svd2ir+'random'+str(i))
+        os.mkdir(sv2dir+'random'+str(i))
         print('made '+str(i)+' random directory')
 
 
