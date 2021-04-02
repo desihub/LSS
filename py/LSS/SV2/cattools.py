@@ -34,12 +34,12 @@ def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/
             if os.path.isfile(fname):
                 print(fname +' already exists')
             else:
-                tdec = tiles['DEC'][0]
+                tdec = tiles['DEC'][i]
                 decmin = tdec - trad
                 decmax = tdec + trad
                 wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
                 print(len(rt[wdec]))
-                inds = desimodel.footprint.find_points_radec(tiles['RA'][0], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+                inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
                 print('got indexes')
                 rtw = rt[wdec][inds]
                 rmtl = Table(rtw)
@@ -50,7 +50,7 @@ def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
                 rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][0]
+                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
