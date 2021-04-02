@@ -11,6 +11,7 @@ import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
+from desitarget.io import read_targets_in_tiles
 
 sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
