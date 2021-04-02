@@ -23,7 +23,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
             fitsio.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(spec)+'-'+str(tile)+'-thru'+zdate+'.fits')
             specs.append(si)
         except:
-            print('no spectrograph '+str(si)+ ' on night '+night)
+            print('no spectrograph '+str(si)+ ' for tile '+str(tile))
     print('spectrographs with data:')
     print(specs)            
     if len(specs) == 0:
