@@ -128,6 +128,6 @@ if mkfulld:
         
         tout.write(ffd,format='fits', overwrite=True) 
         print('wrote matched targets/redshifts to '+ffd)
-        logf.write('made full data files\n')
+        #logf.write('made full data files\n')
 
     
