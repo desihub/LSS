@@ -33,6 +33,7 @@ ral = []
 decl = []
 mtlt = []
 fal = []
+obsl = []
 for tile in mtld['TILEID']:
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
     tilel.append(tile)
@@ -40,11 +41,13 @@ for tile in mtld['TILEID']:
     decl.append(fht['TILEDEC'])
     mtlt.append(fht['MTLTIME'])
     fal.append(fht['FA_RUN'])
+    obsl.append(fht['OBSCONDITIONS'])
 ta = Table()
 ta['TILEID'] = tilel
 ta['RA'] = ral
 ta['DEC'] = decl
 ta['MTLTIME'] = mtlt
 ta['FA_RUN'] = fal
+ta['OBSCONDITIONS'] = obsl
 
 ct.randomtiles_allSV2(ta)
