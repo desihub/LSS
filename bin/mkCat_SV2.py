@@ -109,7 +109,7 @@ if runfa:
                 fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
 
 if mkfulld:
-    for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE'])
+    for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
         ffd = dirout+type+str(tile)+'_full.dat.fits'
         tspec = ct.combspecdata(tile,zdate)
         pdict,goodloc = ct.goodlocdict(tspec)
