@@ -75,6 +75,7 @@ if runfa:
         dt = fbah['FA_RUN']
         ttemp = Table(ta[ii])
         ttemp['OBSCONDITIONS'] = 516
+        ttemp['IN_DESI'] = 1
         ttemp.write('tiletemp.fits',format='fits', overwrite=True)
         for i in range(rm,rx):
             testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
