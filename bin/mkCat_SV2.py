@@ -32,7 +32,7 @@ sv2dir = '/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/'
 randir = sv2dir+'random'
 rm = 0
 rx = 18
-logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
+#logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv2dir+'random'+str(i)):
         os.mkdir(svd2ir+'random'+str(i))
