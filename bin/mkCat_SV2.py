@@ -22,6 +22,8 @@ import LSS.SV2.cattools as ct
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 import LSS.mkCat_singletile.fa4lsscat as fa
 
+version = 'test'
+
 
 mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv2/bright/' #location of ledgers
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.53.0/targets/sv2/resolve/bright/' #location of targets
