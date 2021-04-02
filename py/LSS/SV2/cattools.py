@@ -1,0 +1,39 @@
+def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
+    '''
+    tiles should be a table containing the relevant info
+    '''
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    for ii in range(imin,imax):
+        rt = fitsio.read(dirr+'/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+        #rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+        print('loaded random file') 
+    
+        for i in range(0,len(tiles)):
+            
+            print('length of tile file is (expected to be 1):'+str(len(tiles)))
+            tile = tiles['TILEID'][i]
+            fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+            if os.path.isfile(fname):
+                print(fname +' already exists')
+            else:
+                tdec = tiles['DEC'][0]
+                decmin = tdec - trad
+                decmax = tdec + trad
+                wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+                print(len(rt[wdec]))
+                inds = desimodel.footprint.find_points_radec(tiles['RA'][0], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+                print('got indexes')
+                rtw = rt[wdec][inds]
+                rmtl = Table(rtw)
+                #rmtl['TARGETID'] = np.arange(len(rmtl))
+                print(len(rmtl['TARGETID'])) #checking this column is there
+                rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+                rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+                rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+                rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+                rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][0]
+                rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+                rmtl.write(fname,format='fits', overwrite=True)
+                print('added columns, wrote to '+fname)
