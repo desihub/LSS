@@ -19,14 +19,15 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(spec)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        
         try:
+            ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             fitsio.read(ff)
 
             specs.append(si)
         except:
             print('no spectrograph '+str(si)+ ' for tile '+str(tile))
-            print(ff)
+            #print(ff)
     print('spectrographs with data:')
     print(specs)            
     if len(specs) == 0:
