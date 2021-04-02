@@ -29,6 +29,25 @@ mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-don
 
 sv2dir = '/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/'
 
+from desitarget.sv2 import sv2_targetmask
+type = 'BGS_ANY'
+tarbit = int(np.log2(sv2_targetmask.desi_mask[type]))
+
+
+if not os.path.exists(sv2dir+'/logs'):
+    os.mkdir(sv2dir+'/logs')
+    print('made '+sv2dir+'/logs')
+
+if not os.path.exists(sv2dir+'/LSScats'):
+    os.mkdir(sv2dir+'/LSScats')
+    print('made '+sv2dir+'/LSScats')
+
+dirout = sv2dir+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+
+
 randir = sv2dir+'random'
 rm = 0
 rx = 18
@@ -66,7 +85,8 @@ ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
 mktileran = False
-runfa = True
+runfa = False
+mkfulld = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta)
@@ -87,4 +107,24 @@ if runfa:
             else:   
                 
                 fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
+
+if mkfulld:
+    for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE'])
+        ffd = dirout+type+str(tile)+'_full.dat.fits'
+        tspec = ct.combspecdata(tile,zdate)
+        pdict,goodloc = ct.goodlocdict(tspec)
+        fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz'
+        wt = ta['TILEID'] == tile
+        tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
+        tfa = ct.gettarinfo_type(fbaf,tars,goodloc,tarbit,pdict,tp=tp)
+        tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
+        print(tout.dtype.names)
+        wz = tout['ZWARN']*0 == 0
+        wzg = tout['ZWARN'] == 0
+        print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
+        
+        tout.write(ffd,format='fits', overwrite=True) 
+        print('wrote matched targets/redshifts to '+ffd)
+        logf.write('made full data files\n')
+
     
