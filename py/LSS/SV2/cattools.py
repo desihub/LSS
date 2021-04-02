@@ -1,3 +1,20 @@
+'''
+python functions to do various useful date processing/manipulation
+'''
+import numpy as np
+import fitsio
+import glob
+import os
+import astropy.io.fits as fits
+from astropy.table import Table,join,unique,vstack
+from matplotlib import pyplot as plt
+import desimodel.footprint
+import desimodel.focalplane
+from random import random
+
+from LSS.Cosmo import distance
+
+
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
     '''
     tiles should be a table containing the relevant info
