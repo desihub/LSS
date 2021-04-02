@@ -73,7 +73,7 @@ if runfa:
         tile = mtld['TILEID'][ii]
         fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
         dt = fbah['FA_RUN']
-        ttemp = ta[ii]
+        ttemp = Table(ta[ii])
         ttemp.write('tiletemp.fits',format='fits', overwrite=True)
         for i in range(rm,rx):
             testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
