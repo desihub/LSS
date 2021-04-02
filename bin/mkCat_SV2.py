@@ -119,7 +119,7 @@ if mkfulld:
         fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz'
         wt = ta['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-        tfa = ct.gettarinfo_type(fbaf,tars,goodloc,tarbit,pdict,tp=tp)
+        tfa = ct.gettarinfo_type(fbaf,tars,goodloc,tarbit,pdict)
         tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
         print(tout.dtype.names)
         wz = tout['ZWARN']*0 == 0
