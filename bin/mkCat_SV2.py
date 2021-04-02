@@ -68,7 +68,7 @@ runfa = True
 if mktileran:
     ct.randomtiles_allSV2(ta)
     
-if runrfa:
+if runfa:
     for tile in mtld['TILEID']:
         fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
         dt = fbah['FA_RUN']
