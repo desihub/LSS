@@ -83,8 +83,10 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     #print(tarf)
     #tars = Table.read(tarf)
     #tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
+    #we want to get these from the zbest file that is specific to the tile and thus when it was observed
     tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
     tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
+    tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
     
     tt = join(tt,tars,keys=['TARGETID'])
     
