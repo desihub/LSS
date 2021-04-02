@@ -41,13 +41,13 @@ for tile in mtld['TILEID']:
     decl.append(fht['TILEDEC'])
     mtlt.append(fht['MTLTIME'])
     fal.append(fht['FA_RUN'])
-    obsl.append(fht['OBSCONDITIONS'])
+    #obsl.append(fht['OBSCON'])
 ta = Table()
 ta['TILEID'] = tilel
 ta['RA'] = ral
 ta['DEC'] = decl
 ta['MTLTIME'] = mtlt
 ta['FA_RUN'] = fal
-ta['OBSCONDITIONS'] = obsl
+#ta['OBSCONDITIONS'] = obsl
 
 ct.randomtiles_allSV2(ta)

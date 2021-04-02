@@ -50,7 +50,7 @@ def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
                 rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*tiles['OBSCONDITIONS'][i]
+                rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
