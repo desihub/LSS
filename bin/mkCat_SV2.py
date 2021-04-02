@@ -27,6 +27,18 @@ mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv2/bright/' #loca
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.53.0/targets/sv2/resolve/bright/' #location of targets
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
 
+sv2dir = '/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/'
+
+randir = sv2dir+'random'
+rm = 0
+rx = 18
+logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
+for i in range(rm,rx):
+    if not os.path.exists(sv2dir+'random'+str(i)):
+        os.mkdir(svd2ir+'random'+str(i))
+        print('made '+str(i)+' random directory')
+
+
 #construct a table with the needed tile information
 tilel = []
 ral = []
