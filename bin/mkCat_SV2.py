@@ -62,4 +62,20 @@ ta['MTLTIME'] = mtlt
 ta['FA_RUN'] = fal
 #ta['OBSCONDITIONS'] = obsl
 
-ct.randomtiles_allSV2(ta)
+mktileran = False
+runfa = True
+
+if mktileran:
+    ct.randomtiles_allSV2(ta)
+    
+if runrfa:
+    for tile in mtld['TILEID']:
+        fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
+        dt = fbah['FA_RUN']
+        for i in range(rm,rx):
+            testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
+            if os.path.isfile(testfbaf):
+                print('fba file already made')
+            else:   
+                fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits',tilef,dirout=randir+str(i)+'/',dt = dt)
+    

@@ -28,7 +28,7 @@ def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/
     
         for i in range(0,len(tiles)):
             
-            print('length of tile file is (expected to be 1):'+str(len(tiles)))
+            #print('length of tile file is (expected to be 1):'+str(len(tiles)))
             tile = tiles['TILEID'][i]
             fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
             if os.path.isfile(fname):
