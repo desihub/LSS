@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane
 from random import random
+from desitarget.io import read_targets_in_tiles
 
 from LSS.Cosmo import distance
 
