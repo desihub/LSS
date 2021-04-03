@@ -101,7 +101,7 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     tfall.keep_columns(['TARGETID','LOCATION','PRIORITY'])
     
     tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
-    
+    print(tt.columns)
     #wgl = np.isin(tfa['LOCATION_ASSIGNED'],goodloc)
     #wtype = ((tfa[tp] & 2**tarbit) > 0)
     #wtfa = wgl & wtype
