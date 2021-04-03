@@ -203,6 +203,7 @@ def combran(tiles,rann,randir):
                 fgu = unique(fv,keys='TARGETID') 
                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+                print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 
                 aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
