@@ -132,4 +132,5 @@ if mkfulld:
         #logf.write('made full data files\n')
 
 if combd:
+    print(len(mtld['TILEID']))
     ct.combtiles(mtld['TILEID'],dirout,type)    
