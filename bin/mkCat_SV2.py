@@ -89,7 +89,8 @@ ta['PROGRAM'] = pl
 
 mktileran = False
 runfa = False
-mkfulld = True
+mkfulld = False
+combd = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta)
@@ -130,4 +131,5 @@ if mkfulld:
         print('wrote matched targets/redshifts to '+ffd)
         #logf.write('made full data files\n')
 
-    
+if combd:
+    combtiles(mtld['TILEID'],dirout,type)    

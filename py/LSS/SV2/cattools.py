@@ -120,6 +120,33 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
 
     return tt
 
+def combtiles(tiles,catdir,tp):
+	'''
+	For list of tileids, combine, taking care of overlaps
+	
+	'''
+
+	s = 0
+ 
+	for tile in tiles:
+	    fl = catdir+tp+str(tile)+'_full.dat.fits'
+	    fgun = Table.read(fl)
+	    aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+	    aa[:] = str(tile)
+	    fgun['TILE'] = aa
+	    fgun['TILELOCID'] = 10000*tile +fgu['LOCATION']
+	    if s == 0:
+	        fgu = fgun
+	        s =1
+	    #wm = np.ma.getmaskarray(fgun['LOCATION_ASSIGNED'])
+        #fgun['TILELOCID_ASSIGNED'] = 0
+	    #fgun['TILELOCID_ASSIGNED'][~wm] = tile*10000+fgun['LOCATION_ASSIGNED'][~wm]
+	    else:
+            fgun = vstack([fgu,fgun])
+
+	print(len(np.unique(fgun['TARGETID'])),np.sum(fgun['LOCATION_ASSIGNED']))
+	#fgu.write(e2eout+outf,format='fits', overwrite=True)    
+
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
     '''
