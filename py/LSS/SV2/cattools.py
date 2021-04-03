@@ -147,7 +147,7 @@ def combtiles(tiles,catdir,tp):
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
     wa = fgu['LOCATION_ASSIGNED'] == 1
-    wa &= fgu['PRIORITY'] >= 2000
+    wa &= fgu['PRIORITY_ASSIGNED'] >= 2000
     fa = fgu[wa]
     print(len(fa),len(np.unique(fa['TARGETID'])))
     #fgu.write(e2eout+outf,format='fits', overwrite=True)    
