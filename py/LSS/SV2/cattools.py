@@ -154,7 +154,7 @@ def combtiles(tiles,catdir,tp):
     fa = fgu[wa]
     print(len(fa),len(np.unique(fa['TARGETID'])))
     fgu.sort('sort')
-    fu = unique(fgu['TARGETID'])
+    fu = unique(fgu,keys=['TARGETID'])
     print(np.sum(fu['LOCATION_ASSIGNED']))
     for ii in range(0,len(fu)):
         tid = fu[ii]['TARGETID']
