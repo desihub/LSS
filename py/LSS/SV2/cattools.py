@@ -109,7 +109,7 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
 
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     print('number of assigned fibers '+str(len(tt[wal])))
-    print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID'])))
+    print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID']))))
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
