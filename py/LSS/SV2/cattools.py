@@ -134,7 +134,7 @@ def combtiles(tiles,catdir,tp):
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
         fgun['TILE'] = aa
-        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
+        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         if s == 0:
             fgu = fgun
             s =1
@@ -146,10 +146,25 @@ def combtiles(tiles,catdir,tp):
 
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
+    wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+    fgu[wn]['PRIORITY_ASSIGNED'] = 0
+    fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED']
     wa = fgu['LOCATION_ASSIGNED'] == 1
     wa &= fgu['PRIORITY_ASSIGNED'] >= 2000
     fa = fgu[wa]
     print(len(fa),len(np.unique(fa['TARGETID'])))
+    fgu.sort('sort')
+    fu = unique(fgu['TARGETID'])
+    print(np.sum(fu['LOCATION_ASSIGNED']))
+    for ii in range(0,len(fu)):
+        tid = fu[ii]['TARGETID']
+        wt = fgu['TARGETID'] == tid
+        ot = fu[ii]['TILE']
+        fgut = fgu[wt]
+        for tl in fgut['TILE']:
+            if tl != ot:
+                fu[ii]['TILE'] += '-'+str(tl)
+    print(np.unique(fu['TILE']))
     #fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 

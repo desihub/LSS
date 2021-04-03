@@ -89,7 +89,7 @@ ta['PROGRAM'] = pl
 
 mktileran = False
 runfa = False
-mkfulld = True
+mkfulld = False
 combd = True
 
 if mktileran:
