@@ -183,7 +183,7 @@ def combran(tiles,rann,randir):
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
 
-            fa = Table.read(ffa,hdu='POTENTIAL_ASSIGNEMENTS')
+            fa = Table.read(ffa,hdu='FAVAIL')
             wg = np.isin(fa['LOCATION'],gloc)
             fg = fa[wg]
             fgun = unique(fg,keys=['TARGETID'])
