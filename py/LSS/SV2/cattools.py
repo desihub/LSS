@@ -84,9 +84,6 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     #tars = Table.read(tarf)
     #tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     #we want to get these from the zbest file that is specific to the tile and thus when it was observed
-    tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
-    tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
-    tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
     
     tt = join(tt,tars,keys=['TARGETID'])
     
@@ -101,7 +98,7 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     #Mark targets that actually got assigned fibers
     tfall = Table.read(faf,hdu='FIBERASSIGN')
     
-    tfall.keep_columns(['TARGETID','LOCATION'])
+    tfall.keep_columns(['TARGETID','LOCATION','PRIORITY'])
     
     tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
     
@@ -112,11 +109,12 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
 
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     print('number of assigned fibers '+str(len(tt[wal])))
+    print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID'])))
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
-    tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
+    #tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
 
