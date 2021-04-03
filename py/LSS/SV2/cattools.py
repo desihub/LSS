@@ -188,7 +188,7 @@ def combran(tiles,rann,randir):
             fg = fa[wg]
             fgun = unique(fg,keys=['TARGETID'])
             ffna = Table.read(ffna)
-            fgun = join(fg,ffan,keys=['TARGETID'])
+            fgun = join(fg,ffna,keys=['TARGETID'])
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
