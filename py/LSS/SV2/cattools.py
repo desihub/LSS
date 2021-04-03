@@ -184,11 +184,11 @@ def combran(tiles,rann,randir):
         if os.path.isfile(ffa):
 
             fa = Table.read(ffa,hdu='POTENTIAL_ASSIGNEMENTS')
-	        wg = np.isin(fa['LOCATION'],gloc)
-	        fg = fa[wg]
-	        fgun = unique(fg,keys='TARGETID')
-	        ffna = Table.read(ffna)
-	        fgun = join(fg,ffan,keys=['TARGETID')
+            wg = np.isin(fa['LOCATION'],gloc)
+            fg = fa[wg]
+            fgun = unique(fg,keys='TARGETID')
+            ffna = Table.read(ffna)
+            fgun = join(fg,ffan,keys=['TARGETID')
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
@@ -197,21 +197,21 @@ def combran(tiles,rann,randir):
             if s == 0:
                 fgu = fgun
                 s = 1
-            else:	
-				fv = vstack([fgu,fgun])
-				fgo = fgu
-				fgu = unique(fv,keys='TARGETID') 
-				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-				fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+            else:   
+                fv = vstack([fgu,fgun])
+                fgo = fgu
+                fgu = unique(fv,keys='TARGETID') 
+                dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+                didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+                fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 
-				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
-				aa[:] = '-'+str(tile)
-				#rint(aa)
-				ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
-				#print(ms)
-				fgu['TILE'][didsc] = ms #add the tile info
-				print(str(len(fgu))+' unique total randoms')
+                aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+                aa[:] = '-'+str(tile)
+                #rint(aa)
+                ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+                #print(ms)
+                fgu['TILE'][didsc] = ms #add the tile info
+                print(str(len(fgu))+' unique total randoms')
     fgu.write(randir+str(rann)+'/rancomb_Alltiles.fits',format='fits', overwrite=True)
 
 
