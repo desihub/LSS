@@ -52,6 +52,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
 def goodlocdict(tf):
     '''
     Make a dictionary to map between location and priority
+    tf should come from combspecdata above
     '''
     wloc = tf['FIBERSTATUS'] == 0
     print(str(len(tf[wloc])) + ' locations with FIBERSTATUS 0')
@@ -122,7 +123,7 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
 
 def combtiles(tiles,catdir,tp):
     '''
-    For list of tileids, combine, taking care of overlaps
+    For list of tileids, combine data generated per tile , taking care of overlaps
     
     '''
 
@@ -171,6 +172,47 @@ def combtiles(tiles,catdir,tp):
     wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
     fgu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
+
+def combran(tiles,rann,randir):
+
+    s = 0
+    for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
+        tspec = combspecdata(tile,zdate)
+        pdict,gloc = goodlocdict(tspec)
+        ffa = randir+str(rann)+'/fba-0'+str(tile)+'.fits'
+        ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
+        if os.path.isfile(ffa):
+
+            fa = Table.read(ffa,hdu='POTENTIAL_ASSIGNEMENTS')
+	        wg = np.isin(fa['LOCATION'],gloc)
+	        fg = fa[wg]
+	        fgun = unique(fg,keys='TARGETID')
+	        ffna = Table.read(ffna)
+	        fgun = join(fg,ffan,keys=['TARGETID')
+            print(str(len(fgun))+' unique new randoms')
+            aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+            aa[:] = str(tile)
+            fgun['TILE'] = aa
+            fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
+            if s == 0:
+                fgu = fgun
+                s = 1
+            else:	
+				fv = vstack([fgu,fgun])
+				fgo = fgu
+				fgu = unique(fv,keys='TARGETID') 
+				dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+				didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+				fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
+				aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+				aa[:] = '-'+str(tile)
+				#rint(aa)
+				ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+				#print(ms)
+				fgu['TILE'][didsc] = ms #add the tile info
+				print(str(len(fgu))+' unique total randoms')
+    fgu.write(randir+str(rann)+'/rancomb_Alltiles.fits',format='fits', overwrite=True)
 
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):

@@ -90,7 +90,8 @@ ta['PROGRAM'] = pl
 mktileran = False
 runfa = False
 mkfulld = False
-combd = True
+combd = False
+combr = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta)
@@ -138,3 +139,9 @@ if mkfulld:
 if combd:
     print(len(mtld['TILEID']))
     ct.combtiles(mtld['TILEID'],dirout,type)    
+
+rx = 1
+if combr:
+    print(len(mtld['TILEID']))
+    for i in range(rm,rx):
+        ct.combran(mtld,i,randir)
