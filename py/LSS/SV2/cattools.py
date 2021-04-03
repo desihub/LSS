@@ -199,7 +199,7 @@ def combran(tiles,rann,randir):
                 s = 1
             else:   
                 fv = vstack([fgu,fgun])
-                fgo = fgu.copy
+                fgo = fgu.copy()
                 fgu = unique(fv,keys='TARGETID') 
                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
