@@ -156,7 +156,7 @@ def combtiles(tiles,catdir,tp):
     fgu.sort('sort')
     fu = unique(fgu,keys=['TARGETID'])
     print(np.sum(fu['LOCATION_ASSIGNED']))
-    for ii in range(0,len(fu)):
+    for ii in range(0,len(fu)): #this takes a long time and something more efficient will be necessary
         tid = fu[ii]['TARGETID']
         wt = fgu['TARGETID'] == tid
         ot = fu[ii]['TILE']
@@ -164,8 +164,13 @@ def combtiles(tiles,catdir,tp):
         for tl in fgut['TILE']:
             if tl != ot:
                 fu[ii]['TILE'] += '-'+str(tl)
+        if ii%1000 == 0:
+            print(ii)        
     print(np.unique(fu['TILE']))
-    #fgu.write(e2eout+outf,format='fits', overwrite=True)    
+    wa = fu['LOCATION_ASSIGNED'] == 1
+    wa &= fu['PRIORITY_ASSIGNED'] >= 2000
+    print(np.sum(fu['LOCATION_ASSIGNED']))
+    fgu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
 
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
