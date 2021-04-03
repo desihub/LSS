@@ -85,7 +85,7 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     #tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     #we want to get these from the zbest file that is specific to the tile and thus when it was observed
     
-    tt = join(tt,tars,keys=['TARGETID'])
+    tt = join(tt,tars,keys=['TARGETID'],table_names = ['_AVAIL', ''], uniq_col_name='{col_name}{table_name}')
     
     #tfa = unique(tfa[wgt],keys=['TARGETID'])
     wtype = ((tt[tp] & 2**tarbit) > 0)
@@ -114,6 +114,8 @@ def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
+    wal = tt['LOCATION']*0 == 0
+    print('number of locations from z file '+str(len(tt[wal]))+' (check to match agrees with above)')
     #tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
