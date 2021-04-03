@@ -142,9 +142,9 @@ def combtiles(tiles,catdir,tp):
         #fgun['TILELOCID_ASSIGNED'] = 0
         #fgun['TILELOCID_ASSIGNED'][~wm] = tile*10000+fgun['LOCATION_ASSIGNED'][~wm]
         else:
-            fgun = vstack([fgu,fgun])
+            fgu = vstack([fgu,fgun])
 
-    print(len(np.unique(fgun['TARGETID'])),np.sum(fgun['LOCATION_ASSIGNED']))
+    print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     #fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 
