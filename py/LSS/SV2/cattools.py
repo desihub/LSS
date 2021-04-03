@@ -145,6 +145,10 @@ def combtiles(tiles,catdir,tp):
             fgu = vstack([fgu,fgun])
 
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
+    
+    wa = fgu['LOCATION_ASSIGNED'] == 1
+    fa = fgu[wa]
+    print(len(fa),len(np.unique(fa['TARGETID'])))
     #fgu.write(e2eout+outf,format='fits', overwrite=True)    
 
 
