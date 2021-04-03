@@ -134,7 +134,7 @@ def combtiles(tiles,catdir,tp):
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
         fgun['TILE'] = aa
-        fgun['TILELOCID'] = 10000*tile +fgu['LOCATION']
+        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
         if s == 0:
             fgu = fgun
             s =1
