@@ -87,14 +87,14 @@ ta['FA_RUN'] = fal
 ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
-mktileran = True
+mktileran = False
 runfa = True
 mkfulld = True
 combd = True
 combr = True
 
 if mktileran:
-    ct.randomtiles_allSV2(ta)
+    ct.randomtiles_allSV2(ta,rm,rx)
     
 if runfa:
     for ii in range(0,len(mtld)):
