@@ -53,7 +53,7 @@ if not os.path.exists(dirout):
 
 randir = sv2dir+'random'
 rm = 0
-rx = 18
+rx = 1#8
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv2dir+'random'+str(i)):
@@ -87,10 +87,10 @@ ta['FA_RUN'] = fal
 ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
-mktileran = False
-runfa = False
-mkfulld = False
-combd = False
+mktileran = True
+runfa = True
+mkfulld = True
+combd = True
 combr = True
 
 if mktileran:
@@ -140,7 +140,7 @@ if combd:
     print(len(mtld['TILEID']))
     ct.combtiles(mtld['TILEID'],dirout,type)    
 
-rx = 1
+
 if combr:
     print(len(mtld['TILEID']))
     for i in range(rm,rx):
