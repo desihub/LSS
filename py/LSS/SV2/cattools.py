@@ -333,7 +333,7 @@ def mkclusran(fl,rann):
     fcd = fitsio.read(fl+'clus.dat.fits')
     ffr = fitsio.read(fl+str(rann)+'_full.ran.fits')
     wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
-    wic = np.isin(ffr['TILELOCID'],ffc['TILELOCID'])
+    wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
     wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
     ffc = ffr[~wb]
     print(len(ffc),len(ffr))

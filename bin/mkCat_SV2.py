@@ -102,8 +102,8 @@ mkdtiles = False
 combd = False
 combr = True
 mkfulldat = False
-mkfullran = True
-mkclusdat = True
+mkfullran = False
+mkclusdat = False
 mkclusran = True
 
 if mktileran:
