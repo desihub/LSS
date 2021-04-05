@@ -260,6 +260,7 @@ def get_tilelocweight(zf):
 	#print(np.min(probl),np.max(probl))
 	dz = Table.read(zf) #table is slow, so using fitsio above, Table here
 	dz['FRACZ_TILELOCID'] = probl
+	print(np.unique(dz['TILE']))
 	dz['NTILE']  = np.char.count(dz['TILE'],'-')
 	dz['NTILE'] += 1
 	print(np.unique(dz['NTILE']))
