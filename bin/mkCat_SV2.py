@@ -97,14 +97,14 @@ ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
 mktileran = True
-runfa = True
+runfa = False
 mkdtiles = False
 combd = False
-combr = True
+combr = False
 mkfulldat = False
-mkfullran = True
+mkfullran = False
 mkclusdat = False
-mkclusran = True
+mkclusran = False
 
 if mktileran:
     ct.randomtiles_allSV2(ta,rm,rx)
