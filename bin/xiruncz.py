@@ -99,7 +99,7 @@ if type == 'BGS_ANY':
     zmax = 0.5    
 
 ranwt1=False
-xt.prep4czxi(type,zmin,zmax,nran=1,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+xt.prep4czxi(type,zmin,zmax,nran=18,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
 fa = ''

@@ -62,7 +62,7 @@ if not os.path.exists(dirout):
 
 randir = sv2dir+'random'
 rm = 0
-rx = 1#8
+rx = 18
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv2dir+'random'+str(i)):
@@ -96,14 +96,14 @@ ta['FA_RUN'] = fal
 ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
-mktileran = False
-runfa = False
+mktileran = True
+runfa = True
 mkdtiles = False
 combd = False
-combr = False
+combr = True
 mkfulldat = False
-mkfullran = False
-mkclusdat = True
+mkfullran = True
+mkclusdat = False
 mkclusran = True
 
 if mktileran:
