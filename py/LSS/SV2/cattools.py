@@ -240,8 +240,8 @@ def mkfulldat(zf,imbits,tdir):
 	from desitarget.mtl import inflate_ledger
 	dz = fitsio.read(zf)
 	
-	dz = cutphotmask(dz,imbits)
 	dz = inflate_ledger(dz,tdir)
+	dz = cutphotmask(dz,imbits)
 	
 	NT = np.char.count(dz['TILE'],'-')
 	NT += 1
