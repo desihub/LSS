@@ -98,7 +98,7 @@ ta['PROGRAM'] = pl
 
 mktileran = False
 runfa = False
-mkdtiles = True
+mkdtiles = False
 combd = True
 combr = False
 mkfulldat = True
