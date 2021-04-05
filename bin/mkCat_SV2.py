@@ -96,7 +96,7 @@ ta['FA_RUN'] = fal
 ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
-mktileran = True
+mktileran = False
 runfa = True
 mkdtiles = False
 combd = False
