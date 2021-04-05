@@ -313,7 +313,7 @@ def mkclusdat(fl,weighttileloc=True):
 
 	'''    
 	ff = Table.read(fl+'full.dat.fits')
-	outf = fl+'clus.dat.fits'
+	outf = fl+'clustering.dat.fits'
 	wz = ff['ZWARN'] == 0
 	ff = ff[wz]
 	ff['WEIGHT'] = np.ones(len(ff))
@@ -327,7 +327,7 @@ def mkclusdat(fl,weighttileloc=True):
 
 	ff.write(outf,format='fits', overwrite=True)
 
-def mkclusran(fl,rann):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     ffd = fitsio.read(fl+'full.dat.fits')
     fcd = fitsio.read(fl+'clus.dat.fits')
@@ -337,6 +337,15 @@ def mkclusran(fl,rann):
     wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
     ffc = ffr[~wb]
     print(len(ffc),len(ffr))
+    inds = np.random.choice(len(fcd),len(ffc))
+    dshuf = fcd[inds]
+
+    for col in rcols: 
+        ffc[col] = dshuf[col] 
+    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
+    outf =  fl+str(rann)+'_clustering.dat.fits' 
+    ffc.write(outf,format='fits', overwrite=True)
+
     
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):

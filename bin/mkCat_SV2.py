@@ -100,10 +100,10 @@ mktileran = False
 runfa = False
 mkdtiles = False
 combd = False
-combr = True
+combr = False
 mkfulldat = False
 mkfullran = False
-mkclusdat = False
+mkclusdat = True
 mkclusran = True
 
 if mktileran:
