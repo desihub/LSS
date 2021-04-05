@@ -217,6 +217,8 @@ def combran(tiles,rann,randir):
 
 def get_tilelocweight(zf):
 	dz = fitsio.read(zf)
+	NT = np.char.count(dz['TILE'],'-')
+	NT += 1
 	wz = dz['ZWARN'] == 0
 	dzz = dz[wz]
 	probl = np.zeros(len(dz))
@@ -260,9 +262,8 @@ def get_tilelocweight(zf):
 	#print(np.min(probl),np.max(probl))
 	dz = Table.read(zf) #table is slow, so using fitsio above, Table here
 	dz['FRACZ_TILELOCID'] = probl
-	print(np.unique(dz['TILE']))
-	dz['NTILE']  = np.char.count(dz['TILE'],'-')
-	dz['NTILE'] += 1
+	#print(np.unique(dz['TILE']))
+	dz['NTILE']  = NT
 	print(np.unique(dz['NTILE']))
 	dz.write(zf,format='fits', overwrite=True)
 
