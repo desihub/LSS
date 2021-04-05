@@ -238,7 +238,7 @@ def mkfullran(randir,rann,imbits,outf):
 
 def mkfulldat(zf,imbits,tdir):
 	from desitarget.mtl import inflate_ledger
-	dz = fitsio.read(zf)
+	dz = Table.read(zf)
 	
 	dz = inflate_ledger(dz,tdir)
 	dz = cutphotmask(dz,imbits)
