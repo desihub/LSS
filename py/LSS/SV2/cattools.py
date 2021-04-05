@@ -60,6 +60,14 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
+def cutphotmask(aa,bits):
+    print(str(len(aa)) +' before imaging veto' )
+    keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+    for biti in bits:
+        keep &= ((aa['MASKBITS'] & 2**biti)==0)
+    aa = aa[keep]
+    print(str(len(aa)) +' after imaging veto' )
+    return aa
 
 def gettarinfo_type(faf,tars,goodloc,tarbit,pdict,tp='SV2_DESI_TARGET'):
     #get target info
@@ -215,8 +223,26 @@ def combran(tiles,rann,randir):
                 print(str(len(fgu))+' unique total randoms')
     fgu.write(randir+str(rann)+'/rancomb_Alltiles.fits',format='fits', overwrite=True)
 
-def get_tilelocweight(zf):
+def mkfullran(randir,rann,imbits,outf):
+	zf = randir+str(rann)+'/rancomb_Alltiles.fits'
+	dz = Table.read(zf)
+	
+	dz = cutphotmask(dz,imbits)
+	
+	NT = np.char.count(dz['TILE'],'-')
+	NT += 1
+	dz['NTILE'] = NT
+	dz.write(outf,format='fits', overwrite=True)
+	
+
+
+def mkfulldat(zf,imbits,tdir):
+	from desitarget.mtl import inflate_ledger
 	dz = fitsio.read(zf)
+	
+	dz = cutphotmask(dz,imbits)
+	dz = inflate_ledger(dz,tdir)
+	
 	NT = np.char.count(dz['TILE'],'-')
 	NT += 1
 	wz = dz['ZWARN'] == 0

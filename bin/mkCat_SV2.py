@@ -29,6 +29,7 @@ version = 'test'
 mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv2/bright/' #location of ledgers
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.53.0/targets/sv2/resolve/bright/' #location of targets
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
+imbits = [1,5,6,7,8,9,11,12,13]
 
 sv2dir = '/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/'
 
@@ -96,10 +97,11 @@ ta['PROGRAM'] = pl
 
 mktileran = False
 runfa = False
-mkfulld = False
+mkdtiles = False
 combd = False
 combr = False
-mkprob = True
+mkfulldat = True
+mkfullran = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta,rm,rx)
@@ -121,7 +123,7 @@ if runfa:
                 
                 fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
 
-if mkfulld:
+if mkdtiles:
     for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
         ffd = dirout+type+str(tile)+'_full.dat.fits'
         tspec = ct.combspecdata(tile,zdate)
@@ -155,15 +157,18 @@ if combr:
         ct.combran(mtld,i,randir)
         
         
-if mkprob:
-	ct.get_tilelocweight(dirout+type+'Alltiles_full.dat.fits')
+if mkfulldat:
+	ct.mkfulldat(dirout+type+'Alltiles_full.dat.fits',imbits,tdir)
+	#get_tilelocweight()
 	#logf.write('ran get_tilelocweight\n')
 	#print('ran get_tilelocweight\n')
 
 if mkfullran:
-    e2e.mkfullran(target_type,program,imbits,truez=truez)
-    logf.write('ran mkfullran\n')
-    print('ran mkfullran\n')
+    for ii in range(rm,rx):
+        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
+        ct.mkfullran(randir,ii,imbits,outf)
+    #logf.write('ran mkfullran\n')
+    #print('ran mkfullran\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
