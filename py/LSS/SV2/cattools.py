@@ -215,6 +215,53 @@ def combran(tiles,rann,randir):
                 print(str(len(fgu))+' unique total randoms')
     fgu.write(randir+str(rann)+'/rancomb_Alltiles.fits',format='fits', overwrite=True)
 
+def get_tilelocweight(zf):
+	dz = fitsio.read(zf)
+	wz = dz['ZWARN'] == 0
+	dzz = dz[wz]
+	probl = np.zeros(len(dz))
+	#dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+	locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+	wa = dzz['LOCATION_ASSIGNED'] == 1
+	if len(dzz[wa]) != len(dzz):
+	    print('!found some zwarn = 0 without location_assigned = 1!')
+	loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+	print(np.max(nloclz),np.min(loclz))
+	print(len(locl),len(nloclz))
+	nm = 0
+	nmt =0
+	pd = []
+	for i in range(0,len(locl)):
+		if i%10000 == 0:
+			print('at row '+str(i))
+		nt = nlocl[i]
+		loc = locl[i]
+		w = loclz == loc
+		nz = 0
+		if len(loclz[w]) == 1:
+			nz = 1.#nloclz[w]
+			
+		else:
+			#print(loclz[w],nt)	
+			nm += 1.
+			nmt += nt
+		if len(loclz[w]) > 1:
+			print('why is len(loclz[w]) > 1?')
+			#wa = dz['TILELOCID'] == loc
+			#print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
+			#probl[wa] = nz/nt
+			#pd.append((loc,nz/nt))	
+		pd.append((loc,nz/nt))	
+	pd = dict(pd)
+	for i in range(0,len(dz)):
+		probl[i] = pd[dz['TILELOCID'][i]]
+	print('number of fibers with no good z, number targets on those fibers')
+	print(nm,nmt)
+	#print(np.min(probl),np.max(probl))
+	dz = Table.read(zf) #table is slow, so using fitsio above, Table here
+	dz['FRACZ_TILELOCID'] = probl
+	dz.write(zf,format='fits', overwrite=True)
+
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
     '''

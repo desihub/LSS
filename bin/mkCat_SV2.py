@@ -88,10 +88,11 @@ ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
 mktileran = False
-runfa = True
-mkfulld = True
-combd = True
-combr = True
+runfa = False
+mkfulld = False
+combd = False
+combr = False
+mkprob = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta,rm,rx)
@@ -145,3 +146,37 @@ if combr:
     print(len(mtld['TILEID']))
     for i in range(rm,rx):
         ct.combran(mtld,i,randir)
+        
+        
+if mkprob:
+	ct.get_tilelocweight(outdir+tp+'Alltiles_full.dat.fits')
+	#logf.write('ran get_tilelocweight\n')
+	#print('ran get_tilelocweight\n')
+
+if mkfullran:
+    e2e.mkfullran(target_type,program,imbits,truez=truez)
+    logf.write('ran mkfullran\n')
+    print('ran mkfullran\n')
+
+#needs to happen before randoms so randoms can get z and weights
+if mkclusdat:
+    print(truez)
+    e2e.mkclusdat(target_type,program,truez=truez)
+    logf.write('ran mkclusdat\n')
+    print('ran mkclusdat\n')
+
+if mkclusran:
+    e2e.mkclusran(target_type,program,truez=truez)
+    logf.write('ran mkclusran\n')
+    print('ran mkclusran\n')
+    
+if mkNbar:
+	e2e.mkNbar(target_type,program,P0=P0,omega_matter=omega_matter,truez=truez)
+	logf.write('made nbar\n')
+	print('made nbar\n')
+
+if fillNZ:
+	e2e.fillNZ(target_type,program,P0=P0,truez=truez)	
+	logf.write('put NZ and weight_fkp into clustering catalogs\n')    
+	print('put NZ and weight_fkp into clustering catalogs\n')
+        
