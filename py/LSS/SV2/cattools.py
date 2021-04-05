@@ -236,7 +236,7 @@ def mkfullran(randir,rann,imbits,outf):
     dz = cutphotmask(dz,imbits)
     NT = np.zeros(len(dz))
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[i] = np.char.count(dz['TILE'][ii],'-')+1
+        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
     
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
@@ -253,7 +253,7 @@ def mkfulldat(zf,imbits,tdir):
     
     NT = np.zeros(len(dz))
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[i] = np.char.count(dz['TILE'][ii],'-')+1
+        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(NT))
