@@ -343,7 +343,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     for col in rcols: 
         ffc[col] = dshuf[col] 
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
-    outf =  fl+str(rann)+'_clustering.dat.fits' 
+    outf =  fl+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
     
