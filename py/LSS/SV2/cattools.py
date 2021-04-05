@@ -312,8 +312,8 @@ def mkclusdat(fl,weighttileloc=True):
 	type is 'LRG', 'QSO', 'ELG', or 'BGS'
 
 	'''    
-	ff = Table.read(fl+'_full.dat.fits')
-	outf = fl+'_clus.dat.fits'
+	ff = Table.read(fl+'full.dat.fits')
+	outf = fl+'clus.dat.fits'
 	wz = ff['ZWARN'] == 0
 	ff = ff[wz]
 	ff['WEIGHT'] = np.ones(len(ff))

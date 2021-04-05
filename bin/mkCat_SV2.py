@@ -100,9 +100,9 @@ mktileran = False
 runfa = False
 mkdtiles = False
 combd = False
-combr = False
+combr = True
 mkfulldat = False
-mkfullran = False
+mkfullran = True
 mkclusdat = True
 mkclusran = True
 
