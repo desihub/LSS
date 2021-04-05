@@ -171,7 +171,7 @@ def combtiles(tiles,catdir,tp):
     wa = fu['LOCATION_ASSIGNED'] == 1
     wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
-    fgu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
+    fu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
 
 def combran(tiles,rann,randir):
 
