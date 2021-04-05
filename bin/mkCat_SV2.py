@@ -180,7 +180,7 @@ if mkclusdat:
 
 if mkclusran:
     for ii in range(rm,rx):
-        ct.mkclusran((dirout+type+'Alltiles_',ii)
+        ct.mkclusran(dirout+type+'Alltiles_',ii)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
