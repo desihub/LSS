@@ -36,6 +36,13 @@ from desitarget.sv2 import sv2_targetmask
 type = 'BGS_ANY'
 tarbit = int(np.log2(sv2_targetmask.desi_mask[type]))
 
+if type == 'BGS_ANY':
+    pr = 'BRIGHT'
+else:
+    pr = 'DARK'
+wp = mtld['PROGRAM'] == pr
+mtld = mtld[wp]
+
 
 if not os.path.exists(sv2dir+'/logs'):
     os.mkdir(sv2dir+'/logs')
@@ -90,7 +97,7 @@ ta['PROGRAM'] = pl
 mktileran = False
 runfa = False
 mkfulld = False
-combd = False
+combd = True
 combr = False
 mkprob = True
 
