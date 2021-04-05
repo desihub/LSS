@@ -165,16 +165,22 @@ def combtiles(tiles,catdir,tp):
     fgu.sort('sort')
     fu = unique(fgu,keys=['TARGETID'])
     print(np.sum(fu['LOCATION_ASSIGNED']))
-    for ii in range(0,len(fu)): #this takes a long time and something more efficient will be necessary
-        tid = fu[ii]['TARGETID']
-        wt = fgu['TARGETID'] == tid
-        ot = fu[ii]['TILE']
-        fgut = fgu[wt]
-        for tl in fgut['TILE']:
+    tidsu = fu['TARGETID']
+    tids = fgu['TARGETID']
+    tiles = fgu['TILE']
+    tilesu = fu['TILE']
+    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+        tid = tidsu[ii]#fu[ii]['TARGETID']
+        wt = tids == tid
+        ot = tilesu[ii]
+        
+        tt = tiles[wt]
+        for tl in tt:
             if tl != ot:
-                fu[ii]['TILE'] += '-'+str(tl)
+                tilesu[ii] += '-'+str(tl)
         if ii%1000 == 0:
             print(ii)        
+    fu['TILE'] = tilesu
     print(np.unique(fu['TILE']))
     #wa = fu['LOCATION_ASSIGNED'] == 1
     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
@@ -238,7 +244,7 @@ def mkfullran(randir,rann,imbits,outf):
 
 def mkfulldat(zf,imbits,tdir):
 	#from desitarget.mtl import inflate_ledger
-	dz = fitsio.read(zf)	
+	dz = Table.read(zf)	
 	dz = cutphotmask(dz,imbits)
 	
 	NT = np.char.count(dz['TILE'],'-')
@@ -284,7 +290,7 @@ def mkfulldat(zf,imbits,tdir):
 	print('number of fibers with no good z, number targets on those fibers')
 	print(nm,nmt)
 	#print(np.min(probl),np.max(probl))
-	dz = Table.read(zf) #table is slow, so using fitsio above, Table here
+	#dz = Table.read(zf) #table is slow, so using fitsio above, Table here
 	dz['FRACZ_TILELOCID'] = probl
 	#print(np.unique(dz['TILE']))
 	dz['NTILE']  = NT
