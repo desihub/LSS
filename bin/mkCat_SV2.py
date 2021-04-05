@@ -97,7 +97,7 @@ ta['PROGRAM'] = pl
 mktileran = False
 runfa = False
 mkfulld = False
-combd = True
+combd = False
 combr = False
 mkprob = True
 

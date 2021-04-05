@@ -168,8 +168,8 @@ def combtiles(tiles,catdir,tp):
         if ii%1000 == 0:
             print(ii)        
     print(np.unique(fu['TILE']))
-    wa = fu['LOCATION_ASSIGNED'] == 1
-    wa &= fu['PRIORITY_ASSIGNED'] >= 2000
+    #wa = fu['LOCATION_ASSIGNED'] == 1
+    #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
     fu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
 
@@ -261,6 +261,8 @@ def get_tilelocweight(zf):
 	dz = Table.read(zf) #table is slow, so using fitsio above, Table here
 	dz['FRACZ_TILELOCID'] = probl
 	dz['NTILE']  = np.char.count(dz['TILE'],'-')
+	dz['NTILE'] += 1
+	print(np.unique(dz['NTILE']))
 	dz.write(zf,format='fits', overwrite=True)
 
 
