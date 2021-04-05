@@ -305,6 +305,39 @@ def mkfulldat(zf,imbits,tdir):
     print(np.unique(dz['NTILE']))
     dz.write(zf,format='fits', overwrite=True)
 
+def mkclusdat(fl,weighttileloc=True):
+	'''
+	take full catalog, cut to ra,dec,z add any weight
+	program is dark,gray, or bright
+	type is 'LRG', 'QSO', 'ELG', or 'BGS'
+
+	'''    
+	ff = Table.read(fl+'_full.dat.fits')
+	outf = fl+'_clus.dat.fits'
+	wz = ff['ZWARN'] == 0
+	ff = ff[wz]
+	ff['WEIGHT'] = np.ones(len(ff))
+	if weighttileloc == True:
+		ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
+
+	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
+	print('minimum,maximum weight')
+	print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+
+	ff.write(outf,format='fits', overwrite=True)
+
+def mkclusran(fl,rann):
+    #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    ffd = fitsio.read(fl+'full.dat.fits')
+    fcd = fitsio.read(fl+'clus.dat.fits')
+    ffr = fitsio.read(fl+str(rann)+'_full.ran.fits')
+    wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
+    wic = np.isin(ffr['TILELOCID'],ffc['TILELOCID'])
+    wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
+    ffc = ffr[~wb]
+    print(len(ffc),len(ffr))
+    
 
 def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
     '''

@@ -174,15 +174,15 @@ if mkfullran:
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    print(truez)
-    e2e.mkclusdat(target_type,program,truez=truez)
-    logf.write('ran mkclusdat\n')
-    print('ran mkclusdat\n')
+    ct.mkclusdat(dirout+type+'Alltiles_')
+    #logf.write('ran mkclusdat\n')
+    #print('ran mkclusdat\n')
 
 if mkclusran:
-    e2e.mkclusran(target_type,program,truez=truez)
-    logf.write('ran mkclusran\n')
-    print('ran mkclusran\n')
+    for ii in range(rm,rx):
+        ct.mkclusran((dirout+type+'Alltiles_',ii)
+    #logf.write('ran mkclusran\n')
+    #print('ran mkclusran\n')
     
 if mkNbar:
 	e2e.mkNbar(target_type,program,P0=P0,omega_matter=omega_matter,truez=truez)
