@@ -101,8 +101,10 @@ runfa = False
 mkdtiles = False
 combd = False
 combr = False
-mkfulldat = True
-mkfullran = True
+mkfulldat = False
+mkfullran = False
+mkclusdat = True
+mkclusran = True
 
 if mktileran:
     ct.randomtiles_allSV2(ta,rm,rx)
