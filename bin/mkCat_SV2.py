@@ -107,7 +107,7 @@ mkclusdat = False
 mkclusran = False
 
 if mktileran:
-    ct.randomtiles_allSV2(ta,rm,rx)
+    ct.randomtiles_allSV2(ta,imin=rm,imax=rx)
     
 if runfa:
     for ii in range(0,len(mtld)):
