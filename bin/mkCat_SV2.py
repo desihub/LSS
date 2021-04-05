@@ -12,6 +12,7 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
+from desitarget.mtl import inflate_ledger
 
 sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
@@ -97,8 +98,8 @@ ta['PROGRAM'] = pl
 
 mktileran = False
 runfa = False
-mkdtiles = False
-combd = False
+mkdtiles = True
+combd = True
 combr = False
 mkfulldat = True
 mkfullran = True
@@ -131,6 +132,7 @@ if mkdtiles:
         fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz'
         wt = ta['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
+        tars = inflate_ledger(tars,tdir)
         tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
         tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
         tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]

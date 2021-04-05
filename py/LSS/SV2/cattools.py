@@ -237,10 +237,8 @@ def mkfullran(randir,rann,imbits,outf):
 
 
 def mkfulldat(zf,imbits,tdir):
-	from desitarget.mtl import inflate_ledger
-	dz = Table.read(zf)
-	
-	dz = inflate_ledger(dz,tdir)
+	#from desitarget.mtl import inflate_ledger
+	dz = fitsio.read(zf)	
 	dz = cutphotmask(dz,imbits)
 	
 	NT = np.char.count(dz['TILE'],'-')
