@@ -6,7 +6,8 @@ import sys
 import argparse
 import os
 sys.path.append('../py')
-import LSS.mkCat_singletile.xitools as xt
+#import LSS.mkCat_singletile.xitools as xt
+import LSS.SV2.xitools as xt
 
 
 parser = argparse.ArgumentParser()
@@ -21,7 +22,7 @@ basedir = args.basedir
 version = args.version
 
 
-lssdir = basedir+'/SV1/LSS/LSScats/'
+lssdir = basedir+'/SV2/LSS/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
 subt = None
@@ -98,7 +99,7 @@ if type == 'BGS_ANY':
     zmax = 0.5    
 
 ranwt1=False
-xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+xt.prep4czxi(type,zmin,zmax,nran=1,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
 subprocess.run(['chmod','+x','czpc.sh'])
 subprocess.run('./czpc.sh')
 fa = ''
