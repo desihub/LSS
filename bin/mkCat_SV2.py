@@ -149,7 +149,7 @@ if combr:
         
         
 if mkprob:
-	ct.get_tilelocweight(outdir+tp+'Alltiles_full.dat.fits')
+	ct.get_tilelocweight(dirout+tp+'Alltiles_full.dat.fits')
 	#logf.write('ran get_tilelocweight\n')
 	#print('ran get_tilelocweight\n')
 
