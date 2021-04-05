@@ -96,7 +96,12 @@ if type == 'ELG_FDR_GFIB':
 
 if type == 'BGS_ANY':
     zmin = 0.1
-    zmax = 0.5    
+    zmax = 0.5 
+    
+if type == 'BGS_hiz':
+    zmin = 0.3
+    zmax = 0.5
+    type = 'BGS_ANY'        
 
 ranwt1=False
 xt.prep4czxi(type,zmin,zmax,nran=18,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
