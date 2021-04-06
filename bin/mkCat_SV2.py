@@ -97,12 +97,12 @@ ta['OBSCON'] = obsl
 ta['PROGRAM'] = pl
 
 mktileran = False
-runfa = True
+runfa = False
 mkdtiles = False
 combd = False
-combr = True
+combr = False
 mkfulldat = False
-mkfullran = True
+mkfullran = False
 mkclusdat = False
 mkclusran = True
 
