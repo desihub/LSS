@@ -53,7 +53,7 @@ ctar = False
 if args.cuttar == 'y':
     ctar = True
 cran = False
-if args.cutran = 'y':
+if args.cutran == 'y':
     cran = True
 docatplots = False
 if args.vis == 'y':
