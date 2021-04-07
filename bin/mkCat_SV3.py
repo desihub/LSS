@@ -182,7 +182,7 @@ if cuttar:
 if cutran:
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     for ii in range(rm,rx):
-        ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii).fits')
+        ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
         print(len(ranf))
         if cuttar:
             minr = np.min(tard['RA'])-1
