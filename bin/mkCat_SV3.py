@@ -175,9 +175,13 @@ mkclusdat = False
 mkclusran = False
 
 if ctar:
-    tard = read_targets_in_tiles(mdir,tiles,mtl=True)
+    tard = read_targets_in_tiles(mdir,tiles,mtl=True,isodate='2021-04-06T00:00:00') #this date should be after initial creation and before 1st update
+    print('read in mtl targets')
+    print('should be 0 '+str(np.unique(tard['NUMOBS'])))
     tardi = inflate_ledger(tard,tdir)
+    tardi = Table(tardi)
     tardi.write(sv3dir+pdir+'_targets.fits',overwrite=True,format='fits')
+    print('wrote inflated ledger target file to '+sv3dir+pdir+'_targets.fits')
 
 if cran:
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
@@ -197,7 +201,7 @@ if cran:
             print(len(ranf))                
         wi = is_point_in_desi(tiles, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
-        ranf.write(sv3dir+'random'+str(i)+'/alltilesnofa_'+pdir+'.fits',overwrite=True,format='fits')
+        fitsio.write(sv3dir+'random'+str(i)+'/alltilesnofa_'+pdir+'.fits',ranf,clobber=True)
 
 if mktileran:
     ct.randomtiles_allSV2(ta,imin=rm,imax=rx)
