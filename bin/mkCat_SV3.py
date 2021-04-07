@@ -174,12 +174,12 @@ mkfullran = False
 mkclusdat = False
 mkclusran = False
 
-if cuttar:
+if ctar:
     tard = read_targets_in_tiles(mdird,tiles,mtl=True)
     tardi = inflate_ledger(tard,tdir)
     tardi.write(sv3dir+pdir+'_targets.fits',overwrite=True,format='fits')
 
-if cutran:
+if cran:
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     for ii in range(rm,rx):
         ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
