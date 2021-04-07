@@ -175,7 +175,7 @@ mkclusdat = False
 mkclusran = False
 
 if ctar:
-    tard = read_targets_in_tiles(mdird,tiles,mtl=True)
+    tard = read_targets_in_tiles(mdir,tiles,mtl=True)
     tardi = inflate_ledger(tard,tdir)
     tardi.write(sv3dir+pdir+'_targets.fits',overwrite=True,format='fits')
 
