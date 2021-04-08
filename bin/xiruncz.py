@@ -12,7 +12,7 @@ import LSS.SV3.xitools as xt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is desi catalog directory",default='/global/cfs/cdirs/desi/survey/catalogs')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 
 args = parser.parse_args()
@@ -44,7 +44,7 @@ if type == 'LRG_IR':
 
 
 if type == 'ELG':
-    zmin = 0.6
+    zmin = 0.8
     zmax = 1.6
 
 if type == 'ELGlz':
