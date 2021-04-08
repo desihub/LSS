@@ -82,8 +82,8 @@ mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
 mkdtiles = True
-combd = True
-combr = True    
+combd = False
+combr = False   
 
 
 if type == 'BGS_ANY':
