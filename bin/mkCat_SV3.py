@@ -35,6 +35,9 @@ parser.add_argument("--vis", help="make a plot of data/randoms on tile",default=
 parser.add_argument("--xi", help="run pair-counting code",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='y')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
+parser.add_argument("--combd", help="combine all the tiles together",default='y')
+parser.add_argument("--combr", help="combine the random tiles together",default='y')
+
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
@@ -83,7 +86,11 @@ if args.nz == 'n':
     mknz = False
 mkdtiles = True
 combd = True
-combr = True   
+if args.combd == 'n':
+    combd = False
+combr = True
+if args.combr == 'n':
+    combr = False   
 
 
 if type == 'BGS_ANY':
