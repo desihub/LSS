@@ -100,7 +100,7 @@ else:
     pr = 'DARK'
     pdir = 'dark'
 
-
+pd = pdir
 
 mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
