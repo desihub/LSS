@@ -81,9 +81,9 @@ if args.clus == 'n':
 mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
-mkdtiles = False
+mkdtiles = True
 combd = True
-combr = False   
+combr = True   
 
 
 if type == 'BGS_ANY':
@@ -238,7 +238,17 @@ if mkdtiles:
             wt = ta['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
             #!!!MAKE FASTER BY JUST MATCHING TO TRIMMED TARGET CATALOG YOU ALREADY WROTE OUT!!!
-            tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
+            ftar = Table.read(sv3dir+pdir+'_targets.fits')
+            ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
+            'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
+            'FRACIN_Z','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','FLUX_W1',\
+            'FLUX_W2','FLUX_IVAR_W1','FLUX_IVAR_W2','MW_TRANSMISSION_W1','MW_TRANSMISSION_W2','ALLMASK_G','ALLMASK_R','ALLMASK_Z','FIBERFLUX_G',\
+            'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
+            'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
+            ol = len(tars)
+            tars = join(tars,ftar,keys=['TARGETID'])
+            print('lengths after join:'+str(ol),len(tars))
+            #tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
             tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
             tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
             tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
