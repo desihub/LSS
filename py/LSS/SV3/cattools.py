@@ -129,7 +129,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def combtiles(tiles,catdir,tp='ALL'):
+def combtiles(tiles,catdir,pd,tp='ALL'):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
@@ -185,9 +185,9 @@ def combtiles(tiles,catdir,tp='ALL'):
     #wa = fu['LOCATION_ASSIGNED'] == 1
     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
-    fu.write(catdir+tp+'Alltiles_full.dat.fits',format='fits', overwrite=True)    
+    fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
 
-def combran(tiles,rann,randir):
+def combran(tiles,rann,randir,pd):
 
     s = 0
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
@@ -227,10 +227,10 @@ def combran(tiles,rann,randir):
                 #print(ms)
                 fgu['TILE'][didsc] = ms #add the tile info
                 print(str(len(fgu))+' unique total randoms')
-    fgu.write(randir+str(rann)+'/rancomb_Alltiles.fits',format='fits', overwrite=True)
+    fgu.write(randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf):
-    zf = randir+str(rann)+'/rancomb_Alltiles.fits'
+def mkfullran(randir,rann,imbits,outf,pd):
+    zf = randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits'
     dz = Table.read(zf)
     
     dz = cutphotmask(dz,imbits)

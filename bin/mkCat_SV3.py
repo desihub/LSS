@@ -275,17 +275,17 @@ if mkdtiles:
 
 if combd:
     print(len(mtld['TILEID']))
-    ct.combtiles(mtld['TILEID'],dirout)    
+    ct.combtiles(mtld['TILEID'],dirout,pd)    
 
 
 if combr:
     print(len(mtld['TILEID']))
     for i in range(rm,rx):
-        ct.combran(mtld,i,randir)
+        ct.combran(mtld,i,randir,pd)
         
         
 if mkfulld:
-    ct.mkfulldat(dirout+'ALLAlltiles_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
+    ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
@@ -293,7 +293,7 @@ if mkfulld:
 if mkfullr:
     for ii in range(rm,rx):
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf)
+        ct.mkfullran(randir,ii,imbits,outf,pd)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
