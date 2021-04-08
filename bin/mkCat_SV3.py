@@ -145,7 +145,8 @@ if len(mtld) > 0:
     obsl = []
     pl = []
     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
+        ts = str(tile).zfill(6)
+        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
         tilel.append(tile)
         ral.append(fht['TILERA'])
         decl.append(fht['TILEDEC'])
