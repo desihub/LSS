@@ -82,7 +82,7 @@ mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
 mkdtiles = False
-combd = False
+combd = True
 combr = False   
 
 
@@ -228,28 +228,31 @@ if runrfa:
 if mkdtiles:
     for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
         ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
-        tspec = ct.combspecdata(tile,zdate)
-        pdict,goodloc = ct.goodlocdict(tspec)
-        ts = str(tile).zfill(6)
-        fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-        wt = ta['TILEID'] == tile
-        tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-        #!!!MAKE FASTER BY JUST MATCHING TO TRIMMED TARGET CATALOG YOU ALREADY WROTE OUT!!!
-        tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
-        tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
-        tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
-        tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
-        tars = join(tars,tspec,keys=['TARGETID'],join_type='left')
-        tout = ct.gettarinfo_type(fbaf,tars,goodloc,pdict)
-        #tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
-        print(tout.dtype.names)
-        wz = tout['ZWARN']*0 == 0
-        wzg = tout['ZWARN'] == 0
-        print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
-        
-        tout.write(ffd,format='fits', overwrite=True) 
-        print('wrote matched targets/redshifts to '+ffd)
-        #logf.write('made full data files\n')
+        if os.path.isfile(testfbaf):
+            print(ffd +' file already made')
+        else:
+			tspec = ct.combspecdata(tile,zdate)
+			pdict,goodloc = ct.goodlocdict(tspec)
+			ts = str(tile).zfill(6)
+			fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+			wt = ta['TILEID'] == tile
+			tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
+			#!!!MAKE FASTER BY JUST MATCHING TO TRIMMED TARGET CATALOG YOU ALREADY WROTE OUT!!!
+			tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
+			tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
+			tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
+			tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
+			tars = join(tars,tspec,keys=['TARGETID'],join_type='left')
+			tout = ct.gettarinfo_type(fbaf,tars,goodloc,pdict)
+			#tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
+			print(tout.dtype.names)
+			wz = tout['ZWARN']*0 == 0
+			wzg = tout['ZWARN'] == 0
+			print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
+		
+			tout.write(ffd,format='fits', overwrite=True) 
+			print('wrote matched targets/redshifts to '+ffd)
+			#logf.write('made full data files\n')
 
 if combd:
     print(len(mtld['TILEID']))

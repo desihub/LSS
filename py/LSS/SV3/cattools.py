@@ -305,7 +305,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #print(np.unique(dz['TILE']))
     dz['NTILE']  = NT
     print(np.unique(dz['NTILE']))
-    dz.write(zf,format='fits', overwrite=True)
+    dz.write(outf,format='fits', overwrite=True)
 
 def mkclusdat(fl,weighttileloc=True):
 	'''
