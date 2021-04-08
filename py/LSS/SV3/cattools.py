@@ -193,7 +193,7 @@ def combran(tiles,rann,randir):
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
         tspec = combspecdata(tile,zdate)
         pdict,gloc = goodlocdict(tspec)
-        ffa = randir+str(rann)+'/fba-0'+str(tile)+'.fits'
+        ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
 

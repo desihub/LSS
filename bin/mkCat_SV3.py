@@ -208,11 +208,12 @@ if mkranmtl:
     ct.randomtiles_allSV3(ta,imin=rm,imax=rx)
     
 if runrfa:
+    print('DID YOU DELETE THE OLD FILES!!!')
     for ii in range(0,len(mtld)):
         tile = mtld['TILEID'][ii]
         ts = str(tile).zfill(6)
         fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        dt = fbah['FA_RUN']
+        dt = fbah['RUNDATE']
         ttemp = Table(ta[ii])
         ttemp['OBSCONDITIONS'] = 516
         ttemp['IN_DESI'] = 1
@@ -233,6 +234,7 @@ if mkdtiles:
         fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         wt = ta['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
+        #!!!MAKE FASTER BY JUST MATCHING TO TRIMMED TARGET CATALOG YOU ALREADY WROTE OUT!!!
         tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
         tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
         tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
