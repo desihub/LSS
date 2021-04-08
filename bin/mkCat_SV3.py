@@ -205,7 +205,8 @@ if cran:
             print(len(ranf))                
         wi = is_point_in_desi(tiles, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
-        fitsio.write(sv3dir+'random'+str(i)+'/alltilesnofa_'+pdir+'.fits',ranf,clobber=True)
+        fitsio.write(sv3dir+'random'+str(ii)+'/alltilesnofa.fits',ranf,clobber=True)
+        print('wrote '+sv3dir+'random'+str(ii)+'/alltilesnofa.fits')
 
 if mktileran:
     ct.randomtiles_allSV2(ta,imin=rm,imax=rx)
