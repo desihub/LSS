@@ -22,7 +22,7 @@ def P6(mu):
 def P8(mu):
     return 1./128.*(6435.*mu**8.-12012.*mu**6.+6930.*mu**4.-1260.*mu**2.+35.)
 
-dirxi = os.environ['CSCRATCH']+'/SV2xi/'
+dirxi = os.environ['CSCRATCH']+'/SV3xi/'
 
 om = 0.31
 
@@ -180,6 +180,7 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     fo.close()
     indx = int(rxp/bs)
     rl = np.array(rl)
+    print('plotting '+dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat')
     plt.plot(rl[:indx],rl[:indx]**2.*xil[:indx],'k-')
     plt.xlabel(r'$s$ (Mpc/h)')
     plt.ylabel(r'$s^2\xi$')
