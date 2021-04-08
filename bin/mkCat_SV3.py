@@ -219,7 +219,7 @@ if runrfa:
         ttemp['IN_DESI'] = 1
         ttemp.write('tiletemp.fits',format='fits', overwrite=True)
         for i in range(rm,rx):
-            testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
+            testfbaf = randir+str(i)+'/fba-'+str(tile).zfill(6)+'.fits'
             if os.path.isfile(testfbaf):
                 print('fba file already made')
             else:                   
