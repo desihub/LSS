@@ -129,7 +129,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def combtiles(tiles,catdir,tp):
+def combtiles(tiles,catdir,tp='ALL'):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
@@ -246,9 +246,11 @@ def mkfullran(randir,rann,imbits,outf):
     
 
 
-def mkfulldat(zf,imbits,tdir):
+def mkfulldat(zf,imbits,tdir,tp,bit):
     #from desitarget.mtl import inflate_ledger
     dz = Table.read(zf) 
+    wtype = ((dz[tp] & bit) > 0)
+    dz = dz[wtype]
     dz = cutphotmask(dz,imbits)
     
     NT = np.zeros(len(dz))
@@ -349,14 +351,14 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
 
     
 
-def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/LSS/random',imin=0,imax=18,dirr='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'):
+def randomtiles_allSV3(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random',imin=0,imax=18):
     '''
     tiles should be a table containing the relevant info
     '''
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
     print(trad)
     for ii in range(imin,imax):
-        rt = fitsio.read(dirr+'/randoms-1-'+str(ii)+'.fits',columns=['RA','DEC','TARGETID','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])
+        rt = fitsio.read(dirout+str(ii)+'/alltilesnofa.fits')
         #rt = fitsio.read(minisvdir+'random/random_mtl.fits')
         print('loaded random file') 
     
@@ -380,7 +382,7 @@ def randomtiles_allSV2(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV2/
                 #rmtl['TARGETID'] = np.arange(len(rmtl))
                 print(len(rmtl['TARGETID'])) #checking this column is there
                 rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-                rmtl['SV1_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+                rmtl['SV3_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
                 rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400

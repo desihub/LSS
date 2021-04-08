@@ -29,11 +29,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='y')
-parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='y')
+parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
+parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
 parser.add_argument("--xi", help="run pair-counting code",default='n')
-parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
+parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='y')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
@@ -74,6 +74,8 @@ mkfullr = True #make the random files associated with the full data files
 if args.fullr == 'n':
     mkfullr = False
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+mkclusdat = True
+mkclusran = True
 if args.clus == 'n':
     mkclus = False
 mknz = True #get n(z) for type and all subtypes
@@ -166,15 +168,6 @@ else:
     print('no done tiles in the MTL')
 
 
-runfa = False
-mkdtiles = False
-combd = False
-combr = False
-mkfulldat = False
-mkfullran = False
-mkclusdat = False
-mkclusran = False
-
 if ctar:
     tard = read_targets_in_tiles(mdir,tiles,mtl=True,isodate='2021-04-06T00:00:00') #this date should be after initial creation and before 1st update
     print('read in mtl targets')
@@ -209,12 +202,13 @@ if cran:
         print('wrote '+sv3dir+'random'+str(ii)+'/alltilesnofa.fits')
 
 if mktileran:
-    ct.randomtiles_allSV2(ta,imin=rm,imax=rx)
+    ct.randomtiles_allSV3(ta,imin=rm,imax=rx)
     
 if runfa:
     for ii in range(0,len(mtld)):
         tile = mtld['TILEID'][ii]
-        fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz')
+        ts = str(tile).zfill(6)
+        fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
         dt = fbah['FA_RUN']
         ttemp = Table(ta[ii])
         ttemp['OBSCONDITIONS'] = 516
@@ -224,24 +218,24 @@ if runfa:
             testfbaf = randir+str(i)+'/fba-0'+str(tile)+'.fits'
             if os.path.isfile(testfbaf):
                 print('fba file already made')
-            else:   
-                
+            else:                   
                 fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
 
 if mkdtiles:
     for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
-        ffd = dirout+type+str(tile)+'_full.dat.fits'
+        ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
         tspec = ct.combspecdata(tile,zdate)
         pdict,goodloc = ct.goodlocdict(tspec)
-        fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/0'+str(tile)[:2]+'/fiberassign-0'+str(tile)+'.fits.gz'
+        ts = str(tile).zfill(6)
+        fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         wt = ta['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-        tars = inflate_ledger(tars,tdir)
+        tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
         tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
         tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
         tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
         tars = join(tars,tspec,keys=['TARGETID'],join_type='left')
-        tout = ct.gettarinfo_type(fbaf,tars,goodloc,tarbit,pdict)
+        tout = ct.gettarinfo_type(fbaf,tars,goodloc,pdict)
         #tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
         print(tout.dtype.names)
         wz = tout['ZWARN']*0 == 0
@@ -254,7 +248,7 @@ if mkdtiles:
 
 if combd:
     print(len(mtld['TILEID']))
-    ct.combtiles(mtld['TILEID'],dirout,type)    
+    ct.combtiles(mtld['TILEID'],dirout)    
 
 
 if combr:
@@ -264,7 +258,7 @@ if combr:
         
         
 if mkfulldat:
-    ct.mkfulldat(dirout+type+'Alltiles_full.dat.fits',imbits,tdir)
+    ct.mkfulldat(dirout+type+'Alltiles_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type])
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
