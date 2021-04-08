@@ -196,7 +196,7 @@ if cran:
     for ii in range(rm,rx):
         ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
         print(len(ranf))
-        if cuttar:
+        if ctar:
             wp = ranf['RA'] > minr
             wp &= ranf['RA'] < maxr
             wp &= ranf['DEC'] > mind
