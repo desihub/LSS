@@ -228,7 +228,7 @@ if runrfa:
 if mkdtiles:
     for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
         ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
-        if os.path.isfile(testfbaf):
+        if os.path.isfile(ffd):
             print(ffd +' file already made')
         else:
             tspec = ct.combspecdata(tile,zdate)

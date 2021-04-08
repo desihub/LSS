@@ -7,7 +7,7 @@ import argparse
 import os
 sys.path.append('../py')
 #import LSS.mkCat_singletile.xitools as xt
-import LSS.SV2.xitools as xt
+import LSS.SV3.xitools as xt
 
 
 parser = argparse.ArgumentParser()
@@ -22,7 +22,7 @@ basedir = args.basedir
 version = args.version
 
 
-lssdir = basedir+'/SV2/LSS/LSScats/'
+lssdir = basedir+'/SV3/LSS/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
 subt = None

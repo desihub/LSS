@@ -36,12 +36,12 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
 
     df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_clustering.dat.fits')
     if subt is not None:
-        from desitarget.sv2 import sv2_targetmask
-        tb = sv2_targetmask.desi_mask[subt]
-        sel = (df['SV2_DESI_TARGET'] & tb) > 0
+        from desitarget.sv3 import sv3_targetmask
+        tb = sv3_targetmask.desi_mask[subt]
+        sel = (df['SV3_DESI_TARGET'] & tb) > 0
         df = df[sel]
         
-    so = 'SV2_'+ver+type+fkpw+str(zmin)+str(zmax)
+    so = 'SV3_'+ver+type+fkpw+str(zmin)+str(zmax)
     ifiled = outdir+'g'+so+'4xi.dat'
     fo = open(ifiled,'w')
     w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
@@ -60,7 +60,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
         df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+str(nr)+'_clustering.ran.fits')
         
         if subt is not None:
-            sel = (df['SV2_DESI_TARGET'] & tb) > 0
+            sel = (df['SV3_DESI_TARGET'] & tb) > 0
             df = df[sel]
         
         w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
@@ -93,7 +93,7 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     if fkp:
         fkpw = 'fkp'
 
-    so = 'SV2_'+ver+type+fkpw+str(zmin)+str(zmax)
+    so = 'SV3_'+ver+type+fkpw+str(zmin)+str(zmax)
 
     froot = dirczpc+so
     if rec == '':
