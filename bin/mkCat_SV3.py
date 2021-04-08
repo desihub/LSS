@@ -81,6 +81,9 @@ if args.clus == 'n':
 mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
+mkdtiles = True
+combd = True
+combr = True    
 
 
 if type == 'BGS_ANY':
@@ -201,10 +204,10 @@ if cran:
         fitsio.write(sv3dir+'random'+str(ii)+'/alltilesnofa.fits',ranf,clobber=True)
         print('wrote '+sv3dir+'random'+str(ii)+'/alltilesnofa.fits')
 
-if mktileran:
+if mkranmtl:
     ct.randomtiles_allSV3(ta,imin=rm,imax=rx)
     
-if runfa:
+if runrfa:
     for ii in range(0,len(mtld)):
         tile = mtld['TILEID'][ii]
         ts = str(tile).zfill(6)
