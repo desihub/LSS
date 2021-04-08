@@ -262,13 +262,13 @@ if combr:
         ct.combran(mtld,i,randir)
         
         
-if mkfulldat:
+if mkfulld:
     ct.mkfulldat(dirout+type+'Alltiles_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type])
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
-if mkfullran:
+if mkfullr:
     for ii in range(rm,rx):
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
         ct.mkfullran(randir,ii,imbits,outf)
