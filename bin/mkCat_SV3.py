@@ -110,9 +110,11 @@ tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
 
 wp = tiles['PROGRAM'] == pr
 tiles = tiles[wp]
+print(len(tiles))
 
 wp = np.isin(mtld['TILEID'],tiles['TILEID']) #we want to consider MTL done tiles that correspond to the SV3 tile file
 mtld = mtld[wp]
+print(len(mtld))
 
 
 
