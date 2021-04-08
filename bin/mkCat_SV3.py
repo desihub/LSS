@@ -81,7 +81,7 @@ if args.clus == 'n':
 mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
-mkdtiles = True
+mkdtiles = False
 combd = False
 combr = False   
 
