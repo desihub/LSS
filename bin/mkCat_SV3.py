@@ -178,10 +178,10 @@ if ctar:
     tard = read_targets_in_tiles(mdir,tiles,mtl=True,isodate='2021-04-06T00:00:00') #this date should be after initial creation and before 1st update
     print('read in mtl targets')
     print('should be 0 '+str(np.unique(tard['NUMOBS'])))
-	minr = np.min(tard['RA'])-1
-	maxr = np.max(tard['RA'])+1
-	mind = np.min(tard['DEC'])-1
-	maxd = np.max(tard['DEC'])+1
+    minr = np.min(tard['RA'])-1
+    maxr = np.max(tard['RA'])+1
+    mind = np.min(tard['DEC'])-1
+    maxd = np.max(tard['DEC'])+1
 
     tardi = inflate_ledger(tard,tdir)
     tardi = Table(tardi)
