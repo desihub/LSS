@@ -263,7 +263,7 @@ if combr:
         
         
 if mkfulld:
-    ct.mkfulldat(dirout+type+'Alltiles_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type])
+    ct.mkfulldat(dirout+'ALLAlltiles_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
