@@ -71,7 +71,7 @@ runrfa = True#run randoms through fiberassign
 if args.rfa == 'n':
     runrfa = False
 remake_dtile = True
-if args.redodt == 'n'
+if args.redodt == 'n':
     remake_dtile = False
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
