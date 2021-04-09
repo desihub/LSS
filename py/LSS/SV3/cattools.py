@@ -157,6 +157,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     print('number of assigned fibers '+str(len(tt[wal])))
     print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID']))))
+    print('max priority of assigned '+str(np.max(tt[wal]['PRIORITY_ASSIGNED'])))
     tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
     tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
