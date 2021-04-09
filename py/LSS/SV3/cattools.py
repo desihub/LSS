@@ -39,15 +39,18 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     for i in range(1,len(specs)):
         tn = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
-        tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+        try:
+            tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+        except:
+            print('did not find '+coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
         tspec = vstack([tspec,tn])
         tf = vstack([tf,tnf])
         ts = vstack([ts,tns])
     
     tf = unique(tf,keys=['TARGETID'])
     tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
-    tspec = join(tspec,tf,keys=['TARGETID'])
-    tspec = join(tspec,ts,keys=['TARGETID'])
+    tspec = join(tspec,tf,keys=['TARGETID'],join_type='left')
+    tspec = join(tspec,ts,keys=['TARGETID'],join_type='left')
     print(len(tspec),len(tf))
     #tspec['LOCATION'] = tf['LOCATION']
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
