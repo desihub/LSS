@@ -375,8 +375,8 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
     wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
     wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
-    #ffc = ffr[~wb]
-    ffc = ffr
+    ffc = ffr[~wb]
+    #ffc = ffr
     print(len(ffc),len(ffr))
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
