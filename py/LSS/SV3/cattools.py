@@ -157,6 +157,8 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     print('number of assigned fibers '+str(len(tt[wal])))
     print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID']))))
+    tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
+    tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
@@ -194,6 +196,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+    print(np.max(fgu[wn]['PRIORITY_ASSIGNED']),'max priority assigned')
     fgu[wn]['PRIORITY_ASSIGNED'] = 0
     fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
     wa = fgu['LOCATION_ASSIGNED'] == 1
@@ -228,6 +231,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
 def combran(tiles,rann,randir,pd):
 
     s = 0
+    tiles.sort('ZDATE')
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
         tspec = combfibmap(tile,zdate)
         pdict,gloc = goodlocdict(tspec)
@@ -252,10 +256,11 @@ def combran(tiles,rann,randir,pd):
             else:   
                 fv = vstack([fgu,fgun])
                 fgo = fgu.copy()
-                fgu = unique(fv,keys='TARGETID') 
+                fgu = unique(fv,keys='TARGETID')#,keep='last') 
+                
                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-                print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
+                #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 
                 aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
