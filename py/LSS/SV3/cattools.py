@@ -41,21 +41,51 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
         try:
             tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+            ts = vstack([ts,tns],metadata_conflicts='silent')
         except:
             print('did not find '+coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
-        tspec = vstack([tspec,tn])
-        tf = vstack([tf,tnf])
-        ts = vstack([ts,tns])
+        tspec = vstack([tspec,tn],metadata_conflicts='silent')
+        tf = vstack([tf,tnf],metadata_conflicts='silent')
+        
     
     tf = unique(tf,keys=['TARGETID'])
     tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
-    tspec = join(tspec,tf,keys=['TARGETID'],join_type='left')
-    tspec = join(tspec,ts,keys=['TARGETID'],join_type='left')
+    tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+    tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     print(len(tspec),len(tf))
     #tspec['LOCATION'] = tf['LOCATION']
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
+
+def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
+    #put data from different spectrographs together, one table for fibermap, other for z
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        
+        try:
+            ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            fitsio.read(ff)
+
+            specs.append(si)
+        except:
+            print('no spectrograph '+str(si)+ ' for tile '+str(tile))
+            #print(ff)
+    print('spectrographs with data:')
+    print(specs)            
+    if len(specs) == 0:
+        return None
+    tf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
+    for i in range(1,len(specs)):
+        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
+        tf = vstack([tf,tnf],metadata_conflicts='silent')
+        
+    
+    tf = unique(tf,keys=['TARGETID'])
+    tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    return tf
+
 
 def goodlocdict(tf):
     '''
@@ -199,7 +229,7 @@ def combran(tiles,rann,randir,pd):
 
     s = 0
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
-        tspec = combspecdata(tile,zdate)
+        tspec = combfibmap(tile,zdate)
         pdict,gloc = goodlocdict(tspec)
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
