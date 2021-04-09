@@ -196,7 +196,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-    wn &= fgu['PRIORITY_ASSIGNED'] != 999999
+    wn &= fgu['PRIORITY_ASSIGNED'] == 999999
     print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
     fgu[wn]['PRIORITY_ASSIGNED'] = 0
     fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
