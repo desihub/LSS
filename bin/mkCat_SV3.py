@@ -37,7 +37,7 @@ parser.add_argument("--ranmtl", help="make a random mtl file for the tile",defau
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--combd", help="combine all the tiles together",default='y')
 parser.add_argument("--combr", help="combine the random tiles together",default='y')
-
+parser.add_argument("--redodt", help="remake already done data tiles",default='y')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
@@ -70,6 +70,9 @@ if args.ranmtl == 'y':
 runrfa = True#run randoms through fiberassign
 if args.rfa == 'n':
     runrfa = False
+remake_dtile = True
+if args.redodt == 'n'
+    remake_dtile = False
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
     mkfulld = False
@@ -81,6 +84,8 @@ mkclusdat = True
 mkclusran = True
 if args.clus == 'n':
     mkclus = False
+    mkclusdat = False
+    mkclusran = False
 mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
@@ -237,8 +242,8 @@ if runrfa:
 if mkdtiles:
     for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
         ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
-        if os.path.isfile(ffd):
-            print(ffd +' file already made')
+        if os.path.isfile(ffd) and remake_dtile == False:
+            print(ffd +' file already made and remakes not requested')
         else:
             tspec = ct.combspecdata(tile,zdate)
             pdict,goodloc = ct.goodlocdict(tspec)
