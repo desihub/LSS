@@ -182,20 +182,20 @@ def doran(ii):
         print('DID YOU DELETE THE OLD FILES!!!')
         for it in range(0,len(mtld)):
     
-			tile = mtld['TILEID'][it]
-			ts = str(tile).zfill(6)
-			fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-			dt = fbah['RUNDATE']
-			ttemp = Table(ta[it])
-			ttemp['OBSCONDITIONS'] = 516
-			ttemp['IN_DESI'] = 1
-			ttemp.write('tiletemp.fits',format='fits', overwrite=True)
-			#for i in range(rm,rx):
-			testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
-			if os.path.isfile(testfbaf):
-				print('fba file already made')
-			else:                   
-				fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(ii)+'/',dt = dt)
+            tile = mtld['TILEID'][it]
+            ts = str(tile).zfill(6)
+            fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            dt = fbah['RUNDATE']
+            ttemp = Table(ta[it])
+            ttemp['OBSCONDITIONS'] = 516
+            ttemp['IN_DESI'] = 1
+            ttemp.write('tiletemp.fits',format='fits', overwrite=True)
+            #for i in range(rm,rx):
+            testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
+            if os.path.isfile(testfbaf):
+                print('fba file already made')
+            else:                   
+                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(ii)+'/',dt = dt)
 
  
 
