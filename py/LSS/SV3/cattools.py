@@ -321,6 +321,11 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
+    NT = np.zeros(len(fgu))
+    for ii in range(0,len(fgu['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(fgu['TILE'][ii],'-')+1
+    fgu['NTILE'] = NT    
+
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
 def mkfullran(randir,rann,imbits,outf,tp):
