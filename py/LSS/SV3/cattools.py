@@ -278,7 +278,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             wg = np.isin(fa['LOCATION'],gloc)
             wg &= ~np.isin(fa['LOCATION'],locsna)
             if maskzfail:
-                wg &= np.isin(fa['LOCATION'],loc_fail)
+                wg &= ~np.isin(fa['LOCATION'],loc_fail)
             
             #wzt = wpr & ~wzf & ~wna
 
