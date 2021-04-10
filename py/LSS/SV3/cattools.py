@@ -258,7 +258,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
             gloc = np.unique(fd['LOCATION']) #bad locations already removed from this files
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
-            if tp != 'ALL':
+            if tp != 'dark' and tp != 'bright':
                 wt = (fd[tc] & tmask[tp]) > 0
                 fd = fd[wt]
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
