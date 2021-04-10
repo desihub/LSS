@@ -96,7 +96,7 @@ sv3dir = basedir +'/SV3/LSS/'
 
 from desitarget.sv3 import sv3_targetmask
 
-tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
+#tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
 
 wp = tiles['PROGRAM'] == pr
 tiles = tiles[wp]
