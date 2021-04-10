@@ -333,9 +333,10 @@ def mkfullran(randir,rann,imbits,outf,tp):
     dz = Table.read(zf)
     
     dz = cutphotmask(dz,imbits)
-    NT = np.zeros(len(dz))
-    for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
+    #done in combran instead
+    #NT = np.zeros(len(dz))
+    #for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+    #    NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
     
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
