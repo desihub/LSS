@@ -261,21 +261,21 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             wzf &= fd['ZWARN'] != 999999
             wzf &= fd['ZWARN']*0 == 0
             loc_fail = np.unique(fd[wzf]['LOCATION'])
-			nl,nla = countloc(fd)
-		# 
-			#find the locations that were requested by LRGs but not assigned
-			locsna = []
-			for i in range(0,len(nla)):
-				if nla[i] == 0 and nl[i] > 0:
-					locsna.append(i)
+            nl,nla = countloc(fd)
+        # 
+            #find the locations that were requested by LRGs but not assigned
+            locsna = []
+            for i in range(0,len(nla)):
+                if nla[i] == 0 and nl[i] > 0:
+                    locsna.append(i)
 
             fa = Table.read(ffa,hdu='FAVAIL')
             wg = np.isin(fa['LOCATION'],gloc)
             wg &= ~np.isin(fa['LOCATION'],locsna)
-			if maskzfail:
-			    wg &= np.isin(fa['LOCATION'],loc_fail)
-			
-			#wzt = wpr & ~wzf & ~wna
+            if maskzfail:
+                wg &= np.isin(fa['LOCATION'],loc_fail)
+            
+            #wzt = wpr & ~wzf & ~wna
 
             fg = fa[wg]
             print('before,after vetoing locations:')
@@ -389,26 +389,26 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz.write(outf,format='fits', overwrite=True)
 
 def mkclusdat(fl,weighttileloc=True):
-	'''
-	take full catalog, cut to ra,dec,z add any weight
-	program is dark,gray, or bright
-	type is 'LRG', 'QSO', 'ELG', or 'BGS'
+    '''
+    take full catalog, cut to ra,dec,z add any weight
+    program is dark,gray, or bright
+    type is 'LRG', 'QSO', 'ELG', or 'BGS'
 
-	'''    
-	ff = Table.read(fl+'full.dat.fits')
-	outf = fl+'clustering.dat.fits'
-	wz = ff['ZWARN'] == 0
-	ff = ff[wz]
-	ff['WEIGHT'] = np.ones(len(ff))
-	if weighttileloc == True:
-		ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
+    '''    
+    ff = Table.read(fl+'full.dat.fits')
+    outf = fl+'clustering.dat.fits'
+    wz = ff['ZWARN'] == 0
+    ff = ff[wz]
+    ff['WEIGHT'] = np.ones(len(ff))
+    if weighttileloc == True:
+        ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
-	ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
-	print('minimum,maximum weight')
-	print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
 
-	ff.write(outf,format='fits', overwrite=True)
+    ff.write(outf,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
