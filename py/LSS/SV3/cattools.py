@@ -256,7 +256,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
         if os.path.isfile(ffa):
             fd = Table.read(dt)
             gloc = np.unique(fd['LOCATION']) #bad locations already removed from this files
-            wt = (dt[tc] & tmask[tp]) > 0
+            wt = (fd[tc] & tmask[tp]) > 0
             fd = fd[wt]
             wzf = fd['ZWARN'] != 0 
             wzf &= fd['ZWARN'] != 999999
