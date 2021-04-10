@@ -262,6 +262,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             wzf &= fd['ZWARN'] != 999999
             wzf &= fd['ZWARN']*0 == 0
             loc_fail = np.unique(fd[wzf]['LOCATION'])
+            print('number of zfail locations',len(loc_fail))
             nl,nla = countloc(fd)
         # 
             #find the locations that were requested by LRGs but not assigned
@@ -270,6 +271,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 if nla[i] == 0 and nl[i] > 0:
                     locsna.append(i)
 
+            print('number of unassigned locations',len(locsna))
+            ntloc = len(gloc)-len(locsna)-len(loc_fail)
+            print('total number of assignable positions',ntloc)
             fa = Table.read(ffa,hdu='FAVAIL')
             wg = np.isin(fa['LOCATION'],gloc)
             wg &= ~np.isin(fa['LOCATION'],locsna)
