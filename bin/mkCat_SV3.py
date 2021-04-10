@@ -286,7 +286,7 @@ if combd:
 if combr:
     print(len(mtld['TILEID']))
     for i in range(rm,rx):
-        ct.combran(mtld,ii,randir,tp,sv3_targetmask.desi_mask)
+        ct.combran(mtld,ii,randir,type,sv3_targetmask.desi_mask)
         
         
 if mkfulld:
