@@ -246,6 +246,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
 
     s = 0
     #tiles.sort('ZDATE')
+    print(len(tiles))
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
         #tspec = combfibmap(tile,zdate)
         #pdict,gloc = goodlocdict(tspec)
@@ -308,6 +309,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 #print(ms)
                 fgu['TILE'][didsc] = ms #add the tile info
                 print(str(len(fgu))+' unique total randoms')
+        else:
+            print('did not find '+ffa)
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
 def mkfullran(randir,rann,imbits,outf,tp):
