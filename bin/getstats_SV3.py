@@ -43,7 +43,7 @@ for tp in tpl:
     wzg = dat['ZWARN'] == 0
     print('number of '+tp+' observations (good hardware):',len(dat[wz]))
     print('number of '+tp+' time good observations (ZWARN==0):',len(dat[wzg]))
-    ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/'+tp+'Alltiles_clustering.dat.fits')
+    ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/'+tp+'Alltiles_0_clustering.ran.fits')
     print('effective '+tp+' area, after vetoing higher-priority positions, positions with redshift failures, and imaging: ',str(len(ran)/2500))
     print('\n')
     
