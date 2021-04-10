@@ -286,7 +286,7 @@ if combd:
 if combr:
     print(len(mtld['TILEID']))
     for i in range(rm,rx):
-        ct.combran(mtld,i,randir,pd)
+        ct.combran(mtld,ii,randir,tp,sv3_targetmask.desi_mask)
         
         
 if mkfulld:
@@ -298,7 +298,7 @@ if mkfulld:
 if mkfullr:
     for ii in range(rm,rx):
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,pd)
+        ct.mkfullran(randir,ii,imbits,outf,type)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 

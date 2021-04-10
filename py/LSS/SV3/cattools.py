@@ -230,20 +230,56 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     print(np.sum(fu['LOCATION_ASSIGNED']))
     fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
 
-def combran(tiles,rann,randir,pd):
+def countloc(aa):
+    locs = aa['LOCATION']
+    locsa = aa['LOCATION_ASSIGNED']
+    la = np.max(locs)+1
+    nl = np.zeros(la)
+    nla = np.zeros(la)
+    for i in range(0,len(aa)):
+        nl[locs[i]] += 1
+        nla[locs[i]] += locsa[i]
+    return nl,nla
+
+
+def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True):
 
     s = 0
-    tiles.sort('ZDATE')
+    #tiles.sort('ZDATE')
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
-        tspec = combfibmap(tile,zdate)
-        pdict,gloc = goodlocdict(tspec)
+        #tspec = combfibmap(tile,zdate)
+        #pdict,gloc = goodlocdict(tspec)
+        dt = ddir+'ALL'+str(tile)+'_full.dat.fits'
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
+            fd = Table.read(dt)
+            gloc = np.unique(fd['LOCATION']) #bad locations already removed from this files
+            wt = (dt[tc] & tmask[tp]) > 0
+            fd = fd[wt]
+            wzf = fd['ZWARN'] != 0 
+            wzf &= fd['ZWARN'] != 999999
+            wzf &= fd['ZWARN']*0 == 0
+            loc_fail = np.unique(fd[wzf]['LOCATION'])
+			nl,nla = countloc(fd)
+		# 
+			#find the locations that were requested by LRGs but not assigned
+			locsna = []
+			for i in range(0,len(nla)):
+				if nla[i] == 0 and nl[i] > 0:
+					locsna.append(i)
 
             fa = Table.read(ffa,hdu='FAVAIL')
             wg = np.isin(fa['LOCATION'],gloc)
+            wg &= ~np.isin(fa['LOCATION'],locsna)
+			if maskzfail:
+			    wg &= np.isin(fa['LOCATION'],loc_fail)
+			
+			#wzt = wpr & ~wzf & ~wna
+
             fg = fa[wg]
+            print('before,after vetoing locations:')
+            print(len(fa),len(fg))
             fgun = unique(fg,keys=['TARGETID'])
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
@@ -272,10 +308,10 @@ def combran(tiles,rann,randir,pd):
                 #print(ms)
                 fgu['TILE'][didsc] = ms #add the tile info
                 print(str(len(fgu))+' unique total randoms')
-    fgu.write(randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits',format='fits', overwrite=True)
+    fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,pd):
-    zf = randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits'
+def mkfullran(randir,rann,imbits,outf,tp):
+    zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
     dz = Table.read(zf)
     
     dz = cutphotmask(dz,imbits)
