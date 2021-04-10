@@ -189,13 +189,14 @@ def doran(ii):
             ttemp = Table(ta[it])
             ttemp['OBSCONDITIONS'] = 516
             ttemp['IN_DESI'] = 1
-            ttemp.write('tiletemp.fits',format='fits', overwrite=True)
+            
             #for i in range(rm,rx):
             testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
             if os.path.isfile(testfbaf):
                 print('fba file already made')
             else:                   
-                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(ii)+'/',dt = dt)
+                ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
+                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt)
 
  
 
