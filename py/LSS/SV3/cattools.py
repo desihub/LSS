@@ -267,7 +267,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             loc_fail = np.unique(fd[wzf]['LOCATION'])
             print('number of zfail locations',len(loc_fail))
             nl,nla = countloc(fd)
-            print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),np.sum(nla),np.sum(nl))
+            print(np.sum(fd['LOCATION_ASSIGNED']),len(np.unique(fd['LOCATION'])),np.sum(nla),np.sum(nl))
         # 
             #find the locations that were requested by type but not assigned
             locsna = []
