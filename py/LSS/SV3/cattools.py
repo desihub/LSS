@@ -258,8 +258,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
             gloc = np.unique(fd['LOCATION']) #bad locations already removed from this files
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
-            wt = (fd[tc] & tmask[tp]) > 0
-            fd = fd[wt]
+            if tp != 'ALL':
+                wt = (fd[tc] & tmask[tp]) > 0
+                fd = fd[wt]
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
             wzf = fd['ZWARN'] != 0 
             wzf &= fd['ZWARN'] != 999999
@@ -270,19 +271,20 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             print(np.sum(fd['LOCATION_ASSIGNED']),len(np.unique(fd['LOCATION_AVAIL'])),np.sum(nla),np.sum(nl))
         # 
             #find the locations that were requested by type but not assigned
-            locsna = []
-            for i in range(0,len(nla)):
-                if nla[i] == 0 and nl[i] > 0:
-                    locsna.append(i)
-
-            print('number of unassigned locations',len(locsna))
-            ntloc = len(gloc)-len(locsna)-len(loc_fail)
-            print('total number of assignable positions',ntloc)
             fa = Table.read(ffa,hdu='FAVAIL')
             wg = np.isin(fa['LOCATION'],gloc)
-            wg &= ~np.isin(fa['LOCATION'],locsna)
-            if maskzfail:
-                wg &= ~np.isin(fa['LOCATION'],loc_fail)
+            if tp != 'dark' and tp != 'bright':
+                locsna = []
+                for i in range(0,len(nla)):
+                    if nla[i] == 0 and nl[i] > 0:
+                        locsna.append(i)
+
+                print('number of unassigned locations',len(locsna))
+                ntloc = len(gloc)-len(locsna)-len(loc_fail)
+                print('total number of assignable positions',ntloc)
+                wg &= ~np.isin(fa['LOCATION'],locsna)
+                if maskzfail:
+                    wg &= ~np.isin(fa['LOCATION'],loc_fail)
             
             #wzt = wpr & ~wzf & ~wna
 

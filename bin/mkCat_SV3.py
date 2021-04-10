@@ -33,17 +33,17 @@ parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
 parser.add_argument("--xi", help="run pair-counting code",default='n')
-parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='y')
-parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
+parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
+parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combd", help="combine all the tiles together",default='y')
-parser.add_argument("--combr", help="combine the random tiles together",default='y')
-parser.add_argument("--redodt", help="remake already done data tiles",default='y')
+parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
+parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
-
+#all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
 
 args = parser.parse_args()
 print(args)
@@ -73,6 +73,8 @@ if args.rfa == 'n':
 remake_dtile = True
 if args.redodt == 'n':
     remake_dtile = False
+mkdtiles = True #not really any reason to toggle this since above essentially does for unmade tiles
+
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
     mkfulld = False
@@ -89,7 +91,7 @@ if args.clus == 'n':
 mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
-mkdtiles = True
+
 combd = True
 if args.combd == 'n':
     combd = False
@@ -97,8 +99,17 @@ combr = True
 if args.combr == 'n':
     combr = False   
 
+if type == 'dark' or type == 'bright':
+    #set all type catalog stuff to False in this case
+    mkfulld = False
+    mkfullr = False
+    mkclus = False
+    mkclusdat = False
+    mkclusran = False
+    
+    
 
-if type == 'BGS_ANY':
+if type == 'BGS_ANY' or type == 'bright':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:

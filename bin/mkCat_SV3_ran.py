@@ -56,6 +56,9 @@ if args.ranmtl == 'y':
 runrfa = True#run randoms through fiberassign
 if args.rfa == 'n':
     runrfa = False
+combr = True
+if args.combr == 'n':
+    combr = False   
 
 
 mkfullr = True #make the random files associated with the full data files
@@ -66,12 +69,14 @@ mkclusran = True
 if args.clus == 'n':
     mkclus = False
     mkclusran = False
-combr = True
-if args.combr == 'n':
-    combr = False   
 
+if type == 'bright' or type == 'dark':
+    #don't do any of the actual catalogs in this case
+    mkclus = False
+    mkclusran = False
+    mkfullr = False
 
-if type == 'BGS_ANY':
+if type == 'BGS_ANY' or type == 'bright':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
