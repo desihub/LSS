@@ -340,8 +340,8 @@ def mkfullran(randir,rann,imbits,outf,tp):
     
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
-    print(np.unique(NT))
-    dz['NTILE'] = NT
+    print(np.unique(dz['NTILE']))
+    #dz['NTILE'] = NT
     dz.write(outf,format='fits', overwrite=True)
     
 
