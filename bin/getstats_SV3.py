@@ -12,6 +12,9 @@ wp = np.isin(mtld['TILEID'],tiles['TILEID']) #we want to consider MTL done tiles
 mtld = mtld[wp]
 print('number of completed dark tiles:',len(mtld))
 
+mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
+tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+
 wp = tiles['PROGRAM'] == 'BRIGHT'
 tiles = tiles[wp]
 
