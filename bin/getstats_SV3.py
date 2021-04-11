@@ -64,7 +64,7 @@ for tp in tpl:
     wz &= dat['ZWARN'] != 999999
     wzg = dat['ZWARN'] == 0
     print('number of unique '+tp+' targets observed (good hardware):',len(dat[wz]))
-    print('number of unique'+tp+' targets with a good observation (ZWARN==0):',len(dat[wzg]))
+    print('number of unique '+tp+' targets with a good observation (ZWARN==0):',len(dat[wzg]))
     ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/'+tp+'Alltiles_0_clustering.ran.fits')
     print('effective '+tp+' area, after vetoing higher-priority positions, positions with redshift failures, and imaging: ',str(len(ran)/2500))
     print('#')
