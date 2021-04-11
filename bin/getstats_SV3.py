@@ -43,16 +43,16 @@ dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/A
 wz = dat['ZWARN']*0 == 0
 wz &= dat['ZWARN'] != 999999
 wzg = dat['ZWARN'] == 0
-print('number of dark time observations (good hardware):',len(dat[wz]))
-print('number of dark time good observations (ZWARN==0):',len(dat[wzg]))
+print('number of unique dark time targets observed (good hardware):',len(dat[wz]))
+print('number of unique dark time targets with a good observation (ZWARN==0):',len(dat[wzg]))
 
 print('#')
 dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/ALLAlltiles_bright_full.dat.fits')
 wz = dat['ZWARN']*0 == 0
 wz &= dat['ZWARN'] != 999999
 wzg = dat['ZWARN'] == 0
-print('number of bright time observations (good hardware):',len(dat[wz]))
-print('number of bright time good observations (ZWARN==0):',len(dat[wzg]))
+print('number of unique bright time targets observed (good hardware):',len(dat[wz]))
+print('number of unique bright time targets with a good observation (ZWARN==0):',len(dat[wzg]))
 
 print('#')
 print('splitting by type, numbers are after all veto masks:')
@@ -63,8 +63,8 @@ for tp in tpl:
     wz = dat['ZWARN']*0 == 0
     wz &= dat['ZWARN'] != 999999
     wzg = dat['ZWARN'] == 0
-    print('number of '+tp+' observations (good hardware):',len(dat[wz]))
-    print('number of '+tp+' time good observations (ZWARN==0):',len(dat[wzg]))
+    print('number of unique '+tp+' targets observed (good hardware):',len(dat[wz]))
+    print('number of unique'+tp+' targets with a good observation (ZWARN==0):',len(dat[wzg]))
     ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/'+tp+'Alltiles_0_clustering.ran.fits')
     print('effective '+tp+' area, after vetoing higher-priority positions, positions with redshift failures, and imaging: ',str(len(ran)/2500))
     print('#')
