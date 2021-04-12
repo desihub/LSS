@@ -21,7 +21,7 @@ from fiberassign.targets import (Targets,
                                  TargetTree,
                                  LocationsAvailable,
                                  load_target_table)
-from fiberassign.assign import Assignment, run
+from fiberassign.assign import Assignment, run, write_assignment_fits_tile
 from desitarget.targetmask import bgs_mask, desi_mask
 
 
@@ -50,8 +50,8 @@ def main():
                         " to get the MTL state at that time.  For now, this option"
                         " is just one or more target files.")
 
-    parser.add_argument("--truth", type=str, required=True,
-                        help="Truth information used to access and output redshift.")
+#    parser.add_argument("--truth", type=str, required=True,
+#                        help="Truth information used to access and output redshift.")
 
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
@@ -102,8 +102,8 @@ def main():
 
     # Load mtl and truth, make sure targets are the same
     mtl = Table.read(args.mtl)
-    truth = Table.read(args.truth)
-    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
+#    truth = Table.read(args.truth)
+#    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
 
     #for tgfile in args.targets:
     #    load_target_file(tgs, tgfile)
@@ -132,7 +132,8 @@ def main():
     #tgarray.setall(False)
     #tgarray = np.zeros(n_target * n_realization,dtype='bool')
 
-    bitweights = np.zeros((n_target, n_realization),dtype=bool)
+#    bitweights = np.zeros((n_target, n_realization),dtype=bool)
+    bitweights = np.zeros((n_realization, n_target),dtype=bool)
 
     # Target tree
     #tree = TargetTree(tgs)
@@ -183,16 +184,21 @@ def main():
             run(asgn)
 
             # Update bit arrays for assigned science targets
+            assigned = []
             for tile_id in tiles.id:
                 adata = asgn.tile_location_target(tile_id)
                 for loc, tgid in adata.items():
-                    try:
-                        idx = tg_science2indx[tgid]
-                        bitweights[idx][realization] = True
-                        #tgarray[idx * n_realization + realization] = True
-                    except KeyError:
-                        # Not a science target
-                        pass
+                    assigned.append(tgid)
+            idas = np.isin(tg_science, assigned)
+            bitweights[realization][idas] = True
+#                    try:
+#                        idx = tg_science2indx[tgid]
+#                        tgarray[idx * n_realization + realization] = True
+#                    except KeyError:
+#                        # Not a science target
+#                        pass
+
+    bitweights = bitweights.T
 
     # Pack bits into 64 bit integers
     bitvector0, bitvector1 = [], []
@@ -202,14 +208,9 @@ def main():
     bitvector0, bitvector1 = np.array(bitvector0), np.array(bitvector1)
 
     # Get redshift and spectral type
-    z = truth['TRUEZ']
-    templatetype = truth['TEMPLATETYPE']
-    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
-
-    if len(truth['TARGETID']) != n_target:
-        match = np.intersect1d(truth['TARGETID'],tg_science,return_indices=True)[1]
-        z = z[match]
-        templatetype = templatetype[match]
+    z = mtl['Z'] #truth['TRUEZ']
+#    templatetype = truth['TEMPLATETYPE']
+#    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
 
     # Write output
     outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
@@ -218,9 +219,10 @@ def main():
     output['RA'] = mtl['RA']
     output['DEC'] = mtl['DEC']
     output['Z'] = z
+    output['ASSIGNEDID'] = idas
     output['BITWEIGHT0'] = bitvector0
     output['BITWEIGHT1'] = bitvector1
-    output['TEMPLATETYPE'] = templatetype
+#    output['TEMPLATETYPE'] = templatetype
     output.write(outfile)
 
     # Reduce bitarrays to root process.  The bitarray type conforms to the
