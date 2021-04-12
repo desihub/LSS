@@ -109,7 +109,7 @@ if type == 'dark' or type == 'bright':
     
     
 
-if type == 'BGS_ANY' or type == 'bright':
+if type == 'BGS_ANY' or type == 'bright' or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
