@@ -66,7 +66,7 @@ def main():
     parser.add_argument("--outdir", type=str, required=False, default=None,
                         help="Output directory.")
 
-    parser.add_argument("--realizations", type=int, required=False, default=10,
+    parser.add_argument("--realizations", type=int, required=False, default=128,
                         help="Number of realizations.")
 
     args = parser.parse_args()
@@ -132,7 +132,6 @@ def main():
     #tgarray.setall(False)
     #tgarray = np.zeros(n_target * n_realization,dtype='bool')
 
-#    bitweights = np.zeros((n_target, n_realization),dtype=bool)
     bitweights = np.zeros((n_realization, n_target),dtype=bool)
 
     # Target tree
@@ -178,7 +177,7 @@ def main():
 
             # Read hardware properties- in the future, pass in the assignment run date
             # to this function.
-            hw = load_hardware()
+            #hw = load_hardware()
 
             # Run assignment for this event.
             run(asgn)
@@ -198,14 +197,13 @@ def main():
 #                        # Not a science target
 #                        pass
 
-    bitweights = bitweights.T
-
     # Pack bits into 64 bit integers
-    bitvector0, bitvector1 = [], []
+    bitweights = bitweights.T
+    n_vector = n_realization // 64
+    bitvectors = [[] for _ in range(n_vector)]
     for w in bitweights:
-        bitvector0.append(np.packbits(list(w)).view(np.int)[0])
-        bitvector1.append(np.packbits(list(w)).view(np.int)[1])
-    bitvector0, bitvector1 = np.array(bitvector0), np.array(bitvector1)
+        for v in range(n_vector):
+            bitvectors[v].append(np.packbits(list(w)).view(np.int)[v])
 
     # Get redshift and spectral type
     z = mtl['Z'] #truth['TRUEZ']
@@ -220,8 +218,8 @@ def main():
     output['DEC'] = mtl['DEC']
     output['Z'] = z
     output['ASSIGNEDID'] = idas
-    output['BITWEIGHT0'] = bitvector0
-    output['BITWEIGHT1'] = bitvector1
+    for i,vec in enumerate(bitvectors):
+        output['BITWEIGHT{}'.format(i)] = vec
 #    output['TEMPLATETYPE'] = templatetype
     output.write(outfile)
 
