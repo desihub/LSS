@@ -228,6 +228,25 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     #wa = fu['LOCATION_ASSIGNED'] == 1
     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
+
+    #need to resort tile string
+	fl = np.chararray(len(faf),unicode=True,itemsize=100)
+	for ii in range(0,len(fu)):
+		tl = fu['TILE'][ii]
+		tls = tl.split('-')#.astype('int')
+		tli = tls[0]
+		if len(tls) > 1:
+			#tls = tls.astype('int')
+			tls.sort()
+			tli = tls[0]
+			for i in range(1,len(tls)):
+				tli += '-'+tls[i]
+		#else:
+		#    tli = tls
+		#print(tli)
+		fl[ii] = tli   
+    
+    fu['TILE'] = fl
     fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
 
 def countloc(aa):
