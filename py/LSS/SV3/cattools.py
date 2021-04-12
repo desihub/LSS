@@ -379,6 +379,25 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(NT))
+
+    #get completeness based on unique sets of tiles
+    compa = []
+    tll = []
+    for tls in np.unique(dz['TILE']):
+        w = dz['TILE'] == tls
+        no = sum(dz[w]['LOCATION_ASSIGNED'])
+        nt = len(dz[w])
+        cp = no/nt
+        print(tls,cp,no,nt)
+        compa.append(cp)
+        tll.append(tls)
+    comp_dicta = dict(zip(tll, compa))
+    fcompa = []
+    for tl in dz['TILE']:
+        fcompa.append(comp_dicta[tl]) 
+    dz['COMP_TILE'] = np.array(fcompa)       
+
+    #get tilelocid probs
     wz = dz['ZWARN'] == 0
     dzz = dz[wz]
     probl = np.zeros(len(dz))
