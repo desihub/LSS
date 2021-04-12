@@ -224,7 +224,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         if ii%1000 == 0:
             print(ii)        
     fu['TILE'] = tilesu
-    print(np.unique(fu['TILE']))
+    
     #wa = fu['LOCATION_ASSIGNED'] == 1
     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
@@ -247,6 +247,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         fl[ii] = tli   
     
     fu['TILE'] = fl
+    print(np.unique(fu['TILE']))
     fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
 
 def countloc(aa):
