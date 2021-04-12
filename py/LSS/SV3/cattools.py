@@ -230,7 +230,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     print(np.sum(fu['LOCATION_ASSIGNED']))
 
     #need to resort tile string
-    fl = np.chararray(len(faf),unicode=True,itemsize=100)
+    fl = np.chararray(len(fu),unicode=True,itemsize=100)
     for ii in range(0,len(fu)):
         tl = fu['TILE'][ii]
         tls = tl.split('-')#.astype('int')
