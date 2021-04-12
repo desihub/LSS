@@ -47,6 +47,11 @@ if type == 'ELG':
     zmin = 0.8
     zmax = 1.6
 
+if type == 'ELG_HIP':
+    zmin = 0.8
+    zmax = 1.6
+
+
 if type == 'ELGlz':
     zmin = 0.6
     zmax = 0.8
