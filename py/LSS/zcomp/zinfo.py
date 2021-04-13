@@ -86,12 +86,7 @@ def comb_subset_vert_denali(tarbit,tp,tile,exposures,outf,tt,mfn='temp.txt',md='
                 nights.append(dr[-8:])
 
         for dr,night in zip(dirs,nights):
-            #print(tile,night)
-            #if tile == '80607' and night == 'subset-1':
-            #    pass
-
-            coadddiru = dr
-            tspec = get_subset_denali(tarbit,tp,night,tile,coaddiru,exposures,ct,mfn=mfn,tsmd=tsmd)
+            tspec = get_subset_denali(tarbit,tp,night,tile,dr,exposures,ct,mfn=mfn,tsmd=tsmd)
             if tspec is not None:
                 if ss == 0:
                     tspect = tspec
