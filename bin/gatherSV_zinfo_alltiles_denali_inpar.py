@@ -93,7 +93,7 @@ logf.write(str(args)+'\n')
   
 expf = '/global/cfs/cdirs/desi/survey/observations/SV1/sv1-exposures.fits'  
 exposures = fitsio.read(expf) #this will be used in depth calculations  
-gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG','BACKUP','SSV']
+gt = ['BGS+MWS', 'ELG', 'QSO+ELG', 'QSO+LRG','BACKUP','SSV','SCND']
 #location of inputs
 tiledir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'
 
