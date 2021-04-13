@@ -57,6 +57,60 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
         print('no data for tile '+tile)
         return False
 
+def comb_subset_vert_denali(tarbit,tp,subsets,tile,exposures,outf,tt,mfn='temp.txt',md='rel'):
+    '''
+    performs a vertical concatenation of the data for a tile, so each targetid shows up N_subset times
+    subsets is a list of the subsets (strings)
+    tile is the particular tile (string)
+    coaddir is where the data comes from (string; e.g., the directory pointing to the Blanc release)
+    exposures is the file containing the information per exposure, used to get depth information (data array read by, e.g., fitsio)
+    outf is where the fits file gets written out (string)
+    '''
+    tsmd='fm'
+    ss = 0 #use to switch from creating to concatenating
+    ctypes = ['cumulative','perexp','pernight']
+    for ct in ctypes:
+		if ct == 'cumulative':
+		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/cumulative/'+tile) if f.is_dir() ][0]
+		    night = dirs[-8:]
+		    nights = ['thru'+night]
+		if ct == 'perexp':
+		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/perexp/'+tile) if f.is_dir() ]
+		    nights = []
+		    for dr in dirs:
+		        nights.append('exp'+dr[-8:])
+		if ct == 'pernight':
+		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/pernight/'+tile) if f.is_dir() ]
+		    nights = []
+		    for dr in dirs:
+		        nights.append(dr[-8:])
+
+		for dr,night in zip(dirs,nights):
+			#print(tile,night)
+			#if tile == '80607' and night == 'subset-1':
+			#    pass
+
+			coadddiru = dr
+			tspec = get_subset_denali(tarbit,tp,night,tile,coaddiru,exposures,ct,mfn=mfn,tsmd=tsmd)
+				if tspec is not None:
+					if ss == 0:
+						tspect = tspec
+						ss = 1
+					else:
+						tspect = vstack([tspect,tspec], metadata_conflicts='silent')
+					print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+                    
+    if ss == 1:
+        tspect.sort('TARGETID')
+        tspect['TARGETS'] = tt
+        tspect.write(outf,format='fits', overwrite=True) 
+        print('wrote to '+outf)
+        return True
+    else:
+        print('no data for tile '+tile)
+        return False
+
+
 def comb_exps_vert(tarbit,tp,tile,coaddir,exposures,outf,dirout):
     '''
     performs a vertical concatenation of the exposure data for a tile, so each targetid shows up N_subset times
@@ -401,6 +455,159 @@ def get_subset(tarbit,tp,night,tile,coaddir,exposures,mfn='temp.txt',rel='cascad
             tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
         return tspec
     return None    
+
+def get_subset_denali(tarbit,tp,night,tile,coaddir,exposures,ct,mfn='temp.txt',tsmd='fm'):
+
+    print('going through subset '+night)
+    if tsmd != 'fm':
+        print('tsmd needs to be fm, other options not supported, all will fail!!!')
+        return None
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        try:
+            fl = coaddir+'/zbest-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+            fitsio.read(fl)
+            fl = coaddir+'/coadd-'+str(si)+'-'+str(tile)+'-'+night+'.fits'
+            fitsio.read(fl)
+            specs.append(si)
+        except:
+            #print(fl,specs,si)
+            print('no spectrograph and/or coadd '+str(si)+ ' on subset '+night)
+    if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
+        tspec = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+        tf = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        if tsmd == 'fm':
+            ts = Table.read(coaddir+'/coadd-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+            ts.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+        #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
+        zfm = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+        exps = np.unique(zfm['EXPID'])
+        etdark = []
+        etbright = []
+        etback = []
+        
+        ce = 0
+        for exp in exps:
+            info = exposures[exposures['EXPID'] == exp]
+            if len(info) == 0:
+                print('did not find info for expid '+str(exp))
+                fo = open(mfn,'a')
+                fo.write(str(exp)+'\n')
+                return None
+            else:    
+                
+                nt = str(info['NIGHT'][0])
+                etdark.append(info['EFFTIME_DARK'][0])
+                etbright.append(info['EFFTIME_BRIGHT'][0])
+                etback.append(info['EFFTIME_BACKUP'][0]) 
+                
+                if tsmd != 'fm':
+                    for cam in cams:
+                        tcols  =[]
+                        for col in tsnrcols:
+                            tcols.append(col+'_'+cam.upper())
+                        cf = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='SCORES')
+                        cf.keep_columns(tcols)
+                        for col in tcols:
+                            cf.rename_column(col, col[:-2])
+                        if ce ==0 and cam == 'b':
+                            tids = Table.read(cfdir+'/'+nt+'/cframe-'+cam+str(specs[0])+'-'+str(exp).zfill(8)+'.fits',hdu='FIBERMAP')
+                            tnsrt = cf.copy()
+                            tnsrt['TARGETID'] = tids['TARGETID']
+                        else:
+                            for col in tsnrcols:
+                                tnsrt[col] += cf[col]         
+                ce += 1                 
+        etdarkt = np.zeros(500)
+        etbrightt = np.zeros(500)
+        etbackt = np.zeros(500)
+
+        tid = zfm[0:500]['TARGETID']
+        for i in range(0,len(exps)):
+            sel = zfm[i*500:(i+1)*500]
+            w = sel['FIBERSTATUS'] == 0
+            etdarkt[w] += etdark[i]
+            etbrightt[w] += etbright[i]
+            etbackt[w] += etback[i]
+    
+        
+        tf['EXPS'] = ",".join(exps.astype(str))
+        for i in range(1,len(specs)):
+            zfm = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
+            exps = np.unique(zfm['EXPID'])
+            if tsmd == 'fm':
+                tsn = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='SCORES')
+                tsn.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+                ts = vstack([ts,tsn], metadata_conflicts='silent')
+           
+
+            tn = Table.read(coaddir+'/zbest-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
+            tnf = Table.read(coaddir+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')  
+            tnf['EXPS'] = ",".join(exps.astype(str))
+            tspec = vstack([tspec,tn], metadata_conflicts='silent')                      
+            tf = vstack([tf,tnf], metadata_conflicts='silent')
+            etdark = []
+            etbright = []
+            etback = []
+            ce = 0
+            for exp in exps:
+                info = exposures[exposures['EXPID'] == exp]
+                if len(info) == 0:
+                    print('did not find info for expid '+str(exp))
+                    return None
+                else:
+                    nt = str(info['NIGHT'][0])
+                    etdark.append(info['EFFTIME_DARK'][0])
+                    etbright.append(info['EFFTIME_BRIGHT'][0])
+                    etback.append(info['EFFTIME_BACKUP'][0]) 
+                    
+                        
+                    ce += 1                 
+
+            
+            etdarktn = np.zeros(500)
+            etbrighttn = np.zeros(500)
+            etbacktn = np.zeros(500)
+
+            tidn = zfm[0:500]['TARGETID']
+            for ii in range(0,len(exps)):
+                sel = zfm[ii*500:(ii+1)*500]
+                w = sel['FIBERSTATUS'] == 0
+                etdarktn[w] += etdark[ii]
+                etbrighttn[w] += etbright[ii]
+                etbacktn[w] += etback[ii]
+
+            etdarkt = np.concatenate([etdarkt,etdarktn])
+            etbrightt = np.concatenate([etbrightt,etbrighttn])
+            etbackt = np.concatenate([etbackt,etbacktn])   
+
+
+            tid = np.concatenate([tid,tidn])
+        tspec = join(tspec,tf,keys=['TARGETID'], metadata_conflicts='silent')
+        if tsmd != 'fm':
+            tspec = join(tspec,tnsrt,keys=['TARGETID'], metadata_conflicts='silent')
+        else:
+            tspec = join(tspec,ts,keys=['TARGETID'], metadata_conflicts='silent')
+        td = Table([etdarkt,etbrightt,etbackt,tid],names=('EFFTIME_DARK','EFFTIME_BRIGHT','EFFTIME_BACK','TARGETID'))
+        tspec = join(tspec,td,keys=['TARGETID'], metadata_conflicts='silent')
+        if tarbit != -1:
+            wtype = ((tspec[tp] & 2**tarbit) > 0)
+            print(str(len(tspec))+' total entries '+str(len(tspec[wtype]))+' that are requested type entries with '+str(len(np.unique(tspec[wtype]['TARGETID'])))+' unique target IDs')
+            if len(tspec[wtype]) == 0:
+                return None
+
+            tspec = tspec[wtype]
+        tspec['subset'] = night
+        tspec['coadd_type'] = ct
+        # AR adding a weight for ELGs in the QSO+ELG and QSO+LRG tiles
+        # AR to down-weight QSOs which are at a higher priority
+        # AR we "rescale" to the ELGxQSO/ELG ratio of the parent input target sample per tile
+        if tarbit != -1:
+            tspec['elgqso_weight'] = get_elgqso_weight(tarbit,tp,tile,tspec[tp])
+        return tspec
+    return None    
+
 
 def get_exp(tarbit,tp,exp,tile,coaddir,exposures,mfn='temp.txt'):
 
