@@ -114,6 +114,7 @@ def get_tilezinfo(tile):
         tile = str(tile)
         coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+release+'/tiles/'+tile
         subsets = [x[0][len(coaddir):].strip('/') for x in os.walk(coaddir)] #something must work better than this, but for now...
+        print(subsets)
         if len(subsets) > 1:
             #print(subsets)
             print('going through tile '+tile)
