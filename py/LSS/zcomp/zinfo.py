@@ -70,35 +70,35 @@ def comb_subset_vert_denali(tarbit,tp,subsets,tile,exposures,outf,tt,mfn='temp.t
     ss = 0 #use to switch from creating to concatenating
     ctypes = ['cumulative','perexp','pernight']
     for ct in ctypes:
-		if ct == 'cumulative':
-		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/cumulative/'+tile) if f.is_dir() ][0]
-		    night = dirs[-8:]
-		    nights = ['thru'+night]
-		if ct == 'perexp':
-		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/perexp/'+tile) if f.is_dir() ]
-		    nights = []
-		    for dr in dirs:
-		        nights.append('exp'+dr[-8:])
-		if ct == 'pernight':
-		    dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/pernight/'+tile) if f.is_dir() ]
-		    nights = []
-		    for dr in dirs:
-		        nights.append(dr[-8:])
+        if ct == 'cumulative':
+            dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/cumulative/'+tile) if f.is_dir() ][0]
+            night = dirs[-8:]
+            nights = ['thru'+night]
+        if ct == 'perexp':
+            dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/perexp/'+tile) if f.is_dir() ]
+            nights = []
+            for dr in dirs:
+                nights.append('exp'+dr[-8:])
+        if ct == 'pernight':
+            dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/pernight/'+tile) if f.is_dir() ]
+            nights = []
+            for dr in dirs:
+                nights.append(dr[-8:])
 
-		for dr,night in zip(dirs,nights):
-			#print(tile,night)
-			#if tile == '80607' and night == 'subset-1':
-			#    pass
+        for dr,night in zip(dirs,nights):
+            #print(tile,night)
+            #if tile == '80607' and night == 'subset-1':
+            #    pass
 
-			coadddiru = dr
-			tspec = get_subset_denali(tarbit,tp,night,tile,coaddiru,exposures,ct,mfn=mfn,tsmd=tsmd)
-				if tspec is not None:
-					if ss == 0:
-						tspect = tspec
-						ss = 1
-					else:
-						tspect = vstack([tspect,tspec], metadata_conflicts='silent')
-					print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+            coadddiru = dr
+            tspec = get_subset_denali(tarbit,tp,night,tile,coaddiru,exposures,ct,mfn=mfn,tsmd=tsmd)
+                if tspec is not None:
+                    if ss == 0:
+                        tspect = tspec
+                        ss = 1
+                    else:
+                        tspect = vstack([tspect,tspec], metadata_conflicts='silent')
+                    print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     if ss == 1:
         tspect.sort('TARGETID')
