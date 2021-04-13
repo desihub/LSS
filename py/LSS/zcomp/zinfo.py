@@ -92,13 +92,13 @@ def comb_subset_vert_denali(tarbit,tp,subsets,tile,exposures,outf,tt,mfn='temp.t
 
             coadddiru = dr
             tspec = get_subset_denali(tarbit,tp,night,tile,coaddiru,exposures,ct,mfn=mfn,tsmd=tsmd)
-                if tspec is not None:
-                    if ss == 0:
-                        tspect = tspec
-                        ss = 1
-                    else:
-                        tspect = vstack([tspect,tspec], metadata_conflicts='silent')
-                    print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
+            if tspec is not None:
+                if ss == 0:
+                    tspect = tspec
+                    ss = 1
+                else:
+                    tspect = vstack([tspect,tspec], metadata_conflicts='silent')
+                print('there are now '+str(len(tspect)) +' entries with '+str(len(np.unique(tspect['TARGETID'])))+' unique target IDs')    
                     
     if ss == 1:
         tspect.sort('TARGETID')
