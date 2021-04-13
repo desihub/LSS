@@ -57,7 +57,7 @@ def comb_subset_vert(tarbit,tp,subsets,tile,coaddir,exposures,outf,tt,mfn='temp.
         print('no data for tile '+tile)
         return False
 
-def comb_subset_vert_denali(tarbit,tp,subsets,tile,exposures,outf,tt,mfn='temp.txt',md='rel'):
+def comb_subset_vert_denali(tarbit,tp,tile,exposures,outf,tt,mfn='temp.txt',md='rel'):
     '''
     performs a vertical concatenation of the data for a tile, so each targetid shows up N_subset times
     subsets is a list of the subsets (strings)

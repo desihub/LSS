@@ -120,7 +120,7 @@ def get_tilezinfo(tile):
             a = True
 
         else:
-            a = zi.comb_subset_vert_denali(tarbit,tp,subsets,tile,exposures,outf,tt,mfn=mfn)
+            a = zi.comb_subset_vert_denali(tarbit,tp,tile,exposures,outf,tt,mfn=mfn)
             logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
 
         if a:
