@@ -50,8 +50,8 @@ def main():
                         " to get the MTL state at that time.  For now, this option"
                         " is just one or more target files.")
 
-#    parser.add_argument("--truth", type=str, required=True,
-#                        help="Truth information used to access and output redshift.")
+    parser.add_argument("--truth", type=str, required=False,
+                        help="Truth information used to access and output redshift.")
 
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
@@ -102,8 +102,9 @@ def main():
 
     # Load mtl and truth, make sure targets are the same
     mtl = Table.read(args.mtl)
-#    truth = Table.read(args.truth)
-#    assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
+    if args.truth:
+        truth = Table.read(args.truth)
+        assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
 
     #for tgfile in args.targets:
     #    load_target_file(tgs, tgfile)
@@ -206,9 +207,12 @@ def main():
             bitvectors[v].append(np.packbits(list(w)).view(np.int)[v])
 
     # Get redshift and spectral type
-    z = mtl['Z'] #truth['TRUEZ']
-#    templatetype = truth['TEMPLATETYPE']
-#    templatetype = np.array([t.strip() for t in templatetype], dtype=str)
+    if args.truth:
+        z = truth['TRUEZ']
+        templatetype = truth['TEMPLATETYPE']
+        templatetype = np.array([t.strip() for t in templatetype], dtype=str)
+    else:
+        z = mtl['Z']
 
     # Write output
     outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
@@ -220,7 +224,8 @@ def main():
     output['ASSIGNEDID'] = idas
     for i,vec in enumerate(bitvectors):
         output['BITWEIGHT{}'.format(i)] = vec
-#    output['TEMPLATETYPE'] = templatetype
+    if args.truth:
+        output['TEMPLATETYPE'] = templatetype
     output.write(outfile)
 
     # Reduce bitarrays to root process.  The bitarray type conforms to the
