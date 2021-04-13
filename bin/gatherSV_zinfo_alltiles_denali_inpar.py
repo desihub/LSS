@@ -145,7 +145,8 @@ def get_tilezinfo(tile):
                     #if ln['RZR'] != 'N':
                     #   zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
                     #else:
-                    zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/'    
+                    #zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/' 
+                    zfitdir = tiledir+ln['coadd_type']+'/'+str(ln['TILEID'])+'/'+ln['subset'][-8:]+'/'   
         
                     fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
         
