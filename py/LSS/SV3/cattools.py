@@ -505,7 +505,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     fcds = Table.read(fl+'S_clustering.dat.fits')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
-    dshuf = fcdn[inds]
+    dshuf = fcds[inds]
     for col in rcols: 
         ffcs[col] = dshuf[col]     
     ffcs.write(outfs,format='fits', overwrite=True)
