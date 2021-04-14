@@ -502,7 +502,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     ffcn.write(outfn,format='fits', overwrite=True)
 
     outfs =  fl+'S_'+str(rann)+'_clustering.ran.fits' 
-    fcds = Table.read(fl+'S_clustering.dat.fits'
+    fcds = Table.read(fl+'S_clustering.dat.fits')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
     dshuf = fcdn[inds]
