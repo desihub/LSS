@@ -346,7 +346,7 @@ if mknz:
             dz = 0.05
             ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         else:    
-            ct.mknz(fcd,fcr,fout)
+            ct.mknz(fcd,fcr,fout,bs=0.02)
 
 if fillNZ:
     e2e.fillNZ(target_type,program,P0=P0,truez=truez)   
