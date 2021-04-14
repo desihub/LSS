@@ -109,7 +109,7 @@ if type == 'BGS_hiz':
     type = 'BGS_ANY'        
 
 ranwt1=False
-regl = ['__N','__S']
+regl = ['_N','_S']
 for reg in regl:
 	xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
 	subprocess.run(['chmod','+x','czpc.sh'])

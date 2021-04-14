@@ -466,9 +466,9 @@ def mkclusdat(fl,weighttileloc=True):
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
-    outfn = fl+'_N_clustering.dat.fits'
+    outfn = fl+'N_clustering.dat.fits'
     ff[wn].write(outfn,format='fits', overwrite=True)
-    outfn = fl+'_S_clustering.dat.fits'
+    outfn = fl+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
@@ -491,9 +491,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
     outf =  fl+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
-    outfn =  fl+'_N_'+str(rann)+'clustering.ran.fits' 
+    outfn =  fl+'N_'+str(rann)+'_clustering.ran.fits' 
     ffc[wn].write(outfn,format='fits', overwrite=True)
-    outfs =  fl+'_S_'+str(rann)+'clustering.ran.fits' 
+    outfs =  fl+'S_'+str(rann)+'_clustering.ran.fits' 
     ffc[~wn].write(outfs,format='fits', overwrite=True)
 
     
