@@ -356,13 +356,15 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             print('did not find '+ffa)
     NT = np.zeros(len(fgu))
     ros = np.zeros(len(fgu))
+    print('counting tiles and finding rosette')
     for ii in range(0,len(fgu['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(fgu['TILE'][ii],'-')+1
-        ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
+        ti = int(dz['TILE'][ii].split('-')[0])
+        ros[ii] = tile2rosette(ti)
     fgu['NTILE'] = NT    
             
     fgu['rosette_number'] = ros
-    print(np.unique(dz['rosette_numeber']),return_counts=True)
+    print(np.unique(dz['rosette_number']),return_counts=True)
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
@@ -394,17 +396,18 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
+    print('counting tiles and finding rosette')
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
         ti = int(dz['TILE'][ii].split('-')[0])
-        ros[ii] = tile2rosette(ti)
+        ros[ii] = tile2rosette(ti) #this is very slow!
         if ii%10000 == 0:
             print(ii,ti,ros[ii])
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['rosette_number'] = ros
-    print(np.unique(dz['rosette_numeber']),return_counts=True)
+    print(np.unique(dz['rosette_number']),return_counts=True)
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(NT))
