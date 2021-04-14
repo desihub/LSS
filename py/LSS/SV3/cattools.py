@@ -480,9 +480,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=True):
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
-    outfn = fl+'N_clustering.dat.fits'
+    outfn = fl+wzm+'N_clustering.dat.fits'
     ff[wn].write(outfn,format='fits', overwrite=True)
-    outfn = fl+'S_clustering.dat.fits'
+    outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=True):
