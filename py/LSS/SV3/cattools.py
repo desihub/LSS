@@ -392,10 +392,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz = cutphotmask(dz,imbits)
     
     NT = np.zeros(len(dz))
-    ros = np.zeros(len(dz))
+    #ros = np.zeros(len(dz))
+    ti = np.zeros(len(dz))
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
-        ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
+        ti[ii] = int(dz['TILE'][ii].split('-')[0])
+    ros = tile2rosette(ti)
+    #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['rosette_number'] = ros
     print(np.unique(dz['rosette_numeber']),return_counts=True)
     #NT = np.char.count(dz['TILE'],'-')
