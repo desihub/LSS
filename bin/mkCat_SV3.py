@@ -43,7 +43,7 @@ parser.add_argument("--fullr", help="make the random files associated with the f
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
 
 #all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
 
@@ -330,7 +330,7 @@ if mkclusran:
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
-if mkNbar:
+if mknz:
     regl = ['','_N','_S']
     for reg in regl:
         if zma:
