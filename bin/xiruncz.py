@@ -29,8 +29,9 @@ zmask = ['']
 
 subt = None
 if type == 'LRG':
-    zmin=0.32
-    zmax=1.05
+    zl = [0.32,0.6,0.8,1.05,1.3]
+    #zmin=0.32
+    #zmax=1.05
 
 if type == 'LRG_OPT':
     subt = type
