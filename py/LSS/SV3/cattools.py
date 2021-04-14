@@ -473,8 +473,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=True):
             zind = int(z/1e-6)
             zma.append(fzm[zind]['RADIAL_MASK'])        
         zma = np.array(zma)
-        wzm = zma == 0
-        ff = ff[wzm]    
+        wm = zma == 0
+        ff = ff[wm]    
     wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
     print('minimum,maximum weight')
