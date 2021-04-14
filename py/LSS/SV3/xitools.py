@@ -26,7 +26,7 @@ dirxi = os.environ['CSCRATCH']+'/SV3xi/'
 
 om = 0.31
 
-def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',tile='Alltiles',fkp=False,ranwt1=False,subt=None):
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',reg='',tile='Alltiles',fkp=False,ranwt1=False,subt=None):
     '''
     prepare catalogs to be used by Cheng Zhao's paircount code
     '''
@@ -34,14 +34,14 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     if fkp:
         fkpw = 'fkp'
 
-    df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_clustering.dat.fits')
+    df = fitsio.read(indir+'/'+ver+'/'+type+tile+reg+'_clustering.dat.fits')
     if subt is not None:
         from desitarget.sv3 import sv3_targetmask
         tb = sv3_targetmask.desi_mask[subt]
         sel = (df['SV3_DESI_TARGET'] & tb) > 0
         df = df[sel]
         
-    so = 'SV3_'+ver+type+fkpw+str(zmin)+str(zmax)
+    so = 'SV3_'+ver+type+reg+fkpw+str(zmin)+str(zmax)
     ifiled = outdir+'g'+so+'4xi.dat'
     fo = open(ifiled,'w')
     w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
@@ -57,7 +57,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     ifiler = outdir+'r'+so+'4xi.dat'
     fo = open(ifiler,'w')
     for nr in range(0,nran):
-        df = fitsio.read(indir+'/'+ver+'/'+type+tile+'_'+str(nr)+'_clustering.ran.fits')
+        df = fitsio.read(indir+'/'+ver+'/'+type+tile+reg+'_'+str(nr)+'_clustering.ran.fits')
         
         if subt is not None:
             sel = (df['SV3_DESI_TARGET'] & tb) > 0
@@ -88,12 +88,12 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
     fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
+def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',reg='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
     fkpw = ''
     if fkp:
         fkpw = 'fkp'
 
-    so = 'SV3_'+ver+type+fkpw+str(zmin)+str(zmax)
+    so = 'SV3_'+ver+type+reg+fkpw+str(zmin)+str(zmax)
 
     froot = dirczpc+so
     if rec == '':

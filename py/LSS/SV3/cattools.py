@@ -461,12 +461,15 @@ def mkclusdat(fl,weighttileloc=True):
     if weighttileloc == True:
         ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
+    wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
-
-
     ff.write(outf,format='fits', overwrite=True)
+    outfn = fl+'_N_clustering.dat.fits'
+    ff[wn].write(outfn,format='fits', overwrite=True)
+    outfn = fl+'_S_clustering.dat.fits'
+    ff[~wn].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -484,9 +487,14 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
 
     for col in rcols: 
         ffc[col] = dshuf[col] 
+    wn = ffc['PHOTSYS'] == 'N'
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
     outf =  fl+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
+    outfn =  fl+'_N_'+str(rann)+'clustering.ran.fits' 
+    ffc[wn].write(outfn,format='fits', overwrite=True)
+    outfs =  fl+'_S_'+str(rann)+'clustering.ran.fits' 
+    ffc[~wn].write(outfs,format='fits', overwrite=True)
 
     
 
