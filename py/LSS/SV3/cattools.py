@@ -402,7 +402,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
         ti = int(dz['TILE'][ii].split('-')[0])
-        ros[ii] = tile2rosette(ti) #this is very slow!
+        ros[ii] = tile2rosette(ti) 
         if ii%10000 == 0:
             print(ii,ti,ros[ii])
     #ros = tile2rosette(ti)
@@ -560,6 +560,29 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=True):
     for col in rcols: 
         ffcs[col] = dshuf[col]     
     ffcs.write(outfs,format='fits', overwrite=True)
+
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.3):
+    
+    cd = distance(om,1-om)
+    ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
+    area = len(ranf)/5000.
+    print('area is '+str(area))
+    
+    df = fitsio.read(fcd)
+    
+    nbin = int((zmax-zmin)/bs)
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
+    outf = open(fout,'w')
+    outf.write('#area is '+str(area)+'square degrees\n')
+    outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+    for i in range(0,nbin):
+        zl = zhist[1][i]
+        zh = zhist[1][i+1]
+        zm = (zh+zl)/2.
+        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zl)**3.)
+        nbarz =  zhist[0][i]/voli#/fraca #don't upweight based on fraction not assigned any more
+        outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
+    outf.close()
 
     
 

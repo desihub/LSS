@@ -331,9 +331,20 @@ if mkclusran:
     #print('ran mkclusran\n')
     
 if mkNbar:
-    e2e.mkNbar(target_type,program,P0=P0,omega_matter=omega_matter,truez=truez)
-    logf.write('made nbar\n')
-    print('made nbar\n')
+    regl = ['','_N','_S']
+    for reg in regl:
+        if zma:
+            reg = '_zmask'+reg
+        fcr = dirout+type+'Alltiles_'+reg+'_0_clustering.ran.fits'
+        fcd = dirout+type+'Alltiles_'+reg+'_clustering.dat.fits'
+        fout = dirout+type+str(tile)+'_'+reg+'_nz.dat'
+        if type == 'QSO':
+            zmin = 0.6
+            zmax = 4.5
+            dz = 0.05
+            ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        else:    
+            ct.mknz(fcd,fcr,fout)
 
 if fillNZ:
     e2e.fillNZ(target_type,program,P0=P0,truez=truez)   
