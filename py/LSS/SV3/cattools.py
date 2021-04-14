@@ -498,8 +498,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=True):
         ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
     if zmask:
-		whz = ff['Z'] < 1.6
-		ff = ff[whz]
+        whz = ff['Z'] < 1.6
+        ff = ff[whz]
 
         fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
         zma = []
