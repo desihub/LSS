@@ -41,6 +41,8 @@ parser.add_argument("--redodt", help="remake already done data tiles",default='n
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 #all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
@@ -52,6 +54,9 @@ type = args.type
 basedir = args.basedir
 version = args.version
 
+zma = False
+if args.maskz == 'y':
+    zma = True
 ctar = False
 if args.cuttar == 'y':
     ctar = True
@@ -315,13 +320,13 @@ if mkfullr:
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+'Alltiles_')
+    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
 if mkclusran:
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii)
+        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     

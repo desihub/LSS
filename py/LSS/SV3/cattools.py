@@ -446,7 +446,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True):
+def mkclusdat(fl,weighttileloc=True,zmask=True):
     '''
     take full catalog, cut to ra,dec,z add any weight
     program is dark,gray, or bright
@@ -454,13 +454,27 @@ def mkclusdat(fl,weighttileloc=True):
 
     '''    
     ff = Table.read(fl+'full.dat.fits')
-    outf = fl+'clustering.dat.fits'
+    wzm = ''
+    if zmask:
+        wzm = 'zmask_'
+    outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     ff = ff[wz]
     ff['WEIGHT'] = np.ones(len(ff))
     if weighttileloc == True:
         ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
 
+    whz = ff['Z'] < 1.6
+    ff = ff[whz]
+    if zmask:
+        fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
+        zma = []
+        for z in ff['Z']:
+            zind = int(z/1e-6)
+            zma.append(fzm[zind]['RADIAL_MASK'])        
+        zma = np.array(zma)
+        wzm = zma == 0
+        ff = ff[wzm]    
     wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
     print('minimum,maximum weight')
@@ -471,10 +485,14 @@ def mkclusdat(fl,weighttileloc=True):
     outfn = fl+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=True):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
-    ffd = Table.read(fl+'full.dat.fits')
-    fcd = Table.read(fl+'clustering.dat.fits')
+    wzm = ''
+    if zmask:
+        wzm = 'zmask_'
+
+    #ffd = Table.read(fl+'full.dat.fits')
+    fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
     #wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
     #wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
@@ -489,11 +507,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
         ffc[col] = dshuf[col] 
     wn = ffc['PHOTSYS'] == 'N'
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
-    outf =  fl+str(rann)+'_clustering.ran.fits' 
+    outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
-    outfn =  fl+'N_'+str(rann)+'_clustering.ran.fits' 
-    fcdn = Table.read(fl+'N_clustering.dat.fits')
+    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
+    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     ffcn = ffc[wn]
     inds = np.random.choice(len(fcdn),len(ffcn))
     dshuf = fcdn[inds]
@@ -501,8 +519,8 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
         ffcn[col] = dshuf[col]     
     ffcn.write(outfn,format='fits', overwrite=True)
 
-    outfs =  fl+'S_'+str(rann)+'_clustering.ran.fits' 
-    fcds = Table.read(fl+'S_clustering.dat.fits')
+    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
+    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
     dshuf = fcds[inds]

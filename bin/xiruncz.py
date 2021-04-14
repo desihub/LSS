@@ -25,6 +25,8 @@ version = args.version
 lssdir = basedir+'/SV3/LSS/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
+zmask = ['']
+
 subt = None
 if type == 'LRG':
     zmin=0.32
@@ -45,6 +47,7 @@ if type == 'LRG_IR':
 
 if type == 'ELG' or type == 'ELG_HIP':
     zl = [0.8,1.05,1.3,1.6]
+    zmask = ['','_zmask']
     
     #zmin = 0.8
     #zmax = 1.6
@@ -113,33 +116,35 @@ if type == 'BGS_hiz':
 ranwt1=False
 
 regl = ['_N','_S']
+
 for i in range(0,len(zl)):
-	if i == len(zl)-1:
-	    zmin=zl[0]
-	    zmax=zl[-1]
-	else:
-		zmin = zl[i]
-		zmax = zl[i+1]
-	print(zmin,zmax)
-	for reg in regl:
-		xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
-		subprocess.run(['chmod','+x','czpc.sh'])
-		subprocess.run('./czpc.sh')
-		fa = ''
-		if ranwt1:
-			fa = 'ranwt1'
-		if subt is not None:
-			fa += subt    
-		xt.calcxi_dataCZ(type,zmin,zmax,reg=reg,ver=version,fa=fa)
+    if i == len(zl)-1:
+        zmin=zl[0]
+        zmax=zl[-1]
+    else:
+        zmin = zl[i]
+        zmax = zl[i+1]
+    print(zmin,zmax)
+    for zma in zmask:
+        for reg in regl:
+            xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=zma+reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+            subprocess.run(['chmod','+x','czpc.sh'])
+            subprocess.run('./czpc.sh')
+            fa = ''
+            if ranwt1:
+                fa = 'ranwt1'
+            if subt is not None:
+                fa += subt    
+            xt.calcxi_dataCZ(type,zmin,zmax,reg=reg,ver=version,fa=fa)
 
 
-	xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
-	subprocess.run(['chmod','+x','czpc.sh'])
-	subprocess.run('./czpc.sh')
-	fa = ''
-	if ranwt1:
-		fa = 'ranwt1'
-	if subt is not None:
-		fa += subt    
-	xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)
+        xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=zma,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+        subprocess.run(['chmod','+x','czpc.sh'])
+        subprocess.run('./czpc.sh')
+        fa = ''
+        if ranwt1:
+            fa = 'ranwt1'
+        if subt is not None:
+            fa += subt    
+        xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)
 
