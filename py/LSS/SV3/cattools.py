@@ -491,10 +491,24 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT']):
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
     outf =  fl+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
+
     outfn =  fl+'N_'+str(rann)+'_clustering.ran.fits' 
-    ffc[wn].write(outfn,format='fits', overwrite=True)
+    fcdn = Table.read(fl+'N_clustering.dat.fits')
+    ffcn = ffc[wn]
+    inds = np.random.choice(len(fcdn),len(ffcn))
+    dshuf = fcdn[inds]
+    for col in rcols: 
+        ffcn[col] = dshuf[col]     
+    ffcn.write(outfn,format='fits', overwrite=True)
+
     outfs =  fl+'S_'+str(rann)+'_clustering.ran.fits' 
-    ffc[~wn].write(outfs,format='fits', overwrite=True)
+    fcds = Table.read(fl+'S_clustering.dat.fits'
+    ffcs = ffc[~wn]
+    inds = np.random.choice(len(fcds),len(ffcs))
+    dshuf = fcdn[inds]
+    for col in rcols: 
+        ffcs[col] = dshuf[col]     
+    ffcs.write(outfs,format='fits', overwrite=True)
 
     
 
