@@ -135,7 +135,7 @@ for i in range(0,len(zl)):
                 fa = 'ranwt1'
             if subt is not None:
                 fa += subt    
-            xt.calcxi_dataCZ(type,zmin,zmax,reg=reg,ver=version,fa=fa)
+            xt.calcxi_dataCZ(type,zmin,zmax,reg=zma+reg,ver=version,fa=fa)
 
 
         xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=zma,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
@@ -146,5 +146,5 @@ for i in range(0,len(zl)):
             fa = 'ranwt1'
         if subt is not None:
             fa += subt    
-        xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)
+        xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa,reg=zma)
 
