@@ -16,15 +16,16 @@ from desitarget.io import read_targets_in_tiles
 from LSS.Cosmo import distance
 
 def tile2rosette(tile):
-    for i in range(0,16):
-        test = np.arange(1+27*i,12+27*i)
-        if np.isin(tile,test):
-            return i
-    #print('if we made it here, we must be looking for bright tiles?')
-    for i in range(0,16):
-        test = np.arange(12+27*i,23+27*i)
-        if np.isin(tile,test):
-            return i
+    return (tile-1)//27
+#     for i in range(0,16):
+#         test = np.arange(1+27*i,12+27*i)
+#         if np.isin(tile,test):
+#             return i
+#     #print('if we made it here, we must be looking for bright tiles?')
+#     for i in range(0,16):
+#         test = np.arange(12+27*i,23+27*i)
+#         if np.isin(tile,test):
+#             return i
     
  
 
@@ -407,7 +408,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['rosette_number'] = ros
-    print(np.unique(dz['rosette_number']),return_counts=True)
+    print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(NT))
