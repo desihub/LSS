@@ -97,6 +97,8 @@ mknz = True #get n(z) for type and all subtypes
 if args.nz == 'n':
     mknz = False
 
+fillNZ = False
+
 combd = True
 if args.combd == 'n':
     combd = False
@@ -337,7 +339,7 @@ if mknz:
             reg = '_zmask'+reg
         fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
         fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
-        fout = dirout+type+str(tile)+reg+'_nz.dat'
+        fout = dirout+type+reg+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6
             zmax = 4.5
