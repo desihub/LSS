@@ -109,17 +109,7 @@ if type == 'BGS_hiz':
     type = 'BGS_ANY'        
 
 ranwt1=False
-xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
-subprocess.run(['chmod','+x','czpc.sh'])
-subprocess.run('./czpc.sh')
-fa = ''
-if ranwt1:
-    fa = 'ranwt1'
-if subt is not None:
-    fa += subt    
-xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)
-
-regl = ['_N_','_S_']
+regl = ['__N','__S']
 for reg in regl:
 	xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,reg=reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
 	subprocess.run(['chmod','+x','czpc.sh'])
@@ -130,3 +120,15 @@ for reg in regl:
 	if subt is not None:
 		fa += subt    
 	xt.calcxi_dataCZ(type,zmin,zmax,reg=reg,ver=version,fa=fa)
+
+
+xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+subprocess.run(['chmod','+x','czpc.sh'])
+subprocess.run('./czpc.sh')
+fa = ''
+if ranwt1:
+    fa = 'ranwt1'
+if subt is not None:
+    fa += subt    
+xt.calcxi_dataCZ(type,zmin,zmax,ver=version,fa=fa)
+
