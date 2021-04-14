@@ -335,9 +335,9 @@ if mknz:
     for reg in regl:
         if zma:
             reg = '_zmask'+reg
-        fcr = dirout+type+'Alltiles_'+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+'Alltiles_'+reg+'_clustering.dat.fits'
-        fout = dirout+type+str(tile)+'_'+reg+'_nz.dat'
+        fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
+        fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
+        fout = dirout+type+str(tile)+reg+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6
             zmax = 4.5
