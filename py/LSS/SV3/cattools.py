@@ -15,6 +15,19 @@ from desitarget.io import read_targets_in_tiles
 
 from LSS.Cosmo import distance
 
+def tile2rosette(tile):
+    for i in range(0,16):
+        test = np.arange(1+27*i,12+27*i)
+        if np.isin(tile,test):
+            return i
+    #print('if we made it here, we must be looking for bright tiles?')
+    for i in range(0,16):
+        test = np.arange(12+27*i,23+27*i)
+        if np.isin(tile,test):
+            return i
+    
+ 
+
 def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
     #put data from different spectrographs together, one table for fibermap, other for z
     specs = []
@@ -342,9 +355,14 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
         else:
             print('did not find '+ffa)
     NT = np.zeros(len(fgu))
+    ros = np.zeros(len(fgu))
     for ii in range(0,len(fgu['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(fgu['TILE'][ii],'-')+1
+        ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     fgu['NTILE'] = NT    
+            
+    fgu['rosette_number'] = ros
+    print(np.unique(dz['rosette_numeber']),return_counts=True)
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
@@ -374,8 +392,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz = cutphotmask(dz,imbits)
     
     NT = np.zeros(len(dz))
+    ros = np.zeros(len(dz))
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
+        ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
+    dz['rosette_number'] = ros
+    print(np.unique(dz['rosette_numeber']),return_counts=True)
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(NT))
