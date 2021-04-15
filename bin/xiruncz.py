@@ -84,8 +84,9 @@ if type == 'ELGhz497':
     type = 'ELG'
 
 if type == 'QSO':
-    zmin = 1.
-    zmax = 2.1
+    zl = [0.8,1.05,1.3,1.6,2.1]
+    #zmin = 1.
+    #zmax = 2.1
 
 if type == 'QSOhiz':
     zmin = 1.6
@@ -106,8 +107,9 @@ if type == 'ELG_FDR_GFIB':
    
 
 if type == 'BGS_ANY':
-    zmin = 0.1
-    zmax = 0.5 
+    zl = [0.1,0.3,0.5]
+    #zmin = 0.1
+    #zmax = 0.5 
     
 if type == 'BGS_hiz':
     zmin = 0.3

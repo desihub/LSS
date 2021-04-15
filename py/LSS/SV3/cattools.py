@@ -191,7 +191,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     '''
 
     s = 0
- 
+    cnt = 0 
     for tile in tiles:
         fl = catdir+tp+str(tile)+'_full.dat.fits'
         fgun = Table.read(fl)
@@ -206,7 +206,9 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         #fgun['TILELOCID_ASSIGNED'] = 0
         #fgun['TILELOCID_ASSIGNED'][~wm] = tile*10000+fgun['LOCATION_ASSIGNED'][~wm]
         else:
-            fgu = vstack([fgu,fgun])
+            fgu = vstack([fgu,fgun]metadata_conflicts='silent')
+            print(tile,cnt,len(tiles))
+            cnt += 1
 
     print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
@@ -360,7 +362,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
     print('counting tiles and finding rosette')
     for ii in range(0,len(fgu['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(fgu['TILE'][ii],'-')+1
-        ti = int(dz['TILE'][ii].split('-')[0])
+        ti = int(fgu['TILE'][ii].split('-')[0])
         ros[ii] = tile2rosette(ti)
     fgu['NTILE'] = NT    
             
