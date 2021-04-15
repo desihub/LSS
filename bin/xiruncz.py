@@ -48,7 +48,7 @@ if type == 'LRG_IR':
 
 if type == 'ELG' or type == 'ELG_HIP':
     zl = [0.8,1.05,1.3,1.6]
-    zmask = ['','_zmask']
+    #zmask = ['','_zmask']
     
     #zmin = 0.8
     #zmax = 1.6
