@@ -28,8 +28,9 @@ from desitarget.targetmask import bgs_mask, desi_mask
 def main():
     log = Logger.get()
 
-    mpi_procs = MPI.COMM_WORLD.size
-    mpi_rank = MPI.COMM_WORLD.rank
+    comm = MPI.COMM_WORLD
+    mpi_procs = comm.size
+    mpi_rank = comm.rank
 
     parser = argparse.ArgumentParser()
 
@@ -141,7 +142,6 @@ def main():
     hw = load_hardware()
 
     for realization in my_realizations:
-        print(realization)
         # Set the seed based on the realization, so that the result is reproducible
         # regardless of which process is working on the realization.
         np.random.seed(realization)
@@ -191,42 +191,56 @@ def main():
                     assigned.append(tgid)
             idas = np.isin(tg_science, assigned)
             bitweights[realization][idas] = True
-#                    try:
-#                        idx = tg_science2indx[tgid]
-#                        tgarray[idx * n_realization + realization] = True
-#                    except KeyError:
-#                        # Not a science target
-#                        pass
+                    #try:
+                    #    idx = tg_science2indx[tgid]
+                    #    assigned.append(idx)
+                    #    tgarray[idx * n_realization + realization] = True
+                    #except KeyError:
+                    #    # Not a science target
+                    #    pass
 
-    # Pack bits into 64 bit integers
-    bitweights = bitweights.T
-    n_vector = n_realization // 64
-    bitvectors = [[] for _ in range(n_vector)]
-    for w in bitweights:
-        for v in range(n_vector):
-            bitvectors[v].append(np.packbits(list(w)).view(np.int)[v])
+    # Gather weights from all processes
+    # Number of mpi processes must equal number of realizations (TODO: fix this)
+    gather_weights = None
+    if mpi_rank == 0:
+        gather_weights = np.empty((n_realization, n_target), dtype=bool)
+    comm.Gather(bitweights[mpi_rank], gather_weights, root=0)
 
-    # Get redshift and spectral type
-    if args.truth:
-        z = truth['TRUEZ']
-        templatetype = truth['TEMPLATETYPE']
-        templatetype = np.array([t.strip() for t in templatetype], dtype=str)
-    else:
-        z = mtl['Z']
+    if mpi_rank == 0:
+        # Pack bits into 64 bit integers
+        bweights = np.array(gather_weights).T
+        n_vector = n_realization // 64
+        bitvectors = [[] for _ in range(n_vector)]
+        for w in bweights:
+            for v in range(n_vector):
+                bitvectors[v].append(np.packbits(list(w)).view(np.int)[v])
 
-    # Write output
-    outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
-    output = Table()
-    output['TARGETID'] = mtl['TARGETID']
-    output['RA'] = mtl['RA']
-    output['DEC'] = mtl['DEC']
-    output['Z'] = z
-    output['ASSIGNEDID'] = idas
-    for i,vec in enumerate(bitvectors):
-        output['BITWEIGHT{}'.format(i)] = vec
-    if args.truth:
-        output['TEMPLATETYPE'] = templatetype
-    output.write(outfile)
+        # Get redshifts and spectral type
+        if args.truth:
+            z = truth['TRUEZ']
+            templatetype = truth['TEMPLATETYPE']
+            templatetype = np.array([t.strip() for t in templatetype], dtype=str)
+        else:
+            z = mtl['Z']
+
+        # Write output
+        try:
+            os.makedirs(args.outdir)
+        except:
+            pass
+
+        outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
+        output = Table()
+        output['TARGETID'] = mtl['TARGETID']
+        output['RA'] = mtl['RA']
+        output['DEC'] = mtl['DEC']
+        output['Z'] = z
+        output['ASSIGNEDID'] = idas
+        if args.truth:
+            output['TEMPLATETYPE'] = templatetype
+        for i,vec in enumerate(bitvectors):
+            output['BITWEIGHT{}'.format(i)] = vec
+        output.write(outfile)
 
     # Reduce bitarrays to root process.  The bitarray type conforms to the
     # buffer protocol.
