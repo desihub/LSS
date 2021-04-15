@@ -367,7 +367,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
     fgu['NTILE'] = NT    
             
     fgu['rosette_number'] = ros
-    print(np.unique(dz['rosette_number']),return_counts=True)
+    print(np.unique(fgu['rosette_number']),return_counts=True)
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
