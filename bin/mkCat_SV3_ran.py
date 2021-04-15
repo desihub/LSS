@@ -36,6 +36,7 @@ parser.add_argument("--combr", help="combine the random tiles together",default=
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
+parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 
 
 
@@ -45,6 +46,11 @@ print(args)
 type = args.type
 basedir = args.basedir
 version = args.version
+
+zma = False
+if args.maskz == 'y':
+    zma = True
+
 
 cran = False
 if args.cutran == 'y':
@@ -217,7 +223,7 @@ def doran(ii):
 
 
     if mkclusran:
-        ct.mkclusran(dirout+type+'Alltiles_',ii)
+        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
