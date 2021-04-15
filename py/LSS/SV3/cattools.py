@@ -206,7 +206,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         #fgun['TILELOCID_ASSIGNED'] = 0
         #fgun['TILELOCID_ASSIGNED'][~wm] = tile*10000+fgun['LOCATION_ASSIGNED'][~wm]
         else:
-            fgu = vstack([fgu,fgun]metadata_conflicts='silent')
+            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             print(tile,cnt,len(tiles))
             cnt += 1
 
@@ -339,7 +339,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 fgu = fgun
                 s = 1
             else:   
-                fv = vstack([fgu,fgun])
+                fv = vstack([fgu,fgun],metadata_conflicts='silent')
                 fgo = fgu.copy()
                 fgu = unique(fv,keys='TARGETID')#,keep='last') 
                 
