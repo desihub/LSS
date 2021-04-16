@@ -344,7 +344,11 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             fg = fa
             print('before,after vetoing locations:')
             print(len(fa),len(fg))
-            fgun = unique(fg,keys=['TARGETID'])
+            if tp != 'dark' and tp != 'bright':
+                fg.sort('ZPOSSNOTBAD')
+            else:
+                fg.sort('FIBER_GOOD') 
+            fgun = unique(fg,keys=['TARGETID'],keep='last')
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
             fgun.remove_columns(delcols)
