@@ -399,11 +399,18 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp):
+def mkfullran(randir,rann,imbits,outf,tp,maskzfail=True):
     zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
     dz = Table.read(zf)
-    
+    if maskzfail:
+        wk = dz['ZPOSSNOTBAD'] == 1
+    else:
+        wk = dz['ZPOSS'] = 1
+    print('length before cutting to good positions '+str(len(dz)))
+    dz = dz[wk]    
+    print('length after cutting to good positions '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
+    print('length after cutting to based on imaging veto mask '+str(len(dz)))
     #done in combran instead
     #NT = np.zeros(len(dz))
     #for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
