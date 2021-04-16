@@ -283,6 +283,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
     s = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
+    delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
+    'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
         #tspec = combfibmap(tile,zdate)
         #pdict,gloc = goodlocdict(tspec)
@@ -308,8 +310,15 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
         # 
             #find the locations that were requested by type but not assigned
             fa = Table.read(ffa,hdu='FAVAIL')
+            fa.remove_columns(delcols)
             wg = np.isin(fa['LOCATION'],gloc)
+            fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
+            fa['FIBER_GOOD'][wg] = 1
+            fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
+            wnzf = ~np.isin(fa['LOCATION'],loc_fail)
+            fa['Z_NOTBAD'][wnzf] = 1
             if tp != 'dark' and tp != 'bright':
+                fa['LOC_NOTBLOCK'] = np.zeros(len(fa)).astype(int)
                 locsna = []
                 for i in range(0,len(nla)):
                     if nla[i] == 0 and nl[i] > 0:
@@ -318,9 +327,11 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 print('number of unassigned locations',len(locsna))
                 ntloc = len(gloc)-len(locsna)-len(loc_fail)
                 print('total number of assignable positions',ntloc)
-                wg &= ~np.isin(fa['LOCATION'],locsna)
+                was = ~np.isin(fa['LOCATION'],locsna)
+                fa['LOC_NOTBLOCK'][was] = 1
+                wg &= was
                 if maskzfail:
-                    wg &= ~np.isin(fa['LOCATION'],loc_fail)
+                    wg &= wnzf
             
             #wzt = wpr & ~wzf & ~wna
 
@@ -347,6 +358,10 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
                 #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+                #if this works, can save vetoing until the end
+                fgu['FIBERGOOD'][didsc] = np.maximum(fgu['FIBERGOOD'][didsc],fgun['FIBERGOOD'][dids])
+                fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+                fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
 
                 aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
                 aa[:] = '-'+str(tile)

@@ -42,6 +42,8 @@ parser.add_argument("--fulld", help="make the 'full' catalog containing info on 
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -163,8 +165,8 @@ if not os.path.exists(dirout):
 
 
 randir = sv3dir+'random'
-rm = 0
-rx = 18
+rm = args.minr
+rx = args.maxr
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv3dir+'random'+str(i)):
