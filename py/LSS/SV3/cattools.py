@@ -339,8 +339,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             
             #wzt = wpr & ~wzf & ~wna
 
-            #fg = fa[wg]
-            fg = fa
+            fg = fa[wg]
+            #fg = fa
             print('before,after vetoing locations:')
             print(len(fa),len(fg))
             fgun = unique(fg,keys=['TARGETID'])
