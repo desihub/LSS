@@ -2,6 +2,39 @@
 
 """
 Compute PIP weights in parallel
+
+Example run at NERSC:
+
+srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_pipweights
+     --mtl LRG_oneperztrue_clus.dat.fits --randoms LRG_oneperztrue_clus.ran.fits
+     --format hdf5 --outdir output --realizations 128
+
+Notes:
+- Runs on master version of fiberassign, etc.
+- Must add path_to_LSS_repo/LSS/bin to $PATH or supply path to mpi_pipweights
+- The PIP weights are stored as 64 bit integers, so the number of realizations must
+  be a multiple of 64 (i.e. 64, 128, 192, etc. realizations correspond to output
+  arrays BITWEIGHT0, BITWEIGHT1, BITWEIGHT2, etc.)
+- The number of requested mpi processes (n nodes (-N) x n cores (-c)) must be a
+  multiple of the number of realizations (fastest when n processes = n realizations)
+
+Required Arguments:
+  mtl     (str) : target fits file containing TARGETID, RA, DEC, Z
+  randoms (str) : randoms fits file containing RA, DEC, Z
+
+Optional Arguments:
+  sky          (str) : fits file containing sky targets
+  footprint    (str) : fits file containing footprint
+  tiles        (str) : text file containing tile IDs
+  format       (str) : output file format (fits or hdf5)
+  outdir       (str) : output directory
+  realizations (int) : number of realizations
+
+Outputs:
+  targeted.fits : fits (hdf5) file containing targeted science objects
+  parent.fits   : fits (hdf5) file containing parent catalog
+  randoms.fits  : fits (hdf5) file containing randoms catalog
+
 """
 
 from mpi4py import MPI
