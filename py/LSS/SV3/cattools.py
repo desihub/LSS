@@ -310,7 +310,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
         # 
             #find the locations that were requested by type but not assigned
             fa = Table.read(ffa,hdu='FAVAIL')
-            fa.remove_columns(delcols)
+            
             wg = np.isin(fa['LOCATION'],gloc)
             fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
             fa['FIBER_GOOD'][wg] = 1
@@ -341,6 +341,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             fgun = unique(fg,keys=['TARGETID'])
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
+            fgun.remove_columns(delcols)
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
