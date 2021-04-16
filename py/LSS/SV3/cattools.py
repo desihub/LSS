@@ -317,6 +317,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
             wnzf = ~np.isin(fa['LOCATION'],loc_fail)
             fa['Z_NOTBAD'][wnzf] = 1
+            fa['ZPOSS'] = np.zeros(len(fa)).astype(int)
+            fa['ZPOSSNOTBAD'] = np.zeros(len(fa)).astype(int)
             if tp != 'dark' and tp != 'bright':
                 fa['LOC_NOTBLOCK'] = np.zeros(len(fa)).astype(int)
                 locsna = []
@@ -330,6 +332,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 was = ~np.isin(fa['LOCATION'],locsna)
                 fa['LOC_NOTBLOCK'][was] = 1
                 wg &= was
+                fa['ZPOSS'][wg] = 1
+                fa['ZPOSSNOTBAD'][wg&wnzf] = 1
                 if maskzfail:
                     wg &= wnzf
             
@@ -364,6 +368,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                 fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
                 fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
                 fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
+                fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
+                fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
 
                 aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
                 aa[:] = '-'+str(tile)
