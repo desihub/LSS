@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Example of how one could compute PIP weights in parallel.
+Compute PIP weights in parallel
 """
 
 from mpi4py import MPI
@@ -10,7 +10,6 @@ import h5py
 import argparse
 import numpy as np
 from astropy.table import Table
-from fiberassign.utils import Logger
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import (Targets,
@@ -22,8 +21,6 @@ from fiberassign.assign import Assignment, run
 
 
 def main():
-    log = Logger.get()
-
     comm = MPI.COMM_WORLD
     mpi_procs = comm.size
     mpi_rank = comm.rank
@@ -98,7 +95,7 @@ def main():
     my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
 
     # Bitarray for all targets and realizations
-    bitweights = np.zeros((n_realization, n_target),dtype=bool)
+    bitweights = np.zeros(n_realization * n_target, dtype=bool)
 
     hw = load_hardware()
 
@@ -133,18 +130,20 @@ def main():
             except:
                 pass
         idas = np.isin(tg_science, assigned)
-        bitweights[realization][idas] = True
+        bitweights[realization*n_target:(realization+1)*n_target] = idas
 
     # Gather weights from all processes
-    # Number of mpi processes must equal number of realizations (TODO: fix this)
     gather_weights = None
     if mpi_rank == 0:
-        gather_weights = np.empty((n_realization, n_target), dtype=bool)
-    comm.Gather(bitweights[mpi_rank], gather_weights, root=0)
+        gather_weights = np.empty(len(bitweights), dtype=bool)
+    min_targ = np.min(my_realizations) * n_target
+    max_targ = (np.max(my_realizations) + 1) * n_target
+    comm.Gather(bitweights[min_targ:max_targ], gather_weights, root=0)
 
     if mpi_rank == 0:
-        # Pack bits into 64 bit integers
-        bweights = np.array(gather_weights).T
+        # Pack weights into 64 bit integers
+        weights = np.array_split(gather_weights, n_realization)
+        bweights = np.array(weights).T
         n_vector = n_realization // 64
         bitvectors = [[] for _ in range(n_vector)]
         for w in bweights:
