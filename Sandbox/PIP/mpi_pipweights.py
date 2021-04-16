@@ -103,6 +103,10 @@ def main():
 
     # Load mtl and truth, make sure targets are the same
     mtl = Table.read(args.mtl)
+    if not 'SUBPRIORITY' in mtl:
+        mtl['SUBPRIORITY'] = np.ones(len(mtl))
+        mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
     if args.truth:
         truth = Table.read(args.truth)
         assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
@@ -186,9 +190,12 @@ def main():
             # Update bit arrays for assigned science targets
             assigned = []
             for tile_id in tiles.id:
-                adata = asgn.tile_location_target(tile_id)
-                for loc, tgid in adata.items():
-                    assigned.append(tgid)
+                try:
+                    adata = asgn.tile_location_target(tile_id)
+                    for loc, tgid in adata.items():
+                        assigned.append(tgid)
+                except:
+                    pass
             idas = np.isin(tg_science, assigned)
             bitweights[realization][idas] = True
                     #try:
