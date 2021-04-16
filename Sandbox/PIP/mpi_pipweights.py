@@ -6,6 +6,7 @@ Example of how one could compute PIP weights in parallel.
 
 from mpi4py import MPI
 import os, sys
+import h5py
 import argparse
 import numpy as np
 from astropy.table import Table
@@ -42,8 +43,8 @@ def main():
                         "fiber assignment dates in the survey log, we should be able"
                         " to get the MTL state at that time.  For now, this option"
                         " is just one or more target files.")
-    parser.add_argument("--truth", type=str, required=False,
-                        help="Truth information used to access and output redshift.")
+    parser.add_argument("--randoms", type=str, required=True,
+                        help="FITS file containing random targets.")
     parser.add_argument("--footprint", type=str, required=False, default=None,
                         help="Optional FITS file defining the footprint.  If"
                         " not specified, the default footprint from desimodel"
@@ -52,6 +53,8 @@ def main():
                         help="Optional text file containing a subset of the"
                         " tile IDs to use in the footprint, one ID per line."
                         " Default uses all tiles in the footprint.")
+    parser.add_argument("--format", type=str, required=False, default="fits",
+                        help="File format for outputs (either fits or hdf5).")
     parser.add_argument("--outdir", type=str, required=False, default=".",
                         help="Output directory.")
     parser.add_argument("--realizations", type=int, required=False, default=128,
@@ -72,15 +75,11 @@ def main():
     tiles = load_tiles(tiles_file=args.footprint,
                        select=tileselect)
 
-    # Load mtl and truth, make sure targets are the same
+    # Load mtl
     mtl = Table.read(args.mtl)
-    if not 'SUBPRIORITY' in mtl.keys():
-        mtl['SUBPRIORITY'] = np.ones(len(mtl))
-        mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
-    if args.truth:
-        truth = Table.read(args.truth)
-        assert mtl['TARGETID'].all() == truth['TARGETID'].all(), 'MTL and truth targets are different'
+    mtl['SUBPRIORITY'] = np.ones(len(mtl))
+    mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+    mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets and get IDs
     tgs = Targets()
@@ -152,13 +151,8 @@ def main():
             for v in range(n_vector):
                 bitvectors[v].append(np.packbits(list(w)).view(np.int)[v])
 
-        # Get redshifts and spectral type
-        if args.truth:
-            z = truth['TRUEZ']
-            templatetype = truth['TEMPLATETYPE']
-            templatetype = np.array([t.strip() for t in templatetype], dtype=str)
-        else:
-            z = mtl['Z']
+        # Load randoms
+        randoms = Table.read(args.randoms)
 
         # Write output
         try:
@@ -166,18 +160,74 @@ def main():
         except:
             pass
 
-        outfile = os.path.join(args.outdir,'bitweight_vectors.fits')
-        output = Table()
-        output['TARGETID'] = mtl['TARGETID']
-        output['RA'] = mtl['RA']
-        output['DEC'] = mtl['DEC']
-        output['Z'] = z
-        output['ASSIGNEDID'] = idas
-        if args.truth:
-            output['TEMPLATETYPE'] = templatetype
-        for i,vec in enumerate(bitvectors):
-            output['BITWEIGHT{}'.format(i)] = vec
-        output.write(outfile)
+        if args.format == 'fits':
+            # Output targeted file
+            tfile = os.path.join(args.outdir, 'targeted.fits')
+            toutput = Table()
+            toutput['TARGETID'] = mtl['TARGETID'][idas]
+            toutput['RA'] = mtl['RA'][idas]
+            toutput['DEC'] = mtl['DEC'][idas]
+            toutput['Z'] = mtl['Z'][idas]
+            for t,vec in enumerate(bitvectors):
+                toutput['BITWEIGHT{}'.format(t)] = np.array(vec)[idas]
+            toutput.write(tfile)
+
+            # Output parent file
+            pfile = os.path.join(args.outdir, 'parent.fits')
+            poutput = Table()
+            poutput['TARGETID'] = mtl['TARGETID']
+            poutput['RA'] = mtl['RA']
+            poutput['DEC'] = mtl['DEC']
+            poutput['Z'] = mtl['Z']
+            for p,vec in enumerate(bitvectors):
+                poutput['BITWEIGHT{}'.format(p)] = -np.ones(len(vec), dtype=int)
+            poutput.write(pfile)
+
+            # Output randoms file
+            rfile = os.path.join(args.outdir, 'randoms.fits')
+            routput = Table()
+            routput['RA'] = randoms['RA']
+            routput['DEC'] = randoms['DEC']
+            routput['Z'] = randoms['Z']
+            for r in range(len(bitvectors)):
+                routput['BITWEIGHT{}'.format(r)] = -np.ones(len(randoms), dtype=int)
+            routput.write(rfile)
+
+        elif args.format == 'hdf5':
+            # Output targeted file
+            targetfile = os.path.join(args.outdir, 'targeted.hdf5')
+            tfile = h5py.File(targetfile, 'w')
+            tfile.create_dataset('TARGETID', data=mtl['TARGETID'][idas])
+            tfile.create_dataset('RA', data=mtl['RA'][idas])
+            tfile.create_dataset('DEC', data=mtl['DEC'][idas])
+            tfile.create_dataset('Z', data=mtl['Z'][idas])
+            for t,vec in enumerate(bitvectors):
+                tfile.create_dataset('BITWEIGHT{}'.format(t), data=np.array(vec)[idas])
+            tfile.close()
+
+            # Output parent file
+            parentfile = os.path.join(args.outdir, 'parent.hdf5')
+            pfile = h5py.File(parentfile, 'w')
+            pfile.create_dataset('TARGETID', data=mtl['TARGETID'])
+            pfile.create_dataset('RA', data=mtl['RA'])
+            pfile.create_dataset('DEC', data=mtl['DEC'])
+            pfile.create_dataset('Z', data=mtl['Z'])
+            for p,vec in enumerate(bitvectors):
+                pfile.create_dataset('BITWEIGHT{}'.format(p), data=-np.ones(len(vec), dtype=int))
+            pfile.close()
+
+            # Output randoms file
+            randomfile = os.path.join(args.outdir, 'randoms.hdf5')
+            rfile = h5py.File(randomfile, 'w')
+            rfile.create_dataset('RA', data=randoms['RA'])
+            rfile.create_dataset('DEC', data=randoms['DEC'])
+            rfile.create_dataset('Z', data=randoms['Z'])
+            for r in range(len(bitvectors)):
+                rfile.create_dataset('BITWEIGHT{}'.format(r), data=-np.ones(len(randoms), dtype=int))
+            rfile.close()
+
+        else:
+            raise TypeError("Must specify either fits or hdf5 as output file format.")
 
 if __name__ == "__main__":
     main()
