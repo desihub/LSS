@@ -57,7 +57,7 @@ print('number of unique bright time targets with a good observation (ZWARN==0):'
 print('#')
 print('splitting by type, numbers are after all veto masks:')
 
-tpl = ['ELG','LRG','QSO','BGS_ANY']
+tpl = ['ELG','LRG','QSO','BGS_ANY','MWS_ANY']
 for tp in tpl:
     dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/test/'+tp+'Alltiles_full.dat.fits')
     wz = dat['ZWARN']*0 == 0
