@@ -480,7 +480,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
      #   print('!found some zwarn = 0 without location_assigned = 1!')
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
-    print(len(locl),len(nloclz))
+    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     nm = 0
     nmt =0
     pd = []
@@ -492,7 +492,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         w = loclz == loc
         nz = 0
         if len(loclz[w]) == 1:
-            nz = 1.#nloclz[w]
+            nz = nloclz[w] #these are supposed all be 1...
             
         else:
             #print(loclz[w],nt) 
