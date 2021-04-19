@@ -141,6 +141,9 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print(len(tt),len(tt[wgt]))
     
     tt = tt[wgt]
+    
+    tt = join(tt,tars,keys=['TARGETID'],table_names = ['_AVAIL', ''], uniq_col_name='{col_name}{table_name}')
+    
     #Mark targets that actually got assigned fibers
     tfall = Table.read(faf,hdu='FIBERASSIGN')
     
@@ -160,7 +163,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
     #we want to get these from the zbest file that is specific to the tile and thus when it was observed
     
-    tt = join(tt,tars,keys=['TARGETID'],table_names = ['_AVAIL', ''], uniq_col_name='{col_name}{table_name}')
+    
     
     #tfa = unique(tfa[wgt],keys=['TARGETID'])
     #wtype = ((tt[tp] & 2**tarbit) > 0) #don't cut by type here any more
