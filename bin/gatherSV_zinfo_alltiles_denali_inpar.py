@@ -28,6 +28,7 @@ parser.add_argument("--release", help="what spectro release to use, e.g. blanc o
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--runmd", help="prod/test; test is for debugging result on first tile",default='prod')
+parser.add_argument("--doh5", help="whether or not to do the N best redshift fits, which adds bit of time",default='n')
 args = parser.parse_args()
 print(args)
 
@@ -125,39 +126,40 @@ def get_tilezinfo(tile):
             logf.write('compiled data for tile '+str(tile)+' written to '+outf+'\n')
 
         if a:
-            print('adding info from hd5 files')
-            outfall = dirout +'/'+tile+'_'+type+'zinfo_wh5.fits'
-            if os.path.isfile(outfall): 
-                print(outfall+' exists already')                
-            else:
-                dt = Table.read(outf)
-                cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
-                for i in range(1,5):
+            if args.doh5 == 'y':
+				print('adding info from hd5 files')
+				outfall = dirout +'/'+tile+'_'+type+'zinfo_wh5.fits'
+				if os.path.isfile(outfall): 
+					print(outfall+' exists already')                
+				else:
+					dt = Table.read(outf)
+					cols = ['z','zwarn','chi2','deltachi2','spectype','subtype']
+					for i in range(1,5):
 
-                    dt['z_'+str(i)]=np.zeros(len(dt))
-                    dt['zwarn_'+str(i)]=np.zeros(len(dt))
-                    dt['chi2_'+str(i)]=np.zeros(len(dt))
-                    dt['deltachi2_'+str(i)]=np.zeros(len(dt))
-                    dt['spectype_'+str(i)] = 'GALAXY'
-                    dt['subtype_'+str(i)] = 'GALAXY'
-                for ii in range(0,len(dt)):
-                    ln = dt[ii]
-       
-                    #if ln['RZR'] != 'N':
-                    #   zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
-                    #else:
-                    #zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/' 
-                    zfitdir = tiledir+ln['coadd_type']+'/'+str(ln['TILEID'])+'/'+ln['subset'][-8:]+'/'   
-        
-                    fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
-        
-                    zfits = zi.get_zfits(fl,ln['TARGETID'])
-                    for jj in range(1,5):
-                        for col in cols:
-                            dt[col+'_'+str(jj)][ii] = zfits[jj][col]
-            
-                dt.write(outfall,format='fits', overwrite=True) 
-                print('wrote to '+outfall)
+						dt['z_'+str(i)]=np.zeros(len(dt))
+						dt['zwarn_'+str(i)]=np.zeros(len(dt))
+						dt['chi2_'+str(i)]=np.zeros(len(dt))
+						dt['deltachi2_'+str(i)]=np.zeros(len(dt))
+						dt['spectype_'+str(i)] = 'GALAXY'
+						dt['subtype_'+str(i)] = 'GALAXY'
+					for ii in range(0,len(dt)):
+						ln = dt[ii]
+	   
+						#if ln['RZR'] != 'N':
+						#   zfitdir = '/global/cfs/cdirs/desi/users/rongpu/redux/cascades/'+ln['RZR']+'/'+str(ln['TILEID'])
+						#else:
+						#zfitdir = tiledir+str(ln['TILEID'])+'/'+ln['subset']+'/' 
+						zfitdir = tiledir+ln['coadd_type']+'/'+str(ln['TILEID'])+'/'+ln['subset'][-8:]+'/'   
+		
+						fl = zfitdir+'/redrock-'+str(ln['PETAL_LOC'])+'-'+str(ln['TILEID'])+'-'+ln['subset']+'.h5'
+		
+						zfits = zi.get_zfits(fl,ln['TARGETID'])
+						for jj in range(1,5):
+							for col in cols:
+								dt[col+'_'+str(jj)][ii] = zfits[jj][col]
+			
+					dt.write(outfall,format='fits', overwrite=True) 
+					print('wrote to '+outfall)
             return a
 
 
@@ -194,12 +196,16 @@ if __name__ == '__main__':
 
     #combine all the tiles
 
-    dt = Table.read(dirout +'/'+str(tiles[0])+'_'+type+'zinfo_wh5.fits')
+    fapp = 'zinfo.fits'
+    if args.doh5 == 'y':
+        fapp = 'zinfo_wh5.fits'
+    
+    dt = Table.read(dirout +'/'+str(tiles[0])+'_'+type+fapp)
     dt['TILEID'] = int(tiles[0])
     for i in range(1,len(tiles)):
-        tf = dirout +'/'+str(tiles[i])+'_'+type+'zinfo_wh5.fits'
+        tf = dirout +'/'+str(tiles[i])+'_'+type+fapp
         if os.path.isfile(tf):    
-            dtn = Table.read(dirout +'/'+str(tiles[i])+'_'+type+'zinfo_wh5.fits')
+            dtn = Table.read(dirout +'/'+str(tiles[i])+'_'+type+fapp)
             dtn['TILEID'] = int(tiles[i])
             dt = vstack([dt,dtn])
         else:
@@ -212,7 +218,7 @@ if __name__ == '__main__':
             dt.remove_columns([col])
         except:
             print('didnt find column to remove '+col)
-    outfall = dirout +'/alltiles_'+type+'zinfo_wh5.fits'
+    outfall = dirout +'/alltiles_'+type+fapp
     dt.write(outfall,format='fits', overwrite=True) 
     print('wrote to '+outfall)
     logf.write('combined all tiles, written to '+outfall)
