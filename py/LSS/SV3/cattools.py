@@ -174,6 +174,11 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print('max priority of assigned '+str(np.max(tt[wal]['PRIORITY_ASSIGNED'])))
     tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
     tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
+    print('are location and location_avail the same for assigned targets?')
+    print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
+    print('are location_avail and location_assigned the same for assigned targets?')
+    print(np.array_equal(tt[wal]['LOCATION_ASSIGNED'], tt[wal]['LOCATION_AVAIL']))
+
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
     wal = tt['LOCATION_ASSIGNED'] == 1
