@@ -406,7 +406,7 @@ def mkfullran(randir,rann,imbits,outf,tp,maskzfail=False):
     if maskzfail:
         wk = dz['ZPOSSNOTBAD'] == 1
     else:
-        wk = dz['ZPOSS'] = 1
+        wk = dz['ZPOSS'] == 1
     print('length before cutting to good positions '+str(len(dz)))
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
