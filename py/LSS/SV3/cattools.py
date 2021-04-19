@@ -180,6 +180,8 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
     wal = tt['LOCATION']*0 == 0
     print('number of locations from z file '+str(len(tt[wal]))+' (check to match agrees with above)')
+    print('are location and location_avail the same for assigned targets?')
+    print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
     #tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
