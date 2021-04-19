@@ -498,7 +498,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
      #   print('!found some zwarn = 0 without location_assigned = 1!')
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
-    print(np.histogram(nloclz))
+    #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     nm = 0
     nmt =0
