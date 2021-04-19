@@ -467,7 +467,7 @@ def get_subset_denali(tarbit,tp,night,tile,coaddir,exposures,ct,mfn='temp.txt',t
             fitsio.read(fl)
             specs.append(si)
         except:
-            #print(fl,specs,si)
+            print(fl,specs,si)
             print('no spectrograph and/or coadd '+str(si)+ ' on subset '+night)
     if len(specs) > 2: #basically required just to reject the one night with data from only 2 specs that was in exposures
         tspec = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='ZBEST')
