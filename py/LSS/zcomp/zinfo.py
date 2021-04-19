@@ -72,9 +72,10 @@ def comb_subset_vert_denali(tarbit,tp,tile,exposures,outf,tt,mfn='temp.txt',md='
     for ct in ctypes:
         if ct == 'cumulative':
             dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/cumulative/'+tile) if f.is_dir() ][0]
-            dirs = [dirs]
+            
             night = dirs[-8:]
             nights = ['thru'+night]
+            dirs = [dirs]
         if ct == 'perexp':
             dirs = [ f.path for f in os.scandir('/global/cfs/cdirs/desi/spectro/redux/denali/tiles/perexp/'+tile) if f.is_dir() ]
             nights = []
