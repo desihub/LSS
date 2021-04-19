@@ -469,14 +469,15 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz['COMP_TILE'] = np.array(fcompa)       
 
     #get tilelocid probs
-    wz = dz['ZWARN'] == 0
+    #wz = dz['ZWARN'] == 0
+    wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
     probl = np.zeros(len(dz))
     #dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    wa = dzz['LOCATION_ASSIGNED'] == 1
-    if len(dzz[wa]) != len(dzz):
-        print('!found some zwarn = 0 without location_assigned = 1!')
+    #wa = dzz['LOCATION_ASSIGNED'] == 1
+    #if len(dzz[wa]) != len(dzz):
+     #   print('!found some zwarn = 0 without location_assigned = 1!')
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
     print(len(locl),len(nloclz))
@@ -507,11 +508,14 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     pd = dict(pd)
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
-    print('number of fibers with no good z, number targets on those fibers')
+    print('number of fibers with no observation, number targets on those fibers')
     print(nm,nmt)
+    
     #print(np.min(probl),np.max(probl))
     #dz = Table.read(zf) #table is slow, so using fitsio above, Table here
     dz['FRACZ_TILELOCID'] = probl
+    print('sum of 1/FRACZ_TILELOCID and 1/COMP_TILE; should match')
+    print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']))
     #print(np.unique(dz['TILE']))
     dz['NTILE']  = NT
     print(np.unique(dz['NTILE']))
