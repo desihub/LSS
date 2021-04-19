@@ -210,7 +210,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         print(tile,cnt,len(tiles))
         cnt += 1
 
-    print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
+    #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
@@ -459,7 +459,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         no = sum(dz[w]['LOCATION_ASSIGNED'])
         nt = len(dz[w])
         cp = no/nt
-        print(tls,cp,no,nt)
+        #print(tls,cp,no,nt)
         compa.append(cp)
         tll.append(tls)
     comp_dicta = dict(zip(tll, compa))
@@ -514,8 +514,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #print(np.min(probl),np.max(probl))
     #dz = Table.read(zf) #table is slow, so using fitsio above, Table here
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID and 1/COMP_TILE; should match')
-    print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']))
+    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should match')
+    print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
     #print(np.unique(dz['TILE']))
     dz['NTILE']  = NT
     print(np.unique(dz['NTILE']))
