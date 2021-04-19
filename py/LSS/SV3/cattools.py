@@ -152,8 +152,9 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     tt['LOCATION'][wal] = tt['LOCATION_ASSIGNED'][wal]
+    tt['LOCATION_AVAIL'][wal] = tt['LOCATION_ASSIGNED'][wal]
     print('differences between assigned locations')
-    print(np.unique(tt['LOCATION'][wal]-tt['LOCATION_ASSIGNED'][wal]))
+    print(np.unique(tt['LOCATION_AVAIL'][wal]-tt['LOCATION_ASSIGNED'][wal]))
     #print(tt.columns)
 
 
