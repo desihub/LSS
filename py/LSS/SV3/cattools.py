@@ -133,7 +133,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #    return None
     #tt = join(tt,tfa,keys=['TARGETID'])    
 
-    tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
+    
     
     wgt = (np.isin(tt['LOCATION'],goodloc)) 
     print(str(len(np.unique(tt[wgt]['LOCATION']))) + ' good locations')
@@ -141,6 +141,20 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print(len(tt),len(tt[wgt]))
     
     tt = tt[wgt]
+    #Mark targets that actually got assigned fibers
+    tfall = Table.read(faf,hdu='FIBERASSIGN')
+    
+    tfall.keep_columns(['TARGETID','LOCATION','PRIORITY'])
+    
+    tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
+    wal = tt['LOCATION_ASSIGNED']*0 == 0
+    tt['LOCATION'][wal] = tt['LOCATION_ASSIGNED'][wal]
+    print('differences between assigned locations')
+    print(np.unique(tt['LOCATION'][wal]-tt['LOCATION_ASSIGNED'][wal]))
+    #print(tt.columns)
+
+
+    tt = unique(tt,keys=['TARGETID']) #cut to unique target ids
     #print(tarf)
     #tars = Table.read(tarf)
     #tars.remove_columns(['Z','ZWARN'])#,'PRIORITY','SUBPRIORITY','OBSCONDITIONS'])
@@ -156,13 +170,6 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #tft = join(tft,tt,keys=['TARGETID'])
     #print(str(len(tfa)) +' unique targets with good locations and  at '+str(len(np.unique(tfa['LOCATION'])))+' unique locations and '+str(len(tft))+ ' total unique targets at '+str(len(np.unique(tft['LOCATION']))) +' unique locations ')
 
-    #Mark targets that actually got assigned fibers
-    tfall = Table.read(faf,hdu='FIBERASSIGN')
-    
-    tfall.keep_columns(['TARGETID','LOCATION','PRIORITY'])
-    
-    tt = join(tt,tfall,keys=['TARGETID'],join_type='left',table_names = ['', '_ASSIGNED'], uniq_col_name='{col_name}{table_name}')
-    print(tt.columns)
     #wgl = np.isin(tfa['LOCATION_ASSIGNED'],goodloc)
     #wtype = ((tfa[tp] & 2**tarbit) > 0)
     #wtfa = wgl & wtype
@@ -174,10 +181,10 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print('max priority of assigned '+str(np.max(tt[wal]['PRIORITY_ASSIGNED'])))
     tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
     tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
-    print('are location and location_avail the same for assigned targets?')
-    print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
-    print('are location_avail and location_assigned the same for assigned targets?')
-    print(np.array_equal(tt[wal]['LOCATION_ASSIGNED'], tt[wal]['LOCATION_AVAIL']))
+    #print('are location and location_avail the same for assigned targets?')
+    #print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
+    #print('are location_avail and location_assigned the same for assigned targets?')
+    #print(np.array_equal(tt[wal]['LOCATION_ASSIGNED'], tt[wal]['LOCATION_AVAIL']))
 
     tt['LOCATION_ASSIGNED'] = np.zeros(len(tt),dtype=int)
     tt['LOCATION_ASSIGNED'][wal] = 1
@@ -185,8 +192,8 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print('number of assigned fibers '+str(len(tt[wal]))+' (check to match agrees with above)')
     wal = tt['LOCATION']*0 == 0
     print('number of locations from z file '+str(len(tt[wal]))+' (check to match agrees with above)')
-    print('are location and location_avail the same for assigned targets?')
-    print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
+    #print('are location and location_avail the same for assigned targets?')
+    #print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
     #tt['PRIORITY_ASSIGNED'] = np.vectorize(pdict.__getitem__)(tt['LOCATION'])
 
     return tt
