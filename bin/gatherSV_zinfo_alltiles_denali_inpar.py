@@ -24,7 +24,7 @@ import LSS.zcomp.zinfo as zi
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--release", help="what spectro release to use, e.g. blanc or daily",default='cascades') #eventually remove this and just gather everything
+parser.add_argument("--release", help="what spectro release to use, e.g. blanc or daily",default='denali') #eventually remove this and just gather everything
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--runmd", help="prod/test; test is for debugging result on first tile",default='prod')
@@ -178,9 +178,9 @@ if __name__ == '__main__':
     tiles = np.unique(exps['TILEID'])
     print('going through '+str(len(tiles))+' tiles')
 
-    if arg.runmd == 'prod':
+    if args.runmd == 'prod':
         ntile = len(tiles)
-    if arg.runmd == 'test':
+    if args.runmd == 'test':
         ntile = 1    
     for j in range(0,ntile,N):
         #get_tilezinfo(tiles[j])
