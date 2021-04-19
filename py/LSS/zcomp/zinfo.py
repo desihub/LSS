@@ -479,7 +479,11 @@ def get_subset_denali(tarbit,tp,night,tile,coaddir,exposures,ct,mfn='temp.txt',t
             ts.keep_columns(['TARGETID','TSNR2_ELG','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
         #this is all to get the effective coadded exposure depth; should eventually just be in the fibermap hdu
         zfm = Table.read(coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits',hdu='FIBERMAP')
-        exps = np.unique(zfm['EXPID'])
+        try:
+            exps = np.unique(zfm['EXPID'])
+        except:
+            print('NO EXPID COLUMN in '+coaddir+'/zbest-'+str(specs[0])+'-'+str(tile)+'-'+night+'.fits')
+            return None    
         etdark = []
         etbright = []
         etback = []
