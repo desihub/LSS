@@ -400,7 +400,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,maskzfail=True):
+def mkfullran(randir,rann,imbits,outf,tp,maskzfail=False):
     zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
     dz = Table.read(zf)
     if maskzfail:
@@ -557,7 +557,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=True):
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=True):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
