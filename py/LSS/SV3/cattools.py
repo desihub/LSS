@@ -153,8 +153,8 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     wal = tt['LOCATION_ASSIGNED']*0 == 0
     tt['LOCATION'][wal] = tt['LOCATION_ASSIGNED'][wal]
     tt['LOCATION_AVAIL'][wal] = tt['LOCATION_ASSIGNED'][wal]
-    print('differences between assigned locations')
-    print(np.unique(tt['LOCATION_AVAIL'][wal]-tt['LOCATION_ASSIGNED'][wal]))
+    #print('differences between assigned locations')
+    #print(np.unique(tt['LOCATION_AVAIL'][wal]-tt['LOCATION_ASSIGNED'][wal]))
     #print(tt.columns)
 
 
@@ -183,8 +183,8 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     print('number of assigned fibers '+str(len(tt[wal])))
     print('number of unique target id '+str(len(np.unique(tt[wal]['TARGETID']))))
     print('max priority of assigned '+str(np.max(tt[wal]['PRIORITY_ASSIGNED'])))
-    tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
-    tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
+    #tt[wal]['LOCATION'] = tt[wal]['LOCATION_ASSIGNED']
+    #tt[wal]['LOCATION_AVAIL'] = tt[wal]['LOCATION_ASSIGNED']
     #print('are location and location_avail the same for assigned targets?')
     #print(np.array_equal(tt[wal]['LOCATION'], tt[wal]['LOCATION_AVAIL']))
     #print('are location_avail and location_assigned the same for assigned targets?')
