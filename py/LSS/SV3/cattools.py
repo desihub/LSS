@@ -471,6 +471,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
 
     print('counting tiles and finding rosette')
     nch = 0
+    nbl = 0
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
@@ -478,13 +479,14 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         ti = int(tiles[0])
         ros[ii] = tile2rosette(ti)
         if atloc[ii] == False:
+            nbl += 1
             for tl in tiles:
                 ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
                 if np.isin(ttlocid,atloc):
                     dz[ii]['TILELOCID'] = ttlocid
                     nch += 1
         if ii%10000 == 0:
-            print(ii,ti,ros[ii],nch)
+            print(ii,ti,ros[ii],nch,nbl)
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['rosette_number'] = ros
