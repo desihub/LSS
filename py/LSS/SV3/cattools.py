@@ -222,7 +222,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         tlids = np.copy(fgun['TILELOCID']).astype('<U300')
         fgun['TILELOCIDS'] = tlids
         #wm = np.ma.getmaskarray(fgun['LOCATION_ASSIGNED'])
-        fgun['TILELOCID_ASSIGNED'] = np.zeros(len(gfun))
+        fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
         fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
 
