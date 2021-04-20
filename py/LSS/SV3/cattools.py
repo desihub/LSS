@@ -474,20 +474,24 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     nch = 0
     nbl = 0
     nf = 0
-    for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
+    dz.write('temp.fits',format='fits', overwrite=True)
+    fdz = fitsio.read('temp.fits')
+    for ii in range(0,len(fdz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(fdz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-        tiles = dz['TILE'][ii].split('-')
+        tiles = fdz['TILE'][ii].split('-')
         ti = int(tiles[0])
         ros[ii] = tile2rosette(ti)
         if atloc[ii] == False:
             nbl += 1
             for tl in tiles:
-                ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
-                if np.isin(ttlocid,loclz):
+                ttlocid = int(tl)*10000 +fdz[ii]['LOCATION_AVAIL']
+                s = 0
+                if np.isin(ttlocid,loclz) and s == 0:
                     #dz[ii]['TILELOCID'] = ttlocid
                     locs[ii] = ttlocid
                     nch += 1
+                    s = 1
         if ii%10000 == 0:
             print(ii,ti,ros[ii],nch,nbl)
     #ros = tile2rosette(ti)
