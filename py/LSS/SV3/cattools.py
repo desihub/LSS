@@ -480,8 +480,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         if atloc[ii] == False:
             for tl in tiles:
                 ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
-                if np.isin(ttlocid,atloc)[0]:
-                    dz['TILELOCID'] = ttlocid
+                if np.isin(ttlocid,atloc):
+                    dz[ii]['TILELOCID'] = ttlocid
                     nch += 1
         if ii%10000 == 0:
             print(ii,ti,ros[ii],nch)
