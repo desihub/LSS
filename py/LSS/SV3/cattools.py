@@ -466,7 +466,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     print(np.max(nloclz),np.min(loclz))
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
-    atloc = np.isin(dz['TILELOCID'],locz)
+    atloc = np.isin(dz['TILELOCID'],loclz)
 
 
     print('counting tiles and finding rosette')
