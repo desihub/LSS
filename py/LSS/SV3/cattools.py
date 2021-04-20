@@ -387,7 +387,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
-            fgun['TILE'] = aa
+            fgun['TILE'] = int(tile)
+            fgun['TILES'] = aa
             fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
             if s == 0:
                 fgu = fgun
@@ -409,21 +410,21 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True)
                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
                      fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
 
-                aa = np.chararray(len(fgu['TILE']),unicode=True,itemsize=20)
+                aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
                 aa[:] = '-'+str(tile)
                 #rint(aa)
-                ms = np.core.defchararray.add(fgu['TILE'][didsc],aa[didsc])
+                ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
                 #print(ms)
-                fgu['TILE'][didsc] = ms #add the tile info
+                fgu['TILES'][didsc] = ms #add the tile info
                 print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
     NT = np.zeros(len(fgu))
     ros = np.zeros(len(fgu))
     print('counting tiles and finding rosette')
-    for ii in range(0,len(fgu['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(fgu['TILE'][ii],'-')+1
-        ti = int(fgu['TILE'][ii].split('-')[0])
+    for ii in range(0,len(fgu['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(fgu['TILES'][ii],'-')+1
+        ti = int(fgu['TILES'][ii].split('-')[0])
         ros[ii] = tile2rosette(ti)
     fgu['NTILE'] = NT    
             
@@ -476,7 +477,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #wa = dzz['LOCATION_ASSIGNED'] == 1
     #if len(dzz[wa]) != len(dzz):
      #   print('!found some zwarn = 0 without location_assigned = 1!')
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+    loclz,nloclz = np.unique(dzz['TILELOCID_ASSIGNED'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
@@ -490,17 +491,19 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     nf = 0
     #dz.write('temp.fits',format='fits', overwrite=True)
     #fdz = fitsio.read('temp.fits')
-    for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
+    for ii in range(0,len(dz['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-        tiles = dz['TILE'][ii].split('-')
+        tiles = dz['TILES'][ii].split('-')
         ti = int(tiles[0])
         ros[ii] = tile2rosette(ti)
         if natloc[ii]:# == False:
             nbl += 1
             s = 0
-            for tl in tiles:
-                ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
+            tids = dz['TILELOCIDS'][ii].split('-')
+            for tl in tids:
+                ttlocid  = int(tl)
+                
                 
                 if np.isin(ttlocid,loclz) and s == 0:
                     #dz[ii]['TILELOCID'] = ttlocid
@@ -530,8 +533,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #get completeness based on unique sets of tiles
     compa = []
     tll = []
-    for tls in np.unique(dz['TILE']):
-        w = dz['TILE'] == tls
+    for tls in np.unique(dz['TILES']):
+        w = dz['TILES'] == tls
         no = sum(dz[w]['LOCATION_ASSIGNED'])
         nt = len(dz[w])
         cp = no/nt
@@ -540,7 +543,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
         tll.append(tls)
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
-    for tl in dz['TILE']:
+    for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl]) 
     dz['COMP_TILE'] = np.array(fcompa)       
 
