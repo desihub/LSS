@@ -467,11 +467,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     atloc = np.isin(dz['TILELOCID'],loclz)
+    allloc = 
 
 
     print('counting tiles and finding rosette')
     nch = 0
     nbl = 0
+    nf = 0
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
@@ -482,7 +484,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
             nbl += 1
             for tl in tiles:
                 ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
-                if np.isin(ttlocid,atloc):
+                if np.isin(ttlocid,loclz):
                     dz[ii]['TILELOCID'] = ttlocid
                     nch += 1
         if ii%10000 == 0:
