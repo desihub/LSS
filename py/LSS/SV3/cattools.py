@@ -215,14 +215,19 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         fgun = Table.read(fl)
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
-        fgun['TILE'] = aa
+        fgun['TILE'] = int(tile)
+        fgun['TILES'] = aa
         fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
+        ai = np.chararray(len(fgun),unicode=True,itemsize=300)
+        tlids = np.copy(fgun['TILELOCID']).astype('<U300')
+        fgun['TILELOCIDS'] = tlids
         if s == 0:
             fgu = fgun
             s =1
         #wm = np.ma.getmaskarray(fgun['LOCATION_ASSIGNED'])
-        #fgun['TILELOCID_ASSIGNED'] = 0
-        #fgun['TILELOCID_ASSIGNED'][~wm] = tile*10000+fgun['LOCATION_ASSIGNED'][~wm]
+        fgun['TILELOCID_ASSIGNED'] = np.zeros(len(gfun))
+        wm = fgun['LOCATION_ASSIGNED'] == 1
+        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
         else:
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
         print(tile,cnt,len(tiles))
@@ -244,20 +249,28 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     print(np.sum(fu['LOCATION_ASSIGNED']))
     tidsu = fu['TARGETID']
     tids = fgu['TARGETID']
-    tiles = fgu['TILE']
-    tilesu = fu['TILE']
+    tiles = fgu['TILES']
+    tilesu = fu['TILES']
+    tlids = fgu['TILELOCIDS']
+    tlidsu = fu['TILELOCIDS']
+
     for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
         tid = tidsu[ii]#fu[ii]['TARGETID']
         wt = tids == tid
         ot = tilesu[ii]
-        
+        otl = tlidsu[ii]
         tt = tiles[wt]
+        tti = tlids[wt]
         for tl in tt:
             if tl != ot:
                 tilesu[ii] += '-'+str(tl)
+        for ti in tti:
+            if ti != otl:
+                tlidsu[ii] += '-'+str(ti)
         if ii%1000 == 0:
             print(ii)        
-    fu['TILE'] = tilesu
+    fu['TILES'] = tilesu
+    fu['TILELOCIDS'] = tlidsu
     
     #wa = fu['LOCATION_ASSIGNED'] == 1
     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
@@ -266,7 +279,7 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     #need to resort tile string
     fl = np.chararray(len(fu),unicode=True,itemsize=100)
     for ii in range(0,len(fu)):
-        tl = fu['TILE'][ii]
+        tl = fu['TILES'][ii]
         tls = tl.split('-')#.astype('int')
         tli = tls[0]
         if len(tls) > 1:
@@ -280,8 +293,8 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         #print(tli)
         fl[ii] = tli   
     
-    fu['TILE'] = fl
-    print(np.unique(fu['TILE']))
+    fu['TILES'] = fl
+    print(np.unique(fu['TILES']))
     fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
 
 def countloc(aa):
