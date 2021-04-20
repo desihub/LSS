@@ -221,13 +221,14 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         ai = np.chararray(len(fgun),unicode=True,itemsize=300)
         tlids = np.copy(fgun['TILELOCID']).astype('<U300')
         fgun['TILELOCIDS'] = tlids
-        if s == 0:
-            fgu = fgun
-            s =1
         #wm = np.ma.getmaskarray(fgun['LOCATION_ASSIGNED'])
         fgun['TILELOCID_ASSIGNED'] = np.zeros(len(gfun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
         fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
+
+        if s == 0:
+            fgu = fgun
+            s =1
         else:
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
         print(tile,cnt,len(tiles))
