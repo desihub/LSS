@@ -466,7 +466,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     print(np.max(nloclz),np.min(loclz))
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
-    atloc = np.isin(dz['TILELOCID'],loclz)
+    natloc = ~np.isin(dz['TILELOCID'],loclz)
     locs = np.copy(dz['TILELOCID'])
 
 
@@ -474,19 +474,20 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     nch = 0
     nbl = 0
     nf = 0
-    dz.write('temp.fits',format='fits', overwrite=True)
-    fdz = fitsio.read('temp.fits')
-    for ii in range(0,len(fdz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(fdz['TILE'][ii],'-')+1
+    #dz.write('temp.fits',format='fits', overwrite=True)
+    #fdz = fitsio.read('temp.fits')
+    for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-        tiles = fdz['TILE'][ii].split('-')
+        tiles = dz['TILE'][ii].split('-')
         ti = int(tiles[0])
         ros[ii] = tile2rosette(ti)
-        if atloc[ii] == False:
+        if natloc[ii]:# == False:
             nbl += 1
+            s = 0
             for tl in tiles:
-                ttlocid = int(tl)*10000 +fdz[ii]['LOCATION_AVAIL']
-                s = 0
+                ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
+                
                 if np.isin(ttlocid,loclz) and s == 0:
                     #dz[ii]['TILELOCID'] = ttlocid
                     locs[ii] = ttlocid
