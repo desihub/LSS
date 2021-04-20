@@ -453,14 +453,38 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
+
+    wz = dz['LOCATION_ASSIGNED'] == 1
+    dzz = dz[wz]
+    probl = np.zeros(len(dz))
+    #dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
+    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+    #wa = dzz['LOCATION_ASSIGNED'] == 1
+    #if len(dzz[wa]) != len(dzz):
+     #   print('!found some zwarn = 0 without location_assigned = 1!')
+    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+    print(np.max(nloclz),np.min(loclz))
+    #print(np.histogram(nloclz))
+    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+    atloc = np.isin(dz['TILELOCID'],locz)
+
+
     print('counting tiles and finding rosette')
+    nch = 0
     for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
         NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-        ti = int(dz['TILE'][ii].split('-')[0])
-        ros[ii] = tile2rosette(ti) 
+        tiles = dz['TILE'][ii].split('-')
+        ti = int(tiles[0])
+        ros[ii] = tile2rosette(ti)
+        if atloc[ii] == False:
+            for tl in tiles:
+                ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
+                if np.isin(ttlocid,atloc)[0]:
+                    dz['TILELOCID'] = ttlocid
+                    nch += 1
         if ii%10000 == 0:
-            print(ii,ti,ros[ii])
+            print(ii,ti,ros[ii],nch)
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['rosette_number'] = ros
@@ -488,18 +512,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
 
     #get tilelocid probs
     #wz = dz['ZWARN'] == 0
-    wz = dz['LOCATION_ASSIGNED'] == 1
-    dzz = dz[wz]
-    probl = np.zeros(len(dz))
-    #dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    #wa = dzz['LOCATION_ASSIGNED'] == 1
-    #if len(dzz[wa]) != len(dzz):
-     #   print('!found some zwarn = 0 without location_assigned = 1!')
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    print(np.max(nloclz),np.min(loclz))
-    #print(np.histogram(nloclz))
-    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     nm = 0
     nmt =0
     pd = []
