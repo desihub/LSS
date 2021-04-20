@@ -498,6 +498,15 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['TILELOCID'] = locs
+    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+    #wa = dzz['LOCATION_ASSIGNED'] == 1
+    #if len(dzz[wa]) != len(dzz):
+     #   print('!found some zwarn = 0 without location_assigned = 1!')
+    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+    print(np.max(nloclz),np.min(loclz))
+    #print(np.histogram(nloclz))
+    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+
     dz['rosette_number'] = ros
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
