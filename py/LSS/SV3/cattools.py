@@ -467,7 +467,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     atloc = np.isin(dz['TILELOCID'],loclz)
-    
+    locs = np.copy(ff['TILELOCID'])
 
 
     print('counting tiles and finding rosette')
@@ -485,12 +485,14 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
             for tl in tiles:
                 ttlocid = int(tl)*10000 +dz[ii]['LOCATION_AVAIL']
                 if np.isin(ttlocid,loclz):
-                    dz[ii]['TILELOCID'] = ttlocid
+                    #dz[ii]['TILELOCID'] = ttlocid
+                    locs[ii] = ttlocid
                     nch += 1
         if ii%10000 == 0:
             print(ii,ti,ros[ii],nch,nbl)
     #ros = tile2rosette(ti)
     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
+    dz['TILELOCID'] = locs
     dz['rosette_number'] = ros
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
