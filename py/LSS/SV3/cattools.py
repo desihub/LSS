@@ -202,7 +202,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def combtiles(tiles,catdirtp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
+def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
