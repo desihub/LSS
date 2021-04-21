@@ -218,8 +218,8 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             fgun = fgun[wt]
         fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
-        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
-        atls = np.unique(fgun[wm]['LOCATION'])
+        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION_AVAIL'][wm]
+        atls = np.unique(fgun[wm]['LOCATION_AVAIL'])
         wloc = np.isin(fgun['LOCATION_AVAIL'],atls)
         fgun = fgun[wloc]
         print(len(fgun),np.sum(fgun['LOCATION_ASSIGNED']))
