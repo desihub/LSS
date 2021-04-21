@@ -233,7 +233,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
                     locsna.append(i)
 
             print('number of unassigned locations',len(locsna))
-            was = ~np.isin(fgun['LOCATION'],locsna)
+            was = ~np.isin(fgun['LOCATION_AVAIL'],locsna)
             fgun['LOC_NOTBLOCK'][was] = 1
             wg = was
             fgun['ZPOSS'][wg] = 1
@@ -290,7 +290,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
-        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])))#,np.unique(fgu['TILELOCIDS'])
+        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
     fu = fgu
@@ -525,6 +525,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
     dz = dz[wtype]
+    print('length before any cuts '+str(len(dz)))
     wk = dz['ZPOSS'] == 1
     dz = dz[wk]
     dz = cutphotmask(dz,imbits)
