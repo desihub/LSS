@@ -271,7 +271,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
-        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']))#,np.unique(fgu['TILELOCIDS'])
+        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
     fu = fgu
