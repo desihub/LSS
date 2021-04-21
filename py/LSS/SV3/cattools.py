@@ -219,10 +219,24 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
         fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
         fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION_AVAIL'][wm]
-        atls = np.unique(fgun[wm]['LOCATION_AVAIL'])
-        wloc = np.isin(fgun['LOCATION_AVAIL'],atls)
-        fgun = fgun[wloc]
-        print(len(fgun),np.sum(fgun['LOCATION_ASSIGNED']))
+        #atls = np.unique(fgun[wm]['LOCATION_AVAIL'])
+        #wloc = np.isin(fgun['LOCATION_AVAIL'],atls)
+        #fgun = fgun[wloc]
+        #print(len(fgun),np.sum(fgun['LOCATION_ASSIGNED']))
+        nl,nla = countloc(fgun)
+        fgun['ZPOSS'] = np.zeros(len(fa)).astype(int)
+        if tp != 'dark' and tp != 'bright':
+            fgun['LOC_NOTBLOCK'] = np.zeros(len(fa)).astype(int)
+            locsna = []
+            for i in range(0,len(nla)):
+                if nla[i] == 0 and nl[i] > 0:
+                    locsna.append(i)
+
+            print('number of unassigned locations',len(locsna))
+            was = ~np.isin(fgun['LOCATION'],locsna)
+            fgun['LOC_NOTBLOCK'][was] = 1
+            wg = was
+            fgun['ZPOSS'][wg] = 1
 
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
@@ -257,6 +271,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
             #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
             #fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+            if tp != 'dark' and tp != 'bright':
+                fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+                fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
 
             aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
             aa[:] = '-'+str(tile)
@@ -508,6 +525,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
     dz = dz[wtype]
+    wk = dz['ZPOSS'] == 1
+    dz = dz[wk]
     dz = cutphotmask(dz,imbits)
     
     NT = np.zeros(len(dz))
