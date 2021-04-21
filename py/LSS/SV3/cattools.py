@@ -202,7 +202,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def combtiles(tiles,catdir,pd,tp='ALL'):
+def combtiles(tiles,catdirtp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
@@ -211,8 +211,18 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     s = 0
     cnt = 0 
     for tile in tiles:
-        fl = catdir+tp+str(tile)+'_full.dat.fits'
+        fl = catdir+ttp+str(tile)+'_full.dat.fits'
         fgun = Table.read(fl)
+        if tp != 'dark' and tp != 'bright':
+            wt = (fgun[tc] & tmask[tp]) > 0
+            fgun = fgun[wt]
+        fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
+        wm = fgun['LOCATION_ASSIGNED'] == 1
+        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
+        atls = np.unique(fgun[wm]['LOCATION'])
+        wloc = np.isin(fgun['LOCATION'],atls)
+        fgun = fgun[wloc]
+
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
         fgun['TILE'] = int(tile)
@@ -221,60 +231,90 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
         ai = np.chararray(len(fgun),unicode=True,itemsize=300)
         tlids = np.copy(fgun['TILELOCID']).astype('<U300')
         fgun['TILELOCIDS'] = tlids
-        #wm = np.ma.getmaskarray(fgun['LOCATION_ASSIGNED'])
-        fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
-        wm = fgun['LOCATION_ASSIGNED'] == 1
-        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION'][wm]
 
         if s == 0:
             fgu = fgun
             s =1
         else:
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-        print(tile,cnt,len(tiles))
+            fgo = fgu.copy()
+			wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+			wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+			#print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
+			fgu[wn]['PRIORITY_ASSIGNED'] = 0
+			fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+			wa = fgu['LOCATION_ASSIGNED'] == 1
+			#wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
+			fa = fgu[wa]
+			print(len(fa),len(np.unique(fa['TARGETID'])))
+			fgu.sort('sort')
+            fgu = unique(fgu,keys='TARGETID')#,keep='last') 
+                
+            dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+            didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+            #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
+            fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+
+            aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+            aa[:] = '-'+str(tile)
+            #rint(aa)
+            ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+            #print(ms)
+            fgu['TILES'][didsc] = ms #add the tile info
+            aa = np.copy(fgun[dids]['TILELOCIDS'])#np.chararray(len(fgu['TILELOCIDS']),unicode=True,itemsize=100)
+            aa[:] = np.core.defchararray.add('-',aa)
+            
+            #rint(aa)
+            ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa[didsc])
+            #print(ms)
+            fgu['TILELOCIDS'][didsc] = ms #add the tile info
+
+
+        print(tile,cnt,len(tiles),np.unique(fgu['TILELOCIDS']),np.sum(fgu['LOCATION_ASSIGNED']))
         cnt += 1
 
+    fu = fgu
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
-    wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-    wn |= fgu['PRIORITY_ASSIGNED'] == 999999
-    print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
-    fgu[wn]['PRIORITY_ASSIGNED'] = 0
-    fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
-    wa = fgu['LOCATION_ASSIGNED'] == 1
-    #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
-    fa = fgu[wa]
-    print(len(fa),len(np.unique(fa['TARGETID'])))
-    fgu.sort('sort')
-    fu = unique(fgu,keys=['TARGETID'])
-    print(np.sum(fu['LOCATION_ASSIGNED']))
-    tidsu = fu['TARGETID']
-    tids = fgu['TARGETID']
-    tiles = fgu['TILES']
-    tilesu = fu['TILES']
-    tlids = fgu['TILELOCIDS']
-    tlidsu = fu['TILELOCIDS']
-
-    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
-        tid = tidsu[ii]#fu[ii]['TARGETID']
-        wt = tids == tid
-        ot = tilesu[ii]
-        otl = tlidsu[ii]
-        tt = tiles[wt]
-        tti = tlids[wt]
-        for tl in tt:
-            if tl != ot:
-                tilesu[ii] += '-'+str(tl)
-        for ti in tti:
-            if ti != otl:
-                tlidsu[ii] += '-'+str(ti)
-        if ii%1000 == 0:
-            print(ii)        
-    fu['TILES'] = tilesu
-    fu['TILELOCIDS'] = tlidsu
-    
-    #wa = fu['LOCATION_ASSIGNED'] == 1
-    #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
+#     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+#     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+#     print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
+#     fgu[wn]['PRIORITY_ASSIGNED'] = 0
+#     fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+#     wa = fgu['LOCATION_ASSIGNED'] == 1
+#     #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
+#     fa = fgu[wa]
+#     print(len(fa),len(np.unique(fa['TARGETID'])))
+#     fgu.sort('sort')
+#     fu = unique(fgu,keys=['TARGETID'])
+#     print(np.sum(fu['LOCATION_ASSIGNED']))
+#     tidsu = fu['TARGETID']
+#     tids = fgu['TARGETID']
+#     tiles = fgu['TILES']
+#     tilesu = fu['TILES']
+#     tlids = fgu['TILELOCIDS']
+#     tlidsu = fu['TILELOCIDS']
+# 
+#     for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+#         tid = tidsu[ii]#fu[ii]['TARGETID']
+#         wt = tids == tid
+#         ot = tilesu[ii]
+#         otl = tlidsu[ii]
+#         tt = tiles[wt]
+#         tti = tlids[wt]
+#         for tl in tt:
+#             if tl != ot:
+#                 tilesu[ii] += '-'+str(tl)
+#         for ti in tti:
+#             if ti != otl:
+#                 tlidsu[ii] += '-'+str(ti)
+#         if ii%1000 == 0:
+#             print(ii)        
+#     fu['TILES'] = tilesu
+#     fu['TILELOCIDS'] = tlidsu
+#     
+#     #wa = fu['LOCATION_ASSIGNED'] == 1
+#     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
 
     #need to resort tile string
@@ -296,7 +336,9 @@ def combtiles(tiles,catdir,pd,tp='ALL'):
     
     fu['TILES'] = fl
     print(np.unique(fu['TILES']))
-    fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
+    
+    #fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
+    fu.write(catdir+'/datcomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
 def countloc(aa):
     locs = aa['LOCATION_AVAIL']
@@ -310,7 +352,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',maskzfail=True):
+def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
 
     s = 0
     #tiles.sort('ZDATE')
