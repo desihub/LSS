@@ -265,7 +265,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             aa[:] = np.core.defchararray.add('-',aa)
             
             #rint(aa)
-            ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa[didsc])
+            ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa)
             #print(ms)
             fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
