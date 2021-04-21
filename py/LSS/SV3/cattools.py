@@ -411,8 +411,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
                 wg &= was
                 fa['ZPOSS'][wg] = 1
                 fa['ZPOSSNOTBAD'][wg&wnzf] = 1
-                if maskzfail:
-                    wg &= wnzf
+                #if maskzfail:
+                #    wg &= wnzf
             
             #wzt = wpr & ~wzf & ~wna
 
