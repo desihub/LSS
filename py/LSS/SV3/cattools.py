@@ -226,7 +226,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
         nl,nla = countloc(fgun)
         fgun['ZPOSS'] = np.zeros(len(fgun)).astype(int)
         if tp != 'dark' and tp != 'bright':
-            fgun['LOC_NOTBLOCK'] = np.zeros(len(fgun).astype(int)
+            fgun['LOC_NOTBLOCK'] = np.zeros(len(fgun)).astype(int)
             locsna = []
             for i in range(0,len(nla)):
                 if nla[i] == 0 and nl[i] > 0:
