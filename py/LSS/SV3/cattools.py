@@ -238,16 +238,16 @@ def combtiles(tiles,catdirtp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
         else:
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgo = fgu.copy()
-			wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-			wn |= fgu['PRIORITY_ASSIGNED'] == 999999
-			#print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
-			fgu[wn]['PRIORITY_ASSIGNED'] = 0
-			fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
-			wa = fgu['LOCATION_ASSIGNED'] == 1
-			#wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
-			fa = fgu[wa]
-			print(len(fa),len(np.unique(fa['TARGETID'])))
-			fgu.sort('sort')
+            wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+            wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+            #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
+            fgu[wn]['PRIORITY_ASSIGNED'] = 0
+            fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+            wa = fgu['LOCATION_ASSIGNED'] == 1
+            #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
+            fa = fgu[wa]
+            print(len(fa),len(np.unique(fa['TARGETID'])))
+            fgu.sort('sort')
             fgu = unique(fgu,keys='TARGETID')#,keep='last') 
                 
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
