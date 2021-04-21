@@ -254,7 +254,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
             didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
             #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
-            fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+            #fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
 
             aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
             aa[:] = '-'+str(tile)
@@ -271,7 +271,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
-        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu))#,np.unique(fgu['TILELOCIDS'])
+        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
     fu = fgu
