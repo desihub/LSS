@@ -619,7 +619,7 @@ def mkfullran(randir,rann,imbits,outf,tp,maskzfail=False):
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
     #from desitarget.mtl import inflate_ledger
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
@@ -628,7 +628,9 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf):
     wk = dz['ZPOSS'] == 1
     dz = dz[wk]
     dz = cutphotmask(dz,imbits)
-    
+    dtl = Table.read(ftiles)
+    dz = join(dz,ftiles,keys='TARGETID')
+    print('length after join to file with tiles info is '+str(len(dz)))
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
