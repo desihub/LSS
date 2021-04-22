@@ -213,11 +213,11 @@ def doran(ii):
 
     if combr:
         print(len(mtld['TILEID']))
-        ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask,pdir)
+        ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         
     if mkfullr:
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type)
+        ct.mkfullran(randir,ii,imbits,outf,type,pdir)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
