@@ -31,7 +31,7 @@ def get_tiles(tilefile, footprint):
 
     return tiles
 
-def get_targets(mtlfile, skyfile, randomsfile):
+def get_targets(mtlfile, skyfile):
     """
     Load target and randoms information
     """
@@ -51,10 +51,7 @@ def get_targets(mtlfile, skyfile, randomsfile):
         sky = Table.read(skyfile)
         load_target_table(tgs, sky)
 
-    # Load randoms
-    randoms = Table.read(randomsfile)
-
-    return mtl, tgs, sky, randoms
+    return mtl, tgs, sky
 
 def setup_fba(mtl, sky, tiles, hw):
     """
