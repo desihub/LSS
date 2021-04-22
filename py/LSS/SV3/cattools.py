@@ -202,6 +202,83 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
+def count_tiles(tiles,catdir,pd,ttp='ALL'):
+    '''
+    For list of tileids, simply track the tiles a target shows up as available in
+    pd is dark or bright
+    just output targetid and tiles, meant to be matched to other processing
+    don't worry about what was assigned, purpose is to just count tile overlaps
+    '''
+
+    s = 0
+    cnt = 0 
+    for tile in tiles:
+        fl = catdir+ttp+str(tile)+'_full.dat.fits'
+        fgun = Table.read(fl)
+        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
+        fgun.keep_columns(['TARGETID','TILELOCID'])
+
+        aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+        aa[:] = str(tile)
+
+        fgun['TILES'] = aa
+        
+        ai = np.chararray(len(fgun),unicode=True,itemsize=300)
+        tlids = np.copy(fgun['TILELOCID']).astype('<U300')
+        fgun['TILELOCIDS'] = tlids
+
+        if s == 0:
+            fgu = fgun
+            s =1
+        else:
+            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+            fgo = fgu.copy()
+            fgu = unique(fgu,keys='TARGETID')#,keep='last') 
+                
+            dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+            didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+
+            aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+            aa[:] = '-'+str(tile)
+            #rint(aa)
+            ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+            #print(ms)
+            fgu['TILES'][didsc] = ms #add the tile info
+            aa = np.copy(fgun[dids]['TILELOCIDS'])#np.chararray(len(fgu['TILELOCIDS']),unicode=True,itemsize=100)
+            aa[:] = np.core.defchararray.add('-',aa)
+            
+            #rint(aa)
+            ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa)
+            #print(ms)
+            fgu['TILELOCIDS'][didsc] = ms #add the tile info
+
+
+        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu))
+        cnt += 1
+
+    fu = fgu
+    fl = np.chararray(len(fu),unicode=True,itemsize=100)
+    for ii in range(0,len(fu)):
+        tl = fu['TILES'][ii]
+        tls = tl.split('-')#.astype('int')
+        tli = tls[0]
+        if len(tls) > 1:
+            #tls = tls.astype('int')
+            tls.sort()
+            tli = tls[0]
+            for i in range(1,len(tls)):
+                tli += '-'+tls[i]
+        #else:
+        #    tli = tls
+        #print(tli)
+        fl[ii] = tli   
+    
+    fu['TILES'] = fl
+    print(np.unique(fu['TILES']))
+    
+    fu.write(catdir+'Alltiles_'+pd+'_tilelocs.dat.fits',format='fits', overwrite=True)    
+
+
 def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
@@ -238,16 +315,16 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             wg = was
             fgun['ZPOSS'][wg] = 1
 
-        aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-        aa[:] = str(tile)
+        #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+        #aa[:] = str(tile)
         fgun['TILE'] = int(tile)
-        fgun['TILES'] = aa
-        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
+        #fgun['TILES'] = aa
+        #fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         #print('sum of assigned,# of unique TILELOCID (should match)')
         #print(np.sum(fgun['LOCATION_ASSIGNED'] == 1),len(np.unique(fgun['TILELOCID'])))
-        ai = np.chararray(len(fgun),unicode=True,itemsize=300)
-        tlids = np.copy(fgun['TILELOCID']).astype('<U300')
-        fgun['TILELOCIDS'] = tlids
+        #ai = np.chararray(len(fgun),unicode=True,itemsize=300)
+        #tlids = np.copy(fgun['TILELOCID']).astype('<U300')
+        #fgun['TILELOCIDS'] = tlids
 
         if s == 0:
             fgu = fgun
@@ -355,8 +432,8 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
         fl[ii] = tli   
     
     fu['TILES'] = fl
-    print(np.unique(fu['TILES']))
-    
+    #print(np.unique(fu['TILES']))
+    print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
     #fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
     fu.write(catdir+'/datcomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
@@ -406,8 +483,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             fa = Table.read(ffa,hdu='FAVAIL')
             
             wg = np.isin(fa['LOCATION'],gloc)
-            fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
-            fa['FIBER_GOOD'][wg] = 1
+            fa = fa[wg]
+            #fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
+            #fa['FIBER_GOOD'][wg] = 1
             fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
             wnzf = ~np.isin(fa['LOCATION'],loc_fail)
             fa['Z_NOTBAD'][wnzf] = 1
@@ -424,10 +502,10 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
                 ntloc = len(gloc)-len(locsna)-len(loc_fail)
                 print('total number of assignable positions',ntloc)
                 was = ~np.isin(fa['LOCATION'],locsna)
-                fa['LOC_NOTBLOCK'][was] = 1
-                wg &= was
-                fa['ZPOSS'][wg] = 1
-                fa['ZPOSSNOTBAD'][wg&wnzf] = 1
+                #fa['LOC_NOTBLOCK'][was] = 1
+                #wg &= was
+                fa['ZPOSS'][was] = 1
+                fa['ZPOSSNOTBAD'][was&wnzf] = 1
                 #if maskzfail:
                 #    wg &= wnzf
             
@@ -440,8 +518,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             print(len(fa),len(fg))
             if tp != 'dark' and tp != 'bright':
                 fg.sort('ZPOSSNOTBAD')
-            else:
-                fg.sort('FIBER_GOOD') 
+            #else:
+            #    fg.sort('FIBER_GOOD') 
             fgun = unique(fg,keys=['TARGETID'],keep='last')
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
@@ -466,8 +544,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
                 #if this works, can save vetoing until the end
                 if tp != 'dark' and tp != 'bright':
-                     fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
-                     fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+                     #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
+                     #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
                      fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
                      fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
@@ -481,6 +559,27 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
                 print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
+
+    fl = np.chararray(len(fgu),unicode=True,itemsize=100)
+    for ii in range(0,len(fgu)):
+        tl = fgu['TILES'][ii]
+        tls = tl.split('-')#.astype('int')
+        tli = tls[0]
+        if len(tls) > 1:
+            #tls = tls.astype('int')
+            tls.sort()
+            tli = tls[0]
+            for i in range(1,len(tls)):
+                tli += '-'+tls[i]
+        #else:
+        #    tli = tls
+        #print(tli)
+        fl[ii] = tli   
+    
+    fgu['TILES'] = fl
+    print('number of unique tiles configurations '+str(len(np.unique(fgu['TILES']))))
+
+
     NT = np.zeros(len(fgu))
     ros = np.zeros(len(fgu))
     print('counting tiles and finding rosette')
