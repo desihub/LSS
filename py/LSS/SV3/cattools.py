@@ -217,6 +217,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
         fgun = Table.read(fl)
         fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         fgun.keep_columns(['TARGETID','TILELOCID'])
+        print(len(fgun),len(np.unique(fgun['TARGETID'])))
 
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
@@ -231,8 +232,8 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
             fgu = fgun
             s =1
         else:
-            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgo = fgu.copy()
+            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgu = unique(fgu,keys='TARGETID')#,keep='last') 
                 
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
@@ -260,7 +261,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
     fl = np.chararray(len(fu),unicode=True,itemsize=100)
     for ii in range(0,len(fu)):
         tl = fu['TILES'][ii]
-        tls = tl.split('-')#.astype('int')
+        tls = tl.split('-')#np.unique()#.astype('int')
         tli = tls[0]
         if len(tls) > 1:
             #tls = tls.astype('int')
@@ -330,8 +331,8 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
             fgu = fgun
             s =1
         else:
-            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgo = fgu.copy()
+            fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             wn = fgu['PRIORITY_ASSIGNED']*0 != 0
             wn |= fgu['PRIORITY_ASSIGNED'] == 999999
             #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
