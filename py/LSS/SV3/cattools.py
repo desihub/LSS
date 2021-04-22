@@ -253,7 +253,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
             fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
-        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu))
+        print(tile,cnt,len(tiles),len(fgu))
         cnt += 1
 
     fu = fgu
