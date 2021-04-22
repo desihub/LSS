@@ -512,7 +512,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             #wzt = wpr & ~wzf & ~wna
 
             #fg = fa[wg]
-            print(len(fa[wg]),np.sum(fa['ZPOSSNOTBAD']))
+            print(len(fa),np.sum(fa['ZPOSSNOTBAD']))
             fg = fa
             print('before,after vetoing locations:')
             print(len(fa),len(fg))
