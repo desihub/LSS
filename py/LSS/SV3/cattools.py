@@ -415,25 +415,25 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
     print(np.sum(fu['LOCATION_ASSIGNED']))
 
     #need to resort tile string
-    fl = np.chararray(len(fu),unicode=True,itemsize=100)
-    for ii in range(0,len(fu)):
-        tl = fu['TILES'][ii]
-        tls = tl.split('-')#.astype('int')
-        tli = tls[0]
-        if len(tls) > 1:
-            #tls = tls.astype('int')
-            tls.sort()
-            tli = tls[0]
-            for i in range(1,len(tls)):
-                tli += '-'+tls[i]
-        #else:
-        #    tli = tls
-        #print(tli)
-        fl[ii] = tli   
-    
-    fu['TILES'] = fl
-    #print(np.unique(fu['TILES']))
-    print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
+#     fl = np.chararray(len(fu),unicode=True,itemsize=100)
+#     for ii in range(0,len(fu)):
+#         tl = fu['TILES'][ii]
+#         tls = tl.split('-')#.astype('int')
+#         tli = tls[0]
+#         if len(tls) > 1:
+#             #tls = tls.astype('int')
+#             tls.sort()
+#             tli = tls[0]
+#             for i in range(1,len(tls)):
+#                 tli += '-'+tls[i]
+#         #else:
+#         #    tli = tls
+#         #print(tli)
+#         fl[ii] = tli   
+#     
+#     fu['TILES'] = fl
+#     #print(np.unique(fu['TILES']))
+#     print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
     #fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
     fu.write(catdir+'/datcomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
