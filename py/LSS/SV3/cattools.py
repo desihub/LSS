@@ -629,7 +629,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
     dz = dz[wk]
     dz = cutphotmask(dz,imbits)
     dtl = Table.read(ftiles)
-    dz = join(dz,ftiles,keys='TARGETID')
+    dz = join(dz,dtl,keys='TARGETID')
     print('length after join to file with tiles info is '+str(len(dz)))
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
