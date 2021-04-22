@@ -594,9 +594,14 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
 
     fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,maskzfail=False):
+def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
+    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits'
     dz = Table.read(zf)
+    dz.remove_columns(['TILES','NTILE'])
+    dzpd = Table.read(zfpd)
+    dzpd.keep_columns(['TARGETID','TILES','NTILE'])
+    dz = join(dz,dzpd,keys=['TARGETID'])
     if maskzfail:
         wk = dz['ZPOSSNOTBAD'] == 1
     else:
