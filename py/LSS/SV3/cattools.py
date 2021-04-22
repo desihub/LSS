@@ -319,7 +319,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
         #aa[:] = str(tile)
         fgun['TILE'] = int(tile)
         #fgun['TILES'] = aa
-        #fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
+        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         #print('sum of assigned,# of unique TILELOCID (should match)')
         #print(np.sum(fgun['LOCATION_ASSIGNED'] == 1),len(np.unique(fgun['TILELOCID'])))
         #ai = np.chararray(len(fgun),unicode=True,itemsize=300)
@@ -352,19 +352,19 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
                 fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
                 fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
 
-            aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
-            aa[:] = '-'+str(tile)
+            #aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+            #aa[:] = '-'+str(tile)
             #rint(aa)
-            ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+            #ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
             #print(ms)
-            fgu['TILES'][didsc] = ms #add the tile info
-            aa = np.copy(fgun[dids]['TILELOCIDS'])#np.chararray(len(fgu['TILELOCIDS']),unicode=True,itemsize=100)
-            aa[:] = np.core.defchararray.add('-',aa)
+            #fgu['TILES'][didsc] = ms #add the tile info
+            #aa = np.copy(fgun[dids]['TILELOCIDS'])#np.chararray(len(fgu['TILELOCIDS']),unicode=True,itemsize=100)
+            #aa[:] = np.core.defchararray.add('-',aa)
             
             #rint(aa)
-            ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa)
+            #ms = np.core.defchararray.add(fgu['TILELOCIDS'][didsc],aa)
             #print(ms)
-            fgu['TILELOCIDS'][didsc] = ms #add the tile info
+            #fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
         print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
