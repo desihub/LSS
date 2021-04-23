@@ -488,7 +488,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             
             wg = np.isin(fa['LOCATION'],gloc)
             fa = fa[wg]
-            fa = join(fa,tspec,keys=['LOCATION'],jointype='left')
+            fa = join(fa,tspec,keys=['LOCATION'],join_type='left')
             #fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
             #fa['FIBER_GOOD'][wg] = 1
             #fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
