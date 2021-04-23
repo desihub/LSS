@@ -465,13 +465,13 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
             fd = Table.read(dt)
-            print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
+           # print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
             gloc = np.unique(fd['LOCATION_AVAIL']) #bad locations already removed from this files
-            print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
+            #print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
             if tp != 'dark' and tp != 'bright':
                 wt = (fd[tc] & tmask[tp]) > 0
                 fd = fd[wt]
-            print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
+            #print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
             nl,nla = countloc(fd)
             #commenting out zfailure stuff, not vetoing randoms based on that
             #wzf = fd['ZWARN'] != 0 
