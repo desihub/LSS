@@ -78,16 +78,16 @@ def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/ti
     #find out which spectrograph have data
     for si in range(0,10):
         
-        try:
-            ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
-            fitsio.read(ff)
-
+        #try:
+        ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        if os.path.isfile(ff):
+            #fitsio.read(ff)
             specs.append(si)
-        except:
-            print('no spectrograph '+str(si)+ ' for tile '+str(tile))
+        #except:
+        #    print('no spectrograph '+str(si)+ ' for tile '+str(tile))
             #print(ff)
-    print('spectrographs with data:')
-    print(specs)            
+    #print('spectrographs with data:')
+    #print(specs)            
     if len(specs) == 0:
         return None
     tf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
