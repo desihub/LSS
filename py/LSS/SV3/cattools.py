@@ -458,15 +458,16 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
-        #tspec = combfibmap(tile,zdate)
-        #pdict,gloc = goodlocdict(tspec)
+        tspec = combfibmap(tile,zdate)
+        pdict,gloc = goodlocdict(tspec)
+        tspec.keep_columns(['LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
         dt = ddir+'ALL'+str(tile)+'_full.dat.fits'
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
             fd = Table.read(dt)
            # print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
-            gloc = np.unique(fd['LOCATION_AVAIL']) #bad locations already removed from this files
+            #gloc = np.unique(fd['LOCATION_AVAIL']) #bad locations already removed from this files
             #print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
             if tp != 'dark' and tp != 'bright':
                 wt = (fd[tc] & tmask[tp]) > 0
@@ -487,6 +488,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             
             wg = np.isin(fa['LOCATION'],gloc)
             fa = fa[wg]
+            fa = join(fa,tspec,keys=['LOCATION'],jointype='left')
             #fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
             #fa['FIBER_GOOD'][wg] = 1
             #fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
