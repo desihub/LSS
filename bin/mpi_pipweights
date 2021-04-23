@@ -70,6 +70,7 @@ def parse():
     parser.add_argument("--mtlout", action='store_true', required=False, default=False, help="write mtl files")
     parser.add_argument("--fbaout", action='store_true', required=False, default=False, help="write fba files")
     parser.add_argument("--nopip", action='store_true', required=False, default=False, help="turn off pip weights")
+    parser.add_argument("--noshuffle", action='store_true', required=False, default=False, help="don't shuffle subpriorities")
 
     args = parser.parse_args()
     return args
@@ -113,7 +114,8 @@ def main(args):
         np.random.seed(realization)
 
         # Randomize science target subpriority
-        mtl['SUBPRIORITY'] = np.random.random_sample(size=n_target)
+        if not args.noshuffle:
+            mtl['SUBPRIORITY'] = np.random.random_sample(size=n_target)
 
         # Write alternate mtl file
         if args.mtlout:

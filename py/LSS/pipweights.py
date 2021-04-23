@@ -37,9 +37,12 @@ def get_targets(mtlfile, skyfile):
     """
     # Read mtl file
     mtl = Table.read(mtlfile)
-    mtl['SUBPRIORITY'] = np.ones(len(mtl))
-    mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-    mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
+    if 'SUBPRIORITY' not in mtl:
+        mtl['SUBPRIORITY'] = np.ones(len(mtl))
+    if 'OBSCONDITIONS' not in mtl:
+        mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+    if 'DESI_TARGET' not in mtl:
+        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
     tgs = Targets()
