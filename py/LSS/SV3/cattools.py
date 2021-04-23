@@ -466,19 +466,21 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
         if os.path.isfile(ffa):
             fd = Table.read(dt)
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
-            gloc = np.unique(fd['LOCATION']) #bad locations already removed from this files
+            gloc = np.unique(fd['LOCATION_AVAIL']) #bad locations already removed from this files
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd),len(gloc))
             if tp != 'dark' and tp != 'bright':
                 wt = (fd[tc] & tmask[tp]) > 0
                 fd = fd[wt]
             print(np.sum(fd['LOCATION_ASSIGNED']),len(fd))
-            wzf = fd['ZWARN'] != 0 
-            wzf &= fd['ZWARN'] != 999999
-            wzf &= fd['ZWARN']*0 == 0
-            loc_fail = np.unique(fd[wzf]['LOCATION'])
-            print('number of zfail locations',len(loc_fail))
             nl,nla = countloc(fd)
-            print(np.sum(fd['LOCATION_ASSIGNED']),len(np.unique(fd['LOCATION_AVAIL'])),np.sum(nla),np.sum(nl))
+            #commenting out zfailure stuff, not vetoing randoms based on that
+            #wzf = fd['ZWARN'] != 0 
+            #wzf &= fd['ZWARN'] != 999999
+            #wzf &= fd['ZWARN']*0 == 0
+            #loc_fail = np.unique(fd[wzf]['LOCATION'])
+            #print('number of zfail locations',len(loc_fail))
+            #
+            #print(np.sum(fd['LOCATION_ASSIGNED']),len(np.unique(fd['LOCATION_AVAIL'])),np.sum(nla),np.sum(nl))
         # 
             #find the locations that were requested by type but not assigned
             fa = Table.read(ffa,hdu='FAVAIL')
@@ -487,41 +489,41 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             fa = fa[wg]
             #fa['FIBER_GOOD'] = np.zeros(len(fa)).astype(int)
             #fa['FIBER_GOOD'][wg] = 1
-            fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
-            wnzf = ~np.isin(fa['LOCATION'],loc_fail)
-            fa['Z_NOTBAD'][wnzf] = 1
+            #fa['Z_NOTBAD'] = np.zeros(len(fa)).astype(int)
+            #wnzf = ~np.isin(fa['LOCATION'],loc_fail)
+            #fa['Z_NOTBAD'][wnzf] = 1
             fa['ZPOSS'] = np.zeros(len(fa)).astype(int)
-            fa['ZPOSSNOTBAD'] = np.zeros(len(fa)).astype(int)
+            #fa['ZPOSSNOTBAD'] = np.zeros(len(fa)).astype(int)
             if tp != 'dark' and tp != 'bright':
-                fa['LOC_NOTBLOCK'] = np.zeros(len(fa)).astype(int)
+                #fa['LOC_NOTBLOCK'] = np.zeros(len(fa)).astype(int)
                 locsna = []
                 for i in range(0,len(nla)):
                     if nla[i] == 0 and nl[i] > 0:
                         locsna.append(i)
 
                 print('number of unassigned locations',len(locsna))
-                ntloc = len(gloc)-len(locsna)-len(loc_fail)
+                ntloc = len(gloc)-len(locsna)#-len(loc_fail)
                 print('total number of assignable positions',ntloc)
                 was = ~np.isin(fa['LOCATION'],locsna)
                 #fa['LOC_NOTBLOCK'][was] = 1
                 #wg &= was
                 fa['ZPOSS'][was] = 1
-                fa['ZPOSSNOTBAD'][was&wnzf] = 1
+                #fa['ZPOSSNOTBAD'][was&wnzf] = 1
                 #if maskzfail:
                 #    wg &= wnzf
             
             #wzt = wpr & ~wzf & ~wna
 
             #fg = fa[wg]
-            print(len(fa),np.sum(fa['ZPOSSNOTBAD']))
-            fg = fa
-            print('before,after vetoing locations:')
-            print(len(fa),len(fg))
+            #print(len(fa),np.sum(fa['ZPOSSNOTBAD']))
+            #fg = fa
+            #print('before,after vetoing locations:')
+            #print(len(fa),len(fg))
             if tp != 'dark' and tp != 'bright':
-                fg.sort('ZPOSSNOTBAD')
+                fa.sort('ZPOSS')
             #else:
             #    fg.sort('FIBER_GOOD') 
-            fgun = unique(fg,keys=['TARGETID'],keep='last')
+            fgun = unique(fa,keys=['TARGETID'],keep='last')
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
             fgun.remove_columns(delcols)
@@ -547,9 +549,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
                 if tp != 'dark' and tp != 'bright':
                      #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
                      #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
-                     fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
+                     #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
-                     fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
+                     #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
 
                 aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
                 aa[:] = '-'+str(tile)

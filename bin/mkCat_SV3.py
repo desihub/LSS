@@ -271,7 +271,7 @@ if mkdtiles:
             fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             wt = ta['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-            #!!!MAKE FASTER BY JUST MATCHING TO TRIMMED TARGET CATALOG YOU ALREADY WROTE OUT!!!
+            
             ftar = Table.read(sv3dir+pdir+'_targets.fits')
             ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
             'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
