@@ -460,7 +460,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
         tspec = combfibmap(tile,zdate)
         pdict,gloc = goodlocdict(tspec)
-        tspec.keep_columns(['LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+        tspec.keep_columns(['LOCATION','FIBERSTATUS','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
         dt = ddir+'ALL'+str(tile)+'_full.dat.fits'
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
