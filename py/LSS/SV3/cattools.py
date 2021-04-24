@@ -415,10 +415,12 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         tlocs = fgu['TILELOCID']
         ntl = []
         ch = 0
+        bl = 0
         print(len(tidsu),len(natloc))
         for ii in range(0,len(tidsu)):
             #if wp[ii] & natloc[ii]:
             if natloc[ii]:
+                bl += 1
                 tid = tidsu[ii]
                 wt = tids == tid
                 tls = tlocs[wt]
@@ -432,7 +434,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
                             ch += 1
                             s = 1
             if ii%10000 == 0:
-                print(ii,len(tidsu),ch)
+                print(ii,len(tidsu),ch,bl)
         wa = fu['LOCATION_ASSIGNED'] == 1
         #wp = fgu['ZPOSS']
         loclz,nloclz = np.unique(fu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
