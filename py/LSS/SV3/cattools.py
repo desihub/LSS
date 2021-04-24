@@ -239,6 +239,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL',imask=True):
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgu = unique(fgu,keys='TARGETID')#,keep='last') 
                 
+            #I think this works when the ordering is the same; things got messed up other places with sorts
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
             didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
 
@@ -301,17 +302,14 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         if tp != 'dark' and tp != 'bright':
             wt = (fgun[tc] & tmask[tp]) > 0
             fgun = fgun[wt]
+        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
-        fgun['TILELOCID_ASSIGNED'][wm] = tile*10000+fgun['LOCATION_AVAIL'][wm]
-        #atls = np.unique(fgun[wm]['LOCATION_AVAIL'])
-        #wloc = np.isin(fgun['LOCATION_AVAIL'],atls)
-        #fgun = fgun[wloc]
-        #print(len(fgun),np.sum(fgun['LOCATION_ASSIGNED']))
+        fgun['TILELOCID_ASSIGNED'][wm] = fgun[wm]['TILELOCID'][wm]
         nl,nla = countloc(fgun)
         fgun['ZPOSS'] = np.zeros(len(fgun)).astype(int)
         if tp != 'dark' and tp != 'bright':
-            fgun['LOC_NOTBLOCK'] = np.zeros(len(fgun)).astype(int)
+            #fgun['LOC_NOTBLOCK'] = np.zeros(len(fgun)).astype(int)
             locsna = []
             for i in range(0,len(nla)):
                 if nla[i] == 0 and nl[i] > 0:
@@ -319,7 +317,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
 
             print('number of unassigned locations',len(locsna))
             was = ~np.isin(fgun['LOCATION_AVAIL'],locsna)
-            fgun['LOC_NOTBLOCK'][was] = 1
+            #fgun['LOC_NOTBLOCK'][was] = 1
             wg = was
             fgun['ZPOSS'][wg] = 1
             #fgun.sort('ZPOSS')
@@ -328,7 +326,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         #aa[:] = str(tile)
         fgun['TILE'] = int(tile)
         #fgun['TILES'] = aa
-        fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
+        
         #print('sum of assigned,# of unique TILELOCID (should match)')
         #print(np.sum(fgun['LOCATION_ASSIGNED'] == 1),len(np.unique(fgun['TILELOCID'])))
         #ai = np.chararray(len(fgun),unicode=True,itemsize=300)
@@ -379,7 +377,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
-    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+    
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
     #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
@@ -388,10 +386,17 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
    
     
     if tp != 'dark' and tp != 'bright':
-        wa = fgu['LOCATION_ASSIGNED'] == 1
-        print('ZPOSS for LOCATION_ASSIGNED = 1:')
-        print(np.unique(fgu[wa]['ZPOSS']))
+        #wa = fgu['LOCATION_ASSIGNED'] == 1
+        #print('ZPOSS for LOCATION_ASSIGNED = 1:')
+        #print(np.unique(fgu[wa]['ZPOSS']))
         fgu['sort'] = fgu['sort']*fgu['ZPOSS']
+        wa = fgu['LOCATION_ASSIGNED'] == 1
+        #wp = fgu['ZPOSS']
+        loclz,nloclz = np.unique(fgu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
+        wp = fgu['ZPOSS'] == 1
+        natloc = ~np.isin(fgu[wp]['TILELOCID'],loclz)
+        print('number of zposs with tilelocid not showing up in tilelocid_assigned:')
+        print(np.sum(natloc))
     fgu.sort('sort')
     fu = unique(fgu,keys='TARGETID')
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
@@ -692,15 +697,14 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
             nbl += 1
             s = 0
             tids = dz['TILELOCIDS'][ii].split('-')
-            for tl in tids:
-                ttlocid  = int(tl)
-                
-                
-                if np.isin(ttlocid,loclz) and s == 0:
-                    #dz[ii]['TILELOCID'] = ttlocid
-                    locs[ii] = ttlocid
-                    nch += 1
-                    s = 1
+            if s == 0:
+				for tl in tids:
+					ttlocid  = int(tl)				
+					if np.isin(ttlocid,loclz):
+						#dz[ii]['TILELOCID'] = ttlocid
+						locs[ii] = ttlocid
+						nch += 1
+						s = 1
         if ii%10000 == 0:
             print(ii,ti,ros[ii],nch,nbl)
     #ros = tile2rosette(ti)
