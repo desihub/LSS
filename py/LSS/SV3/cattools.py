@@ -698,13 +698,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
             s = 0
             tids = dz['TILELOCIDS'][ii].split('-')
             if s == 0:
-				for tl in tids:
-					ttlocid  = int(tl)				
-					if np.isin(ttlocid,loclz):
-						#dz[ii]['TILELOCID'] = ttlocid
-						locs[ii] = ttlocid
-						nch += 1
-						s = 1
+                for tl in tids:
+                    ttlocid  = int(tl)              
+                    if np.isin(ttlocid,loclz):
+                        #dz[ii]['TILELOCID'] = ttlocid
+                        locs[ii] = ttlocid
+                        nch += 1
+                        s = 1
         if ii%10000 == 0:
             print(ii,ti,ros[ii],nch,nbl)
     #ros = tile2rosette(ti)
