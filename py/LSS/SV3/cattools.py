@@ -397,8 +397,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         natloc = ~np.isin(fgu[wp]['TILELOCID'],loclz)
         print('number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
-    fgu.sort('sort')
-    fu = unique(fgu,keys='TARGETID')
+    #fgu.sort('sort')
+    fgu.sort('ZPOSS')
+    fu = unique(fgu,keys='TARGETID',keep='last')
     
     if tp != 'dark' and tp != 'bright':
         
