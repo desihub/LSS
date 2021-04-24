@@ -379,12 +379,12 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
-	fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-	wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-	wn |= fgu['PRIORITY_ASSIGNED'] == 999999
-	#print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
-	fgu[wn]['PRIORITY_ASSIGNED'] = 0
-	fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+    wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+    wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+    #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
+    fgu[wn]['PRIORITY_ASSIGNED'] = 0
+    fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
    
     
     if tp != 'dark' and tp != 'bright':
