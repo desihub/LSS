@@ -536,9 +536,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=True):
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
             fgun.remove_columns(delcols)
-			if imask:
-				wm = fgun['MASKBITS'] == 0
-				fgun = fgun[wm]
+            if imask:
+                wm = fgun['MASKBITS'] == 0
+                fgun = fgun[wm]
 
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
