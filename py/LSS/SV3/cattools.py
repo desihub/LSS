@@ -399,7 +399,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         print(np.sum(natloc))
     fgu.sort('sort')
     fu = unique(fgu,keys='TARGETID')
+    
     if tp != 'dark' and tp != 'bright':
+        
         wa = fu['LOCATION_ASSIGNED'] == 1
         #wp = fgu['ZPOSS']
         loclz,nloclz = np.unique(fu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
@@ -407,11 +409,35 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
         print('after cutting to unique, number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
+		tidsu = fu['TARGETID'][wp][natloc]
+		tids = fgu['TARGETID']
+		tlocs = fgu['TILELOCID']
+		ntl = []
+		for ii in range(0,len(tidsu)):
+		    tid = tidsu[ii]
+		    wt = tids == tid
+		    tls = tlocs[wt]
+		    s = 0
+		    for tl in tls:
+		        if s == 0:
+		            if np.isin(tl,loclz):
+		                wu = fu['TARGETID'] == tid
+		                fu[wu]['TILELOCID'] = tl
+		                #ntl.append(tl)
+		                s = 1
+            if ii%100 == 0:
+                print(ii,len(tidsu))
+        wa = fu['LOCATION_ASSIGNED'] == 1
+        #wp = fgu['ZPOSS']
+        loclz,nloclz = np.unique(fu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
+        wp = fu['ZPOSS'] == 1
+        natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
+        print('after cutting to unique and reassignment, number of zposs with tilelocid not showing up in tilelocid_assigned:')
+        print(np.sum(natloc))
+		
         
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
-#     tidsu = fu['TARGETID']
-#     tids = fgu['TARGETID']
 #     tiles = fgu['TILES']
 #     tilesu = fu['TILES']
 #     tlids = fgu['TILELOCIDS']
