@@ -305,7 +305,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         fgun['TILELOCID_ASSIGNED'] = np.zeros(len(fgun))
         wm = fgun['LOCATION_ASSIGNED'] == 1
-        fgun['TILELOCID_ASSIGNED'][wm] = fgun[wm]['TILELOCID'][wm]
+        fgun['TILELOCID_ASSIGNED'][wm] = fgun['TILELOCID'][wm]
         nl,nla = countloc(fgun)
         fgun['ZPOSS'] = np.zeros(len(fgun)).astype(int)
         if tp != 'dark' and tp != 'bright':
