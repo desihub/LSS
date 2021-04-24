@@ -202,7 +202,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def count_tiles(tiles,catdir,pd,ttp='ALL'):
+def count_tiles(tiles,catdir,pd,ttp='ALL',imask=True):
     '''
     For list of tileids, simply track the tiles a target shows up as available in
     pd is dark or bright
@@ -215,6 +215,9 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
     for tile in tiles:
         fl = catdir+ttp+str(tile)+'_full.dat.fits'
         fgun = Table.read(fl)
+        if imask:
+            wm = fgun['MASKBITS'] == 0
+            fgun = fgun[wm]
         fgun['TILELOCID'] = 10000*tile +fgun['LOCATION_AVAIL']
         fgun.keep_columns(['TARGETID','TILELOCID'])
         print(len(fgun),len(np.unique(fgun['TARGETID'])))
@@ -280,7 +283,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL'):
     fu.write(catdir+'Alltiles_'+pd+'_tilelocs.dat.fits',format='fits', overwrite=True)    
 
 
-def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
+def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
@@ -291,6 +294,10 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL'):
     for tile in tiles:
         fl = catdir+ttp+str(tile)+'_full.dat.fits'
         fgun = Table.read(fl)
+        if imask:
+            wm = fgun['MASKBITS'] == 0
+            fgun = fgun[wm]
+
         if tp != 'dark' and tp != 'bright':
             wt = (fgun[tc] & tmask[tp]) > 0
             fgun = fgun[wt]
@@ -450,7 +457,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
+def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=True):
 
     s = 0
     #tiles.sort('ZDATE')
@@ -529,6 +536,10 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET'):
             ffna = Table.read(ffna)
             fgun = join(fgun,ffna,keys=['TARGETID'])
             fgun.remove_columns(delcols)
+			if imask:
+				wm = fgun['MASKBITS'] == 0
+				fgun = fgun[wm]
+
             print(str(len(fgun))+' unique new randoms')
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
