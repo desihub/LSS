@@ -580,8 +580,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
             #fg = fa
             #print('before,after vetoing locations:')
             #print(len(fa),len(fg))
-            if tp != 'dark' and tp != 'bright':
-                fa.sort('ZPOSS')
+            #if tp != 'dark' and tp != 'bright':
+            #    fa.sort('ZPOSS')
             #else:
             #    fg.sort('FIBER_GOOD') 
             fgun = unique(fa,keys=['TARGETID'],keep='last')
