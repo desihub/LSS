@@ -511,6 +511,7 @@ def countloc(aa):
 def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     s = 0
+    td = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
@@ -591,7 +592,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
                 wm = fgun['MASKBITS'] == 0
                 fgun = fgun[wm]
 
-            print(str(len(fgun))+' unique new randoms')
+            print(tile,td, len(tiles), str(len(fgun))+' unique new randoms')
+            td += 1
             aa = np.chararray(len(fgun),unicode=True,itemsize=100)
             aa[:] = str(tile)
             fgun['TILE'] = int(tile)
