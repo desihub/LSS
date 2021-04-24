@@ -601,32 +601,36 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
                 fgu = fgun
                 s = 1
             else:   
-                fv = vstack([fgu,fgun],metadata_conflicts='silent')
-                fgo = fgu.copy()
-                fgu = unique(fv,keys='TARGETID')#,keep='last') 
-                
-                dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-                didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-                #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
-                fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
-                #if this works, can save vetoing until the end
-                if tp != 'dark' and tp != 'bright':
-                     #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
-                     #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
-                     #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
-                     fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
-                     #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
-
-                aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
-                aa[:] = '-'+str(tile)
-                #rint(aa)
-                ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
-                #print(ms)
-                fgu['TILES'][didsc] = ms #add the tile info
-                print(str(len(fgu))+' unique total randoms')
+                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+#                 fgo = fgu.copy()
+#                 fgu = unique(fv,keys='TARGETID')#,keep='last') 
+#                 
+#                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+#                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+#                 #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
+#                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+#                 #if this works, can save vetoing until the end
+#                 if tp != 'dark' and tp != 'bright':
+#                      #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
+#                      #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+#                      #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
+#                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
+#                      #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
+# 
+#                 aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+#                 aa[:] = '-'+str(tile)
+#                 #rint(aa)
+#                 ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+#                 #print(ms)
+#                 fgu['TILES'][didsc] = ms #add the tile info
+#                 print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
 
+    fgu.sort('ZPOSS')
+    fu = unique(fgu,keys=['TARGETID'],keep='last')
+    fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
+    return True
     fl = np.chararray(len(fgu),unicode=True,itemsize=100)
     for ii in range(0,len(fgu)):
         tl = fgu['TILES'][ii]
