@@ -418,7 +418,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         print(len(tidsu),len(natloc))
         for ii in range(0,len(tidsu)):
             #if wp[ii] & natloc[ii]:
-            if natloc[ii]
+            if natloc[ii]:
                 tid = tidsu[ii]
                 wt = tids == tid
                 tls = tlocs[wt]
