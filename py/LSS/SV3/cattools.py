@@ -388,6 +388,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
    
     
     if tp != 'dark' and tp != 'bright':
+        wa = fgu['LOCATION_ASSIGNED'] == 1
+        print('ZPOSS for LOCATION_ASSIGNED = 1:')
+        print(np.unique(fgu[wa]['ZPOSS']))
         fgu['sort'] = fgu['sort']*fgu['ZPOSS']
     fgu.sort('sort')
     fu = unique(fgu,keys='TARGETID')
