@@ -409,22 +409,22 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
         print('after cutting to unique, number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
-		tidsu = fu['TARGETID'][wp][natloc]
-		tids = fgu['TARGETID']
-		tlocs = fgu['TILELOCID']
-		ntl = []
-		for ii in range(0,len(tidsu)):
-		    tid = tidsu[ii]
-		    wt = tids == tid
-		    tls = tlocs[wt]
-		    s = 0
-		    for tl in tls:
-		        if s == 0:
-		            if np.isin(tl,loclz):
-		                wu = fu['TARGETID'] == tid
-		                fu[wu]['TILELOCID'] = tl
-		                #ntl.append(tl)
-		                s = 1
+        tidsu = fu['TARGETID'][wp][natloc]
+        tids = fgu['TARGETID']
+        tlocs = fgu['TILELOCID']
+        ntl = []
+        for ii in range(0,len(tidsu)):
+            tid = tidsu[ii]
+            wt = tids == tid
+            tls = tlocs[wt]
+            s = 0
+            for tl in tls:
+                if s == 0:
+                    if np.isin(tl,loclz):
+                        wu = fu['TARGETID'] == tid
+                        fu[wu]['TILELOCID'] = tl
+                        #ntl.append(tl)
+                        s = 1
             if ii%100 == 0:
                 print(ii,len(tidsu))
         wa = fu['LOCATION_ASSIGNED'] == 1
@@ -434,7 +434,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
         print('after cutting to unique and reassignment, number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
-		
+        
         
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
