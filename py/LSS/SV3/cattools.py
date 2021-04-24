@@ -399,6 +399,15 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         print(np.sum(natloc))
     fgu.sort('sort')
     fu = unique(fgu,keys='TARGETID')
+    if tp != 'dark' and tp != 'bright':
+        wa = fu['LOCATION_ASSIGNED'] == 1
+        #wp = fgu['ZPOSS']
+        loclz,nloclz = np.unique(fu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
+        wp = fu['ZPOSS'] == 1
+        natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
+        print('after cutting to unique, number of zposs with tilelocid not showing up in tilelocid_assigned:')
+        print(np.sum(natloc))
+        
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
 #     tidsu = fu['TARGETID']
