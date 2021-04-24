@@ -351,7 +351,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             fa = fgu[wa]
             print(len(fa),len(np.unique(fa['TARGETID'])))
             #fgu.sort('sort')
-            fgu = unique(fgu,keys='TARGETID')#,keep='last') 
+            fgu = unique(fgu,keys='TARGETID',keep='last') 
                 
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
             didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
