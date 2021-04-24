@@ -202,7 +202,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def count_tiles(tiles,catdir,pd,ttp='ALL',imask=True):
+def count_tiles(tiles,catdir,pd,ttp='ALL',imask=False):
     '''
     For list of tileids, simply track the tiles a target shows up as available in
     pd is dark or bright
@@ -284,7 +284,7 @@ def count_tiles(tiles,catdir,pd,ttp='ALL',imask=True):
     fu.write(catdir+'Alltiles_'+pd+'_tilelocs.dat.fits',format='fits', overwrite=True)    
 
 
-def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
+def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
     '''
     For list of tileids, combine data generated per tile , taking care of overlaps
     
@@ -508,7 +508,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=True):
+def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     s = 0
     #tiles.sort('ZDATE')
