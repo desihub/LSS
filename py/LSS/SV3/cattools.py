@@ -406,7 +406,8 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         #wp = fgu['ZPOSS']
         loclz,nloclz = np.unique(fu[wa]['TILELOCID_ASSIGNED'],return_counts=True)
         wp = fu['ZPOSS'] == 1
-        natloc = ~np.isin(fu[wp]['TILELOCID'],loclz)
+        nalz = ~np.isin(fu['TILELOCID'],loclz)
+        natloc = wp & nalz#~np.isin(fu[wp]['TILELOCID'],loclz)
         print('after cutting to unique, number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
         tidsu = fu['TARGETID']#[wp][natloc]
@@ -414,8 +415,10 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
         tlocs = fgu['TILELOCID']
         ntl = []
         ch = 0
+        print(len(tidsu),len(natloc))
         for ii in range(0,len(tidsu)):
-            if wp[ii] & natloc[ii]:
+            #if wp[ii] & natloc[ii]:
+            if natloc[ii]
                 tid = tidsu[ii]
                 wt = tids == tid
                 tls = tlocs[wt]
@@ -428,7 +431,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
                             #ntl.append(tl)
                             ch += 1
                             s = 1
-            if ii%1000 == 0:
+            if ii%10000 == 0:
                 print(ii,len(tidsu),ch)
         wa = fu['LOCATION_ASSIGNED'] == 1
         #wp = fgu['ZPOSS']
