@@ -322,7 +322,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             fgun['LOC_NOTBLOCK'][was] = 1
             wg = was
             fgun['ZPOSS'][wg] = 1
-            fgun.sort('ZPOSS')
+            #fgun.sort('ZPOSS')
 
         #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         #aa[:] = str(tile)
@@ -339,27 +339,27 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             fgu = fgun
             s =1
         else:
-            fgo = fgu.copy()
+            #fgo = fgu.copy()
             fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-            wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-            wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+            #wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+            #wn |= fgu['PRIORITY_ASSIGNED'] == 999999
             #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
-            fgu[wn]['PRIORITY_ASSIGNED'] = 0
-            fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
-            wa = fgu['LOCATION_ASSIGNED'] == 1
+            #fgu[wn]['PRIORITY_ASSIGNED'] = 0
+            #fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+            #wa = fgu['LOCATION_ASSIGNED'] == 1
             #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
-            fa = fgu[wa]
-            print(len(fa),len(np.unique(fa['TARGETID'])))
+            #fa = fgu[wa]
+            #print(len(fa),len(np.unique(fa['TARGETID'])))
             #fgu.sort('sort')
-            fgu = unique(fgu,keys='TARGETID',keep='last') 
+            #fgu = unique(fgu,keys='TARGETID',keep='last') 
                 
-            dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-            didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+            #dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+            #didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
             #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
             #fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
-            if tp != 'dark' and tp != 'bright':
-                fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
-                fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
+            #if tp != 'dark' and tp != 'bright':
+            #    fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+            #    fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
 
             #aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
             #aa[:] = '-'+str(tile)
@@ -376,24 +376,23 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             #fgu['TILELOCIDS'][didsc] = ms #add the tile info
 
 
-        print(tile,cnt,len(tiles),np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
+        print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
-    fu = fgu
+	fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+	wn = fgu['PRIORITY_ASSIGNED']*0 != 0
+	wn |= fgu['PRIORITY_ASSIGNED'] == 999999
+	#print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
+	fgu[wn]['PRIORITY_ASSIGNED'] = 0
+	fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+   
+    
+    if tp != 'dark' and tp != 'bright':
+        fgu['sort'] = fgu['sort']*fgu['ZPOSS']
+     fgu.sort('sort')
+    fu = unique(fgu,keys='TARGETID')
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
-#     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
-#     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
-#     print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
-#     fgu[wn]['PRIORITY_ASSIGNED'] = 0
-#     fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
-#     wa = fgu['LOCATION_ASSIGNED'] == 1
-#     #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
-#     fa = fgu[wa]
-#     print(len(fa),len(np.unique(fa['TARGETID'])))
-#     fgu.sort('sort')
-#     fu = unique(fgu,keys=['TARGETID'])
-#     print(np.sum(fu['LOCATION_ASSIGNED']))
 #     tidsu = fu['TARGETID']
 #     tids = fgu['TARGETID']
 #     tiles = fgu['TILES']
