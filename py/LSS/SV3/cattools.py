@@ -322,6 +322,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             fgun['LOC_NOTBLOCK'][was] = 1
             wg = was
             fgun['ZPOSS'][wg] = 1
+            fgun.sort('ZPOSS')
 
         #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         #aa[:] = str(tile)
@@ -349,7 +350,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=True):
             #wa &= fgu['PRIORITY_ASSIGNED'] >= 2000 #this was put SV2 to ignore BGS repeats
             fa = fgu[wa]
             print(len(fa),len(np.unique(fa['TARGETID'])))
-            fgu.sort('sort')
+            #fgu.sort('sort')
             fgu = unique(fgu,keys='TARGETID')#,keep='last') 
                 
             dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
