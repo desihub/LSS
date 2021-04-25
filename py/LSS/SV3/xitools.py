@@ -88,7 +88,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
     fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',reg='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50):
+def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',reg='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50,vis=False):
     fkpw = ''
     if fkp:
         fkpw = 'fkp'
@@ -180,11 +180,12 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     fo.close()
     indx = int(rxp/bs)
     rl = np.array(rl)
-    print('plotting '+dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat')
-    plt.plot(rl[:indx],rl[:indx]**2.*xil[:indx],'k-')
-    plt.xlabel(r'$s$ (Mpc/h)')
-    plt.ylabel(r'$s^2\xi$')
-    plt.show()
+    if vis:
+		print('plotting '+dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat')
+		plt.plot(rl[:indx],rl[:indx]**2.*xil[:indx],'k-')
+		plt.xlabel(r'$s$ (Mpc/h)')
+		plt.ylabel(r'$s^2\xi$')
+		plt.show()
     return True
 
 
