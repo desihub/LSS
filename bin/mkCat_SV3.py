@@ -313,7 +313,8 @@ if combr:
         
 if mkfulld:
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
-    ct.mkfulldat(dirout+'datcomb_'+type+'_Alltiles.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits')
+    azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210420.fits'
+    ct.mkfulldat(dirout+'datcomb_'+type+'_Alltiles.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
@@ -327,7 +328,7 @@ if mkfullr:
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma)
+    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
