@@ -868,7 +868,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
         wzm = 'zmask_'
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
-    wz &= ff['LOCATION_ASSIGNED'] == 1
+    #wz &= ff['LOCATION_ASSIGNED'] == 1
     if tp == 'ELG' or tp == 'ELG_HIP':
         ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
         ff['Z_ar'].name = 'Z'
@@ -878,6 +878,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
     if tp == 'LRG':
+        print('applying extra cut for LRGs')
         wz &= ff['DELTACHI2'] > 16
     print('length before cutting to good z '+str(len(ff)))
     ff = ff[wz]
