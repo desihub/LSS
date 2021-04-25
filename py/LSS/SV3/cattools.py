@@ -698,7 +698,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',ttp=''):
     #from desitarget.mtl import inflate_ledger
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
@@ -710,7 +710,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    if ttp == 'ELG' or ttp == 'ELG_HIP':
         arz = Table.read(azf)
         wg = arz['FIBERSTATUS'] == 0
         arz = arz[wg]
@@ -797,7 +797,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
     print('getting completenes')
     for tls in np.unique(dz['TILES']):
         if ct%10000 == 0:
-            print('at row '+str(nt))
+            print('at row '+str(ct))
 
         w = dz['TILES'] == tls
         no = sum(dz[w]['LOCATION_ASSIGNED'])
