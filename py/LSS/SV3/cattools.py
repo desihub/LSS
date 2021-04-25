@@ -877,6 +877,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
         wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
+        print(len(ff[wz]))
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        print('length after also making sure location assigned '+str(ff[wz]))
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         wz &= ff['DELTACHI2'] > 16
