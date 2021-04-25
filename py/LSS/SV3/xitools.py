@@ -181,11 +181,11 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     indx = int(rxp/bs)
     rl = np.array(rl)
     if vis:
-		print('plotting '+dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat')
-		plt.plot(rl[:indx],rl[:indx]**2.*xil[:indx],'k-')
-		plt.xlabel(r'$s$ (Mpc/h)')
-		plt.ylabel(r'$s^2\xi$')
-		plt.show()
+        print('plotting '+dirxi+'xi024'+so+rec+muw+str(bs)+'st'+str(start)+fa+'.dat')
+        plt.plot(rl[:indx],rl[:indx]**2.*xil[:indx],'k-')
+        plt.xlabel(r'$s$ (Mpc/h)')
+        plt.ylabel(r'$s^2\xi$')
+        plt.show()
     return True
 
 
