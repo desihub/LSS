@@ -868,6 +868,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
         wzm = 'zmask_'
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
+    wz &= ff['LOCATION_ASSIGNED'] == 1
     if tp == 'ELG' or tp == 'ELG_HIP':
         ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
         ff['Z_ar'].name = 'Z'
