@@ -698,7 +698,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
     #from desitarget.mtl import inflate_ledger
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
@@ -710,6 +710,21 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
+    if tp == 'ELG' or tp == 'ELG_HIP':
+        arz = Table.read(azf)
+        wg = arz['FIBERSTATUS'] == 0
+        arz = arz[wg]
+        arz['o2c'] = np.log10(arz['FOII']/arz['FOII_ERR'])+0.2*np.log10(arz['DELTACHI2']) 
+        w = (arz['o2c']*0) != 0
+        arz['o2c'][w] = -20
+        arz.sort('TSNR2_ELG')
+        arzu = unique(arz,keys=['TARGETID'],keep='last')
+        arzu.keep_columns(['TARGETID','o2c','Z','ZWARN','TSNR2_ELG'])    
+        arzu['Z'].name = 'Z_ar'
+        arzu['ZWARN'].name = 'ZWARN_ar'
+        arzu['TSNR2_ELG'].name = 'TSNR2_ELG_ar'
+        dz = join(dz,arzu,keys=['TARGETID'],join_type='left')
+        print('check length after merge with OII strength file:' +str(len(dz)))
     print('length after join to file with tiles info is '+str(len(dz)))
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
@@ -778,7 +793,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
     #get completeness based on unique sets of tiles
     compa = []
     tll = []
+    ct = 0
+    print('getting completenes')
     for tls in np.unique(dz['TILES']):
+        if ct%10000 == 0:
+            print('at row '+str(nt))
+
         w = dz['TILES'] == tls
         no = sum(dz[w]['LOCATION_ASSIGNED'])
         nt = len(dz[w])
@@ -786,6 +806,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
         #print(tls,cp,no,nt)
         compa.append(cp)
         tll.append(tls)
+        ct += 1
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
     for tl in dz['TILES']:
@@ -834,11 +855,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles):
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=True):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
     '''
     take full catalog, cut to ra,dec,z add any weight
     program is dark,gray, or bright
-    type is 'LRG', 'QSO', 'ELG', or 'BGS'
+    tp distinguishes what to do with redshift info, will become increasingly relevant
 
     '''    
     ff = Table.read(fl+'full.dat.fits')
@@ -847,7 +868,19 @@ def mkclusdat(fl,weighttileloc=True,zmask=True):
         wzm = 'zmask_'
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
+    if tp == 'ELG' or tp == 'ELG_HIP':
+        ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
+        ff['Z_ar'].name = 'Z'
+        ff['ZWARN_ar'].name = 'ZWARN'
+        ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
+        wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+    if tp == 'LRG':
+        wz &= ff['DELTACHI2'] > 16
+    print('length before cutting to good z '+str(len(ff)))
     ff = ff[wz]
+    print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))
     if weighttileloc == True:
         ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
