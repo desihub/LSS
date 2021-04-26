@@ -325,7 +325,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         aa = np.chararray(len(fgun),unicode=True,itemsize=100)
         aa[:] = str(tile)
         fgun['TILE'] = int(tile)
-        #fgun['TILES'] = aa
+        fgun['TILES'] = aa
         
         #print('sum of assigned,# of unique TILELOCID (should match)')
         #print(np.sum(fgun['LOCATION_ASSIGNED'] == 1),len(np.unique(fgun['TILELOCID'])))
