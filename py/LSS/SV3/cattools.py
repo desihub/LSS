@@ -322,12 +322,12 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
             fgun['ZPOSS'][wg] = 1
             #fgun.sort('ZPOSS')
 
-        aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-        aa[:] = str(tile)
+        #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+        #aa[:] = str(tile)
         fgun['TILE'] = int(tile)
-        fgun['TILES'] = aa
-        tlids = np.copy(fgun['TILELOCID']).astype('<U300')
-        fgun['TILELOCIDS'] = tlids
+        #fgun['TILES'] = aa
+        #tlids = np.copy(fgun['TILELOCID']).astype('<U300')
+        #fgun['TILELOCIDS'] = tlids
         
         #print('sum of assigned,# of unique TILELOCID (should match)')
         #print(np.sum(fgun['LOCATION_ASSIGNED'] == 1),len(np.unique(fgun['TILELOCID'])))
@@ -379,6 +379,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
+	fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
+	tlids = np.copy(fgu['TILELOCID']).astype('<U300')
+	fgu['TILELOCIDS'] = tlids
     
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
@@ -402,6 +405,10 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
     fgu.sort('sort')
     #fgu.sort('ZPOSS')
     fu = unique(fgu,keys='TARGETID')#,keep='last')
+ 
+    tidsu = fu['TARGETID']#[wp][natloc]
+    tids = fgu['TARGETID']
+ 
     
     if tp != 'dark' and tp != 'bright':
         
@@ -413,8 +420,6 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         natloc = wp & nalz#~np.isin(fu[wp]['TILELOCID'],loclz)
         print('after cutting to unique, number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
-        tidsu = fu['TARGETID']#[wp][natloc]
-        tids = fgu['TARGETID']
         tlocs = fgu['TILELOCID']
         ntl = []
         ch = 0
@@ -597,10 +602,10 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
             print(tile,td, len(tiles), str(len(fgun))+' unique new randoms')
             td += 1
-            aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-            aa[:] = str(tile)
+            #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+            #aa[:] = str(tile)
             fgun['TILE'] = int(tile)
-            fgun['TILES'] = aa
+            #fgun['TILES'] = aa
             fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
             if s == 0:
                 fgu = fgun
@@ -633,6 +638,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
             print('did not find '+ffa)
 
     #fgu.sort('ZPOSS')
+    fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
     fu = unique(fgu,keys=['TARGETID'])#,keep='last')
     #fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
     #return True
