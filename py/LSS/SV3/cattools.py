@@ -322,8 +322,8 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
             fgun['ZPOSS'][wg] = 1
             #fgun.sort('ZPOSS')
 
-        #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-        #aa[:] = str(tile)
+        aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+        aa[:] = str(tile)
         fgun['TILE'] = int(tile)
         #fgun['TILES'] = aa
         
@@ -447,52 +447,52 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
-#     tiles = fgu['TILES']
-#     tilesu = fu['TILES']
-#     tlids = fgu['TILELOCIDS']
-#     tlidsu = fu['TILELOCIDS']
-# 
-#     for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
-#         tid = tidsu[ii]#fu[ii]['TARGETID']
-#         wt = tids == tid
-#         ot = tilesu[ii]
-#         otl = tlidsu[ii]
-#         tt = tiles[wt]
-#         tti = tlids[wt]
-#         for tl in tt:
-#             if tl != ot:
-#                 tilesu[ii] += '-'+str(tl)
-#         for ti in tti:
-#             if ti != otl:
-#                 tlidsu[ii] += '-'+str(ti)
-#         if ii%1000 == 0:
-#             print(ii)        
-#     fu['TILES'] = tilesu
-#     fu['TILELOCIDS'] = tlidsu
+    tiles = fgu['TILES']
+    tilesu = fu['TILES']
+    tlids = fgu['TILELOCIDS']
+    tlidsu = fu['TILELOCIDS']
+
+    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+        tid = tidsu[ii]#fu[ii]['TARGETID']
+        wt = tids == tid
+        ot = tilesu[ii]
+        otl = tlidsu[ii]
+        tt = tiles[wt]
+        tti = tlids[wt]
+        for tl in tt:
+            if tl != ot:
+                tilesu[ii] += '-'+str(tl)
+        for ti in tti:
+            if ti != otl:
+                tlidsu[ii] += '-'+str(ti)
+        if ii%1000 == 0:
+            print(ii)        
+    fu['TILES'] = tilesu
+    fu['TILELOCIDS'] = tlidsu
 #     
 #     #wa = fu['LOCATION_ASSIGNED'] == 1
 #     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
 
     #need to resort tile string
-#     fl = np.chararray(len(fu),unicode=True,itemsize=100)
-#     for ii in range(0,len(fu)):
-#         tl = fu['TILES'][ii]
-#         tls = tl.split('-')#.astype('int')
-#         tli = tls[0]
-#         if len(tls) > 1:
-#             #tls = tls.astype('int')
-#             tls.sort()
-#             tli = tls[0]
-#             for i in range(1,len(tls)):
-#                 tli += '-'+tls[i]
-#         #else:
-#         #    tli = tls
-#         #print(tli)
-#         fl[ii] = tli   
-#     
-#     fu['TILES'] = fl
-#     #print(np.unique(fu['TILES']))
+    fl = np.chararray(len(fu),unicode=True,itemsize=100)
+    for ii in range(0,len(fu)):
+        tl = fu['TILES'][ii]
+        tls = tl.split('-')#.astype('int')
+        tli = tls[0]
+        if len(tls) > 1:
+            #tls = tls.astype('int')
+            tls.sort()
+            tli = tls[0]
+            for i in range(1,len(tls)):
+                tli += '-'+tls[i]
+        #else:
+        #    tli = tls
+        #print(tli)
+        fl[ii] = tli   
+    
+    fu['TILES'] = fl
+    #print(np.unique(fu['TILES']))
 #     print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
     #fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
     fu.write(catdir+'/datcomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
@@ -604,39 +604,63 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
                 fgu = fgun
                 s = 1
             else:   
-                fv = vstack([fgu,fgun],metadata_conflicts='silent')
-                fgo = fgu.copy()
-                fgu = unique(fv,keys='TARGETID')#,keep='last') 
-                
-                dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-                didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-                #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
-                fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
-                #if this works, can save vetoing until the end
-                if tp != 'dark' and tp != 'bright':
-                     #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
-                     #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
-                     #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
-                     fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
-                     #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
-
-                aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
-                aa[:] = '-'+str(tile)
-                #rint(aa)
-                ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
-                #print(ms)
-                fgu['TILES'][didsc] = ms #add the tile info
-                print(str(len(fgu))+' unique total randoms')
+                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+#                 fgo = fgu.copy()
+#                 fgu = unique(fv,keys='TARGETID')#,keep='last') 
+#                 
+#                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+#                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+#                 #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
+#                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+#                 #if this works, can save vetoing until the end
+#                 if tp != 'dark' and tp != 'bright':
+#                      #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
+#                      #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+#                      #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
+#                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
+#                      #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
+# 
+#                 aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+#                 aa[:] = '-'+str(tile)
+#                 #rint(aa)
+#                 ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+#                 #print(ms)
+#                 fgu['TILES'][didsc] = ms #add the tile info
+#                 print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
 
     #fgu.sort('ZPOSS')
-    #fu = unique(fgu,keys=['TARGETID'],keep='last')
+    fu = unique(fgu,keys=['TARGETID'])#,keep='last')
     #fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
     #return True
-    fl = np.chararray(len(fgu),unicode=True,itemsize=100)
-    for ii in range(0,len(fgu)):
-        tl = fgu['TILES'][ii]
+    tiles = fgu['TILES']
+    tilesu = fu['TILES']
+    #tlids = fgu['TILELOCIDS']
+    #tlidsu = fu['TILELOCIDS']
+
+    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+        tid = tidsu[ii]#fu[ii]['TARGETID']
+        wt = tids == tid
+        ot = tilesu[ii]
+        #otl = tlidsu[ii]
+        tt = tiles[wt]
+        #tti = tlids[wt]
+        for tl in tt:
+            if tl != ot:
+                tilesu[ii] += '-'+str(tl)
+        #for ti in tti:
+        #    if ti != otl:
+        #        tlidsu[ii] += '-'+str(ti)
+        if ii%1000 == 0:
+            print(ii)        
+    fu['TILES'] = tilesu
+    #fu['TILELOCIDS'] = tlidsu
+ 
+ 
+    fl = np.chararray(len(fu),unicode=True,itemsize=100)
+    for ii in range(0,len(fu)):
+        tl = fu['TILES'][ii]
         tls = tl.split('-')#.astype('int')
         tli = tls[0]
         if len(tls) > 1:
@@ -650,23 +674,23 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
         #print(tli)
         fl[ii] = tli   
     
-    fgu['TILES'] = fl
-    print('number of unique tiles configurations '+str(len(np.unique(fgu['TILES']))))
+    fu['TILES'] = fl
+    print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
 
 
     NT = np.zeros(len(fgu))
     ros = np.zeros(len(fgu))
     print('counting tiles and finding rosette')
-    for ii in range(0,len(fgu['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(fgu['TILES'][ii],'-')+1
-        ti = int(fgu['TILES'][ii].split('-')[0])
+    for ii in range(0,len(fu['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+        NT[ii] = np.char.count(fu['TILES'][ii],'-')+1
+        ti = int(fu['TILES'][ii].split('-')[0])
         ros[ii] = tile2rosette(ti)
-    fgu['NTILE'] = NT    
+    fu['NTILE'] = NT    
             
-    fgu['rosette_number'] = ros
-    print(np.unique(fgu['rosette_number'],return_counts=True))
+    fu['rosette_number'] = ros
+    print(np.unique(fu['rosette_number'],return_counts=True))
 
-    fgu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
+    fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
 def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
