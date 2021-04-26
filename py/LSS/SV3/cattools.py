@@ -379,9 +379,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
-	fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
-	tlids = np.copy(fgu['TILELOCID']).astype('<U300')
-	fgu['TILELOCIDS'] = tlids
+    fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
+    tlids = np.copy(fgu['TILELOCID']).astype('<U300')
+    fgu['TILELOCIDS'] = tlids
     
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
