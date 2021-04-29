@@ -981,7 +981,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
         wm = zma == 0
         ff = ff[wm]    
     wn = ff['PHOTSYS'] == 'N'
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','TILES'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
@@ -1011,7 +1011,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False):
     for col in rcols: 
         ffc[col] = dshuf[col] 
     wn = ffc['PHOTSYS'] == 'N'
-    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILELOCID'])  
+    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','TILES'])  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
