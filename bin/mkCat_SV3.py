@@ -300,8 +300,8 @@ if mkdtiles:
 
 if combd:
     print(len(mtld['TILEID']))
-    #if type == 'dark' or type == 'bright':
-    #    ct.count_tiles(mtld['TILEID'],dirout,type)
+    if type == 'dark' or type == 'bright':
+        ct.count_tiles(mtld['TILEID'],dirout,type)
     ct.combtiles(mtld['TILEID'],dirout,type,sv3_targetmask.desi_mask)    
 
 

@@ -63,7 +63,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         
     
     tf = unique(tf,keys=['TARGETID'])
-    tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     print(len(tspec),len(tf))
@@ -97,7 +97,39 @@ def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/ti
         
     
     tf = unique(tf,keys=['TARGETID'])
-    tf.keep_columns(['TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    return tf
+
+def combfibmap_and_scores(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
+    #put data from different spectrographs together, one table for fibermap, other for z
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        
+        #try:
+        ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        if os.path.isfile(ff):
+            #fitsio.read(ff)
+            specs.append(si)
+        #except:
+        #    print('no spectrograph '+str(si)+ ' for tile '+str(tile))
+            #print(ff)
+    #print('spectrographs with data:')
+    #print(specs)            
+    if len(specs) == 0:
+        return None
+    tf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
+    ts = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+    for i in range(1,len(specs)):
+        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
+        tf = vstack([tf,tnf],metadata_conflicts='silent')
+		tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+		ts = vstack([ts,tns],metadata_conflicts='silent')
+        
+    
+    tf = unique(tf,keys=['TARGETID'])
+    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    tf = join(tf,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     return tf
 
 
@@ -379,15 +411,17 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         print(tile,cnt,len(tiles))#,np.sum(fgu['LOCATION_ASSIGNED']),len(fgu),len(np.unique(fgu['TILELOCID'])),np.sum(fgu['ZPOSS']))#,np.unique(fgu['TILELOCIDS'])
         cnt += 1
 
-    fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
-    tlids = np.copy(fgu['TILELOCID']).astype('<U300')
-    fgu['TILELOCIDS'] = tlids
+    #fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
+    #tlids = np.copy(fgu['TILELOCID']).astype('<U300')
+    #fgu['TILELOCIDS'] = tlids
     
+    if tp == 'ELG' or tp == 'ELG_HIP':
+        tsnrcol = 'TSNR2_ELG'
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
     #print(len(fgu[~wn]),np.max(fgu[~wn]['PRIORITY_ASSIGNED']),'max priority assigned')
     fgu[wn]['PRIORITY_ASSIGNED'] = 0
-    fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED'] #create this column so assigned always show up in order of highest priority
+    fgu['sort'] = -1.*fgu['LOCATION_ASSIGNED']*fgu['PRIORITY_ASSIGNED']*fgu[tsnrcol] #create this column so assigned always show up in order of highest priority
    
     
     if tp != 'dark' and tp != 'bright':
@@ -454,51 +488,51 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         
     #print(len(np.unique(fgu['TARGETID'])),np.sum(fgu['LOCATION_ASSIGNED']))
     
-    tiles = fgu['TILES']
-    tilesu = fu['TILES']
-    tlids = fgu['TILELOCIDS']
-    tlidsu = fu['TILELOCIDS']
-
-    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
-        tid = tidsu[ii]#fu[ii]['TARGETID']
-        wt = tids == tid
-        ot = tilesu[ii]
-        otl = tlidsu[ii]
-        tt = tiles[wt]
-        tti = tlids[wt]
-        for tl in tt:
-            if tl != ot:
-                tilesu[ii] += '-'+str(tl)
-        for ti in tti:
-            if ti != otl:
-                tlidsu[ii] += '-'+str(ti)
-        if ii%1000 == 0:
-            print(ii)        
-    fu['TILES'] = tilesu
-    fu['TILELOCIDS'] = tlidsu
+#     tiles = fgu['TILES']
+#     tilesu = fu['TILES']
+#     tlids = fgu['TILELOCIDS']
+#     tlidsu = fu['TILELOCIDS']
+# 
+#     for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+#         tid = tidsu[ii]#fu[ii]['TARGETID']
+#         wt = tids == tid
+#         ot = tilesu[ii]
+#         otl = tlidsu[ii]
+#         tt = tiles[wt]
+#         tti = tlids[wt]
+#         for tl in tt:
+#             if tl != ot:
+#                 tilesu[ii] += '-'+str(tl)
+#         for ti in tti:
+#             if ti != otl:
+#                 tlidsu[ii] += '-'+str(ti)
+#         if ii%1000 == 0:
+#             print(ii)        
+#     fu['TILES'] = tilesu
+#     fu['TILELOCIDS'] = tlidsu
 #     
 #     #wa = fu['LOCATION_ASSIGNED'] == 1
 #     #wa &= fu['PRIORITY_ASSIGNED'] >= 2000
     print(np.sum(fu['LOCATION_ASSIGNED']))
 
     #need to resort tile string
-    fl = np.chararray(len(fu),unicode=True,itemsize=100)
-    for ii in range(0,len(fu)):
-        tl = fu['TILES'][ii]
-        tls = tl.split('-')#.astype('int')
-        tli = tls[0]
-        if len(tls) > 1:
-            #tls = tls.astype('int')
-            tls.sort()
-            tli = tls[0]
-            for i in range(1,len(tls)):
-                tli += '-'+tls[i]
-        #else:
-        #    tli = tls
-        #print(tli)
-        fl[ii] = tli   
-    
-    fu['TILES'] = fl
+#     fl = np.chararray(len(fu),unicode=True,itemsize=100)
+#     for ii in range(0,len(fu)):
+#         tl = fu['TILES'][ii]
+#         tls = tl.split('-')#.astype('int')
+#         tli = tls[0]
+#         if len(tls) > 1:
+#             #tls = tls.astype('int')
+#             tls.sort()
+#             tli = tls[0]
+#             for i in range(1,len(tls)):
+#                 tli += '-'+tls[i]
+#         #else:
+#         #    tli = tls
+#         #print(tli)
+#         fl[ii] = tli   
+#     
+#     fu['TILES'] = fl
     #print(np.unique(fu['TILES']))
 #     print('number of unique tiles configurations '+str(len(np.unique(fu['TILES']))))
     #fu.write(catdir+tp+'Alltiles_'+pd+'_full.dat.fits',format='fits', overwrite=True)    
@@ -602,67 +636,72 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
             print(tile,td, len(tiles), str(len(fgun))+' unique new randoms')
             td += 1
-            #aa = np.chararray(len(fgun),unicode=True,itemsize=100)
-            #aa[:] = str(tile)
+            aa = np.chararray(len(fgun),unicode=True,itemsize=100)
+            aa[:] = str(tile)
             fgun['TILE'] = int(tile)
-            #fgun['TILES'] = aa
+            fgun['TILES'] = aa
             fgun['TILELOCID'] = 10000*tile +fgun['LOCATION']
             if s == 0:
                 fgu = fgun
                 s = 1
             else:   
-                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-#                 fgo = fgu.copy()
-#                 fgu = unique(fv,keys='TARGETID')#,keep='last') 
-#                 
-#                 dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
-#                 didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
-#                 #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
-#                 fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
-#                 #if this works, can save vetoing until the end
-#                 if tp != 'dark' and tp != 'bright':
-#                      #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
-#                      #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
-#                      #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
-#                      fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
-#                      #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
-# 
-#                 aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
-#                 aa[:] = '-'+str(tile)
-#                 #rint(aa)
-#                 ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
-#                 #print(ms)
-#                 fgu['TILES'][didsc] = ms #add the tile info
-#                 print(str(len(fgu))+' unique total randoms')
+                fv = vstack([fgu,fgun],metadata_conflicts='silent')
+                fgo = fgu.copy()
+                fgu = unique(fv,keys='TARGETID')#,keep='last') 
+                
+                dids = np.isin(fgun['TARGETID'],fgo['TARGETID']) #get the rows with target IDs that were duplicates in the new file
+                didsc = np.isin(fgu['TARGETID'],fgun['TARGETID'][dids]) #get the row in the concatenated table that had dup IDs
+                #print(len(fgu),len(fgo),len(fgun),len(fgu[didsc]),len(fgun[dids]))
+                fgu['TILELOCID'][didsc] = fgun['TILELOCID'][dids] #give the repeats the new tilelocids, since those are the most likely to be available to low priority targets
+                #if this works, can save vetoing until the end
+                fgu['TSNR2_ELG'][didsc] = np.maximum(fgu['TSNR2_ELG'][didsc],fgun['TSNR2_ELG'][dids])
+                fgu['TSNR2_QSO'][didsc] = np.maximum(fgu['TSNR2_QSO'][didsc],fgun['TSNR2_QSO'][dids]) 
+                fgu['TSNR2_BGS'][didsc] = np.maximum(fgu['TSNR2_BGS'][didsc],fgun['TSNR2_BGS'][dids])
+                fgu['TSNR2_LRG'][didsc] = np.maximum(fgu['TSNR2_LRG'][didsc],fgun['TSNR2_LRG'][dids]) 
+                if tp != 'dark' and tp != 'bright':
+                     #fgu['FIBER_GOOD'][didsc] = np.maximum(fgu['FIBER_GOOD'][didsc],fgun['FIBER_GOOD'][dids])
+                     #fgu['LOC_NOTBLOCK'][didsc] = np.maximum(fgu['LOC_NOTBLOCK'][didsc],fgun['LOC_NOTBLOCK'][dids]) 
+                     #fgu['Z_NOTBAD'][didsc] = np.maximum(fgu['Z_NOTBAD'][didsc],fgun['Z_NOTBAD'][dids])
+                     fgu['ZPOSS'][didsc] = np.maximum(fgu['ZPOSS'][didsc],fgun['ZPOSS'][dids]) 
+                     #fgu['ZPOSSNOTBAD'][didsc] = np.maximum(fgu['ZPOSSNOTBAD'][didsc],fgun['ZPOSSNOTBAD'][dids])
+
+                aa = np.chararray(len(fgu['TILES']),unicode=True,itemsize=20)
+                aa[:] = '-'+str(tile)
+                #rint(aa)
+                ms = np.core.defchararray.add(fgu['TILES'][didsc],aa[didsc])
+                #print(ms)
+                fgu['TILES'][didsc] = ms #add the tile info
+                print(str(len(fgu))+' unique total randoms')
         else:
             print('did not find '+ffa)
 
     #fgu.sort('ZPOSS')
-    fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
-    fu = unique(fgu,keys=['TARGETID'])#,keep='last')
+    #fgu['TILES'] = np.copy(fgu['TILE']).astype('<U100')
+    #fu = unique(fgu,keys=['TARGETID'])#,keep='last')
+    fu = fgu
     #fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
     #return True
-    tiles = fgu['TILES']
-    tilesu = fu['TILES']
+#     tiles = fgu['TILES']
+#     tilesu = fu['TILES']
     #tlids = fgu['TILELOCIDS']
     #tlidsu = fu['TILELOCIDS']
 
-    for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
-        tid = tidsu[ii]#fu[ii]['TARGETID']
-        wt = tids == tid
-        ot = tilesu[ii]
-        #otl = tlidsu[ii]
-        tt = tiles[wt]
-        #tti = tlids[wt]
-        for tl in tt:
-            if tl != ot:
-                tilesu[ii] += '-'+str(tl)
-        #for ti in tti:
-        #    if ti != otl:
-        #        tlidsu[ii] += '-'+str(ti)
-        if ii%1000 == 0:
-            print(ii)        
-    fu['TILES'] = tilesu
+#     for ii in range(0,len(tidsu)): #this takes a long time and something more efficient will be necessary
+#         tid = tidsu[ii]#fu[ii]['TARGETID']
+#         wt = tids == tid
+#         ot = tilesu[ii]
+#         #otl = tlidsu[ii]
+#         tt = tiles[wt]
+#         #tti = tlids[wt]
+#         for tl in tt:
+#             if tl != ot:
+#                 tilesu[ii] += '-'+str(tl)
+#         #for ti in tti:
+#         #    if ti != otl:
+#         #        tlidsu[ii] += '-'+str(ti)
+#         if ii%1000 == 0:
+#             print(ii)        
+#     fu['TILES'] = tilesu
     #fu['TILELOCIDS'] = tlidsu
  
  
