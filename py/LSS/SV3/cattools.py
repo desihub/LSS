@@ -415,8 +415,11 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
     #tlids = np.copy(fgu['TILELOCID']).astype('<U300')
     #fgu['TILELOCIDS'] = tlids
     
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    tsnrcol = 'TSNR2_'+tp
+    if tp == 'ELG_HIP':
         tsnrcol = 'TSNR2_ELG'
+    if tp == 'BGS_ANY':
+        tsnrcol = 'TSNR2_BGS'    
     wt = (fgu[tsnrcol] == 1e20) | (fgu[tsnrcol]*0 != 0)
     print('number with bad tsnrcol is '+str(len(fgu[wt])))
     fgu[tsnrcol][wt] = 0
