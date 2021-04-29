@@ -16,7 +16,17 @@ from desitarget.io import read_targets_in_tiles
 from LSS.Cosmo import distance
 
 def tile2rosette(tile):
-    return (tile-1)//27
+    if tile < 433:
+        return (tile-1)//27
+    else:
+        if tile >= 433 and tile < 436:
+            return 13
+        if tile >= 436 and tile < 439:
+            return 14
+        if tile >= 439 and tile < 442:
+            return 15
+    print('did not identify rosette!!!')
+    return None                
 #     for i in range(0,16):
 #         test = np.arange(1+27*i,12+27*i)
 #         if np.isin(tile,test):
