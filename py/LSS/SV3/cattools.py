@@ -418,7 +418,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
     if tp == 'ELG' or tp == 'ELG_HIP':
         tsnrcol = 'TSNR2_ELG'
     wt = (fgu[tsnrcol] == 1e20) | (fgu[tsnrcol]*0 != 0)
-    print('number with bad tsnrcol is '+str(len(fgu[wt]))
+    print('number with bad tsnrcol is '+str(len(fgu[wt])))
     fgu[tsnrcol][wt] = 0
     wn = fgu['PRIORITY_ASSIGNED']*0 != 0
     wn |= fgu['PRIORITY_ASSIGNED'] == 999999
