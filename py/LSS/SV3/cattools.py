@@ -565,7 +565,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     for tile,zdate in zip(tiles['TILEID'],tiles['ZDATE']):
-        tspec = combfibmap(tile,zdate)
+        tspec = combfibmap_and_scores(tile,zdate)
         pdict,gloc = goodlocdict(tspec)
         tspec.keep_columns(['LOCATION','FIBERSTATUS','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS'])
         dt = ddir+'ALL'+str(tile)+'_full.dat.fits'
