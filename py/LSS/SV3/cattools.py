@@ -866,9 +866,10 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',ttp=''):
     tll = []
     ct = 0
     print('getting completenes')
-    for tls in np.unique(dz['TILES']):
-        if ct%10000 == 0:
-            print('at row '+str(ct))
+    nts = len(np.unique(dz['TILES']))
+    for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+        if ct%500 == 0:
+            print('at tiles '+str(ct)+' of '+str(nts))
 
         w = dz['TILES'] == tls
         no = sum(dz[w]['LOCATION_ASSIGNED'])

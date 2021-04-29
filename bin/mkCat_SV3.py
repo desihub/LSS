@@ -267,6 +267,8 @@ if mkdtiles:
         else:
             tspec = ct.combspecdata(tile,zdate)
             pdict,goodloc = ct.goodlocdict(tspec)
+            wloc = (np.isin(tspec['LOCATION'],goodloc))
+            tspec = tspec[wloc]
             ts = str(tile).zfill(6)
             fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             wt = ta['TILEID'] == tile
