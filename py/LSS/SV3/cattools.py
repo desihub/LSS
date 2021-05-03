@@ -37,6 +37,28 @@ def tile2rosette(tile):
 #         if np.isin(tile,test):
 #             return i
     
+def combtile_spec(tiles,outf=''):
+    s = 0
+    n = 0
+    if os.path.isfile(outf):
+        specd = Table.read(outf)
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')    
+
+    for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE']):
+        tspec = combspecdata(tile,zdate)
+        if s == 0:
+            specd = tspec
+            s = 1
+        else:
+            specd = vstack([specd,tspec],metadata_conflicts='silent')
+        specd.sort('TARGETID')
+        n += 1
+        print(tile,n,len(tiles[tmask]),len(specd)) 
+    specd.write(outf,format='fits', overwrite=True)       
  
 
 def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
@@ -613,6 +635,7 @@ def combran_wdup(tiles,rann,randir,tp):
 
     if os.path.isfile(outf):
         tarsn = Table.read(fout)
+        #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
         s = 1
         tdone = np.unique(tarsn['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
@@ -626,11 +649,11 @@ def combran_wdup(tiles,rann,randir,tp):
             
             ffna = Table.read(ffna)
             fgun = join(fa,ffna,keys=['TARGETID'])
-            fgun.remove_columns(delcols)
-
-            
+            #fgun.remove_columns(delcols)
+                        
             td += 1
-            fgun['TILE'] = int(tile)
+            fgun['TILEID'] = int(tile)
+            fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
             if s == 0:
                 fgu = fgun
                 s = 1
