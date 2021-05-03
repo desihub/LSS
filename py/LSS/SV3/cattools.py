@@ -50,6 +50,7 @@ def combtile_spec(tiles,outf=''):
 
     for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE']):
         tspec = combspecdata(tile,zdate)
+        tspec['TILEID'] = tile
         if s == 0:
             specd = tspec
             s = 1
@@ -58,7 +59,7 @@ def combtile_spec(tiles,outf=''):
         specd.sort('TARGETID')
         kp = (specd['TARGETID'] > 0)
         specd = specd[kp]
-        specd['TILEID'] = tile
+        
         n += 1
         print(tile,n,len(tiles[tmask]),len(specd)) 
     specd.write(outf,format='fits', overwrite=True)       
