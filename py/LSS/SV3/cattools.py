@@ -165,6 +165,29 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
+def combtarinfo_all(tiles,tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+    s = 0
+    n = 0
+    for tile in tiles['TILEID']
+        ts = str(tile).zfill(6)
+        faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+        fht = fitsio.read_header(faf)
+		wt = tiles['TILEID'] == tile
+		tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
+		tars.keep_columns(tarcols)
+		tars['ZWARN'].name = 'ZWARN_MTL'
+		tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
+		tars = join(tars,tt,keys=['TARGETID'])
+		tars['TILEID'] = tile
+		if s == 0:
+		    tarsn = tars
+		else:
+		    tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
+		tarsn.sort('TARGETID')
+		n += 1
+		print(tile,n,len(tiles),len(tarsn)) 
+	return tarsn	   
+
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments

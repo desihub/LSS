@@ -301,10 +301,13 @@ if mkdtiles:
             #logf.write('made full data files\n')
 
 if combd:
-    print(len(mtld['TILEID']))
-    if type == 'dark' or type == 'bright':
-        ct.count_tiles(mtld['TILEID'],dirout,type)
-    ct.combtiles(mtld['TILEID'],dirout,type,sv3_targetmask.desi_mask)    
+    #print(len(mtld['TILEID']))
+    #if type == 'dark' or type == 'bright':
+    #    ct.count_tiles(mtld['TILEID'],dirout,type)
+    #ct.combtiles(mtld['TILEID'],dirout,type,sv3_targetmask.desi_mask)   
+    dd = ct.combtarinfo_all(ta)
+    outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
+    dd.write(outf,format='fits', overwrite=True)
 
 
 if combr:
