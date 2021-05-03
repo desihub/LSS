@@ -172,21 +172,21 @@ def combtarinfo_all(tiles,tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_B
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
-		wt = tiles['TILEID'] == tile
-		tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
-		tars.keep_columns(tarcols)
-		tars['ZWARN'].name = 'ZWARN_MTL'
-		tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
-		tars = join(tars,tt,keys=['TARGETID'])
-		tars['TILEID'] = tile
-		if s == 0:
-		    tarsn = tars
-		else:
-		    tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
-		tarsn.sort('TARGETID')
-		n += 1
-		print(tile,n,len(tiles),len(tarsn)) 
-	return tarsn	   
+        wt = tiles['TILEID'] == tile
+        tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
+        tars.keep_columns(tarcols)
+        tars['ZWARN'].name = 'ZWARN_MTL'
+        tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
+        tars = join(tars,tt,keys=['TARGETID'])
+        tars['TILEID'] = tile
+        if s == 0:
+            tarsn = tars
+        else:
+            tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
+        tarsn.sort('TARGETID')
+        n += 1
+        print(tile,n,len(tiles),len(tarsn)) 
+    return tarsn       
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
