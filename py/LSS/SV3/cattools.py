@@ -169,9 +169,9 @@ def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI
     s = 0
     n = 0
     if os.path.isfile(fout):
-        tars = Table.read(fout)
+        tarsn = Table.read(fout)
         s = 1
-        tdone = np.unique(tars['TILEID'])
+        tdone = np.unique(tarsn['TILEID'])
         tmask = ~np.isin(tdone,tiles['TILEID'])
     else:
         tmask = np.ones(len(tiles)).astype('bool')    
@@ -612,9 +612,9 @@ def combran_wdup(tiles,rann,randir,tp):
     outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
 
     if os.path.isfile(fout):
-        tars = Table.read(fout)
+        tarsn = Table.read(fout)
         s = 1
-        tdone = np.unique(tars['TILEID'])
+        tdone = np.unique(tarsn['TILEID'])
         tmask = ~np.isin(tdone,tiles['TILEID'])
     else:
         tmask = np.ones(len(tiles)).astype('bool')    

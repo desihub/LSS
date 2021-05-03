@@ -306,7 +306,8 @@ if combd:
     #    ct.count_tiles(mtld['TILEID'],dirout,type)
     #ct.combtiles(mtld['TILEID'],dirout,type,sv3_targetmask.desi_mask)   
     #dd = ct.combtarinfo_all(ta,mdir=mdir)
-    ct.combtiles_wdup(ta,mdir=mdir)
+    outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
+    ct.combtiles_wdup(ta,mdir,outf)
     #outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
     #dd.write(outf,format='fits', overwrite=True)
 
