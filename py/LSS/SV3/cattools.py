@@ -615,7 +615,7 @@ def combran_wdup(tiles,rann,randir,tp):
         tarsn = Table.read(fout)
         s = 1
         tdone = np.unique(tarsn['TILEID'])
-        tmask = ~np.isin(tdone,tiles['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         tmask = np.ones(len(tiles)).astype('bool')    
     for tile in tiles[tmask]['TILEID']:
