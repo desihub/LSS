@@ -196,7 +196,7 @@ def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI
         tarsn.sort('TARGETID')
         n += 1
         print(tile,n,len(tiles),len(tarsn)) 
-   tarsn.write(fout,format='fits', overwrite=True)       
+    tarsn.write(fout,format='fits', overwrite=True)       
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
