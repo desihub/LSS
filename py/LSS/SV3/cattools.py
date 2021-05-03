@@ -56,6 +56,9 @@ def combtile_spec(tiles,outf=''):
         else:
             specd = vstack([specd,tspec],metadata_conflicts='silent')
         specd.sort('TARGETID')
+        kp = (specd['TARGETID'] > 0)
+        specd = specd[kp]
+        specd['TILEID'] = tile
         n += 1
         print(tile,n,len(tiles[tmask]),len(specd)) 
     specd.write(outf,format='fits', overwrite=True)       
