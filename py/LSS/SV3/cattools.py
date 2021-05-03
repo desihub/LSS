@@ -176,10 +176,11 @@ def combtarinfo_all(tiles,mdir='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET
         tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
         #tars.keep_columns(tarcols)
         tars = tars[[b for b in tarcol]]
-        tars['ZWARN'].name = 'ZWARN_MTL'
+        
         tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
         tars = join(tars,tt,keys=['TARGETID'])
         tars['TILEID'] = tile
+        tars['ZWARN'].name = 'ZWARN_MTL'
         if s == 0:
             tarsn = tars
         else:
