@@ -309,7 +309,7 @@ if combd:
     outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
     ct.combtiles_wdup(ta,mdir,outf)
     outf = sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits'
-    ct.combtile_spec(tiles,outf)
+    ct.combtile_spec(ta,outf)
     #outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
     #dd.write(outf,format='fits', overwrite=True)
 
