@@ -168,7 +168,7 @@ def cutphotmask(aa,bits):
 def combtarinfo_all(tiles,tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
     n = 0
-    for tile in tiles['TILEID']
+    for tile in tiles['TILEID']:
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
