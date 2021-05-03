@@ -195,7 +195,7 @@ def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI
             tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
         tarsn.sort('TARGETID')
         n += 1
-        print(tile,n,len(tiles),len(tarsn)) 
+        print(tile,n,len(tiles[tmask]),len(tarsn)) 
     tarsn.write(fout,format='fits', overwrite=True)       
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
@@ -611,7 +611,7 @@ def combran_wdup(tiles,rann,randir,tp):
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
 
-    if os.path.isfile(fout):
+    if os.path.isfile(outf):
         tarsn = Table.read(fout)
         s = 1
         tdone = np.unique(tarsn['TILEID'])
