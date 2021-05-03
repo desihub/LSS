@@ -594,6 +594,41 @@ def countloc(aa):
     return nl,nla
 
 
+def combran_wdup(tiles,rann,randir,tp):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
+    'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
+
+    for tile tiles['TILEID']:
+        ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
+        ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
+        if os.path.isfile(ffa):
+            fa = Table.read(ffa,hdu='FAVAIL')
+            
+            ffna = Table.read(ffna)
+            fgun = join(fa,ffna,keys=['TARGETID'])
+            fgun.remove_columns(delcols)
+
+            
+            td += 1
+            fgun['TILE'] = int(tile)
+            if s == 0:
+                fgu = fgun
+                s = 1
+            else:   
+                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+            fgu.sort('TARGETID')
+            print(tile,td, len(tiles), len(fgun),len(fgu))
+        else:
+            print('did not find '+ffa)
+
+    fu.write(randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits',format='fits', overwrite=True)
+
+
 def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     s = 0
