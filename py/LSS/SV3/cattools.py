@@ -183,6 +183,7 @@ def combtarinfo_all(tiles,mdir='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET
         tars['ZWARN'].name = 'ZWARN_MTL'
         if s == 0:
             tarsn = tars
+            s = 1
         else:
             tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
         tarsn.sort('TARGETID')
