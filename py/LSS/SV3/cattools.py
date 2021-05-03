@@ -165,10 +165,17 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
-def combtarinfo_all(tiles,mdir='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
     n = 0
-    for tile in tiles['TILEID']:
+    if os.path.isfile(fout):
+        tars = Table.read(fout)
+        s = 1
+        tdone = np.unique(tars['TILEID'])
+        tmask = ~np.isin(tdone,tiles['TILEID'])
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')    
+    for tile in tiles[tmask]['TILEID']:
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
@@ -189,7 +196,7 @@ def combtarinfo_all(tiles,mdir='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET
         tarsn.sort('TARGETID')
         n += 1
         print(tile,n,len(tiles),len(tarsn)) 
-    return tarsn       
+   tarsn.write(fout,format='fits', overwrite=True)       
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
@@ -602,8 +609,16 @@ def combran_wdup(tiles,rann,randir,tp):
     print(len(tiles))
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
+    outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
 
-    for tile in tiles['TILEID']:
+    if os.path.isfile(fout):
+        tars = Table.read(fout)
+        s = 1
+        tdone = np.unique(tars['TILEID'])
+        tmask = ~np.isin(tdone,tiles['TILEID'])
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')    
+    for tile in tiles[tmask]['TILEID']:
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
@@ -626,7 +641,7 @@ def combran_wdup(tiles,rann,randir,tp):
         else:
             print('did not find '+ffa)
 
-    fu.write(randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits',format='fits', overwrite=True)
+    fgu.write(outf,format='fits', overwrite=True)
 
 
 def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
