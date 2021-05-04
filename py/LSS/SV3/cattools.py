@@ -726,8 +726,10 @@ def combran_wdup(tiles,rann,randir,tp,sv3dir):
         else:
             print('did not find '+ffa)
 
-    fgu.write(outf,format='fits', overwrite=True)
+    if len(tiles[tmask]['TILEID']) > 0:
+        fgu.write(outf,format='fits', overwrite=True)
     specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID'])
     outf = randir+str(rann)+'/rancomb_'+tp+'wdupspec_Alltiles.fits'
