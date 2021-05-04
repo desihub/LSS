@@ -315,7 +315,7 @@ if combd:
     specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-    tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits')
+    tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
     #outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
     #dd.write(outf,format='fits', overwrite=True)
 
