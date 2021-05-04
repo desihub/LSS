@@ -638,7 +638,7 @@ def combran_wdup(tiles,rann,randir,tp):
     outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
 
     if os.path.isfile(outf):
-        tarsn = Table.read(fout)
+        tarsn = Table.read(outf)
         #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
         s = 1
         tdone = np.unique(tarsn['TILEID'])
