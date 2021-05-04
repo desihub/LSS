@@ -305,6 +305,64 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
+def count_tiles_better(dr,rann=0):
+    '''
+    from files with duplicates that have already been sorted by targetid, quickly go 
+    through and get the multi-tile information
+    dr is either 'dat' or 'ran'
+    returns file with TARGETID,NTILE,TILES,TILELOCIDS
+    '''
+    
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_specwdup_Alltiles.fits')
+    wf = fs['FIBERSTATUS'] == 0
+    stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    gtl = np.unique(stlid[wf])
+    
+    if dr == 'dat':
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_tarspecwdup_Alltiles.fits')
+        outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_ntileinfo.fits' 
+    if dr == 'ran':
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_darkwdupspec_Alltiles.fits')
+        outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_ntileinfo.fits'
+    wg = np.isin(fj['TILELOCID'],gtl)  
+    fjg = fj[wg]  
+
+    tids = np.unique(fjg['TARGETID'])
+    nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
+    nt = []
+    tl = []
+    tli = []
+    ti = 0
+    i = 0
+    while i < len(fjg):
+        tls  = []
+        tlis = []
+        nli = 0
+    
+        while fjg[i]['TARGETID'] == tids[ti]:
+            nli += 1
+            tls.append(fjg[i]['TILEID'])
+            tlis.append(fjg[i]['TILELOCID'])
+            i += 1
+            if i == len(fjg):
+                break
+        nloc.append(nli)
+        tlsu = np.unique(tls)
+        tlisu = np.unique(tlis)
+        nt.append(len(tlsu))
+        tl.append("-".join(tlsu.astype(str)))
+        tli.append("-".join(tlisu.astype(str)))
+      
+        if ti%100000 == 0:
+            print(ti)
+        ti += 1 
+    tc = Table()
+    tc['TARGETID'] = tids
+    tc['NTILE'] = nt
+    tc['TILES'] = tl
+    tc['TILELOCIDS'] = tli
+    
+    
 def count_tiles(tiles,catdir,pd,ttp='ALL',imask=False):
     '''
     For list of tileids, simply track the tiles a target shows up as available in
@@ -627,7 +685,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran_wdup(tiles,rann,randir,tp):
+def combran_wdup(tiles,rann,randir,tp,sv3dir):
 
     s = 0
     td = 0
@@ -669,6 +727,12 @@ def combran_wdup(tiles,rann,randir,tp):
             print('did not find '+ffa)
 
     fgu.write(outf,format='fits', overwrite=True)
+    specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
+    specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    fgu = join(fgu,specf,keys=['LOCATION','TILEID'])
+    outf = randir+str(rann)+'/rancomb_'+tp+'wdupspec_Alltiles.fits'
+    fgu.write(outf,format='fits', overwrite=True)
+    
 
 
 def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
