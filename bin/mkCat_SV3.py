@@ -307,17 +307,17 @@ if combd:
     #ct.combtiles(mtld['TILEID'],dirout,type,sv3_targetmask.desi_mask)   
     #dd = ct.combtarinfo_all(ta,mdir=mdir)
     if type == 'dark' or type == 'bright':
-		outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
-		ct.combtiles_wdup(ta,mdir,outf)
-		outf = sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits'
-		ct.combtile_spec(mtld,outf)
-		tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
-		tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-		specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
-		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-		tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-		tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
-		ct.count_tiles_better('dat')
+        outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
+        ct.combtiles_wdup(ta,mdir,outf)
+        outf = sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits'
+        ct.combtile_spec(mtld,outf)
+        tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+        tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
+        ct.count_tiles_better('dat')
     else:
         print('nothing to be done for combd, only done for dark/bright now')
     #outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
@@ -327,10 +327,10 @@ if combd:
 if combr:
     #print(len(mtld['TILEID']))
     if type == 'dark' or type == 'bright':
-		for i in range(rm,rx):
-			#ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
-			ct.combran_wdup(mtld,i,randir,type,sv3dir)
-			ct.count_tiles_better('ran',i)
+        for i in range(rm,rx):
+            #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
+            ct.combran_wdup(mtld,i,randir,type,sv3dir)
+            ct.count_tiles_better('ran',i)
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
