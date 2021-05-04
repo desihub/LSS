@@ -641,7 +641,7 @@ def combran_wdup(tiles,rann,randir,tp):
         fgu = Table.read(outf)
         #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
         s = 1
-        tdone = np.unique(tarsn['TILEID'])
+        tdone = np.unique(fgu['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         tmask = np.ones(len(tiles)).astype('bool')    
