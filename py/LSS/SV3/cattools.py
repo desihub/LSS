@@ -328,7 +328,7 @@ def find_znotposs(dz):
         if ti%30000 == 0:
             print(ti)
         ti += 1 
-    print('number of locations where assignment was not possible because of priorities '+len(lznposs))
+    print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
 def count_tiles_better(dr,rann=0):
