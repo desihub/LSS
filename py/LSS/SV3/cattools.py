@@ -323,7 +323,7 @@ def find_znotposs(dz):
             if i == len(dz):
                 break
         if za == 0:
-            lznposs.append(dz[i]['TILELOCID'])
+            lznposs.append(dz[i-1]['TILELOCID'])
       
         if ti%30000 == 0:
             print(ti)
