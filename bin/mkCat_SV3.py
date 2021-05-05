@@ -342,7 +342,7 @@ if mkfulld:
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210420.fits'
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
     dz = sv3dir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
-    ct.mkfulldat(dz,imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,ttp=type)
+    ct.mkfulldat(dz,imbits,tdir,type,sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
