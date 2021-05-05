@@ -313,6 +313,7 @@ if combd:
         ct.combtile_spec(mtld,outf)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        tarf.remove_column['PRIORITY'] #we get this where relevant from spec file
         specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
@@ -339,7 +340,9 @@ if combr:
 if mkfulld:
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210420.fits'
-    ct.mkfulldat(dirout+'datcomb_'+type+'_Alltiles.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,ttp=type)
+    #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
+    dz = sv3dir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
+    ct.mkfulldat(dz,imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,ttp=type)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')

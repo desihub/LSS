@@ -305,6 +305,32 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
+def find_znotposs(dz):
+	dz.sort('TARGETID')
+	lznposs = []
+	tids = np.unique(dz['TARGETID'])
+	ti = 0
+	i = 0
+	
+	while i < len(dz):
+		za = 0
+	
+		while dz[i]['TARGETID'] == tids[ti]:
+			if dz[i]['ZWARN'] != 999999:
+				za = 1
+				#break
+			i += 1
+			if i == len(dz):
+				break
+		if za == 0:
+			lznposs.append(dz[i]['TILELOCID'])
+	  
+		if ti%30000 == 0:
+			print(ti)
+		ti += 1 
+    print('number of locations where assignment was not possible because of priorities '+len(lznposs))
+    return lznposs
+    
 def count_tiles_better(dr,rann=0):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
@@ -957,19 +983,41 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',ttp=''):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
     #from desitarget.mtl import inflate_ledger
+    if tp == 'BGS_ANY' and tp == 'MWS_ANY':
+        fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_bright_specwdup_Alltiles.fits')
+        tscol = 'TSNR2_BGS'
+    else:    
+        fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_specwdup_Alltiles.fits')
+        tscol = 'TSNR2_ELG'
+    wf = fs['FIBERSTATUS'] == 0
+    stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    gtl = np.unique(stlid[wf])
+
+
     dz = Table.read(zf) 
     wtype = ((dz[tp] & bit) > 0)
-    dz = dz[wtype]
-    print('length before any cuts '+str(len(dz)))
-    wk = dz['ZPOSS'] == 1
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wtype&wg]
+    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    lznp = find_znotposs(dz)
+    wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk]
     dz = cutphotmask(dz,imbits)
     dtl = Table.read(ftiles)
-    dtl.keep_columns(['TARGETID','TILES','TILELOCIDS'])
+    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
-    if ttp == 'ELG' or ttp == 'ELG_HIP':
+    wz = dzz['ZWARN'] != 999999 #this is what the null column becomes
+    wa &= dzz['ZWARN']*0 == 0 #just in case of nans
+    dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    dz['LOCATION_ASSIGNED'][wz] = 1
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+0.1*dz[tscol]
+    dz.sort('sort')
+    dz = unique(dz,keys=['TARGETID'])
+    print('length after cutting to unique targetid '+str(len(dz)))
+
+    if tp == 'ELG' or tp == 'ELG_HIP':
         arz = Table.read(azf)
         wg = arz['FIBERSTATUS'] == 0
         arz = arz[wg]
@@ -984,7 +1032,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',ttp=''):
         arzu['TSNR2_ELG'].name = 'TSNR2_ELG_ar'
         dz = join(dz,arzu,keys=['TARGETID'],join_type='left')
         print('check length after merge with OII strength file:' +str(len(dz)))
-    print('length after join to file with tiles info is '+str(len(dz)))
+    #print('length after join to file with tiles info is '+str(len(dz)))
     NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
@@ -1002,52 +1050,53 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',ttp=''):
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
-    locs = np.copy(dz['TILELOCID'])
+    print('number of unique targets left around unassigned locations is '+str(np.sum(natloc)))
+#     locs = np.copy(dz['TILELOCID'])
+# 
+# 
+#     print('counting tiles and finding rosette')
+#     nch = 0
+#     nbl = 0
+#     nf = 0
+#     #dz.write('temp.fits',format='fits', overwrite=True)
+#     #fdz = fitsio.read('temp.fits')
+#     for ii in range(0,len(dz['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+#         NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
+#         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
+#         tiles = dz['TILES'][ii].split('-')
+#         ti = int(tiles[0])
+#         ros[ii] = tile2rosette(ti)
+#         if natloc[ii]:# == False:
+#             nbl += 1
+#             s = 0
+#             tids = dz['TILELOCIDS'][ii].split('-')
+#             if s == 0:
+#                 for tl in tids:
+#                     ttlocid  = int(tl)              
+#                     if np.isin(ttlocid,loclz):
+#                         #dz[ii]['TILELOCID'] = ttlocid
+#                         locs[ii] = ttlocid
+#                         nch += 1
+#                         s = 1
+#         if ii%10000 == 0:
+#             print(ii,ti,ros[ii],nch,nbl)
+#     #ros = tile2rosette(ti)
+#     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
+#     dz['TILELOCID'] = locs
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#     #wa = dzz['LOCATION_ASSIGNED'] == 1
+#     #if len(dzz[wa]) != len(dzz):
+#      #   print('!found some zwarn = 0 without location_assigned = 1!')
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+#     print(np.max(nloclz),np.min(loclz))
+#     #print(np.histogram(nloclz))
+#     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
 
-
-    print('counting tiles and finding rosette')
-    nch = 0
-    nbl = 0
-    nf = 0
-    #dz.write('temp.fits',format='fits', overwrite=True)
-    #fdz = fitsio.read('temp.fits')
-    for ii in range(0,len(dz['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-        NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
-        #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-        tiles = dz['TILES'][ii].split('-')
-        ti = int(tiles[0])
-        ros[ii] = tile2rosette(ti)
-        if natloc[ii]:# == False:
-            nbl += 1
-            s = 0
-            tids = dz['TILELOCIDS'][ii].split('-')
-            if s == 0:
-                for tl in tids:
-                    ttlocid  = int(tl)              
-                    if np.isin(ttlocid,loclz):
-                        #dz[ii]['TILELOCID'] = ttlocid
-                        locs[ii] = ttlocid
-                        nch += 1
-                        s = 1
-        if ii%10000 == 0:
-            print(ii,ti,ros[ii],nch,nbl)
-    #ros = tile2rosette(ti)
-    #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
-    dz['TILELOCID'] = locs
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    #wa = dzz['LOCATION_ASSIGNED'] == 1
-    #if len(dzz[wa]) != len(dzz):
-     #   print('!found some zwarn = 0 without location_assigned = 1!')
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    print(np.max(nloclz),np.min(loclz))
-    #print(np.histogram(nloclz))
-    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
-
-    dz['rosette_number'] = ros
+    dz['rosette_number'] = tile2rosette(dz['TILEID'])#ros
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
-    print(np.unique(NT))
+    print(np.unique(dz['NTILE']))
 
     #get completeness based on unique sets of tiles
     compa = []
