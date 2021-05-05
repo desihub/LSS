@@ -306,28 +306,28 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
 def find_znotposs(dz):
-	dz.sort('TARGETID')
-	lznposs = []
-	tids = np.unique(dz['TARGETID'])
-	ti = 0
-	i = 0
-	
-	while i < len(dz):
-		za = 0
-	
-		while dz[i]['TARGETID'] == tids[ti]:
-			if dz[i]['ZWARN'] != 999999:
-				za = 1
-				#break
-			i += 1
-			if i == len(dz):
-				break
-		if za == 0:
-			lznposs.append(dz[i]['TILELOCID'])
-	  
-		if ti%30000 == 0:
-			print(ti)
-		ti += 1 
+    dz.sort('TARGETID')
+    lznposs = []
+    tids = np.unique(dz['TARGETID'])
+    ti = 0
+    i = 0
+    
+    while i < len(dz):
+        za = 0
+    
+        while dz[i]['TARGETID'] == tids[ti]:
+            if dz[i]['ZWARN'] != 999999:
+                za = 1
+                #break
+            i += 1
+            if i == len(dz):
+                break
+        if za == 0:
+            lznposs.append(dz[i]['TILELOCID'])
+      
+        if ti%30000 == 0:
+            print(ti)
+        ti += 1 
     print('number of locations where assignment was not possible because of priorities '+len(lznposs))
     return lznposs
     
