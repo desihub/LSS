@@ -313,7 +313,7 @@ if combd:
         ct.combtile_spec(mtld,outf)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        tarf.remove_column['PRIORITY'] #we get this where relevant from spec file
+        tarf.remove_columns(['PRIORITY'] )#we get this where relevant from spec file
         specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
