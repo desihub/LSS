@@ -306,16 +306,16 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
 def find_znotposs(dz):
-    dz.sort('TARGETID')
+    dz.sort('TILELOCID')
     lznposs = []
-    tids = np.unique(dz['TARGETID'])
+    tids = np.unique(dz['TILELOCID'])
     ti = 0
     i = 0
     
     while i < len(dz):
         za = 0
     
-        while dz[i]['TARGETID'] == tids[ti]:
+        while dz[i]['TILELOCID'] == tids[ti]:
             if dz[i]['ZWARN'] != 999999:
                 za = 1
                 #break
