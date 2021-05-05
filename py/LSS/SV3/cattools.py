@@ -983,7 +983,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET'):
     #from desitarget.mtl import inflate_ledger
     if tp == 'BGS_ANY' and tp == 'MWS_ANY':
         fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_bright_specwdup_Alltiles.fits')
@@ -997,7 +997,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf=''):
 
 
     dz = Table.read(zf) 
-    wtype = ((dz[tp] & bit) > 0)
+    wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
