@@ -306,7 +306,35 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
 def find_znotposs(dz):
-    dz.sort('TILELOCID')
+
+    dz.sort('TARGETID')
+    tidnoz = []
+    tids = np.unique(dz['TARGETID'])
+    ti = 0
+    i = 0
+    
+    print('finding targetids that were not observed')
+    while i < len(dz):
+        za = 0
+    
+        while dz[i]['TARGETID'] == tids[ti]:
+            if dz[i]['ZWARN'] != 999999:
+                za = 1
+                #break
+            i += 1
+            if i == len(dz):
+                break
+        if za == 0:
+            tidnoz.append(dz[i-1]['TARGETID'])
+      
+        if ti%30000 == 0:
+            print(ti)
+        ti += 1 
+
+    
+    selnoz = np.isin(dz['TARGETID'],tidnoz)
+    dznoz = dz[selnoz]
+    dznoz.sort('TILELOCID')
     lznposs = []
     tids = np.unique(dz['TILELOCID'])
     ti = 0
@@ -325,7 +353,7 @@ def find_znotposs(dz):
         if za == 0:
             lznposs.append(dz[i-1]['TILELOCID'])
       
-        if ti%30000 == 0:
+        if ti%1000 == 0:
             print(ti)
         ti += 1 
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
@@ -986,11 +1014,12 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
 def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET'):
     #from desitarget.mtl import inflate_ledger
     if tp == 'BGS_ANY' and tp == 'MWS_ANY':
-        fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_bright_specwdup_Alltiles.fits')
+        pd = 'bright'        
         tscol = 'TSNR2_BGS'
     else:    
-        fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_specwdup_Alltiles.fits')
+        pd = 'dark'
         tscol = 'TSNR2_ELG'
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
     wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
@@ -1004,6 +1033,15 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     lznp = find_znotposs(dz)
     wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk]
+    print('joining to full imaging')
+    ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+pd+'_targets.fits')
+            ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
+            'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
+            'FRACIN_Z','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','FLUX_W1',\
+            'FLUX_W2','FLUX_IVAR_W1','FLUX_IVAR_W2','MW_TRANSMISSION_W1','MW_TRANSMISSION_W2','ALLMASK_G','ALLMASK_R','ALLMASK_Z','FIBERFLUX_G',\
+            'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
+            'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
+    dz = join(dz,ftar,keys=['TARGETID'])
     dz = cutphotmask(dz,imbits)
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
