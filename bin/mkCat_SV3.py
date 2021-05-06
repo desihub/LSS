@@ -332,7 +332,8 @@ if combr:
         for i in range(rm,rx):
             #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
             ct.combran_wdup(mtld,i,randir,type,sv3dir)
-            ct.count_tiles_better('ran',i)
+            tc = ct.count_tiles_better('ran',pdir,i)
+            tc.write(randir+str(i)+'/rancomb_'+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
