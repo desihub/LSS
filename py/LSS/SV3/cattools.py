@@ -1102,13 +1102,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
-     for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+    for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
 #         NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
 #         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
 #         tiles = dz['TILES'][ii].split('-')
 #         ti = int(tiles[0])
-         ti = dz['TILEID']
-         ros[ii] = tile2rosette(ti)
+        ti = dz['TILEID']
+        ros[ii] = tile2rosette(ti)
 #         if natloc[ii]:# == False:
 #             nbl += 1
 #             s = 0
