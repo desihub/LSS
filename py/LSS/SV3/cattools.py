@@ -1111,8 +1111,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 # 
 # 
 #     print('counting tiles and finding rosette')
-     nch = 0
-     nbl = 0
+    nch = 0
+    nbl = 0
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
