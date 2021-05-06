@@ -1051,7 +1051,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-    wa &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+0.1*dz[tscol]
