@@ -1107,7 +1107,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
 #         tiles = dz['TILES'][ii].split('-')
 #         ti = int(tiles[0])
-        ti = dz['TILEID']
+        ti = dz[ii]['TILEID']
         ros[ii] = tile2rosette(ti)
 #         if natloc[ii]:# == False:
 #             nbl += 1
