@@ -1009,23 +1009,27 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
 
-    #zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
-    #dz = Table.read(zf)
+    zf = randir+str(rann)+'/rancomb_'+pd+'wdupspec_Alltiles.fits'
+    dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
-    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits'
+    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltilelocinfo.fits.fits'
     dzpd = Table.read(zfpd)
-    dzpd.keep_columns(['TARGETID','TILES','NTILE'])
+    #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
     #if maskzfail:
     #    wk = dz['ZPOSSNOTBAD'] == 1
     #else:
     #    wk = dz['ZPOSS'] == 1
     print('length before cutting to good positions '+str(len(dz)))
+    wk = ~np.isin(dz['TILELOCID'],lznp)
+    wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
+    dz = unique(dz,keys=['TARGETID'])
+    print('lengeth after cutting to unique TARGETID '+str(len(dz)))
     #done in combran instead
     #NT = np.zeros(len(dz))
     #for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
