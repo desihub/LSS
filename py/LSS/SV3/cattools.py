@@ -365,6 +365,7 @@ def find_znotposs(dz):
         ti += 1 
     #the ones to veto are now the join of the two
     wtbtlid = np.isin(tlidnoz,tidsb)
+    tlidnoz = np.array(tlidnoz)
     lznposs = tlidnoz[wtbtlid]
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
