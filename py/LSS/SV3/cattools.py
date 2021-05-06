@@ -1063,7 +1063,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique targetid '+str(len(dz)))
-
+    print('LOCATION_ASSIGNED numbers')
+    print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
+   
+    print('TILELOCID_ASSIGNED numbers')
+    print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
     if tp == 'ELG' or tp == 'ELG_HIP':
         arz = Table.read(azf)
         wg = arz['FIBERSTATUS'] == 0
