@@ -1059,7 +1059,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = 0
     dz['TILELOCID_ASSIGNED'][wtl] = 1
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED'][wtl]
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique targetid '+str(len(dz)))
