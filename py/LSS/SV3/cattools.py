@@ -994,11 +994,26 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,pd,maskzfail=False):
-    zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
+def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskzfail=False):
+
+    #first, need to find locations to veto based data
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
+    wf = fs['FIBERSTATUS'] == 0
+    stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    gtl = np.unique(stlid[wf])
+    zf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+    dz = Table.read(zf) 
+    wtype = ((dz[desitarg] & bit) > 0)
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wtype&wg]
+    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    lznp = find_znotposs(dz)
+
+    #zf = randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits'
+    #dz = Table.read(zf)
+    #dz.remove_columns(['TILES','NTILE'])
+
     zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltiles.fits'
-    dz = Table.read(zf)
-    dz.remove_columns(['TILES','NTILE'])
     dzpd = Table.read(zfpd)
     dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
@@ -1041,6 +1056,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz = Table.read(zf) 
     wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
+    print(len(dz[wtype]))
+    print(len(dz[wg]))
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)

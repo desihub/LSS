@@ -214,14 +214,15 @@ def doran(ii):
     if combr:
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
-        ct.combran_wdup(mtld,ii,randir,type,sv3dir)
-        ct.count_tiles_better('ran',ii)
+        if type == 'dark' or type == 'bright':
+            ct.combran_wdup(mtld,ii,randir,type,sv3dir)
+            ct.count_tiles_better('ran',ii)
 
 
         
     if mkfullr:
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir)
+        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
