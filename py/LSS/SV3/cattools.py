@@ -1099,8 +1099,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
 
-    wz = dz['LOCATION_ASSIGNED'] == 1
-    dzz = dz[wz]
     probl = np.zeros(len(dz))
     #dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
 
@@ -1156,6 +1154,9 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #wa = dzz['LOCATION_ASSIGNED'] == 1
     #if len(dzz[wa]) != len(dzz):
      #   print('!found some zwarn = 0 without location_assigned = 1!')
+    wz = dz['LOCATION_ASSIGNED'] == 1
+    dzz = dz[wz]
+
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
     #print(np.histogram(nloclz))
@@ -1216,6 +1217,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 
     #get tilelocid probs
     #wz = dz['ZWARN'] == 0
+    print('getting fraction assigned for each tilelocid')
     nm = 0
     nmt =0
     pd = []
