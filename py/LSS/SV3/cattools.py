@@ -1087,7 +1087,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #wa = dzz['LOCATION_ASSIGNED'] == 1
     #if len(dzz[wa]) != len(dzz):
      #   print('!found some zwarn = 0 without location_assigned = 1!')
-    loclz,nloclz = np.unique(dzz['TILELOCID_ASSIGNED'],return_counts=True)
+    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
