@@ -1036,6 +1036,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     lznp = find_znotposs(dz)
     wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk]
+    print('length after priority veto '+str(len(dz)))
     print('joining to full imaging')
     ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+pd+'_targets.fits')
     ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
@@ -1049,8 +1050,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
-    wz = dzz['ZWARN'] != 999999 #this is what the null column becomes
-    wa &= dzz['ZWARN']*0 == 0 #just in case of nans
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wa &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+0.1*dz[tscol]
