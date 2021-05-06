@@ -1055,9 +1055,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+0.1*dz[tscol]
+    tlids = np.unique(dz['TILELOCID'][wz])
+    wtl = np.isin(dz['TILELOCID'],tlids)
+    dz['TILELOCID_ASSIGNED'] = 0
+    dz['TILELOCID_ASSIGNED'][wtl] = 1
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED'][wtl]
     dz.sort('sort')
-    dz = unique(dz,keys=['TARGETID'])
+    dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique targetid '+str(len(dz)))
 
     if tp == 'ELG' or tp == 'ELG_HIP':
