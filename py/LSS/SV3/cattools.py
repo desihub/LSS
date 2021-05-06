@@ -326,7 +326,7 @@ def find_znotposs(dz):
             if i == len(dz):
                 break
         if za == 0:
-            tidnoz.append(dz[i-1]['TARGETID'])
+            tidnoz.append(tids[ti])
       
         if ti%30000 == 0:
             print(ti)
@@ -334,11 +334,13 @@ def find_znotposs(dz):
 
     
     selnoz = np.isin(dz['TARGETID'],tidnoz)
-    dz = dz[selnoz]
+    tidsb = np.unique(dz[selnoz]['TILELOCID'])
+    #dz = dz[selnoz]
     dz.sort('TILELOCID')
-    print('number of targetids with no obs '+str(len(dz)))
-    lznposs = []
     tids = np.unique(dz['TILELOCID'])
+    print('number of targetids with no obs '+str(len(tidnoz)))
+    lznposs = []
+    
     ti = 0
     i = 0
     
@@ -353,7 +355,8 @@ def find_znotposs(dz):
             if i == len(dz):
                 break
         if za == 0:
-            lznposs.append(dz[i-1]['TILELOCID'])
+            if np.isin(tids[ti],tidsb):
+                lznposs.append(tids[ti])
       
         if ti%1000 == 0:
             print(ti)
