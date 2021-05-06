@@ -1027,7 +1027,11 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     tarf = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/alltilesnofa.fits')
+    delcols = ['RA','DEC','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SCND_TARGET',\
+    'NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
+    tarf.remove_columns(delcols)
     dz = join(dz,tarf,keys=['TARGETID'])
+    
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     dz = unique(dz,keys=['TARGETID'])
