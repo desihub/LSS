@@ -1130,7 +1130,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             if i == len(dz):
                 break
     
-        if ti%500 == 0:
+        if ti%1000 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
 
         #w = dz['TILES'] == tls
@@ -1145,7 +1145,9 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     fcompa = []
     for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl]) 
-    dz['COMP_TILE'] = np.array(fcompa)       
+    dz['COMP_TILE'] = np.array(fcompa)
+    wc0 = dz['COMP_TILE'] == 0
+    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))       
 
 
 
@@ -1196,11 +1198,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     ros = tile2rosette(ti)
 #     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['TILELOCID'] = locs
-#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 #     #wa = dzz['LOCATION_ASSIGNED'] == 1
 #     #if len(dzz[wa]) != len(dzz):
 #      #   print('!found some zwarn = 0 without location_assigned = 1!')
-#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
 #     print(np.max(nloclz),np.min(loclz))
 #     #print(np.histogram(nloclz))
 #     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
