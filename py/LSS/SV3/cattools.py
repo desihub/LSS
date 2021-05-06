@@ -1119,6 +1119,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     print('counting tiles and finding rosette')
     nch = 0
     nbl = 0
+    tlids = dz['TILELOCIDS']
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
@@ -1132,15 +1133,16 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         if natloc[ii]:# == False:
             nbl += 1
             s = 0
-            tids = dz['TILELOCIDS'][ii].split('-')
+            tids = tlids[ii].split('-')
             if s == 0:
                 for tl in tids:
                     ttlocid  = int(tl)              
                     if np.isin(ttlocid,loclz):
-                        dz[ii]['TILELOCID'] = ttlocid
-                        locs[ii] = ttlocid
+                        #dz[ii]['TILELOCID'] = ttlocid
+                        locs[ii] = ttlocid #use below instead and assign at end, maybe faster
                         nch += 1
                         s = 1
+                        break
         if ii%10000 == 0:
             print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
      
@@ -1188,7 +1190,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             if i == len(dz):
                 break
     
-        if ct%500 == 0:
+        if ti%500 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
 
         #w = dz['TILES'] == tls
