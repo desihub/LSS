@@ -1013,7 +1013,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
-    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltilelocinfo.fits.fits'
+    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
     #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
