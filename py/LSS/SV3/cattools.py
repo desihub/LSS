@@ -1206,7 +1206,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should match')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
     #print(np.unique(dz['TILE']))
-    dz['NTILE']  = NT
+    #dz['NTILE']  = NT
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
