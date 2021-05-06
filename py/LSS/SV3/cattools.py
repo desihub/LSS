@@ -1142,7 +1142,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
                         nch += 1
                         s = 1
         if ii%10000 == 0:
-            print(ii,ti,ros[ii],nch,nbl)
+            print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
      
 #     ros = tile2rosette(ti)
 #     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
@@ -1174,6 +1174,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     laa = dz['LOCATION_ASSIGNED']
     
     #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    i = 0
     while i < len(dz):
         tls  = []
         tlis = []
