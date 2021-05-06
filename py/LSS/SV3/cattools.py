@@ -333,8 +333,9 @@ def find_znotposs(dz):
 
     
     selnoz = np.isin(dz['TARGETID'],tidnoz)
-    dznoz = dz[selnoz]
-    dznoz.sort('TILELOCID')
+    dz = dz[selnoz]
+    dz.sort('TILELOCID')
+    print('number of targetids with no obs '+str(len(dz)))
     lznposs = []
     tids = np.unique(dz['TILELOCID'])
     ti = 0
