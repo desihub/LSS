@@ -1075,7 +1075,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         dz = join(dz,arzu,keys=['TARGETID'],join_type='left')
         print('check length after merge with OII strength file:' +str(len(dz)))
     #print('length after join to file with tiles info is '+str(len(dz)))
-    NT = np.zeros(len(dz))
+    #NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
 
@@ -1102,12 +1102,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
-#     for ii in range(0,len(dz['TILES'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+     for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
 #         NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
 #         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
 #         tiles = dz['TILES'][ii].split('-')
 #         ti = int(tiles[0])
-#         ros[ii] = tile2rosette(ti)
+         ti = dz['TILEID']
+         ros[ii] = tile2rosette(ti)
 #         if natloc[ii]:# == False:
 #             nbl += 1
 #             s = 0
@@ -1122,7 +1123,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #                         s = 1
 #         if ii%10000 == 0:
 #             print(ii,ti,ros[ii],nch,nbl)
-#     #ros = tile2rosette(ti)
+     
+#     ros = tile2rosette(ti)
 #     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
 #     dz['TILELOCID'] = locs
 #     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
@@ -1134,7 +1136,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     #print(np.histogram(nloclz))
 #     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
 
-    dz['rosette_number'] = tile2rosette(dz['TILEID'])#ros
+    #dz['rosette_number'] = tile2rosette(dz['TILEID'])# not sure why that didn't work
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
