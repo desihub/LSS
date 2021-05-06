@@ -358,7 +358,7 @@ def find_znotposs(dz):
             if np.isin(tids[ti],tidsb):
                 lznposs.append(tids[ti])
       
-        if ti%1000 == 0:
+        if ti%30000 == 0:
             print(ti)
         ti += 1 
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
@@ -1111,8 +1111,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 # 
 # 
 #     print('counting tiles and finding rosette')
-#     nch = 0
-#     nbl = 0
+     nch = 0
+     nbl = 0
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
@@ -1123,20 +1123,20 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #         ti = int(tiles[0])
         ti = dz[ii]['TILEID']
         ros[ii] = tile2rosette(ti)
-#         if natloc[ii]:# == False:
-#             nbl += 1
-#             s = 0
-#             tids = dz['TILELOCIDS'][ii].split('-')
-#             if s == 0:
-#                 for tl in tids:
-#                     ttlocid  = int(tl)              
-#                     if np.isin(ttlocid,loclz):
-#                         #dz[ii]['TILELOCID'] = ttlocid
-#                         locs[ii] = ttlocid
-#                         nch += 1
-#                         s = 1
-#         if ii%10000 == 0:
-#             print(ii,ti,ros[ii],nch,nbl)
+        if natloc[ii]:# == False:
+            nbl += 1
+            s = 0
+            tids = dz['TILELOCIDS'][ii].split('-')
+            if s == 0:
+                for tl in tids:
+                    ttlocid  = int(tl)              
+                    if np.isin(ttlocid,loclz):
+                        dz[ii]['TILELOCID'] = ttlocid
+                        locs[ii] = ttlocid
+                        nch += 1
+                        s = 1
+        if ii%10000 == 0:
+            print(ii,ti,ros[ii],nch,nbl)
      
 #     ros = tile2rosette(ti)
 #     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
@@ -1160,21 +1160,38 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #get completeness based on unique sets of tiles
     compa = []
     tll = []
-    ct = 0
+    ti = 0
     print('getting completenes')
     nts = len(np.unique(dz['TILES']))
-    for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    tlsl = dz['TILES']
+    tlslu = np.unique(tlsl)
+    laa = dz['LOCATION_ASSIGNED']
+    
+    #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    while i < len(dz):
+        tls  = []
+        tlis = []
+        nli = 0
+        nai = 0
+    
+        while tlsl[i] == tlslu[ti]:
+            nli += 1
+            nai += laa[i]
+            i += 1
+            if i == len(dz):
+                break
+    
         if ct%500 == 0:
-            print('at tiles '+str(ct)+' of '+str(nts))
+            print('at tiles '+str(ti)+' of '+str(nts))
 
-        w = dz['TILES'] == tls
-        no = sum(dz[w]['LOCATION_ASSIGNED'])
-        nt = len(dz[w])
-        cp = no/nt
+        #w = dz['TILES'] == tls
+        #no = sum(dz[w]['LOCATION_ASSIGNED'])
+        #nt = len(dz[w])
+        cp = nai/nli#no/nt
         #print(tls,cp,no,nt)
         compa.append(cp)
-        tll.append(tls)
-        ct += 1
+        tll.append(tlslu[ti])
+        ti += 1
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
     for tl in dz['TILES']:
