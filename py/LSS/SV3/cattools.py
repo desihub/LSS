@@ -370,7 +370,7 @@ def find_znotposs(dz):
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
-def count_tiles_better(dr,rann=0):
+def count_tiles_better(dr,pd,rann=0):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
     through and get the multi-tile information
@@ -378,17 +378,17 @@ def count_tiles_better(dr,rann=0):
     returns file with TARGETID,NTILE,TILES,TILELOCIDS
     '''
     
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_specwdup_Alltiles.fits')
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
     wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     
     if dr == 'dat':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_tarspecwdup_Alltiles.fits')
-        outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_ntileinfo.fits' 
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
+        #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
     if dr == 'ran':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_darkwdupspec_Alltiles.fits')
-        outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_ntileinfo.fits'
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'wdupspec_Alltiles.fits')
+        #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)  
     fjg = fj[wg]  
 
@@ -1017,10 +1017,10 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     dzpd = Table.read(zfpd)
     dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
-    if maskzfail:
-        wk = dz['ZPOSSNOTBAD'] == 1
-    else:
-        wk = dz['ZPOSS'] == 1
+    #if maskzfail:
+    #    wk = dz['ZPOSSNOTBAD'] == 1
+    #else:
+    #    wk = dz['ZPOSS'] == 1
     print('length before cutting to good positions '+str(len(dz)))
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
@@ -1073,6 +1073,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
             'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
     dz = join(dz,ftar,keys=['TARGETID'])
+    #print('length after join to full targets (should be same) '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])

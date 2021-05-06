@@ -318,7 +318,7 @@ if combd:
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
         tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat')
+        tc = ct.count_tiles_better('dat',pdir)
         tc.write(dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combd, only done for dark/bright now')
