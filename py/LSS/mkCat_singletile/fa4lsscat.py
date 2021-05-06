@@ -41,7 +41,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00'):
     tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
     favail = LocationsAvailable(tgsavail)
     del tree
-    asgn = Assignment(tgs, tgsavail, favail)
+    asgn = Assignment(tgs, tgsavail, favail,{})
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)	
