@@ -206,6 +206,10 @@ else:
     print('no done tiles in the MTL')
 
 
+minr = 148
+maxr = 274
+mind = -2.5
+maxd = 68
 if ctar:
     tard = read_targets_in_tiles(mdir,tiles,mtl=True,isodate='2021-04-06T00:00:00') #this date should be after initial creation and before 1st update
     print('read in mtl targets')
@@ -227,13 +231,13 @@ if cran:
     for ii in range(rm,rx):
         ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
         print(len(ranf))
-        if ctar:
-            wp = ranf['RA'] > minr
-            wp &= ranf['RA'] < maxr
-            wp &= ranf['DEC'] > mind
-            wp &= ranf['DEC'] < maxd
-            ranf = ranf[wp]
-            print(len(ranf))                
+        #if ctar:
+        wp = ranf['RA'] > minr
+        wp &= ranf['RA'] < maxr
+        wp &= ranf['DEC'] > mind
+        wp &= ranf['DEC'] < maxd
+        ranf = ranf[wp]
+        print(len(ranf))                
         wi = is_point_in_desi(tiles, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
         fitsio.write(sv3dir+'random'+str(ii)+'/alltilesnofa.fits',ranf,clobber=True)
