@@ -417,6 +417,8 @@ def count_tiles_better(dr,rann=0):
     tc['TILES'] = tl
     tc['TILELOCIDS'] = tli
     
+    return tc
+    
     
 def count_tiles(tiles,catdir,pd,ttp='ALL',imask=False):
     '''
