@@ -1113,7 +1113,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
     print('number of unique targets left around unassigned locations is '+str(np.sum(natloc)))
-#     locs = np.copy(dz['TILELOCID'])
+    locs = np.copy(dz['TILELOCID'])
 # 
 # 
 #     print('counting tiles and finding rosette')
@@ -1146,7 +1146,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
      
 #     ros = tile2rosette(ti)
 #     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
-#     dz['TILELOCID'] = locs
+    dz['TILELOCID'] = locs
 #     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 #     #wa = dzz['LOCATION_ASSIGNED'] == 1
 #     #if len(dzz[wa]) != len(dzz):
