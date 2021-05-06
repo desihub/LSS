@@ -165,8 +165,9 @@ if not os.path.exists(dirout):
 
 
 randir = sv3dir+'random'
-rm = args.minr.astype(int)
-rx = args.maxr.astype(int)
+rm = int(args.minr)
+rx = int(args.maxr)
+print(rm,rx)
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv3dir+'random'+str(i)):
