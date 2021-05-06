@@ -1026,6 +1026,8 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
+    tarf = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/alltilesnofa.fits')
+    dz = join(dz,tarf,keys=['TARGETID'])
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     dz = unique(dz,keys=['TARGETID'])
