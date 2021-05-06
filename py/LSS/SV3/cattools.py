@@ -1043,6 +1043,9 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
+    dz['rosette_number'] = 0
+    for ii in range(0,len(dz)):
+        dz[ii]['rosette_number'] = tile2rosette(dz[ii]['TILEID'])
     print(np.unique(dz['NTILE']))
     #dz['NTILE'] = NT
     dz.write(outf,format='fits', overwrite=True)
