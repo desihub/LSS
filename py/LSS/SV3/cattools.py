@@ -339,6 +339,7 @@ def find_znotposs(dz):
     dz.sort('TILELOCID')
     tids = np.unique(dz['TILELOCID'])
     print('number of targetids with no obs '+str(len(tidnoz)))
+    tlidnoz = []
     lznposs = []
     
     ti = 0
@@ -355,12 +356,16 @@ def find_znotposs(dz):
             if i == len(dz):
                 break
         if za == 0:
-            if np.isin(tids[ti],tidsb):
-                lznposs.append(tids[ti])
+            tlidnoz.append(tids[ti])
+            #if np.isin(tids[ti],tidsb):
+            #    lznposs.append(tids[ti])
       
         if ti%30000 == 0:
-            print(ti)
+            print(ti,len(tids))
         ti += 1 
+    #the ones to veto are now the join of the two
+    wtbtlid = np.isin(tlidnoz,tidsb)
+    lznposs = tlidnoz[wtbtlid]
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
