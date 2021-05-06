@@ -25,8 +25,9 @@ def tile2rosette(tile):
             return 14
         if tile >= 439 and tile < 442:
             return 15
-    print('did not identify rosette!!!')
-    return None                
+    return 999999 #need to figure out key to higher numbers
+    #print('did not identify rosette!!!')
+    #return None                
 #     for i in range(0,16):
 #         test = np.arange(1+27*i,12+27*i)
 #         if np.isin(tile,test):
@@ -1136,6 +1137,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     #print(np.histogram(nloclz))
 #     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
 
+    dz['rosette_number'] = ros
     #dz['rosette_number'] = tile2rosette(dz['TILEID'])# not sure why that didn't work
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
