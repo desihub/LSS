@@ -355,6 +355,7 @@ if mkfulld:
     else:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
+    print(desitarg)
     ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
