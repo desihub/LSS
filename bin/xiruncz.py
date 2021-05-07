@@ -106,7 +106,7 @@ if type == 'ELG_FDR_GFIB':
     type = 'ELG'
    
 
-if type == 'BGS_ANY':
+if type[:3] == 'BGS':
     zl = [0.1,0.3,0.5]
     #zmin = 0.1
     #zmax = 0.5 
