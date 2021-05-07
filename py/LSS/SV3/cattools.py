@@ -801,6 +801,7 @@ def combran_wdup(tiles,rann,randir,tp,sv3dir):
     fgu = join(fgu,specf,keys=['LOCATION','TILEID'])
     fgu.sort('TARGETID')
     outf = randir+str(rann)+'/rancomb_'+tp+'wdupspec_Alltiles.fits'
+    print(outf)
     fgu.write(outf,format='fits', overwrite=True)
     
 
