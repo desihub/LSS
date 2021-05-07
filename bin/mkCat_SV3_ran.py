@@ -82,7 +82,7 @@ if type == 'bright' or type == 'dark':
     mkclusran = False
     mkfullr = False
 
-if type == 'BGS_ANY' or type == 'bright' or type == 'MWS_ANY':
+if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
@@ -223,7 +223,13 @@ def doran(ii):
         
     if mkfullr:
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
+        if type == 'BGS_BRIGHT':
+            bit = sv3_targetmask.bgs_mask[type]
+            desitarg='SV3_BGS_TARGET'
+        else:
+            bit = sv3_targetmask.desi_mask[type]    
+            desitarg='SV3_DESI_TARGET'
+        ct.mkfullran(randir,ii,imbits,outf,type,pdir,bit,desitarg=desitarg)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
