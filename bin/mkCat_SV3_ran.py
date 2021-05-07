@@ -217,7 +217,7 @@ def doran(ii):
         if type == 'dark' or type == 'bright':
             ct.combran_wdup(mtld,ii,randir,type,sv3dir)
             tc = ct.count_tiles_better('ran',type,ii)
-            tc.write(randir+str(i)+'/rancomb_'+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+            tc.write(randir+str(ii)+'/rancomb_'+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
 
         
