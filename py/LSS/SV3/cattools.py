@@ -1055,7 +1055,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
 
 def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET'):
     #from desitarget.mtl import inflate_ledger
-    if tp == 'BGS_ANY' or tp == 'MWS_ANY':
+    if tp[:3] == 'BGS' or tp == 'MWS':
         pd = 'bright'        
         tscol = 'TSNR2_BGS'
     else:    

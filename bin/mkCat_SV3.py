@@ -349,7 +349,13 @@ if mkfulld:
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210420.fits'
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
     dz = sv3dir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
-    ct.mkfulldat(dz,imbits,tdir,type,sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf)
+    if type == 'BGS_BRIGHT':
+        bit = sv3_targetmask.bgs_mask[type]
+        desitarg='SV3_BGS_TARGET'
+    else:
+        bit = sv3_targetmask.desi_mask[type]
+        desitarg='SV3_DESI_TARGET'
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
