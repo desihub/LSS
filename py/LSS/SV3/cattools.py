@@ -1035,8 +1035,8 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
-    dz.sort(tsnr,keep='last') #should allow to later cut on tsnr for match to data
-    dz = unique(dz,keys=['TARGETID'])
+    dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+    dz = unique(dz,keys=['TARGETID'],keep='last')
     print('lengeth after cutting to unique TARGETID '+str(len(dz)))
     #done in combran instead
     #NT = np.zeros(len(dz))
