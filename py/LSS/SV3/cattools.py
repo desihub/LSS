@@ -1360,7 +1360,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG'):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
@@ -1369,8 +1369,8 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80):
     #ffd = Table.read(fl+'full.dat.fits')
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
-    if type[:3] == 'ELG' or type == 'LRG':
-        wz = ffr['TSNR2_ELG'] < tsnrcut
+    #if type[:3] == 'ELG' or type == 'LRG':
+    wz = ffr[tsnrcol] > tsnrcut
     #wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
     #wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
     #wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked

@@ -384,8 +384,16 @@ if mkclusdat:
     #print('ran mkclusdat\n')
 
 if mkclusran:
+    tsnrcol = 'TSNR2_ELG'
+    if type[:3] == 'ELG':
+        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+        tsnrcut = 80
+    if type == 'LRG':
+        #dchi2 = 16  
+        tsnrcut = 80  
+
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
+        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
