@@ -1304,17 +1304,17 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     #wz &= ff['LOCATION_ASSIGNED'] == 1
-#     if tp == 'ELG' or tp == 'ELG_HIP':
-#         ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
-#         ff['Z_ar'].name = 'Z'
-#         ff['ZWARN_ar'].name = 'ZWARN'
-#         ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
-#         wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
-#         wz &= ff['ZWARN']*0 == 0
-#         wz &= ff['ZWARN'] != 999999
-#         print(len(ff[wz]))
-#         wz &= ff['LOCATION_ASSIGNED'] == 1
-#         print('length after also making sure location assigned '+str(len(ff[wz])))
+    if tp == 'ELG' or tp == 'ELG_HIP':
+        ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
+        ff['Z_ar'].name = 'Z'
+        ff['ZWARN_ar'].name = 'ZWARN'
+        ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
+        wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        print(len(ff[wz]))
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        print('length after also making sure location assigned '+str(len(ff[wz])))
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         wz &= ff['DELTACHI2'] > 16
