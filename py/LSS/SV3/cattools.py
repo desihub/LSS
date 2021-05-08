@@ -1310,7 +1310,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     wz = ff['ZWARN'] == 0
     #wz &= ff['LOCATION_ASSIGNED'] == 1
     print('length before cutting to objects with redshifts '+str(len(ff)))
-    print('length after cutting to zwarn == 0 '+str(len(ff)))
+    print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
     if tp == 'ELG' or tp == 'ELG_HIP':
         #ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
         #ff['Z_ar'].name = 'Z'
