@@ -374,7 +374,7 @@ if mkclusdat:
     dchi2 = 9
     tsnrcut = 0
     if type[:3] == 'ELG':
-        dchi2 = 0.9
+        dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
         tsnrcut = 80
     if type == 'LRG':
         dchi2 = 16  
