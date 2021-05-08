@@ -995,7 +995,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskzfail=False):
+def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',maskzfail=False):
 
     #first, need to find locations to veto based data
     fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
@@ -1035,6 +1035,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',maskz
     
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
+    dz.sort(tsnr) #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'])
     print('lengeth after cutting to unique TARGETID '+str(len(dz)))
     #done in combran instead
@@ -1102,6 +1103,23 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz['TILELOCID_ASSIGNED'][wtl] = 1
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
+
+    if tp == 'ELG' or tp == 'ELG_HIP':
+        arz = Table.read(azf)
+        wg = arz['FIBERSTATUS'] == 0
+        arz = arz[wg]
+        arz['o2c'] = np.log10(arz['FOII']/arz['FOII_ERR'])+0.2*np.log10(arz['DELTACHI2']) 
+        w = (arz['o2c']*0) != 0
+        arz['o2c'][w] = -20
+        #arz.sort('TSNR2_ELG')
+        #arzu = unique(arz,keys=['TARGETID'],keep='last')
+        arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c'])#,'Z','ZWARN','TSNR2_ELG'])    
+        #arz['Z'].name = 'Z_ar'
+        #arz['ZWARN'].name = 'ZWARN_ar'
+        #arz['TSNR2_ELG'].name = 'TSNR2_ELG_ar'
+        dz = join(dz,arzu,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        print('check length after merge with OII strength file:' +str(len(dz)))
+
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
@@ -1111,21 +1129,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
    
     print('TILELOCID_ASSIGNED numbers')
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
-    if tp == 'ELG' or tp == 'ELG_HIP':
-        arz = Table.read(azf)
-        wg = arz['FIBERSTATUS'] == 0
-        arz = arz[wg]
-        arz['o2c'] = np.log10(arz['FOII']/arz['FOII_ERR'])+0.2*np.log10(arz['DELTACHI2']) 
-        w = (arz['o2c']*0) != 0
-        arz['o2c'][w] = -20
-        arz.sort('TSNR2_ELG')
-        arzu = unique(arz,keys=['TARGETID'],keep='last')
-        arzu.keep_columns(['TARGETID','o2c','Z','ZWARN','TSNR2_ELG'])    
-        arzu['Z'].name = 'Z_ar'
-        arzu['ZWARN'].name = 'ZWARN_ar'
-        arzu['TSNR2_ELG'].name = 'TSNR2_ELG_ar'
-        dz = join(dz,arzu,keys=['TARGETID'],join_type='left')
-        print('check length after merge with OII strength file:' +str(len(dz)))
     #print('length after join to file with tiles info is '+str(len(dz)))
     #NT = np.zeros(len(dz))
     ros = np.zeros(len(dz))
@@ -1290,7 +1293,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     '''
     take full catalog, cut to ra,dec,z add any weight
     program is dark,gray, or bright
@@ -1304,21 +1307,29 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     #wz &= ff['LOCATION_ASSIGNED'] == 1
+    print('length before cutting to objects with redshifts '+str(len(ff)))
+    print('length after cutting to zwarn == 0 '+str(len(ff)))
     if tp == 'ELG' or tp == 'ELG_HIP':
-        ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
-        ff['Z_ar'].name = 'Z'
-        ff['ZWARN_ar'].name = 'ZWARN'
-        ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
-        wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
+        #ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
+        #ff['Z_ar'].name = 'Z'
+        #ff['ZWARN_ar'].name = 'ZWARN'
+        #ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
+        wz = ff['o2c'] > dchi2
+        #wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
-        print(len(ff[wz]))
+        print('length after oII cut '+str(len(ff[wz])))
         wz &= ff['LOCATION_ASSIGNED'] == 1
         print('length after also making sure location assigned '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
     if tp == 'LRG':
         print('applying extra cut for LRGs')
-        wz &= ff['DELTACHI2'] > 16
-    print('length before cutting to good z '+str(len(ff)))
+        wz &= ff['DELTACHI2'] > dchi2
+        print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+    
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))
@@ -1347,7 +1358,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp=''):
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
@@ -1356,11 +1367,14 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False):
     #ffd = Table.read(fl+'full.dat.fits')
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+    if type[:3] == 'ELG' or type == 'LRG':
+        wz = ffr['TSNR2_ELG'] < tsnrcut
     #wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
     #wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
     #wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
     #ffc = ffr[~wb]
-    ffc = ffr
+    ffc = ffr[wz]
+    print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
