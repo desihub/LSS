@@ -384,6 +384,7 @@ if mkclusdat:
     #print('ran mkclusdat\n')
 
 if mkclusran:
+    print('doing clustering randoms')
     tsnrcol = 'TSNR2_ELG'
     if type[:3] == 'ELG':
         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
