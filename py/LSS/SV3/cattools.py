@@ -1124,7 +1124,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp == 'ELG' or tp == 'ELG_HIP':
-        print('number of masked oII row (hopefully near zero) '+ str(np.sum(dz['o2c'].mask)))
+        print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
