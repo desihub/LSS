@@ -371,7 +371,15 @@ if mkfullr:
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type)
+    dchi2 = 9
+    tsnrcut = 0
+    if type[:3] == 'ELG':
+        dchi2 = 0.9
+        tsnrcut = 80
+    if type == 'LRG':
+        dchi2 = 16  
+        tsnrcut = 80  
+    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
