@@ -1117,7 +1117,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         #arz['Z'].name = 'Z_ar'
         #arz['ZWARN'].name = 'ZWARN_ar'
         #arz['TSNR2_ELG'].name = 'TSNR2_ELG_ar'
-        dz = join(dz,arzu,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         print('check length after merge with OII strength file:' +str(len(dz)))
 
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
