@@ -34,7 +34,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     if fkp:
         fkpw = 'fkp'
     ntw = ''
-    if minn != '0':
+    if minn != 0:
         ntw = 'mint'+str(minn)    
 
     df = fitsio.read(indir+'/'+ver+'/'+type+tile+reg+'_clustering.dat.fits')
@@ -96,7 +96,7 @@ def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircount
     if fkp:
         fkpw = 'fkp'
     ntw = ''
-    if minn != '0':
+    if minn != 0:
         ntw = 'mint'+str(minn)    
 
 
