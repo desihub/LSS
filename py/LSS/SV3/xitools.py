@@ -26,13 +26,16 @@ dirxi = os.environ['CSCRATCH']+'/SV3xi/'
 
 om = 0.31
 
-def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',reg='',tile='Alltiles',fkp=False,ranwt1=False,subt=None):
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',reg='',minn=0,tile='Alltiles',fkp=False,ranwt1=False,subt=None):
     '''
     prepare catalogs to be used by Cheng Zhao's paircount code
     '''
     fkpw = ''
     if fkp:
         fkpw = 'fkp'
+    ntw = ''
+    if minn != '0':
+        ntw = 'mint'+str(minn)    
 
     df = fitsio.read(indir+'/'+ver+'/'+type+tile+reg+'_clustering.dat.fits')
     if subt is not None:
@@ -41,10 +44,10 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
         sel = (df['SV3_DESI_TARGET'] & tb) > 0
         df = df[sel]
         
-    so = 'SV3_'+ver+type+reg+fkpw+str(zmin)+str(zmax)
+    so = 'SV3_'+ver+type+reg+fkpw+ntw+str(zmin)+str(zmax)
     ifiled = outdir+'g'+so+'4xi.dat'
     fo = open(ifiled,'w')
-    w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+    w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > minn)
     df = df[w]
     wt = df['WEIGHT']
     if fkp:
@@ -88,12 +91,16 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     fo.write('/global/u2/z/zhaoc/programs/FCFC_2D/2pcf -c '+cf+' -d '+ifiled+' -r '+ifiler+' --data-z-min='+str(zmin)+' --data-z-max='+str(zmax)+' --rand-z-min='+str(zmin)+' --rand-z-max='+str(zmax)+' --dd='+ddf+' --dr='+drf+' --rr='+rrf+' -p 7 -f')
     fo.close()
 
-def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',reg='',bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50,vis=False):
+def calcxi_dataCZ(type,zmin,zmax,dirczpc = os.environ['CSCRATCH']+'/cz/paircounts/',fa='',reg='',minn=0,bs=5,start=0,rec='',mumin=0,mumax=1,mupow=0,ver='test',fkp=False,rxp=50,vis=False):
     fkpw = ''
     if fkp:
         fkpw = 'fkp'
+    ntw = ''
+    if minn != '0':
+        ntw = 'mint'+str(minn)    
 
-    so = 'SV3_'+ver+type+reg+fkpw+str(zmin)+str(zmax)
+
+    so = 'SV3_'+ver+type+reg+fkpw+ntw+str(zmin)+str(zmax)
 
     froot = dirczpc+so
     if rec == '':

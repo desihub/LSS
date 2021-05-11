@@ -26,10 +26,12 @@ lssdir = basedir+'/SV3/LSS/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
 zmask = ['']
+minn = 0
 
 subt = None
 if type == 'LRG':
     zl = [0.32,0.6,0.8,1.05,1.3]
+    minn = 2
     #zmin=0.32
     #zmax=1.05
 
