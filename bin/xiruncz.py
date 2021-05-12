@@ -109,6 +109,7 @@ if type == 'ELG_FDR_GFIB':
    
 
 if type[:3] == 'BGS':
+    minn = 2
     zl = [0.1,0.3,0.5]
     #zmin = 0.1
     #zmax = 0.5 
