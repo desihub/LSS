@@ -1,6 +1,6 @@
 import numpy as np
 import fitsio
-from astropy.table import Table
+from astropy.table import Table,unique
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -33,7 +33,9 @@ mtld = mtld[wp]
 print('number of completed bright tiles:',len(mtld))
 
 
-ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_dark_Alltiles.fits')
+#ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_dark_Alltiles.fits')
+ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_darkwdupspec_Alltiles.fits')
+ran = unique(ran,keys=['TARGETID'])
 
 print('#area covered on DARK tiles\n#>N_tiles area(deg2)')
 for nt in np.unique(ran['NTILE']):
@@ -41,7 +43,10 @@ for nt in np.unique(ran['NTILE']):
     print(nt,len(ran[wt])/2500)
     
 print('#')
-ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_bright_Alltiles.fits')
+#ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_bright_Alltiles.fits')
+ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_brightwdupspec_Alltiles.fits')
+ran = unique(ran,keys=['TARGETID'])
+
 
 print('#area covered on BRIGHT tiles\n#>N_tiles area(deg2)')
 for nt in np.unique(ran['NTILE']):
@@ -49,20 +54,25 @@ for nt in np.unique(ran['NTILE']):
     print(nt,len(ran[wt])/2500)
     
 print('#')
-dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/'+version+'/datcomb_dark_Alltiles.fits')
+dat = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_tarspecwdup_Alltiles.fits')
 wz = dat['ZWARN']*0 == 0
 wz &= dat['ZWARN'] != 999999
+datz = unique(dat[wz],keys=['TARGETID'])
 wzg = dat['ZWARN'] == 0
-print('number of unique dark time targets observed (good hardware):',len(dat[wz]))
+datzg = unique(dat[wzg],keys=['TARGETID'])
+print('number of unique dark time targets observed (good hardware):',len(datz))
 print('number of unique dark time targets with a good observation (ZWARN==0):',len(dat[wzg]))
 
 print('#')
-dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/LSScats/'+version+'/datcomb_bright_Alltiles.fits')
+dat = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_bright_tarspecwdup_Alltiles.fits')
 wz = dat['ZWARN']*0 == 0
 wz &= dat['ZWARN'] != 999999
+datz = unique(dat[wz],keys=['TARGETID'])
 wzg = dat['ZWARN'] == 0
-print('number of unique bright time targets observed (good hardware):',len(dat[wz]))
-print('number of unique bright time targets with a good observation (ZWARN==0):',len(dat[wzg]))
+datzg = unique(dat[wzg],keys=['TARGETID'])
+
+print('number of unique bright time targets observed (good hardware):',len(datz))
+print('number of unique bright time targets with a good observation (ZWARN==0):',len(datzg))
 
 print('#')
 print('splitting by type, numbers are after all veto masks:')
