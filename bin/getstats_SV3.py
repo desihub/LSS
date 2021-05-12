@@ -34,7 +34,7 @@ print('number of completed bright tiles:',len(mtld))
 
 
 #ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_dark_Alltiles.fits')
-ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_darkwdupspec_Alltiles.fits')
+ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_dark_Alltilelocinfo.fits')
 ran = unique(ran,keys=['TARGETID'])
 
 print('#area covered on DARK tiles\n#>N_tiles area(deg2)')
@@ -44,7 +44,7 @@ for nt in np.unique(ran['NTILE']):
     
 print('#')
 #ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_bright_Alltiles.fits')
-ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_brightwdupspec_Alltiles.fits')
+ran = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random0/rancomb_bright_Alltilelocinfo.fits')
 ran = unique(ran,keys=['TARGETID'])
 
 
