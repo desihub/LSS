@@ -61,7 +61,7 @@ datz = unique(dat[wz],keys=['TARGETID'])
 wzg = dat['ZWARN'] == 0
 datzg = unique(dat[wzg],keys=['TARGETID'])
 print('number of unique dark time targets observed (good hardware):',len(datz))
-print('number of unique dark time targets with a good observation (ZWARN==0):',len(dat[wzg]))
+print('number of unique dark time targets with a good observation (ZWARN==0):',len(datzg))
 
 print('#')
 dat = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_bright_tarspecwdup_Alltiles.fits')
