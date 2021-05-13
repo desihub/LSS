@@ -40,7 +40,8 @@ parser.add_argument("--combr", help="combine the random tiles together",default=
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
-parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
@@ -90,11 +91,12 @@ if args.fullr == 'n':
     mkfullr = False
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
 mkclusdat = True
-mkclusran = True
+mkclusran = False
 if args.clus == 'n':
     mkclus = False
     mkclusdat = False
-    mkclusran = False
+if args.clusran == 'y':
+    mkclusran = True
 mknz = False #get n(z) for type and all subtypes
 if args.nz == 'y':
     mknz = True
