@@ -1292,6 +1292,14 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
     #print(np.unique(dz['TILE']))
     #dz['NTILE']  = NT
+    dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
+    if tp == 'LRG':
+		fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
+		wv = dz['TSNR2_LRG'] < 180
+		efs = .08+2.42*(fibfluxz)**-4/.038
+		ems = erf((ff['TSNR2_LRG']-25)/30)*.986
+		dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
+		    
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
@@ -1334,9 +1342,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
-    ff['WEIGHT'] = np.ones(len(ff))
+    ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
-        ff['WEIGHT'] = 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
 
     if zmask:
         whz = ff['Z'] < 1.6
