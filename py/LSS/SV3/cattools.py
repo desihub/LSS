@@ -1294,12 +1294,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #dz['NTILE']  = NT
     dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
     if tp == 'LRG':
-		fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
-		wv = dz['TSNR2_LRG'] < 180
-		efs = .08+2.42*(fibfluxz)**-4/.038
-		ems = erf((ff['TSNR2_LRG']-25)/30)*.986
-		dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
-		    
+        fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
+        wv = dz['TSNR2_LRG'] < 180
+        efs = .08+2.42*(fibfluxz)**-4/.038
+        ems = erf((ff['TSNR2_LRG']-25)/30)*.986
+        dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
+            
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
