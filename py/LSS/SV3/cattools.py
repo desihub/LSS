@@ -1298,7 +1298,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
         wv = dz['TSNR2_LRG'] < 180
         efs = .08+2.42*(fibfluxz)**-4/.038
-        ems = erf((ff['TSNR2_LRG']-25)/30)*.986
+        ems = erf((dz['TSNR2_LRG']-25)/30)*.986
         dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
             
     print(np.unique(dz['NTILE']))
