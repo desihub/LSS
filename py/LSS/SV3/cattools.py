@@ -25,18 +25,12 @@ def tile2rosette(tile):
             return 14
         if tile >= 439 and tile < 442:
             return 15
-    return 999999 #need to figure out key to higher numbers
-    #print('did not identify rosette!!!')
-    #return None                
-#     for i in range(0,16):
-#         test = np.arange(1+27*i,12+27*i)
-#         if np.isin(tile,test):
-#             return i
-#     #print('if we made it here, we must be looking for bright tiles?')
-#     for i in range(0,16):
-#         test = np.arange(12+27*i,23+27*i)
-#         if np.isin(tile,test):
-#             return i
+        if tile >= 442 and tile <=480:
+            return (tile-442)//3
+            
+        if tile > 480:
+            return tile/30    
+    return 999999 #shouldn't be any more?
     
 def combtile_spec(tiles,outf=''):
     s = 0
