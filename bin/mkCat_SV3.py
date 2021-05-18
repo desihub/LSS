@@ -348,7 +348,7 @@ if combr:
         
 if mkfulld:
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
-    azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits'
+    azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210513.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
     dz = sv3dir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
