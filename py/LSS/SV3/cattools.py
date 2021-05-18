@@ -29,7 +29,7 @@ def tile2rosette(tile):
             return (tile-442)//3
             
         if tile > 480:
-            return tile/30    
+            return tile//30    
     return 999999 #shouldn't be any more?
     
 def combtile_spec(tiles,outf=''):
