@@ -25,8 +25,8 @@ import LSS.imaging.select_samples as ss
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--tarver", help="version of targeting",default='0.49.0')
-parser.add_argument("--survey", help="e.g., sv1 or main",default='main')
+parser.add_argument("--tarver", help="version of targeting",default='0.57.0')
+parser.add_argument("--survey", help="e.g., sv1 or main",default='sv3')
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 
@@ -44,6 +44,9 @@ if survey == 'main':
 if survey == 'sv1':
     tp = 'SV1_DESI_TARGET'
     sw = 'sv1'
+if survey == 'sv3':
+    tp = 'SV3_DESI_TARGET'
+    sw = 'sv3'
 
 outdir = basedir+'/tarcat/v'+version+'/tv'+tarver+'/'
 if not os.path.exists( basedir+'/tarcat'):
@@ -71,8 +74,8 @@ sfn = glob.glob(dirsweepn+'sweep*')
 
 elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
 
-mkbsamp = False #make the base sample
-domaskd = False #mask data based on mask bits above
+mkbsamp = True #make the base sample
+domaskd = True #mask data based on mask bits above
 domaskr = True #mask randoms
 'test'
 print('type being used for bright/dark '+type[:3])
