@@ -7,6 +7,7 @@ import sys
 from desitarget import cuts
 from desitarget import targetmask
 from desitarget.sv1 import sv1_targetmask
+from desitarget.sv3 import sv3_targetmask
 import astropy.io.fits as fits
 
 
@@ -43,6 +44,10 @@ def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
 	    bs = sv1_targetmask.desi_mask[type]
 	    tp = 'SV1_DESI_TARGET'
 	    ws = 'sv1'
+	if survey == 'sv3':
+	    bs = sv3_targetmask.desi_mask[type]
+	    tp = 'SV3_DESI_TARGET'
+	    ws = 'sv3'
 	print(type+' selection bit is '+str(bs))
 	
 	outf = outdir+type+ws +'targetsDR9v'+tarver.strip('.')+'.fits'   
