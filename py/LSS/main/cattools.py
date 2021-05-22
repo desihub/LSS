@@ -60,7 +60,7 @@ def combtile_spec(tiles,outf=''):
     specd.write(outf,format='fits', overwrite=True)       
  
 
-def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
+def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='4combtar' ):
     #put data from different spectrographs together, one table for fibermap, other for z
     specs = []
     #find out which spectrograph have data
@@ -94,7 +94,8 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         
     
     tf = unique(tf,keys=['TARGETID'])
-    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    if md == '4combtar': #target files should contain the rest of the info
+        tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     print(len(tspec),len(tf))
@@ -186,7 +187,7 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
-def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
     n = 0
     if os.path.isfile(fout):
