@@ -24,7 +24,7 @@ import desimodel.io as dmio
 
 
 
-def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00'):
+def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0'):
     '''
     will write out fiberassignment files for each tile with the FASSIGN, FTARGETS, FAVAIL HDUS
     these are what are required to determine the geometry of what fiberassign thinks could have been observed and also match to actual observations (though FASSIGN is not really necessary)
@@ -41,8 +41,10 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00'):
     tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
     favail = LocationsAvailable(tgsavail)
     del tree
-    asgn = Assignment(tgs, tgsavail, favail)
-    #asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4
+    if faver == '2.3.0':
+        asgn = Assignment(tgs, tgsavail, favail)
+    if faver != '2.3.0'
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)	

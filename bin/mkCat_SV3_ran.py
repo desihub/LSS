@@ -37,6 +37,7 @@ parser.add_argument("--fullr", help="make the random files associated with the f
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+parser.add_argument("--faver", help="version of fiberassign code to use for random",default='2.3.0')
 
 
 
@@ -46,6 +47,7 @@ print(args)
 type = args.type
 basedir = args.basedir
 version = args.version
+faver = args.faver
 
 zma = False
 if args.maskz == 'y':
@@ -147,6 +149,7 @@ if len(mtld) > 0:
     fal = []
     obsl = []
     pl = []
+    fver = []
     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
         ts = str(tile).zfill(6)
         fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -156,6 +159,11 @@ if len(mtld) > 0:
         mtlt.append(fht['MTLTIME'])
         fal.append(fht['FA_RUN'])
         obsl.append(fht['OBSCON'])
+        fav = fht['FA_VER']
+        if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
+            fver.append('2.3.0')
+        else:
+            fver.append(fav)    
         pl.append(pro)
     ta = Table()
     ta['TILEID'] = tilel
@@ -165,6 +173,8 @@ if len(mtld) > 0:
     ta['FA_RUN'] = fal
     ta['OBSCON'] = obsl
     ta['PROGRAM'] = pl
+    #ta['FA_VER'] = fver
+    print(np.unique(fver))
 else:
     print('no done tiles in the MTL')
 
@@ -199,17 +209,21 @@ def doran(ii):
             ts = str(tile).zfill(6)
             fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
             dt = fbah['RUNDATE']
-            ttemp = Table(ta[it])
-            ttemp['OBSCONDITIONS'] = 516
-            ttemp['IN_DESI'] = 1
+            fav = fbah['FA_VER']
+            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
+                fav = '2.3.0'
+            if fav == faver:
+                ttemp = Table(ta[it])
+                ttemp['OBSCONDITIONS'] = 516
+                ttemp['IN_DESI'] = 1
             
-            #for i in range(rm,rx):
-            testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
-            if os.path.isfile(testfbaf):
-                print('fba file already made')
-            else:                   
-                ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
-                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt)
+                #for i in range(rm,rx):
+                testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
+                if os.path.isfile(testfbaf):
+                    print('fba file already made')
+                else:                   
+                    ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
+                    fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
 
  
 
