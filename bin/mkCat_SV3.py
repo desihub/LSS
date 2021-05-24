@@ -239,8 +239,10 @@ if cran:
         wp &= ranf['DEC'] > mind
         wp &= ranf['DEC'] < maxd
         ranf = ranf[wp]
-        print(len(ranf))                
-        wi = is_point_in_desi(tiles, ranf["RA"], ranf["DEC"])
+        print(len(ranf))
+        tilesall = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+        tilesu = unique(tilesall,keys=['RA','DEC'])                
+        wi = is_point_in_desi(tilesu, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
         fitsio.write(sv3dir+'random'+str(ii)+'/alltilesnofa.fits',ranf,clobber=True)
         print('wrote '+sv3dir+'random'+str(ii)+'/alltilesnofa.fits')
