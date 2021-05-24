@@ -210,7 +210,7 @@ def doran(ii):
             tile = mtld['TILEID'][it]
             ts = str(tile).zfill(6)
             fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-            dt = fbah['RUNDATE']
+            dt = fbah['RUNDATE'][:19]
             fav = fbah['FA_VER']
             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
                 fav = '2.3.0'
@@ -219,6 +219,8 @@ def doran(ii):
                 ttemp['OBSCONDITIONS'] = 516
                 ttemp['IN_DESI'] = 1
             
+                print(ttemp)
+                print(fav,dt)
                 #for i in range(rm,rx):
                 testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
                 if os.path.isfile(testfbaf):
