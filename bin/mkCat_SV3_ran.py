@@ -177,6 +177,7 @@ if len(mtld) > 0:
     print(np.unique(fver))
     wfv = (np.array(fver) == faver)
     mtld =  mtld[wfv]
+    ta = ta[wfv]
 else:
     print('no done tiles in the MTL')
 
