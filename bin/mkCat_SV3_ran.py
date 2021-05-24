@@ -175,7 +175,7 @@ if len(mtld) > 0:
     ta['PROGRAM'] = pl
     #ta['FA_VER'] = fver
     print(np.unique(fver))
-    wfv = (fver == faver)
+    wfv = (np.array(fver) == faver)
     mtld =  mtld[wfv]
 else:
     print('no done tiles in the MTL')
@@ -206,7 +206,7 @@ def doran(ii):
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
         for it in range(0,len(mtld)):
-    
+            #print(it,len(mtld))    
             tile = mtld['TILEID'][it]
             ts = str(tile).zfill(6)
             fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
