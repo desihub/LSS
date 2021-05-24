@@ -43,7 +43,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     del tree
     if faver == '2.3.0':
         asgn = Assignment(tgs, tgsavail, favail)
-    if faver != '2.3.0'
+    if faver != '2.3.0':
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
