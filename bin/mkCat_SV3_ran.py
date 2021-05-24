@@ -175,7 +175,7 @@ if len(mtld) > 0:
     ta['PROGRAM'] = pl
     #ta['FA_VER'] = fver
     print(np.unique(fver))
-    wfv = (fav == faver)
+    wfv = (fver == faver)
     mtld =  mtld[wfv]
 else:
     print('no done tiles in the MTL')
