@@ -179,7 +179,7 @@ if len(mtld) > 0:
     ta['FA_RUN'] = fal
     ta['OBSCON'] = obsl
     ta['PROGRAM'] = pl
-    ta['FA_HA'] = fahal
+    #ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
     print(np.unique(fver))
     wfv = (np.array(fver) == faver)
