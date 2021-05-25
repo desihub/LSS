@@ -226,7 +226,11 @@ def doran(ii):
                 ttemp = Table(ta[it])
                 ttemp['OBSCONDITIONS'] = 516
                 ttemp['IN_DESI'] = 1
-            
+                try:
+                    ttemp['FA_PLAN'] = fbah['FA_PLAN']
+                    ttemp['FIELDROT'] = fbah['FIELDROT']
+                except:
+                    print('did not add FA_PLAN and FIELDROT')
                 #for i in range(rm,rx):
                 testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
                 if os.path.isfile(testfbaf):
