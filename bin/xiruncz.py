@@ -1,6 +1,7 @@
 #make sure to type these two commands:
 #export OMP_NUM_THREADS=64
 #module load gsl
+#python xiruncz.py --type ELG_HIP
 import subprocess
 import sys
 import argparse
@@ -116,7 +117,7 @@ if type == 'ELG_FDR_GFIB':
    
 
 if type[:3] == 'BGS':
-    minn = 2
+    #minn = 2
     zl = [0.1,0.3,0.5]
     #zmin = 0.1
     #zmax = 0.5 
