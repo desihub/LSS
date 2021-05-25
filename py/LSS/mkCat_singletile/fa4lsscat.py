@@ -38,13 +38,23 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     tree = TargetTree(tgs, 0.01)
     hw = load_hardware(rundate=dt)
     tiles = load_tiles(tiles_file=tilef)
-    tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
-    favail = LocationsAvailable(tgsavail)
+    #tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
+    #favail = LocationsAvailable(tgsavail)
     del tree
     if faver == '2.3.0':
+        tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
+        favail = LocationsAvailable(tgsavail)
         asgn = Assignment(tgs, tgsavail, favail)
-    if faver != '2.3.0':
+    if faver == '2.4.0' or faver == '2.5.0' or faver == '2.5.1':
+        tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
+        favail = LocationsAvailable(tgsavail)
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+    if int(faver[:1]) >= 3:
+        tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles)
+        tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+    
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)	
