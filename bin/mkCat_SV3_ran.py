@@ -150,6 +150,7 @@ if len(mtld) > 0:
     obsl = []
     pl = []
     fver = []
+    fahal = []
     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
         ts = str(tile).zfill(6)
         fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -164,6 +165,11 @@ if len(mtld) > 0:
             fver.append('2.3.0')
         else:
             fver.append(fav)    
+        try:
+            faha = fht['FA_HA']
+        except:
+            faha = 0
+            print(tile,'no FA_HA in this tile header')        
         pl.append(pro)
     ta = Table()
     ta['TILEID'] = tilel
@@ -173,6 +179,7 @@ if len(mtld) > 0:
     ta['FA_RUN'] = fal
     ta['OBSCON'] = obsl
     ta['PROGRAM'] = pl
+    ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
     print(np.unique(fver))
     wfv = (np.array(fver) == faver)
