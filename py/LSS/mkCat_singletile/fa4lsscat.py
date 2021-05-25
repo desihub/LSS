@@ -50,6 +50,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
         favail = LocationsAvailable(tgsavail)
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
     if int(faver[:1]) >= 3:
+        from fiberassign.targets import targets_in_tiles
         tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles)
         tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
         favail = LocationsAvailable(tgsavail)
