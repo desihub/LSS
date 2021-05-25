@@ -40,7 +40,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     tiles = load_tiles(tiles_file=tilef)
     #tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
     #favail = LocationsAvailable(tgsavail)
-    del tree
+    #del tree
     if faver == '2.3.0':
         tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
         favail = LocationsAvailable(tgsavail)
