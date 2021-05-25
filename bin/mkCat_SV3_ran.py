@@ -165,11 +165,11 @@ if len(mtld) > 0:
             fver.append('2.3.0')
         else:
             fver.append(fav)    
-        try:
-            faha = fht['FA_HA']
-        except:
-            faha = 0
-            print(tile,'no FA_HA in this tile header')        
+        #try:
+        #    faha = fht['FA_HA']
+        #except:
+        #    faha = 0
+        #    print(tile,'no FA_HA in this tile header')        
         pl.append(pro)
     ta = Table()
     ta['TILEID'] = tilel
@@ -228,6 +228,7 @@ def doran(ii):
                 ttemp['IN_DESI'] = 1
                 try:
                     ttemp['FA_PLAN'] = fbah['FA_PLAN']
+                    ttemp['FA_HA'] = fbah['FA_HA']
                     ttemp['FIELDROT'] = fbah['FIELDROT']
                 except:
                     print('did not add FA_PLAN and FIELDROT')
