@@ -277,6 +277,7 @@ def doran(ii):
             #dchi2 = 16  
             tsnrcut = 80          
         if type[:3] == 'BGS':
+            tsnrcol = 'TSNR2_BGS'
             dchi2 = 40
             tsnrcut = 1000
 
