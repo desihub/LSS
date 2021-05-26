@@ -1334,6 +1334,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
         print('length after dchi2 cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp[:3] == 'BGS':
+        print('applying extra cut for BGS')
+        wz &= ff['DELTACHI2'] > dchi2
+        print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
     
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
