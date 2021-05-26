@@ -276,6 +276,10 @@ def doran(ii):
         if type == 'LRG':
             #dchi2 = 16  
             tsnrcut = 80          
+        if type[:3] == 'BGS':
+            dchi2 = 40
+            tsnrcut = 1000
+
         ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')

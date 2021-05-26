@@ -400,6 +400,9 @@ if mkclusran:
     if type == 'LRG':
         #dchi2 = 16  
         tsnrcut = 80  
+    if type[:3] == 'BGS':
+        dchi2 = 40
+        tsnrcut = 1000
 
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
