@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
+from desitarget.sv3 import sv3_targetmask
 
 sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
@@ -138,7 +139,7 @@ imbits = [1,5,6,7,8,9,11,12,13]
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
 
-from desitarget.sv3 import sv3_targetmask
+
 
 #tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
 
@@ -383,6 +384,9 @@ if mkclusdat:
     if type == 'LRG':
         dchi2 = 16  
         tsnrcut = 80  
+    if type[:3] == 'BGS':
+        dchi2 = 40
+        tsnrcut = 1000
     ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
