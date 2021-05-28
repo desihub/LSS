@@ -1057,8 +1057,12 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     dz['rosette_number'] = 0
+    dz['rosette_r'] = 0
     for ii in range(0,len(dz)):
-        dz[ii]['rosette_number'] = tile2rosette(dz[ii]['TILEID'])
+        rosn = tile2rosette(dz[ii]['TILEID'])
+        rosd = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC'])
+        dz[ii]['rosette_number'] = rosn
+        dz[ii]['rosette_r'] = rosd
     print(np.unique(dz['NTILE']))
     #dz['NTILE'] = NT
     dz.write(outf,format='fits', overwrite=True)
@@ -1145,7 +1149,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
     #print('length after join to file with tiles info is '+str(len(dz)))
     #NT = np.zeros(len(dz))
-    ros = np.zeros(len(dz))
+    
     #ti = np.zeros(len(dz))
 
     probl = np.zeros(len(dz))
@@ -1222,13 +1226,17 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     nf = 0
 #     #dz.write('temp.fits',format='fits', overwrite=True)
 #     #fdz = fitsio.read('temp.fits')
+    ros = np.zeros(len(dz))
+    rosr = np.zeros(len(dz))
     for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
 #         NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
 #         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
 #         tiles = dz['TILES'][ii].split('-')
 #         ti = int(tiles[0])
         ti = dz[ii]['TILEID']
-        ros[ii] = tile2rosette(ti)
+        rosn = tile2rosette(ti)
+        rosr[ii] = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC'])
+        ros[ii] = rosn
         if natloc[ii]:# == False:
             nbl += 1
             s = 0
@@ -1258,6 +1266,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
 
     dz['rosette_number'] = ros
+    dz['rosette_r'] = rosr
     #dz['rosette_number'] = tile2rosette(dz['TILEID'])# not sure why that didn't work
     print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
@@ -1379,7 +1388,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
         wm = zma == 0
         ff = ff[wm]    
     wn = ff['PHOTSYS'] == 'N'
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','TILES'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
@@ -1412,7 +1421,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     for col in rcols: 
         ffc[col] = dshuf[col] 
     wn = ffc['PHOTSYS'] == 'N'
-    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','TILES'])  
+    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
