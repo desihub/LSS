@@ -31,6 +31,23 @@ def tile2rosette(tile):
         if tile > 480:
             return tile//30    
     return 999999 #shouldn't be any more?
+
+def calc_rosr(rosn,ra,dec):
+    #given rosetter number and ra,dec, calculate distance from center 
+    roscen = {0:(150.100,2.182),1:(179.6,0),2:(183.1,0),3:(189.9,61.8),4:(194.75,28.2)\
+    ,5:(210.0,5.0),6:(215.5,52.5),7:(217.8,34.4),8:(216.3,-0.6),9:(219.8,-0.6)\
+    ,10:(218.05,2.43),11:(242.75,54.98),12:(241.05,43.45),13:(245.88,43.45),14:(252.5,34.5)\
+    ,15:(269.73,66.02),16:(194.75,24.7),17:(212.8,-0.6),18:(269.73,62.52),19:(236.1,43.45)}
+    ra = ra*np.pi/180.
+    dec = dec*np.pi/180.
+    rac,decc = roscen[rosn]
+    rac = rac*np.pi/180.
+    decc = decc*np.pi/180.
+    cd = np.sin(dec)*np.sin(decc)+np.cos(dec)*np.cos(decc)*cos(rac-ra)
+    ad = np.arccos(cd)*180./np.pi
+    if ad > 2.5:
+        print(rosn,ra,dec,rac,decc)
+    return ad
     
 def combtile_spec(tiles,outf=''):
     s = 0
@@ -94,7 +111,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         
     
     tf = unique(tf,keys=['TARGETID'])
-    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD'])
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     print(len(tspec),len(tf))
