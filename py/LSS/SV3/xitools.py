@@ -66,7 +66,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
             sel = (df['SV3_DESI_TARGET'] & tb) > 0
             df = df[sel]
         
-        w = (df['Z'] > zmin) & (df['Z'] < zmax) #& (df['NTILE'] > mintile)
+        w = (df['Z'] > zmin) & (df['Z'] < zmax) & (df['NTILE'] > mintile)
 
         df = df[w]
         if ranwt1:
