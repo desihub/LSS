@@ -43,7 +43,7 @@ def calc_rosr(rosn,ra,dec):
     rac,decc = roscen[rosn]
     rac = rac*np.pi/180.
     decc = decc*np.pi/180.
-    cd = np.sin(dec)*np.sin(decc)+np.cos(dec)*np.cos(decc)*cos(rac-ra)
+    cd = np.sin(dec)*np.sin(decc)+np.cos(dec)*np.cos(decc)*np.cos(rac-ra)
     ad = np.arccos(cd)*180./np.pi
     if ad > 2.5:
         print(rosn,ra,dec,rac,decc)
