@@ -67,6 +67,15 @@ if type == 'ELG' or type == 'ELG_HIP':
 #if type == 'ELG_HIP':
 #    zmin = 0.8
 #    zmax = 1.6
+if type == 'ELG_HIP16':
+    minn = 5
+    zl = [1,1.6]
+    type = 'ELG_HIP'
+
+if type == 'ELG16':
+    minn = 5
+    zl = [1,1.6]
+    type = 'ELG'
 
 
 if type == 'ELGlz':
