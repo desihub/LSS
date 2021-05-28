@@ -38,7 +38,7 @@ subt = None
 
 if type == 'LRG':
     zl = [0.4,0.8,1.1]
-    #minn = 2
+    minn = 5
     #zmin=0.32
     #zmax=1.05
 
@@ -57,6 +57,7 @@ if type == 'LRG_IR':
 
 
 if type == 'ELG' or type == 'ELG_HIP':
+    minn = 5
     zl = [0.8,1.05,1.3,1.6]
     #zmask = ['','_zmask']
     
