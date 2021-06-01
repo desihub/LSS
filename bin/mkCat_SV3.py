@@ -275,7 +275,8 @@ if runrfa:
                 fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
 
 if mkdtiles:
-    for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
+    #for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
+    for tile,zdate in zip(mtld['TILEID'],mtld['LASTNIGHT']): 
         ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
         if os.path.isfile(ffd) and remake_dtile == False:
             print(ffd +' file already made and remakes not requested')
