@@ -132,7 +132,10 @@ pd = pdir
 
 mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
-mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
+#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
+mtld = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
+wdone = mtld['ZDONE'] == True
+mtld = mtld[wdone]
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
 imbits = [1,5,6,7,8,9,11,12,13]
 
@@ -187,7 +190,8 @@ if len(mtld) > 0:
     fal = []
     obsl = []
     pl = []
-    for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+    for tile in mtld['TILEID']:
         ts = str(tile).zfill(6)
         fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
         tilel.append(tile)
@@ -196,7 +200,8 @@ if len(mtld) > 0:
         mtlt.append(fht['MTLTIME'])
         fal.append(fht['FA_RUN'])
         obsl.append(fht['OBSCON'])
-        pl.append(pro)
+        #pl.append(pro)
+        pl.append(pr)
     ta = Table()
     ta['TILEID'] = tilel
     ta['RA'] = ral
