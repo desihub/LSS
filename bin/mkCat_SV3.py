@@ -342,7 +342,7 @@ if combd:
         ct.combtile_spec(mtld,outf,rel=specrel)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        remcol = ['PRIORITY','Z']
+        remcol = ['PRIORITY','Z','ZWARN']
         for col in remcol:
             try:
                 tarf.remove_columns([col] )#we get this where relevant from spec file
