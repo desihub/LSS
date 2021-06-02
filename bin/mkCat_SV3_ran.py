@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='y')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
@@ -48,6 +49,7 @@ type = args.type
 basedir = args.basedir
 version = args.version
 faver = args.faver
+specrel = args.verspec
 
 zma = False
 if args.maskz == 'y':
@@ -124,11 +126,17 @@ if not os.path.exists(sv3dir+'/logs'):
     os.mkdir(sv3dir+'/logs')
     print('made '+sv3dir+'/logs')
 
-if not os.path.exists(sv3dir+'/LSScats'):
-    os.mkdir(sv3dir+'/LSScats')
-    print('made '+sv3dir+'/LSScats')
+ldirspec = sv3dir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
 
-dirout = sv3dir+'LSScats/'+version+'/'
+
+if not os.path.exists(ldirspec+'LSScats'):
+    os.mkdir(ldirspec+'LSScats')
+    print('made '+ldirspec+'LSScats')
+
+dirout = ldirspec+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
