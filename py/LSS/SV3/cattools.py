@@ -60,7 +60,8 @@ def combtile_spec(tiles,outf=''):
     else:
         tmask = np.ones(len(tiles)).astype('bool')    
 
-    for tile,str(zdate) in zip(tiles[tmask]['TILEID'],tiles[tmask]['LASTNIGHT']):
+    for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['LASTNIGHT']):
+        zdate = str(zdate)
         tspec = combspecdata(tile,zdate)
         tspec['TILEID'] = tile
         if s == 0:
