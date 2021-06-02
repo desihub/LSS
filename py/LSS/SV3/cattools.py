@@ -1093,6 +1093,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print(len(dz[wg]))
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    print('length of unique targetid after selecting type and fiberstatus == 0 '+str(len(np.unique(dz['TARGETID']))))
     lznp = find_znotposs(dz)
     wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk]
@@ -1106,7 +1107,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
             'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
     dz = join(dz,ftar,keys=['TARGETID'])
-    #print('length after join to full targets (should be same) '+str(len(dz)))
+    print('length after join to full targets (should be same) '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
