@@ -49,7 +49,7 @@ def calc_rosr(rosn,ra,dec):
         print(rosn,ra,dec,rac,decc)
     return ad
     
-def combtile_spec(tiles,outf=''):
+def combtile_spec(tiles,outf='',rel='daily'):
     s = 0
     n = 0
     if os.path.isfile(outf):
@@ -62,7 +62,7 @@ def combtile_spec(tiles,outf=''):
 
     for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['LASTNIGHT']):
         zdate = str(zdate)
-        tspec = combspecdata(tile,zdate)
+        tspec = combspecdata(tile,zdate,rel=rel)
         tspec['TILEID'] = tile
         if s == 0:
             specd = tspec
