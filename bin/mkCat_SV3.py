@@ -342,7 +342,12 @@ if combd:
         ct.combtile_spec(mtld,outf,rel=specrel)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        tarf.remove_columns(['PRIORITY','Z'] )#we get this where relevant from spec file
+        remcol = ['PRIORITY','Z']
+        for col in remcol:
+            try:
+                tarf.remove_columns([col] )#we get this where relevant from spec file
+            except:
+                print('column '+col +' was not in tarwdup file')    
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
         specf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','FIBERSTATUS','PRIORITY'\
         ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD'])
