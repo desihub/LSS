@@ -338,12 +338,12 @@ if combd:
     if type == 'dark' or type == 'bright':
         outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
         ct.combtiles_wdup(ta,mdir,outf)
-        outf = lspecdir+'datcomb_'+type+'_specwdup_Alltiles.fits'
+        outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
         ct.combtile_spec(mtld,outf,rel=specrel)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
         tarf.remove_columns(['PRIORITY','Z'] )#we get this where relevant from spec file
-        specf = Table.read(lspecdir+'datcomb_'+type+'_specwdup_Alltiles.fits')
+        specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
         specf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','FIBERSTATUS','PRIORITY'\
         ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD'])
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -356,7 +356,7 @@ if combd:
             print(len(tj))
             tj = join(tj,ftar,keys=['TARGETID'])  
             print(len(tj))  
-        tj.write(lspecdir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
+        tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',pdir)
         tc.write(dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
     else:
