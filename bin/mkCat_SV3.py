@@ -338,7 +338,7 @@ if combd:
             print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
         except:
             ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
-            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET']
+            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
             print(len(tj))
             tj = join(tj,ftar,keys=['TARGETID'])  
             print(len(tj))  
