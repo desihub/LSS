@@ -78,8 +78,9 @@ def combtile_spec(tiles,outf=''):
     specd.write(outf,format='fits', overwrite=True)       
  
 
-def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
+def combspecdata(tile,zdate,specroot='/global/cfs/cdirs/desi/spectro/redux/',rel='daily' ):
     #put data from different spectrographs together, one table for fibermap, other for z
+    coaddir=rel+'/tiles/cumulative/'
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
@@ -112,7 +113,8 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         
     
     tf = unique(tf,keys=['TARGETID'])
-    tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD'])
+    #tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','FIBERSTATUS','PRIORITY','FA_TARGET','FA_TYPE',\
+    #'OBJTYPE','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD','SV3_DESI_TARGET','SV3_BGS_TARGET'])
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     print(len(tspec),len(tf))

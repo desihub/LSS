@@ -30,6 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
@@ -38,6 +39,7 @@ parser.add_argument("--ranmtl", help="make a random mtl file for the tile",defau
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combd", help="combine all the tiles together",default='y')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
@@ -57,6 +59,7 @@ print(args)
 type = args.type
 basedir = args.basedir
 version = args.version
+specrel = args.verspec
 
 zma = False
 if args.maskz == 'y':
@@ -82,7 +85,10 @@ if args.rfa == 'n':
 remake_dtile = True
 if args.redodt == 'n':
     remake_dtile = False
-mkdtiles = True #not really any reason to toggle this since above essentially does for unmade tiles
+
+mkdtiles = False #not really necessary anymore
+if args.dodt == 'y':
+    mkdtiles = True
 
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
@@ -160,11 +166,17 @@ if not os.path.exists(sv3dir+'/logs'):
     os.mkdir(sv3dir+'/logs')
     print('made '+sv3dir+'/logs')
 
-if not os.path.exists(sv3dir+'/LSScats'):
-    os.mkdir(sv3dir+'/LSScats')
-    print('made '+sv3dir+'/LSScats')
+ldirspec = sv3dir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
 
-dirout = sv3dir+'LSScats/'+version+'/'
+
+if not os.path.exists(ldirspec+'LSScats'):
+    os.mkdir(sv3dir+'LSScats')
+    print('made '+sv3dir+'LSScats')
+
+dirout = ldirspec+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
@@ -326,12 +338,14 @@ if combd:
     if type == 'dark' or type == 'bright':
         outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
         ct.combtiles_wdup(ta,mdir,outf)
-        outf = sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits'
-        ct.combtile_spec(mtld,outf)
+        outf = lspecdir+'datcomb_'+type+'_specwdup_Alltiles.fits'
+        ct.combtile_spec(mtld,outf,rel=specrel)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
         tarf.remove_columns(['PRIORITY','Z'] )#we get this where relevant from spec file
-        specf = Table.read(sv3dir+'datcomb_'+type+'_specwdup_Alltiles.fits')
+        specf = Table.read(lspecdir+'datcomb_'+type+'_specwdup_Alltiles.fits')
+        specf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','FIBERSTATUS','PRIORITY'\
+        ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD'])
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
         try:
@@ -342,7 +356,7 @@ if combd:
             print(len(tj))
             tj = join(tj,ftar,keys=['TARGETID'])  
             print(len(tj))  
-        tj.write(sv3dir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
+        tj.write(lspecdir+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',pdir)
         tc.write(dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
     else:
@@ -369,7 +383,7 @@ if mkfulld:
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
-    dz = sv3dir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
+    dz = lspecdir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
         desitarg='SV3_BGS_TARGET'
