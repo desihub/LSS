@@ -392,7 +392,7 @@ if mkfulld:
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
-    dz = lspecdir+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
+    dz = ldirspec+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
         desitarg='SV3_BGS_TARGET'
@@ -400,7 +400,7 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
