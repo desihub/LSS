@@ -281,7 +281,7 @@ if mkdtiles:
         if os.path.isfile(ffd) and remake_dtile == False:
             print(ffd +' file already made and remakes not requested')
         else:
-            zdat = str(zdate)
+            zdate = str(zdate)
             tspec = ct.combspecdata(tile,zdate)
             pdict,goodloc = ct.goodlocdict(tspec)
             wloc = (np.isin(tspec['LOCATION'],goodloc))
