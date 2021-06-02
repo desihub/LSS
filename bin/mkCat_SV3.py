@@ -173,8 +173,8 @@ if not os.path.exists(ldirspec):
 
 
 if not os.path.exists(ldirspec+'LSScats'):
-    os.mkdir(sv3dir+'LSScats')
-    print('made '+sv3dir+'LSScats')
+    os.mkdir(ldirspec+'LSScats')
+    print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
