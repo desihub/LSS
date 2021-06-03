@@ -262,7 +262,7 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-            ct.combran_wdup(mtld,ii,randir,type,sv3dir)
+            ct.combran_wdup(mtld,ii,randir,type,ldirspec)
             tc = ct.count_tiles_better('ran',type,ii)
             tc.write(randir+str(ii)+'/rancomb_'+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
@@ -276,7 +276,7 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir,bit,desitarg=desitarg)
+        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
