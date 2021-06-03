@@ -15,15 +15,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is desi catalog directory",default='/global/cfs/cdirs/desi/survey/catalogs')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
 
 args = parser.parse_args()
 
 type = args.type
 basedir = args.basedir
 version = args.version
+specrel = args.verspec
 
 
-lssdir = basedir+'/SV3/LSS/LSScats/'
+lssdir = basedir+'/SV3/LSS/'+specrel+'/LSScats/'
 #dirout = svdir+'LSScats/'+version+'/'
 
 zmask = ['']
