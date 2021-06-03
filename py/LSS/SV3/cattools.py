@@ -1025,7 +1025,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,randir,desitarg='SV3_DESI_TARGET'
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
 
-    zf = indir+'/rancomb_'+str(rann)+tp+'wdupspec_Alltiles.fits'
+    zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits'
     #zf = randir+str(rann)+'/rancomb_'+pd+'wdupspec_Alltiles.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
