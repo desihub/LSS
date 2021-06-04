@@ -34,8 +34,6 @@ types = ['ELG','ELG_HIP','LRG','QSO','BGS_ANY','BGS_BRIGHT']
 for type in types:
 	regl = ['','_N','_S']
 	for reg in regl:
-		if zma:
-			reg = '_zmask'+reg
 		fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
 		fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
 		fout = dirout+type+reg+'_nz.dat'
