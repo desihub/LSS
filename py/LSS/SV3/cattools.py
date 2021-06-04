@@ -385,7 +385,7 @@ def find_znotposs(dz):
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
-def count_tiles_better(dr,pd,rann=0):
+def count_tiles_better(dr,pd,rann=0,specrel='daily'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
     through and get the multi-tile information
@@ -393,16 +393,16 @@ def count_tiles_better(dr,pd,rann=0):
     returns file with TARGETID,NTILE,TILES,TILELOCIDS
     '''
     
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specrel+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     
     if dr == 'dat':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS'+specrel+'/datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
     if dr == 'ran':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'wdupspec_Alltiles.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)  
     fjg = fj[wg]  
@@ -1030,7 +1030,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,randir,desitarg='SV3_DESI_TARGET'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
-    zfpd = randir+str(rann)+'/rancomb_'+pd+'_Alltilelocinfo.fits'
+    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
     #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])

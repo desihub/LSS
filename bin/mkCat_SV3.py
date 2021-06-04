@@ -367,8 +367,8 @@ if combd:
             tj = join(tj,ftar,keys=['TARGETID'])  
             print(len(tj))  
         tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',pdir)
-        tc.write(dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',pdir,specrel=specrel)
+        tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combd, only done for dark/bright now')
     #outf = dirout+'datcomb_'+type+'wdup_Alltiles.fits'
@@ -401,7 +401,7 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',dirout+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
