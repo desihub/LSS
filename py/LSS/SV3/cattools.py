@@ -399,10 +399,10 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily'):
     gtl = np.unique(stlid[wf])
     
     if dr == 'dat':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS'+specrel+'/datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
     if dr == 'ran':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)  
     fjg = fj[wg]  
