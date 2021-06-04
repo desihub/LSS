@@ -12,6 +12,14 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 
+args = parser.parse_args()
+print(args)
+
+basedir = args.basedir
+version = args.version
+specrel = args.verspec
+
+
 sv3dir = basedir +'/SV3/LSS/'
 
 
