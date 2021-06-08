@@ -93,7 +93,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
            ts = tns
         else:    
             ts = vstack([ts,tns],metadata_conflicts='silent')
-            tq = vstack([tq,tqs],metadata_conflicts='silent')
+            tq = vstack([tq,tnq],metadata_conflicts='silent')
             tspec = vstack([tspec,tn],metadata_conflicts='silent')
             tf = vstack([tf,tnf],metadata_conflicts='silent')
         
