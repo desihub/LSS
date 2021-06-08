@@ -19,7 +19,7 @@ sys.path.append('../py') #this requires running from LSS/bin, *something* must a
 
 #from this package
 #try:
-import LSS.SV3.cattools as ct
+import LSS.main.cattools as ct
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
