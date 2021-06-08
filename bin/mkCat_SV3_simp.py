@@ -136,7 +136,7 @@ if not os.path.exists(dirout):
 
 indirspec = indir+specrel+'/'
 
-inrandir = indir+'random'
+
         
         
 if mkfulld:
@@ -152,9 +152,16 @@ if mkfulld:
     ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
 if mkfullr:
+    if type == 'BGS_BRIGHT':
+        bit = sv3_targetmask.bgs_mask[type]
+        desitarg='SV3_BGS_TARGET'
+    else:
+        bit = sv3_targetmask.desi_mask[type]
+        desitarg='SV3_DESI_TARGET'
+
     for ii in range(rm,rx):
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(inrandir,ii,imbits,outf,type,progl,sv3_targetmask.desi_mask[type])
+        ct.mkfullran(indirspec,ii,imbits,outf,type,progl,bit,randir,desitarg=desitarg)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
