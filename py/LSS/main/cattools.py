@@ -75,9 +75,6 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
                 print('did not find '+fq)    
         else:
             print('did not find '+ff)        
-        except:
-            print('no spectrograph '+str(si)+ ' for tile '+str(tile)+' testing file '+ff)
-            #print(ff)
     print('spectrographs with data:')
     print(specs)            
     if len(specs) == 0:
