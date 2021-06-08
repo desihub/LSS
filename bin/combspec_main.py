@@ -29,7 +29,6 @@ parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 args = parser.parse_args()
 print(args)
 
-type = args.type
 basedir = args.basedir
 version = args.version
 prog = args.prob
