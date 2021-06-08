@@ -31,7 +31,7 @@ print(args)
 
 basedir = args.basedir
 version = args.version
-prog = args.prob
+prog = args.prog
 progu = prog.upper()
 
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
