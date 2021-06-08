@@ -35,6 +35,7 @@ def tile2rosette(tile):
 def combtile_spec(tiles,outf=''):
     s = 0
     n = 0
+    nfail = 0
     if os.path.isfile(outf):
         specd = Table.read(outf)
         s = 1
@@ -45,18 +46,23 @@ def combtile_spec(tiles,outf=''):
 
     for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE']):
         tspec = combspecdata(tile,zdate)
-        tspec['TILEID'] = tile
-        if s == 0:
-            specd = tspec
-            s = 1
-        else:
-            specd = vstack([specd,tspec],metadata_conflicts='silent')
-        specd.sort('TARGETID')
-        kp = (specd['TARGETID'] > 0)
-        specd = specd[kp]
-        
-        n += 1
-        print(tile,n,len(tiles[tmask]),len(specd)) 
+        if tspec:
+			tspec['TILEID'] = tile
+			if s == 0:
+				specd = tspec
+				s = 1
+			else:
+				specd = vstack([specd,tspec],metadata_conflicts='silent')
+			specd.sort('TARGETID')
+			kp = (specd['TARGETID'] > 0)
+			specd = specd[kp]
+	
+			n += 1
+			print(tile,n,len(tiles[tmask]),len(specd)) 
+		else:
+		    print(str(tile)+' failed')
+		    nfail += 1	
+    print('total number of failures was '+str(nfail))
     specd.write(outf,format='fits', overwrite=True)       
  
 
