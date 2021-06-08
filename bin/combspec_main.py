@@ -66,4 +66,4 @@ if not os.path.exists(dirout):
 
 
 outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
-ct.combtile_spec(mtld,outf)
+ct.combtile_spec(tiles4comb,outf)
