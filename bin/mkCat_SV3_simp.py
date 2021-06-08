@@ -178,7 +178,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
+    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -197,7 +197,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
