@@ -161,7 +161,7 @@ if mkfullr:
 
     for ii in range(rm,rx):
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(indirspec,ii,imbits,outf,type,progl,bit,randir,desitarg=desitarg)
+        ct.mkfullran(indirspec,ii,imbits,outf,type,progl,bit,desitarg=desitarg)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
