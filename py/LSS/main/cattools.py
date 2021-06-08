@@ -66,7 +66,7 @@ def combtile_spec(tiles,outf=''):
     specd.write(outf,format='fits', overwrite=True)       
  
 
-def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='4combtar' ):
+def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='' ):
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
