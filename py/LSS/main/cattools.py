@@ -65,12 +65,16 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
-        
-        try:
-            ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
-            fitsio.read(ff)
+        ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        if os.path.isfile(ff):
+            fq = coaddir+str(tile)+'/'+zdate+'/zqso-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            if os.path.isfile(fq):
 
-            specs.append(si)
+                specs.append(si)
+            else:
+                print('did not find '+fq)    
+        else:
+            print('did not find '+ff)        
         except:
             print('no spectrograph '+str(si)+ ' for tile '+str(tile)+' testing file '+ff)
             #print(ff)
@@ -78,26 +82,32 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     print(specs)            
     if len(specs) == 0:
         return None
-    tspec = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
-    tf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
-    ts = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[0])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
-    for i in range(1,len(specs)):
+    for i in range(0,len(specs)):
         tn = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
+        tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits'
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
-        try:
-            tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+        tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
+    
+        if i == 0:
+           tspec = tn
+           tq = tnq
+           tf = tnf
+           ts = tns
+       else:    
             ts = vstack([ts,tns],metadata_conflicts='silent')
-        except:
-            print('did not find '+coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
-        tspec = vstack([tspec,tn],metadata_conflicts='silent')
-        tf = vstack([tf,tnf],metadata_conflicts='silent')
+            tq = vstack([tq,tqs],metadata_conflicts='silent')
+            tspec = vstack([tspec,tn],metadata_conflicts='silent')
+            tf = vstack([tf,tnf],metadata_conflicts='silent')
         
     
     tf = unique(tf,keys=['TARGETID'])
     if md == '4combtar': #target files should contain the rest of the info
         tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN'])
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+    tspec = join(tspec,tq,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+
     print(len(tspec),len(tf))
     #tspec['LOCATION'] = tf['LOCATION']
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
