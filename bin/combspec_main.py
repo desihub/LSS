@@ -20,10 +20,6 @@ sys.path.append('../py') #this requires running from LSS/bin, *something* must a
 #from this package
 #try:
 import LSS.main.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
-import LSS.mkCat_singletile.fa4lsscat as fa
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
