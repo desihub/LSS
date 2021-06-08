@@ -148,7 +148,7 @@ if mkfulld:
     else:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
-    print(desitarg,pdir,bit)
+    
     ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
 if mkfullr:
