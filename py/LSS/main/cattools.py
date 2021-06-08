@@ -62,6 +62,7 @@ def combtile_spec(tiles,outf=''):
 
 def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='4combtar' ):
     #put data from different spectrographs together, one table for fibermap, other for z
+    zdate = str(zdate)
     specs = []
     #find out which spectrograph have data
     for si in range(0,10):
