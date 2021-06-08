@@ -107,12 +107,17 @@ imbits = [1,5,6,7,8,9,11,12,13]
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
 #basedir for your outputs
 sv3dir = basedir +'/SV3/LSS/'
+if not os.path.exists(basedir +'/SV3'):
+    os.mkdir(basedir +'/SV3')
+if not os.path.exists(sv3dir):
+    os.mkdir(sv3dir)
+    print('made '+sv3dir)    
 #base directory for previously compiled inputs
 indir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'
 
-if not os.path.exists(sv3dir+'/logs'):
-    os.mkdir(sv3dir+'/logs')
-    print('made '+sv3dir+'/logs')
+if not os.path.exists(sv3dir+'logs'):
+    os.mkdir(sv3dir+'logs')
+    print('made '+sv3dir+'logs')
 
 ldirspec = sv3dir+specrel+'/'
 if not os.path.exists(ldirspec):
