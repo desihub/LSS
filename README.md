@@ -1,6 +1,8 @@
 # LSS
 Codes used to create LSS catalogs and randoms
 
+This repo is not updated to be inclued in desi_environment. Instead, it needs to be git cloned/updated like an external repo
+
 Versions developed for different specific settings are being created. These are in separate folders in the py/LSS directory. Common tools go in the LSS directory.
 
 Scripts meant to act like executables are in the bin directory. Currently, one should enter the bin directory to run everything (and then the paths work). The default mode will produce output in your CSCRATCH directory on NERSC. This code only works on NERSC.
@@ -12,6 +14,8 @@ Make sure to be in the DESI environment, e.g., run
 source /project/projectdirs/desi/software/desi_environment.sh master
 
 before trying anything else (master should soon switch to main).
+
+python mkCat_SV3_simp.py --type QSO #This re-creates the version 1 catalogs writing them into your scratch by default. One should be able to test edits to the catalogs using this (starting from some pre-defined inputs). Available types are QSO, BGS_ANY, BGS_BRIGHT, ELG, ELG_HIP, LRG, MWS_ANY
 
 python gatherSV_zinfo_alltiles.py --type ELG --release blanc #this gathers all of the redshift info for SV1 ELG targets in the blanc release (daily supported as release, LRG, QSO, BGS_ANY are additional supported types as should be anything in the SV1 DESIMASK)
 
