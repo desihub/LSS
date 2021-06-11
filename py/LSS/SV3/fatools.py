@@ -258,7 +258,7 @@ copying functions from fba_launch_io.py just so these are stable and in one plac
 actually want to have to load proper version of fiberassign just for this
 """
 
-def mv_write_targets_out(infn, targdir, outfn, log=Logger.get(), step="", start=time()):
+def mv_write_targets_out(infn, targdir, outfn):
     """
     Moves the file created by desitarget.io.write_targets
     and removes folder created by desitarget.io.write_targets    
@@ -274,7 +274,6 @@ def mv_write_targets_out(infn, targdir, outfn, log=Logger.get(), step="", start=
     """
     # AR renaming
     _ = shutil.move(infn, outfn)
-    log.info("{:.1f}s\t{}\trenaming {} to {}".format(time() - start, step, infn, outfn))
     # AR removing folders
     if targdir[-1] != "/":
         targdir = "{}/".format(targdir)
@@ -360,7 +359,7 @@ def get_nowradec(ra, dec, pmra, pmdec, parallax, ref_year, pmtime_utc_str, scnd=
     return ra, dec
     
 def force_finite_pm(
-    d, pmra_key="PMRA", pmdec_key="PMDEC", log=Logger.get(), step="", start=time()
+    d, pmra_key="PMRA", pmdec_key="PMDEC"
 ):
     """
     Replaces NaN PMRA, PMDEC by 0    
@@ -382,11 +381,7 @@ def force_finite_pm(
         keep = ~np.isfinite(d[key])
         if keep.sum() > 0:
             d[key][keep] = 0.0
-            log.info(
-                "{:.1f}s\t{}\t replacing NaN by 0 for {} targets".format(
-                    time() - start, step, keep.sum()
-                )
-            )
+            
     return d
 
 
@@ -396,9 +391,6 @@ def force_nonzero_refepoch(
     ref_epoch_key="REF_EPOCH",
     pmra_key="PMRA",
     pmdec_key="PMDEC",
-    log=Logger.get(),
-    step="",
-    start=time(),
 ):
     """
     Replaces 0 by force_ref_epoch in ref_epoch
@@ -423,23 +415,8 @@ def force_nonzero_refepoch(
     keep = d[ref_epoch_key] == 0
     n = ((d[pmra_key][keep] != 0) | (d[pmra_key][keep] != 0)).sum()
     if n > 0:
-        log.error(
-            "{:.1f}s\t{}\t{} targets have {}=0 but {} or {} != 0; exiting".format(
-                time() - start, step, n, ref_epoch_key, pmra_key, pmdec_key,
-            )
-        )
         sys.exit(1)
     d[ref_epoch_key][keep] = force_ref_epoch
-    log.info(
-        "{:.1f}s\t{}\tsetting {}={} for {} objects with {}=0".format(
-            time() - start,
-            step,
-            ref_epoch_key,
-            force_ref_epoch,
-            keep.sum(),
-            ref_epoch_key,
-        )
-    )
     return d
 
 
@@ -456,9 +433,6 @@ def update_nowradec(
     gaiag_key="GAIA_PHOT_G_MEAN_MAG",
     gaiaaen_key="GAIA_ASTROMETRIC_EXCESS_NOISE",
     scnd=False,
-    log=Logger.get(),
-    step="",
-    start=time(),
 ):
     """
     Update (RA, DEC, REF_EPOCH) using proper motion
@@ -520,26 +494,8 @@ def update_nowradec(
     # AR updating positions to pmtime_utc_str for targets passing the AEN criterion
     d[ra_key][keep] = nowra[keep]
     d[dec_key][keep] = nowdec[keep]
-    log.info(
-        "{:.1f}s\t{}\tupdating RA,DEC at {} with PM for {:.0f}/{:.0f} targets passing AEN; maximum changes: RA={:.1f},{:.1f} arcsec, DEC={:.1f},{:.1f} arcsec".format(
-            time() - start,
-            step,
-            pmtime_utc_jyear,
-            keep.sum(),
-            len(keep),
-            3600.0 * dra.min(),
-            3600.0 * dra.max(),
-            3600 * ddec.min(),
-            3600.0 * ddec.max(),
-        )
-    )
     # AR updating REF_EPOCH for *all* objects (for PlateMaker)
     d[ref_epoch_key] = pmtime_utc_jyear
-    log.info(
-        "{:.1f}s\tupdating REF_EPOCH to {} for all {} targets".format(
-            time() - start, pmtime_utc_jyear, len(keep)
-        )
-    )
     return d
     
 
