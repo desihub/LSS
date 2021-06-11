@@ -36,51 +36,14 @@ from desitarget.mtl import inflate_ledger
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
 
-minimal_target_columns= [('RELEASE', '>i2'),
-             ('BRICKNAME', 'S8'),
-             ('BRICKID', '>i4'),
-             ('BRICK_OBJID', '>i4'),
-             ('MORPHTYPE', 'S4'),
-             ('RA', '>f8'),
-             ('DEC', '>f8'),
-             ('EBV', '>f4'),
-             ('FLUX_G', '>f4'),
-             ('FLUX_R', '>f4'),
-             ('FLUX_Z', '>f4'),
-             ('FLUX_W1', '>f4'),
-             ('FLUX_W2', '>f4'),
-             ('FLUX_IVAR_G', '>f4'),
-             ('FLUX_IVAR_R', '>f4'),
-             ('FLUX_IVAR_Z', '>f4'),
-             ('FLUX_IVAR_W1', '>f4'),
-             ('FLUX_IVAR_W2', '>f4'),
-             ('FIBERFLUX_G', '>f4'),
-             ('FIBERFLUX_R', '>f4'),
-             ('FIBERFLUX_Z', '>f4'),
-             ('FIBERTOTFLUX_G', '>f4'),
-             ('FIBERTOTFLUX_R', '>f4'),
-             ('FIBERTOTFLUX_Z', '>f4'),
-             ('REF_EPOCH', '>f4'),
-             ('MASKBITS', '>i2'),
-             ('SERSIC', '>f4'),
-             ('SHAPE_R', '>f4'),
-             ('SHAPE_E1', '>f4'),
-             ('SHAPE_E2', '>f4'),
-             ('REF_ID', '>i8'),
-             ('REF_CAT', 'S2'),
-             ('GAIA_PHOT_G_MEAN_MAG', '>f4'),
-             ('GAIA_PHOT_BP_MEAN_MAG', '>f4'),
-             ('GAIA_PHOT_RP_MEAN_MAG', '>f4'),
-             ('PARALLAX', '>f4'),
-             ('PMRA', '>f4'),
-             ('PMDEC', '>f4'),
-             ('PHOTSYS', 'S1'),
-             ('TARGETID', '>i8'),
-             ('SUBPRIORITY', '>f8'),
-             ('OBSCONDITIONS', '>i8'),
-             ('PRIORITY_INIT', '>i8'),
-             ('NUMOBS_INIT', '>i8'),
-             'SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
+minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYPE','RA',\
+'DEC','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','FLUX_W2','FLUX_IVAR_G','FLUX_IVAR_R',\
+'FLUX_IVAR_Z','FLUX_IVAR_W1','FLUX_IVAR_W2','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z',\
+'FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','REF_EPOCH','MASKBITS','SERSIC',\
+'SHAPE_R','SHAPE_E1','SHAPE_E2','REF_ID','REF_CAT','GAIA_PHOT_G_MEAN_MAG',\
+'GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','PMRA','PMDEC','PHOTSYS',\
+'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SV3_DESI_TARGET',\
+'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
 def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',outdir=None):
     ts = str(tileid).zfill(6)
