@@ -1112,6 +1112,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #read in the big combined data file
     dz = Table.read(zf) 
     #find the rows that satisfy the target type
+    """
+    If you want add some kind of alternative sample definition, change how wtype gets 
+    defined (currently requires a desitarget bit but anything define by input photometry
+    should be fine). Probably needs to actually be added after ftar is joined below so 
+    that all photo info is there.
+    """
     wtype = ((dz[desitarg] & bit) > 0)
     #find the rows that are 'good' tilelocid
     wg = np.isin(dz['TILELOCID'],gtl)
