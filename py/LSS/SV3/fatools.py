@@ -36,6 +36,10 @@ from desitarget.mtl import inflate_ledger
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
 
+# AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
+gaia_ref_epochs = {"dr2": 2015.5}
+
+
 minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYPE','RA',\
 'DEC','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','FLUX_W2','FLUX_IVAR_G','FLUX_IVAR_R',\
 'FLUX_IVAR_Z','FLUX_IVAR_W1','FLUX_IVAR_W2','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z',\
