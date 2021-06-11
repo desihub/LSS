@@ -74,7 +74,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     tarfn,
     tdir+prog)
 
-	fo = open('fa-'+ts+'.sh','w')
+	fo = open(outdir+'fa-'+ts+'.sh','w')
 	fo.write('#!/bin/bash\n\n')
 	if float(fht['FA_VER'][:3]) < 2.4:
 		fo.write("module swap fiberassign/2.3.0\n")
