@@ -100,7 +100,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     tdir+prog)
 
     if getosubp:
-        otar = Table.read(indir+ts+'-targets.fits')
+        otar = Table.read(indir+ts+'-targ.fits')
         otar.keep_columns(['TARGETID','SUBPRIORITY'])
         ntar = Table.read(tarfn)
         ntar.remove_columns(['SUBPRIORITY'])
