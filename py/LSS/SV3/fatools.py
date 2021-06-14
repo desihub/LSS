@@ -56,14 +56,14 @@ def comp_neworig(tileid):
     fn = fitsio.read(dirn+'fba-'+ts+'.fits')
     w = fn['DEVICE_TYPE'] == 'POS'
     fn = fn[w]
-	wn = fn['TARGETID'] >= 0
-	fn = fn[wn]
-	print(len(fn))
-	wa = fa['TARGETID'] >= 0
-	fa = fa[wa]
-	print(len(fa))	
+    wn = fn['TARGETID'] >= 0
+    fn = fn[wn]
+    print(len(fn))
+    wa = fa['TARGETID'] >= 0
+    fa = fa[wa]
+    print(len(fa))  
     ws = np.isin(fn['TARGETID'],fa['TARGETID'])
-    print(np.sum(ws))	
+    print(np.sum(ws))   
     if np.sum(ws) == len(fa) and len(fa) == len(fn):
         return True
     else:
