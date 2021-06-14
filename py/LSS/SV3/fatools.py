@@ -49,7 +49,7 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SV3_DESI_TARGET',\
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
-def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',outdir=None):
+def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -82,6 +82,8 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         print('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
+    if getosubp:
+        outdir += 'orig/'
     tarfn = outdir+ts+'-targ.fits'    
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
@@ -97,6 +99,13 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     tarfn,
     tdir+prog)
 
+    if getosubp:
+        otar = Table.read(indir+ts+'-targets.fits')
+        otar.keep_columns(['TARGETID','SUBPRIORITY'])
+        ntar = Table.read(tarfn)
+        ntar.remove_columns(['SUBPRIORITY'])
+        ntar = join(ntar,otar,keys=['TARGETID'])
+        ntar.write(tarfn,format='fits', overwrite=True)
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     if float(fht['FA_VER'][:3]) < 2.4:
