@@ -54,6 +54,8 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
+    if fht['DESIROOT'] == '/data/datasystems':
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'
     tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
@@ -74,7 +76,10 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         fitsio.read(gfaf)
     except:
         print('Error! gfa file does not appear to exist')    
-    
+    toof = indir+ts+'-too.fits'
+    too = os.path.isfile(toof)
+    if too:
+        print('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
     tarfn = outdir+ts+'-targ.fits'    
@@ -100,6 +105,8 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     fo.write("fba_run")
     fo.write(" --targets "+tarfn+" "+scndf)
+    if too:
+        fo.write(" "+toof)
     fo.write(" --sky "+skyf)
     fo.write(" --footprint "+tilef)
     fo.write(" --rundate "+fht['RUNDATE'])
