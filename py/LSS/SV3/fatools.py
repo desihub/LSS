@@ -49,6 +49,26 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SV3_DESI_TARGET',\
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
+def comp_neworig(tileid):
+    ts = str(tileid).zfill(6)
+    fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
+    fn = fitsio.read(dirn+'fba-'+ts+'.fits')
+    w = fn['DEVICE_TYPE'] == 'POS'
+    fn = fn[w]
+	wn = fn['TARGETID'] >= 0
+	fn = fn[wn]
+	print(len(fn))
+	wa = fa['TARGETID'] >= 0
+	fa = fa[wa]
+	print(len(fa))	
+    ws = np.isin(fn['TARGETID'],fa['TARGETID'])
+    print(np.sum(ws))	
+    if np.sum(ws) == len(fa) and len(fa) == len(fn):
+        return True
+    else:
+        return False
+        
 def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
