@@ -79,13 +79,13 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
     if fht['DESIROOT'] == '/data/datasystems':
-        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})        
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
-            f = fitsio.read(indir+'/'+ts+'-targ.fits')
+            f = fitsio.read(indir+ts+'-targ.fits')
         except:
         
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)
+            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
             
     tilef = indir+ts+'-tiles.fits'
     try:
