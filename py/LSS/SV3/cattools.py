@@ -1333,7 +1333,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1347,6 +1347,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     wzm = ''
     if zmask:
         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'    
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
@@ -1393,6 +1397,19 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
         zma = np.array(zma)
         wm = zma == 0
         ff = ff[wm]    
+    #apply any cut on rosette radius
+    if rcut is not None:
+        wr = ff['rosette_r'] > rcut[0]
+        wr &= ff['rosette_r'] <  rcut[1]
+        print('length before rosette radius cut '+str(len(ff)))
+        ff = ff[wr]
+        print('length after rosette radius cut '+str(len(ff)))
+    #apply cut on ntile
+    if ntilecut > 0:
+        print('length before ntile cut '+str(len(ff)))
+        wt = ff['NTILE'] > ntilecut
+        ff = ff[wt]
+        print('length after ntile cut '+str(len(ff)))    
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
@@ -1404,7 +1421,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG'):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0):
     '''
     fl is the root of our catalog file names
     rann is the random number
@@ -1417,6 +1434,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     wzm = ''
     if zmask:
         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'    
+
     #load in data clustering catalog
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     #load in full random file
@@ -1426,6 +1448,21 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffc = ffr[wz]
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
+    #apply any cut on rosette radius
+    if rcut is not None:
+        wr = ffc['rosette_r'] > rcut[0]
+        wr &= ffc['rosette_r'] <  rcut[1]
+        print('length before rosette radius cut '+str(len(ffc)))
+        ffc = ffc[wr]
+        print('length after rosette radius cut '+str(len(ffc)))
+    #apply cut on ntile
+    if ntilecut > 0:
+        print('length before ntile cut '+str(len(ffc)))
+        wt = ffc['NTILE'] > ntilecut
+        ffc = ffc[wt]
+        print('length after ntile cut '+str(len(ffc)))    
+
+
     #randomly sample data rows to apply redshifts, weights, etc. to randoms
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
