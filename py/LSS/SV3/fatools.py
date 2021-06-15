@@ -166,10 +166,10 @@ def altcreate_mtl(
     outfn,
     targdir,
     survey='sv3',
-    mtltime=None,#I think we will just want this to be the latest for the re/alt runs
-    tmpoutdir=tempfile.mkdtemp(),
+    mtltime=None,#I think we will just want this to be the latest for the re/alt runs    
     pmtime_utc_str=None,
-    add_plate_cols=True,
+    add_plate_cols=True#,
+    #tmpoutdir=tempfile.mkdtemp(),
 ):
     """
     Mostly copied from fiberassign.fba_launch_io.create_mtl
@@ -256,9 +256,11 @@ def altcreate_mtl(
         d = force_nonzero_refepoch(
             d, gaia_ref_epochs[gaiadr]
         )
+    d = Table(d)
+    d.write(outfn,format='fits', overwrite=True)
     # AR mtl: write fits
-    n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
-    _ = mv_write_targets_out(tmpfn, tmpoutdir, outfn)
+    #n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
+    #_ = mv_write_targets_out(tmpfn, tmpoutdir, outfn)
 
     # AR mtl: update header if pmcorr = "y"
     if pmcorr == "y":
