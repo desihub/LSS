@@ -50,6 +50,10 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
 def comp_neworig(tileid):
+    """"
+    check that new matches the original
+    this should only match for the first tile of every rosette/program
+    """"
     ts = str(tileid).zfill(6)
     fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
@@ -75,12 +79,18 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
     if fht['DESIROOT'] == '/data/datasystems':
-        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'
-    tilef = indir+ts+'-tiles.fits'
+        dr = indir +fht['PMTIME'][:10].translate({ord('-'): None})        
+        try:
+            f = fitsio.read(dr+'/'+ts+'-targ.fits')
+        except:
+        
+            date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+            dr = indir+str(date)
+            
     try:
         fitsio.read(tilef)
     except:
-        print('Error! tile file does not appear to exist')    
+        return('Error! tile file does not appear to exist for tile '+tilied+' '+tilef)    
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
