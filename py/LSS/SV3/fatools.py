@@ -90,7 +90,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     try:
         fitsio.read(tilef)
     except:
-        return('Error! tile file does not appear to exist for tile '+tilied+' '+tilef)    
+        return('Error! tile file does not appear to exist for tile '+tileid+' '+tilef)    
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
