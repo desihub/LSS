@@ -50,10 +50,10 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
 def comp_neworig(tileid):
-    """"
+    """
     check that new matches the original
     this should only match for the first tile of every rosette/program
-    """"
+    """
     ts = str(tileid).zfill(6)
     fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
