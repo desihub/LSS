@@ -87,6 +87,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)
             
+    tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
     except:
