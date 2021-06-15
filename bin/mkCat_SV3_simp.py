@@ -35,8 +35,8 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
-parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0)
-parser.add_argument("--rcut",help="add any cut on the rosette radius",default=None)
+parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
+parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
 
 #default processes the first of the 18 random files
 
@@ -48,7 +48,10 @@ basedir = args.basedir
 version = args.version
 specrel = args.verspec
 ntile = args.ntile
-rcut = args.rcut
+rcutstr = args.rcut.split(',')
+rcut = []
+rcut.append(float(rcutstr[0]))
+rcut.append(float(rcutstr[1]))
 
 
 print('running catalogs for tracer type '+type)
