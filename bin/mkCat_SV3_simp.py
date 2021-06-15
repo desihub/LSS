@@ -35,6 +35,9 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
+parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
+parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
+
 #default processes the first of the 18 random files
 
 args = parser.parse_args()
@@ -44,6 +47,13 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+ntile = args.ntile
+rcut = args.rcut
+if rcut is not None:
+	rcutstr = rcut.split(',')
+	rcut = []
+	rcut.append(float(rcutstr[0]))
+	rcut.append(float(rcutstr[1]))
 
 
 print('running catalogs for tracer type '+type)
@@ -178,7 +188,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
+    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -197,7 +207,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
