@@ -57,6 +57,7 @@ if rcut is not None:
     rcut.append(float(rcutstr[0]))
     rcut.append(float(rcutstr[1]))
 cpfull = args.cpfull
+ccut = arg.ccut
 
 print('running catalogs for tracer type '+type)
 
@@ -131,7 +132,7 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
-indirfull = indir+specrel+'/'+verfull+'/'
+indirfull = indir+specrel+'/LSScats/'+verfull+'/'
 
 
 
