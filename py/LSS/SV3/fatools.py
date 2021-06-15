@@ -86,7 +86,6 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-    print(indir)        
     tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
@@ -139,6 +138,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         ntar.write(tarfn,format='fits', overwrite=True)
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
+    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master')
     if float(fht['FA_VER'][:3]) < 2.4:
         fo.write("module swap fiberassign/2.3.0\n")
     else:
@@ -257,6 +257,9 @@ def altcreate_mtl(
             d, gaia_ref_epochs[gaiadr]
         )
     d = Table(d)
+    outfndir = '/'.join(outfn.split('/')[:-1])
+    if not os.path.exists(outfndir):
+        os.makedirs(outfndir, exist_ok=True)
     d.write(outfn,format='fits', overwrite=True)
     # AR mtl: write fits
     #n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
