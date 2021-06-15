@@ -52,10 +52,10 @@ specrel = args.verspec
 ntile = args.ntile
 rcut = args.rcut
 if rcut is not None:
-	rcutstr = rcut.split(',')
-	rcut = []
-	rcut.append(float(rcutstr[0]))
-	rcut.append(float(rcutstr[1]))
+    rcutstr = rcut.split(',')
+    rcut = []
+    rcut.append(float(rcutstr[0]))
+    rcut.append(float(rcutstr[1]))
 cpfull = args.cpfull
 
 print('running catalogs for tracer type '+type)
@@ -139,8 +139,8 @@ if cpfull == 'y':
     cpdatcom = 'cp '+indirfull+ type+'Alltiles_full.dat.fits '+dirout
     os.system(cpdatcom)
     for i in range(0,18):       
-		cprancom = 'cp '+indirfull+ type+'Alltiles_'+str(i)+'_full.ran.fits '+dirout
-		os.system(cprancom)
+        cprancom = 'cp '+indirfull+ type+'Alltiles_'+str(i)+'_full.ran.fits '+dirout
+        os.system(cprancom)
         
 
 #needs to happen before randoms so randoms can get z and weights
