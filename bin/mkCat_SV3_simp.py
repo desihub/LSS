@@ -48,10 +48,12 @@ basedir = args.basedir
 version = args.version
 specrel = args.verspec
 ntile = args.ntile
-rcutstr = args.rcut.split(',')
-rcut = []
-rcut.append(float(rcutstr[0]))
-rcut.append(float(rcutstr[1]))
+rcut = args.rcut
+if rcut is not None:
+	rcutstr = rcut.split(',')
+	rcut = []
+	rcut.append(float(rcutstr[0]))
+	rcut.append(float(rcutstr[1]))
 
 
 print('running catalogs for tracer type '+type)
