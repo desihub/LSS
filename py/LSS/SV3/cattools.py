@@ -12,6 +12,7 @@ import desimodel.footprint
 import desimodel.focalplane
 from random import random
 from desitarget.io import read_targets_in_tiles
+from desitarget.sv3 import sv3_targetmask
 
 from LSS.Cosmo import distance
 
@@ -1112,12 +1113,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #read in the big combined data file
     dz = Table.read(zf) 
     #find the rows that satisfy the target type
-    """
-    If you want add some kind of alternative sample definition, change how wtype gets 
-    defined (currently requires a desitarget bit but anything define by input photometry
-    should be fine). Probably needs to actually be added after ftar is joined below so 
-    that all photo info is there.
-    """
     wtype = ((dz[desitarg] & bit) > 0)
     #find the rows that are 'good' tilelocid
     wg = np.isin(dz['TILELOCID'],gtl)
@@ -1333,7 +1328,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1351,6 +1346,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += '_'+ccut #you could change this to however you want the file names to turn out
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
@@ -1410,6 +1407,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wt = ff['NTILE'] > ntilecut
         ff = ff[wt]
         print('length after ntile cut '+str(len(ff)))    
+    if ccut == 'notQSO':
+        wc = (ff['SV3_DESI_TARGET'] & sv3_targetmask.desi_mask['QSO']) ==  0
+        print('length before cutting to not QSO '+str(len(ff)))
+        ff = ff[wc]
+        print('length after cutting to not QSO '+str(len(ff)))
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
@@ -1421,7 +1423,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None):
     '''
     fl is the root of our catalog file names
     rann is the random number
@@ -1438,6 +1440,8 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
     #load in data clustering catalog
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
