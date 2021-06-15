@@ -57,7 +57,7 @@ if rcut is not None:
     rcut.append(float(rcutstr[0]))
     rcut.append(float(rcutstr[1]))
 cpfull = args.cpfull
-ccut = arg.ccut
+ccut = args.ccut
 
 print('running catalogs for tracer type '+type)
 
