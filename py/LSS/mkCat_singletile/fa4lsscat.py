@@ -33,6 +33,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     dirout is the directory where this all gets written out !make sure this is unique for every different target!
     '''                                
     tgs = Targets()
+    mver = int(faver[:1])
     if mver < 5:
         load_target_file(tgs,targetf)
     else:
@@ -46,7 +47,7 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     #tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
     #favail = LocationsAvailable(tgsavail)
     #del tree
-    mver = int(faver[:1])
+    
     if mver < 3:
         from fiberassign.targets import (TargetTree)
         tree = TargetTree(tgs, 0.01)
