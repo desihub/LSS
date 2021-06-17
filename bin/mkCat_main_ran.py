@@ -181,12 +181,14 @@ if len(mtld) > 0:
     ta['PROGRAM'] = pl
     #ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
-    print(np.unique(fver))
+    print(np.unique(fver),return_counts=True)
     wfv = (np.array(fver) == faver)
     #mtld =  mtld[wfv]
     ta = ta[wfv]
 else:
     print('no done tiles in the MTL')
+
+print(len(ta))
 
 
 def doran(ii):
