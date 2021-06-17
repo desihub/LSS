@@ -33,7 +33,12 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     dirout is the directory where this all gets written out !make sure this is unique for every different target!
     '''                                
     tgs = Targets()
-    load_target_file(tgs,targetf)
+    if mver < 5:
+        load_target_file(tgs,targetf)
+    else:
+        from fiberassign.targets import TargetTagalong
+        tagalong = TargetTagalong([])
+        load_target_file(tgs,tagalong,targetf)
     print('loaded target file '+targetf)
     
     hw = load_hardware(rundate=dt)
@@ -41,7 +46,8 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     #tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
     #favail = LocationsAvailable(tgsavail)
     #del tree
-    if int(faver[:1]) < 3:
+    mver = int(faver[:1])
+    if mver < 3:
         from fiberassign.targets import (TargetTree)
         tree = TargetTree(tgs, 0.01)
      
@@ -53,13 +59,22 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
         tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
         favail = LocationsAvailable(tgsavail)
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
-    if int(faver[:1]) >= 3:
+    if mver >= 3 and mver < 5:
         from fiberassign.targets import targets_in_tiles
         tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles)
         tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
         favail = LocationsAvailable(tgsavail)
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
-    
+    if mver >= 5:
+        from fiberassign.targets import targets_in_tiles
+        tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles,tagalong)
+        tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
-    write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
+    if mver < 5:
+        write_assignment_fits(tiles, asgn, out_dir=dirout, all_targets=True)
+    else:
+        write_assignment_fits(tiles,tagalong, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)	
