@@ -181,7 +181,7 @@ if len(mtld) > 0:
     ta['PROGRAM'] = pl
     #ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
-    print(np.unique(fver),return_counts=True)
+    print(np.unique(fver,return_counts=True))
     wfv = (np.array(fver) == faver)
     #mtld =  mtld[wfv]
     ta = ta[wfv]
