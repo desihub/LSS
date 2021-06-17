@@ -37,8 +37,8 @@ def getfatiles(targetf,tilef,dirout='',dt = '2020-03-10T00:00:00',faver='2.3.0')
     if mver < 5:
         load_target_file(tgs,targetf)
     else:
-        from fiberassign.targets import TargetTagalong
-        tagalong = TargetTagalong([])
+        from fiberassign.targets import TargetTagalong,create_tagalong
+        tagalong = create_tagalong()#TargetTagalong([])
         load_target_file(tgs,tagalong,targetf)
     print('loaded target file '+targetf)
     
