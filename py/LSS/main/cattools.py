@@ -1449,15 +1449,14 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.3):
 
     
 
-def randomtiles_allSV3(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random',imin=0,imax=18):
+def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,rann=1,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
     '''
     tiles should be a table containing the relevant info
     '''
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
     print(trad)
     for ii in range(imin,imax):
-        rt = fitsio.read(dirout+str(ii)+'/alltilesnofa.fits')
-        #rt = fitsio.read(minisvdir+'random/random_mtl.fits')
+        rt = fitsio.read(dirrt+'/randoms-'+str(rann)+'-'+str(ii)+'.fits')
         print('loaded random file') 
     
         for i in range(0,len(tiles)):
@@ -1480,7 +1479,6 @@ def randomtiles_allSV3(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV3/
                 #rmtl['TARGETID'] = np.arange(len(rmtl))
                 print(len(rmtl['TARGETID'])) #checking this column is there
                 rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-                rmtl['SV3_DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
                 rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
