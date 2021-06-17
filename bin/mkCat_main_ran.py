@@ -52,8 +52,8 @@ basedir = args.basedir
 version = args.version
 faver = args.faver
 specrel = args.verspec
-rm = args.minr
-rx = args.maxr
+rm = int(args.minr)
+rx = int(args.maxr)
 if args.par == 'y':
     par = True
 
