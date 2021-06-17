@@ -143,27 +143,27 @@ if len(mtld) > 0:
     for tile in mtld['TILEID']:
         ts = str(tile).zfill(6)
         try:
-			fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-			tilel.append(tile)
-			ral.append(fht['TILERA'])
-			decl.append(fht['TILEDEC'])
-			mtlt.append(fht['MTLTIME'])
-			fal.append(fht['FA_RUN'])
-			obsl.append(fht['OBSCON'])
-			fav = fht['FA_VER']
-			if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-				fver.append('2.3.0')
-			else:
-				fver.append(fav)    
-			#try:
-			#    faha = fht['FA_HA']
-			#except:
-			#    faha = 0
-			#    print(tile,'no FA_HA in this tile header')        
-			#pl.append(pro)
-			pl.append(pr)
-		except:
-		    print('failed to find and/or get info for tile '+ts)	
+            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            tilel.append(tile)
+            ral.append(fht['TILERA'])
+            decl.append(fht['TILEDEC'])
+            mtlt.append(fht['MTLTIME'])
+            fal.append(fht['FA_RUN'])
+            obsl.append(fht['OBSCON'])
+            fav = fht['FA_VER']
+            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
+                fver.append('2.3.0')
+            else:
+                fver.append(fav)    
+            #try:
+            #    faha = fht['FA_HA']
+            #except:
+            #    faha = 0
+            #    print(tile,'no FA_HA in this tile header')        
+            #pl.append(pro)
+            pl.append(pr)
+        except:
+            print('failed to find and/or get info for tile '+ts)    
     ta = Table()
     ta['TILEID'] = tilel
     ta['RA'] = ral
