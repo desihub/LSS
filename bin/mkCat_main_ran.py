@@ -197,7 +197,7 @@ def doran(ii):
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
-        for it in range(0,len(mtld)):
+        for it in range(0,len(ta)):
             #print(it,len(mtld))    
             tile = ta['TILEID'][it]
             ts = str(tile).zfill(6)
