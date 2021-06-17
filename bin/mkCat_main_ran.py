@@ -89,9 +89,9 @@ pd = pdir
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
 wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
-wd &= mt['FAPRGRM'] == prog
+wd &= mt['FAPRGRM'] == pdir
 mtd = mt[wd]
-print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtd))+' '+pdir+' time main survey tiles that are greater than 85% of goaltime')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
