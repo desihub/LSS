@@ -90,12 +90,12 @@ mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
 wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['FAPRGRM'] == pdir
-mtd = mt[wd]
-print('found '+str(len(mtd))+' '+pdir+' time main survey tiles that are greater than 85% of goaltime')
+mtld = mt[wd]
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles that are greater than 85% of goaltime')
 
 tiles4comb = Table()
-tiles4comb['TILEID'] = mtd['TILEID']
-tiles4comb['ZDATE'] = mtd['LASTNIGHT']
+tiles4comb['TILEID'] = mtld['TILEID']
+tiles4comb['ZDATE'] = mtld['LASTNIGHT']
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/main/LSS/'
