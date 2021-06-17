@@ -38,6 +38,9 @@ parser.add_argument("--clus", help="make the data/random clustering files; these
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for main should be 5.0.0 or greater",default='5.0.0')
+parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 
 
@@ -49,6 +52,10 @@ basedir = args.basedir
 version = args.version
 faver = args.faver
 specrel = args.verspec
+rm = args.minr
+rx = args.maxr
+if args.par == 'y':
+    par = True
 
 
 mkranmtl = False
@@ -265,12 +272,16 @@ def doran(ii):
     #print('ran mkclusran\n')
     
 if __name__ == '__main__':
-    from multiprocessing import Pool
-    import sys
-    #N = int(sys.argv[2])
-    N = rx
-    p = Pool(N)
-    inds = []
-    for i in range(0,N):
-        inds.append(i)
-    p.map(doran,inds)
+    if par:
+		from multiprocessing import Pool
+		import sys
+		#N = int(sys.argv[2])
+		N = rx
+		p = Pool(N)
+		inds = []
+		for i in range(0,N):
+			inds.append(i)
+		p.map(doran,inds)
+    else:
+        for i in range(rmin,rmax):
+            doran(i)
