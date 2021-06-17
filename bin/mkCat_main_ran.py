@@ -126,8 +126,6 @@ if not os.path.exists(dirout):
 
 
 randir = maindir+'random'
-rm = 0
-rx = 18
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(maindir+'random'+str(i)):
