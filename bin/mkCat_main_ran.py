@@ -54,8 +54,9 @@ faver = args.faver
 specrel = args.verspec
 rm = int(args.minr)
 rx = int(args.maxr)
-if args.par == 'y':
-    par = True
+par = True
+if args.par == 'n':
+    par = False
 
 
 mkranmtl = False
