@@ -39,6 +39,9 @@ parser.add_argument("--clus", help="make the data/random clustering files; these
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for SV3 are '2.3.0' '2.4.0' '2.5.0' '2.5.1' '3.0.0' '4.0.0'",default='2.3.0')
+parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 
 
@@ -50,6 +53,11 @@ basedir = args.basedir
 version = args.version
 faver = args.faver
 specrel = args.verspec
+rm = args.minr
+rx = args.maxr
+if args.par == 'y':
+    par = True
+
 
 zma = False
 if args.maskz == 'y':
@@ -143,8 +151,6 @@ if not os.path.exists(dirout):
 
 
 randir = sv3dir+'random'
-rm = 0
-rx = 18
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 for i in range(rm,rx):
     if not os.path.exists(sv3dir+'random'+str(i)):
@@ -301,12 +307,16 @@ def doran(ii):
     #print('ran mkclusran\n')
     
 if __name__ == '__main__':
-    from multiprocessing import Pool
-    import sys
-    #N = int(sys.argv[2])
-    N = rx
-    p = Pool(N)
-    inds = []
-    for i in range(0,N):
-        inds.append(i)
-    p.map(doran,inds)
+    if par:
+		from multiprocessing import Pool
+		import sys
+		#N = int(sys.argv[2])
+		N = rx
+		p = Pool(N)
+		inds = []
+		for i in range(0,N):
+			inds.append(i)
+		p.map(doran,inds)
+    else:
+        for i in range(rmin,rmax):
+            doran(i)
