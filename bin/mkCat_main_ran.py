@@ -273,15 +273,15 @@ def doran(ii):
     
 if __name__ == '__main__':
     if par:
-		from multiprocessing import Pool
-		import sys
-		#N = int(sys.argv[2])
-		N = rx
-		p = Pool(N)
-		inds = []
-		for i in range(0,N):
-			inds.append(i)
-		p.map(doran,inds)
+        from multiprocessing import Pool
+        import sys
+        #N = int(sys.argv[2])
+        N = rx
+        p = Pool(N)
+        inds = []
+        for i in range(0,N):
+            inds.append(i)
+        p.map(doran,inds)
     else:
         for i in range(rmin,rmax):
             doran(i)
