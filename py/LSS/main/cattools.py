@@ -201,7 +201,7 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
-def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
     n = 0
     if os.path.isfile(fout):
@@ -215,6 +215,7 @@ def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','DESI_TAR
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
+        mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
         wt = tiles['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
         #tars.keep_columns(tarcols)
