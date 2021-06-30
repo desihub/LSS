@@ -74,7 +74,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     for si in range(0,10):
         ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
         if os.path.isfile(ff):
-            fq = coaddir+str(tile)+'/'+zdate+'/zqso-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             if os.path.isfile(fq):
 
                 specs.append(si)
@@ -88,7 +88,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         return None
     for i in range(0,len(specs)):
         tn = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
-        tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zqso-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
+        tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
         tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
     
