@@ -25,12 +25,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
+
 
 args = parser.parse_args()
 print(args)
 
 basedir = args.basedir
 version = args.version
+specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
 
@@ -90,11 +93,15 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
+ldirspec = maindir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 tarfo = maindir+'datcomb_'+prog+'_tarwdup_zdone.fits'
 ct.combtiles_wdup(tiles4comb,tarfo)
-specfo = maindir+'datcomb_'+prog+'_spec_zdone.fits'
+specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
 ct.combtile_spec(tiles4comb,specfo)
 tarf = Table.read(tarfo)
 tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -114,7 +121,7 @@ specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBT
 'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-tj.write(maindir+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
+tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
 tc = ct.count_tiles_better('dat',prog,specrel=specrel)
-tc.write(maindir+'Alltiles_'+prog+'_tilelocs.dat.fits',format='fits', overwrite=True)
+tc.write(ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits',format='fits', overwrite=True)
 

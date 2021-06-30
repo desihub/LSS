@@ -30,9 +30,9 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
-parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='y')
+parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
-parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--combr", help="combine the random tiles together",default='y')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -133,6 +133,11 @@ for i in range(rm,rx):
     if not os.path.exists(maindir+'random'+str(i)):
         os.mkdir(maindir+'random'+str(i))
         print('made '+str(i)+' random directory')
+
+ldirspec = maindir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
 
 
 #construct a table with the needed tile information
