@@ -68,5 +68,5 @@ if not os.path.exists(dirout):
 
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
-utf = maindir+'datcomb_'+prog+'_spec_zdone.fits'
+outf = maindir+'datcomb_'+prog+'_spec_zdone.fits'
 ct.combtile_spec(tiles4comb,outf)
