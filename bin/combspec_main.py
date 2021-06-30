@@ -36,10 +36,12 @@ progu = prog.upper()
 
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
-wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
+#wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
+wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == prog
 mtd = mt[wd]
-print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
@@ -65,5 +67,6 @@ if not os.path.exists(dirout):
     print('made '+dirout)
 
 
-outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
+#outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
+utf = maindir+'datcomb_'+prog+'_spec_zdone.fits'
 ct.combtile_spec(tiles4comb,outf)
