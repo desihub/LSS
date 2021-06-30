@@ -47,6 +47,30 @@ tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['LASTNIGHT']
 
+if len(tiles4comb) > 0:
+    ral = []
+    decl = []
+    mtlt = []
+    fal = []
+    obsl = []
+    pl = []
+    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+    for tile in tiles4comb['TILEID']:
+        ts = str(tile).zfill(6)
+        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+        ral.append(fht['TILERA'])
+        decl.append(fht['TILEDEC'])
+        mtlt.append(fht['MTLTIME'])
+        fal.append(fht['FA_RUN'])
+        obsl.append(fht['OBSCON'])
+    tiles4comb['RA'] = ral
+    tiles4comb['DEC'] = decl
+    tiles4comb['MTLTIME'] = mtlt
+    tiles4comb['FA_RUN'] = fal
+    tiles4comb['OBSCON'] = obsl
+    
+
+
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/main/LSS/'
 
