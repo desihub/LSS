@@ -41,7 +41,7 @@ wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == prog
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true')
+print('found '+str(len(mtd))+' '+pdir+' time main survey tiles with zdone true')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
