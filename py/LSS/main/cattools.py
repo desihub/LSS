@@ -401,7 +401,8 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily'):
         fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
     if dr == 'ran':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/rancomb_'+pd+'wdupspec_zdone.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+        
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)  
     fjg = fj[wg]  
@@ -814,7 +815,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir):
     specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID'])
     fgu.sort('TARGETID')
-    outf = randir+str(rann)+'/rancomb_'+tp+'wdupspec_zdone.fits'
+    outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print(outf)
     fgu.write(outf,format='fits', overwrite=True)
     
