@@ -216,6 +216,10 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
         mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+        if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
+            mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
+        if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
+            mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
         wt = tiles['TILEID'] == tile
         tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
         #tars.keep_columns(tarcols)
