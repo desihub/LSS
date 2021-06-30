@@ -69,7 +69,7 @@ if not os.path.exists(dirout):
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 tarfo = maindir+'datcomb_'+prog+'_tarwdup_zdone.fits'
-ct.combtiles_wdup(ta,mdir,tarf)
+ct.combtiles_wdup(tiles4comb,mdir,tarf)
 specfo = maindir+'datcomb_'+prog+'_spec_zdone.fits'
 ct.combtile_spec(tiles4comb,specfo)
 tarf = Table.read(tarfo)
