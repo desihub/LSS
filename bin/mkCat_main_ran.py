@@ -196,16 +196,18 @@ def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
 
     if mkranmtl:
-        #ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
-        for jj in range(0,18):
-            rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-            tim = rx*ii
-            tix = rx*(ii+1)
-            if tix < len(ta):
-                tiles = ta[tim:tix]
-            else:
-                tiles = ta[tim:]
-            ct.randomtiles_main_fromran(tiles,rt )
+        if par:
+            for jj in range(0,18):
+                rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
+                tim = rx*ii
+                tix = rx*(ii+1)
+                if tix < len(ta):
+                    tiles = ta[tim:tix]
+                else:
+                    tiles = ta[tim:]
+                ct.randomtiles_main_fromran(tiles,rt )
+        else:
+            ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
