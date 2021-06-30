@@ -96,10 +96,11 @@ pd = pdir
 
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
-wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
+#wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
+wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
 mtld = mt[wd]
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtld['TILEID']
@@ -195,7 +196,16 @@ def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
 
     if mkranmtl:
-        ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        #ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        for jj in range(0,18):
+            rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits')
+            tim = rx*ii
+            tix = rx*(ii+1)
+            if tix < len(ta):
+                tiles = ta[tim:tix]
+            else:
+                tiles = ta[tim:]
+            ct.randomtiles_main_fromran(tiles,rt )
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')

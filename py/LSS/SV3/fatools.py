@@ -250,7 +250,7 @@ def altcreate_mtl(
     # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
     if pmcorr == "y":
         if pmtime_utc_str is None:
-            sys.exti(1)
+            sys.exit(1)
         d = update_nowradec(d, gaiadr, pmtime_utc_str)
     else:
         d = force_nonzero_refepoch(

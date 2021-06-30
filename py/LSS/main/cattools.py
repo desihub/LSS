@@ -1486,3 +1486,39 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
+
+def randomtiles_allmain(tiles,rt ):
+    '''
+    tiles should be a table containing the relevant info
+    take the input random, rt, as an argument so when doing in parallel only one copy in memory
+    '''
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    
+    for i in range(0,len(tiles)):
+        
+        #print('length of tile file is (expected to be 1):'+str(len(tiles)))
+        tile = tiles['TILEID'][i]
+        fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+        if os.path.isfile(fname):
+            print(fname +' already exists')
+        else:
+            tdec = tiles['DEC'][i]
+            decmin = tdec - trad
+            decmax = tdec + trad
+            wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+            print(len(rt[wdec]))
+            inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+            print('got indexes')
+            rtw = rt[wdec][inds]
+            rmtl = Table(rtw)
+            #rmtl['TARGETID'] = np.arange(len(rmtl))
+            print(len(rmtl['TARGETID'])) #checking this column is there
+            rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+            rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+            rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+            rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+            rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+            rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+            rmtl.write(fname,format='fits', overwrite=True)
+            print('added columns, wrote to '+fname)
