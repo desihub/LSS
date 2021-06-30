@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-Compute PIP weights in parallel
+Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
 
-srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_pipweights
+srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
      --mtl LRG_oneperztrue_clus.dat.fits --randoms LRG_oneperztrue_clus.ran.fits
      --format hdf5 --outdir output --realizations 128
 
@@ -62,7 +62,7 @@ def main(args):
     mpi_rank = comm.rank
 
     import numpy as np
-    from LSS.pipweights import (get_tiles, get_targets, setup_fba,
+    from LSS.bitweights import (get_tiles, get_targets, setup_fba,
                                update_bitweights, pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
     from fiberassign.assign import run
