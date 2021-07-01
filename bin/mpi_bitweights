@@ -62,6 +62,7 @@ def main(args):
     mpi_rank = comm.rank
 
     import numpy as np
+    from astropy.table import Table, vstack
     from LSS.bitweights import (get_tiles, get_targets, setup_fba,
                                update_bitweights, pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
@@ -72,8 +73,8 @@ def main(args):
 
     # Get target and randoms information
     mtl, tgs, sky, randoms = get_targets(args.mtl, args.sky, args.randoms)
-    tg_science = tgs.ids()
-    n_target = len(tg_science)
+    tg_ids = tgs.ids()
+    n_target = len(tg_ids)
 
     # Load hardward for fiber assignment
     hw = load_hardware()
@@ -93,14 +94,13 @@ def main(args):
 
         # Randomize subpriorities
         mtl['SUBPRIORITY'] = np.random.random_sample(size=len(mtl))
-        sky['SUBPRIORITY'] = np.random.random_sample(size=len(sky))
 
         # Set up and run fiber assignment
         asgn = setup_fba(mtl, sky, tiles, hw)
         run(asgn)
 
         # Update bit weights for assigned science targets
-        idas, bitweights = update_bitweights(realization, asgn, tiles, tg_science, bitweights)
+        idas, bitweights = update_bitweights(realization, asgn, tiles, tg_ids, bitweights)
 
     # Gather weights from all processes
     gather_weights = None
@@ -116,9 +116,25 @@ def main(args):
         bweights = np.array(weights).T
         bitvectors = pack_bitweights(bweights)
 
+        # Combine sky and mtl
+        if sky:
+            outmtl = Table()
+            outmtl['TARGETID'] = mtl['TARGETID']
+            outmtl['RA'] = mtl['RA']
+            outmtl['DEC'] = mtl['DEC']
+            outmtl['Z'] = mtl['Z']
+            outsky = Table()
+            outsky['TARGETID'] = sky['TARGETID']
+            outsky['RA'] = sky['RA']
+            outsky['DEC'] = sky['DEC']
+            outsky['Z'] = np.empty(len(sky))
+            targets = vstack([outmtl, outsky])
+        else:
+            targets = mtl
+
         # Write output files
-        write_output('targeted', args.outdir, args.format, mtl[idas], idas, bitvectors)
-        write_output('parent', args.outdir, args.format, mtl, idas, bitvectors)
+        write_output('targeted', args.outdir, args.format, targets[idas], idas, bitvectors)
+        write_output('parent', args.outdir, args.format, targets, idas, bitvectors)
         write_output('randoms', args.outdir, args.format, randoms, idas, bitvectors)
 
 if __name__ == "__main__":
