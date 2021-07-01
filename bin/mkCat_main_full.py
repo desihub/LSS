@@ -108,7 +108,7 @@ if os.path.isfile(tarf) and redotar == False:
     mktar = False
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
-    ss.gather_targets(type,tardir,maindir,tarver,main,progl,keys=keys)
+    ss.gather_targets(type,tardir,maindir,tarver,'main',progl,keys=keys)
         
         
 if mkfulld:
