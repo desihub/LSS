@@ -122,7 +122,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
 
 
