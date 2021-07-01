@@ -1078,7 +1078,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'):
     else:    
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_spec_zdone.fits')
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/datcomb_'+pd+'_spec_zdone.fits')
     wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
