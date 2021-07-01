@@ -105,7 +105,7 @@ specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
 ct.combtile_spec(tiles4comb,specfo)
 tarf = Table.read(tarfo)
 tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-remcol = ['PRIORITY','Z','ZWARN','FIBER']
+remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
 for col in remcol:
 	try:
 		tarf.remove_columns([col] )#we get this where relevant from spec file

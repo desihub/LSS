@@ -89,15 +89,19 @@ if not os.path.exists(maindir+'/LSScats'):
     os.mkdir(maindir+'/LSScats')
     print('made '+maindir+'/LSScats')
 
-dirout = maindir+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    print('made '+dirout)
-
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
     print('made '+ldirspec)
+    
+if not os.path.exists(ldirspec+'LSScats'):
+    os.mkdir(ldirspec+'LSScats')
+    print('made '+ldirspec+'LSScats')
+
+dirout = ldirspec+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)    
 
 tarver = '1.1.1'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'

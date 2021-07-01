@@ -230,7 +230,7 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
         tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
         tars = join(tars,tt,keys=['TARGETID'])
         tars['TILEID'] = tile
-        tars['ZWARN'].name = 'ZWARN_MTL'
+        tars.remove_columns(['ZWARN'])
         if s == 0:
             tarsn = tars
             s = 1
@@ -1012,14 +1012,23 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',maskzfail=False):
+def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='DESI_TARGET',tsnr= 'TSNR2_ELG',maskzfail=False,specver='daily'):
 
     #first, need to find locations to veto based data
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
-    wf = fs['FIBERSTATUS'] == 0
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata & badqa
+    wf = ~nomtl
+
+    #wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
-    zf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     dz = Table.read(zf) 
     wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
@@ -1027,7 +1036,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
 
-    zf = randir+str(rann)+'/rancomb_'+pd+'wdupspec_Alltiles.fits'
+    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
@@ -1044,10 +1053,12 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
-    tarf = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/alltilesnofa.fits')
-    delcols = ['RA','DEC','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SCND_TARGET',\
-    'NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
-    tarf.remove_columns(delcols)
+    #columns there already, don't need them again
+    #ocol =['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' 
+    tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+    'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
     dz = join(dz,tarf,keys=['TARGETID'])
     
     dz = cutphotmask(dz,imbits)
@@ -1055,18 +1066,8 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     dz.sort(tsnr) #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('lengeth after cutting to unique TARGETID '+str(len(dz)))
-    #done in combran instead
-    #NT = np.zeros(len(dz))
-    #for ii in range(0,len(dz['TILE'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-    #    NT[ii] = np.char.count(dz['TILE'][ii],'-')+1
-    
-    #NT = np.char.count(dz['TILE'],'-')
-    #NT += 1
-    dz['rosette_number'] = 0
-    for ii in range(0,len(dz)):
-        dz[ii]['rosette_number'] = tile2rosette(dz[ii]['TILEID'])
     print(np.unique(dz['NTILE']))
-    #dz['NTILE'] = NT
+    
     dz.write(outf,format='fits', overwrite=True)
     
 
@@ -1095,6 +1096,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 
 
     dz = Table.read(zf) 
+    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
     wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))

@@ -260,11 +260,11 @@ def doran(ii):
     if mkfullr:
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
-            bit = sv3_targetmask.bgs_mask[type]
+            bit = targetmask.bgs_mask[type]
             desitarg='SV3_BGS_TARGET'
         else:
-            bit = sv3_targetmask.desi_mask[type]    
-            desitarg='SV3_DESI_TARGET'
+            bit = targetmask.desi_mask[type]    
+            desitarg='DESI_TARGET'
         ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
