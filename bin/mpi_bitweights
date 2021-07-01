@@ -91,8 +91,9 @@ def main(args):
         # regardless of which process is working on the realization
         np.random.seed(realization)
 
-        # Randomize science target subpriority
-        mtl['SUBPRIORITY'] = np.random.random_sample(size=n_target)
+        # Randomize subpriorities
+        mtl['SUBPRIORITY'] = np.random.random_sample(size=len(mtl))
+        sky['SUBPRIORITY'] = np.random.random_sample(size=len(sky))
 
         # Set up and run fiber assignment
         asgn = setup_fba(mtl, sky, tiles, hw)
