@@ -108,7 +108,8 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     tf = unique(tf,keys=['TARGETID'])
     if md == '4combtar': #target files should contain the rest of the info
         tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
-    tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN'])
+    tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
+    tq['ZWARN'].name = 'ZWARN_MTL'
     tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
     tspec = join(tspec,tq,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
@@ -1080,10 +1081,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         pd = 'dark'
         tscol = 'TSNR2_ELG'
     fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
     num_nod = np.sum(nodata)
     print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
     num_badqa = np.sum(badqa)
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata & badqa
