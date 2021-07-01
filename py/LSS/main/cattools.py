@@ -1069,7 +1069,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr=
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1078,7 +1078,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     else:    
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_specwdup_Alltiles.fits')
+    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'_spec_zdone.fits')
     wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
@@ -1096,13 +1096,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz = dz[wk]
     print('length after priority veto '+str(len(dz)))
     print('joining to full imaging')
-    ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+pd+'_targets.fits')
-    ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
-            'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
-            'FRACIN_Z','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','FLUX_W1',\
-            'FLUX_W2','FLUX_IVAR_W1','FLUX_IVAR_W2','MW_TRANSMISSION_W1','MW_TRANSMISSION_W2','ALLMASK_G','ALLMASK_R','ALLMASK_Z','FIBERFLUX_G',\
-            'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
-            'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
     dz = join(dz,ftar,keys=['TARGETID'])
     #print('length after join to full targets (should be same) '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
@@ -1232,7 +1225,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #         tiles = dz['TILES'][ii].split('-')
 #         ti = int(tiles[0])
         ti = dz[ii]['TILEID']
-        ros[ii] = tile2rosette(ti)
+        
         if natloc[ii]:# == False:
             nbl += 1
             s = 0
@@ -1249,8 +1242,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         if ii%10000 == 0:
             print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
      
-#     ros = tile2rosette(ti)
-#     #ros[ii] = tile2rosette(int(dz['TILE'][ii].split('-')[0]))
     dz['TILELOCID'] = locs
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 #     #wa = dzz['LOCATION_ASSIGNED'] == 1
@@ -1261,9 +1252,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
 #     #print(np.histogram(nloclz))
 #     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
 
-    dz['rosette_number'] = ros
-    #dz['rosette_number'] = tile2rosette(dz['TILEID'])# not sure why that didn't work
-    print(np.unique(dz['rosette_number'],return_counts=True))
     #NT = np.char.count(dz['TILE'],'-')
     #NT += 1
     print(np.unique(dz['NTILE']))
@@ -1309,12 +1297,6 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #print(np.unique(dz['TILE']))
     #dz['NTILE']  = NT
     dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
-    if tp == 'LRG':
-        fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
-        wv = dz['TSNR2_LRG'] < 180
-        efs = .08+2.42*(fibfluxz)**-4/.038
-        ems = erf((dz['TSNR2_LRG']-25)/30)*.986
-        dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
             
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
