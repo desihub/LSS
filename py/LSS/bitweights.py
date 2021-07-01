@@ -125,7 +125,7 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
-def write_output(outtype, outdir, fileformat, targets, idas, bitvectors):
+def write_output(outtype, outdir, fileformat, targets, idas, bitvectors, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -134,11 +134,14 @@ def write_output(outtype, outdir, fileformat, targets, idas, bitvectors):
     except:
         pass
 
+    # Output fits files
     if fileformat == 'fits':
         outfile = os.path.join(outdir, '{}.fits'.format(outtype))
         output = Table()
         if outtype == 'targeted' or outtype == 'parent':
             output['TARGETID'] = targets['TARGETID']
+            if desi_target_key:
+                output['{}'.format(desi_target_key)] = targets['{}'.format(desi_target_key)]
         output['RA'] = targets['RA']
         output['DEC'] = targets['DEC']
         output['Z'] = targets['Z']
@@ -151,11 +154,14 @@ def write_output(outtype, outdir, fileformat, targets, idas, bitvectors):
                 output['BITWEIGHT{}'.format(i)] = -np.ones(len(targets), dtype=int)
         output.write(outfile)
 
+    # Output hdf5 files
     elif fileformat == 'hdf5':
         outfile = os.path.join(outdir, '{}.hdf5'.format(outtype))
         outfile = h5py.File(outfile, 'w')
         if outtype == 'targeted' or outtype == 'parent':
             outfile.create_dataset('TARGETID', data=targets['TARGETID'])
+            if desi_target_key:
+                outfile.create_dataset('{}'.format(desi_target_key), data=targets['{}'.format(desi_target_key)])
         outfile.create_dataset('RA', data=targets['RA'])
         outfile.create_dataset('DEC', data=targets['DEC'])
         outfile.create_dataset('Z', data=targets['Z'])

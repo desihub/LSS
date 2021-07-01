@@ -116,15 +116,25 @@ def main(args):
         bweights = np.array(weights).T
         bitvectors = pack_bitweights(bweights)
 
+        # Find which target bits to output
+        desi_target_key = None
+        for key in mtl.keys():
+            if 'DESI_TARGET' in key:
+                desi_target_key = key
+
         # Combine sky and mtl
         if sky:
             outmtl = Table()
             outmtl['TARGETID'] = mtl['TARGETID']
+            if desi_target_key:
+                outmtl['{}'.format(desi_target_key)] = mtl['{}'.format(desi_target_key)]
             outmtl['RA'] = mtl['RA']
             outmtl['DEC'] = mtl['DEC']
             outmtl['Z'] = mtl['Z']
             outsky = Table()
             outsky['TARGETID'] = sky['TARGETID']
+            if desi_target_key:
+                outsky['{}'.format(desi_target_key)] = sky['{}'.format(desi_target_key)]
             outsky['RA'] = sky['RA']
             outsky['DEC'] = sky['DEC']
             outsky['Z'] = np.empty(len(sky))
@@ -133,8 +143,8 @@ def main(args):
             targets = mtl
 
         # Write output files
-        write_output('targeted', args.outdir, args.format, targets[idas], idas, bitvectors)
-        write_output('parent', args.outdir, args.format, targets, idas, bitvectors)
+        write_output('targeted', args.outdir, args.format, targets[idas], idas, bitvectors, desi_target_key)
+        write_output('parent', args.outdir, args.format, targets, idas, bitvectors, desi_target_key)
         write_output('randoms', args.outdir, args.format, randoms, idas, bitvectors)
 
 if __name__ == "__main__":
