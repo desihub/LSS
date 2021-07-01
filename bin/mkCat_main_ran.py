@@ -268,7 +268,8 @@ def doran(ii):
         else:
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg)
+        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg)
+        
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
