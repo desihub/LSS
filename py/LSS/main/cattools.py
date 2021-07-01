@@ -1460,8 +1460,9 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
     tiles should be a table containing the relevant info
     '''
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-    print(trad,ii)
+    
     for ii in range(imin,imax):
+        print(trad,ii)
         rt = fitsio.read(dirrt+'/randoms-'+str(rann)+'-'+str(ii)+'.fits')
         print('loaded random file '+str(ii)) 
     
