@@ -1036,7 +1036,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='DESI_TARGET',tsnr= 'TS
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
 
-    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
+    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
