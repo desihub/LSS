@@ -1096,7 +1096,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 
 
     dz = Table.read(zf) 
-    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
+    
     wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
@@ -1108,6 +1108,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     dz = dz[wk]
     print('length after priority veto '+str(len(dz)))
     print('joining to full imaging')
+    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
     dz = join(dz,ftar,keys=['TARGETID'])
     #print('length after join to full targets (should be same) '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
