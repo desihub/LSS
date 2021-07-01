@@ -12,6 +12,7 @@ import desimodel.footprint
 import desimodel.focalplane
 from random import random
 from desitarget.io import read_targets_in_tiles
+from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
 from LSS.Cosmo import distance
 
@@ -1079,7 +1080,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         pd = 'dark'
         tscol = 'TSNR2_ELG'
     fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-    wf = fs['FIBERSTATUS'] == 0
+    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata & badqa
+    wf = ~nomtl
+    #wf = fs['FIBERSTATUS'] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
 
