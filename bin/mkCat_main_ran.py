@@ -95,6 +95,8 @@ else:
 
 pd = pdir
 
+imbits = [1,5,6,7,8,9,11,12,13]
+
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
