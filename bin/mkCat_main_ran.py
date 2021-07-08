@@ -123,10 +123,6 @@ if not os.path.exists(maindir+'/LSScats'):
     os.mkdir(maindir+'/LSScats')
     print('made '+maindir+'/LSScats')
 
-dirout = maindir+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    print('made '+dirout)
 
 
 
@@ -141,6 +137,12 @@ ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
     print('made '+ldirspec)
+
+
+dirout = ldirspec+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
 
 
 #construct a table with the needed tile information
