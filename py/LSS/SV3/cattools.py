@@ -1011,7 +1011,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG'):
+def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -1037,6 +1037,9 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     zf = indir+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
     dz = Table.read(zf) 
     wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & qsobit) == 0)
+
     wg = np.isin(dz['TILELOCID'],gtl)
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
@@ -1081,7 +1084,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily'):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1114,6 +1117,8 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz = Table.read(zf) 
     #find the rows that satisfy the target type
     wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & qsobit) == 0)
     #find the rows that are 'good' tilelocid
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))

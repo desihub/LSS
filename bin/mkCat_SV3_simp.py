@@ -35,6 +35,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
 
@@ -55,6 +56,9 @@ if rcut is not None:
 	rcut.append(float(rcutstr[0]))
 	rcut.append(float(rcutstr[1]))
 
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
 
 print('running catalogs for tracer type '+type)
 
@@ -159,7 +163,7 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'Alltiles_full.dat.fits',indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 if mkfullr:
     if type == 'BGS_BRIGHT':
@@ -170,8 +174,8 @@ if mkfullr:
         desitarg='SV3_DESI_TARGET'
 
     for ii in range(rm,rx):
-        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(indirspec,ii,imbits,outf,type,progl,bit,desitarg=desitarg)
+        outf = dirout+type+notqso+'Alltiles_'+str(ii)+'_full.ran.fits'
+        ct.mkfullran(indirspec,ii,imbits,outf,type,progl,bit,desitarg=desitarg,notqso=notqso)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
@@ -188,7 +192,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile)
+    ct.mkclusdat(dirout+type+notqso+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -207,7 +211,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile)
+        ct.mkclusran(dirout+type+notqso+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
