@@ -13,7 +13,7 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 from desitarget.sv3 import sv3_targetmask
 
-sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
+#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
 #try:
@@ -51,10 +51,10 @@ specrel = args.verspec
 ntile = args.ntile
 rcut = args.rcut
 if rcut is not None:
-	rcutstr = rcut.split(',')
-	rcut = []
-	rcut.append(float(rcutstr[0]))
-	rcut.append(float(rcutstr[1]))
+    rcutstr = rcut.split(',')
+    rcut = []
+    rcut.append(float(rcutstr[0]))
+    rcut.append(float(rcutstr[1]))
 
 notqso = ''
 if args.notqso == 'y':

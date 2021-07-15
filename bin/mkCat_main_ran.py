@@ -16,7 +16,7 @@ from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
 from desimodel.footprint import is_point_in_desi
 
-sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
+#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
 #try:

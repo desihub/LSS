@@ -18,7 +18,7 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 
-sys.path.append('../py')
+#sys.path.append('../py')
 
 #from this package
 import LSS.mkCat_singletile.cattools as ct

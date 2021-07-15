@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 
-sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
+#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
 #try:
