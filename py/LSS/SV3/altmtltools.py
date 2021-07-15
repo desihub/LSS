@@ -75,8 +75,8 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False):
     zcatids = zcat['TARGETID']
     altZCat = Table(zcat)
     if debug:
-	    failures = 0
-	    negativeIDs = 0
+        failures = 0
+        negativeIDs = 0
     for n, i in zip(zcatids, range(len(zcatids))):
         cond = (n == zcatids)
         if debug and (n < 0):
@@ -85,11 +85,11 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False):
         altid = real2AltMap[n]
         altZCat['TARGETID'][i] = altid
     if debug:
-	    print('negIDs')
-	    print(negativeIDs)
-	    print('failures')
-	    print(failures)
-	    print('testctr')
+        print('negIDs')
+        print(negativeIDs)
+        print('failures')
+        print(failures)
+        print('testctr')
     d =  Counter(altZCat['TARGETID'])  
     res = [ k for k, v in d.items() if v > 1]
     print(res)
@@ -140,13 +140,13 @@ def trimToMTL(notMTL, MTL, debug = False):
     for n in allNames:
         if n in MTLNames:
             if debug:
-	            print('allowed')
-	            print(n)
+                print('allowed')
+                print(n)
             continue
         else:
-        	if debug:
-	            print('killed')
-	            print(n)
+            if debug:
+                print('killed')
+                print(n)
             notMTL = rfn.drop_fields(notMTL, n)
     return notMTL
 
