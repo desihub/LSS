@@ -19,9 +19,21 @@ import os
 from desiutil.log import get_logger
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
 from LSS.SV3.fatools import get_fba_fromnewmtl
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger
+from desitarget.targets import decode_targetid
 log = get_logger()
 
+os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 
+zcatdatamodel = np.array([], dtype=[
+    ('RA', '>f8'), ('DEC', '>f8'), ('TARGETID', '>i8'),
+    ('NUMOBS', '>i4'), ('Z', '>f8'), ('ZWARN', '>i8'), ('ZTILEID', '>i4')
+    ])
+
+mtltilefiledm = np.array([], dtype=[
+    ('TILEID', '>i4'), ('TIMESTAMP', 'U25'),
+    ('VERSION', 'U14'), ('PROGRAM', 'U6'), ('ZDATE', 'U8')
+    ])
 def createFAmap(FAReal, FAAlt, debug = False):
     TIDReal = FAReal['TARGETID']
     TIDAlt = FAAlt['TARGETID']
