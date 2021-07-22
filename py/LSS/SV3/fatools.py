@@ -72,6 +72,85 @@ def comp_neworig(tileid):
         return True
     else:
         return False
+ 
+def redo_fba_fromorig(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
+    '''
+    simply try to reproduce fiberassign from the files in the fiberassign directory
+    '''
+    ts = str(tileid).zfill(6)
+    #get info from origin fiberassign file
+    fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    indir = fht['OUTDIR']
+    if fht['DESIROOT'] == '/data/datasystems':
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
+        try:
+            f = fitsio.read(indir+ts+'-targ.fits')
+        except:
+        
+            date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+    print(indir)        
+    tarf = indir+ts+'-targ.fits'
+    try:
+        fitsio.read(tarf)
+    except:
+        return('Error! target file does not appear to exist for tile '+ts+' '+tilef)    
+    tilef = indir+ts+'-tiles.fits'
+    try:
+        fitsio.read(tilef)
+    except:
+        return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)    
+    skyf = indir+ts+'-sky.fits'
+    try:
+        fitsio.read(skyf)
+    except:
+        print('Error! sky file does not appear to exist')    
+    scndf = indir+ts+'-scnd.fits'
+    try:
+        fitsio.read(scndf)
+    except:
+        print('Error! secondary file does not appear to exist')    
+    gfaf = indir+ts+'-gfa.fits'
+    try:
+        fitsio.read(gfaf)
+    except:
+        print('Error! gfa file does not appear to exist')    
+    toof = indir+ts+'-too.fits'
+    too = os.path.isfile(toof)
+    if too:
+        print('will be using too file '+toof)
+    if outdir is None:
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
+    if getosubp:
+        outdir += 'orig/'
+      
+    prog = fht['FAPRGRM'].lower()
+    gaiadr = None
+    if np.isin('gaiadr2',fht['FAARGS'].split()):
+        gaiadr = 'dr2'
+    if np.isin('gaiaedr3',fht['FAARGS'].split()):
+        gaiadr = 'edr3'
+    
+    fo = open(outdir+'fa-'+ts+'.sh','w')
+    fo.write('#!/bin/bash\n\n')
+    if float(fht['FA_VER'][:3]) < 2.4:
+        fo.write("module swap fiberassign/2.3.0\n")
+    else:
+        fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+    fo.write("fba_run")
+    fo.write(" --targets "+tarf+" "+scndf)
+    if too:
+        fo.write(" "+toof)
+    fo.write(" --sky "+skyf)
+    fo.write(" --footprint "+tilef)
+    fo.write(" --rundate "+fht['RUNDATE'])
+    fo.write(" --fieldrot "+str(fht['FIELDROT']))
+    fo.write(" --dir "+outdir)
+    #fo.write(" --by_tile true")
+    if float(fht['FA_VER'][:3]) >= 3:
+        fo.write(" --ha "+fht['FA_HA'])
+    fo.close()    
+ 
         
 def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
     ts = str(tileid).zfill(6)
