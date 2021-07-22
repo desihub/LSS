@@ -121,9 +121,7 @@ def redo_fba_fromorig(tileid,outdir=None):
     if too:
         print('will be using too file '+toof)
     if outdir is None:
-        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
-    if getosubp:
-        outdir += 'orig/'
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
       
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
