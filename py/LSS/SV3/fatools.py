@@ -218,6 +218,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         ntar.write(tarfn,format='fits', overwrite=True)
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
+    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
     if float(fht['FA_VER'][:3]) < 2.4:
         fo.write("module swap fiberassign/2.3.0\n")
     else:
@@ -233,7 +234,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     fo.write(" --dir "+outdir)
     #fo.write(" --by_tile true")
     if float(fht['FA_VER'][:3]) >= 3:
-        fo.write(" --ha "+fht['FA_HA'])
+        fo.write(" --ha "+str(fht['FA_HA']))
     fo.close()    
 
 
@@ -336,6 +337,9 @@ def altcreate_mtl(
             d, gaia_ref_epochs[gaiadr]
         )
     d = Table(d)
+    outfndir = '/'.join(outfn.split('/')[:-1])
+    if not os.path.exists(outfndir):
+        os.makedirs(outfndir, exist_ok=True)
     d.write(outfn,format='fits', overwrite=True)
     # AR mtl: write fits
     #n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
