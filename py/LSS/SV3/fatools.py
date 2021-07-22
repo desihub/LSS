@@ -106,11 +106,13 @@ def redo_fba_fromorig(tileid,outdir=None):
     except:
         print('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
+    scnd = True 
     try:
         fitsio.read(scndf)
     except:
         print(' secondary file does not appear to exist')
-        scnd = True    
+        scnd = False 
+           
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
