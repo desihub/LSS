@@ -141,7 +141,7 @@ def redo_fba_fromorig(tileid,outdir=None):
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
-        fo.write()" "+scndf)
+        fo.write(" "+scndf)
     if too:
         fo.write(" "+toof)
     fo.write(" --sky "+skyf)
