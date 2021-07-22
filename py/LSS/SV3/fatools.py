@@ -151,7 +151,7 @@ def redo_fba_fromorig(tileid,outdir=None):
     fo.write(" --dir "+outdir)
     #fo.write(" --by_tile true")
     if float(fht['FA_VER'][:3]) >= 3:
-        fo.write(" --ha "+fht['FA_HA'])
+        fo.write(" --ha "+str(fht['FA_HA']))
     fo.close()    
  
         
