@@ -73,7 +73,7 @@ def comp_neworig(tileid):
     else:
         return False
  
-def redo_fba_fromorig(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
+def redo_fba_fromorig(tileid,outdir=None):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
@@ -109,7 +109,8 @@ def redo_fba_fromorig(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/
     try:
         fitsio.read(scndf)
     except:
-        print('Error! secondary file does not appear to exist')    
+        print(' secondary file does not appear to exist')
+        scnd = True    
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
@@ -138,7 +139,9 @@ def redo_fba_fromorig(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/
     else:
         fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     fo.write("fba_run")
-    fo.write(" --targets "+tarf+" "+scndf)
+    fo.write(" --targets "+tarf)
+    if scnd:
+        fo.write()" "+scndf)
     if too:
         fo.write(" "+toof)
     fo.write(" --sky "+skyf)
