@@ -226,6 +226,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     #fo.write(" --by_tile true")
+    if faver >= 2.4:
+        fo.write(" --sky_per_petal 40 --sky_per_slitblock 1 --standards_per_petal 10")
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
     fo.close()    
