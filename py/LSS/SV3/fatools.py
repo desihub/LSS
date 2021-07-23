@@ -230,6 +230,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
         fo.write(" --sky_per_petal 40 --sky_per_slitblock 1 --standards_per_petal 10")
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
+        fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
     fo.close()    
  
         
