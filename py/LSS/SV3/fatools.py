@@ -119,7 +119,7 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
     fa = fitsio.read(indir+'fba-'+ts+'.fits')
     
     fn = fitsio.read(dirn+'fba-'+ts+'.fits')
-    return np.array_equal(fa,fn)
+    return np.array_equal(fa['TARGETID'],fn['TARGETID'])
 #     w = fn['DEVICE_TYPE'] == 'POS'
 #     fn = fn[w]
 #     wn = fn['TARGETID'] >= 0
