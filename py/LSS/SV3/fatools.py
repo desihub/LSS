@@ -204,7 +204,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     if faver == None:
         faver = float(fht['FA_VER'][:3])
         if faver == 2.4:
-            fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2')
+            fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
 
         if faver < 2.4:
             #fo.write("module swap fiberassign/2.3.0\n")
