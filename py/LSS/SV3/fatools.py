@@ -199,6 +199,7 @@ def redo_fba_fromorig(tileid,outdir=None):
     fo.write('#!/bin/bash\n\n')
     if float(fht['FA_VER'][:3]) < 2.4:
         fo.write("module swap fiberassign/2.3.0\n")
+        fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
     else:
         fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     fo.write("fba_run")
