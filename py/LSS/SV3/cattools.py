@@ -1418,6 +1418,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length before cutting to not QSO '+str(len(ff)))
         ff = ff[wc]
         print('length after cutting to not QSO '+str(len(ff)))
+    if ccut == 'zQSO':
+        wc = ff['SPECTYPE'] ==  'QSO'
+        print('length before cutting to spectype QSO '+str(len(ff)))
+        ff = ff[wc]
+        print('length after cutting to spectype QSO '+str(len(ff)))
+
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
     ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
