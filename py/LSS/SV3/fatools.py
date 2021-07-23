@@ -82,17 +82,21 @@ def comp_neworig_tgt(tileid):
     fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
     fn = fitsio.read(dirn+'fba-'+ts+'.fits')
-    w = fn['DEVICE_TYPE'] == 'POS'
-    fn = fn[w]
-    wn = fn['TARGETID'] >= 0
+    wn = fn['FA_TYPE'] != 0
+    wn &= fn['FA_TYPE'] != 4
+
+    #w = fn['DEVICE_TYPE'] == 'POS'
     fn = fn[wn]
+    #wn = fn['TARGETID'] >= 0
+    #fn = fn[wn]
     #print(len(fn))
-    wa = fa['OBJTYPE'] == 'TGT'
+    wa = fa['FA_TYPE'] != 0
+    wa &= fa['FA_TYPE'] != 4
     fa = fa[wa]
     #print(len(fa))  
     ws = np.isin(fn['TARGETID'],fa['TARGETID'])
     #print(np.sum(ws))   
-    if np.sum(ws) == len(fa):# and len(fa) == len(fn):
+    if np.sum(ws) == len(fa) and len(fa) == len(fn):
         return True
     else:
         return False
