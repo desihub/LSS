@@ -91,7 +91,7 @@ def comp_neworig_tgt(tileid):
     fa = fa[wa]
     #print(len(fa))  
     ws = np.isin(fn['TARGETID'],fa['TARGETID'])
-    print(np.sum(ws))   
+    #print(np.sum(ws))   
     if np.sum(ws) == len(fa):# and len(fa) == len(fn):
         return True
     else:
