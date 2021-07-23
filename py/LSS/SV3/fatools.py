@@ -140,7 +140,7 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
 #         return False
 
  
-def redo_fba_fromorig(tileid,outdir=None):
+def redo_fba_fromorig(tileid,outdir=None,faver=None):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
@@ -201,11 +201,15 @@ def redo_fba_fromorig(tileid,outdir=None):
     
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    if float(fht['FA_VER'][:3]) < 2.4:
-        fo.write("module swap fiberassign/2.3.0\n")
-        fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
+    if faver == None:
+		faver = float(fht['FA_VER'][:3])
+		if faver < 2.4:
+			#fo.write("module swap fiberassign/2.3.0\n")
+			fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
+		else:
+			fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
-        fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+        fo.write("module swap fiberassign/"+str(faver)+"\n")
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
@@ -218,7 +222,7 @@ def redo_fba_fromorig(tileid,outdir=None):
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     #fo.write(" --by_tile true")
-    if float(fht['FA_VER'][:3]) >= 3:
+    if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
     fo.close()    
  
