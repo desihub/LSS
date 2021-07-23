@@ -87,7 +87,7 @@ def comp_neworig_tgt(tileid):
     wn = fn['TARGETID'] >= 0
     fn = fn[wn]
     #print(len(fn))
-    wa = fa['OBJTYPE'] 'TGT'
+    wa = fa['OBJTYPE'] == 'TGT'
     fa = fa[wa]
     #print(len(fa))  
     ws = np.isin(fn['TARGETID'],fa['TARGETID'])
