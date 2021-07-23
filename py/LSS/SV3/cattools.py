@@ -1353,7 +1353,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'    
     if ccut is not None:
-        wzm += +ccut+'_' #you could change this to however you want the file names to turn out
+        wzm += ccut+'_' #you could change this to however you want the file names to turn out
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
