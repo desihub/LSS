@@ -210,6 +210,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
+        faver = float(faver[:3])
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
