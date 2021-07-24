@@ -228,7 +228,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.write(" --rundate "+rundate)
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
-    fo.write(" --sky_per_petal 40 --standards_per_petal 10")
+    if indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210416/' and indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210418/':
+        fo.write(" --sky_per_petal 40 --standards_per_petal 10")
     #fo.write(" --by_tile true")
     if faver >= 2.4:
         fo.write(" --sky_per_slitblock 1")
