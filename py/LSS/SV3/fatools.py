@@ -305,23 +305,60 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
-    if float(fht['FA_VER'][:3]) < 2.4:
-        fo.write("module swap fiberassign/2.3.0\n")
+
+    if faver == None:
+        faver = float(fht['FA_VER'][:3])
+        if faver == 2.4:
+            fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
+
+        if faver < 2.4:
+            #fo.write("module swap fiberassign/2.3.0\n")
+            fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
+        else:
+            fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
-        fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+        fo.write("module swap fiberassign/"+str(faver)+"\n")
+        faver = float(faver[:3])
     fo.write("fba_run")
-    fo.write(" --targets "+tarfn+" "+scndf)
+    fo.write(" --targets "+tarfn)
+    if scnd:
+        fo.write(" "+scndf)
     if too:
         fo.write(" "+toof)
     fo.write(" --sky "+skyf)
     fo.write(" --footprint "+tilef)
-    fo.write(" --rundate "+fht['RUNDATE'])
+    rundate= fht['RUNDATE']
+    if rundate == '2021-04-10T21:28:37':
+        rundate = '2021-04-10T20:00:00'
+    fo.write(" --rundate "+rundate)
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
+    fo.write(" --sky_per_petal 40 --standards_per_petal 10")
     #fo.write(" --by_tile true")
-    if float(fht['FA_VER'][:3]) >= 3:
+    if faver >= 2.4:
+        fo.write(" --sky_per_slitblock 1")
+    if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
+        fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
     fo.close()    
+
+#     if float(fht['FA_VER'][:3]) < 2.4:
+#         fo.write("module swap fiberassign/2.3.0\n")
+#     else:
+#         fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+#     fo.write("fba_run")
+#     fo.write(" --targets "+tarfn+" "+scndf)
+#     if too:
+#         fo.write(" "+toof)
+#     fo.write(" --sky "+skyf)
+#     fo.write(" --footprint "+tilef)
+#     fo.write(" --rundate "+fht['RUNDATE'])
+#     fo.write(" --fieldrot "+str(fht['FIELDROT']))
+#     fo.write(" --dir "+outdir)
+#     #fo.write(" --by_tile true")
+#     if float(fht['FA_VER'][:3]) >= 3:
+#         fo.write(" --ha "+str(fht['FA_HA']))
+#     fo.close()    
 
 
 def altcreate_mtl(
