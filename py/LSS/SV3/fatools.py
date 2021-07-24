@@ -222,7 +222,10 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
         fo.write(" "+toof)
     fo.write(" --sky "+skyf)
     fo.write(" --footprint "+tilef)
-    fo.write(" --rundate "+fht['RUNDATE'])
+    rundate= fht['RUNDATE']
+    if fht == '2021-04-10T21:28:37':
+        rundate = '2021-04-10T20:00:00'
+    fo.write(" --rundate "+rundate)
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
