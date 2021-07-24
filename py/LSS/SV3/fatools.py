@@ -316,8 +316,10 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
             fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
 
         if faver < 2.4:
-            #fo.write("module swap fiberassign/2.3.0\n")
-            fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
+            if int(indir[-7:-1]) > 210413:
+                fo.write("module swap fiberassign/2.3.0\n")
+            else:
+                fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         else:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
