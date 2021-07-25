@@ -242,7 +242,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None):
+def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None,faver=None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -267,10 +267,12 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     except:
         print('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
+    scnd = True 
     try:
         fitsio.read(scndf)
     except:
-        print('Error! secondary file does not appear to exist')    
+        print(' secondary file does not appear to exist')
+        scnd = False 
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
