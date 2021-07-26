@@ -303,7 +303,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
         gaiadr,
         fht['PMCORR'],
         tarfn,
-        tdir)
+        tdir+prog)
 
     if getosubp:
         otar = Table.read(indir+ts+'-targ.fits')
