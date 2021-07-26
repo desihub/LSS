@@ -297,7 +297,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
     
-    if indir is not None:
+    if mtldir is not None:
         altcreate_mtl(tilef,
         mtldir+prog,        
         gaiadr,
