@@ -299,11 +299,11 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     
     if mtldir is not None:
         altcreate_mtl(tilef,
-        mtldir+prog,        
+        mtldir,        
         gaiadr,
         fht['PMCORR'],
         tarfn,
-        tdir+prog)
+        tdir)
 
     if getosubp:
         otar = Table.read(indir+ts+'-targ.fits')
