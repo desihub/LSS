@@ -242,7 +242,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None,faver=None):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -284,9 +284,12 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
         print('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
-    if getosubp:
+    if getosubp == True or mtldir == None:
         outdir += 'orig/'
-    tarfn = outdir+ts+'-targ.fits'    
+    if mtldir == None:
+        tarfn = indir+ts+'-targ.fits' 
+    else:
+        tarfn = outdir+ts+'-targ.fits'    
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
     if np.isin('gaiadr2',fht['FAARGS'].split()):
@@ -294,12 +297,13 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
     
-    altcreate_mtl(tilef,
-    mtldir+prog,        
-    gaiadr,
-    fht['PMCORR'],
-    tarfn,
-    tdir+prog)
+    if indir is not None:
+        altcreate_mtl(tilef,
+        mtldir+prog,        
+        gaiadr,
+        fht['PMCORR'],
+        tarfn,
+        tdir+prog)
 
     if getosubp:
         otar = Table.read(indir+ts+'-targ.fits')
