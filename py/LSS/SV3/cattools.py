@@ -1113,7 +1113,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         fbcol = 'FIBERSTATUS'
     if specver == 'everest':
         fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[] == 0
+    wf = fs[fbcol] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     #gtl now contains the list of 'good' tilelocid
@@ -1175,7 +1175,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
         arz = Table.read(azf)
-        wg = arz['FIBERSTATUS'] == 0
+        wg = arz[fbcol] == 0
         arz = arz[wg]
         arz['o2c'] = np.log10(arz['FOII']/arz['FOII_ERR'])+0.2*np.log10(arz['DELTACHI2']) 
         w = (arz['o2c']*0) != 0
