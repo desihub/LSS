@@ -769,7 +769,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran_wdup(tiles,rann,randir,tp,sv3dir):
+def combran_wdup(tiles,rann,randir,tp,sv3dir,specf):
 
     s = 0
     td = 0
@@ -812,7 +812,7 @@ def combran_wdup(tiles,rann,randir,tp,sv3dir):
 
     if len(tiles[tmask]['TILEID']) > 0:
         fgu.write(outf,format='fits', overwrite=True)
-    specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
+    #specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID'])
@@ -1012,7 +1012,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4):
+def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -1028,8 +1028,8 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     
     #first, need to find locations to veto based on data
     #the same is done in mkfulldat
-    fs = fitsio.read(indir+'datcomb_'+pd+'_specwdup_Alltiles.fits')
-    wf = fs['FIBERSTATUS'] == 0
+    #fs = fitsio.read(indir+'datcomb_'+pd+'_specwdup_Alltiles.fits')
+    wf = fs[fbcol] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     #gtl now contains the list of good locations

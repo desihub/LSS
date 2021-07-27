@@ -268,13 +268,29 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-            ct.combran_wdup(mtld,ii,randir,type,ldirspec)
-            tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
+			if specrel == 'everest':
+				specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+				wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+				specf = specf[wt]
+			if specrel == 'daily':
+				specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+
+            ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf)
+            tc = ct.count_tiles_better(specf,'ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
 
         
     if mkfullr:
+		if specrel == 'everest':
+			specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+			wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+			specf = specf[wt]
+			fbcol = 'COADD_FIBERSTATUS'
+		if specrel == 'daily':
+			specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+			fbcol = 'FIBERSTATUS'
+
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = sv3_targetmask.bgs_mask[type]
@@ -282,7 +298,7 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg,fbcol=fbcol)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
