@@ -1109,7 +1109,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         tscol = 'TSNR2_ELG'
     #load in the appropriate dark/bright combined spec file and use to denote the tileid + location that had good observations:
     fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
-    wf = fs['FIBERSTATUS'] == 0
+    if specver == 'daily':
+        fbcol = 'FIBERSTATUS'
+    if specver == 'everest':
+        fbcol = 'COADD_FIBERSTATUS'
+    wf = fs[] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     #gtl now contains the list of 'good' tilelocid
