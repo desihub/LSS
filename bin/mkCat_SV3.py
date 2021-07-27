@@ -353,6 +353,7 @@ if combd:
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
         if specrel == 'daily':
             outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
@@ -376,7 +377,7 @@ if combd:
                 tj = join(tj,ftar,keys=['TARGETID'])  
                 print(len(tj))  
         tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',pdir,specrel=specrel)
+        tc = ct.count_tiles_better(specf,'dat',pdir,specrel=specrel)
         tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combd, only done for dark/bright now')

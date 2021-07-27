@@ -386,7 +386,7 @@ def find_znotposs(dz):
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
-def count_tiles_better(dr,pd,rann=0,specrel='daily'):
+def count_tiles_better(fs,dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
     through and get the multi-tile information
@@ -394,8 +394,9 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily'):
     returns file with TARGETID,NTILE,TILES,TILELOCIDS
     '''
     
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specrel+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
-    wf = fs['FIBERSTATUS'] == 0
+    #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specrel+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
+    #wf = fs['FIBERSTATUS'] == 0
+    wf = fs[fibcol] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
     
