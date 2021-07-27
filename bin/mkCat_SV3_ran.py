@@ -305,7 +305,7 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,randir,desitarg=desitarg,fbcol=fbcol)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
