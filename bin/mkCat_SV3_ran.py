@@ -268,12 +268,12 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-			if specrel == 'everest':
-				specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
-				wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-				specf = specf[wt]
-			if specrel == 'daily':
-				specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            if specrel == 'everest':
+                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+                wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+                specf = specf[wt]
+            if specrel == 'daily':
+                specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
 
             ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf)
             tc = ct.count_tiles_better(specf,'ran',type,ii,specrel=specrel)
@@ -282,14 +282,14 @@ def doran(ii):
 
         
     if mkfullr:
-		if specrel == 'everest':
-			specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
-			wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-			specf = specf[wt]
-			fbcol = 'COADD_FIBERSTATUS'
-		if specrel == 'daily':
-			specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
-			fbcol = 'FIBERSTATUS'
+        if specrel == 'everest':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            fbcol = 'COADD_FIBERSTATUS'
+        if specrel == 'daily':
+            specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
