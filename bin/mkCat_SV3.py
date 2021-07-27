@@ -330,56 +330,56 @@ if mkdtiles:
             #logf.write('made full data files\n')
 
 if combd:
-	if type == 'dark' or type == 'bright':
-		outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
-		ct.combtiles_wdup(ta,mdir,outf)
-		tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
-		tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-		remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
-		for col in remcol:
-			try:
-				tarf.remove_columns([col] )#we get this where relevant from spec file
-			except:
-				print('column '+col +' was not in tarwdup file')    
+    if type == 'dark' or type == 'bright':
+        outf = sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits'
+        ct.combtiles_wdup(ta,mdir,outf)
+        tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
+        for col in remcol:
+            try:
+                tarf.remove_columns([col] )#we get this where relevant from spec file
+            except:
+                print('column '+col +' was not in tarwdup file')    
 
         if specrel == 'everest':
-			specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
-			wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-			specf = specf[wt]
-			specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
-			,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-			,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
-			,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-			'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-			'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
-			tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
+            ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             
         if specrel == 'daily':
-			outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
-			ct.combtile_spec(mtld,outf,rel=specrel)
-			specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
-			specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
-			,'FIBERASSIGN_X','FIBERASSIGN_Y','LOCATION','FIBER','FIBERSTATUS','PRIORITY'\
-			,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD','TILEID','INTEG_COADD_FLUX_B',\
-			'MEDIAN_COADD_FLUX_B','MEDIAN_COADD_SNR_B','INTEG_COADD_FLUX_R','MEDIAN_COADD_FLUX_R','MEDIAN_COADD_SNR_R','INTEG_COADD_FLUX_Z',\
-			'MEDIAN_COADD_FLUX_Z','MEDIAN_COADD_SNR_Z','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-			'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-			'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
-			specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-			tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-			try:
-				print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
-			except:
-				ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
-				ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
-				print(len(tj))
-				tj = join(tj,ftar,keys=['TARGETID'])  
-				print(len(tj))  
-		tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
-		tc = ct.count_tiles_better('dat',pdir,specrel=specrel)
-		tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
-	else:
-		print('nothing to be done for combd, only done for dark/bright now')
+            outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
+            ct.combtile_spec(mtld,outf,rel=specrel)
+            specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
+            ,'FIBERASSIGN_X','FIBERASSIGN_Y','LOCATION','FIBER','FIBERSTATUS','PRIORITY'\
+            ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD','TILEID','INTEG_COADD_FLUX_B',\
+            'MEDIAN_COADD_FLUX_B','MEDIAN_COADD_SNR_B','INTEG_COADD_FLUX_R','MEDIAN_COADD_FLUX_R','MEDIAN_COADD_SNR_R','INTEG_COADD_FLUX_Z',\
+            'MEDIAN_COADD_FLUX_Z','MEDIAN_COADD_SNR_Z','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+            try:
+                print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
+            except:
+                ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
+                ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
+                print(len(tj))
+                tj = join(tj,ftar,keys=['TARGETID'])  
+                print(len(tj))  
+        tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',pdir,specrel=specrel)
+        tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
+    else:
+        print('nothing to be done for combd, only done for dark/bright now')
 
 
 if combr:
