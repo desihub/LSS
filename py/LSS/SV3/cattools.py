@@ -1085,7 +1085,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4):
+def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1108,7 +1108,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
         pd = 'dark'
         tscol = 'TSNR2_ELG'
     #load in the appropriate dark/bright combined spec file and use to denote the tileid + location that had good observations:
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
+    #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     if specver == 'daily':
         fbcol = 'FIBERSTATUS'
     if specver == 'everest':

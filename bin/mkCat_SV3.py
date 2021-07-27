@@ -397,6 +397,13 @@ if combr:
         
         
 if mkfulld:
+    if specrel == 'everest':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+        wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+        specf = specf[wt]
+    if specrel == 'daily':
+        specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
@@ -409,7 +416,7 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
