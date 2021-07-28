@@ -17,6 +17,7 @@ parser.add_argument("--basedir", help="base directory for output, default is des
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
+parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 
 args = parser.parse_args()
 
@@ -25,6 +26,7 @@ basedir = args.basedir
 version = args.version
 specrel = args.verspec
 survey = args.survey
+nran = int(args.nran)
 
 if survey == 'SV3':
     import LSS.SV3.xitools as xt
@@ -159,7 +161,7 @@ for i in range(0,len(zl)):
     print(zmin,zmax)
     for zma in zmask:
         for reg in regl:
-            xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,minn=minn,reg=zma+reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+            xt.prep4czxi(type,zmin,zmax,nran=nran,indir=lssdir,ver=version,minn=minn,reg=zma+reg,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
             subprocess.run(['chmod','+x','czpc.sh'])
             subprocess.run('./czpc.sh')
             fa = ''
@@ -170,7 +172,7 @@ for i in range(0,len(zl)):
             xt.calcxi_dataCZ(type,zmin,zmax,minn=minn,reg=zma+reg,ver=version,fa=fa)
 
 
-        xt.prep4czxi(type,zmin,zmax,nran=10,indir=lssdir,ver=version,minn=minn,reg=zma,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
+        xt.prep4czxi(type,zmin,zmax,nran=nran,indir=lssdir,ver=version,minn=minn,reg=zma,outdir=os.environ['CSCRATCH']+'/cz/',ranwt1=ranwt1,subt=subt)
         subprocess.run(['chmod','+x','czpc.sh'])
         subprocess.run('./czpc.sh')
         fa = ''
