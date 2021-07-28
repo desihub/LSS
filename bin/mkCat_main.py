@@ -176,7 +176,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'zdone_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ntilecut=ntile,ccut=ccut)
 
 if mkclusran:
     print('doing clustering randoms')
