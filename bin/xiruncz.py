@@ -16,7 +16,7 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is desi catalog directory",default='/global/cfs/cdirs/desi/survey/catalogs')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
-parser.add_argumen("--survey",help="e.g., SV3 or main",default='SV3')
+parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 
 args = parser.parse_args()
 
