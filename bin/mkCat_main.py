@@ -77,7 +77,7 @@ if mkfulld:
     
 mkclusdat = False
 mkclusran = False
-if args.clus == 'y':
+if args.clusd == 'y':
     mkclusdat = True
     
 if mkclusdat:
