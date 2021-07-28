@@ -8,7 +8,7 @@ import argparse
 import os
 #sys.path.append('../py')
 #import LSS.mkCat_singletile.xitools as xt
-import LSS.SV3.xitools as xt
+#import LSS.SV3.xitools as xt
 
 
 parser = argparse.ArgumentParser()
