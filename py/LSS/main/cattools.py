@@ -1312,29 +1312,32 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
     '''
-    take full catalog, cut to ra,dec,z add any weight
-    program is dark,gray, or bright
-    tp distinguishes what to do with redshift info, will become increasingly relevant
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''    
     ff = Table.read(fl+'full.dat.fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += ccut+'_' #you could change this to however you want the file names to turn out
     outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
-    #wz &= ff['LOCATION_ASSIGNED'] == 1
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
     if tp == 'ELG' or tp == 'ELG_HIP':
-        #ff.remove_columns(['Z','ZWARN','TSNR2_ELG'])
-        #ff['Z_ar'].name = 'Z'
-        #ff['ZWARN_ar'].name = 'ZWARN'
-        #ff['TSNR2_ELG_ar'].name = 'TSNR2_ELG'
         wz = ff['o2c'] > dchi2
-        #wz = (ff['o2c'] > 0.9) | ((ff['ZWARN'] == 0) & (ff['Z'] > 1.55))
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
         print('length after oII cut '+str(len(ff[wz])))
@@ -1348,6 +1351,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
         print('length after dchi2 cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp[:3] == 'BGS':
+        print('applying extra cut for BGS')
+        wz &= ff['DELTACHI2'] > dchi2
+        print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
     
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
@@ -1367,8 +1378,33 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80):
         zma = np.array(zma)
         wm = zma == 0
         ff = ff[wm]    
+    #apply any cut on rosette radius
+    if rcut is not None:
+        wr = ff['rosette_r'] > rcut[0]
+        wr &= ff['rosette_r'] <  rcut[1]
+        print('length before rosette radius cut '+str(len(ff)))
+        ff = ff[wr]
+        print('length after rosette radius cut '+str(len(ff)))
+    #apply cut on ntile
+    if ntilecut > 0:
+        print('length before ntile cut '+str(len(ff)))
+        wt = ff['NTILE'] > ntilecut
+        ff = ff[wt]
+        print('length after ntile cut '+str(len(ff)))    
+    if ccut == 'notQSO':
+        wc = (ff['SV3_DESI_TARGET'] & sv3_targetmask.desi_mask['QSO']) ==  0
+        print('length before cutting to not QSO '+str(len(ff)))
+        ff = ff[wc]
+        print('length after cutting to not QSO '+str(len(ff)))
+    if ccut == 'zQSO':
+        wc = ff['SPECTYPE'] ==  'QSO'
+        print('length before cutting to spectype QSO '+str(len(ff)))
+        ff = ff[wc]
+        print('length after cutting to spectype QSO '+str(len(ff)))
+
+    #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','TILES'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
