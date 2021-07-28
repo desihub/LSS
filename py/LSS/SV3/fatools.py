@@ -49,14 +49,13 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SV3_DESI_TARGET',\
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
 
-def comp_neworig(tileid):
+def comp_neworig(tileid,dirn='/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'):
     """
     check that new matches the original
     
     """
     ts = str(tileid).zfill(6)
-    fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
+    fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz') 
     fn = fitsio.read(dirn+'fba-'+ts+'.fits')
     w = fn['DEVICE_TYPE'] == 'POS'
     fn = fn[w]
@@ -323,7 +322,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
 
         if faver < 2.4:
             if int(indir[-7:-1]) > 210413:
-                fo.write("module swap fiberassign/2.3.0\n")
+                fo.write("module swap fiberassign/2.3.0\n") #inspection of results revealed tiles that used 2.2.dev* after 20210413 are reproduced using 2.3.0 and those before using 2.2.0
             else:
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         else:
