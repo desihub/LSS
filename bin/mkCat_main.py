@@ -47,6 +47,10 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+ntile = args.ntile
+ccut = args.ccut
+rm = int(args.minr)
+rx = int(args.maxr)
 
 
 print('running catalogs for tracer type '+type)
@@ -62,6 +66,29 @@ if args.fulld == 'n':
 if mkfulld:
     print('making "full" catalog file for data')    
     
+    
+#mkfullr = True #make the random files associated with the full data files
+#if args.fullr == 'n':
+#    mkfullr = False
+    
+#if mkfullr:
+#    print('making full catalog for randoms, files '+str(rm)+ ' through '+str(rx))
+#    print('(if running all, consider doing in parallel)')    
+    
+mkclusdat = False
+mkclusran = False
+if args.clus == 'y':
+    mkclusdat = True
+    
+if mkclusdat:
+    print('making clustering catalog for data')
+    
+if args.clusran == 'y':
+    mkclusran = True
+    
+if mkclusran:
+    print('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx))
+    print('(if running all, consider doing in parallel)')  
     
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
