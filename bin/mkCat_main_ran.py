@@ -263,7 +263,7 @@ def doran(ii):
 
         
     if mkfullr:
-        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
             desitarg='SV3_BGS_TARGET'
