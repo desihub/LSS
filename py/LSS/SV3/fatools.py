@@ -298,7 +298,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     
     if mtldir is not None:
         altcreate_mtl(tilef,
-        mtldir,        
+        mtldir+prog,        
         gaiadr,
         fht['PMCORR'],
         tarfn,
