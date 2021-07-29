@@ -243,7 +243,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None,faver=None):
+def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/orig_mtls/sv3/',getosubp=False,outdir=None,faver=None, redoFA = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -302,7 +302,7 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     print('tarfn = {0}'.format(tarfn))
     print('tdir+prog = {0}'.format(tdir+prog))
     altcreate_mtl(tilef,
-    mtldir,        
+    mtldir+prog,        
     gaiadr,
     fht['PMCORR'],
     tarfn,
@@ -349,6 +349,8 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
+    if redoFA:
+        fo.write(" --overwrite")
     #fo.write(" --by_tile true")
     if faver >= 2.4:
         fo.write(" --sky_per_slitblock 1")

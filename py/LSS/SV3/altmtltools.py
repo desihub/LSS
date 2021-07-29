@@ -365,14 +365,14 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
                 try:
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh'])
-                    result = subprocess.run(command_run, capture_output = True)
+                    result = subprocess.run(command_run, capture_output = True, shell = True)
                 except:
                     print('get_fba_fromnewmtl failed in univ {0}. Trying again'.format(n))
                     print('mtldir = {0}'.format(altmtldir + survey.lower()))
                     print('fbadirbase = {0}'.format(fbadirbase))
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh'])
-                    result = subprocess.run(command_run, capture_output = True)
+                    result = subprocess.run(command_run, capture_output = True, shell = True)
             print('PYTHONPATH postFA')
             print(os.getenv('PYTHONPATH'))
             print('PATH postFA')
