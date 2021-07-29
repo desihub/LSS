@@ -201,7 +201,6 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
     if faver == None:
         faver = float(fht['FA_VER'][:3])
         if faver == 2.4:
@@ -217,6 +216,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
+    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
+    
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
@@ -294,8 +295,14 @@ def get_fba_fromnewmtl(tileid,mtldir='/global/cfs/cdirs/desi/survey/catalogs/SV3
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
     
+    print('tilef = {0}'.format(tilef))
+    print('mtldir+prog = {0}'.format(mtldir+prog))
+    print('gaiadr = {0}'.format(gaiadr))
+    print('PMCORR = {0}'.format(fht['PMCORR']))
+    print('tarfn = {0}'.format(tarfn))
+    print('tdir+prog = {0}'.format(tdir+prog))
     altcreate_mtl(tilef,
-    mtldir+prog,        
+    mtldir,        
     gaiadr,
     fht['PMCORR'],
     tarfn,
@@ -421,6 +428,9 @@ def altcreate_mtl(
     tiles = fitsio.read(tilesfn)
 
     # AR mtl: read mtl
+    print('mtldir read = {0}'.format(mtldir))
+    print('tiles = {0}'.format(tiles))
+    print('isodate = {0}'.format(mtltime))
     d = io.read_targets_in_tiles(
         mtldir,
         tiles,
