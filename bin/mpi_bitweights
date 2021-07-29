@@ -55,7 +55,7 @@ def main(args):
 
     import numpy as np
     from astropy.table import Table, vstack
-    from LSS.bitweights import (get_targets, setup_fba, update_bitweights
+    from LSS.bitweights import (get_targets, setup_fba, update_bitweights,
                                 pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
     from fiberassign.tiles import load_tiles
@@ -70,8 +70,8 @@ def main(args):
     else:
          tiles = load_tiles()
 
-    # Get target and randoms information
-    mtl, tgs, sky, randoms = get_targets(args.mtl, args.sky, args.randoms)
+    # Get target and information
+    mtl, tgs, sky = get_targets(args.mtl, args.sky)
     tg_ids = tgs.ids()
     tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
     n_target = len(tg_ids)
@@ -173,7 +173,7 @@ def main(args):
             targets = mtl
 
         # Write output files
-        write_output(args.outdir, args.format, targets[idas], bitvectors[idas], idas, desi_target_key=desi_target_key)
+        write_output(args.outdir, args.format, targets[idas], bitvectors[idas], desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()

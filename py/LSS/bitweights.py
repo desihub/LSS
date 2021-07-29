@@ -20,6 +20,8 @@ def get_targets(mtlfile, skyfile):
         mtl['SUBPRIORITY'] = np.ones(len(mtl))
     if 'OBSCONDITIONS' not in mtl:
         mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+    if 'DESI_TARGET' not in mtl:
+        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
     tgs = Targets()
@@ -56,13 +58,13 @@ def update_bitweights(realization, asgn, tileids, tg_ids, tg_ids2idx, bitweights
     Update bit weights for assigned science targets
     """
     for tileid in tileids:
-        adata = asgn.tile_location_target(tileid)
-        for loc, tgid in adata.items():
-            try: # Find which targets were assigned
+        try: # Find which targets were assigned
+            adata = asgn.tile_location_target(tileid)
+            for loc, tgid in adata.items():
                 idx = tg_ids2idx[tgid]
                 bitweights[realization * len(tg_ids) + idx] = True
-            except:
-                pass
+        except:
+            pass
 
     return bitweights
 
@@ -96,7 +98,7 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
-def write_output(outdir, fileformat, targets, bitvectors, idas, desi_target_key=None):
+def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -107,7 +109,7 @@ def write_output(outdir, fileformat, targets, bitvectors, idas, desi_target_key=
 
     # Output fits files
     if fileformat == 'fits':
-        outfile = os.path.join(outdir, '{}.fits'.format(outtype))
+        outfile = os.path.join(outdir, 'targeted.fits')
         output = Table()
         output['TARGETID'] = targets['TARGETID']
         if desi_target_key:
@@ -116,22 +118,21 @@ def write_output(outdir, fileformat, targets, bitvectors, idas, desi_target_key=
         output['DEC'] = targets['DEC']
         output['Z'] = targets['Z']
         for i in range(bitvectors.shape[1]):
-            output['BITWEIGHT{}'.format(i)] = bitvectors[:,i][idas]
+            output['BITWEIGHT{}'.format(i)] = bitvectors[:,i]
         output.write(outfile)
 
     # Output hdf5 files
     elif fileformat == 'hdf5':
-        outfile = os.path.join(outdir, '{}.hdf5'.format(outtype))
+        outfile = os.path.join(outdir, 'targeted.hdf5')
         outfile = h5py.File(outfile, 'w')
-        if outtype == 'targeted' or outtype == 'parent':
-            outfile.create_dataset('TARGETID', data=targets['TARGETID'])
-            if desi_target_key:
-                outfile.create_dataset('{}'.format(desi_target_key), data=targets['{}'.format(desi_target_key)])
+        outfile.create_dataset('TARGETID', data=targets['TARGETID'])
+        if desi_target_key:
+            outfile.create_dataset('{}'.format(desi_target_key), data=targets['{}'.format(desi_target_key)])
         outfile.create_dataset('RA', data=targets['RA'])
         outfile.create_dataset('DEC', data=targets['DEC'])
         outfile.create_dataset('Z', data=targets['Z'])
         for i in range(bitvectors.shape[1]):
-            outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i][idas])
+            outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i])
         outfile.close()
 
     else:
