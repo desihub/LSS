@@ -4,17 +4,15 @@ Functions for calculating PIP weights
 import os
 import h5py
 import numpy as np
-from random import random
 from astropy.table import Table
-from fiberassign.tiles import load_tiles
 from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
                                  LocationsAvailable, load_target_table)
 from fiberassign.assign import Assignment
 
 
-def get_targets(mtlfile, skyfile, randomsfile):
+def get_targets(mtlfile, skyfile):
     """
-    Load target and randoms information
+    Load target and information
     """
     # Read mtl file
     mtl = Table.read(mtlfile)
@@ -22,8 +20,6 @@ def get_targets(mtlfile, skyfile, randomsfile):
         mtl['SUBPRIORITY'] = np.ones(len(mtl))
     if 'OBSCONDITIONS' not in mtl:
         mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-#    if 'DESI_TARGET' not in mtl:
-#        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
     tgs = Targets()
@@ -35,16 +31,7 @@ def get_targets(mtlfile, skyfile, randomsfile):
         sky = Table.read(skyfile)
         load_target_table(tgs, sky)
 
-    # Load randoms
-    randoms = Table.read(randomsfile)
-    if 'Z' not in randoms:
-        randoms['Z'] = np.empty(len(randoms))
-        nd = len(mtl)
-        for i in range(len(randoms)):
-            ind = int(random()*nd)
-            randoms["Z"][i] = mtl["Z"][ind]
-
-    return mtl, tgs, sky, randoms
+    return mtl, tgs, sky
 
 def setup_fba(mtl, sky, tiles, hw):
     """
@@ -85,8 +72,8 @@ def pack_bitweights(array):
            of target galaxies, and Nreal is the number of fibre assignment realizations.
     Output: returns a 2D array of 64-bit signed integers. 
     """
-    Nbits=64
-    dtype=np.int64
+    Nbits = 64
+    dtype = np.int64
     Ngal, Nreal = array.shape           # total number of realizations and number of target galaxies
     Nout = (Nreal + Nbits - 1) // Nbits # number of output columns
     # intermediate arrays
@@ -108,7 +95,7 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
-def write_output(outtype, outdir, fileformat, targets, bitvectors, idas=None, desi_target_key=None):
+def write_output(outdir, fileformat, targets, bitvectors, idas, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -121,16 +108,14 @@ def write_output(outtype, outdir, fileformat, targets, bitvectors, idas=None, de
     if fileformat == 'fits':
         outfile = os.path.join(outdir, '{}.fits'.format(outtype))
         output = Table()
-        if outtype == 'targeted' or outtype == 'parent':
-            output['TARGETID'] = targets['TARGETID']
-            if desi_target_key:
-                output['{}'.format(desi_target_key)] = targets['{}'.format(desi_target_key)]
+        output['TARGETID'] = targets['TARGETID']
+        if desi_target_key:
+            output['{}'.format(desi_target_key)] = targets['{}'.format(desi_target_key)]
         output['RA'] = targets['RA']
         output['DEC'] = targets['DEC']
         output['Z'] = targets['Z']
         for i in range(bitvectors.shape[1]):
-            if outtype == 'targeted':
-                output['BITWEIGHT{}'.format(i)] = bitvectors[:,i][idas]
+            output['BITWEIGHT{}'.format(i)] = bitvectors[:,i][idas]
         output.write(outfile)
 
     # Output hdf5 files
@@ -145,8 +130,7 @@ def write_output(outtype, outdir, fileformat, targets, bitvectors, idas=None, de
         outfile.create_dataset('DEC', data=targets['DEC'])
         outfile.create_dataset('Z', data=targets['Z'])
         for i in range(bitvectors.shape[1]):
-            if outtype == 'targeted':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i][idas])
+            outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i][idas])
         outfile.close()
 
     else:

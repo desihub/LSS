@@ -5,11 +5,10 @@ Compute bit weights in parallel to be used for PIP or IIP weights
 Example run at NERSC:
 
 srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
-     --mtl LRG_oneperztrue_clus.dat.fits --randoms LRG_oneperztrue_clus.ran.fits
-     --format hdf5 --outdir output --realizations 128
+     --mtl LRG_oneperztrue_clus.dat.fits --format hdf5 --outdir output --realizations 128
 
 Notes:
-- Runs on master version of fiberassign, etc.
+- Runs on master version DESI repos except for fiberassign (use 2.3.0 for now)
 - Must add path_to_LSS_repo/LSS/bin to $PATH and path_to_LSS/LSS/py to $PYTHONPATH
 - PIP weights are stored as 64 bit integers, so the number of realizations must
   be a multiple of 64 (i.e. 64, 128, 192, etc. realizations correspond to output
@@ -33,9 +32,9 @@ import argparse
 
 def parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sky", type=str, required=False, help="fits file with sky targets")
     parser.add_argument("--mtl", type=str, required=True,
                         help="fits file with mtl, should contain only targets available to fibers")
+    parser.add_argument("--sky", type=str, required=False, help="fits file with sky targets")
     parser.add_argument("--tiles", type=str, required=False, default=None,
                         help="Optional fits file containing tile information to use in the footprint,"
                         "default uses desimodel footprint.")
@@ -160,7 +159,7 @@ def main(args):
             targets = mtl
 
         # Write output files
-        write_output('targeted', args.outdir, args.format, targets[idas], bitvectors, idas=idas, desi_target_key=desi_target_key)
+        write_output(args.outdir, args.format, targets[idas], bitvectors[idas], idas, desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()
