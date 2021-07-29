@@ -51,17 +51,18 @@ def setup_fba(mtl, sky, tiles, hw):
 
     return asgn
 
-def update_bitweights(realization, asgn, tile_id, tg_ids, tg_ids2idx, bitweights):
+def update_bitweights(realization, asgn, tileids, tg_ids, tg_ids2idx, bitweights):
     """
     Update bit weights for assigned science targets
     """
-    adata = asgn.tile_location_target(tile_id)
-    for loc, tgid in adata.items():
-        try: # Find which targets were assigned
-            idx = tg_ids2idx[tgid]
-            bitweights[realization * len(tg_ids) + idx] = True
-        except:
-            pass
+    for tileid in tileids:
+        adata = asgn.tile_location_target(tileid)
+        for loc, tgid in adata.items():
+            try: # Find which targets were assigned
+                idx = tg_ids2idx[tgid]
+                bitweights[realization * len(tg_ids) + idx] = True
+            except:
+                pass
 
     return bitweights
 

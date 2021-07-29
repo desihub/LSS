@@ -58,16 +58,17 @@ def main(args):
     from LSS.bitweights import (get_targets, setup_fba, update_bitweights
                                 pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
-#    from fiberassign.tiles import load_tiles
+    from fiberassign.tiles import load_tiles
     from fiberassign._internal import Tiles
     from fiberassign.assign import run
     from fiberassign.targets import (Targets, load_target_table)
 
     # Load tile data
-    tiles = None
+    tiledata = None
     if args.tiles:
-#        tiles = load_tiles(args.tiles)
         tiledata = Table.read(args.tiles)
+    else:
+         tiles = load_tiles()
 
     # Get target and randoms information
     mtl, tgs, sky, randoms = get_targets(args.mtl, args.sky, args.randoms)
@@ -83,6 +84,9 @@ def main(args):
     # Bit weight array for all targets and realizations
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
 
+    # Load hardward for fiber assignment
+    hw = load_hardware()
+
     for realization in my_realizations:
         # Set the seed based on the realization, so that the result is reproducible
         # regardless of which process is working on the realization
@@ -91,26 +95,36 @@ def main(args):
         # Randomize subpriorities
         mtl['SUBPRIORITY'] = np.random.random_sample(size=len(mtl))
 
-        # Loop through tiles individually to load appropriate rundate
-        for tdata in tiledata:
-            # Load tile
-            tileid = [tdata['TILEID']]
-            tilera = [tdata['RA']]
-            tiledec = [tdata['DEC']]
-            rundate = [tdata['RUNDATE']]
-            obscond = tdata['OBSCONDITIONS']
-            theta = [tdata['FIELDROT']]
-            tile = Tiles(tileid, tilera, tiledec, obscond, rundate, theta, tilera)
+        # Loop through tiles individually to load appropriate tile information
+        if tiledata:
+            for tdata in tiledata:
+                # Load tile
+                tileid = [tdata['TILEID']]
+                tilera = [tdata['RA']]
+                tiledec = [tdata['DEC']]
+                rundate = [tdata['RUNDATE']]
+                obscond = tdata['OBSCONDITIONS']
+                theta = [tdata['FIELDROT']]
+                tile = Tiles(tileid, tilera, tiledec, obscond, rundate, theta, tilera)
+    
+                # Load appropriate hardware state
+                hw = load_hardware(rundate=rundate[0])
+    
+                # Set up and run fiber assignment
+                asgn = setup_fba(mtl, sky, tile, hw)
+                run(asgn)
+    
+                # Update bit weights for assigned science targets
+                bitweights = update_bitweights(realization, asgn, tileid, tg_ids, tg_ids2idx, bitweights)
 
-            # Load appropriate hardware state
-            hw = load_hardware(rundate=rundate[0])
-
+        # Run all tiles simultaneously if we don't have tile information
+        else:
             # Set up and run fiber assignment
-            asgn = setup_fba(mtl, sky, tile, hw)
+            asgn = setup_fba(mtl, sky, tiles, hw)
             run(asgn)
 
             # Update bit weights for assigned science targets
-            bitweights = update_bitweights(realization, asgn, tileid[0], tg_ids, tg_ids2idx, bitweights)
+            bitweights = update_bitweights(realization, asgn, tiles.id, tg_ids, tg_ids2idx, bitweights)
 
     # Gather weights from all processes
     gather_weights = None
