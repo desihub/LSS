@@ -18,20 +18,16 @@ Notes:
 
 Required Arguments:
   mtl     (str) : target fits file containing TARGETID, RA, DEC, Z
-  randoms (str) : randoms fits file containing RA, DEC, Z
 
 Optional Arguments:
   sky          (str) : fits file containing sky targets
-  footprint    (str) : fits file containing footprint
-  tiles        (str) : text file containing tile IDs
+  tiles        (str) : fits file containing tile information
   format       (str) : output file format (fits or hdf5)
   outdir       (str) : output directory
   realizations (int) : number of realizations
 
 Outputs:
   targeted.fits : fits (hdf5) file containing targeted science objects
-  parent.fits   : fits (hdf5) file containing parent catalog
-  randoms.fits  : fits (hdf5) file containing randoms catalog
 """
 import argparse
 
@@ -40,12 +36,9 @@ def parse():
     parser.add_argument("--sky", type=str, required=False, help="fits file with sky targets")
     parser.add_argument("--mtl", type=str, required=True,
                         help="fits file with mtl, should contain only targets available to fibers")
-    parser.add_argument("--randoms", type=str, required=True, help="fits file with random targets")
-    parser.add_argument("--footprint", type=str, required=False, default=None,
-                        help="Optional fits file defining the footprint, default footprint from desimodel")
     parser.add_argument("--tiles", type=str, required=False, default=None,
-                        help="Optional text file containing a subset of the tile IDs to use in the footprint,"
-                        "one ID per line. Default uses all tiles in the footprint.")
+                        help="Optional fits file containing tile information to use in the footprint,"
+                        "default uses desimodel footprint.")
     parser.add_argument("--format", type=str, required=False, default="fits",
                         help="File format for outputs (either fits or hdf5)")
     parser.add_argument("--outdir", type=str, required=False, default=".", help="Output directory")
@@ -63,21 +56,25 @@ def main(args):
 
     import numpy as np
     from astropy.table import Table, vstack
-    from LSS.bitweights import (get_tiles, get_targets, setup_fba,
-                               update_bitweights, pack_bitweights, write_output)
+    from LSS.bitweights import (get_targets, setup_fba, update_bitweights
+                                pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
+#    from fiberassign.tiles import load_tiles
+    from fiberassign._internal import Tiles
     from fiberassign.assign import run
+    from fiberassign.targets import (Targets, load_target_table)
 
-    # Get tile information
-    tiles = get_tiles(args.tiles, args.footprint)
+    # Load tile data
+    tiles = None
+    if args.tiles:
+#        tiles = load_tiles(args.tiles)
+        tiledata = Table.read(args.tiles)
 
     # Get target and randoms information
     mtl, tgs, sky, randoms = get_targets(args.mtl, args.sky, args.randoms)
     tg_ids = tgs.ids()
+    tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
     n_target = len(tg_ids)
-
-    # Load hardward for fiber assignment
-    hw = load_hardware()
 
     # Divide realizations among processes
     n_realization = args.realizations
@@ -95,12 +92,26 @@ def main(args):
         # Randomize subpriorities
         mtl['SUBPRIORITY'] = np.random.random_sample(size=len(mtl))
 
-        # Set up and run fiber assignment
-        asgn = setup_fba(mtl, sky, tiles, hw)
-        run(asgn)
+        # Loop through tiles individually to load appropriate rundate
+        for tdata in tiledata:
+            # Load tile
+            tileid = [tdata['TILEID']]
+            tilera = [tdata['RA']]
+            tiledec = [tdata['DEC']]
+            rundate = [tdata['RUNDATE']]
+            obscond = tdata['OBSCONDITIONS']
+            theta = [tdata['FIELDROT']]
+            tile = Tiles(tileid, tilera, tiledec, obscond, rundate, theta, tilera)
 
-        # Update bit weights for assigned science targets
-        idas, bitweights = update_bitweights(realization, asgn, tiles, tg_ids, bitweights)
+            # Load appropriate hardware state
+            hw = load_hardware(rundate=rundate[0])
+
+            # Set up and run fiber assignment
+            asgn = setup_fba(mtl, sky, tile, hw)
+            run(asgn)
+
+            # Update bit weights for assigned science targets
+            bitweights = update_bitweights(realization, asgn, tileid[0], tg_ids, tg_ids2idx, bitweights)
 
     # Gather weights from all processes
     gather_weights = None
@@ -115,6 +126,12 @@ def main(args):
         weights = np.array_split(gather_weights, n_realization)
         bweights = np.array(weights).T
         bitvectors = pack_bitweights(bweights)
+
+        # Figure out targeted sample
+        idas = np.zeros(n_target, dtype=bool)
+        for real in range(n_realization):
+            was_assigned = weights[real] == True
+            idas[was_assigned] = True
 
         # Find which target bits to output
         desi_target_key = None
@@ -143,9 +160,7 @@ def main(args):
             targets = mtl
 
         # Write output files
-        write_output('targeted', args.outdir, args.format, targets[idas], idas, bitvectors, desi_target_key)
-        write_output('parent', args.outdir, args.format, targets, idas, bitvectors, desi_target_key)
-        write_output('randoms', args.outdir, args.format, randoms, idas, bitvectors)
+        write_output('targeted', args.outdir, args.format, targets[idas], bitvectors, idas=idas, desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()

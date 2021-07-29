@@ -4,6 +4,7 @@ Functions for calculating PIP weights
 import os
 import h5py
 import numpy as np
+from random import random
 from astropy.table import Table
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
@@ -11,35 +12,18 @@ from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
 from fiberassign.assign import Assignment
 
 
-def get_tiles(tilefile, footprint):
-    """
-    Load tile information
-    """
-    # Read tiles we are using
-    tileselect = None
-    if tilefile is not None:
-        tileselect = list()
-        with open(tilefile, "r") as f:
-            for line in f:
-                # Try to convert the first column to an integer
-                try:
-                    tileselect.append(int(line.split()[0]))
-                except ValueError:
-                    pass
-    tiles = load_tiles(tiles_file=footprint,
-                       select=tileselect)
-
-    return tiles
-
 def get_targets(mtlfile, skyfile, randomsfile):
     """
     Load target and randoms information
     """
     # Read mtl file
     mtl = Table.read(mtlfile)
-    mtl['SUBPRIORITY'] = np.ones(len(mtl))
-    mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-    mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
+    if 'SUBPRIORITY' not in mtl:
+        mtl['SUBPRIORITY'] = np.ones(len(mtl))
+    if 'OBSCONDITIONS' not in mtl:
+        mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+#    if 'DESI_TARGET' not in mtl:
+#        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
     tgs = Targets()
@@ -53,6 +37,12 @@ def get_targets(mtlfile, skyfile, randomsfile):
 
     # Load randoms
     randoms = Table.read(randomsfile)
+    if 'Z' not in randoms:
+        randoms['Z'] = np.empty(len(randoms))
+        nd = len(mtl)
+        for i in range(len(randoms)):
+            ind = int(random()*nd)
+            randoms["Z"][i] = mtl["Z"][ind]
 
     return mtl, tgs, sky, randoms
 
@@ -74,26 +64,19 @@ def setup_fba(mtl, sky, tiles, hw):
 
     return asgn
 
-def update_bitweights(realization, asgn, tiles, tg_science, bitweights):
+def update_bitweights(realization, asgn, tile_id, tg_ids, tg_ids2idx, bitweights):
     """
     Update bit weights for assigned science targets
     """
-    assigned = []
-    for tile_id in tiles.id:
+    adata = asgn.tile_location_target(tile_id)
+    for loc, tgid in adata.items():
         try: # Find which targets were assigned
-            adata = asgn.tile_location_target(tile_id)
-            for loc, tgid in adata.items():
-                assigned.append(tgid)
+            idx = tg_ids2idx[tgid]
+            bitweights[realization * len(tg_ids) + idx] = True
         except:
             pass
 
-    # Update bit weights
-    idas = np.isin(tg_science, assigned)
-    min_targ = realization * len(tg_science)
-    max_targ = (realization + 1) * len(tg_science)
-    bitweights[min_targ:max_targ] = idas
-
-    return idas, bitweights
+    return bitweights
 
 def pack_bitweights(array):
     """
@@ -125,7 +108,7 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
-def write_output(outtype, outdir, fileformat, targets, idas, bitvectors, desi_target_key=None):
+def write_output(outtype, outdir, fileformat, targets, bitvectors, idas=None, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -148,10 +131,6 @@ def write_output(outtype, outdir, fileformat, targets, idas, bitvectors, desi_ta
         for i in range(bitvectors.shape[1]):
             if outtype == 'targeted':
                 output['BITWEIGHT{}'.format(i)] = bitvectors[:,i][idas]
-            elif outtype == 'parent':
-                output['BITWEIGHT{}'.format(i)] = -np.ones(len(bitvectors[:,i]), dtype=int)
-            elif outtype == 'randoms':
-                output['BITWEIGHT{}'.format(i)] = -np.ones(len(targets), dtype=int)
         output.write(outfile)
 
     # Output hdf5 files
@@ -168,10 +147,6 @@ def write_output(outtype, outdir, fileformat, targets, idas, bitvectors, desi_ta
         for i in range(bitvectors.shape[1]):
             if outtype == 'targeted':
                 outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i][idas])
-            elif outtype == 'parent':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=-np.ones(len(bitvectors[:,i]), dtype=int))
-            elif outtype == 'randoms':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=-np.ones(len(targets), dtype=int))
         outfile.close()
 
     else:
