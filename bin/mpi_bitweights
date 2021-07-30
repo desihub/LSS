@@ -8,9 +8,9 @@ srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
      --mtl LRG_oneperztrue_clus.dat.fits --format hdf5 --outdir output --realizations 128
 
 Notes:
-- Runs on master version DESI repos except for fiberassign (use 2.3.0 for now)
+- Runs on master version of all DESI repos except for fiberassign (use 2.3.0 for now)
 - Must add path_to_LSS_repo/LSS/bin to $PATH and path_to_LSS/LSS/py to $PYTHONPATH
-- PIP weights are stored as 64 bit integers, so the number of realizations must
+- bit weights are stored as 64 bit integers, so the number of realizations must
   be a multiple of 64 (i.e. 64, 128, 192, etc. realizations correspond to output
   arrays BITWEIGHT0, BITWEIGHT1, BITWEIGHT2, etc.)
 - n nodes (-N) x n cpus (-c) must be a factor of the number of realizations
