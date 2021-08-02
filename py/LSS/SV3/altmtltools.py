@@ -188,10 +188,25 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, seed = 314159, obscon 
         initialentries['SUBPRIORITY'] = subpriors[shuffler]
             
         io.write_mtl(outputMTLDir, initialentries, survey='sv3', obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
-        
+
+def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'dark'):
+    print('quick restart running')
+    from shutil import copyfile, move
+    from glob import glob as ls
+    for nRestart in range(ndirs):
+        print(nRestart)
+        altmtldirRestart = altmtlbasedir + '/Univ{0:03d}/'.format(nRestart)
+        if os.path.exists(altmtldirRestart + 'mtl-done-tiles.ecsv'):
+            move(altmtldirRestart + 'mtl-done-tiles.ecsv',altmtldirRestart + 'mtl-done-tiles.ecsv.old')
+        restartMTLs = ls(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
+        #print(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
+        #print(restartMTLs)
+        for fn in restartMTLs:
+            copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
+     
 def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
-                secondary=False, singletile = None, debugOrig = False, 
+                secondary=False, singletile = None, singleDate = None, debugOrig = False, 
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None):
     """Execute full MTL loop, including reading files, updating ledgers.
@@ -258,20 +273,11 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
+    #print('globals items')
+    #print(globals().items())
 
     if quickRestart:
-        from shutil import copyfile, move
-        from glob import glob as ls
-        for nRestart in range(ndirs):
-            print(nRestart)
-            altmtldirRestart = altmtlbasedir + '/Univ{0:03d}/'.format(nRestart)
-            if os.path.exists(altmtldirRestart + 'mtl-done-tiles.ecsv'):
-                move(altmtldirRestart + 'mtl-done-tiles.ecsv',altmtldirRestart + 'mtl-done-tiles.ecsv.old')
-            restartMTLs = ls(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
-            #print(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
-            #print(restartMTLs)
-            for fn in restartMTLs:
-                copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
+        quickRestartFxn(ndirs = 1, altmtlbasedir = altmtlbasedir, survey = survey, obscon = obscon)
     # ADM first grab all of the relevant files.
     # ADM grab the MTL directory (in case we're relying on $MTL_DIR).
     mtldir = get_mtl_dir(mtldir)
@@ -345,11 +351,17 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
                 return althpdirname, mtltilefn, ztilefn, tiles
         if not (singletile is None):
             tiles = tiles[tiles['TILEID'] == singletile]
-        dates = np.sort(list(set(tiles['ZDATE'])))
+        
         #sorttiles = np.sort(tiles, order = 'ZDATE')
-
+        if not singleDate is None:
+            tiles = tiles[tiles['ZDATE'] == singleDate]
+        else:
+            assert(0)
+        dates = np.sort(list(set(tiles['ZDATE'])))
         for date in dates:
-            print(date)
+            #print('globals items')
+            #print(globals().items())
+            #print(date)
             dateTiles = tiles[tiles['ZDATE'] == date]
             OrigFAs = []
             AltFAs = []
@@ -412,8 +424,12 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
                 A2RMap.update(A2RMapTemp)
                 R2AMap.update(R2AMapTemp)
 
+            print(type(zcat))
+            print(zcat.dtype)
             altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
 
+            print(type(altZCat))
+            print(altZCat.dtype)
             # ADM update the appropriate ledger.
             
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
@@ -421,7 +437,6 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
             if survey == "main":
                 sleep(1)
                 tiles["TIMESTAMP"] = get_utc_date(survey=survey)
-
             
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
         # ADM for the main survey "holding pen" method, ensure the TIMESTAMP
