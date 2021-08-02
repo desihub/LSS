@@ -475,6 +475,8 @@ def altcreate_mtl(
     if not os.path.exists(outfndir):
         os.makedirs(outfndir, exist_ok=True)
     d.write(outfn,format='fits', overwrite=True)
+    del d
+    return True
     # AR mtl: write fits
     #n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
     #_ = mv_write_targets_out(tmpfn, tmpoutdir, outfn)
