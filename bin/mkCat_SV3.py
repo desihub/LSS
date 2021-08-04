@@ -368,14 +368,14 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-            try:
-                print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
-            except:
-                ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
-                ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
-                print(len(tj))
-                tj = join(tj,ftar,keys=['TARGETID'])  
-                print(len(tj))  
+        try:
+            print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
+        except:
+            ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
+            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
+            print(len(tj))
+            tj = join(tj,ftar,keys=['TARGETID'])  
+            print(len(tj))  
         tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better(specf,'dat',pdir,specrel=specrel)
         tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
