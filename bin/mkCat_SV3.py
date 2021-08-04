@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
@@ -398,7 +398,7 @@ if combr:
         
 if mkfulld:
     if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'cumulative.fits')
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
