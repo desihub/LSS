@@ -210,8 +210,8 @@ if len(mtld) > 0:
         ral.append(fht['TILERA'])
         decl.append(fht['TILEDEC'])
         mtlt.append(fht['MTLTIME'])
-        fal.append(fht['FA_RUN'])
-        obsl.append(fht['OBSCON'])
+        fal.append(fht['RUNDATE'])
+        obsl.append(fht['FIELDROT'])
         #pl.append(pro)
         pl.append(pr)
     ta = Table()
@@ -219,8 +219,8 @@ if len(mtld) > 0:
     ta['RA'] = ral
     ta['DEC'] = decl
     ta['MTLTIME'] = mtlt
-    ta['FA_RUN'] = fal
-    ta['OBSCON'] = obsl
+    ta['RUNDATE'] = fal
+    ta['FIELDROT'] = obsl
     ta['PROGRAM'] = pl
     ta['OBSCONDITIONS'] = 516
     ta['IN_DESI'] = 1
