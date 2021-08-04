@@ -1430,7 +1430,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff = ff[wc]
         print('length after cutting to spectype QSO '+str(len(ff)))
     if ccut == 'main':
-        if type != 'LRG':
+        if tp != 'LRG':
             print('this is only defined for LRGs!' )
         else:
             lrgmaintar = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/',columns=['TARGETID'])
