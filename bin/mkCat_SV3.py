@@ -222,6 +222,10 @@ if len(mtld) > 0:
     ta['FA_RUN'] = fal
     ta['OBSCON'] = obsl
     ta['PROGRAM'] = pl
+    ta['OBSCONDITIONS'] = 516
+    ta['IN_DESI'] = 1
+    ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+
 else:
     print('no done tiles in the MTL')
 
