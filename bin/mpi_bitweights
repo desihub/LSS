@@ -101,11 +101,12 @@ def main(args):
                 # Load tile
                 tileid = [tdata['TILEID']]
                 tilera = [tdata['RA']]
+                tileha = [tdata['FA_HA']]
                 tiledec = [tdata['DEC']]
                 rundate = [tdata['RUNDATE']]
                 obscond = tdata['OBSCONDITIONS']
                 theta = [tdata['FIELDROT']]
-                tile = Tiles(tileid, tilera, tiledec, obscond, rundate, theta)#, tilera)
+                tile = Tiles(tileid, tilera, tiledec, obscond, rundate, theta, tileha)
     
                 # Load appropriate hardware state
                 hw = load_hardware(rundate=rundate[0])

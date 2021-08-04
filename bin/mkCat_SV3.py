@@ -202,6 +202,7 @@ if len(mtld) > 0:
     fal = []
     obsl = []
     pl = []
+    hal = []
     #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
     for tile in mtld['TILEID']:
         ts = str(tile).zfill(6)
@@ -212,6 +213,7 @@ if len(mtld) > 0:
         mtlt.append(fht['MTLTIME'])
         fal.append(fht['RUNDATE'])
         obsl.append(fht['FIELDROT'])
+        hal.append(fht['FA_HA'])
         #pl.append(pro)
         pl.append(pr)
     ta = Table()
@@ -222,6 +224,7 @@ if len(mtld) > 0:
     ta['RUNDATE'] = fal
     ta['FIELDROT'] = obsl
     ta['PROGRAM'] = pl
+    ta['FA_HA'] = hal
     ta['OBSCONDITIONS'] = 516
     ta['IN_DESI'] = 1
     ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
