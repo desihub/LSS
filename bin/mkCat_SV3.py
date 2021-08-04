@@ -343,7 +343,7 @@ if combd:
                 print('column '+col +' was not in tarwdup file')    
 
         if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
             wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
             specf = specf[wt]
             specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
@@ -398,7 +398,7 @@ if combr:
         
 if mkfulld:
     if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
