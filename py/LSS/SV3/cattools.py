@@ -1433,7 +1433,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         if tp != 'LRG':
             print('this is only defined for LRGs!' )
         else:
-            lrgmaintar = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/',columns=['TARGETID'])
+            lrgmaintar = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/LRGtargetsDR9v1.1.1.fits',columns=['TARGETID'])
             sel = np.isin(ff['TARGETID'],lrgmaintar)
             print('numbers before/after cut:')
             print(len(ff),len(ff[sel]))
