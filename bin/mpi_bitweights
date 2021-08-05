@@ -88,7 +88,7 @@ def main(args):
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
 
     # Load hardward for fiber assignment
-    hw = load_hardware()
+    hw = load_hardware(rundate='2021-04-06T00:39:37') #rundate for first SV3 tiles
 
     for realization in my_realizations:
         # Set the seed based on the realization, so that the result is reproducible
