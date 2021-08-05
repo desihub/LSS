@@ -158,9 +158,9 @@ def main(args):
             if 'SV3_DESI_TARGET' == key:
                 desi_target_key = key
         if desi_target_key == None:
-			for key in mtl.keys():
-				if 'DESI_TARGET' == key:
-					desi_target_key = key
+            for key in mtl.keys():
+                if 'DESI_TARGET' == key:
+                    desi_target_key = key
         
 
         # Combine sky and mtl
