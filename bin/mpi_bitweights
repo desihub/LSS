@@ -181,4 +181,6 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse()
+    print('started')
+    print(args)
     main(args)
