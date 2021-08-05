@@ -69,7 +69,8 @@ def main(args):
     tiledata = None
     if args.tiles:
         #tiledata = Table.read(args.tiles)
-         tiles = load_tiles(args.tiles)
+         #tiles = load_tiles(args.tiles)
+         tiles = load_tiles(tiles_file=args.tiles, select=None)#,obstime=args.obsdate, obstheta=args.fieldrot, obsha=args.ha)
     else:
          tiles = load_tiles()
 
