@@ -16,11 +16,11 @@ def get_targets(mtlfile, skyfile,survey='sv3'):
     """
     # Read mtl file
     mtl = Table.read(mtlfile)
-    if 'SUBPRIORITY' not in mtl:
+    if 'SUBPRIORITY' not in mtl.dtype.names:
         mtl['SUBPRIORITY'] = np.ones(len(mtl))
-    if 'OBSCONDITIONS' not in mtl:
+    if 'OBSCONDITIONS' not in mtl.dtype.names:
         mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-    if 'DESI_TARGET' not in mtl:
+    if 'DESI_TARGET' not in mtl.dtype.names:
         mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
