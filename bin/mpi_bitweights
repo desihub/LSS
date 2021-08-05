@@ -74,7 +74,7 @@ def main(args):
          tiles = load_tiles()
 
     # Get target and information
-    mtl, tgs, sky = get_targets(args.mtl, args.sky,survey=args.survey)
+    mtl, tgs, sky = get_targets(args.mtl, args.sky)
     print('got targets')
     tg_ids = tgs.ids()
     tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
@@ -116,7 +116,7 @@ def main(args):
                 hw = load_hardware(rundate=rundate[0])
     
                 # Set up and run fiber assignment
-                asgn = setup_fba(mtl, sky, tile, hw,survey=args.survey)
+                asgn = setup_fba(mtl, sky, tile, hw)
                 run(asgn)
     
                 # Update bit weights for assigned science targets
