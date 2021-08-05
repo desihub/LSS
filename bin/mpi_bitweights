@@ -47,6 +47,7 @@ def parse():
     return args
 
 def main(args):
+    print('started')
     # Initialize mpi
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -73,6 +74,7 @@ def main(args):
 
     # Get target and information
     mtl, tgs, sky = get_targets(args.mtl, args.sky)
+    print('got targets')
     tg_ids = tgs.ids()
     tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
     n_target = len(tg_ids)
