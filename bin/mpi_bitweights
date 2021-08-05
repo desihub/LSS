@@ -152,11 +152,16 @@ def main(args):
             idas[was_assigned] = True
 
         print('number of targets that got assigned '+str(np.sum(idas)))
-        # Find which target bits to output
+        # Find which target bits to output, if SV3_DESI_TARGET is there, use that, DESI_TARGET otherwise
         desi_target_key = None
         for key in mtl.keys():
-            if 'DESI_TARGET' in key:
+            if 'SV3_DESI_TARGET' == key:
                 desi_target_key = key
+        if desi_target_key == None:
+			for key in mtl.keys():
+				if 'DESI_TARGET' == key:
+					desi_target_key = key
+        
 
         # Combine sky and mtl
         if sky:
