@@ -10,7 +10,7 @@ from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
 from fiberassign.assign import Assignment
 
 
-def get_targets(mtlfile, skyfile,survey='sv3'):
+def get_targets(mtlfile, skyfile):
     """
     Load target and information
     """
@@ -25,25 +25,25 @@ def get_targets(mtlfile, skyfile,survey='sv3'):
 
     # Load science targets
     tgs = Targets()
-    load_target_table(tgs, mtl,survey=survey)
+    load_target_table(tgs, mtl)
 
     # Load sky targets
     sky = None
     if skyfile:
         sky = Table.read(skyfile)
-        load_target_table(tgs, sky,survey=survey)
+        load_target_table(tgs, sky)
 
     return mtl, tgs, sky
 
-def setup_fba(mtl, sky, tiles, hw,survey='sv3'):
+def setup_fba(mtl, sky, tiles, hw):
     """
     Set up tiles, targets, etc. for fiber assignment
     """
     # Load targets and target tree
     tgs = Targets()
-    load_target_table(tgs, mtl,survey=survey)
+    load_target_table(tgs, mtl)
     if sky:
-        load_target_table(tgs, sky,survey=survey)
+        load_target_table(tgs, sky)
     tree = TargetTree(tgs)
 
     # Compute available targets / locations
