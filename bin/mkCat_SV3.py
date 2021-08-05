@@ -225,7 +225,8 @@ if len(mtld) > 0:
     ta['FIELDROT'] = obsl
     ta['PROGRAM'] = pl
     ta['FA_HA'] = hal
-    ta['OBSCONDITIONS'] = 516
+    if pd == 'dark':
+        ta['OBSCONDITIONS'] = 1
     ta['IN_DESI'] = 1
     ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
 
