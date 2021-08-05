@@ -150,6 +150,7 @@ def main(args):
             was_assigned = weights[real] == True
             idas[was_assigned] = True
 
+        print('number of targets that got assigned '+str(np.sum(idas)))
         # Find which target bits to output
         desi_target_key = None
         for key in mtl.keys():
