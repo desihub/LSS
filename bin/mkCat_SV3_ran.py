@@ -269,7 +269,7 @@ def doran(ii):
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
             if specrel == 'everest':
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
                 wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
                 specf = specf[wt]
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -290,12 +290,12 @@ def doran(ii):
         
     if mkfullr:
         if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
             wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
             specf = specf[wt]
             fbcol = 'COADD_FIBERSTATUS'
         if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'

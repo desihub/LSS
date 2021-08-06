@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+"""
+Match output from mpi_bitweights to clustering catalog to output bit weights for particular target type
+or generate parent or randoms file with bit weights for 2pcf
+
+Example run:
+make_bitweight_file --input targeted.fits --category targeted --matchfile ELGAlltiles_clustering.dat.fits
+                    --informat fits --target elg --realizations 128 --outdir output --outformat hdf5
+
+Arguments:
+  input        (str) : input file containing full targeted, parent, or randoms catalog
+  category     (str) : targeted, parent, or randoms
+  matchfile    (str) : clustering file to match IDs for targeted catalog
+  target       (str) : target type (e.g. elg, lrg, qso, bgs)
+  realizations (int) : number of realizations for constructing bit weight arrays
+  outdir       (str) : output directory
+  format       (str) : output file format
+
+Outputs (for example):
+  targeted_lrg.fits : fits (hdf5) file containing targeted science objects
+"""
+import sys
+import argparse
+import numpy as np
+import h5py
+from astropy.table import Table
+from desiutil.log import get_logger
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--input", type=str, required=True, help="input targeted, parent, or randoms file")
+parser.add_argument("--category", type=str, required=True, help="targeted, parent, or randoms")
+parser.add_argument("--matchfile", type=str, required=False, help="file per target type to match to targeted file")
+parser.add_argument("--target", type=str, required=True, help="target type, e.g. elg, lrg, etc.")
+parser.add_argument("--realizations", type=int, required=True, help="number of realizations")
+parser.add_argument("--outdir", type=str, required=False, default='.', help="output directory")
+parser.add_argument("--format", type=str, required=False, default='fits', help="output file format")
+args = parser.parse_args()
+
+log = get_logger()
+
+# Load input file
+informat = args.input.split('.')[-1]
+if informat == 'fits':
+    indata = Table.read(args.input)
+elif informat == 'hdf5':
+    indata = h5py.File(args.input, 'r')
+else:
+    log.critical("Input must be either fits or hdf5 format!")
+    sys.exit()
+
+# Use number of realizations for constructing bit weight arrays
+nreal = args.realizations
+if nreal % 64 != 0:
+    log.critical("Number of realizations must be a multiple of 64!")
+    sys.exit()
+else:
+    nbitarrays = nreal // 64
+
+# targeted, parent, or randoms?
+cat = args.category
+
+# Get targeted data
+if cat == 'targeted':
+    # Match targets to get particular target type
+    tid       = np.array(indata['TARGETID'])
+    matchdata = Table.read(args.matchfile)
+    matchid   = matchdata['TARGETID']
+    match     = np.intersect1d(tid, matchid, return_indices=True)
+
+    tid = tid[match[1]]
+    z   = np.array(matchdata['Z'])[match[2]]
+    ra  = np.array(indata['RA'])[match[1]]
+    dec = np.array(indata['DEC'])[match[1]]
+
+    bitarrays = []
+    for i in range(nbitarrays):
+        bitarrays.append(np.array(indata['BITWEIGHT{}'.format(i)])[match[1]])
+
+# Get parent or randoms data
+elif cat == 'parent' or cat == 'randoms':
+    if cat == 'parent':
+        tid = np.array(indata['TARGETID'])
+
+    z   = np.array(indata['Z'])
+    ra  = np.array(indata['RA'])
+    dec = np.array(indata['DEC'])
+
+    bitarrays = []
+    for i in range(nbitarrays):
+        bitarrays.append(-1 * np.ones(len(indata), dtype=int))
+
+else:
+    log.critical("Must provide catalog type: targeted, parent, or randoms!")
+    sys.exit()
+
+# Write output file
+targtype  = args.target
+outdir    = args.outdir
+outformat = args.format
+if outformat == 'fits':
+    output = Table()
+    if cat == 'targeted' or cat == 'parent':
+        output['TARGETID'] = tid
+    output['Z']   = z
+    output['RA']  = ra
+    output['DEC'] = dec
+    for a,arr in enumerate(bitarrays):
+        output['BITWEIGHT{}'.format(a)] = arr
+
+    outfile = '{}/{}_{}.fits'.format(outdir, cat, targtype)
+    output.write(outfile)
+    log.info("Wrote file {}".format(outfile))
+
+elif outformat == 'hdf5':
+    outfile = '{}/{}_{}.hdf5'.format(outdir, cat, targtype)
+    output = h5py.File(outfile, 'w')
+    if cat == 'targeted' or cat == 'parent':
+        output.create_dataset('TARGETID', data=tid)
+    output.create_dataset('Z', data=z)
+    output.create_dataset('RA', data=ra)
+    output.create_dataset('DEC', data=dec)
+    for a,arr in enumerate(bitarrays):
+        output.create_dataset('BITWEIGHT{}'.format(a), data=arr)
+
+    output.close()
+    log.info("Wrote file {}".format(outfile))
+
+else:
+    log.critical("Output must be either fits or hdf5 format!")
+    sys.exit()
+

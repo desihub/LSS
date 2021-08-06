@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
@@ -202,6 +202,7 @@ if len(mtld) > 0:
     fal = []
     obsl = []
     pl = []
+    hal = []
     #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
     for tile in mtld['TILEID']:
         ts = str(tile).zfill(6)
@@ -210,8 +211,9 @@ if len(mtld) > 0:
         ral.append(fht['TILERA'])
         decl.append(fht['TILEDEC'])
         mtlt.append(fht['MTLTIME'])
-        fal.append(fht['FA_RUN'])
-        obsl.append(fht['OBSCON'])
+        fal.append(fht['RUNDATE'])
+        obsl.append(fht['FIELDROT'])
+        hal.append(fht['FA_HA'])
         #pl.append(pro)
         pl.append(pr)
     ta = Table()
@@ -219,9 +221,22 @@ if len(mtld) > 0:
     ta['RA'] = ral
     ta['DEC'] = decl
     ta['MTLTIME'] = mtlt
-    ta['FA_RUN'] = fal
-    ta['OBSCON'] = obsl
+    ta['RUNDATE'] = fal
+    ta['FIELDROT'] = obsl
     ta['PROGRAM'] = pl
+    ta['FA_HA'] = hal
+    #if pd == 'dark':
+    ta['OBSCONDITIONS'] = 15
+    ta['IN_DESI'] = 1
+    ttf = Table() #to write out to use for fiberassign all at once
+    ttf['TILEID'] = tilel
+    ttf['RA'] = ral
+    ttf['DEC'] = decl
+    ttf['OBSCONDITIONS'] = 15
+    ttf['IN_DESI'] = 1
+    ttf['PROGRAM'] = 'SV3'
+    ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+
 else:
     print('no done tiles in the MTL')
 
@@ -343,7 +358,7 @@ if combd:
                 print('column '+col +' was not in tarwdup file')    
 
         if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
             wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
             specf = specf[wt]
             specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
@@ -368,14 +383,14 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-            try:
-                print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
-            except:
-                ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
-                ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
-                print(len(tj))
-                tj = join(tj,ftar,keys=['TARGETID'])  
-                print(len(tj))  
+        try:
+            print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
+        except:
+            ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
+            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
+            print(len(tj))
+            tj = join(tj,ftar,keys=['TARGETID'])  
+            print(len(tj))  
         tj.write(ldirspec+'datcomb_'+type+'_tarspecwdup_Alltiles.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better(specf,'dat',pdir,specrel=specrel)
         tc.write(ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',format='fits', overwrite=True)
@@ -398,7 +413,7 @@ if combr:
         
 if mkfulld:
     if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-cumulative.fits')
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':

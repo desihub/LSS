@@ -26,7 +26,7 @@ dirxi = os.environ['CSCRATCH']+'/SV3xi/'
 
 om = 0.31
 
-def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',reg='',minn=0,tile='Alltiles',fkp=False,ranwt1=False,subt=None):
+def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCRATCH']+'/cz/',reg='',minn=0,tile='',fkp=False,ranwt1=False,subt=None):
     '''
     prepare catalogs to be used by Cheng Zhao's paircount code
     '''

@@ -1429,6 +1429,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length before cutting to spectype QSO '+str(len(ff)))
         ff = ff[wc]
         print('length after cutting to spectype QSO '+str(len(ff)))
+    if ccut == 'main':
+        if tp != 'LRG':
+            print('this is only defined for LRGs!' )
+        else:
+            lrgmaintar = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/LRGtargetsDR9v1.1.1.fits',columns=['TARGETID'])
+            sel = np.isin(ff['TARGETID'],lrgmaintar['TARGETID'])
+            print('numbers before/after cut:')
+            print(len(ff),len(ff[sel]))
+            ff = ff[sel]   
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'

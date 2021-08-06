@@ -5,41 +5,23 @@ import os
 import h5py
 import numpy as np
 from astropy.table import Table
-from fiberassign.tiles import load_tiles
 from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
                                  LocationsAvailable, load_target_table)
 from fiberassign.assign import Assignment
 
 
-def get_tiles(tilefile, footprint):
+def get_targets(mtlfile, skyfile):
     """
-    Load tile information
-    """
-    # Read tiles we are using
-    tileselect = None
-    if tilefile is not None:
-        tileselect = list()
-        with open(tilefile, "r") as f:
-            for line in f:
-                # Try to convert the first column to an integer
-                try:
-                    tileselect.append(int(line.split()[0]))
-                except ValueError:
-                    pass
-    tiles = load_tiles(tiles_file=footprint,
-                       select=tileselect)
-
-    return tiles
-
-def get_targets(mtlfile, skyfile, randomsfile):
-    """
-    Load target and randoms information
+    Load target and information
     """
     # Read mtl file
     mtl = Table.read(mtlfile)
-    mtl['SUBPRIORITY'] = np.ones(len(mtl))
-    mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
-    mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
+    if 'SUBPRIORITY' not in mtl.dtype.names:
+        mtl['SUBPRIORITY'] = np.ones(len(mtl))
+    if 'OBSCONDITIONS' not in mtl.dtype.names:
+        mtl['OBSCONDITIONS'] = np.ones(len(mtl), dtype=int)
+    if 'DESI_TARGET' not in mtl.dtype.names:
+        mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
     # Load science targets
     tgs = Targets()
@@ -51,10 +33,7 @@ def get_targets(mtlfile, skyfile, randomsfile):
         sky = Table.read(skyfile)
         load_target_table(tgs, sky)
 
-    # Load randoms
-    randoms = Table.read(randomsfile)
-
-    return mtl, tgs, sky, randoms
+    return mtl, tgs, sky
 
 def setup_fba(mtl, sky, tiles, hw):
     """
@@ -74,26 +53,20 @@ def setup_fba(mtl, sky, tiles, hw):
 
     return asgn
 
-def update_bitweights(realization, asgn, tiles, tg_science, bitweights):
+def update_bitweights(realization, asgn, tileids, tg_ids, tg_ids2idx, bitweights):
     """
     Update bit weights for assigned science targets
     """
-    assigned = []
-    for tile_id in tiles.id:
+    for tileid in tileids:
         try: # Find which targets were assigned
-            adata = asgn.tile_location_target(tile_id)
+            adata = asgn.tile_location_target(tileid)
             for loc, tgid in adata.items():
-                assigned.append(tgid)
+                idx = tg_ids2idx[tgid]
+                bitweights[realization * len(tg_ids) + idx] = True
         except:
             pass
 
-    # Update bit weights
-    idas = np.isin(tg_science, assigned)
-    min_targ = realization * len(tg_science)
-    max_targ = (realization + 1) * len(tg_science)
-    bitweights[min_targ:max_targ] = idas
-
-    return idas, bitweights
+    return bitweights
 
 def pack_bitweights(array):
     """
@@ -102,8 +75,8 @@ def pack_bitweights(array):
            of target galaxies, and Nreal is the number of fibre assignment realizations.
     Output: returns a 2D array of 64-bit signed integers. 
     """
-    Nbits=64
-    dtype=np.int64
+    Nbits = 64
+    dtype = np.int64
     Ngal, Nreal = array.shape           # total number of realizations and number of target galaxies
     Nout = (Nreal + Nbits - 1) // Nbits # number of output columns
     # intermediate arrays
@@ -125,7 +98,7 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
-def write_output(outtype, outdir, fileformat, targets, idas, bitvectors):
+def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -134,38 +107,32 @@ def write_output(outtype, outdir, fileformat, targets, idas, bitvectors):
     except:
         pass
 
+    # Output fits files
     if fileformat == 'fits':
-        outfile = os.path.join(outdir, '{}.fits'.format(outtype))
+        outfile = os.path.join(outdir, 'targeted.fits')
         output = Table()
-        if outtype == 'targeted' or outtype == 'parent':
-            output['TARGETID'] = targets['TARGETID']
+        output['TARGETID'] = targets['TARGETID']
+        if desi_target_key:
+            output['{}'.format(desi_target_key)] = targets['{}'.format(desi_target_key)]
         output['RA'] = targets['RA']
         output['DEC'] = targets['DEC']
         output['Z'] = targets['Z']
         for i in range(bitvectors.shape[1]):
-            if outtype == 'targeted':
-                output['BITWEIGHT{}'.format(i)] = bitvectors[:,i][idas]
-            elif outtype == 'parent':
-                output['BITWEIGHT{}'.format(i)] = -np.ones(len(bitvectors[:,i]), dtype=int)
-            elif outtype == 'randoms':
-                output['BITWEIGHT{}'.format(i)] = -np.ones(len(targets), dtype=int)
+            output['BITWEIGHT{}'.format(i)] = bitvectors[:,i]
         output.write(outfile)
 
+    # Output hdf5 files
     elif fileformat == 'hdf5':
-        outfile = os.path.join(outdir, '{}.hdf5'.format(outtype))
+        outfile = os.path.join(outdir, 'targeted.hdf5')
         outfile = h5py.File(outfile, 'w')
-        if outtype == 'targeted' or outtype == 'parent':
-            outfile.create_dataset('TARGETID', data=targets['TARGETID'])
+        outfile.create_dataset('TARGETID', data=targets['TARGETID'])
+        if desi_target_key:
+            outfile.create_dataset('{}'.format(desi_target_key), data=targets['{}'.format(desi_target_key)])
         outfile.create_dataset('RA', data=targets['RA'])
         outfile.create_dataset('DEC', data=targets['DEC'])
         outfile.create_dataset('Z', data=targets['Z'])
         for i in range(bitvectors.shape[1]):
-            if outtype == 'targeted':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i][idas])
-            elif outtype == 'parent':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=-np.ones(len(bitvectors[:,i]), dtype=int))
-            elif outtype == 'randoms':
-                outfile.create_dataset('BITWEIGHT{}'.format(i), data=-np.ones(len(targets), dtype=int))
+            outfile.create_dataset('BITWEIGHT{}'.format(i), data=bitvectors[:,i])
         outfile.close()
 
     else:
