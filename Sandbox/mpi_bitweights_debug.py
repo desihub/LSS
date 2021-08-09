@@ -147,14 +147,12 @@ def main(args):
     print(len(bitweights),sum(bitweights))
     #if mpi_rank == 0:
     s = 0
+    tids = []
     for tileid in tiles.id:
         adata = asgn.tile_location_target(tileid)
         for loc, tgid in adata.items():
-            if s == 0:
-                tids = tgid
-                s = 1
-            else:
-                tids = np.concatenate([tids,tgid])
+            tids.append(tgid)
+    tids = np.array(tids)
     tidsu = np.unique(tids)
     print(len(tidsu))
     w = np.isin(mtl['TARGETID'],tidsu)
