@@ -92,6 +92,11 @@ def main(args):
 
     # Bit weight array for all targets and realizations
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
+    for tid in tg_ids:
+        idx = tg_ids2idx[tgd]
+        bitweights[idx] = True
+    print(sum(bitweights),len(bitweights))
+    return True
 
     # Load hardward for fiber assignment
     hw = load_hardware(rundate='2021-04-06T00:39:37') #rundate for first SV3 tiles
