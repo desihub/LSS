@@ -158,13 +158,14 @@ def main(args):
 
     tt = Table()
     tt['TARGETID'] = tg_ids
-    tt['BITWEIGHTS'] = bitweights
-    tj = join(mtl,tt,keys=['TARGETID'])
+    #tt['BITWEIGHTS'] = bitweights
+    tj = join(tt,mtl,keys=['TARGETID'])
     tids = np.array(tids)
     tidsu = np.unique(tids)
     
     #w = np.isin(mtl['TARGETID'],tidsu)
-    w = tj['BITWEIGHTS'] > 0
+    #w = tj['BITWEIGHTS'] > 0
+    w = bitweights > 0
     print(len(tidsu),sum(bitweights),len(tj[w]),sum(tj['BITWEIGHTS']),len(tj))
     
 
