@@ -146,7 +146,20 @@ def main(args):
 
     print(len(bitweights),sum(bitweights))
     #if mpi_rank == 0:
-    plt.plot(mtl[bitweights]['RA'],mtl[bitweights]['DEC'],',k')
+    s = 0
+    for tileid in tiles.id:
+        adata = asgn.tile_location_target(tileid)
+        for loc, tgid in adata.items():
+            if s == 0:
+                tids = tgid
+            else:
+                tids = np.concatenate([tids,tgid])
+    tidsu = np.unique(tids)
+    print(len(tidsu))
+    w = np.isin(mtl['TARGETID'],tidsu)
+
+    #plt.plot(mtl[bitweights]['RA'],mtl[bitweights]['DEC'],',k')
+    plt.plot(mtl[w]['RA'],mtl[w]['DEC'],',k')
     plt.xlim(178,188)
     plt.ylim(-5,5)
     plt.show()
