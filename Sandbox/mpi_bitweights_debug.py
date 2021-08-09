@@ -164,8 +164,8 @@ def main(args):
     tidsu = np.unique(tids)
     
     #w = np.isin(mtl['TARGETID'],tidsu)
-    w = tj['BITWEIGHTS'] = True
-    print(len(tidsu),sum(bitweights),len(tj[w]))
+    w = tj['BITWEIGHTS'] > 0
+    print(len(tidsu),sum(bitweights),len(tj[w]),sum(tj['BITWEIGHTS']),len(tj))
     
 
     plt.plot(tj[w]['RA'],tj[w]['DEC'],',k')
