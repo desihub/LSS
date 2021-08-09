@@ -81,6 +81,7 @@ def main(args):
     mtl, tgs, sky = get_targets(args.mtl, args.sky)
     
     tg_ids = tgs.ids()
+    print(np.array_equal(mtl['TARGETID'],tg_ids))
     tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
     n_target = len(tg_ids)
     print('there are targets '+str(n_target))
