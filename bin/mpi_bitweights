@@ -56,7 +56,7 @@ def main(args):
     mpi_rank = comm.rank
 
     import numpy as np
-    from astropy.table import Table, vstack
+    from astropy.table import Table, vstack,join
     from LSS.bitweights import (get_targets, setup_fba, update_bitweights,
                                 pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
