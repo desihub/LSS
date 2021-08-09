@@ -166,7 +166,7 @@ def main(args):
     #w = np.isin(mtl['TARGETID'],tidsu)
     #w = tj['BITWEIGHTS'] > 0
     w = bitweights > 0
-    print(len(tidsu),sum(bitweights),len(tj[w]),sum(tj['BITWEIGHTS']),len(tj))
+    #print(len(tidsu),sum(bitweights),len(tj[w]),sum(tj['BITWEIGHTS']),len(tj))
     
 
     plt.plot(tj[w]['RA'],tj[w]['DEC'],',k')
