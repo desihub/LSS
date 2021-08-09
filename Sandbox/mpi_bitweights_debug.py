@@ -92,11 +92,6 @@ def main(args):
 
     # Bit weight array for all targets and realizations
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
-    for tid in tg_ids:
-        idx = tg_ids2idx[tid]
-        bitweights[idx] = True
-    print(sum(bitweights),len(bitweights))
-    return True
 
     # Load hardward for fiber assignment
     hw = load_hardware(rundate='2021-04-06T00:39:37') #rundate for first SV3 tiles
@@ -139,7 +134,7 @@ def main(args):
             run(asgn)
 
             # Update bit weights for assigned science targets
-            bitweights = update_bitweights(realization, asgn, tiles.id, tg_ids, tg_ids2idx, bitweights)
+            #bitweights = update_bitweights(realization, asgn, tiles.id, tg_ids, tg_ids2idx, bitweights)
 
     # Gather weights from all processes
     #gather_weights = None
@@ -157,13 +152,16 @@ def main(args):
         adata = asgn.tile_location_target(tileid)
         for loc, tgid in adata.items():
             tids.append(tgid)
+            idx = tg_ids2idx[tgid]
+            bitweights[idx] = True
+
     tids = np.array(tids)
     tidsu = np.unique(tids)
-    print(len(tidsu))
+    print(len(tidsu),sum(bitweights))
     w = np.isin(mtl['TARGETID'],tidsu)
 
-    #plt.plot(mtl[bitweights]['RA'],mtl[bitweights]['DEC'],',k')
-    plt.plot(mtl[w]['RA'],mtl[w]['DEC'],',k')
+    plt.plot(mtl[bitweights]['RA'],mtl[bitweights]['DEC'],',k')
+    #plt.plot(mtl[w]['RA'],mtl[w]['DEC'],',k')
     plt.xlim(178,188)
     plt.ylim(-5,5)
     plt.show()
