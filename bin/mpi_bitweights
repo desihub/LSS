@@ -72,6 +72,7 @@ def main(args):
          #tiles = load_tiles(args.tiles)
          tiles = load_tiles(tiles_file=args.tiles, select=None)#,obstime=args.obsdate, obstheta=args.fieldrot, obsha=args.ha)
     else:
+         print('YOU SHOULD REALLY USE A TILES FILE (unless this is for the original e2e mock)!')
          tiles = load_tiles()
 
     # Get target and information
@@ -185,7 +186,8 @@ def main(args):
             targets = mtl
 
         # Write output files
-        write_output(args.outdir, args.format, targets[idas], bitvectors[idas], desi_target_key=desi_target_key)
+        #write_output(args.outdir, args.format, targets[idas], bitvectors[idas], desi_target_key=desi_target_key)
+        write_output(args.outdir, args.format, targets, bitvectors, desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()
