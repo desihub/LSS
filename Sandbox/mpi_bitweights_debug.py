@@ -150,7 +150,7 @@ def main(args):
     plt.xlim(178,188)
     plt.ylim(-5,5)
     plt.show()
-    if n_realization == False
+    if n_realization == False:
         # Pack weights into 64 bit integers
         #weights = np.array_split(gather_weights, n_realization)
         #bweights = np.array(weights).T
