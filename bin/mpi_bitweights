@@ -165,9 +165,9 @@ def main(args):
                     desi_target_key = key
         
 
-		targetsb = Table()
-		targetsb['TARGETID'] = tg_ids
-		targetsb['was_assigned'] = idas
+        targetsb = Table()
+        targetsb['TARGETID'] = tg_ids
+        targetsb['was_assigned'] = idas
 
         # Combine sky and mtl
         if sky:
