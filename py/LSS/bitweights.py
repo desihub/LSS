@@ -98,6 +98,24 @@ def pack_bitweights(array):
             bitw8[:] = 0
     return output_array
 
+def unpack_bitweights(we):
+    Nwe= 1
+    Nbits = 64
+    Ngal = np.shape(we)[0]
+    Nreal = Nbits*Nwe
+    print('Nbits, Nwe = ',Nbits,Nwe)
+    print('Nreal = ',Nreal)
+    print('Ngal = ',Ngal)
+    true8=[np.uint8(255) for n in range(0, Ngal)]
+    array_bool = np.zeros((Ngal,Nreal), dtype=bool)
+    for j in range(Nwe):
+        lg = np.zeros((Ngal, Nbits), dtype=bool)
+        for i in range(Nbits//8):
+            chunk8 = np.uint8(np.bitwise_and(np.right_shift(we,8*i), true8))
+            lg[:,Nbits-8*(i+1):Nbits-i*8] = np.reshape(np.unpackbits(chunk8), (Ngal, 8))
+        array_bool[:,j*Nbits:(j+1)*Nbits] = lg[:,::-1]
+    return array_bool
+
 def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
     """
     Write output file containing bit weights
