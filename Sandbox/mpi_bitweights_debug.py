@@ -152,6 +152,7 @@ def main(args):
         for loc, tgid in adata.items():
             if s == 0:
                 tids = tgid
+                s = 1
             else:
                 tids = np.concatenate([tids,tgid])
     tidsu = np.unique(tids)
