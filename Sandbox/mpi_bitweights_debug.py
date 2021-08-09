@@ -56,7 +56,7 @@ def main(args):
     #mpi_rank = comm.rank
 
     import numpy as np
-    from astropy.table import Table, vstack
+    from astropy.table import Table, vstack,join
     from LSS.bitweights import (get_targets, setup_fba, update_bitweights,
                                 pack_bitweights, write_output)
     from fiberassign.hardware import load_hardware
@@ -156,12 +156,19 @@ def main(args):
             idx = tg_ids2idx[tgid]
             bitweights[idx] = True
 
+    tt = Table()
+    tt['TARGETID'] = tg_ids
+    tt['BITWEIGHTS'] = bitweights
+    tj = join(mtl,tt,keys=['TARGETID'])
     tids = np.array(tids)
     tidsu = np.unique(tids)
-    print(len(tidsu),sum(bitweights))
-    w = np.isin(mtl['TARGETID'],tidsu)
+    
+    #w = np.isin(mtl['TARGETID'],tidsu)
+    w = tj['BITWEIGHTS'] = True
+    print(len(tidsu),sum(bitweights),len(tj[w]))
+    
 
-    plt.plot(mtl[bitweights]['RA'],mtl[bitweights]['DEC'],',k')
+    plt.plot(tj[w]['RA'],tj[w]['DEC'],',k')
     #plt.plot(mtl[w]['RA'],mtl[w]['DEC'],',k')
     plt.xlim(178,188)
     plt.ylim(-5,5)
