@@ -93,7 +93,7 @@ def main(args):
     # Bit weight array for all targets and realizations
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
     for tid in tg_ids:
-        idx = tg_ids2idx[tgd]
+        idx = tg_ids2idx[tid]
         bitweights[idx] = True
     print(sum(bitweights),len(bitweights))
     return True
