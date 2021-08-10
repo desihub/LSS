@@ -26,13 +26,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
-parser.add_argument("--verfull",help="version for full catalogs",default='1')
-parser.add_argument("--cpfull",help="whether to copy over the full catalogs; necessary the first run",default='y')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verfull",help="version for full catalogs",default='test')
+parser.add_argument("--cpfull",help="whether to copy over the full catalogs; necessary the first run",default='n')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -58,7 +58,8 @@ if rcut is not None:
     rcut.append(float(rcutstr[1]))
 cpfull = args.cpfull
 ccut = args.ccut
-print('using ccut '+ccut)
+if rcut is not None:
+    print('using ccut '+ccut)
 
 print('running catalogs for tracer type '+type)
 
