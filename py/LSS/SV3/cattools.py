@@ -1378,7 +1378,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         # Custom DELTACHI2 vs z cut from Rongpu
         drz = (10**(3 - 3.5*ff['Z']))
         mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (ff['DELTACHI2']<d)
+        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
         mask_bad |= (ff['DELTACHI2']<10)
         wz &= ff['Z']<1.4
         wz &= (~mask_bad)
