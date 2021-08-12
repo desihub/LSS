@@ -1420,6 +1420,8 @@ def mkclusdat(fl,weightmd='PROB_OBS',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=N
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
     if weightmd == 'PROB_OBS': 
         ff['WEIGHT'] *= 1./ff[weightmd]
+        wzer = ff[weightmd] == 0
+        ff['WEIGHT'][wzer] = 0
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
