@@ -155,7 +155,7 @@ indirspec = indir+specrel+'/'
         
 if mkfulld:
     if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+progl+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
