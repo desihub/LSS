@@ -1317,7 +1317,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print(nm,nmt)
     
     if bitweightfile is not None:
-        fb = fitio.read(bitweightfile)
+        fb = fitsio.read(bitweightfile)
         dz = join(dz,fb,keys=['TARGETID'])
     dz['FRACZ_TILELOCID'] = probl
     print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; dont quite match because some tilelocid still have 0 assigned')
