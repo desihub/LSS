@@ -1086,7 +1086,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     
 
 
-def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4):
+def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4,bitweightfile=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1316,6 +1316,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('number of fibers with no observation, number targets on those fibers')
     print(nm,nmt)
     
+    if bitweightfile is not None:
+        fb = fitio.read(bitweightfile)
+        dz = join(dz,fb,keys=['TARGETID'])
     dz['FRACZ_TILELOCID'] = probl
     print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; dont quite match because some tilelocid still have 0 assigned')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
@@ -1340,7 +1343,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
             
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
+def mkclusdat(fl,weightmd='PROB_OBS',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1413,9 +1416,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
-    if weighttileloc == True:
+    if weightmd == 'tileloc':
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
-
+    if weightmd == 'PROB_OBS': 
+        ff['WEIGHT'] *= 1./ff[weightmd]
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
