@@ -139,10 +139,10 @@ indirfull = indir+specrel+'/LSScats/'+verfull+'/'
 
 
 if cpfull == 'y':
-    cpdatcom = 'cp '+indirfull+ type+'Alltiles_full.dat.fits '+dirout
+    cpdatcom = 'cp '+indirfull+ type+'_full.dat.fits '+dirout
     os.system(cpdatcom)
     for i in range(0,18):       
-        cprancom = 'cp '+indirfull+ type+'Alltiles_'+str(i)+'_full.ran.fits '+dirout
+        cprancom = 'cp '+indirfull+ type+'_'+str(i)+'_full.ran.fits '+dirout
         os.system(cprancom)
         
 
@@ -159,7 +159,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -178,7 +178,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     

@@ -298,7 +298,7 @@ def doran(ii):
             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+'_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = sv3_targetmask.bgs_mask[type]
             desitarg='SV3_BGS_TARGET'
@@ -324,7 +324,7 @@ def doran(ii):
             dchi2 = 40
             tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')

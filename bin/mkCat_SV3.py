@@ -431,14 +431,14 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+'_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
 if mkfullr:
     for ii in range(rm,rx):
-        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+'_'+str(ii)+'_full.ran.fits'
         ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -456,7 +456,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
+    ct.mkclusdat(dirout+type+'_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
