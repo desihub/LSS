@@ -427,7 +427,7 @@ if mkfulld:
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
-    azf = '/global/cfs/cdirs/desi/users/raichoor/everest/v0/sv3-elg-everest.fits'
+    azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
