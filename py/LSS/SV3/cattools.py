@@ -1189,8 +1189,10 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         w |= arz['OII_FLUX'] < 0
         o2c[w] = -20
         #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
+        arz = Table(arz)
+        arz['o2c'] = o2c
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
-        dz['o2c'] = o2c
+        
         dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
