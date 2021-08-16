@@ -1124,6 +1124,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #find the rows that satisfy the target type
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
+        print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
     #find the rows that are 'good' tilelocid
     wg = np.isin(dz['TILELOCID'],gtl)
@@ -1316,13 +1317,15 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('number of fibers with no observation, number targets on those fibers')
     print(nm,nmt)
     
-    if bitweightfile is not None:
-        fb = fitsio.read(bitweightfile)
-        dz = join(dz,fb,keys=['TARGETID'])
     dz['FRACZ_TILELOCID'] = probl
     print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; dont quite match because some tilelocid still have 0 assigned')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
     dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
+    if bitweightfile is not None:
+        fb = fitsio.read(bitweightfile)
+        dz = join(dz,fb,keys=['TARGETID'])
+    print('length after join with bitweight file',len(dz))
+
     '''
     This is where redshift failure weights go
     '''
