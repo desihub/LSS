@@ -1178,6 +1178,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     if tp == 'ELG' or tp == 'ELG_HIP':
         arz = Table.read(azf)
         wg = arz[fbcol] == 0
+        wg &= arz['SUBSET'][:4] == "thru"
         arz = arz[wg]
         arz['o2c'] = np.log10(arz['OII_FLUX']/arz['OII_SIGMA'])+0.2*np.log10(arz['DELTACHI2']) 
         w = (arz['o2c']*0) != 0
