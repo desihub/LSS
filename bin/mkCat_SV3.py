@@ -51,6 +51,8 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+
 #all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
 
 args = parser.parse_args()
@@ -60,6 +62,11 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
 
 zma = False
 if args.maskz == 'y':
