@@ -1176,7 +1176,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
-        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_SIGMA','SUBSET','DELTACHI2'])
+        arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_SIGMA','SUBSET','DELTACHI2'])
         st = []
         for i in range(0,len(arz)):
             st.append(arz['SUBSET'][i][:4])
@@ -1191,7 +1191,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         dz['o2c'] = o2c
-        dz.remove_columns(['SUBSET','DELTACHI2_OII'])
+        dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
