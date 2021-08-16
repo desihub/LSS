@@ -433,7 +433,8 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+'_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')

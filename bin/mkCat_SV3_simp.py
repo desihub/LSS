@@ -173,7 +173,8 @@ if mkfulld:
     else:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
-    
+    print(desitarg,progl,bit)
+
     ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',\
     indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,\
     specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
