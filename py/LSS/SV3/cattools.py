@@ -1178,11 +1178,11 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         arz = Table.read(azf)
         wg = arz[fbcol] == 0
         arz = arz[wg]
-        arz['o2c'] = np.log10(arz['FOII']/arz['FOII_ERR'])+0.2*np.log10(arz['DELTACHI2']) 
+        arz['o2c'] = np.log10(arz['OII_FLUX']/arz['OII_SIGMA'])+0.2*np.log10(arz['DELTACHI2']) 
         w = (arz['o2c']*0) != 0
-        w |= arz['FOII'] < 0
+        w |= arz['OII_FLUX'] < 0
         arz['o2c'][w] = -20
-        arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','FOII','FOII_ERR'])#,'Z','ZWARN','TSNR2_ELG'])    
+        arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         print('check length after merge with OII strength file:' +str(len(dz)))
 
