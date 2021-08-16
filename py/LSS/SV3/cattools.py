@@ -1324,7 +1324,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     if bitweightfile is not None:
         fb = fitsio.read(bitweightfile)
         dz = join(dz,fb,keys=['TARGETID'])
-    print('length after join with bitweight file',len(dz))
+    print('length after join with bitweight file and sum of 1/comp_tile',len(dz),np.sum(1./dz[wz]['COMP_TILE']))
 
     '''
     This is where redshift failure weights go
