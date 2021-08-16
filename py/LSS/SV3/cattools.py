@@ -1325,8 +1325,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     if bitweightfile is not None:
         fb = fitsio.read(bitweightfile)
         dz = join(dz,fb,keys=['TARGETID'])
+    wz = dz['LOCATION_ASSIGNED'] == 1 #join re-ordered array, reget mask for assigned locations and check comp_tile
     print('length after join with bitweight file and sum of 1/comp_tile',len(dz),np.sum(1./dz[wz]['COMP_TILE']),len(dz[wz]))
-    print('check comp_tile array',np.array_equal(oct,dz['COMP_TILE']))
+    #print('check comp_tile array',np.array_equal(oct,dz['COMP_TILE']))
 
     '''
     This is where redshift failure weights go
