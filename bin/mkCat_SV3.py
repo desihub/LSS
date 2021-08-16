@@ -425,6 +425,7 @@ if mkfulld:
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
     dz = ldirspec+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
+    print(dz)
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
         desitarg='SV3_BGS_TARGET'
