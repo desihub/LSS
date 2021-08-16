@@ -1176,7 +1176,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
-        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA','SUBSET','DELTACHI2'])
+        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_SIGMA','SUBSET','DELTACHI2'])
         st = []
         for i in range(0,len(arz)):
             st.append(arz['SUBSET'][i][:4])
