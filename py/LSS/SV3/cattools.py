@@ -1178,18 +1178,19 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     if tp == 'ELG' or tp == 'ELG_HIP':
         arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA','SUBSET','DELTACHI2'])
         st = []
-        for i in range(0,len(fe)):
-            st.append(fe['SUBSET'][i][:4])
+        for i in range(0,len(arz)):
+            st.append(arz['SUBSET'][i][:4])
         st = np.array(st)
         wg = arz[fbcol] == 0
         wg &= st == "thru"
         arz = arz[wg]
-        arz['o2c'] = np.log10(arz['OII_FLUX']/arz['OII_SIGMA'])+0.2*np.log10(arz['DELTACHI2']) 
-        w = (arz['o2c']*0) != 0
+        o2c = np.log10(arz['OII_FLUX']/arz['OII_SIGMA'])+0.2*np.log10(arz['DELTACHI2']) 
+        w = (o2c*0) != 0
         w |= arz['OII_FLUX'] < 0
-        arz['o2c'][w] = -20
+        o2c[w] = -20
         #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+        dz['o2c'] = o2c
         dz.remove_columns(['SUBSET','DELTACHI2_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
