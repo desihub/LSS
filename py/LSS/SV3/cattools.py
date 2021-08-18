@@ -1184,7 +1184,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         wg = arz[fbcol] == 0
         wg &= st == "thru"
         arz = arz[wg]
-        o2c = np.log10(arz['OII_FLUX']/arz['OII_SIGMA'])+0.2*np.log10(arz['DELTACHI2']) 
+        o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
         w = (o2c*0) != 0
         w |= arz['OII_FLUX'] < 0
         o2c[w] = -20
