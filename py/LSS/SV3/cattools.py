@@ -1366,7 +1366,16 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     Probably better to put it here so that full file only gets written out once and includes
     all of the weights
     '''
-            
+    #for debugging writeout
+    for col in dz.dtype.names:
+        to = Table()
+        to[col] = ffq[col]
+        #print(col)
+        try:
+            to.write('temp.fits',format='fits', overwrite=True)
+        except:
+            print(col+' failed!')            
+    
     dz.write(outf,format='fits', overwrite=True)
 
 def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
