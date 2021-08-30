@@ -1369,7 +1369,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #for debugging writeout
     for col in dz.dtype.names:
         to = Table()
-        to[col] = ffq[col]
+        to[col] = dz[col]
         #print(col)
         try:
             to.write('temp.fits',format='fits', overwrite=True)
