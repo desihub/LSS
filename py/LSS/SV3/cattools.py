@@ -1196,12 +1196,22 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
+    if tp[:3] == 'QSO':
+        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILE','Z','ZERR','SELECTION_METHOD','Z_QN'])
+        arz['TILE'].name = 'TILEID'
+        dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        dz['Z'].name = 'Z_RR_ini' #rename the original redrock redshifts
+        dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+
+    
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+    if tp == 'QSO':
+        print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask))
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
@@ -1395,6 +1405,14 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
+    
+    if tp == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['TSNR2_QSO'] > tsnrcut
+    
     if tp == 'ELG' or tp == 'ELG_HIP':
         wz = ff['o2c'] > dchi2
         wz &= ff['ZWARN']*0 == 0
@@ -1430,6 +1448,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
+    print('minimum,maximum Z',min(ff['Z']),max(ff['Z']))
     ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
     if weightmd == 'tileloc':
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
