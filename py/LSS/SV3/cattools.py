@@ -1421,6 +1421,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = ff['Z']*0 == 0
         wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
         wz &= ff['TSNR2_QSO'] > tsnrcut
     
