@@ -1201,7 +1201,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         arz.keep_columns=(['TARGETID','LOCATION','TILE','Z','ZERR','SELECTION_METHOD','Z_QN'])
         arz['TILE'].name = 'TILEID'
         dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-        dz['Z'].name = 'Z_RR_ini' #rename the original redrock redshifts
+        dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
     
