@@ -163,6 +163,7 @@ if specrel == 'daily':
         
 if mkfulld:
 
+    azf=''
     if type[:3] == 'ELG':
         azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
     if type[:3] == 'QSO':
