@@ -2,6 +2,7 @@
 python functions to do various useful date processing/manipulation
 '''
 import numpy as np
+from scipy.special import erf
 import fitsio
 import glob
 import os
@@ -1100,7 +1101,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     specver is the version of the pipeline used for the redshift info; only 'daily' exists for now
     '''
     
-    from scipy.special import erf
+    
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'        
