@@ -187,8 +187,8 @@ if mknz:
     for reg in regl:
         if zma:
             reg = '_zmask'+reg
-        fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
+        fcr = dirout+type+reg+'_0_clustering.ran.fits'
+        fcd = dirout+type+reg+'_clustering.dat.fits'
         fout = dirout+type+reg+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6

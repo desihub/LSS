@@ -1350,23 +1350,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('length after join with bitweight file and sum of 1/comp_tile',len(dz),np.sum(1./dz[wz]['COMP_TILE']),len(dz[wz]))
     #print('check comp_tile array',np.array_equal(oct,dz['COMP_TILE']))
 
-    '''
-    This is where redshift failure weights go
-    '''
     
-    #The LRGs just have this fairly ad hoc model that AJR fit in the notebook, definitely needs refinement/automation
-    if tp == 'LRG':
-        fibfluxz = dz['FIBERFLUX_Z']/dz['MW_TRANSMISSION_Z']
-        wv = dz['TSNR2_LRG'] < 180
-        efs = .08+2.42*(fibfluxz)**-4/.038
-        ems = erf((dz['TSNR2_LRG']-25)/30)*.986
-        dz['WEIGHT_ZFAIL'][wv] = 1./(1. -(1.-ems[wv])*efs[wv])
-
-    '''
-    One could plug in imaging systematic weights here
-    Probably better to put it here so that full file only gets written out once and includes
-    all of the weights
-    '''
     #for debugging writeout
     for col in dz.dtype.names:
         to = Table()
@@ -1410,6 +1394,24 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print(len(ff),len(ff[sel]))
             ff = ff[sel]   
             ff.write(fl+wzm+'full.dat.fits',format='fits',overwrite='True')
+    
+    '''
+    This is where redshift failure weights go
+    '''
+
+    #The LRGs just have this fairly ad hoc model that AJR fit in the notebook, definitely needs refinement/automation
+    if tp == 'LRG':
+        fibfluxz = ff['FIBERFLUX_Z']/ff['MW_TRANSMISSION_Z']
+        coeff = [117.46,-60.91,11.49,-0.513] #from polyfit, 3rd to zeroth order in 1/fiberflu
+        efs = coeff[-1]+coeff[-2]*(1/fibfluxz)+coeff[-3]*(1/fibfluxz)**2.+coeff[-4]*(1/fibfluxz)**3.
+        ems = erf((ff['TSNR2_LRG']-13.2)/39.7)*.9855
+        ff['WEIGHT_ZFAIL'] = 1./(1. -(1.-ems)*efs)
+
+    '''
+    One could plug in imaging systematic weights here
+    Probably better to put it here so that full file only gets written out once and includes
+    all of the weights
+    '''
 
 
     outf = fl+wzm+'clustering.dat.fits'
