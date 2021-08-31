@@ -185,8 +185,6 @@ if mkclusran:
 if mknz:
     regl = ['','_N','_S']
     for reg in regl:
-        if zma:
-            reg = '_zmask'+reg
         fcr = dirout+type+reg+'_0_clustering.ran.fits'
         fcd = dirout+type+reg+'_clustering.dat.fits'
         fout = dirout+type+reg+'_nz.dat'
