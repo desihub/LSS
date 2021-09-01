@@ -178,8 +178,10 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,progl,bit)
-    bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    #bitweightfile = None
+    bitweightfile = None
+    if progl == 'dark':
+        bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+    #
     ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',\
     indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,\
     specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
@@ -211,7 +213,7 @@ if mkclusdat:
         tsnrcut = 80  
     if type[:3] == 'BGS':
         dchi2 = 40
-        tsnrcut = 1000
+        tsnrcut = 800
     ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
@@ -228,7 +230,7 @@ if mkclusran:
     if type[:3] == 'BGS':
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
-        tsnrcut = 1000
+        tsnrcut = 800
 
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile)
