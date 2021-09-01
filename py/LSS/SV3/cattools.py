@@ -1400,6 +1400,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     This is where redshift failure weights go
     '''
 
+    ff['WEIGHT_ZFAIL'] = 1
     #The LRGs just have this fairly ad hoc model that AJR fit in the notebook, definitely needs refinement/automation
     if tp == 'LRG':
         fibfluxz = ff['FIBERFLUX_Z']/ff['MW_TRANSMISSION_Z']
