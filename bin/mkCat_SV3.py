@@ -442,7 +442,7 @@ if mkfulld:
     print(desitarg,pdir,bit)
     bitweightfile = None
     if pdir == 'dark':
-        bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+        bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
 
     ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
     #get_tilelocweight()
