@@ -45,5 +45,10 @@ for tid in tidl:
 try:
     #edit out the fiberassign_rerun piece to be fiberassign once fba_rerun_io is merged into master fiberassign 
     from fiberassign_rerun.fba_rerun_io import fba_rerun_check
+    docheck = True
+except:
+    print('import failed, not doing check')
+
+if docheck:
     for ii in range(0,len(fnl)):
         fba_rerun_check(fol[ii], fnl[ii], str(tidl[ii])+'.diff')   
