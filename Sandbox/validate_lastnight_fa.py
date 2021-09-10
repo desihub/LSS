@@ -36,10 +36,11 @@ for tid in tidl:
     sel = exps['TILEID'] == tid
     sel &= exps['NIGHT'].astype(int) == maxn
     expid = exps[sel]['EXPID'][0] #just select one expid to get the fiberassign file
-    fn = '/global/cfs/cdirs/desi/spectro/data/'+str(maxn)+'/'+str(expid).zfill(8)+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz'
+    ff = 'fiberassign-'+str(tid).zfill(6)+'.fits.gz'
+    fn = '/global/cfs/cdirs/desi/spectro/data/'+str(maxn)+'/'+str(expid).zfill(8)+'/'+ff
     print('reproducing data for fiberassign file '+fn)
     fol.append(fn)
-    fnl.append(outdir+'/'+fn[12:15]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
+    fnl.append(outdir+'/'+ff[12:15]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
     #system call run fiberassign
     os.system('fba_rerun --infiberassign '+fn+' --outdir '+outdir+' --dtver 1.1.1 --nosteps qa')
 
