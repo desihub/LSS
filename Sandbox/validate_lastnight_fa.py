@@ -53,4 +53,16 @@ except:
 
 if docheck:
     for ii in range(0,len(fnl)):
-        fba_rerun_check(fol[ii], fnl[ii], str(tidl[ii])+'.diff')   
+        dfn = outdir+'/'+str(tidl[ii])+'.diff'
+        fba_rerun_check(fol[ii], fnl[ii],dfn )  
+        dd = np.loadtxt(dfn).transpose()
+        if len(dd) > 0:
+            tids = dd[3]
+            sel = tids > 0
+            if len(tids[sel]) > 0:
+                print('found '+str(len(tids[sel]))+' positive targetid that are different')
+                print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
+            else:
+                print('TILEID '+str(tidl[ii])+' PASSED') 
+        else:
+            print('TILEID '+str(tidl[ii])+' PASSED')          
