@@ -55,7 +55,7 @@ if docheck:
     for ii in range(0,len(fnl)):
         dfn = outdir+'/'+str(tidl[ii])+'.diff'
         fba_rerun_check(fol[ii], fnl[ii],dfn )  
-        tids = np.genfromtxt(dfn,usecols = (3)
+        tids = np.genfromtxt(dfn,usecols = (3))
         if len(tids) > 0:
             #tids = dd[3]
             sel = tids > 0
