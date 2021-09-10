@@ -2,6 +2,7 @@
 #and export PYTHONPATH=/global/homes/a/ajross/desicode/fiberassign_rerun/py:$PYTHONPATH
 #the 2nd likley only works for AJR at the moment, once fba_rerun_io is in master branch 2nd shouldn't be necessary
 from astropy.table import Table
+import numpy as np
 import os
 
 #open exposures file
