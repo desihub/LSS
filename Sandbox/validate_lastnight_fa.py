@@ -21,10 +21,10 @@ sel &= np.isin(exps['TILEID'],tlm['TILEID'])
 exps = exps[sel]
 
 if args.night == None:
-	#find the most recent night
-	maxn = np.max(exps['NIGHT'].astype(int))
+    #find the most recent night
+    maxn = np.max(exps['NIGHT'].astype(int))
 else:
-    maxn = int(args.night)	
+    maxn = int(args.night)  
 seln = exps['NIGHT'].astype(int) == maxn
 #get the list of tileids observed on the last night
 tidl = np.unique(exps[seln]['TILEID'])
@@ -72,22 +72,22 @@ if docheck:
     for ii in range(0,len(fnl)):
         dfn = outdir+'/'+str(tidl[ii])+'.diff'
         if os.path.isfile(fnl[ii]):
-			fba_rerun_check(fol[ii], fnl[ii],dfn )  
-			tids = np.genfromtxt(dfn,usecols = (3))
-			if len(tids) > 0:
-				#tids = dd[3]
-				sel = tids > 0
-				if len(tids[sel]) > 0:
-					print('found '+str(len(tids[sel]))+' positive targetid that are different')
-					print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
-				else:
-					print('TILEID '+str(tidl[ii])+' PASSED') 
-					tids_passl.append(tidl[ii])
-			else:
-				print('TILEID '+str(tidl[ii])+' PASSED')          
-				tids_passl.append(tidl[ii])
-		else:
-		    print('WHY IS THERE NO NEW FIBERASSIGN FILE FOR '+str(tidl[ii])+'!?!? (check above output for clues)')
+            fba_rerun_check(fol[ii], fnl[ii],dfn )  
+            tids = np.genfromtxt(dfn,usecols = (3))
+            if len(tids) > 0:
+                #tids = dd[3]
+                sel = tids > 0
+                if len(tids[sel]) > 0:
+                    print('found '+str(len(tids[sel]))+' positive targetid that are different')
+                    print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
+                else:
+                    print('TILEID '+str(tidl[ii])+' PASSED') 
+                    tids_passl.append(tidl[ii])
+            else:
+                print('TILEID '+str(tidl[ii])+' PASSED')          
+                tids_passl.append(tidl[ii])
+        else:
+            print('WHY IS THERE NO NEW FIBERASSIGN FILE FOR '+str(tidl[ii])+'!?!? (check above output for clues)')
 
 #move intermediate files for tiles that pass
 
