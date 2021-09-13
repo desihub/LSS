@@ -9,7 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--clean", help="remove all files in the output directory prior to start, True/Fase",default=False)
-
+args = parser.parse_args()
 
 #open exposures file
 exps = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/exposures.ecsv')
