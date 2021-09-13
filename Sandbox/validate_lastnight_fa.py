@@ -90,7 +90,7 @@ if docheck:
 
 intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main/test' #remove the test once we are happy
 for tid in tids_passl:
-    mv_tiddir = os.path.join(intermediate_dir, "{:06}".format(tid)[:3]))
+    mv_tiddir = os.path.join(intermediate_dir, "{:06}".format(tid)[:3])
     if not os.path.isdir(mv_tiddir):
         print("create {}".format(mv_tiddir))
         os.mkdir(mv_tiddir)
