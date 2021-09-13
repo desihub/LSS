@@ -56,7 +56,7 @@ for tid in tidl:
     fn = '/global/cfs/cdirs/desi/spectro/data/'+str(maxn)+'/'+str(expid).zfill(8)+'/'+ff
     print('reproducing data for fiberassign file '+fn)
     fol.append(fn)
-    fnl.append(outdir+'/'+ff[12:15]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
+    fnl.append(outdir+'/'+str(tid).zfill(6)[:3]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
     #system call run fiberassign
     os.system('fba_rerun --infiberassign '+fn+' --outdir '+outdir+' --nosteps qa') #--dtver 1.1.1 
 
@@ -90,12 +90,13 @@ if docheck:
 
 intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main/test' #remove the test once we are happy
 for tid in tids_passl:
-    mv_tiddir = os.path.join(intermediate_dir, "{:06}".format(tid)[:3])
+    mv_tiddir = os.path.join(intermediate_dir, str(tid).zfill(6)[:3])
     if not os.path.isdir(mv_tiddir):
         print("create {}".format(mv_tiddir))
         os.mkdir(mv_tiddir)
-    for name in ["tiles", "sky", "gfa", "targ", "scnd", "too"]:
-        fn = os.path.join(outdir, "{:06}".format(tid)[:3], "{:06d}-{}.fits".format(tid))
+    for name in ["tiles", "sky", "gfa", "targ", "scnd", "too"]:        
+        #fn = os.path.join(outdir, str(tid).zfill(6)[:3], "{:06d}-{}.fits".format(tid))
+        fn = outdir+'/'+str(tid).zfill(6)[:3]+'/'+str(tid).zfill(6)+'-'+name+'.fits'
         if os.path.isfile(fn):
             mv_fn =os.path.join(mv_tiddir, os.path.basename(fn))
             print("moving {} to {}".format(fn, mv_fn))
