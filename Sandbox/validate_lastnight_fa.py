@@ -99,5 +99,5 @@ for tid in tids_passl:
         if os.path.isfile(fn):
             mv_fn =os.path.join(mv_tiddir, os.path.basename(fn))
             print("moving {} to {}".format(fn, mv_fn))
-            os.system("mv {} {}".format(fn, mv_fn)
+            os.system("mv {} {}".format(fn, mv_fn))
 
