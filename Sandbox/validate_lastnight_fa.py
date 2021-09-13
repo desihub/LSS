@@ -46,7 +46,7 @@ if args.clean:
     os.system('rm -R '+outdir+'/*')
 
 fol = [] #empty list to contain orginal fiberassign file names
-fnl = [] #empty list to contain orginal fiberassign file names
+fnl = [] #empty list to contain new fiberassign file names
 
 for tid in tidl:
     sel = exps['TILEID'] == tid
@@ -71,20 +71,23 @@ tids_passl = []
 if docheck:
     for ii in range(0,len(fnl)):
         dfn = outdir+'/'+str(tidl[ii])+'.diff'
-        fba_rerun_check(fol[ii], fnl[ii],dfn )  
-        tids = np.genfromtxt(dfn,usecols = (3))
-        if len(tids) > 0:
-            #tids = dd[3]
-            sel = tids > 0
-            if len(tids[sel]) > 0:
-                print('found '+str(len(tids[sel]))+' positive targetid that are different')
-                print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
-            else:
-                print('TILEID '+str(tidl[ii])+' PASSED') 
-                tids_passl.append(tidl[ii])
-        else:
-            print('TILEID '+str(tidl[ii])+' PASSED')          
-            tids_passl.append(tidl[ii])
+        if os.path.isfile(fnl[ii]):
+			fba_rerun_check(fol[ii], fnl[ii],dfn )  
+			tids = np.genfromtxt(dfn,usecols = (3))
+			if len(tids) > 0:
+				#tids = dd[3]
+				sel = tids > 0
+				if len(tids[sel]) > 0:
+					print('found '+str(len(tids[sel]))+' positive targetid that are different')
+					print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
+				else:
+					print('TILEID '+str(tidl[ii])+' PASSED') 
+					tids_passl.append(tidl[ii])
+			else:
+				print('TILEID '+str(tidl[ii])+' PASSED')          
+				tids_passl.append(tidl[ii])
+		else:
+		    print('WHY IS THERE NO NEW FIBERASSIGN FILE FOR '+str(tidl[ii])+'!?!? (check above output for clues)')
 
 #move intermediate files for tiles that pass
 
