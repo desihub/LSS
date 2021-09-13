@@ -20,7 +20,7 @@ tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-ma
 sel &= np.isin(exps['TILEID'],tlm['TILEID'])
 exps = exps[sel]
 
-if args.night is not None:
+if args.night == None:
 	#find the most recent night
 	maxn = np.max(exps['NIGHT'].astype(int))
 else:
