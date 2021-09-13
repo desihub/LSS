@@ -4,14 +4,27 @@
 from astropy.table import Table
 import numpy as np
 import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
+parser.add_argument("--clean", help="remove all files in the output directory prior to start, True/Fase",default=False)
+
 
 #open exposures file
 exps = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/exposures.ecsv')
 #remove the rows that don't have night so that next lines work
 sel = exps['NIGHT'] != 'None'
+#check if tileid are in main
+tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
+sel &= np.isin(exps['TILEID'],tlm['TILEID'])
 exps = exps[sel]
-#find the most recent night
-maxn = np.max(exps['NIGHT'].astype(int))
+
+if args.night in not None:
+	#find the most recent night
+	maxn = np.max(exps['NIGHT'].astype(int))
+else:
+    maxn = int(args.night)	
 seln = exps['NIGHT'].astype(int) == maxn
 #get the list of tileids observed on the last night
 tidl = np.unique(exps[seln]['TILEID'])
@@ -29,6 +42,9 @@ if not os.path.exists(outdir):
     os.mkdir(outdir)
     print('made '+outdir)
 
+if args.clean:
+    os.system('rm -R '+outdir+'/*')
+
 fol = [] #empty list to contain orginal fiberassign file names
 fnl = [] #empty list to contain orginal fiberassign file names
 
@@ -42,7 +58,7 @@ for tid in tidl:
     fol.append(fn)
     fnl.append(outdir+'/'+ff[12:15]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
     #system call run fiberassign
-    os.system('fba_rerun --infiberassign '+fn+' --outdir '+outdir+' --dtver 1.1.1 --nosteps qa')
+    os.system('fba_rerun --infiberassign '+fn+' --outdir '+outdir+' --nosteps qa') #--dtver 1.1.1 
 
 try:
     #edit out the fiberassign_rerun piece to be fiberassign once fba_rerun_io is merged into master fiberassign 
@@ -51,6 +67,7 @@ try:
 except:
     print('import failed, not doing check')
 
+tids_passl = []
 if docheck:
     for ii in range(0,len(fnl)):
         dfn = outdir+'/'+str(tidl[ii])+'.diff'
@@ -64,5 +81,23 @@ if docheck:
                 print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
             else:
                 print('TILEID '+str(tidl[ii])+' PASSED') 
+                tids_passl.append(tidl[ii])
         else:
             print('TILEID '+str(tidl[ii])+' PASSED')          
+            tids_passl.append(tidl[ii])
+
+#move intermediate files for tiles that pass
+
+intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main/test' #remove the test once we are happy
+for tid in tids_passl:
+    mv_tiddir = os.path.join(intermediate_dir, "{:06}".format(tid)[:3]))
+    if not os.path.isdir(mv_tiddir):
+        print("create {}".format(mv_tiddir))
+        os.mkdir(mv_tiddir)
+    for name in ["tiles", "sky", "gfa", "targ", "scnd", "too"]:
+        fn = os.path.join(outdir, "{:06}".format(tid)[:3], "{:06d}-{}.fits".format(tid))
+        if os.path.isfile(fn):
+            mv_fn =os.path.join(mv_tiddir, os.path.basename(fn))
+            print("moving {} to {}".format(fn, mv_fn))
+            os.system("mv {} {}".format(fn, mv_fn)
+
