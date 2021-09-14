@@ -1592,7 +1592,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffcs.write(outfs,format='fits', overwrite=True)
 
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
-    nzd = np.loadtxt(fn+'_nz.dat').transpose()[3] #column with nbar values
+    nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
     fn = fb+'_clustering.dat.fits'
     fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
     zl = fd['Z']
