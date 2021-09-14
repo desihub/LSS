@@ -1608,20 +1608,20 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
     ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(0,nran):
-		fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-		fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
-		zl = fd['Z']
-		nl = np.zeros(len(zl))
-		for ii in range(0,len(zl)):
-			z = zl[ii]
-			zind = int((z-zmin)/bs)
-			if z > zmin and z < zmax:
-				nl[ii] = nzd[zind]
-		del fd
-		ft = Table.read(fn)
-		ft['NBAR'] = nl
-		ft.write(fn,format='fits',overwrite=True)      
-		print('done with random number '+str(rann))  
+        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
+        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+        zl = fd['Z']
+        nl = np.zeros(len(zl))
+        for ii in range(0,len(zl)):
+            z = zl[ii]
+            zind = int((z-zmin)/bs)
+            if z > zmin and z < zmax:
+                nl[ii] = nzd[zind]
+        del fd
+        ft = Table.read(fn)
+        ft['NBAR'] = nl
+        ft.write(fn,format='fits',overwrite=True)      
+        print('done with random number '+str(rann))  
     return True        
     
 
