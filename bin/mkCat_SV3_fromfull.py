@@ -185,8 +185,8 @@ if mkclusran:
 #changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
     wzm = ''
-    if zmask:
-        wzm = 'zmask_'
+#     if zmask:
+#         wzm = 'zmask_'
     if rcut is not None:
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
