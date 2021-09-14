@@ -195,8 +195,9 @@ if mknz:
         wzm += ccut+'_' #you could change this to however you want the file names to turn out
 
     regl = ['','_N','_S']
-    fb = dirout+type+wzm+reg
+    
     for reg in regl:
+        fb = dirout+type+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'
