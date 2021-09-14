@@ -189,7 +189,7 @@ if mknz:
 #         wzm = 'zmask_'
     if rcut is not None:
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
-    if ntilecut > 0:
+    if ntile > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'    
     if ccut is not None:
         wzm += ccut+'_' #you could change this to however you want the file names to turn out
