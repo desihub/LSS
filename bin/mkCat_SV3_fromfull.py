@@ -87,10 +87,6 @@ mknz = False #get n(z) for type and all subtypes
 if args.nz == 'y':
     mknz = True
 
-if mknz:
-    print('creating n(z); note, this does so for all tracer types and requires updated randoms to be done properly')
-
-
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
@@ -209,7 +205,7 @@ if mknz:
         else:    
             dz = 0.02
             zmin = 0.01
-            zmax = 1.6
+            zmax = 1.61
         ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
 
