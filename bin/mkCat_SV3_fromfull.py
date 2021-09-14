@@ -182,19 +182,35 @@ if mkclusran:
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
+#changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
+    wzm = ''
+    if zmask:
+        wzm = 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += ccut+'_' #you could change this to however you want the file names to turn out
+
     regl = ['','_N','_S']
+    fb = dirout+type+wzm+reg
     for reg in regl:
-        fcr = dirout+type+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+reg+'_clustering.dat.fits'
-        fout = dirout+type+reg+'_nz.dat'
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6
             zmax = 4.5
             dz = 0.05
-            ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+            
         else:    
-            ct.mknz(fcd,fcr,fout,bs=0.02)
+            dz = 0.02
+            zmin = 0.01
+            zmax = 1.6
+        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
 
 
         
