@@ -101,7 +101,7 @@ if not os.path.exists(ldirspec):
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 tarfo = maindir+'datcomb_'+prog+'_tarwdup_zdone.fits'
 ct.combtiles_wdup(tiles4comb,tarfo)
-if verspec == 'daily':
+if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     ct.combtile_spec(tiles4comb,specfo)
     tarf = Table.read(tarfo)
@@ -124,7 +124,7 @@ if verspec == 'daily':
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
 
-if verspec == 'everest':
+if specrel == 'everest':
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
     wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
     specf = specf[wt]
