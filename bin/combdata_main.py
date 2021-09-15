@@ -134,6 +134,9 @@ if specrel == 'everest':
     ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    tarf = Table.read(tarfo)
+    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
