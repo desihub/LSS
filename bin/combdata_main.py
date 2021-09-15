@@ -125,7 +125,7 @@ if specrel == 'daily':
 
 
 if specrel == 'everest':
-    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
     specf = specf[wt]
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
