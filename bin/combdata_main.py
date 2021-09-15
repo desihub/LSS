@@ -142,6 +142,6 @@ if specrel == 'everest':
 
 
 tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
-tc = ct.count_tiles_better('dat',prog,specrel=specrel)
+tc = ct.count_tiles_better(specf,'dat',prog,specrel=specrel)
 tc.write(ldirspec+'Alltiles'+prog+'_tilelocs.dat.fits',format='fits', overwrite=True)
 
