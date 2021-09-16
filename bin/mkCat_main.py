@@ -102,6 +102,7 @@ progl = prog.lower()
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wt = mtld['FAPRGRM'] == progl
 wt &= mtld['SURVEY'] == 'main'
+wt &= mtld['ZDONE'] == 'true'
 mtld = mtld[wt]
 print('there are '+str(len(mtld))+' tiles')
 
@@ -174,7 +175,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(specf,dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
