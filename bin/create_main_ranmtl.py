@@ -154,7 +154,7 @@ print(len(ta))
 
 dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'  
 
-for rann in range(rm,rx:)
+for rann in range(rm,rx):
 	fnr = dirrt+'/randoms-1-'+str(rann)+'.fits'
 	rt = fitsio.read(fnr,columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
 	print('read input random file '+fnr)
