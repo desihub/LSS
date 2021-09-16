@@ -101,7 +101,7 @@ progl = prog.lower()
 
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wt = mtld['FAPRGRM'] == progl
-wt &= mtld['SURVEY'] == main
+wt &= mtld['SURVEY'] == 'main'
 mtld = mtld[wt]
 print('there are '+str(len(mtld))+' tiles')
 
