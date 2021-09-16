@@ -168,7 +168,7 @@ for rann in range(rm,rx):
 			tiles = ta[tim:tix]
 		else:
 			tiles = ta[tim:]
-		ct.randomtiles_main_fromran(tiles,rt,args.rann )
+		ct.randomtiles_main_fromran(tiles,rt,rann )
 
 	N = args.nproc
 	p = Pool(N)
