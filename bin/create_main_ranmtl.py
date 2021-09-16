@@ -15,6 +15,9 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
 from desimodel.footprint import is_point_in_desi
+from multiprocessing import Pool
+
+
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
@@ -32,7 +35,10 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nproc",help="number of processors to use",default=32)
-parser.add_argument("--rann",help='the number for the input random file (0-17)',default=0)
+parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
+
+#parser.add_argument("--rann",help='the number for the input random file (0-17)',default=0)
 
 
 
@@ -147,31 +153,32 @@ else:
 print(len(ta))
 
 dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'  
-fnr = dirrt+'/randoms-1-'+str(args.rann)+'.fits'
-rt = fitsio.read(fnr,columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-print('read input random file '+fnr)
 
-def doran(ii):
+for rann in range(rm,rx:)
+	fnr = dirrt+'/randoms-1-'+str(rann)+'.fits'
+	rt = fitsio.read(fnr,columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
+	print('read input random file '+fnr)
 
-	nti = int(len(ta)/rx)+1
-	tim = nti*ii
-	tix = nti*(ii+1)
-	if tix < len(ta):
-		tiles = ta[tim:tix]
-	else:
-		tiles = ta[tim:]
-	ct.randomtiles_main_fromran(tiles,rt,args.rann )
+	def doran(ii):
 
-            
-     
+		nti = int(len(ta)/rx)+1
+		tim = nti*ii
+		tix = nti*(ii+1)
+		if tix < len(ta):
+			tiles = ta[tim:tix]
+		else:
+			tiles = ta[tim:]
+		ct.randomtiles_main_fromran(tiles,rt,args.rann )
 
-if __name__ == '__main__':
-	from multiprocessing import Pool
-	import sys
-	#N = int(sys.argv[2])
 	N = args.nproc
 	p = Pool(N)
 	inds = []
 	for i in range(0,N):
 		inds.append(i)
 	p.map(doran,inds)
+
+            
+     
+
+#if __name__ == '__main__':
+	#N = int(sys.argv[2])
