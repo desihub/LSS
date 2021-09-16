@@ -160,7 +160,7 @@ def doran(ii):
 		tiles = ta[tim:tix]
 	else:
 		tiles = ta[tim:]
-	ct.randomtiles_main_fromran(tiles,rt )
+	ct.randomtiles_main_fromran(tiles,rt,args.rann )
 
             
      

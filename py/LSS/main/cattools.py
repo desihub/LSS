@@ -1525,7 +1525,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_main_fromran(tiles,rt,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random' ):
+def randomtiles_main_fromran(tiles,rt,rann,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random' ):
     '''
     tiles should be a table containing the relevant info
     take the input random, rt, as an argument so when doing in parallel only one copy in memory
@@ -1537,7 +1537,7 @@ def randomtiles_main_fromran(tiles,rt,dirout='/global/cfs/cdirs/desi/survey/cata
         
         #print('length of tile file is (expected to be 1):'+str(len(tiles)))
         tile = tiles['TILEID'][i]
-        fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+        fname = dirout+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(fname):
             print(fname +' already exists')
         else:
