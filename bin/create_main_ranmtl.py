@@ -138,9 +138,9 @@ if len(mtld) > 0:
     #ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
     print(np.unique(fver,return_counts=True))
-    wfv = (np.array(fver) == faver)
+    #wfv = (np.array(fver) == faver)
     #mtld =  mtld[wfv]
-    ta = ta[wfv]
+    #ta = ta[wfv]
 else:
     print('no done tiles in the MTL')
 
