@@ -35,8 +35,6 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nproc",help="number of processors to use",default=32)
-parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 
 #parser.add_argument("--rann",help='the number for the input random file (0-17)',default=0)
 
