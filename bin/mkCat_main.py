@@ -99,6 +99,11 @@ else:
 
 progl = prog.lower()
 
+mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+wt = mtld['PROGRAM'] == progl
+wt &= mtld['SURVEY'] == main
+mtld = mtld[wt]
+print('there are '+str(len(mtld))+' tiles')
 
 imbits = [1,5,6,7,8,9,11,12,13]
 
@@ -153,7 +158,7 @@ if mktar: #concatenate target files for given type, with column selection hardco
 if mkfulld:
     if specrel == 'everest':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
-        wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+        wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
