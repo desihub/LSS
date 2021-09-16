@@ -207,10 +207,11 @@ def doran(ii):
 
     if mkranmtl:
         if par:
-            for jj in range(0,18):
+            nti = int(len(ta)/rx)+1
+            for jj in range(rm,rx):
                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-                tim = rx*ii
-                tix = rx*(ii+1)
+                tim = nti*ii
+                tix = nti*(ii+1)
                 if tix < len(ta):
                     tiles = ta[tim:tix]
                 else:
