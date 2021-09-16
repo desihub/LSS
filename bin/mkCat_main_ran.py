@@ -213,12 +213,14 @@ def doran(ii):
             for jj in range(rm,rx):
                 print(jj)
                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
+                print('read random file '+str(jj))
                 tim = nti*ii
                 tix = nti*(ii+1)
                 if tix < len(ta):
                     tiles = ta[tim:tix]
                 else:
                     tiles = ta[tim:]
+                print('writing randoms to '+str(len(tiles))+' tiles')
                 ct.randomtiles_main_fromran(tiles,rt )
         else:
             ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
