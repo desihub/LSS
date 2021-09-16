@@ -206,9 +206,12 @@ def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
 
     if mkranmtl:
+        print('making random mtl files for each tile')
         if par:
             nti = int(len(ta)/rx)+1
+            print(nti,len(ta),ii)
             for jj in range(rm,rx):
+                print(jj)
                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
                 tim = nti*ii
                 tix = nti*(ii+1)
