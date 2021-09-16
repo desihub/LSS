@@ -1072,7 +1072,7 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='DESI_TARGET',tsnr= 'TS
     
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
+def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1081,11 +1081,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     else:    
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
+    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
     num_nod = np.sum(nodata)
     print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
     num_badqa = np.sum(badqa)
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata & badqa
