@@ -231,7 +231,7 @@ if args.nz == 'y':
     regl = ['','_N','_S']
     
     for reg in regl:
-        fb = dirout+type+wzm+reg
+        fb = dirout+type+wzm+reg+'zdone'
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'
