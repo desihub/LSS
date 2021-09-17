@@ -281,6 +281,16 @@ def doran(ii):
 
         
     if mkfullr:
+
+        if specrel == 'everest':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            fbcol = 'COADD_FIBERSTATUS'
+        if specrel == 'daily':
+            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+            fbcol = 'FIBERSTATUS'
+
         outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
@@ -288,7 +298,8 @@ def doran(ii):
         else:
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg)
+        
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
