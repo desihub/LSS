@@ -428,7 +428,11 @@ if mkfulld:
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
-    azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+    azf=''
+    if type[:3] == 'ELG':
+        azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+    if type[:3] == 'QSO':
+        azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_SV3.fits'
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old

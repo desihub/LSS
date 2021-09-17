@@ -1074,8 +1074,15 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     
     dz.write(outf,format='fits', overwrite=True)
     del dz
-    
 
+def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',ecol=['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']):
+    dz = fitsio.read(fn)
+    tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=ecol)
+    dz = join(dz,tarf,keys=['TARGETID'])
+    dz.write(fn,format='fits', overwrite=True)
+    del dz
+        
+    
 
 def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
     from scipy.special import erf
@@ -1157,6 +1164,16 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
         
         dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
+
+    if tp[:3] == 'QSO':
+        arz = Table.read(azf)
+        arz.keep_columns(['TARGETID','LOCATION','TILE','Z','ZERR','Z_QN'])
+        print(arz.dtype.names)
+        #arz['TILE'].name = 'TILEID'
+        dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
+        dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+
 
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
@@ -1354,7 +1371,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    if tp == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['TSNR2_QSO'] > tsnrcut
+    
+    if tp[:3] == 'ELG':
         wz = ff['o2c'] > dchi2
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
@@ -1365,8 +1390,16 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after tsnrcut '+str(len(ff[wz])))
     if tp == 'LRG':
         print('applying extra cut for LRGs')
-        wz &= ff['DELTACHI2'] > dchi2
-        print('length after dchi2 cut '+str(len(ff[wz])))
+        # Custom DELTACHI2 vs z cut from Rongpu
+        drz = (10**(3 - 3.5*ff['Z']))
+        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
+        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
+        mask_bad |= (ff['DELTACHI2']<10)
+        wz &= ff['Z']<1.4
+        wz &= (~mask_bad)
+
+        #wz &= ff['DELTACHI2'] > dchi2
+        print('length after Rongpu cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
 
@@ -1476,6 +1509,40 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     for col in rcols: 
         ffcs[col] = dshuf[col]     
     ffcs.write(outfs,format='fits', overwrite=True)
+
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
+    nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
+    fn = fb+'_clustering.dat.fits'
+    fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+    zl = fd['Z']
+    nl = np.zeros(len(zl))
+    for ii in range(0,len(zl)):
+        z = zl[ii]
+        zind = int((z-zmin)/bs)
+        if z > zmin and z < zmax:
+            nl[ii] = nzd[zind]
+    del fd
+    ft = Table.read(fn)
+    ft['NZ'] = nl
+    ft.write(fn,format='fits',overwrite=True)        
+    print('done with data')
+    for rann in range(0,nran):
+        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
+        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+        zl = fd['Z']
+        nl = np.zeros(len(zl))
+        for ii in range(0,len(zl)):
+            z = zl[ii]
+            zind = int((z-zmin)/bs)
+            if z > zmin and z < zmax:
+                nl[ii] = nzd[zind]
+        del fd
+        ft = Table.read(fn)
+        ft['NZ'] = nl
+        ft.write(fn,format='fits',overwrite=True)      
+        print('done with random number '+str(rann))  
+    return True        
+
 
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.3):
     
