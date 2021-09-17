@@ -1014,31 +1014,34 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='DESI_TARGET',tsnr= 'TSNR2_ELG',maskzfail=False,specver='daily'):
+def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
 
     #first, need to find locations to veto based data
-    fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata & badqa
-    wf = ~nomtl
+#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+#     num_nod = np.sum(nodata)
+#     print('number with no data '+str(num_nod))
+#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+#     num_badqa = np.sum(badqa)
+#     print('number with bad qa '+str(num_badqa))
+#     nomtl = nodata & badqa
+#     wf = ~nomtl
 
-    #wf = fs['FIBERSTATUS'] == 0
+    wf = fs[fbcol] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
-    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     dz = Table.read(zf) 
     wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & qsobit) == 0)
+
     wg = np.isin(dz['TILELOCID'],gtl)
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
 
-    zf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    
+    zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
@@ -1060,15 +1063,16 @@ def mkfullran(randir,rann,imbits,outf,tp,pd,bit,desitarg='DESI_TARGET',tsnr= 'TS
     'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
     tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
     dz = join(dz,tarf,keys=['TARGETID'])
-    
+    del tarf
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     dz.sort(tsnr) #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
-    print('lengeth after cutting to unique TARGETID '+str(len(dz)))
+    print('length after cutting to unique TARGETID '+str(len(dz)))
     print(np.unique(dz['NTILE']))
     
     dz.write(outf,format='fits', overwrite=True)
+    del dz
     
 
 
