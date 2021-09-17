@@ -1045,7 +1045,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
-    zfpd = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
     #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
