@@ -41,7 +41,7 @@ def prep4czxi(type,zmin,zmax,nran=10,indir='',ver='test',outdir=os.environ['CSCR
     if subt is not None:
         from desitarget.sv3 import sv3_targetmask
         tb = sv3_targetmask.desi_mask[subt]
-        sel = (df['SV3_DESI_TARGET'] & tb) > 0
+        sel = (df['DESI_TARGET'] & tb) > 0
         df = df[sel]
         
     so = 'main_'+ver+type+reg+fkpw+ntw+str(zmin)+str(zmax)

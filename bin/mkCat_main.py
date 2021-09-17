@@ -62,6 +62,7 @@ if args.redotar == 'y':
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
     mkfulld = False
+        
     
 if mkfulld:
     print('making "full" catalog file for data')    
@@ -216,7 +217,7 @@ if mkclusran:
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
 
-if mknz:
+if args.nz == 'y':
     wzm = ''
 #     if zmask:
 #         wzm = 'zmask_'
