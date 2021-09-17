@@ -1089,8 +1089,14 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     num_badqa = np.sum(badqa)
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata & badqa
-    wf = ~nomtl
+    wfqa = ~nomtl
     #wf = fs['FIBERSTATUS'] == 0
+    if specver == 'daily':
+        fbcol = 'FIBERSTATUS'
+    if specver == 'everest':
+        fbcol = 'COADD_FIBERSTATUS'
+    wf = fs[fbcol] == 0
+    print(len(fs[wf]),len(fs[wfqa]))
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wf])
 
