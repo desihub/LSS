@@ -205,7 +205,7 @@ if args.fillran == 'y':
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
         fn = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
-        addcol_ran(fn,ii)
+        ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
 if mkclusran:
