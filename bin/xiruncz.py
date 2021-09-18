@@ -47,7 +47,7 @@ if type == 'LRGAlltiles' or type == 'LRGAlltiles_main':
     #zmax=1.05
 
 if type == 'LRG':
-    zl = [0.4,0.8,1.1]
+    zl = [0.4,0.6,0.8,1.1]
 #    minn = 5
     #zmin=0.32
     #zmax=1.05
@@ -68,7 +68,7 @@ if type == 'LRG_IR':
 
 if type[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
-    zl = [0.8,1.05,1.3,1.6]
+    zl = [0.8,1.1,1.5]
     #zmask = ['','_zmask']
     
     #zmin = 0.8
@@ -114,7 +114,7 @@ if type == 'ELGhz497':
     type = 'ELG'
 
 if type == 'QSO':
-    zl = [0.8,1.05,1.3,1.6,2.1]
+    zl = [0.8,1.1,1.5,2.1]
     #zmin = 1.
     #zmax = 2.1
 
