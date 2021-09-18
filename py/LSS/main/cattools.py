@@ -1425,7 +1425,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         selz = ff['Z'] > zmin
         selz &= ff['Z'] < zmax
         ec = ff[selz]
-        hd = np.histogram(ec['EBV'],weights=tarcompe/ec['COMP_TILE'],range=(0,.15))
+        hd = np.histogram(ec['EBV'],weights=1./ec['COMP_TILE'],range=(0,.15))
         fer = fitsio.read(fl+'0_full.ran.fits')
         hr = np.histogram(fer['EBV'],bins=hd[1])
         norm = sum(hr[0])/sum(hd[0])
