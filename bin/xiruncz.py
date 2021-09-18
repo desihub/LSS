@@ -66,7 +66,7 @@ if type == 'LRG_IR':
     type = 'LRG'
 
 
-if type == 'ELG' or type == 'ELG_HIP':
+if type[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
     zl = [0.8,1.05,1.3,1.6]
     #zmask = ['','_zmask']
