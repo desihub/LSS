@@ -206,6 +206,7 @@ if args.fillran == 'y':
     for ii in range(rm,rx):
         fn = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
         addcol_ran(fn,ii)
+        print('done with '+str(ii))
 
 if mkclusran:
     print('doing clustering randoms')
