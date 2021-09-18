@@ -171,7 +171,7 @@ if mkfulld:
 
     azf=''
     if type[:3] == 'ELG':
-        azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        azf = '/global/cfs/cdirs/desi/users/raichoor/everest/main-elg-everest-tiles.fits'
     if type[:3] == 'QSO':
         azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_MAIN.fits'
 
