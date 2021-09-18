@@ -1417,6 +1417,26 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if weighttileloc == True:
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
 
+    #weights for imaging systematic go here
+    ff['WEIGHT_SYS'] =  1.
+    if tp[:3] == 'ELG':
+        zmin = 0.8
+        zmax = 1.5
+        selz = ff['Z'] > zmin
+        selz &= ff['Z'] < zmax
+        ec = ff[selz]
+        hd = np.histogram(ec['EBV'],weights=tarcompe/ec['COMP_TILE'],range=(0,.15))
+        fer = fitsio.read(fl+'0_full.ran.fits')
+        hr = np.histogram(fer['EBV'],bins=hd[1])
+        norm = sum(hr[0])/sum(hd[0])
+        xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
+        yl = hd[0]/hr[0]*norm
+        el = np.sqrt(hd[0])/hr[0]*norm
+        m,b = np.polyfit(xl,yl,1,w=1/el)
+        print('linear fits coefficients to EBV are '+str(m)+' '+str(b))
+        ff['WEIGHT_SYS'] = 1./(m*ff['EBV']+b)
+    ff['WEIGHT'] *= ff['WEIGHT_SYS']
+
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
@@ -1455,7 +1475,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES'])
+    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS'])
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
