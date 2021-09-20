@@ -60,12 +60,11 @@ for tid in tidl:
     #system call run fiberassign
     os.system('fba_rerun --infiberassign '+fn+' --outdir '+outdir+' --nosteps qa') #--dtver 1.1.1 
 
-try:
-    #edit out the fiberassign_rerun piece to be fiberassign once fba_rerun_io is merged into master fiberassign 
-    from fiberassign_rerun.fba_rerun_io import fba_rerun_check
-    docheck = True
-except:
-    print('import failed, not doing check')
+#try:
+from fiberassign.fba_rerun_io import fba_rerun_check
+docheck = True
+#except:
+#    print('import failed, not doing check')
 
 tids_passl = []
 if docheck:
