@@ -294,7 +294,7 @@ def doran(ii):
         outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
-            desitarg='SV3_BGS_TARGET'
+            desitarg='BGS_TARGET'
         else:
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
