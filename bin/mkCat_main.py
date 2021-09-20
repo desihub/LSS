@@ -153,6 +153,8 @@ tarf = maindir+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 mktar = True
 if os.path.isfile(tarf) and redotar == False:
     mktar = False
+if type == 'BGS_BRIGHT':
+    mktar = False    
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
     ss.gather_targets(type,tardir,maindir,tarver,'main',progl,keys=keys)
