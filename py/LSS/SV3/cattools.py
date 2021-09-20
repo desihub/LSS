@@ -1472,6 +1472,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT'] *= 1./ff[weightmd]
         wzer = ff[weightmd] == 0
         ff['WEIGHT'][wzer] = 0
+        print(len(ff[wzer])+' galaxies with PROB_OBS 0 getting assigned weight of 0 (should not happen, at minimum adjust weights to reflect 1 real realization happened)')
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
