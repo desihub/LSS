@@ -1436,7 +1436,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('linear fits coefficients to EBV are '+str(m)+' '+str(b))
         ff['WEIGHT_SYS'] = 1./(m*ff['EBV']+b)
         hd = np.histogram(np.log(ec['GALDEPTH_G']),weights=1./ec['COMP_TILE'],range=(5.5,8.))
-        fer = fitsio.read(fl+'0_full.ran.fits')
         hr = np.histogram(np.log(fer['GALDEPTH_G']),bins=hd[1])
         norm = sum(hr[0])/sum(hd[0])
         xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
