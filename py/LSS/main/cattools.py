@@ -33,7 +33,7 @@ def tile2rosette(tile):
             return tile//30    
     return 999999 #shouldn't be any more?
     
-def combtile_spec(tiles,outf=''):
+def combtile_spec(tiles,outf='',md=''):
     s = 0
     n = 0
     nfail = 0
@@ -46,7 +46,10 @@ def combtile_spec(tiles,outf=''):
         tmask = np.ones(len(tiles)).astype('bool')    
 
     for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE']):
-        tspec = combspecdata(tile,zdate)
+        if md == 'zmtl':
+            tspec = combzmtl(tile,zdate)
+        else:
+            tspec = combspecdata(tile,zdate)
         if tspec:
             tspec['TILEID'] = tile
             if s == 0:
@@ -119,6 +122,35 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
+
+def combzmtl(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='' ):
+    #put data from different spectrographs together, one table for fibermap, other for z
+    zdate = str(zdate)
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        if os.path.isfile(ff):
+            specs.append(si)
+        else:
+            print('did not find '+ff)    
+    print('spectrographs with data:')
+    print(specs)            
+    if len(specs) == 0:
+        return None
+    for i in range(0,len(specs)):
+        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
+    
+        if i == 0:
+           tspec = tn
+        else:    
+            tspec = vstack([tspec,tn],metadata_conflicts='silent')
+        
+    
+    tspec.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
+    tspec['ZWARN'].name = 'ZWARN_MTL'
+    return tspec
+
 
 def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
     #put data from different spectrographs together, one table for fibermap, other for z
