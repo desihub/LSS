@@ -147,8 +147,9 @@ def combzmtl(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tile
             tspec = vstack([tspec,tn],metadata_conflicts='silent')
         
     
-    tspec.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
+    tspec.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN','ZTILEID'])
     tspec['ZWARN'].name = 'ZWARN_MTL'
+    tspec['ZTILEID'].name = 'TILEID'
     return tspec
 
 
