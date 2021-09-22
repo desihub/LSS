@@ -14,7 +14,7 @@ args = parser.parse_args()
 month = args.night[:6]
 
 #open exposures file
-exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.ecsv')
+exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
 
 #get the list of tileids observed on the last night
 tidl = np.unique(exps['TILEID'])
