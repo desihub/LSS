@@ -16,6 +16,12 @@ month = args.night[:6]
 #open exposures file
 exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
 
+#check if tileid are in main
+tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
+sel &= np.isin(exps['TILEID'],tlm['TILEID'])
+exps = exps[sel]
+
+
 #get the list of tileids observed on the last night
 tidl = np.unique(exps['TILEID'])
 
