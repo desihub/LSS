@@ -18,7 +18,7 @@ exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+
 
 #check if tileid are in main
 tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
-sel &= np.isin(exps['TILEID'],tlm['TILEID'])
+sel = np.isin(exps['TILEID'],tlm['TILEID'])
 exps = exps[sel]
 
 
