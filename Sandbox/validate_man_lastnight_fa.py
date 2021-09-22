@@ -19,7 +19,7 @@ exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+
 #get the list of tileids observed on the last night
 tidl = np.unique(exps['TILEID'])
 
-print('looking at fiberassign files used on the night '+str(maxn))
+print('looking at fiberassign files used on the night '+args.night)
 print('the tileids are:')
 print(tidl)
 
@@ -42,7 +42,7 @@ for tid in tidl:
     sel = exps['TILEID'] == tid
     expid = exps[sel]['EXPID'][0] #just select one expid to get the fiberassign file
     ff = 'fiberassign-'+str(tid).zfill(6)+'.fits.gz'
-    fn = '/global/cfs/cdirs/desi/spectro/data/'+str(maxn)+'/'+str(expid).zfill(8)+'/'+ff
+    fn = '/global/cfs/cdirs/desi/spectro/data/'+args.night+'/'+str(expid).zfill(8)+'/'+ff
     print('reproducing data for fiberassign file '+fn)
     fol.append(fn)
     fnl.append(outdir+'/'+str(tid).zfill(6)[:3]+'/fiberassign-'+str(tid).zfill(6)+'.fits.gz')
