@@ -111,7 +111,7 @@ print('there are '+str(len(mtld))+' tiles')
 #imbits = [1,8,9,11,12,13]
 
 #change imaging bits to just what was applied to targeting
-if tp[:3] == 'BGS':
+if type[:3] == 'BGS':
     imbits = [1,13]
 else:
     imbits = [1,12,13]    
