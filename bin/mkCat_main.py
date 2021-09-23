@@ -111,10 +111,13 @@ print('there are '+str(len(mtld))+' tiles')
 #imbits = [1,8,9,11,12,13]
 
 #change imaging bits to just what was applied to targeting
+ebits = None
 if type[:3] == 'BGS':
     imbits = [1,13]
 else:
-    imbits = [1,12,13]    
+    imbits = [1,12,13]
+    if type[:3] == 'LRG' or type[:3] == 'ELG':
+        ebits = [8,9,11]    
 
 
 #location of targets
@@ -208,7 +211,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,imbits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
@@ -232,7 +235,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,imbits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.nz == 'y':
     wzm = ''

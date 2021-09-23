@@ -1380,7 +1380,7 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1391,6 +1391,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     '''    
     ff = Table.read(fl+'full.dat.fits')
+    
+    if ebits is not None:
+        ff = cutphotmask(ff,ebits)
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1527,7 +1530,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG'):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
@@ -1536,6 +1539,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #ffd = Table.read(fl+'full.dat.fits')
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+    if ebits is not None:
+        ffr = cutphotmask(ffr,ebits)
+
     #if type[:3] == 'ELG' or type == 'LRG':
     wz = ffr[tsnrcol] > tsnrcut
     #wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
