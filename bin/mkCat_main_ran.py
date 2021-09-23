@@ -95,7 +95,13 @@ else:
 
 pd = pdir
 
-imbits = [1,8,9,11,12,13]
+#imbits = [1,8,9,11,12,13]
+
+if tp[:3] == 'BGS':
+    imbits = [1,13]
+else:
+    imbits = [1,12,13]    
+
 
 mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wd = mt['SURVEY'] == 'main'
