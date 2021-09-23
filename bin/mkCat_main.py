@@ -211,7 +211,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,imbits=ebits)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
@@ -235,7 +235,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,imbits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.nz == 'y':
     wzm = ''
