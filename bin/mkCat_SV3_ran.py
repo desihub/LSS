@@ -111,7 +111,7 @@ wdone = mtld['ZDONE'] == 'true'
 mtld = mtld[wdone]
 
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,5,6,7,8,9,11,12,13]
+imbits = [1,8,9,11,12,13]
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'

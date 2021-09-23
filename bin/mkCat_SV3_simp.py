@@ -115,7 +115,7 @@ else:
 progl = prog.lower()
 
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,5,6,7,8,9,11,12,13]
+imbits = [1,8,9,11,12,13]
 
 #location of targets
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 

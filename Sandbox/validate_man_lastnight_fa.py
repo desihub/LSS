@@ -85,7 +85,7 @@ if docheck:
 
 #move intermediate files for tiles that pass
 
-intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main/test' #remove the test once we are happy
+intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main' #remove the test once we are happy
 for tid in tids_passl:
     mv_tiddir = os.path.join(intermediate_dir, str(tid).zfill(6)[:3])
     if not os.path.isdir(mv_tiddir):

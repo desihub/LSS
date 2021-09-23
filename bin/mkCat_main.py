@@ -108,7 +108,7 @@ wt &= mtld['ZDONE'] == 'true'
 mtld = mtld[wt]
 print('there are '+str(len(mtld))+' tiles')
 
-imbits = [1,5,6,7,8,9,11,12,13]
+imbits = [1,8,9,11,12,13]
 
 
 #location of targets
@@ -165,6 +165,7 @@ if mkfulld:
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
+        zmtlf = fitsio.read()
     if specrel == 'daily':
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
  
