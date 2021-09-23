@@ -1543,9 +1543,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
     if ebits is not None:
-        print('number before imaging mask '+str(len(ff)))
+        print('number before imaging mask '+str(len(ffr)))
         ffr = cutphotmask(ffr,ebits)
-        print('number after imaging mask '+str(len(ff)))
+        print('number after imaging mask '+str(len(ffr)))
 
     #if type[:3] == 'ELG' or type == 'LRG':
     wz = ffr[tsnrcol] > tsnrcut
