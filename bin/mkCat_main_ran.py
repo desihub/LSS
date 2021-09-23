@@ -97,7 +97,7 @@ pd = pdir
 
 #imbits = [1,8,9,11,12,13]
 
-if tp[:3] == 'BGS':
+if type[:3] == 'BGS':
     imbits = [1,13]
 else:
     imbits = [1,12,13]    
