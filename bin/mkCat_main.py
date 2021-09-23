@@ -171,7 +171,7 @@ if mkfulld:
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
-        zmtlf = fitsio.read()
+        #zmtlf = fitsio.read()
     if specrel == 'daily':
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
  
