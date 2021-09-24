@@ -123,6 +123,12 @@ if type == 'QSOhiz':
     zmax = 2.1
     type = 'QSO'
 
+if type == 'QSOlya':
+    zmin = 2.1
+    zmax = 3.5
+    type = 'QSO'
+
+
 if type == 'QSO_RF_4PASS':
     subt = type
     zmin = 1.6
