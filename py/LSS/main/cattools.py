@@ -15,23 +15,6 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
 from LSS.Cosmo import distance
-
-def tile2rosette(tile):
-    if tile < 433:
-        return (tile-1)//27
-    else:
-        if tile >= 433 and tile < 436:
-            return 13
-        if tile >= 436 and tile < 439:
-            return 14
-        if tile >= 439 and tile < 442:
-            return 15
-        if tile >= 442 and tile <=480:
-            return (tile-442)//3
-            
-        if tile > 480:
-            return tile//30    
-    return 999999 #shouldn't be any more?
     
 def combtile_spec(tiles,outf='',md=''):
     s = 0
@@ -1458,31 +1441,31 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #weights for imaging systematic go here
     ff['WEIGHT_SYS'] =  1.
-    if tp[:3] == 'ELG':
-        zmin = 0.8
-        zmax = 1.5
-        selz = ff['Z'] > zmin
-        selz &= ff['Z'] < zmax
-        ec = ff[selz]
-        hd = np.histogram(ec['EBV'],weights=1./ec['COMP_TILE'],range=(0,.15))
-        fer = fitsio.read(fl+'0_full.ran.fits')
-        hr = np.histogram(fer['EBV'],bins=hd[1])
-        norm = sum(hr[0])/sum(hd[0])
-        xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
-        yl = hd[0]/hr[0]*norm
-        el = np.sqrt(hd[0])/hr[0]*norm
-        m,b = np.polyfit(xl,yl,1,w=1/el)
-        print('linear fits coefficients to EBV are '+str(m)+' '+str(b))
-        ff['WEIGHT_SYS'] = 1./(m*ff['EBV']+b)
-        hd = np.histogram(np.log(ec['GALDEPTH_G']),weights=1./ec['COMP_TILE'],range=(5.5,8.))
-        hr = np.histogram(np.log(fer['GALDEPTH_G']),bins=hd[1])
-        norm = sum(hr[0])/sum(hd[0])
-        xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
-        yl = hd[0]/hr[0]*norm
-        el = np.sqrt(hd[0])/hr[0]*norm
-        m,b = np.polyfit(xl,yl,1,w=1/el)
-        print('linear fits coefficients to GALDEPTH_G are '+str(m)+' '+str(b))
-        ff['WEIGHT_SYS'] *= 1./(m*np.log(ff['GALDEPTH_G'])+b)
+#     if tp[:3] == 'ELG':
+#         zmin = 0.8
+#         zmax = 1.5
+#         selz = ff['Z'] > zmin
+#         selz &= ff['Z'] < zmax
+#         ec = ff[selz]
+#         hd = np.histogram(ec['EBV'],weights=1./ec['COMP_TILE'],range=(0,.15))
+#         fer = fitsio.read(fl+'0_full.ran.fits')
+#         hr = np.histogram(fer['EBV'],bins=hd[1])
+#         norm = sum(hr[0])/sum(hd[0])
+#         xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
+#         yl = hd[0]/hr[0]*norm
+#         el = np.sqrt(hd[0])/hr[0]*norm
+#         m,b = np.polyfit(xl,yl,1,w=1/el)
+#         print('linear fits coefficients to EBV are '+str(m)+' '+str(b))
+#         ff['WEIGHT_SYS'] = 1./(m*ff['EBV']+b)
+#         hd = np.histogram(np.log(ec['GALDEPTH_G']),weights=1./ec['COMP_TILE'],range=(5.5,8.))
+#         hr = np.histogram(np.log(fer['GALDEPTH_G']),bins=hd[1])
+#         norm = sum(hr[0])/sum(hd[0])
+#         xl = hd[1][:-1]+(hd[1][1]-hd[1][0])/2.
+#         yl = hd[0]/hr[0]*norm
+#         el = np.sqrt(hd[0])/hr[0]*norm
+#         m,b = np.polyfit(xl,yl,1,w=1/el)
+#         print('linear fits coefficients to GALDEPTH_G are '+str(m)+' '+str(b))
+#         ff['WEIGHT_SYS'] *= 1./(m*np.log(ff['GALDEPTH_G'])+b)
 
     ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
