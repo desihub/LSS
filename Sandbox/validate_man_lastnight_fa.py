@@ -26,7 +26,7 @@ exps = exps[sel]
 tidl = np.unique(exps['TILEID'])
 
 print('looking at fiberassign files used on the night '+args.night)
-print('the tileids are:')
+print('the '+str(len(tidl)+' tileids are:')
 print(tidl)
 
 if not os.path.exists(os.environ['CSCRATCH']+'/fiberassign'):
