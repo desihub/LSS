@@ -124,8 +124,9 @@ if type == 'QSOhiz':
     type = 'QSO'
 
 if type == 'QSOlya':
-    zmin = 2.1
-    zmax = 3.5
+    #zmin = 2.1
+    #zmax = 3.5
+    zl = [2.1,3.5]
     type = 'QSO'
 
 
