@@ -273,7 +273,7 @@ class Syst:
         print('Fitting for:')
         print(self.par_names)
 
-        mig = Minuit(self.get_chi2,**init_pars)# throw_nan=False, \
+        mig = Minuit(self.get_chi2,forced_parameters=par_names,**init_pars)# throw_nan=False, \
                              #forced_parameters=par_names, \
                              #print_level=1, errordef=1, \
                              #**init_pars)
