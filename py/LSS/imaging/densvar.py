@@ -85,7 +85,7 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps):
     sel &= dd['Z'] < zmax
     dds = dd[sel]
     #-- Dictionaries containing all different systematic values
-    mapv = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'])
+    data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'])
     data_we = dds['WEIGHT']
     rand_we = np.ones(len(rd))
     #-- Create fitter object
