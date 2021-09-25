@@ -241,6 +241,7 @@ if mkclusran:
 if args.imsys == 'y':
     from LSS.imaging import densvar
     regl = ['','_N','_S']
+    wzm = ''
     if type[:3] == 'ELG':
         zmin = 0.8
         zmax = 1.5
