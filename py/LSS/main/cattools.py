@@ -1581,7 +1581,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         inds = np.random.choice(len(fcd),len(ffss))
         dshuf = fcd[inds]
         for col in rcols: 
-            fffs[col] = dshuf[col]     
+            ffss[col] = dshuf[col]     
 
         ffss[sel].write(outfn,format='fits', overwrite=True)
 
