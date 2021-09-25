@@ -104,7 +104,7 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps):
     s.prepare(nbins=nbins)
     s.fit_minuit(fit_maps=fit_maps)
     s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.5, 1.5])#, title=f'{sample_name}: global fit')
-
+    plt.show()
     #-- Get weights for global fit
     data_weightsys_global = 1/s.get_model(s.best_pars, data_syst)
     wsysl = np.ones(len(dd))
