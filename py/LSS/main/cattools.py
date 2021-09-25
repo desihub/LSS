@@ -1583,7 +1583,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         for col in rcols: 
             ffss[col] = dshuf[col]     
 
-        ffss[sel].write(outfn,format='fits', overwrite=True)
+        ffss.write(outfn,format='fits', overwrite=True)
 
 
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
