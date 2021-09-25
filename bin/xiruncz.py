@@ -158,6 +158,9 @@ ranwt1=False
 
 regl = ['_N','_S']
 
+if survey == main:
+    regl = ['_DN','_DS','_N','_S']
+
 for i in range(0,len(zl)):
     if i == len(zl)-1:
         zmin=zl[0]
