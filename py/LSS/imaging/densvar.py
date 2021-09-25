@@ -3,7 +3,7 @@ import astropy.io.fits as fits
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
-from LSS.imaging import imsys_fitter as sf
+from LSS import imsys_fitter as sf
 
 pixfn      = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
 hdr        = fits.getheader(pixfn,1)
