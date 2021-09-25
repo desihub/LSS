@@ -239,7 +239,7 @@ if mkclusran:
         ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.imsys == 'y':
-    from LSS.imaging impor densvar
+    from LSS.imaging import densvar
     regl = ['','_N','_S']
     if type[:3] == 'ELG':
         zmin = 0.8
