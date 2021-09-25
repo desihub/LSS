@@ -275,8 +275,8 @@ class Syst:
         mig = Minuit(self.get_chi2, throw_nan=False, \
                              forced_parameters=par_names, \
                              print_level=1, errordef=1, \
-                             frontend=iminuit.frontends.ConsoleFrontend(), \
                              **init_pars)
+                             #frontend=iminuit.frontends.ConsoleFrontend(), \
 
         mig.tol = 1.0 
         imin = mig.migrad()
