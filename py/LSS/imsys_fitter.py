@@ -183,8 +183,9 @@ class Syst:
 
         #-- doing histograms with np.bincount, it's faster
         for name in data_syst:
-            h_dat = np.bincount(h_index[name], weights=data_we*we_model, 
-                                minlength=self.nbins)
+            #h_dat = np.bincount(h_index[name], weights=data_we*we_model, 
+            #                    minlength=self.nbins)
+            h_dat,_ = np.histogram(data_syst[name],bins=self.edges[name],weights=data_we*we_model)
             h_ran = h_rand[name]
             #-- computing overdensity and error assuming poisson
             delt = h_dat/h_ran * self.factor
