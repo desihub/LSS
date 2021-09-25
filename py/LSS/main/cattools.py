@@ -1514,7 +1514,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     outfn = fl+wzm+'N_clustering.dat.fits'
     ff[wn].write(outfn,format='fits', overwrite=True)
     outfn = fl+wzm+'S_clustering.dat.fits'
-    ff[~wn].write(outfn,format='fits', overwrite=True)
+    ffs = ff[~wn]
+    ffs.write(outfn,format='fits', overwrite=True)
+    for reg in ['DS','DN']: #split DECaLS NGC/SGC
+        outfn = fl+wzm+reg+'_clustering.dat.fits'
+        sel = densvar.sel_reg(ffs['RA','DEC',reg)
+        ffs[sel].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -1566,6 +1571,19 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     for col in rcols: 
         ffcs[col] = dshuf[col]     
     ffcs.write(outfs,format='fits', overwrite=True)
+
+    for reg in ['DS','DN']: #split DECaLS NGC/SGC
+        outfn = fl+wzm+reg+'_clustering.dat.fits'
+        sel = densvar.sel_reg(ffcs['RA','DEC',reg)
+        fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
+        ffss = ffs[sel]
+        inds = np.random.choice(len(fcd),len(ffss))
+        dshuf = fcd[inds]
+        for col in rcols: 
+            fffs[col] = dshuf[col]     
+
+        ffss[sel].write(outfn,format='fits', overwrite=True)
+
 
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
     nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
