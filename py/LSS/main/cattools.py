@@ -1574,7 +1574,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffcs.write(outfs,format='fits', overwrite=True)
 
     for reg in ['DS','DN']: #split DECaLS NGC/SGC
-        outfn = fl+wzm+reg+'_clustering.dat.fits'
+        outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
         ffss = ffcs[sel]
