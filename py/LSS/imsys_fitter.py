@@ -7,7 +7,7 @@ import healpy as hp
 from astropy.io import fits
 from astropy.table import Table
 from iminuit import Minuit
-import iminuit.frontends
+#import iminuit.frontends
 from scipy.optimize import minimize
 
 class Syst:
