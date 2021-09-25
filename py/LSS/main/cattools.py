@@ -15,6 +15,7 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
 from LSS.Cosmo import distance
+from LSS.imaging import densvar
     
 def combtile_spec(tiles,outf='',md=''):
     s = 0
