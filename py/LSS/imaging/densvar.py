@@ -100,14 +100,14 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps):
     s.cut_outliers(p=0.5, verbose=1) 
 
     #-- Perform global fit
-    nbins=20
+    nbins=10
     s.prepare(nbins=nbins)
     s.fit_minuit(fit_maps=fit_maps)
     s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.5, 1.5])#, title=f'{sample_name}: global fit')
 
     #-- Get weights for global fit
     data_weightsys_global = 1/s.get_model(s.best_pars, data_syst)
-    wsysl = np.ones(len(dat))
+    wsysl = np.ones(len(dd))
     wsysl[sel] = data_weightsys_global 
     return wsysl
 

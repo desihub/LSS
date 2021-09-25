@@ -245,7 +245,8 @@ if args.imsys == 'y':
     if type[:3] == 'ELG':
         zmin = 0.8
         zmax = 1.5
-        fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        #fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        fit_maps = ['STARDENS']
         use_maps = fit_maps
     
     for reg in regl:
