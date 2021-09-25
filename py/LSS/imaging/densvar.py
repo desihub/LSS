@@ -68,7 +68,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
 
     pixm = fitsio.read(pixfn)
     data_pix = get_pix(nside, data_ra, data_dec,nest) 
-    rand_pix = get_pix(nside, rand_ra, rand_dec,nset)
+    rand_pix = get_pix(nside, rand_ra, rand_dec,nest)
     syst_names = ['STARDENS','EBV', 'PSFDEPTH_G', 'PSFDEPTH_R',\
     'PSFDEPTH_Z','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z',\
     'PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
