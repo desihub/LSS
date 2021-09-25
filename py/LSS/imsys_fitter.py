@@ -106,7 +106,8 @@ class Syst:
             h_rand[name], _ = np.histogram(rand_syst[name], bins=edg, 
                                         weights=self.rand_we)
             print(h_rand[name])
-            h_dat = np.bincount(h_index[name], weights=self.data_we)
+            h_dat[name],_ = np.histogram(data_syst[name],bins=edg,weights=self.data_we)
+            #h_dat = np.bincount(h_index[name], weights=self.data_we)
             #h_randn = np.bincount(h_indexr[name], weights=self.rand_we)  
             print(h_dat)
             #print(h_randn)  
