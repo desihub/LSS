@@ -3,6 +3,7 @@ import astropy.io.fits as fits
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
+from LSS.imaging import imsys_fitter as sf
 
 pixfn      = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
 hdr        = fits.getheader(pixfn,1)
@@ -54,6 +55,61 @@ def sel_reg(ra,dec,reg):
         w = ~wra
         w &= dec > -25
     return w        
+
+
+def get_pix(nside, ra, dec, nest=0):
+    return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
+
+def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
+    
+    #-- Dictionaries containing all different systematic values
+    data_syst = {}
+    rand_syst = {}
+
+    pixm = fitsio.read(pixfn)
+    data_pix = get_pix(nside, data_ra, data_dec,nest) 
+    rand_pix = get_pix(nside, rand_ra, rand_dec,nset)
+    syst_names = ['STARDENS','EBV', 'PSFDEPTH_G', 'PSFDEPTH_R',\
+    'PSFDEPTH_Z','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z',\
+    'PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+
+    for syst_name in syst_names:
+        data_syst[syst_name] = pixm[syst_name][data_pix]
+        rand_syst[syst_name] = pixm[syst_name][rand_pix]
+
+    return data_syst, rand_syst
+
+
+def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps):
+    sel = dd['Z'] > zmin
+    sel &= dd['Z'] < zmax
+    dds = dd[sel]
+    #-- Dictionaries containing all different systematic values
+    mapv = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'])
+    data_we = dds['WEIGHT']
+    rand_we = np.ones(len(rd))
+    #-- Create fitter object
+    s = sf.Syst(data_we, rand_we)
+
+    fit_maps = fitmaps
+    use_maps = usemaps
+
+    #-- Add the systematic maps we want 
+    for syst_name in use_maps:
+        s.add_syst(syst_name, data_syst[syst_name], rand_syst[syst_name])
+    s.cut_outliers(p=0.5, verbose=1) 
+
+    #-- Perform global fit
+    nbins=20
+    s.prepare(nbins=nbins)
+    s.fit_minuit(fit_maps=fit_maps)
+    s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.5, 1.5])#, title=f'{sample_name}: global fit')
+
+    #-- Get weights for global fit
+    data_weightsys_global = 1/s.get_model(s.best_pars, data_syst)
+    wsysl = np.ones(len(dat))
+    wsysl[sel] = data_weightsys_global 
+    return wsysl
 
 
 def radec2thphi(ra,dec):

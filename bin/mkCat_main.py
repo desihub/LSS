@@ -35,6 +35,7 @@ parser.add_argument("--clusd", help="make the 'clustering' catalog intended for 
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+parser.add_argument("--imsys",help="add weights for imaging systematics?",default='y')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -125,8 +126,8 @@ tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'+
 
 #columns to select from target sample
 keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','FLUX_W1','FLUX_W2','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z', 'MW_TRANSMISSION_W1', 'MW_TRANSMISSION_W2','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
-	   'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
-	   'MASKBITS','WISEMASK_W1','WISEMASK_W2', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET','BGS_TARGET','SHAPE_R']
+       'GALDEPTH_Z','FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z', 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z',\
+       'MASKBITS','WISEMASK_W1','WISEMASK_W2', 'EBV', 'PHOTSYS','TARGETID','DESI_TARGET','BGS_TARGET','SHAPE_R']
 
 
 
@@ -236,6 +237,28 @@ if mkclusran:
 
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+
+if args.imsys == 'y':
+    from LSS.imaging impor densvar
+    regl = ['','_N','_S']
+    if type[:3] == 'ELG':
+        zmin = 0.8
+        zmax = 1.5
+        fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        use_maps = fit_maps
+    
+    for reg in regl:
+        fb = dirout+type+'zdone'+wzm+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        rd = fitsio.read(fcr)
+        fcd = fb+'_clustering.dat.fits'
+        dd = fitsio.read(fcd)
+        wsysl = get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
+        dd['WEIGHT_SYS'] = wsysl
+        dd['WEIGHT'] *= wsysl
+        dd.write(fcd,overwrite=True,format='fits')
+
+    
 
 if args.nz == 'y':
     wzm = ''
