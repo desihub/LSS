@@ -1577,7 +1577,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         outfn = fl+wzm+reg+'_clustering.dat.fits'
         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
-        ffss = ffs[sel]
+        ffss = ffcs[sel]
         inds = np.random.choice(len(fcd),len(ffss))
         dshuf = fcd[inds]
         for col in rcols: 
