@@ -91,8 +91,8 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps):
     #-- Create fitter object
     s = sf.Syst(data_we, rand_we)
 
-    fit_maps = fitmaps
-    use_maps = usemaps
+    fit_maps = fit_maps
+    use_maps = use_maps
 
     #-- Add the systematic maps we want 
     for syst_name in use_maps:
