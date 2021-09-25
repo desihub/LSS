@@ -254,7 +254,7 @@ if args.imsys == 'y':
         rd = fitsio.read(fcr)
         fcd = fb+'_clustering.dat.fits'
         dd = fitsio.read(fcd)
-        wsysl = get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
+        wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
         dd['WEIGHT_SYS'] = wsysl
         dd['WEIGHT'] *= wsysl
         dd.write(fcd,overwrite=True,format='fits')
