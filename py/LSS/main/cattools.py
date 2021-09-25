@@ -1518,7 +1518,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ffs.write(outfn,format='fits', overwrite=True)
     for reg in ['DS','DN']: #split DECaLS NGC/SGC
         outfn = fl+wzm+reg+'_clustering.dat.fits'
-        sel = densvar.sel_reg(ffs['RA','DEC',reg)
+        sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
         ffs[sel].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
@@ -1574,7 +1574,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 
     for reg in ['DS','DN']: #split DECaLS NGC/SGC
         outfn = fl+wzm+reg+'_clustering.dat.fits'
-        sel = densvar.sel_reg(ffcs['RA','DEC',reg)
+        sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
         ffss = ffs[sel]
         inds = np.random.choice(len(fcd),len(ffss))
