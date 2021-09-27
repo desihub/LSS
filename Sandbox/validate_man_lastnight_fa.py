@@ -81,6 +81,10 @@ if docheck:
                 else:
                     print('TILEID '+str(tidl[ii])+' PASSED')          
                     tids_passl.append(tidl[ii])
+            else:
+                print('TILEID '+str(tidl[ii])+' PASSED')          
+                tids_passl.append(tidl[ii])
+
         else:
             print('WHY IS THERE NO NEW FIBERASSIGN FILE FOR '+str(tidl[ii])+'!?!? (check above output for clues)')
 
