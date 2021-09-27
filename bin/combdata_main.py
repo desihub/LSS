@@ -42,6 +42,9 @@ wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == prog
+if specrel != 'daily':
+    wd &= mt['LASTNIGHT'] < 20210801
+    
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true')
@@ -99,7 +102,7 @@ if not os.path.exists(ldirspec):
     print('made '+ldirspec)
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
-tarfo = maindir+'datcomb_'+prog+'_tarwdup_zdone.fits'
+tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 ct.combtiles_wdup(tiles4comb,tarfo)
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -134,6 +137,12 @@ if specrel == 'everest':
     ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
+    ct.combtile_spec(tiles4comb,specfo,md='zmtl')
+    fzmtl = fitsio.read(specfo)
+    specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
+
+
     tarf = Table.read(tarfo)
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
 
