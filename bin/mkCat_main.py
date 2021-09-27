@@ -243,23 +243,27 @@ if args.imsys == 'y':
     regl = ['_DN','_DS','','_N','_S']
     wzm = ''
     if type[:3] == 'ELG':
-        zmin = 0.8
-        zmax = 1.5
+        #zmin = 0.8
+        #zmax = 1.5
+        zrl = [(0.6,0.8),(0.8,1.1),(1.1,1.5)]
         fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
         #fit_maps = ['STARDENS','EBV','GALDEPTH_G']
         use_maps = fit_maps
     
     for reg in regl:
-        fb = dirout+type+'zdone'+wzm+reg
-        fcr = fb+'_0_clustering.ran.fits'
-        rd = fitsio.read(fcr)
-        fcd = fb+'_clustering.dat.fits'
-        dd = Table.read(fcd)
-        print('getting weights for region '+reg)
-        wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
-        dd['WEIGHT_SYS'] = wsysl
-        dd['WEIGHT'] *= wsysl
-        dd.write(fcd,overwrite=True,format='fits')
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+			fb = dirout+type+'zdone'+wzm+reg
+			fcr = fb+'_0_clustering.ran.fits'
+			rd = fitsio.read(fcr)
+			fcd = fb+'_clustering.dat.fits'
+			dd = Table.read(fcd)
+			print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+			wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
+			dd['WEIGHT_SYS'] = wsysl
+			dd['WEIGHT'] *= wsysl
+			dd.write(fcd,overwrite=True,format='fits')
 
     
 
