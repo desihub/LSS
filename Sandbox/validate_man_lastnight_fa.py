@@ -67,23 +67,26 @@ if docheck:
         dfn = outdir+'/'+str(tidl[ii])+'.diff'
         if os.path.isfile(fnl[ii]):
             fba_rerun_check(fol[ii], fnl[ii],dfn )  
-            tids = np.genfromtxt(dfn,usecols = (3))
-            if len(tids) > 0:
-                #tids = dd[3]
-                sel = tids > 0
-                if len(tids[sel]) > 0:
-                    print('found '+str(len(tids[sel]))+' positive targetid that are different')
-                    print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
+            if len(open(dfn).readlines())<1:
+                tids = np.genfromtxt(dfn,usecols = (3))
+                if len(tids) > 0:
+                    #tids = dd[3]
+                    sel = tids > 0
+                    if len(tids[sel]) > 0:
+                        print('found '+str(len(tids[sel]))+' positive targetid that are different')
+                        print('FOLLOW-UP NEEDED, DO NOT ALLOW ZDONE FOR TILEID '+str(tidl[ii])+'!!!')
+                    else:
+                        print('TILEID '+str(tidl[ii])+' PASSED') 
+                        tids_passl.append(tidl[ii])
                 else:
-                    print('TILEID '+str(tidl[ii])+' PASSED') 
+                    print('TILEID '+str(tidl[ii])+' PASSED')          
                     tids_passl.append(tidl[ii])
-            else:
-                print('TILEID '+str(tidl[ii])+' PASSED')          
-                tids_passl.append(tidl[ii])
         else:
             print('WHY IS THERE NO NEW FIBERASSIGN FILE FOR '+str(tidl[ii])+'!?!? (check above output for clues)')
 
 #move intermediate files for tiles that pass
+
+print('The number of tiles that is passed is '+str(len(tids_passl)))
 
 intermediate_dir = '/global/cfs/cdirs/desi/survey/fiberassign/main' #remove the test once we are happy
 for tid in tids_passl:
