@@ -254,16 +254,16 @@ if args.imsys == 'y':
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
-			fb = dirout+type+'zdone'+wzm+reg
-			fcr = fb+'_0_clustering.ran.fits'
-			rd = fitsio.read(fcr)
-			fcd = fb+'_clustering.dat.fits'
-			dd = Table.read(fcd)
-			print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-			wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
-			dd['WEIGHT_SYS'] = wsysl
-			dd['WEIGHT'] *= wsysl
-			dd.write(fcd,overwrite=True,format='fits')
+            fb = dirout+type+'zdone'+wzm+reg
+            fcr = fb+'_0_clustering.ran.fits'
+            rd = fitsio.read(fcr)
+            fcd = fb+'_clustering.dat.fits'
+            dd = Table.read(fcd)
+            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
+            dd['WEIGHT_SYS'] = wsysl
+            dd['WEIGHT'] *= wsysl
+            dd.write(fcd,overwrite=True,format='fits')
 
     
 
