@@ -64,7 +64,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         zfn = 'redrock'
 
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
         if os.path.isfile(ff):
             fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             if os.path.isfile(fq):
@@ -74,7 +74,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
                 print('did not find '+fq)    
         elif zfn == 'zbest':
             zfn = 'redrock'
-            ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             if os.path.isfile(ff):
                 fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
                 if os.path.isfile(fq):
