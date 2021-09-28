@@ -106,4 +106,4 @@ for tid in tids_passl:
             print("moving {} to {}".format(fn, mv_fn))
             os.system("mv {} {}".format(fn, mv_fn))
 
-os.system("chmod -R 755 /global/cfs/cdirs/desi/survey/fiberassign/main")
+os.system("fix_permissions.sh /global/cfs/cdirs/desi/survey/fiberassign/main")
