@@ -78,10 +78,12 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
             else:
                 print('did not find '+fq)    
         elif zfn == 'zbest':
-            zfn = 'redrock'
-            ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            zfnt = 'redrock'
+            ff = coaddir+str(tile)+'/'+zdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             if os.path.isfile(ff):
                 fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+                zfn = zfnt
+                zhdu = 'REDSHIFTS'
                 if os.path.isfile(fq):
 
                     specs.append(si)
