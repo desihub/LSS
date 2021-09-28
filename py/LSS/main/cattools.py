@@ -59,8 +59,12 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     zdate = str(zdate)
     specs = []
     #find out which spectrograph have data
+    zfn = 'zbest'
+    if int(zdate) >  20210700:
+        zfn = 'redrock'
+
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+zdate+'/zbest-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
         if os.path.isfile(ff):
             fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
             if os.path.isfile(fq):
@@ -68,6 +72,18 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
                 specs.append(si)
             else:
                 print('did not find '+fq)    
+        elif zfn == 'zbest':
+            zfn = 'redrock'
+            ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            if os.path.isfile(ff):
+                fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+                if os.path.isfile(fq):
+
+                    specs.append(si)
+                else:
+                    print('did not find '+fq)    
+            else:
+                print('did not find '+ff)            
         else:
             print('did not find '+ff)        
     print('spectrographs with data:')
@@ -75,9 +91,9 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     if len(specs) == 0:
         return None
     for i in range(0,len(specs)):
-        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
+        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
         tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
-        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/zbest-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
+        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
         tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
     
         if i == 0:
