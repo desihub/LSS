@@ -60,8 +60,11 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     specs = []
     #find out which spectrograph have data
     zfn = 'zbest'
-    if int(zdate) >  20210700:
+    zhdu = 'ZBEST'
+    if int(zdate) >  20210730:
         zfn = 'redrock'
+        zhdu = 'ZCATALOG'
+        
 
     for si in range(0,10):
         ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
@@ -91,7 +94,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     if len(specs) == 0:
         return None
     for i in range(0,len(specs)):
-        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='ZBEST')
+        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu=zhdu)
         tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
         tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='SCORES')
