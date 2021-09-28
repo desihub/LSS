@@ -65,7 +65,7 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     if int(zdate) >  20210730:
         zfn = 'redrock'
         zhdu = 'REDSHIFTS'
-        shdu = 'TSNR2' 
+        #shdu = 'TSNR2' 
         
 
     for si in range(0,10):
