@@ -184,7 +184,7 @@ if mkfulld:
             azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_MAIN.fits'
 
     if specrel == 'daily':
-        specf = Table.read(ldirspec+'datcomb_'+progl+'_specwdup_Alltiles.fits')
+        specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
  
     ftar = fitsio.read(tarf)
 
