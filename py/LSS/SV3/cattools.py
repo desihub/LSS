@@ -1177,34 +1177,36 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
-        arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
-        st = []
-        for i in range(0,len(arz)):
-            st.append(arz['SUBSET'][i][:4])
-        st = np.array(st)
-        wg = arz[fbcol] == 0
-        wg &= st == "thru"
-        arz = arz[wg]
-        o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
-        w = (o2c*0) != 0
-        w |= arz['OII_FLUX'] < 0
-        o2c[w] = -20
-        #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
-        arz = Table(arz)
-        arz['o2c'] = o2c
-        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
-        
-        dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
-        print('check length after merge with OII strength file:' +str(len(dz)))
+        if azf != '':
+			arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
+			st = []
+			for i in range(0,len(arz)):
+				st.append(arz['SUBSET'][i][:4])
+			st = np.array(st)
+			wg = arz[fbcol] == 0
+			wg &= st == "thru"
+			arz = arz[wg]
+			o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
+			w = (o2c*0) != 0
+			w |= arz['OII_FLUX'] < 0
+			o2c[w] = -20
+			#arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])    
+			arz = Table(arz)
+			arz['o2c'] = o2c
+			dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+   
+			dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
+			print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO':
-        arz = Table.read(azf)
-        arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
-        print(arz.dtype.names)
-        #arz['TILE'].name = 'TILEID'
-        dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-        dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
-        dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+        if azf != '':
+            arz = Table.read(azf)
+            arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
+            print(arz.dtype.names)
+            #arz['TILE'].name = 'TILEID'
+            dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+            dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
+            dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
