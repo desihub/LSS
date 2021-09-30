@@ -1348,9 +1348,10 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     nm = 0
     nmt =0
     pd = []
+    nloclt = len(locl)
     for i in range(0,len(locl)):
         if i%10000 == 0:
-            print('at row '+str(i))
+            print('at row '+str(i)+' of '+str(nloclt))
         nt = nlocl[i]
         loc = locl[i]
         w = loclz == loc
