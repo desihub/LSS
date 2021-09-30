@@ -118,6 +118,7 @@ if specrel == 'daily':
     specf = Table.read(specfo)
     sel = specf['COADD_FIBERSTATUS'] == 999999
     specf['COADD_FIBERSTATUS'][sel] = specf['FIBERSTATUS'][sel]
+    specf.write(specfo,overwrite=True,format='fits')
     specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','ZWARN_MTL','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','COADD_FIBERSTATUS','PRIORITY'\
     ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD','TILEID','INTEG_COADD_FLUX_B',\
