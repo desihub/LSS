@@ -1184,7 +1184,7 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
-    if tp[:3] == 'ELG':# or tp == 'ELG_HIP':
+    if tp[:3] == 'ELG' and azf != '':# or tp == 'ELG_HIP':
         arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
         st = []
         for i in range(0,len(arz)):
@@ -1205,7 +1205,7 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
         dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
-    if tp[:3] == 'QSO':
+    if tp[:3] == 'QSO' and azf != '':
         arz = Table.read(azf)
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
         print(arz.dtype.names)
