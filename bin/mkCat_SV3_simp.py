@@ -115,7 +115,14 @@ else:
 progl = prog.lower()
 
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,8,9,11,12,13]
+#change imaging bits to just what was applied to targeting
+ebits = None
+if type[:3] == 'BGS':
+    imbits = [1,13]
+else:
+    imbits = [1,12,13]
+    if type[:3] == 'LRG' or type[:3] == 'ELG':
+        ebits = [8,9,11]    
 
 #location of targets
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
@@ -182,7 +189,7 @@ if mkfulld:
     if progl == 'dark':
         #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',\
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',\
     indirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,\
     specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
 
@@ -195,7 +202,7 @@ if mkfullr:
         desitarg='SV3_DESI_TARGET'
 
     for ii in range(rm,rx):
-        outf = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         ct.mkfullran(specf,indirspec,ii,imbits,outf,type,progl,bit,desitarg=desitarg,notqso=notqso,fbcol=fbcol)
         
     #logf.write('ran mkfullran\n')
@@ -214,7 +221,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile)
+    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -233,7 +240,7 @@ if mkclusran:
         tsnrcut = 800
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile)
+        ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ebits=ebits)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     

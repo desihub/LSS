@@ -111,7 +111,14 @@ wdone = mtld['ZDONE'] == 'true'
 mtld = mtld[wdone]
 
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,8,9,11,12,13]
+#change imaging bits to just what was applied to targeting
+ebits = None
+if type[:3] == 'BGS':
+    imbits = [1,13]
+else:
+    imbits = [1,12,13]
+    if type[:3] == 'LRG' or type[:3] == 'ELG':
+        ebits = [8,9,11]    
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
@@ -298,7 +305,7 @@ def doran(ii):
             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+'_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = sv3_targetmask.bgs_mask[type]
             desitarg='SV3_BGS_TARGET'
@@ -324,7 +331,7 @@ def doran(ii):
             dchi2 = 40
             tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')

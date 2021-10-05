@@ -1366,7 +1366,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None):
+def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1376,7 +1376,12 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''    
-    ff = Table.read(fl+'full.dat.fits')
+    ff = Table.read(fl+'full_noveto.dat.fits')
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ff)))
+        ff = cutphotmask(ff,ebits)
+        print('number after imaging mask '+str(len(ff)))
+    ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1526,7 +1531,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     outfn = fl+wzm+'S_clustering.dat.fits'
     ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None):
+def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
     fl is the root of our catalog file names
     rann is the random number
@@ -1549,7 +1554,13 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #load in data clustering catalog
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     #load in full random file
-    ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+    ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ffr)))
+        ffr = cutphotmask(ffr,ebits)
+        print('number after imaging mask '+str(len(ffr)))
+    ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
+
     #mask mask on tsnr
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]

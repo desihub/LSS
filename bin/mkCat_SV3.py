@@ -151,7 +151,14 @@ mtld = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
 wdone = mtld['ZDONE'] == 'true'
 mtld = mtld[wdone]
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,8,9,11,12,13]
+#change imaging bits to just what was applied to targeting
+ebits = None
+if type[:3] == 'BGS':
+    imbits = [1,13]
+else:
+    imbits = [1,12,13]
+    if type[:3] == 'LRG' or type[:3] == 'ELG':
+        ebits = [8,9,11]    
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
@@ -449,14 +456,14 @@ if mkfulld:
     if pdir == 'dark':
         #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
 if mkfullr:
     for ii in range(rm,rx):
-        outf = dirout+type+'_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
         ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -474,7 +481,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-    ct.mkclusdat(dirout+type+'_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
+    ct.mkclusdat(dirout+type+'_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -493,7 +500,7 @@ if mkclusran:
         tsnrcut = 800
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
