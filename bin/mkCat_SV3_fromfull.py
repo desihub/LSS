@@ -18,9 +18,7 @@ from desitarget.sv3 import sv3_targetmask
 #from this package
 #try:
 import LSS.SV3.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
+from LSS.globals import SV3 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -96,20 +94,29 @@ else:
 
 progl = prog.lower()
 
-tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-#change imaging bits to just what was applied to targeting
-ebits = None
-if type[:3] == 'BGS':
-    imbits = [1,13]
-else:
-    imbits = [1,12,13]
-    if type[:3] == 'LRG' or type[:3] == 'QSO':
-        ebits = [8,9,11]    
-    if type[:3] == 'ELG' or type[:3] == 'BGS':
-        ebits = [11]    
+SV3p = SV3(type)
+mdir = SV3p.mdir+progl+'/' #location of ledgers
+tdir = SV3p.tdir+progl+'/' #location of targets
+mtld = SV3p.mtld
+tiles = SV3p.tiles
+imbits = SV3p.imbits #mask bits applied to targeting
+ebits = SV3p.ebits #extra mask bits we think should be applied
 
-#location of targets
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
+
+# tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+# #change imaging bits to just what was applied to targeting
+# ebits = None
+# if type[:3] == 'BGS':
+#     imbits = [1,13]
+# else:
+#     imbits = [1,12,13]
+#     if type[:3] == 'LRG' or type[:3] == 'QSO':
+#         ebits = [8,9,11]    
+#     if type[:3] == 'ELG' or type[:3] == 'BGS':
+#         ebits = [11]    
+# 
+# #location of targets
+# tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
 #basedir for your outputs
 sv3dir = basedir +'/SV3/LSS/'
 if not os.path.exists(basedir +'/SV3'):

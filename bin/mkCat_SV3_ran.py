@@ -20,10 +20,8 @@ from desimodel.footprint import is_point_in_desi
 #from this package
 #try:
 import LSS.SV3.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 import LSS.mkCat_singletile.fa4lsscat as fa
+from LSS.globals import SV3 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -103,25 +101,35 @@ else:
 
 pd = pdir
 
-mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
-#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
-mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
-wdone = mtld['ZDONE'] == 'true'
-mtld = mtld[wdone]
-tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+SV3p = SV3(type)
+mdir = SV3p.mdir+pdir+'/' #location of ledgers
+tdir = SV3p.tdir+pdir+'/' #location of targets
+mtld = SV3p.mtld
+tiles = SV3p.tiles
+imbits = SV3p.imbits #mask bits applied to targeting
+ebits = SV3p.ebits #extra mask bits we think should be applied
 
 
-#change imaging bits to just what was applied to targeting
-ebits = None
-if type[:3] == 'BGS':
-    imbits = [1,13]
-else:
-    imbits = [1,12,13]
-    if type[:3] == 'LRG' or type[:3] == 'QSO':
-        ebits = [8,9,11]    
-    if type[:3] == 'ELG' or type[:3] == 'BGS':
-        ebits = [11]    
+
+# mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
+# tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
+# #mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
+# mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+# wdone = mtld['ZDONE'] == 'true'
+# mtld = mtld[wdone]
+# tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+# 
+# 
+# #change imaging bits to just what was applied to targeting
+# ebits = None
+# if type[:3] == 'BGS':
+#     imbits = [1,13]
+# else:
+#     imbits = [1,12,13]
+#     if type[:3] == 'LRG' or type[:3] == 'QSO':
+#         ebits = [8,9,11]    
+#     if type[:3] == 'ELG' or type[:3] == 'BGS':
+#         ebits = [11]    
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
