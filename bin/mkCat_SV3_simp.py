@@ -131,8 +131,8 @@ progl = prog.lower()
 #tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
 
 SV3p = SV3(type)
-mdir = SV3p.mdir+pdir+'/' #location of ledgers
-tdir = SV3p.tdir+pdir+'/' #location of targets
+mdir = SV3p.mdir+progl+'/' #location of ledgers
+tdir = SV3p.tdir+progl+'/' #location of targets
 mtld = SV3p.mtld
 tiles = SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
