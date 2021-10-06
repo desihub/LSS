@@ -18,6 +18,7 @@ from desitarget.sv3 import sv3_targetmask
 #from this package
 #try:
 import LSS.SV3.cattools as ct
+import LSS.globals.SV3 as SV3
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
