@@ -1,3 +1,5 @@
+from astropy.table import Table
+
 class SV3:
     def __init__(self,tp):
         self.mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/' #location of ledgers
