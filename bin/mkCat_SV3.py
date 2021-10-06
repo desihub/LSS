@@ -16,15 +16,10 @@ from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
 from desitarget.sv3 import sv3_targetmask
 
-#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
-
 #from this package
-#try:
 import LSS.SV3.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 import LSS.mkCat_singletile.fa4lsscat as fa
+import LSS.globals.SV3 as SV3
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -62,6 +57,8 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+SV3p = SV3(type)
 
 notqso = ''
 if args.notqso == 'y':
@@ -143,23 +140,30 @@ else:
 
 pd = pdir
 
-mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
+mdir = SV3p.mdir+pdir+'/' #location of ledgers
+tdir = SV3p.tdir+pdir+'/' #location of targets
+mtld = SV3p.mtld
+tiles = SV3p.tiles
+imbits = SV3p.imbits #mask bits applied to targeting
+ebits = SV3p.ebits #extra mask bits we think should be applied
+
+#mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'
+#tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
 #mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
-mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv ')
-wdone = mtld['ZDONE'] == 'true'
-mtld = mtld[wdone]
-tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv ')
+#wdone = mtld['ZDONE'] == 'true'
+#mtld = mtld[wdone]
+#tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
 #change imaging bits to just what was applied to targeting
-ebits = None
-if type[:3] == 'BGS':
-    imbits = [1,13]
-else:
-    imbits = [1,12,13]
-    if type[:3] == 'LRG' or type[:3] == 'QSO':
-        ebits = [8,9,11]    
-    if type[:3] == 'ELG' or type[:3] == 'BGS':
-        ebits = [11]    
+#ebits = None
+#if type[:3] == 'BGS':
+#    imbits = [1,13]
+#else:
+#    imbits = [1,12,13]
+#    if type[:3] == 'LRG' or type[:3] == 'QSO':
+#        ebits = [8,9,11]    
+#    if type[:3] == 'ELG' or type[:3] == 'BGS':
+#        ebits = [11]    
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
@@ -289,7 +293,7 @@ if cran:
         wp &= ranf['DEC'] < maxd
         ranf = ranf[wp]
         print(len(ranf))
-        tilesall = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+        tilesall = tiles #Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
         tilesu = unique(tilesall,keys=['RA','DEC'])                
         wi = is_point_in_desi(tilesu, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
@@ -438,9 +442,9 @@ if mkfulld:
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
     if type[:3] == 'ELG':
-        azf = '/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
     if type[:3] == 'QSO':
-        azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_SV3.fits'
+        azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
@@ -455,8 +459,9 @@ if mkfulld:
     print(desitarg,pdir,bit)
     bitweightfile = None
     if pdir == 'dark':
+        bitweightfile = SV3p.darkbitweightfile
         #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-        bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+        #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
     ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
