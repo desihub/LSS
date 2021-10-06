@@ -121,8 +121,10 @@ if type[:3] == 'BGS':
     imbits = [1,13]
 else:
     imbits = [1,12,13]
-    if type[:3] == 'LRG' or type[:3] == 'ELG':
+    if type[:3] == 'LRG' or type[:3] == 'QSO':
         ebits = [8,9,11]    
+    if type[:3] == 'ELG' or type[:3] == 'BGS':
+        ebits = [11]    
 
 #location of targets
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 

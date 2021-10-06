@@ -97,7 +97,16 @@ else:
 progl = prog.lower()
 
 tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,8,9,11,12,13]
+#change imaging bits to just what was applied to targeting
+ebits = None
+if type[:3] == 'BGS':
+    imbits = [1,13]
+else:
+    imbits = [1,12,13]
+    if type[:3] == 'LRG' or type[:3] == 'QSO':
+        ebits = [8,9,11]    
+    if type[:3] == 'ELG' or type[:3] == 'BGS':
+        ebits = [11]    
 
 #location of targets
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
@@ -138,7 +147,7 @@ if cpfull == 'y':
     cpdatcom = 'cp '+indirfull+ type+'_full.dat.fits '+dirout
     os.system(cpdatcom)
     for i in range(0,18):       
-        cprancom = 'cp '+indirfull+ type+'_'+str(i)+'_full.ran.fits '+dirout
+        cprancom = 'cp '+indirfull+ type+'_'+str(i)+'_full_veto.ran.fits '+dirout
         os.system(cprancom)
         
 
@@ -155,7 +164,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd = 'PROB_OBS')
+    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd = 'PROB_OBS',ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -174,7 +183,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
