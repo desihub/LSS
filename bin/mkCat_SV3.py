@@ -19,7 +19,7 @@ from desitarget.sv3 import sv3_targetmask
 #from this package
 import LSS.SV3.cattools as ct
 import LSS.mkCat_singletile.fa4lsscat as fa
-import LSS.globals.SV3 as SV3
+from LSS.globals import SV3 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
