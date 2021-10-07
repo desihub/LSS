@@ -31,7 +31,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
-parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='y')
+parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
@@ -280,7 +280,7 @@ if args.nz == 'y':
 #     if ccut is not None:
 #         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    regl = ['','_N','_S']
+    egl = ['_DN','_DS','','_N','_S']
     
     for reg in regl:
         fb = dirout+type+'zdone'+wzm+reg
