@@ -58,7 +58,7 @@ else:
 
 pd = pdir
 
-mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
+mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
