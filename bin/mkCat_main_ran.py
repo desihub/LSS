@@ -188,8 +188,11 @@ if len(mtld) > 0:
             fal.append(fht['FA_RUN'])
             obsl.append(fht['OBSCON'])
             fav = fht['FA_VER']
-            if int(fav[:2]) >= 5:
-                fav = '5.0.0'
+            try:
+                if int(fav[:1]) >= 5:
+                    fav = '5.0.0'
+            except:
+                print(fav)        
             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
                 fver.append('2.3.0')
             else:
