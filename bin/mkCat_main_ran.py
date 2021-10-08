@@ -260,6 +260,12 @@ def doran(ii):
             fav = fbah['FA_VER']
             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
                 fav = '2.3.0'
+            try:
+                if int(fav[:1]) >= 5:
+                    fav = '5.0.0'
+            except:
+                print(fav)        
+
             if fav == faver:
                 ttemp = Table(ta[it])
                 ttemp['OBSCONDITIONS'] = 516
