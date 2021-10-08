@@ -294,7 +294,7 @@ def doran(ii):
         if type == 'dark' or type == 'bright':
 
             if specrel == 'daily':
-                specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+                specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
                 specf = Table.read(specfo)
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
