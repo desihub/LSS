@@ -369,7 +369,7 @@ if __name__ == '__main__':
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        #N = rx
+        N = rx-rm
         p = Pool(N)
         inds = []
         for i in range(rm,rx):
