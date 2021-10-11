@@ -39,6 +39,8 @@ parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
+parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
+
 
 #default processes the first of the 18 random files
 
@@ -267,8 +269,8 @@ if mknz:
         wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntile > 0:
         wzm += '_ntileg'+str(ntilecut)+'_'    
-    if ccut is not None:
-        wzm += '_'+ccut #you could change this to however you want the file names to turn out
+    if args.ccut is not None:
+        wzm += '_'+args.ccut #you could change this to however you want the file names to turn out
 
     regl = ['','_N','_S']
     
