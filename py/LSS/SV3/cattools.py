@@ -1477,7 +1477,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
     if weightmd == 'probobs' :         
         nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
-        ff['WEIGHT'] *= nreal/nassign#1./ff['PROB_OBS']
+        ff['WEIGHT'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
         print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
         #wzer = ff['PROB_OBS'] == 0
         #ff['WEIGHT'][wzer] = 0
