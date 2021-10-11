@@ -1366,7 +1366,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
+def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1476,10 +1476,12 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if weightmd == 'tileloc':
         ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
     if weightmd == 'probobs' :         
-        ff['WEIGHT'] *= 1./ff['PROB_OBS']
-        wzer = ff['PROB_OBS'] == 0
-        ff['WEIGHT'][wzer] = 0
-        print(str(len(ff[wzer]))+' galaxies with PROB_OBS 0 getting assigned weight of 0 (should not happen, at minimum adjust weights to reflect 1 real realization happened)')
+        nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
+        ff['WEIGHT'] *= nreal/nassign#1./ff['PROB_OBS']
+        print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+        #wzer = ff['PROB_OBS'] == 0
+        #ff['WEIGHT'][wzer] = 0
+        #print(str(len(ff[wzer]))+' galaxies with PROB_OBS 0 getting assigned weight of 0 (should not happen, at minimum adjust weights to reflect 1 real realization happened)')
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
