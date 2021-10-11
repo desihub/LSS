@@ -173,7 +173,7 @@ ffd = dirout+type+str(tile)+'_'+night+'_full.dat.fits'
 fcd = dirout+type+str(tile)+'_'+night+'_clustering.dat.fits'
 
 
-elgandlrgbits = [1,5,6,7,8,9,11,12,13] #these get used to veto imaging area
+elgandlrgbits = [1,8,9,11,12,13] #these get used to veto imaging area
 logf.write('imaging mask bits applied are '+str(elgandlrgbits)+'\n') 
 
 zfailmd = 'zwarn' #only option so far, but can easily add things based on delta_chi2 or whatever

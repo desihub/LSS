@@ -36,6 +36,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
+parser.add_argument("--weightmode",help="what to use as option for completeness weights",default="probobs")
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
@@ -132,7 +133,8 @@ progl = prog.lower()
 #location of targets
 #tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
 
-SV3p = SV3(type)
+
+SV3p = SV3(type,weightmode=args.weightmode)
 mdir = SV3p.mdir+progl+'/' #location of ledgers
 tdir = SV3p.tdir+progl+'/' #location of targets
 mtld = SV3p.mtld
@@ -238,7 +240,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ebits=ebits)
+    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ebits=ebits,weightmd=SV3p.weightmode)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
