@@ -16,6 +16,7 @@ exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+
 
 #cut to dark tiles
 sel = exps['FAPRGRM']=='dark'
+sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 exps = exps[sel]
 
 
