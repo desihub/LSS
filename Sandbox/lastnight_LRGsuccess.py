@@ -14,7 +14,7 @@ exps = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/exposur
 #remove the rows that don't have night so that next lines work
 sel = exps['NIGHT'] != 'None'
 #check if tileid are in main
-tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
+tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = tlm['FAPRGRM'] == 'dark' #only select dark tiles for LRG check
 tlm = tlm[wd]
 sel &= np.isin(exps['TILEID'],tlm['TILEID'])
