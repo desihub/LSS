@@ -3,6 +3,7 @@ from astropy.table import Table
 import numpy as np
 import os
 import argparse
+import fitsio
 from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
