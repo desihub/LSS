@@ -17,7 +17,7 @@ wd &= tlm['OBSSTATUS'] == 'obsend'
 tlm = tlm[wd]
 tidl = np.unique(tlm['TILEID'])
 
-print('looking at LRG redshift results from the night '+str(maxn))
+print('looking at LRG redshift results from the night '+str(args.night))
 print('the tileids are:')
 print(tidl)
 
