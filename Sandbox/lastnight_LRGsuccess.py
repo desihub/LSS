@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 args = parser.parse_args()
 
+month = args.night[:6]
 #get the right tileids
 exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
 
