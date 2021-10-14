@@ -13,7 +13,7 @@ args = parser.parse_args()
 tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = tlm['FAPRGRM'] == 'dark' #only select dark tiles for LRG check
 wd &= tlm['LASTNIGHT'] == args.night
-wd &= = tlm['OBSSTATUS'] == 'obsend'
+wd &= tlm['OBSSTATUS'] == 'obsend'
 tlm = tlm[wd]
 tidl = np.unique(tlm['TILEID'])
 
