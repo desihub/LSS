@@ -55,13 +55,13 @@ for tid in tidl:
         wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
         zlrg = zmtlf[wfqa&wlrg]
         if len(zlrg) > 0:
-			wzwarn = zmtlf['ZWARN'] == 0
-			gzlrg = zmtlf[wzwarn&wlrg]
-			print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
-			gz[pt] += len(gzlrg)
-			tz[pt] += len(zlrg)
-		else:
-		    print('no good lrg data')	
+            wzwarn = zmtlf['ZWARN'] == 0
+            gzlrg = zmtlf[wzwarn&wlrg]
+            print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+            gz[pt] += len(gzlrg)
+            tz[pt] += len(zlrg)
+        else:
+            print('no good lrg data')   
         
 
 tzs = gz/tz
