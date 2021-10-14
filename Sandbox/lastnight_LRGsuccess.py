@@ -9,25 +9,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 args = parser.parse_args()
 
-#open exposures file
-exps = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/exposures.ecsv')
-#remove the rows that don't have night so that next lines work
-sel = exps['NIGHT'] != 'None'
-#check if tileid are in main
+#get the right tileids
 tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = tlm['FAPRGRM'] == 'dark' #only select dark tiles for LRG check
+wd &= tlm['LASTNIGHT'] == args.night
+wd &= = tlm['OBSSTATUS'] == 'obsend'
 tlm = tlm[wd]
-sel &= np.isin(exps['TILEID'],tlm['TILEID'])
-exps = exps[sel]
-
-if args.night == None:
-    #find the most recent night
-    maxn = np.max(exps['NIGHT'].astype(int))
-else:
-    maxn = int(args.night)  
-seln = exps['NIGHT'].astype(int) == maxn
-#get the list of tileids observed on the last night
-tidl = np.unique(exps[seln]['TILEID'])
+tidl = np.unique(tlm['TILEID'])
 
 print('looking at LRG redshift results from the night '+str(maxn))
 print('the tileids are:')
