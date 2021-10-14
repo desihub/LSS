@@ -11,6 +11,7 @@ class SV3:
             self.imbits = [1,13]
         else:
             self.imbits = [1,12,13]
+        self.ebits = None
         if tp[:3] == 'LRG' or tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
