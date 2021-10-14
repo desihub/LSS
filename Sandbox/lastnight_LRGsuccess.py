@@ -36,7 +36,7 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
 for tid in tidl:
     for pt in range(0,10):
-        zmtlf = fitsio.read(zdir+tid+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits')
+        zmtlf = fitsio.read(zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits')
         nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
         num_nod = np.sum(nodata)
         print('looking at petal '+str(pt)+' on tile '+str(tid))
