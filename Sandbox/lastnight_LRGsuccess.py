@@ -10,12 +10,16 @@ parser.add_argument("--night", help="use this if you want to specify the night, 
 args = parser.parse_args()
 
 #get the right tileids
-tlm = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
-wd = tlm['FAPRGRM'] == 'dark' #only select dark tiles for LRG check
-wd &= tlm['LASTNIGHT'] == args.night
-wd &= tlm['OBSSTATUS'] == 'obsend'
-tlm = tlm[wd]
-tidl = np.unique(tlm['TILEID'])
+exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
+
+#cut to dark tiles
+sel = exps['FAPRGRM']=='dark'
+exps = exps[sel]
+
+
+#get the list of tileids observed on the last night
+tidl = np.unique(exps['TILEID'])
+
 
 print('looking at LRG redshift results from the night '+str(args.night))
 print('the tileids are:')
