@@ -13,11 +13,18 @@ args = parser.parse_args()
 month = args.night[:6]
 #get the right tileids
 exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
-
+print('number of exposures found:')
+print(len(exps))
 #cut to dark tiles
 sel = exps['FAPRGRM']=='dark'
+print('number that are dark time:')
+print(len(exps[sel]))
+
 sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 exps = exps[sel]
+print('number that have EFFTIME_ETC > 850:')
+print(len(exps[sel]))
+
 
 
 #get the list of tileids observed on the last night
