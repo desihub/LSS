@@ -20,15 +20,27 @@ sel = exps['FAPRGRM']=='dark'
 print('number that are dark time:')
 print(len(exps[sel]))
 
-sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 exps = exps[sel]
-print('number that have EFFTIME_ETC > 850:')
-print(len(exps))
 
 
 
 #get the list of tileids observed on the last night
 tidl = np.unique(exps['TILEID'])
+
+#get total exposure time for tiles 
+exptl = np.zeros(len(tidl))
+for ii in range(0, len(tidl)):
+    w = exps['TILEID'] == tidl[ii]
+    expt = np.sum(exps[w]['EFFTIME_ETC'])
+    exptl[ii] = expt
+
+
+#sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
+sel = exptl > 850
+tidl = tidl[sel]
+
+print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
+print(len(tidl))
 
 
 print('looking at LRG redshift results from the night '+str(args.night))
