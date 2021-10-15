@@ -23,7 +23,7 @@ print(len(exps[sel]))
 sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 exps = exps[sel]
 print('number that have EFFTIME_ETC > 850:')
-print(len(exps[sel]))
+print(len(exps))
 
 
 
