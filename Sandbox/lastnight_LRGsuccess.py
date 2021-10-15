@@ -79,6 +79,7 @@ for tid in tidl:
         
 
 print('the total number of LRG considered per petal for the night is:')
+print(tz)
 tzs = gz/tz
 print('the total fraction of good LRG z per petal for the night is:')
 print(tzs)
