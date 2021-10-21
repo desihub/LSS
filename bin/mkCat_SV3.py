@@ -515,23 +515,32 @@ if mkclusran:
     #print('ran mkclusran\n')
     
 if mknz:
+    wzm = ''
+#     if zmask:
+#         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntile > 0:
+        wzm += '_ntileg'+str(ntilecut)+'_'    
+    if args.ccut is not None:
+        wzm += '_'+args.ccut #you could change this to however you want the file names to turn out
+
     regl = ['','_N','_S']
+    
     for reg in regl:
-        if zma:
-            reg = '_zmask'+reg
-        fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
-        fout = dirout+type+reg+'_nz.dat'
+        fb = dirout+type+wzm+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6
             zmax = 4.5
             dz = 0.05
-            ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+            
         else:    
-            ct.mknz(fcd,fcr,fout,bs=0.02)
-
-if fillNZ:
-    e2e.fillNZ(target_type,program,P0=P0,truez=truez)   
-    logf.write('put NZ and weight_fkp into clustering catalogs\n')    
-    print('put NZ and weight_fkp into clustering catalogs\n')
+            dz = 0.02
+            zmin = 0.01
+            zmax = 1.61
+        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
         
