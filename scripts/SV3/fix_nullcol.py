@@ -15,23 +15,13 @@ indir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'
 types = ['ELG','ELG_HIP','LRG','QSO','BGS_ANY','BGS_BRIGHT']
 
 
-colstar = ['REF_EPOCH',
- 'PARALLAX',
- 'PMRA',
- 'PMDEC',
- 'OBSCONDITIONS',
- 'NUMOBS_INIT',
- 'SV3_SCND_TARGET',
- 'NUMOBS_MORE',
- 'NUMOBS',
- 'Z',
- 'ZTILEID',
- 'VERSION']
+colstar = ['REF_EPOCH','PARALLAX','PMRA','PMDEC','OBSCONDITIONS','NUMOBS_INIT',\
+'SV3_SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZTILEID','VERSION']
 
 fix_nullcol(indir+'datcomb_dark_tarwdup_Alltiles.fits',colstar)
 fix_nullcol(indir+'datcomb_bright_tarwdup_Alltiles.fits',colstar)
 
-colspec = 'REF_EPOCH',
+colspec = ['REF_EPOCH',
  'PARALLAX',
  'PMRA',
  'PMDEC',
