@@ -18,5 +18,5 @@ nran = 18
 for tp in types:
     print(tp)
     for ii in range(0,nran):
-        fix_dupcol(indir+'everest/LSScats/test/'+tp'_'_str(ii)+'_full.ran.fits'))
+        fix_dupcol(indir+'everest/LSScats/test/'+tp+'_'+str(ii)+'_full.ran.fits'))
         print(str(ii))
