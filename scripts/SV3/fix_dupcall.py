@@ -2,12 +2,13 @@
 from astropy.table import Table
 
 def fix_dupcol(fn,col='FIBER'):
+    of = Table.read(fn)
     try:
-        print(len(fn[col+'_2']))
+        print(len(of[col+'_2']))
     except:
         print('did not find column '+col+'_2 for file '+fn)
         return True
-    of = Table.read(fn)
+    
     of.remove_columns([col+'_2'])
     of[col+'_1'].name = col
     of.write(fn,overwrite=True,format='fits')
