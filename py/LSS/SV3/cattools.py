@@ -1645,7 +1645,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
     return True        
     
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.3):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.31519):
     
     cd = distance(om,1-om)
     ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
