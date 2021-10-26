@@ -33,11 +33,11 @@ colspec = ['REF_EPOCH',
  'ZTILEID',
  'VERSION']
  
-fix_nullcol(indir+'datcomb_dark_tarspecwdup_Alltiles.fits',colspec)
-fix_nullcol(indir+'datcomb_bright_tarspecwdup_Alltiles.fits',colspec)
+fix_nullcol(indir+'everest/datcomb_dark_tarspecwdup_Alltiles.fits',colspec)
+fix_nullcol(indir+'everest/datcomb_bright_tarspecwdup_Alltiles.fits',colspec)
  
 for tp in types:
     print(tp)
-    fix_nullcol(indir+'LSScats/test/'+tp+'_full_noveto.dat.fits',colspec)
-    fix_nullcol(indir+'LSScats/test/'+tp+'_full.dat.fits',colspec)
+    fix_nullcol(indir+'everest/LSScats/test/'+tp+'_full_noveto.dat.fits',colspec)
+    fix_nullcol(indir+'everest/LSScats/test/'+tp+'_full.dat.fits',colspec)
         
