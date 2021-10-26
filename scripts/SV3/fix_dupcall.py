@@ -2,6 +2,11 @@
 from astropy.table import Table
 
 def fix_dupcol(fn,col='FIBER'):
+    try:
+        print(len(fn[col+'_2']))
+    except:
+        print('did not find column '+col+'_2 for file '+fn)
+        return True
     of = Table.read(fn)
     of.remove_columns([col+'_2'])
     of[col+'_1'].name = col
@@ -10,7 +15,7 @@ def fix_dupcol(fn,col='FIBER'):
 indir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/'
 
 
-types = ['ELG','ELG_HIP','LRG','LRG_main','QSO','BGS_ANY','BGS_BRIGHT']
+types = ['ELG','ELG_HIP','LRG','QSO','BGS_ANY','BGS_BRIGHT']
 
 nran = 18
 for ii in range(0,nran):
