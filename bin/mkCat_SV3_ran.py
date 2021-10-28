@@ -358,5 +358,5 @@ if __name__ == '__main__':
             inds.append(i)
         p.map(doran,inds)
     else:
-        for i in range(rmin,rmax):
+        for i in range(rm,rx):
             doran(i)
