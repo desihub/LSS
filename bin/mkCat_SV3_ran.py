@@ -53,6 +53,7 @@ faver = args.faver
 specrel = args.verspec
 rm = int(args.minr)
 rx = int(args.maxr)
+par = False
 if args.par == 'y':
     par = True
 
