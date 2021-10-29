@@ -60,13 +60,14 @@ if os.path.exists('README.rst'):
 if os.path.isdir('bin'):
     setup_keywords['scripts'] = [fname for fname in glob.glob(os.path.join('bin', '*'))
         if os.path.basename(fname).startswith('mkCat_') and not os.path.basename(fname).endswith('.rst')]
-    print('LOOOL',setup_keywords['scripts'])
+
 setup_keywords['provides'] = [setup_keywords['name']]
 setup_keywords['python_requires'] = '>=3.5'
 setup_keywords['zip_safe'] = False
 setup_keywords['use_2to3'] = False
 setup_keywords['packages'] = find_packages('py')
 setup_keywords['package_dir'] = {'': 'py'}
+
 setup_keywords['cmdclass'] = {'sdist': DistutilsSdist}
 if have_desiutil:
     setup_keywords['cmdclass']['module_file'] = ds.DesiModule
@@ -77,7 +78,7 @@ if have_desiutil:
 #
 # Add internal data directories.
 #
-setup_keywords['package_data'] = {}
+setup_keywords['package_data'] = {'LSS': ['data/*.dat']}
 #
 # Run setup command.
 #
