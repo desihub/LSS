@@ -1124,7 +1124,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
         
     
 
-def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
