@@ -104,8 +104,8 @@ else:
 progl = prog.lower()
 
 mainp = main(args.type)
-mdir = mainp.mdir+pdir+'/' #location of ledgers
-tdir = mainp.tdir+pdir+'/' #location of targets
+mdir = mainp.mdir+progl+'/' #location of ledgers
+tdir = mainp.tdir+progl+'/' #location of targets
 mtld = mainp.mtld
 tiles = mainp.tiles
 imbits = mainp.imbits #mask bits applied to targeting
