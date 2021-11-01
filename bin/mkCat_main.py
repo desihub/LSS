@@ -106,16 +106,16 @@ progl = prog.lower()
 mainp = main(args.type)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
-mtld = mainp.mtld
+#mtld = mainp.mtld
 tiles = mainp.tiles
 imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
-wt = mtld['FAPRGRM'] == progl
-wt &= mtld['SURVEY'] == 'main'
-wt &= mtld['ZDONE'] == 'true'
-mtld = mtld[wt]
-print('there are '+str(len(mtld))+' tiles')
+#wt = mtld['FAPRGRM'] == progl
+#wt &= mtld['SURVEY'] == 'main'
+#wt &= mtld['ZDONE'] == 'true'
+#mtld = mtld[wt]
+#print('there are '+str(len(mtld))+' tiles')
 
 
 #columns to select from target sample
@@ -171,9 +171,9 @@ if mkfulld:
         #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
         #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
-            azf = main.elgzf
+            azf = mainp.elgzf
         if type[:3] == 'QSO':
-            azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_MAIN.fits'
+            azf = mainp.qsozf
 
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
