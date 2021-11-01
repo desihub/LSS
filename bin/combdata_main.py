@@ -43,11 +43,13 @@ wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == prog
 if specrel != 'daily':
-    wd &= mt['LASTNIGHT'] < 20210801
-    
+    #wd &= mt['LASTNIGHT'] < 20210801
+    if specrel == 'everest':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+        wd = np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true')
+print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
@@ -131,9 +133,6 @@ if specrel == 'daily':
 
 
 if specrel == 'everest':
-    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+prog+'-cumulative.fits')
-    wt = np.isin(specf['TILEID'],tiles4comb['TILEID']) #cut spec file to dark or bright time tiles
-    specf = specf[wt]
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
