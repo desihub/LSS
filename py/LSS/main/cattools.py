@@ -1146,11 +1146,11 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     #if specver == 'daily':
     #    fbcol = 'FIBERSTATUS'
     #if specver == 'everest':
-    fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
+    #fbcol = 'COADD_FIBERSTATUS'
+    #wf = fs[fbcol] == 0
     print(len(fs[wf]),len(fs[wfqa]))
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
+    gtl = np.unique(stlid[wfqa])
 
 
     dz = Table.read(zf) 
