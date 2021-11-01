@@ -19,6 +19,7 @@ from desitarget import targetmask
 #try:
 import LSS.main.cattools as ct
 import LSS.imaging.select_samples as ss
+from LSS.globals import main
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
@@ -102,27 +103,19 @@ else:
 
 progl = prog.lower()
 
-mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+mdir = main.mdir+pdir+'/' #location of ledgers
+tdir = main.tdir+pdir+'/' #location of targets
+mtld = main.mtld
+tiles = main.tiles
+imbits = main.imbits #mask bits applied to targeting
+ebits = main.ebits #extra mask bits we think should be applied
+
 wt = mtld['FAPRGRM'] == progl
 wt &= mtld['SURVEY'] == 'main'
 wt &= mtld['ZDONE'] == 'true'
 mtld = mtld[wt]
 print('there are '+str(len(mtld))+' tiles')
 
-#imbits = [1,8,9,11,12,13]
-
-#change imaging bits to just what was applied to targeting
-ebits = None
-if type[:3] == 'BGS':
-    imbits = [1,13]
-else:
-    imbits = [1,12,13]
-    if type[:3] == 'LRG' or type[:3] == 'ELG':
-        ebits = [8,9,11]    
-
-
-#location of targets
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'+progl+'/' 
 
 #columns to select from target sample
 keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX_R', 'FLUX_Z','FLUX_W1','FLUX_W2','MW_TRANSMISSION_G', 'MW_TRANSMISSION_R', 'MW_TRANSMISSION_Z', 'MW_TRANSMISSION_W1', 'MW_TRANSMISSION_W2','FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2','NOBS_G', 'NOBS_R', 'NOBS_Z','PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R',\
@@ -174,22 +167,17 @@ if mkfulld:
     azf=''
     
     if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
-        wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-        specf = specf[wt]
-        #zmtlf = fitsio.read()
+        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
+        #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
-            azf = '/global/cfs/cdirs/desi/users/raichoor/everest/main-elg-everest-tiles.fits'
+            azf = main.elgzf
         if type[:3] == 'QSO':
             azf = '/global/cscratch1/sd/edmondc/SHARE/QSO_CATALOG/QSO_catalog_MAIN.fits'
 
-    if specrel == 'daily':
-        specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
+    #if specrel == 'daily':
+        #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
  
-    ftar = fitsio.read(tarf)
-
-    
-    
+    ftar = fitsio.read(tarf)   
 
     dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
     if type == 'BGS_BRIGHT':
@@ -199,7 +187,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(specf,dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:

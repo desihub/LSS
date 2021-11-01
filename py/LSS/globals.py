@@ -39,5 +39,5 @@ class main:
             self.ebits = [8,9,11]    
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
-        self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/everest/main-elg-everest-tiles.fits'
+        self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/ELG/main-elg-everest-tiles.fits'
         self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/QSO/QSO_catalog_MAIN.fits'

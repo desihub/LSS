@@ -1134,6 +1134,9 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
         pd = 'dark'
         tscol = 'TSNR2_ELG'
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
+    dz = Table.read(zf) 
+    selz = dz['ZWARN'] != 999999
+    fs = dz[selz]
     nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
     num_nod = np.sum(nodata)
     print('number with no data '+str(num_nod))
@@ -1153,7 +1156,7 @@ def mkfulldat(fs,zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET'
     gtl = np.unique(stlid[wfqa])
 
 
-    dz = Table.read(zf) 
+    
     
     wtype = ((dz[desitarg] & bit) > 0)
     wg = np.isin(dz['TILELOCID'],gtl)
