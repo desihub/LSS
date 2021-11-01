@@ -103,7 +103,7 @@ else:
 
 progl = prog.lower()
 
-mainp = main()
+mainp = main(args.type)
 mdir = mainp.mdir+pdir+'/' #location of ledgers
 tdir = mainp.tdir+pdir+'/' #location of targets
 mtld = mainp.mtld
