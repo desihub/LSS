@@ -292,8 +292,8 @@ def doran(ii):
                 #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
                 #wt = np.isin(mtld['TILEID'],specf['TILEID'])
                 #above two lines already done above
-                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
                 specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
                 specf = specf[wt]
                 print('number of TILEID in spec data being used:')
                 print(len(np.unique(specf['TILEID'])))
