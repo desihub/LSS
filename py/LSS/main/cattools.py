@@ -436,9 +436,18 @@ def count_tiles_better(fs,dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS
     
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_spec_zdone.fits')
     #wf = fs['FIBERSTATUS'] == 0
-    wf = fs[fibcol] == 0
+    #wf = fs[fibcol] == 0
+    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata & badqa
+    wfqa = ~nomtl
+
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
+    gtl = np.unique(stlid[wfqa])
     
     if dr == 'dat':
         fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
@@ -1054,23 +1063,32 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
+def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
 
-    #first, need to find locations to veto based data
-#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-#     num_nod = np.sum(nodata)
-#     print('number with no data '+str(num_nod))
-#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-#     num_badqa = np.sum(badqa)
-#     print('number with bad qa '+str(num_badqa))
-#     nomtl = nodata & badqa
-#     wf = ~nomtl
-
-    wf = fs[fbcol] == 0
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     dz = Table.read(zf) 
+    selz = dz['ZWARN'] != 999999
+    fs = dz[selz]
+
+    #first, need to find locations to veto based data
+    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata & badqa
+    wfqa = ~nomtl
+    #wf = fs['FIBERSTATUS'] == 0
+    if specver == 'daily':
+        fbcol = 'FIBERSTATUS'
+    if specver == 'everest':
+        fbcol = 'COADD_FIBERSTATUS'
+    wf = fs[fbcol] == 0
+    print(len(fs[wf]),len(fs[wfqa]))
+    stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    gtl = np.unique(stlid[wfqa])
+
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         wtype &= ((dz[desitarg] & qsobit) == 0)
@@ -1163,7 +1181,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(len(dz[wtype]))
     print(len(dz[wg]))
     dz = dz[wtype&wg]
-    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    print('length after selecting type and good hardware '+str(len(dz)))
     lznp = find_znotposs(dz)
     wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk]

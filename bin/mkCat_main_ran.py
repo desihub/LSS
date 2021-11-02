@@ -302,8 +302,9 @@ def doran(ii):
 
 
                 specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-                specf = specf[wt]
+                wt = np.isin(mtld['TILEID'],specf['TILEID'])
+                #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+                #specf = specf[wt]
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
             kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
@@ -312,7 +313,7 @@ def doran(ii):
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
 
-            ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+            ct.combran_wdup(mtld[wt],ii,randir,type,ldirspec,specf,keepcols=kc)
             tc = ct.count_tiles_better(specf,'ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
@@ -323,12 +324,12 @@ def doran(ii):
     if mkfullr:
 
         if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            specf = specf[wt]
+            #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+            #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            #specf = specf[wt]
             fbcol = 'COADD_FIBERSTATUS'
         if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+            #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
@@ -339,7 +340,7 @@ def doran(ii):
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
         
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
+        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
