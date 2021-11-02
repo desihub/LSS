@@ -289,11 +289,13 @@ def doran(ii):
             
             if specrel == 'everest':    
 
-
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(mtld['TILEID'],specf['TILEID'])
-                #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-                #specf = specf[wt]
+                #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+                #wt = np.isin(mtld['TILEID'],specf['TILEID'])
+                #above two lines already done above
+                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+                specf = specf[wt]
+                print('number of TILEID in spec data being used:')
+                print(len(np.unique(specf['TILEID'])))
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
             kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
@@ -302,7 +304,7 @@ def doran(ii):
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
 
-            ct.combran_wdup(mtld[wt],ii,randir,type,ldirspec,specf,keepcols=kc)
+            ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
             tc = ct.count_tiles_better(specf,'ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
