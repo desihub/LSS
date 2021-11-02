@@ -426,7 +426,26 @@ def find_znotposs(dz):
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
     
-def count_tiles_better(fs,dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
+def get_specdat(indir,pd):
+    #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    dz = Table.read(zf) 
+    selz = dz['ZWARN'] != 999999
+    fs = dz[selz]
+
+    #first, need to find locations to veto based data
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata & badqa
+    wfqa = ~nomtl
+    return fs[wfqa]
+
+
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
     through and get the multi-tile information
@@ -437,17 +456,20 @@ def count_tiles_better(fs,dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_spec_zdone.fits')
     #wf = fs['FIBERSTATUS'] == 0
     #wf = fs[fibcol] == 0
-    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata & badqa
-    wfqa = ~nomtl
+    #nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    #num_nod = np.sum(nodata)
+    #print('number with no data '+str(num_nod))
+    #badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    #num_badqa = np.sum(badqa)
+    #print('number with bad qa '+str(num_badqa))
+    #nomtl = nodata & badqa
+    #wfqa = ~nomtl
+    
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    fs = get_specdat(indir,pd)
 
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wfqa])
+    gtl = np.unique(stlid)
     
     if dr == 'dat':
         fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
@@ -1065,27 +1087,29 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
 def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
 
-    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-    dz = Table.read(zf) 
-    selz = dz['ZWARN'] != 999999
-    fs = dz[selz]
-
-    #first, need to find locations to veto based data
-    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata & badqa
-    wfqa = ~nomtl
-    #wf = fs['FIBERSTATUS'] == 0
-    if specver == 'daily':
-        fbcol = 'FIBERSTATUS'
-    if specver == 'everest':
-        fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
-    print(len(fs[wf]),len(fs[wfqa]))
+#     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+#     dz = Table.read(zf) 
+#     selz = dz['ZWARN'] != 999999
+#     fs = dz[selz]
+# 
+#     #first, need to find locations to veto based data
+#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+#     num_nod = np.sum(nodata)
+#     print('number with no data '+str(num_nod))
+#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+#     num_badqa = np.sum(badqa)
+#     print('number with bad qa '+str(num_badqa))
+#     nomtl = nodata & badqa
+#     wfqa = ~nomtl
+#     #wf = fs['FIBERSTATUS'] == 0
+#     if specver == 'daily':
+#         fbcol = 'FIBERSTATUS'
+#     if specver == 'everest':
+#         fbcol = 'COADD_FIBERSTATUS'
+#     wf = fs[fbcol] == 0
+#     print(len(fs[wf]),len(fs[wfqa]))
+    
+    fs = get_specdat(indir,pd)
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid[wfqa])
 
@@ -1152,28 +1176,31 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         pd = 'dark'
         tscol = 'TSNR2_ELG'
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-    dz = Table.read(zf) 
-    selz = dz['ZWARN'] != 999999
-    fs = dz[selz]
-    nodata = fs["ZWARN"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata & badqa
-    wfqa = ~nomtl
-    #wf = fs['FIBERSTATUS'] == 0
-    if specver == 'daily':
-        fbcol = 'FIBERSTATUS'
-    if specver == 'everest':
-        fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
-    print(len(fs[wf]),len(fs[wfqa]))
+#     dz = Table.read(zf) 
+#     selz = dz['ZWARN_MTL'] != 999999
+#     fs = dz[selz]
+#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+#     num_nod = np.sum(nodata)
+#     print('number with no data '+str(num_nod))
+#     badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+#     num_badqa = np.sum(badqa)
+#     print('number with bad qa '+str(num_badqa))
+#     nomtl = nodata & badqa
+#     wfqa = ~nomtl
+#     #wf = fs['FIBERSTATUS'] == 0
+#     if specver == 'daily':
+#         fbcol = 'FIBERSTATUS'
+#     if specver == 'everest':
+#         fbcol = 'COADD_FIBERSTATUS'
+#     wf = fs[fbcol] == 0
+#     print(len(fs[wf]),len(fs[wfqa]))
+    
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    fs = get_specdat(indir,pd)
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wfqa])
+    gtl = np.unique(stlid)
 
-
+    dz = Table.read(zf) 
     
     
     wtype = ((dz[desitarg] & bit) > 0)
