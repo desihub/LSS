@@ -107,7 +107,7 @@ wd &= mt['FAPRGRM'] == pdir
 if specrel != 'daily':
     if specrel == 'everest':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-        wd = np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
