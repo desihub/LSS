@@ -101,28 +101,17 @@ imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
 
-#imbits = [1,8,9,11,12,13]
-
-# if type[:3] == 'BGS':
-#     imbits = [1,13]
-# else:
-#     imbits = [1,12,13]    
-# 
-# 
-# mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == 'main'
-#wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
-
-maxnight = 20301231
-if specrel == 'everest':
-    maxnight = 20210801
-
-wd &= mt['LASTNIGHT'] < maxnight    
-
+if specrel != 'daily':
+    if specrel == 'everest':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+        wd = np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtld = mt[wd]
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true')
+#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtld['TILEID']
