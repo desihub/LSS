@@ -146,9 +146,10 @@ if specrel == 'everest':
 
 
     tarf = Table.read(tarfo)
+    tarf.remove_columns(['ZWARN_MTL'])
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
 
-    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
 
