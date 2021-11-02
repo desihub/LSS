@@ -1195,7 +1195,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 #     wf = fs[fbcol] == 0
 #     print(len(fs[wf]),len(fs[wfqa]))
     
-    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver
     fs = get_specdat(indir,pd)
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid)
