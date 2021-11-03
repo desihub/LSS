@@ -1087,8 +1087,6 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
 def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
 
-     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-     dz = Table.read(zf) 
 #     selz = dz['ZWARN'] != 999999
 #     fs = dz[selz]
 # 
@@ -1108,6 +1106,8 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
 #         fbcol = 'COADD_FIBERSTATUS'
 #     wf = fs[fbcol] == 0
 #     print(len(fs[wf]),len(fs[wfqa]))
+    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    dz = Table.read(zf) 
     
     fs = get_specdat(indir,pd)
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
