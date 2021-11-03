@@ -1111,7 +1111,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     
     fs = get_specdat(indir,pd)
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wfqa])
+    gtl = np.unique(stlid)
 
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
