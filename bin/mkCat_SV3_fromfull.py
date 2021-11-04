@@ -190,8 +190,11 @@ if mkclusran:
         dchi2 = 40
         tsnrcut = 1000
 
+    rcols=['Z','WEIGHT']
+    if type[:3] == 'BGS':
+        rcols.append('flux_r_dered')
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
