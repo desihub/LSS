@@ -1527,6 +1527,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         kl.append('flux_r_dered')
+        print(kl)
 
     ff.keep_columns(kl)#,'PROB_OBS'
     print('minimum,maximum weight')
