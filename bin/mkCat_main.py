@@ -233,13 +233,18 @@ if args.imsys == 'y':
     from LSS.imaging import densvar
     regl = ['_DN','_DS','','_N','_S']
     wzm = ''
+    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    use_maps = fit_maps
     if type[:3] == 'ELG':
-        #zmin = 0.8
-        #zmax = 1.5
         zrl = [(0.6,0.8),(0.8,1.1),(1.1,1.5)]
-        fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-        #fit_maps = ['STARDENS','EBV','GALDEPTH_G']
-        use_maps = fit_maps
+    if type[:3] == 'QSO':
+        zrl = [(0.8,1.6),(1.6,2.1),(2.1,3.5)]    
+    if type[:3] == 'LRG':
+        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
+    if type[:3] == 'BGS':
+        zrl = [(0.1,0.5)]    
+       
+        
     
     for reg in regl:
         for zr in zrl:
