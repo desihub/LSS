@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
+from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
@@ -369,13 +370,20 @@ if __name__ == '__main__':
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        N = 32
-        #N = rx-rm
-        p = Pool(N)
+        #N = 32
+        N = rx-rm
+        #p = Pool(N)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        p.map(doran,inds)
+        pool = sharedmem.MapReduce(np=N)
+        with pool:
+            def reduce(i, r):
+                print('chunk', i, 'done')
+                return r
+            pool.map(doran,inds)
+
+        #p.map(doran,inds)
     else:
         for i in range(rm,rx):
             doran(i)
