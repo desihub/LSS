@@ -1584,7 +1584,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    ff.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS'])
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS']
+    if tp[:3] == 'BGS':
+        ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
+        kl.append('flux_r_dered')
+        print(kl)
+    ff.keep_columns(kl)
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
