@@ -41,7 +41,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
-
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -83,6 +83,11 @@ if type == 'bright' or type == 'dark':
     mkclus = False
     mkclusran = False
     mkfullr = False
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     pr = 'BRIGHT'
@@ -324,7 +329,7 @@ def doran(ii):
             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
             desitarg='BGS_TARGET'
@@ -332,7 +337,7 @@ def doran(ii):
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
         
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
+        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -352,7 +357,7 @@ def doran(ii):
             dchi2 = 40
             tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')

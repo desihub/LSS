@@ -39,6 +39,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 
@@ -93,6 +94,11 @@ if args.clusran == 'y':
 if mkclusran:
     print('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx))
     print('(if running all, consider doing in parallel)')  
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
     
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
@@ -188,7 +194,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
@@ -203,12 +209,12 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
-        fn = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
+        fn = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
@@ -227,7 +233,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+notqso+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 if args.imsys == 'y':
     from LSS.imaging import densvar
@@ -250,7 +256,7 @@ if args.imsys == 'y':
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
-            fb = dirout+type+'zdone'+wzm+reg
+            fb = dirout+type+notqso+'zdone'+wzm+reg
             fcr = fb+'_0_clustering.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
@@ -277,7 +283,7 @@ if args.nz == 'y':
     egl = ['_DN','_DS','','_N','_S']
     
     for reg in regl:
-        fb = dirout+type+'zdone'+wzm+reg
+        fb = dirout+type+notqso+'zdone'+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'

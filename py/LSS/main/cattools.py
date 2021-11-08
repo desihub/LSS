@@ -1166,7 +1166,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
         
     
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1204,6 +1204,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     
     
     wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        print('removing QSO targets')
+        wtype &= ((dz[desitarg] & qsobit) == 0)
+
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
     print(len(dz[wg]))
