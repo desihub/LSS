@@ -371,13 +371,14 @@ if __name__ == '__main__':
         import sys
         #N = int(sys.argv[2])
         #N = 32
-        N = rx-rm
+        N = rx-rm+1
         #p = Pool(N)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        pool = sharedmem.MapReduce(np=N)
-        with pool:
+        #pool = sharedmem.MapReduce(np=N)
+        #with pool:
+        with sharedmem.MapReduce() as pool:
             def reduce( r):
                 print('chunk done')
                 return r
