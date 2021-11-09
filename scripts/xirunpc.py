@@ -28,7 +28,7 @@ version = args.version
 specrel = args.verspec
 survey = args.survey
 nran = int(args.nran)
-weight_type = args.weightype
+weight_type = args.weight_type
 
 if args.bintype == 'log':
     bine = np.logspace(-1.5, 2.2, 80)
