@@ -173,7 +173,7 @@ for i in range(0,len(zl)):
     print(zmin,zmax)
     for zma in zmask:
         for reg in regl:
-            (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,
+            (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type)
             fo = open(dirxi+'xi024'+ttype+survey+version+args.bintype+'.dat','w')
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[2][i])+' '+str(xiell[4][i])+'\n')
