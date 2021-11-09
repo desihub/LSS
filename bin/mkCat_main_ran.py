@@ -381,7 +381,7 @@ if __name__ == '__main__':
             def reduce(i, r):
                 print('chunk', i, 'done')
                 return r
-            pool.map(doran,inds,reduce=reduce)
+            r = pool.map(doran,inds,reduce=reduce)
 
         #p.map(doran,inds)
     else:
