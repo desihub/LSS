@@ -1237,13 +1237,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
     if tp[:3] == 'ELG' and azf != '':# or tp == 'ELG_HIP':
-        arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
+        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
         st = []
         for i in range(0,len(arz)):
             st.append(arz['SUBSET'][i][:4])
         st = np.array(st)
-        wg = arz[fbcol] == 0
-        wg &= st == "thru"
+        #wg = arz[fbcol] == 0
+        wg = st == "thru"
         arz = arz[wg]
         o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
         w = (o2c*0) != 0
@@ -1254,7 +1254,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         arz['o2c'] = o2c
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         
-        dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
+        dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '':
