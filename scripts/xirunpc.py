@@ -18,7 +18,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 parser.add_argument("--weight_type",help="types of weights to use",default='angular_bitwise')
-parser.add_argument("--bintype","log or lin",default='log')
+parser.add_argument("--bintype",help="log or lin",default='log')
 
 args = parser.parse_args()
 
