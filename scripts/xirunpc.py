@@ -126,6 +126,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
             return positions, weights
     
         fibered_data_positions, fibered_data_weights = get_positions_weights(parent_data, fibered=True)
+        print(len(fibered_data_weights))
         parent_data_positions, parent_data_weights = get_positions_weights(parent_data)
         parent_randoms_positions, parent_randoms_weights = get_positions_weights(parent_randoms)
         
