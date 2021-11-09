@@ -378,8 +378,8 @@ if __name__ == '__main__':
             inds.append(i)
         pool = sharedmem.MapReduce(np=N)
         with pool:
-            def reduce(i, r):
-                print('chunk', i, 'done')
+            def reduce( r):
+                print('chunk done')
                 return r
             r = pool.map(doran,inds,reduce=reduce)
 
