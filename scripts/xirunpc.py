@@ -190,7 +190,7 @@ for i in range(0,len(zl)):
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
             fo.close()
-            if args.vis == 'y'
+            if args.vis == 'y':
                 if args.bintype == 'log':
                     plt.loglog(sep,xiell[0])
                 if args.bintype == 'lin':
