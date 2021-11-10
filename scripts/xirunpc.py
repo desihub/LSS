@@ -17,9 +17,10 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
-parser.add_argument("--weight_type",help="types of weights to use",default='angular_bitwise')
+parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32)
+parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 
 args = parser.parse_args()
 
@@ -72,10 +73,12 @@ if ttype[:3] == 'BGS':
     #zmin = 0.1
     #zmax = 0.5 
 
+if survey == 'main':
+    wa = 'zdone'
 
 def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
-    data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer, region))
-    randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer, region, iran)) for iran in range(nrandoms)]
+    data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
+    randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
     data = Table.read(data_fn)
     randoms = vstack([Table.read(fn) for fn in randoms_fn])
     corrmode = mode
@@ -101,6 +104,8 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
                 weights *= rfweight(positions[0], positions[1])
             if 'zfail' in weight_type:
                 weights *= catalog['WEIGHT_ZFAIL'][mask]
+            if 'default' in weight_type:
+                weights *= catalog['WEIGHT'][mask]
             if 'completeness' in weight_type:
                 weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
             elif 'bitwise' in weight_type:
@@ -183,9 +188,10 @@ for i in range(0,len(zl)):
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
             fo.close()
-            if args.bintype == 'log':
-                plt.loglog(sep,xiell[0])
-            if args.bintype == 'lin':
-                plt.plot(sep,sep**2.*xiell[0])
-            plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
-            plt.show()    
+            if args.vis == 'y'
+                if args.bintype == 'log':
+                    plt.loglog(sep,xiell[0])
+                if args.bintype == 'lin':
+                    plt.plot(sep,sep**2.*xiell[0])
+                plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
+                plt.show()    
