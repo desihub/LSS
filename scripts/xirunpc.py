@@ -183,17 +183,17 @@ for i in range(0,len(zl)):
         zmin = zl[i]
         zmax = zl[i+1]
     print(zmin,zmax)
-    for zma in zmask:
-        for reg in regl:
-            (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-            fo = open(dirxi+'xi024'+ttype+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
-            for i in range(0,len(sep)):
-                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
-            fo.close()
-            if args.vis == 'y':
-                if args.bintype == 'log':
-                    plt.loglog(sep,xiell[0])
-                if args.bintype == 'lin':
-                    plt.plot(sep,sep**2.*xiell[0])
-                plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
-                plt.show()    
+	for reg in regl:
+		print(reg)
+		(sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+		fo = open(dirxi+'xi024'+ttype+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
+		for i in range(0,len(sep)):
+			fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
+		fo.close()
+		if args.vis == 'y':
+			if args.bintype == 'log':
+				plt.loglog(sep,xiell[0])
+			if args.bintype == 'lin':
+				plt.plot(sep,sep**2.*xiell[0])
+			plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
+			plt.show()    
