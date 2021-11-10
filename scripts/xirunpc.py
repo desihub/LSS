@@ -18,7 +18,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 parser.add_argument("--weight_type",help="types of weights to use",default='angular_bitwise')
-parser.add_argument("--bintype",help="log or lin",default='log')
+parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32)
 
 args = parser.parse_args()
@@ -179,7 +179,7 @@ for i in range(0,len(zl)):
     for zma in zmask:
         for reg in regl:
             (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-            fo = open(dirxi+'xi024'+ttype+survey+version+'_'+weight_type+args.bintype+'.dat','w')
+            fo = open(dirxi+'xi024'+ttype+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
             fo.close()
