@@ -118,7 +118,9 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         parent_randoms = vstack([Table.read(fn) for fn in randoms_fn])
         
         def get_positions_weights(catalog, fibered=False):
-            mask = catalog['PHOTSYS'] == region
+            mask = np.ones(len(catalog),dtype='bool')
+            if reg != '':
+                mask &= catalog['PHOTSYS'] == region.strip('_')
             if fibered: mask &= catalog['LOCATION_ASSIGNED']
             positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
             if fibered: weights = list(catalog['BITWEIGHTS'][mask].T)
@@ -176,10 +178,10 @@ for i in range(0,len(zl)):
     for zma in zmask:
         for reg in regl:
             (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type)
-            #fo = open(dirxi+'xi024'+ttype+survey+version+args.bintype+'.dat','w')
-            #for i in range(0,len(sep)):
-            #    fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[2][i])+' '+str(xiell[4][i])+'\n')
-            #fo.close()
+            fo = open(dirxi+'xi024'+ttype+survey+version+'_'+weight_type+args.bintype+'.dat','w')
+            for i in range(0,len(sep)):
+                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
+            fo.close()
             if args.bintype == 'log':
                 plt.loglog(sep,xiell[0])
             if args.bintype == 'lin':
