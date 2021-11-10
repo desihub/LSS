@@ -19,6 +19,7 @@ parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 parser.add_argument("--weight_type",help="types of weights to use",default='angular_bitwise')
 parser.add_argument("--bintype",help="log or lin",default='log')
+parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32)
 
 args = parser.parse_args()
 
@@ -162,7 +163,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
 
 ranwt1=False
 
-regl = ['_N','_S']
+regl = ['_N','_S','']
 
 if survey == 'main':
     regl = ['_DN','_DS','_N','_S','']
@@ -177,7 +178,7 @@ for i in range(0,len(zl)):
     print(zmin,zmax)
     for zma in zmask:
         for reg in regl:
-            (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type)
+            (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
             fo = open(dirxi+'xi024'+ttype+survey+version+'_'+weight_type+args.bintype+'.dat','w')
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
