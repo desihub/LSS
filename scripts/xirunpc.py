@@ -113,7 +113,9 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         return positions, weights
     
     data_positions, data_weights = get_positions_weights(data, name='data')
+    print('using '+str(len(data_positions[0]))+ ' rows for data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
+    print('using '+str(len(random_positions[0]))+ ' rows for random')
 
     kwargs = {}
     if 'angular' in weight_type and wang is None:
