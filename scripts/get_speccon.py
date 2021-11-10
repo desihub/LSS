@@ -26,7 +26,7 @@ tids = np.unique(dcat['TILEID'])
 
 mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == args.survey
-wd &= mt['FAPRGRM'] == prog
+wd &= mt['FAPRGRM'] == args.prog
 wd &= np.isin(mt['TILEID'],tids)
 mtd = mt[wd]
 
