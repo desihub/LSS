@@ -47,7 +47,7 @@ for ii in range(0,len(tiles4comb)):
     
     
     # Here we grab the path for each coadd under cumulative/tileid/zdate
-    fpaths = sorted(glob.glob(fpath + '/' + 'coadd-?-{:d}-thru{}.fits'.format(tiles4comb['TILEID'][ii], tiles4comb['ZDATE'][ii]))
+    fpaths = sorted(glob.glob(fpath + '/' + 'coadd-?-{:d}-thru{}.fits'.format(tiles4comb['TILEID'][ii], tiles4comb['ZDATE'][ii])))
     
     
     coadd_fpaths += [x for x in fpaths]
