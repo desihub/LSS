@@ -4,6 +4,7 @@ import numpy as np
 import astropy.io.fits as fits
 import argparse
 import fitsio
+import os
 
 from   astropy.table import Table, join, unique, vstack
 from   desiutil.log import get_logger
