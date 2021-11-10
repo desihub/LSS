@@ -17,6 +17,8 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 
 args = parser.parse_args()
 
+outf = args.basedir +'/'+args.survey+'/LSS/'+args.verspec+'/specobscon.fits'
+
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
 exposures = exposures['EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
@@ -135,5 +137,5 @@ for in_expids in unique_in_expids:
         
     print('Processed: {}'.format(in_expids))
 
-outf = args.basedir +'/'+args.survey+'/LSS/'+args.specrel+'/specobscon.fits'
+
 condition_cat.write(outf, format='fits', overwrite=True)
