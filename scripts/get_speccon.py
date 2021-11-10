@@ -9,7 +9,6 @@ from   astropy.table import Table, join, unique, vstack
 from   desiutil.log import get_logger
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--survey", help="main or sv3",default='main')
 parser.add_argument("--prog", help="dark or bright",default='dark')
@@ -48,7 +47,7 @@ for ii in range(0,len(tiles4comb)):
     
     
     # Here we grab the path for each coadd under cumulative/tileid/zdate
-    fpaths = sorted(glob.glob(fpath + '/' + 'coadd-?-{:d}-thru{}.fits'.format(tiles4comb['TILEID'][ii], tiles4comb['ZDATE'][ii])
+    fpaths = sorted(glob.glob(fpath + '/' + 'coadd-?-{:d}-thru{}.fits'.format(tiles4comb['TILEID'][ii], tiles4comb['ZDATE'][ii]))
     
     
     coadd_fpaths += [x for x in fpaths]
