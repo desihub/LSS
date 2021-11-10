@@ -21,7 +21,7 @@ datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
 exposures = exposures['EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
 
-dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+prog+'-'+'cumulative.fits')
+dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
 tids = np.unique(dcat['TILEID'])
 
 mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
