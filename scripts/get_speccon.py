@@ -8,6 +8,22 @@ import os
 
 from   astropy.table import Table, join, unique, vstack
 from   desiutil.log import get_logger
+import ephem
+import astropy.units as u
+
+from   desisurvey.config import Configuration
+from   astropy.time import Time
+from   astropy.table import Table
+
+config = Configuration()
+
+mayall = ephem.Observer()
+mayall.lat = config.location.latitude().to(u.rad).value
+mayall.lon = config.location.longitude().to(u.rad).value
+mayall.elevation = config.location.elevation().to(u.m).value
+
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
@@ -26,7 +42,21 @@ outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
 
-addcols = ['ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
+exposures['MOON_ILLUM'] = np.zeros(len(exposures))
+
+for ii in range(0,len(exposures)):
+
+    t = Time(exposures[ii]['MJD'], format='mjd')
+    moon.compute(t.datetime)
+
+    moon_illlum = moon.moon_phase
+    exposures[ii]['MOON_ILLUM'] = moon_illum
+    
+print('added moon illumination, median is:'+str(np.median(exposures['MOON_ILLUM'])))
+
+
+
+addcols = ['ZD','ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
 
 for col in addcols:
     exposures[col] = np.ones(len(exposures))*-99
@@ -46,7 +76,7 @@ for col in addcols:
     print('fraction null:')
     print(col,str(len(exposures[selnull])/len(exposures)))               
 
-ocol = ['EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
+ocol = ['MOON_ILLUM','EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
 tcol = addcols + ocol
 exposures = exposures[tcol]
 
