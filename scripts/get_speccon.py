@@ -33,7 +33,7 @@ for col in addcols:
 
 for ii in range(0,len(exposures)):
     es = str(exposures[ii]['EXPID']).zfill(8)
-    efn = '/global/cfs/cdirs/desi/spectro/data/'+str(expsoures[ii]['NIGHT'])+'/'es+'/desi-'+es+'.fits.fz'
+    efn = '/global/cfs/cdirs/desi/spectro/data/'+str(expsoures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
     hh = fitsio.read_header(efn,ext=1)
     for col in addcols:
         try:
