@@ -17,7 +17,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 
 args = parser.parse_args()
 
-outf = args.basedir +'/'+args.survey+'/LSS/'+args.verspec+'/specobscon.fits'
+outf = args.basedir +'/'+args.survey+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits'
 
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
