@@ -33,7 +33,7 @@ wd &= np.isin(mt['TILEID'],tids)
 mtd = mt[wd]
 
 tiles4comb = Table()
-tiles4comb['TILEID'] = mtd['TILEID']
+tiles4comb['TILEID'] = mtd['TILEID'].astype(int)
 tiles4comb['ZDATE'] = mtd['LASTNIGHT']
 
 print('numbers of tiles, should match:')
