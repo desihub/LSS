@@ -26,7 +26,7 @@ outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
 
-addcols = ['ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP – TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
+addcols = ['ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
 
 for col in addcols:
     exposures[col] = np.ones(len(exposures))*-99
