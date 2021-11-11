@@ -25,7 +25,30 @@ outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits
 
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
-exposures = exposures['EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
+
+addcols = ['ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP – TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
+
+for col in addcols:
+    exposures[col] = np.ones(len(exposures))*-99
+
+for ii in range(0,len(exposures)):
+    es = str(exposures[ii]['EXPID']).zfill(8)
+    efn = '/global/cfs/cdirs/desi/spectro/data/'+str(expsoures[ii]['NIGHT'])+'/'es+'/desi-'+es+'.fits.fz'
+    hh = fitsio.read_header(efn,ext=1)
+    for col in addcols:
+        try:
+            exposures[ii][col] = hh[col]
+        except:
+            pass
+
+for col in addcols:
+    selnull = exposures[col] == -99
+    print('fraction null:')
+    print(col,str(len(exposures[selnull])/len(exposures)))               
+
+ocol = ['EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
+tcol = addcols + ocol
+exposures = exposures[tcol]
 
 dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
 tids = np.unique(dcat['TILEID'])
