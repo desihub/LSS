@@ -50,7 +50,7 @@ for ii in range(0,len(exposures)):
     t = Time(exposures[ii]['MJD'], format='mjd')
     moon.compute(t.datetime)
 
-    moon_illlum = moon.moon_phase
+    moon_illum = moon.moon_phase
     exposures[ii]['MOON_ILLUM'] = moon_illum
     
 print('added moon illumination, median is:'+str(np.median(exposures['MOON_ILLUM'])))
