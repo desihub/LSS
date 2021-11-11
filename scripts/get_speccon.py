@@ -44,6 +44,7 @@ exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
 
 exposures['MOON_ILLUM'] = np.zeros(len(exposures))
 
+moon = ephem.Moon(mayall)
 for ii in range(0,len(exposures)):
 
     t = Time(exposures[ii]['MJD'], format='mjd')
