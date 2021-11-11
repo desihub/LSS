@@ -19,7 +19,7 @@ parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
-parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32)
+parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 
 args = parser.parse_args()
@@ -73,6 +73,7 @@ if ttype[:3] == 'BGS':
     #zmin = 0.1
     #zmax = 0.5 
 
+wa = ''
 if survey == 'main':
     wa = 'zdone'
 
