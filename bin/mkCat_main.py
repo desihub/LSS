@@ -281,7 +281,7 @@ if args.nz == 'y':
 #     if ccut is not None:
 #         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    egl = ['_DN','_DS','','_N','_S']
+    regl = ['_DN','_DS','','_N','_S']
     
     for reg in regl:
         fb = dirout+type+notqso+'zdone'+wzm+reg
