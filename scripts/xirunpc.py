@@ -65,6 +65,12 @@ if ttype == 'QSO':
     #zmin = 1.
     #zmax = 2.1
 
+if ttype == 'QSOh':
+    zl = [2.1,3.5]
+    ttype = 'QSO'
+    #zmin = 1.
+    #zmax = 2.1
+
    
 
 if ttype[:3] == 'BGS':
