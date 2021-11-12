@@ -73,14 +73,14 @@ if ttype[:3] == 'BGS':
     #zmin = 0.1
     #zmax = 0.5 
 
-if ttype[:3] == 'BGS' and ttype[:-1] == 'l':
+if ttype[:3] == 'BGS' and ttype[-1] == 'l':
     #minn = 2
     zl = [0.1,0.3]
     ttype = ttype[:-1]
     #zmin = 0.1
     #zmax = 0.5 
 
-if ttype[:3] == 'BGS' and ttype[:-1] == 'h':
+if ttype[:3] == 'BGS' and ttype[-1] == 'h':
     #minn = 2
     zl = [0.3,0.5]
     ttype = ttype[:-1]
