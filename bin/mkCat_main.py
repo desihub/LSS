@@ -138,10 +138,6 @@ if not os.path.exists(maindir+'/logs'):
     os.mkdir(maindir+'/logs')
     print('made '+maindir+'/logs')
 
-if not os.path.exists(maindir+'/LSScats'):
-    os.mkdir(maindir+'/LSScats')
-    print('made '+maindir+'/LSScats')
-
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)

@@ -191,7 +191,10 @@ regl = ['_N','_S','']
 if survey == 'main':
     regl = ['_DN','_DS','_N','_S','']
 
-for i in range(0,len(zl)):
+nzr = len(zl)
+if len(zl) == 2:
+    nzr = len(zl)-1
+for i in range(0,nzr):
     if i == len(zl)-1:
         zmin=zl[0]
         zmax=zl[-1]
