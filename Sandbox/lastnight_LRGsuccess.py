@@ -57,7 +57,7 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 for tid in tidl:
     for pt in range(0,10):
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
-        if os.path.isfile(zmtff):
+        if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
             nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
             num_nod = np.sum(nodata)
