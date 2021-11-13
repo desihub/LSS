@@ -79,7 +79,7 @@ for tid in tidl:
             else:
                 print('no good lrg data')  
         else:
-            print(zmtff+' not found') 
+            print(zmtlff+' not found') 
         
 
 print('the total number of LRG considered per petal for the night is:')
