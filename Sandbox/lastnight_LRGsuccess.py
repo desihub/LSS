@@ -56,27 +56,31 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
 for tid in tidl:
     for pt in range(0,10):
-        zmtlf = fitsio.read(zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits')
-        nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
-        num_nod = np.sum(nodata)
-        print('looking at petal '+str(pt)+' on tile '+str(tid))
-        print('number with no data '+str(num_nod))
-        badqa = zmtlf["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-        num_badqa = np.sum(badqa)
-        print('number with bad qa '+str(num_badqa))
-        nomtl = nodata | badqa
-        wfqa = ~nomtl
-        wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
-        zlrg = zmtlf[wfqa&wlrg]
-        if len(zlrg) > 0:
-            wzwarn = zmtlf['ZWARN'] == 0
-            gzlrg = zmtlf[wzwarn&wlrg]
-            print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
-            gz[pt] += len(gzlrg)
-            tz[pt] += len(zlrg)
-        else:
-            print('no good lrg data')   
-        
+        zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
+        if os.path.isfile(zmtff):
+            zmtlf = fitsio.read(zmtlff)
+			nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
+			num_nod = np.sum(nodata)
+			print('looking at petal '+str(pt)+' on tile '+str(tid))
+			print('number with no data '+str(num_nod))
+			badqa = zmtlf["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+			num_badqa = np.sum(badqa)
+			print('number with bad qa '+str(num_badqa))
+			nomtl = nodata | badqa
+			wfqa = ~nomtl
+			wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
+			zlrg = zmtlf[wfqa&wlrg]
+			if len(zlrg) > 0:
+				wzwarn = zmtlf['ZWARN'] == 0
+				gzlrg = zmtlf[wzwarn&wlrg]
+				print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+				gz[pt] += len(gzlrg)
+				tz[pt] += len(zlrg)
+			else:
+				print('no good lrg data')  
+		else:
+		    print(zmtff+' not found') 
+		
 
 print('the total number of LRG considered per petal for the night is:')
 print(tz)
