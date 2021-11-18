@@ -44,7 +44,7 @@ ldirspec = maindir+specrel+'/'
 dirout = ldirspec+'LSScats/'+version+'/'
 
 
-regl = ['_N','_S','_DN']
+regl = ['_S','_DN','_N']
 position_columns = ['RA','DEC','Z']
 zmin = 0.3
 zmax = 1.2
@@ -90,11 +90,11 @@ for reg in regl:
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
     recon = recfunc(f=0.8, bias=2.0, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
-    print('grid set up')
+    print('grid set up',flush=True)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
-    print('data assigned')
+    print('data assigned',flush=True)
     recon.assign_randoms(pos_ran,ran_cat['WEIGHT'])
-    print('randoms assigned')
+    print('randoms assigned',flush=True)
     recon.set_density_contrast()
     print('density constrast calculated, now doing recon',flush=True)
     recon.run()
@@ -126,6 +126,8 @@ for reg in regl:
     rant['Z'] = z
     rant.write(fcro,format='fits',overwrite=True)
     print('wrote data to '+fcro)
+    del datt
+    del rant
    
     
     
