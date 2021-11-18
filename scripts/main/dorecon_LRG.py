@@ -86,7 +86,7 @@ for reg in regl:
     ran_dis = comoving_distance(ran_cat[position_columns[2]])
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
-    recon = recfunc(f=0.8, bias=2.0,cellsize=4, los='local',positions=pos_ran,nthreads=args.nthreads)
+    recon = recfunc(f=0.8, bias=2.0,cellsize=4, los='local',positions=pos_ran,nthreads=int(args.nthreads))
     print('grid set up')
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     print('data assigned')
