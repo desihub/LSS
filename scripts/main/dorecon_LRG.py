@@ -11,7 +11,7 @@ import fitsio
 from astropy.table import Table,vstack
 
 import pyrecon
-from pyrecon import  utils,IterativeFFTParticleReconstruction,MultiGridReconstruction
+from pyrecon import  utils,IterativeFFTParticleReconstruction,MultiGridReconstruction,setup_logging
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -52,6 +52,8 @@ bias = 1.8
 beta = 0.4
 ff = beta*bias
 
+setup_logging()
+
 if args.rectype == 'MG':
     recfunc = MultiGridReconstruction
 if args.rectype == 'IFT':
@@ -59,8 +61,9 @@ if args.rectype == 'IFT':
 
 def getrdz_fromxyz(cat):
     distance, ra, dec = utils.cartesian_to_sky(cat)
-    distance_to_redshift = utils.DistanceToRedshift(comoving_distance())
-    z = distance_to_redshift(distance)   
+    # DESI tabulated values go to z = 10. Do we want to go further?
+    distance_to_redshift = utils.DistanceToRedshift(comoving_distance, zmax=10)
+    z = distance_to_redshift(distance)
     return ra,dec,z 
     
 for reg in regl:
@@ -86,7 +89,7 @@ for reg in regl:
     ran_dis = comoving_distance(ran_cat[position_columns[2]])
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
-    recon = recfunc(f=0.8, bias=2.0,cellsize=4, los='local',positions=pos_ran,nthreads=int(args.nthreads))
+    recon = recfunc(f=0.8, bias=2.0, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
     print('grid set up')
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     print('data assigned')

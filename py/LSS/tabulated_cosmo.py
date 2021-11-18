@@ -40,6 +40,9 @@ class TabulatedDESI(object):
 
     def comoving_radial_distance(self, z):
         r"""Return comoving radial distance, in :math:`\mathrm{Mpc}/h`."""
+        z = np.asarray(z)
+        mask = (z < self._z[0]) | (z > self._z[-1])
+        if mask.any(): raise CosmologyError('Input z outside of tabulated range.')
         return np.interp(z, self._z, self._comoving_radial_distance, left=None, right=None)
 
 
