@@ -80,7 +80,7 @@ for reg in regl:
     ran_dis = comoving_distance(ran_cat[position_columns[2]])
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
-    recon = recfunc(f=0.8, bias=2.0, los='local',positions=pos_ran,nthreads=args.nthreads)
+    recon = recfunc(f=0.8, bias=2.0,cellsize=4, los='local',positions=pos_ran,nthreads=args.nthreads)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     recon.assign_randoms(pos_ran,ran_cat['WEIGHT'])
     recon.set_density_contrast()
