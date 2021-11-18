@@ -8,7 +8,7 @@ import numpy as np
 import yaml
 
 import fitsio
-from astropy.table import Table
+from astropy.table import Table,vstack
 
 import pyrecon
 from pyrecon import  utils,IterativeFFTParticleReconstruction,MultiGridReconstruction
