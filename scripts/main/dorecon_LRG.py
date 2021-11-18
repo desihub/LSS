@@ -16,7 +16,7 @@ from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 comoving_distance = cosmo.comoving_radial_distance
 
-
+parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
