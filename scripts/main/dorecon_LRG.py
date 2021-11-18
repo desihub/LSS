@@ -24,6 +24,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--nthreads",default=1)
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='MG')
 parser.add_argument("--convention",help="recsym or disp supported so far",default='recsym')
+parser.add_argument("--nran",help="how many of the random files to concatenate",default=5)
 
 
 args = parser.parse_args()
@@ -32,6 +33,8 @@ print(args)
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+nran = int(args.nran)
 
 
 maindir = basedir +'/main/LSS/'
@@ -62,18 +65,21 @@ def getrdz_fromxyz(cat):
     
 for reg in regl:
     fb = dirout+'LRGzdone'+reg
-    fcr = fb+'_0_clustering.ran.fits'
-    fcd = fb+'_clustering.dat.fits'
+
     
+    fcd = fb+'_clustering.dat.fits'    
     dat_cat = fitsio.read(fcd)
     seld = dat_cat['Z'] > zmin
     seld &= dat_cat['Z'] < zmax
     dat_cat = dat_cat[seld]
+    print('using '+str(len(dat_cat))+' data entries')
     
-    ran_cat = fitsio.read(fcr)
+    randoms_fn = [os.path.join(fb, '_{:d}_clustering.ran.fits'.format( iran)) for iran in range(nran)]
+    rancat = vstack([Table.read(fn) for fn in randoms_fn])
     selr = ran_cat['Z'] > zmin
     selr &= ran_cat['Z'] < zmax
     ran_cat = ran_cat[selr]
+    print('using '+str(len(ran_cat))+' random entries')
 
     dat_dis = comoving_distance(dat_cat[position_columns[2]])
     pos_dat = utils.sky_to_cartesian(dat_dis,dat_cat[position_columns[0]],dat_cat[position_columns[1]])
@@ -99,7 +105,7 @@ for reg in regl:
     
     positions_rec['randoms'] = pos_ran - recon.read_shifts(pos_ran, field='disp+rsd' if args.convention == 'recsym' else 'disp')
     
-    fcro = fb+'_0_clustering_recon.ran.fits'
+    fcro = fb+'_clustering_recon.ran.fits'
     fcdo = fb+'_clustering_recon.dat.fits'
     
     datt = Table(dat_cat)
