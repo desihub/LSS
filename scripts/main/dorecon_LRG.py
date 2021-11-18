@@ -95,7 +95,7 @@ for reg in regl:
     recon.set_density_contrast()
     print('density constrast calculated, now doing recon',flush=True)
     recon.run()
-    print('recon has been run')
+    print('recon has been run',flush=True)
     
     positions_rec = {}
     if args.rectype == 'IFT':
