@@ -75,7 +75,7 @@ for reg in regl:
     print('using '+str(len(dat_cat))+' data entries')
     
     randoms_fn = [fb+ '_{:d}_clustering.ran.fits'.format( iran) for iran in range(nran)]
-    rancat = vstack([Table.read(fn) for fn in randoms_fn])
+    ran_cat = vstack([Table.read(fn) for fn in randoms_fn])
     selr = ran_cat['Z'] > zmin
     selr &= ran_cat['Z'] < zmax
     ran_cat = ran_cat[selr]
