@@ -81,10 +81,15 @@ for reg in regl:
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
     recon = recfunc(f=0.8, bias=2.0,cellsize=4, los='local',positions=pos_ran,nthreads=args.nthreads)
+    print('grid set up')
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
+    print('data assigned')
     recon.assign_randoms(pos_ran,ran_cat['WEIGHT'])
+    print('randoms assigned')
     recon.set_density_contrast()
+    print('density constrast calculated, now doing recon')
     recon.run()
+    print('recon has been run')
     
     positions_rec = {}
     if args.rectype == 'IFT':
