@@ -21,8 +21,8 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--nthreads",default=1)
-parser.add_argument("rectype",help="IFT or MG supported so far",default='MG')
-parser.add_argument("convention",help="recsym or disp supported so far",default='recsym')
+parser.add_argument("--rectype",help="IFT or MG supported so far",default='MG')
+parser.add_argument("--convention",help="recsym or disp supported so far",default='recsym')
 
 
 args = parser.parse_args()
