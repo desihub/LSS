@@ -76,9 +76,9 @@ for reg in regl:
     ran_cat = ran_cat[selr]
 
     dat_dis = comoving_distance(dat_cat[position_columns[2]])
-    pos_dat = utils.sky_to_cartesian(distance,dat_cat[position_columns[0]],dat_cat[position_columns[1]])
+    pos_dat = utils.sky_to_cartesian(dat_dis,dat_cat[position_columns[0]],dat_cat[position_columns[1]])
     ran_dis = comoving_distance(ran_cat[position_columns[2]])
-    pos_ran = utils.sky_to_cartesian(distance,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
+    pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
     
     recon = recfunc(f=0.8, bias=2.0, los='local',positions=pos_ran,nthreads=args.nthreads)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
