@@ -7,6 +7,7 @@ import re
 import numpy as np
 import yaml
 
+import fitsio
 from astropy.table import Table
 
 import pyrecon
