@@ -73,7 +73,7 @@ for reg in regl:
     ran_cat = fitsio.read(fcr)
     selr = ran_cat['Z'] > zmin
     selr &= ran_cat['Z'] < zmax
-    ran_cat = ran_cat[seld]
+    ran_cat = ran_cat[selr]
 
     dat_dis = comoving_distance(dat_cat[position_columns[2]])
     pos_dat = utils.sky_to_cartesian(distance,dat_cat[position_columns[0]],dat_cat[position_columns[1]])
