@@ -1653,7 +1653,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.31519):
     
     cd = distance(om,1-om)
-    ranf = fitsio.read(fcr) #should have originally had 5000/deg2 density, so can convert to area
+    ranf = fitsio.read(fcr) #should have originally had 2500/deg2 density, so can convert to area
     area = len(ranf)/2500.
     print('area is '+str(area))
     
@@ -1669,7 +1669,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.31519):
         zh = zhist[1][i+1]
         zm = (zh+zl)/2.
         voli = area/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zl)**3.)
-        nbarz =  zhist[0][i]/voli#/fraca #don't upweight based on fraction not assigned any more
+        nbarz =  zhist[0][i]/voli
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
