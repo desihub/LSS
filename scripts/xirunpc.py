@@ -109,19 +109,19 @@ if survey == 'main':
     wa = 'zdone'
 
 def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
-    if ttype != 'LRGrec':
-        data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
-        data = Table.read(data_fn)
-
-        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
-        randoms = vstack([Table.read(fn) for fn in randoms_fn])
-    else:
+    if ttype == 'ELGrec' or ttype == 'LRGrec':
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
 
         randoms_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits') 
         randoms = Table.read(randoms_fn) 
-   
+    else:
+        data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
+        data = Table.read(data_fn)
+
+        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+        randoms = vstack([Table.read(fn) for fn in randoms_fn])
+  
     corrmode = mode
     if mode == 'wp':
         corrmode = 'rppi'
