@@ -46,10 +46,10 @@ dirout = ldirspec+'LSScats/'+version+'/'
 
 regl = ['_DN','_N']
 position_columns = ['RA','DEC','Z']
-zmin = 0.3
-zmax = 1.2
-bias = 1.8
-beta = 0.4
+zmin = 0.7
+zmax = 1.6
+bias = 1.
+beta = 0.6
 ff = beta*bias
 
 setup_logging()
@@ -67,7 +67,7 @@ def getrdz_fromxyz(cat):
     return ra,dec,z 
     
 for reg in regl:
-    fb = dirout+'LRGzdone'+reg
+    fb = dirout+'ELGzdone'+reg
 
     
     fcd = fb+'_clustering.dat.fits'    
