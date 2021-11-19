@@ -214,6 +214,7 @@ ranwt1=False
 regl = ['_N','_S','']
 
 tcorr = ttype
+tw = ttype
 if survey == 'main':
     regl = ['_DN','_DS','_N','_S','']
     if ttype == 'LRGrec':
