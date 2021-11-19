@@ -23,7 +23,7 @@ parser.add_argument("--nthreads",help="number of threads for parallel comp",defa
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 
 #only relevant for reconstruction
-parser.add_argument("--rectype",help="IFT or MG supported so far",default='MG')
+parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
 parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
 
 
@@ -111,10 +111,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms = vstack([Table.read(fn) for fn in randoms_fn])
     else:
-        data_fn = os.path.join(dirname, '{}{}_clustering_'+args.rectype+args.convention+'.dat.fits'.format(tracer+wa, region))
+        data_fn = os.path.join(dirname, tracer+wa+ region'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
 
-        randoms_fn = os.path.join(dirname, '{}{}_clustering_'+args.rectype+args.convention+'.ran.fits'.format(tracer+wa, region)) 
+        randoms_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits') 
         randoms = Table.read(randoms_fn) 
    
     corrmode = mode
