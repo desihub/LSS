@@ -106,10 +106,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms = vstack([Table.read(fn) for fn in randoms_fn])
     else:
-        data_fn = os.path.join(dirname, '{}{}_clustering_rec.dat.fits'.format(tracer+wa, region))
+        data_fn = os.path.join(dirname, '{}{}_clustering_recon.dat.fits'.format(tracer+wa, region))
         data = Table.read(data_fn)
 
-        randoms_fn = [os.path.join(dirname, '{}{}_clustering_rec.ran.fits'.format(tracer+wa, region)) ]
+        randoms_fn = [os.path.join(dirname, '{}{}_clustering_recon.ran.fits'.format(tracer+wa, region)) ]
         randoms = Table.read(fn) 
    
     corrmode = mode
