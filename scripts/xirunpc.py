@@ -99,10 +99,19 @@ if survey == 'main':
     wa = 'zdone'
 
 def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
-    data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
-    randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
-    data = Table.read(data_fn)
-    randoms = vstack([Table.read(fn) for fn in randoms_fn])
+    if ttype != 'LRGrec':
+		data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
+		data = Table.read(data_fn)
+
+		randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+		randoms = vstack([Table.read(fn) for fn in randoms_fn])
+    else:
+ 		data_fn = os.path.join(dirname, '{}{}_clustering_rec.dat.fits'.format(tracer+wa, region))
+		data = Table.read(data_fn)
+
+		randoms_fn = [os.path.join(dirname, '{}{}_clustering_rec.ran.fits'.format(tracer+wa, region)) ]
+		randoms = Table.read(fn) 
+   
     corrmode = mode
     if mode == 'wp':
         corrmode = 'rppi'
@@ -194,8 +203,13 @@ ranwt1=False
 
 regl = ['_N','_S','']
 
+tcorr = ttype
 if survey == 'main':
     regl = ['_DN','_DS','_N','_S','']
+    if ttype == 'LRGrec':
+        regl = ['_DN','_S']
+        tcorr = 'LRG'
+        
 
 nzr = len(zl)
 if len(zl) == 2:
@@ -210,7 +224,7 @@ for i in range(0,nzr):
     print(zmin,zmax)
     for reg in regl:
         print(reg)
-        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=ttype, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
         fo = open(dirxi+'xi024'+ttype+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
         for i in range(0,len(sep)):
             fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
