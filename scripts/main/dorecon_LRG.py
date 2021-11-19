@@ -23,7 +23,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--nthreads",default=1)
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='MG')
-parser.add_argument("--convention",help="recsym or disp supported so far",default='recsym')
+parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
 parser.add_argument("--nran",help="how many of the random files to concatenate",default=5)
 
 
@@ -102,14 +102,14 @@ for reg in regl:
     
     positions_rec = {}
     if args.rectype == 'IFT':
-        positions_rec['data'] = pos_dat - recon.read_shifts('data', field='disp+rsd')
+        positions_rec['data'] = pos_dat - recon.read_shifts('data')#, field='disp+rsd')
     else:
-        positions_rec['data'] = pos_dat - recon.read_shifts(pos_dat, field='disp+rsd')
+        positions_rec['data'] = pos_dat - recon.read_shifts(pos_dat)#, field='disp+rsd')
     
     positions_rec['randoms'] = pos_ran - recon.read_shifts(pos_ran, field='disp+rsd' if args.convention == 'recsym' else 'disp')
     
-    fcro = fb+'_clustering_recon.ran.fits'
-    fcdo = fb+'_clustering_recon.dat.fits'
+    fcro = fb+'_clustering_'+args.rectype+args.convention+'.ran.fits'
+    fcdo = fb+'_clustering_'+args.rectype+args.convention+'.dat.fits'
     
     datt = Table(dat_cat)
     ra,dec,z = getrdz_fromxyz(positions_rec['data'])
