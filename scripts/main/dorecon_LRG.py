@@ -44,7 +44,7 @@ ldirspec = maindir+specrel+'/'
 dirout = ldirspec+'LSScats/'+version+'/'
 
 
-regl = ['_S','_DN','_N']
+regl = ['_DN','_N']
 position_columns = ['RA','DEC','Z']
 zmin = 0.3
 zmax = 1.2
