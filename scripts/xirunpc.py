@@ -43,6 +43,11 @@ if args.bintype == 'lin':
     bine = np.linspace(1e-4, 200, 40)
 
 dirxi = os.environ['CSCRATCH']+'/'+survey+'xi/'
+
+if not os.path.exists(dirxi):
+    os.mkdir(dirxi)
+    print('made '+dirxi) 
+
 lssdir = basedir+'/'+survey+'/LSS/'+specrel+'/LSScats/'
 dirname = lssdir + version
 #dirout = svdir+'LSScats/'+version+'/'
@@ -214,6 +219,7 @@ if survey == 'main':
     if ttype == 'LRGrec':
         regl = ['_DN','_N']
         tcorr = 'LRG'
+        tw = 'LRG'+args.rectype+args.convention
         
 
 nzr = len(zl)
@@ -230,7 +236,7 @@ for i in range(0,nzr):
     for reg in regl:
         print(reg)
         (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-        fo = open(dirxi+'xi024'+tcorr+args.rectype+args.convention+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
+        fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
         for i in range(0,len(sep)):
             fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
         fo.close()
