@@ -221,6 +221,10 @@ if survey == 'main':
         regl = ['_DN','_N']
         tcorr = 'LRG'
         tw = 'LRG'+args.rectype+args.convention
+    if ttype == 'ELGrec':
+        regl = ['_DN','_N']
+        tcorr = 'ELG'
+        tw = 'ELG'+args.rectype+args.convention
         
 
 nzr = len(zl)
