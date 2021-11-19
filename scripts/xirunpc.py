@@ -135,10 +135,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     def get_positions_weights(catalog, name='data'):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
         positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
-        if weight_type is None:
-            weights = None
-        else:
-            weights = np.ones_like(positions[0])
+        #if weight_type is None:
+        #    weights = None
+        #else:
+        weights = np.ones_like(positions[0])
         if name == 'data':
             if 'photometric' in weight_type:
                 rfweight = RFWeight(tracer=tracer)
