@@ -110,7 +110,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         data = Table.read(data_fn)
 
         randoms_fn = [os.path.join(dirname, '{}{}_clustering_recon.ran.fits'.format(tracer+wa, region)) ]
-        randoms = Table.read(fn) 
+        randoms = Table.read(randoms_fn) 
    
     corrmode = mode
     if mode == 'wp':
