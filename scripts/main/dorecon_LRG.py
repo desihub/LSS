@@ -88,8 +88,10 @@ for reg in regl:
     pos_dat = utils.sky_to_cartesian(dat_dis,dat_cat[position_columns[0]],dat_cat[position_columns[1]])
     ran_dis = comoving_distance(ran_cat[position_columns[2]])
     pos_ran = utils.sky_to_cartesian(ran_dis,ran_cat[position_columns[0]],ran_cat[position_columns[1]])
-    
-    recon = recfunc(f=0.8, bias=2.0, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
+    if args.rectype == 'IFT':
+        recon = recfunc(f=0.8, bias=2.0, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
+    if args.rectype == 'MG':
+        recon = recfunc(f=0.8, bias=2.0, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads))
     print('grid set up',flush=True)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     print('data assigned',flush=True)
