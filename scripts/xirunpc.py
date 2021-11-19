@@ -100,17 +100,17 @@ if survey == 'main':
 
 def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
     if ttype != 'LRGrec':
-		data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
-		data = Table.read(data_fn)
+        data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
+        data = Table.read(data_fn)
 
-		randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
-		randoms = vstack([Table.read(fn) for fn in randoms_fn])
+        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+        randoms = vstack([Table.read(fn) for fn in randoms_fn])
     else:
- 		data_fn = os.path.join(dirname, '{}{}_clustering_rec.dat.fits'.format(tracer+wa, region))
-		data = Table.read(data_fn)
+        data_fn = os.path.join(dirname, '{}{}_clustering_rec.dat.fits'.format(tracer+wa, region))
+        data = Table.read(data_fn)
 
-		randoms_fn = [os.path.join(dirname, '{}{}_clustering_rec.ran.fits'.format(tracer+wa, region)) ]
-		randoms = Table.read(fn) 
+        randoms_fn = [os.path.join(dirname, '{}{}_clustering_rec.ran.fits'.format(tracer+wa, region)) ]
+        randoms = Table.read(fn) 
    
     corrmode = mode
     if mode == 'wp':
