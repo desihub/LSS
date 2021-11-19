@@ -207,7 +207,7 @@ tcorr = ttype
 if survey == 'main':
     regl = ['_DN','_DS','_N','_S','']
     if ttype == 'LRGrec':
-        regl = ['_DN','_S']
+        regl = ['_DN','_N']
         tcorr = 'LRG'
         
 
