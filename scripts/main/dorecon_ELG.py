@@ -91,7 +91,7 @@ for reg in regl:
     if args.rectype == 'IFT':
         recon = recfunc(f=ff, bias=bias, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
     if args.rectype == 'MG':
-        recon = recfunc(f=ff, bias=bias, cellsize=10, los='local', positions=pos_ran, nthreads=int(args.nthreads))
+        recon = recfunc(f=ff, bias=bias, cellsize=9, los='local', positions=pos_ran, nthreads=int(args.nthreads))
     print('grid set up',flush=True)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     print('data assigned',flush=True)
