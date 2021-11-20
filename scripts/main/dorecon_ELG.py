@@ -91,13 +91,13 @@ for reg in regl:
     if args.rectype == 'IFT':
         recon = recfunc(f=ff, bias=bias, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads), fft_engine='fftw')
     if args.rectype == 'MG':
-        recon = recfunc(f=ff, bias=bias, cellsize=7, los='local',ran_min=.1, positions=pos_ran, nthreads=int(args.nthreads))
+        recon = recfunc(f=ff, bias=bias, cellsize=7, los='local', positions=pos_ran, nthreads=int(args.nthreads))
     print('grid set up',flush=True)
     recon.assign_data(pos_dat,dat_cat['WEIGHT'])
     print('data assigned',flush=True)
     recon.assign_randoms(pos_ran,ran_cat['WEIGHT'])
     print('randoms assigned',flush=True)
-    recon.set_density_contrast()
+    recon.set_density_contrast(ran_min=0.1)
     print('density constrast calculated, now doing recon',flush=True)
     recon.run()
     print('recon has been run',flush=True)
