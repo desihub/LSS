@@ -1,0 +1,16 @@
+1) The catalogs I have are stored here:
+    /global/cscratch1/sd/avariu/desi/ABACUS_2GPC
+    /global/cscratch1/sd/avariu/desi/UNIT_3GPC/sv3_v1.0_mycosmo/h5py/
+
+2) Prepare mocks into a format that can be interpreted by fiber assigment, unifying QSO, ELG and LRGs (dark time)
+OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits'
+
+3) Run fba_run in mocks:
+fba_run --targets targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks
+
+4) RuNING mkCAT
+python mkMock_SV3.py --type dark --verspec mock --mockmtl y
+
+5) Finally, run for LRG as:
+python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y 
+
