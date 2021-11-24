@@ -17,7 +17,6 @@ from desimodel.footprint import is_point_in_desi
 from desitarget.sv3 import sv3_targetmask
 
 #from this package
-import LSS.SV3.cattools as ct
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 
@@ -29,23 +28,13 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
-parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
 parser.add_argument("--xi", help="run pair-counting code",default='n')
-parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--mockmtl", help="make a mock mtl file for the tile",default='n')
-parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combd", help="combine all the tiles together",default='y')
-parser.add_argument("--combr", help="combine the random tiles together",default='n')
-parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
-parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
-parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -74,43 +63,20 @@ if args.maskz == 'y':
 ctar = False
 if args.cuttar == 'y':
     ctar = True
-cran = False
-if args.cutran == 'y':
-    cran = True
 docatplots = False
 if args.vis == 'y':
     docatplots = True
 doclus = False
 if args.xi == 'y':    
     doclus = True
-mkranmtl = False
-if args.ranmtl == 'y':
-    mkranmtl = True
-runrfa = True#run randoms through fiberassign
-if args.rfa == 'n':
-    runrfa = False
-remake_dtile = True
-if args.redodt == 'n':
-    remake_dtile = False
-
-mkdtiles = False #not really necessary anymore
-if args.dodt == 'y':
-    mkdtiles = True
-
 mkfulld = True #make the 'full' catalog containing info on everything physically reachable by a fiber
 if args.fulld == 'n':
     mkfulld = False
-mkfullr = True #make the random files associated with the full data files
-if args.fullr == 'n':
-    mkfullr = False
 mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
 mkclusdat = True
-mkclusran = False
 if args.clus == 'n':
     mkclus = False
     mkclusdat = False
-if args.clusran == 'y':
-    mkclusran = True
 mknz = False #get n(z) for type and all subtypes
 if args.nz == 'y':
     mknz = True
@@ -120,10 +86,6 @@ fillNZ = False
 combd = True
 if args.combd == 'n':
     combd = False
-combr = True
-if args.combr == 'n':
-    combr = False   
-
 mkmockmtl = False
 if args.mockmtl == 'y':
     mkmockmtl = True
@@ -163,28 +125,8 @@ tiles = SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
 ebits = SV3p.ebits #extra mask bits we think should be applied
 
-#mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'
-#tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
-#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
-#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv ')
-#wdone = mtld['ZDONE'] == 'true'
-#mtld = mtld[wdone]
-#tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-#change imaging bits to just what was applied to targeting
-#ebits = None
-#if type[:3] == 'BGS':
-#    imbits = [1,13]
-#else:
-#    imbits = [1,12,13]
-#    if type[:3] == 'LRG' or type[:3] == 'QSO':
-#        ebits = [8,9,11]    
-#    if type[:3] == 'ELG' or type[:3] == 'BGS':
-#        ebits = [11]    
-
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = os.path.join(basedir,'SV3', 'LSS')
-
-
 
 #tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
 
@@ -198,43 +140,15 @@ print(len(mtld))
 
 
 test_dir(os.path.join(sv3dir,'logs'))
-'''if not os.path.exists(sv3dir+'/logs'):
-    os.mkdir(sv3dir+'/logs')
-    print('made '+sv3dir+'/logs')'''
 
 ldirspec = os.path.join(sv3dir, specrel)
 test_dir(ldirspec)
-'''ldirspec = sv3dir+specrel+'/'
-if not os.path.exists(ldirspec):
-    os.mkdir(ldirspec)
-    print('made '+ldirspec)'''
 
 test_dir(os.path.join(ldirspec,'LSScats'))
-'''if not os.path.exists(ldirspec+'LSScats'):
-    os.mkdir(ldirspec+'LSScats')
-    print('made '+ldirspec+'LSScats')'''
 
 dirout = os.path.join(ldirspec,'LSScats', version)
 test_dir(dirout)
-'''dirout = ldirspec+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    print('made '+dirout)'''
 
-randir = os.path.join(sv3dir, 'random')
-#randir = sv3dir+'random'
-rm = int(args.minr)
-rx = int(args.maxr)
-print(rm,rx)
-for i in range(rm,rx):
-    test_dir(os.path.join(sv3dir, 'random'+str(i)))
-    print('made '+str(i)+' random directory')
-
-#logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
-'''for i in range(rm,rx):
-    if not os.path.exists(sv3dir+'random'+str(i)):
-        os.mkdir(sv3dir+'random'+str(i))
-        print('made '+str(i)+' random directory')'''
 
 tiles_ta_file = os.path.join(sv3dir, 'tiles-'+pr+'.fits')
 #construct a table with the needed tile information
@@ -279,15 +193,6 @@ else:
         #if pd == 'dark':
         ta['OBSCONDITIONS'] = 15
         ta['IN_DESI'] = 1
-        '''
-        ttf = Table() #to write out to use for fiberassign all at once
-        ttf['TILEID'] = tilel
-        ttf['RA'] = ral
-        ttf['DEC'] = decl
-        ttf['OBSCONDITIONS'] = 15
-        ttf['IN_DESI'] = 1
-        ttf['PROGRAM'] = 'SV3'
-        '''
         ta.write(tiles_ta_file, format='fits', overwrite=True)
 
     else:
@@ -301,9 +206,9 @@ maxd = 68
 my_path = '/global/cscratch1/sd/acarnero/fiberassign'
 target_file = os.path.join(my_path, 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits')
 
-cutsv3_target_file = os.path.join(sv3dir,'alltilesnofa.fits')
+cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa.fits')
 
-if ctar:
+if ctar and not cutsv3_target_file:
     ffile, h = fitsio.read(target_file, header=True)
 
     print('targets before anything', len(ffile))
@@ -321,117 +226,22 @@ if ctar:
     fitsio.write(cutsv3_target_file, ffile, clobber=True, header=h)
     print('wrote '+cutsv3_target_file+' from '+target_file)
     target_file = cutsv3_target_file
+else:
+    print('targets selected in tile already')
+    target_file = cutsv3_target_file
 
-    '''
-    tard = read_targets_in_tiles(mdir,tiles,mtl=True,isodate='2021-04-06T00:00:00') #this date should be after initial creation and before 1st update
-    print('read in mtl targets')
-    print('should be 0 '+str(np.unique(tard['NUMOBS'])))
-    minr = np.min(tard['RA'])-1
-    maxr = np.max(tard['RA'])+1
-    mind = np.min(tard['DEC'])-1
-    maxd = np.max(tard['DEC'])+1
 
-    tardi = inflate_ledger(tard,tdir)
-    tardi = Table(tardi)
-    tardi.write(sv3dir+pdir+'_targets.fits',overwrite=True,format='fits')
-    print('wrote inflated ledger target file to '+sv3dir+pdir+'_targets.fits')
-    del tardi
-    del tard
-    '''
-
-if cran:
-    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-    for ii in range(rm,rx):
-        ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
-        print(len(ranf))
-        #if ctar:
-        wp = ranf['RA'] > minr
-        wp &= ranf['RA'] < maxr
-        wp &= ranf['DEC'] > mind
-        wp &= ranf['DEC'] < maxd
-        ranf = ranf[wp]
-        print(len(ranf))
-        tilesall = tiles #Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-        tilesu = unique(tilesall,keys=['RA','DEC'])                
-        wi = is_point_in_desi(tilesu, ranf["RA"], ranf["DEC"])
-        ranf = ranf[wi]
-        fitsio.write(sv3dir+'random'+str(ii)+'/alltilesnofa.fits',ranf,clobber=True)
-        print('wrote '+sv3dir+'random'+str(ii)+'/alltilesnofa.fits')
-
-if mkranmtl:
-    ct.randomtiles_allSV3(ta,imin=rm,imax=rx)
-    
 if mkmockmtl:
+    test_dir('./atest')
     myct.randomtiles_allSV3(ta, target_file, directory_output='./atest')
 
-if runrfa:
-    print('DID YOU DELETE THE OLD FILES!!!')
-    for ii in range(0,len(mtld)):
-        tile = mtld['TILEID'][ii]
-        ts = str(tile).zfill(6)
-        fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        dt = fbah['RUNDATE']
-        ttemp = Table(ta[ii])
-        ttemp['OBSCONDITIONS'] = 516
-        ttemp['IN_DESI'] = 1
-        ttemp.write('tiletemp.fits',format='fits', overwrite=True)
-        for i in range(rm,rx):
-            testfbaf = randir+str(i)+'/fba-'+str(tile).zfill(6)+'.fits'
-            if os.path.isfile(testfbaf):
-                print('fba file already made')
-            else:                   
-                fa.getfatiles(randir+str(i)+'/tilenofa-'+str(tile)+'.fits','tiletemp.fits',dirout=randir+str(i)+'/',dt = dt)
-
-if mkdtiles:
-    #for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
-    for tile,zdate in zip(mtld['TILEID'],mtld['LASTNIGHT']): 
-        ffd = dirout+'ALL'+str(tile)+'_full.dat.fits'
-        if os.path.isfile(ffd) and remake_dtile == False:
-            print(ffd +' file already made and remakes not requested')
-        else:
-            zdate = str(zdate)
-            tspec = ct.combspecdata(tile,zdate)
-            pdict,goodloc = ct.goodlocdict(tspec)
-            wloc = (np.isin(tspec['LOCATION'],goodloc))
-            tspec = tspec[wloc]
-            ts = str(tile).zfill(6)
-            fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-            wt = ta['TILEID'] == tile
-            tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-            
-            ftar = Table.read(sv3dir+pdir+'_targets.fits')
-            ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
-            'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
-            'FRACIN_Z','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','FLUX_W1',\
-            'FLUX_W2','FLUX_IVAR_W1','FLUX_IVAR_W2','MW_TRANSMISSION_W1','MW_TRANSMISSION_W2','ALLMASK_G','ALLMASK_R','ALLMASK_Z','FIBERFLUX_G',\
-            'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
-            'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
-            ol = len(tars)
-            tars = join(tars,ftar,keys=['TARGETID'])
-            print('lengths after join:'+str(ol),len(tars))
-            #tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
-            tars = join(tars,tspec,keys=['TARGETID'],join_type='left')
-            tout = ct.gettarinfo_type(fbaf,tars,goodloc,pdict)
-            #tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
-            print(tout.dtype.names)
-            wz = tout['ZWARN']*0 == 0
-            wzg = tout['ZWARN'] == 0
-            print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
-        
-            tout.write(ffd,format='fits', overwrite=True) 
-            print('wrote matched targets/redshifts to '+ffd)
-            #logf.write('made full data files\n')
-
-debug=True
+debug=False
 if combd:
     if type == 'dark' or type == 'bright':
 
         outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles.fits')
         if not debug:
-            myct.combtiles_wdup(ta, ['./atest', 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'aure000{TILE}.fits'] , fout=outf)
+            myct.combtiles_wdup(ta, ['./atest', 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks000{TILE}.fits'] , fout=outf)
 
         print('yeah!')
         tarf = Table.read(outf)
@@ -455,7 +265,7 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-            
+        '''            
         elif specrel == 'daily':
             outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
             ct.combtile_spec(mtld,outf,rel=specrel)
@@ -469,11 +279,11 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-
+        '''
         elif specrel == 'mock':
             outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
             if not debug:
-                myct.combtile_specmock(ta, ['./fiberassigment', 'aure000{TILE}.fits'], cutsv3_target_file, outfile_spec)
+                myct.combtile_specmock(ta, ['./fiberassigment', 'mocks000{TILE}.fits'], target_file, outfile_spec)
             specf = Table.read(outfile_spec)
             specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PLATE_RA','PLATE_DEC','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -496,19 +306,6 @@ if combd:
         print('ole')
     else:
         print('nothing to be done for combd, only done for dark/bright now')
-
-print('end here')
-if combr:
-    #print(len(mtld['TILEID']))
-    if type == 'dark' or type == 'bright':
-        for i in range(rm,rx):
-            #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
-            ct.combran_wdup(mtld,i,randir,type,sv3dir)
-            tc = ct.count_tiles_better('ran',pdir,i)
-            tc.write(randir+str(i)+'/rancomb_'+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
-    else:
-        print('nothing to be done for combr, only done for dark/bright now')
-        
         
         
 if mkfulld:
@@ -523,7 +320,6 @@ if mkfulld:
         specf = Table.read(outfile_spec)
 
 
-    #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
     if type[:3] == 'ELG':
         azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
@@ -555,12 +351,6 @@ if mkfulld:
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
-if mkfullr:
-    for ii in range(rm,rx):
-        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
-    #logf.write('ran mkfullran\n')
-    #print('ran mkfullran\n')
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
@@ -579,24 +369,6 @@ if mkclusdat:
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
-if mkclusran:
-    print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 800
-
-    for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)
-    #logf.write('ran mkclusran\n')
-    #print('ran mkclusran\n')
     
 if mknz:
     wzm = ''
@@ -625,6 +397,6 @@ if mknz:
             dz = 0.02
             zmin = 0.01
             zmax = 1.61
-        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
+        myct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        myct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
         

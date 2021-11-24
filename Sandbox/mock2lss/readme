@@ -3,14 +3,33 @@
     /global/cscratch1/sd/avariu/desi/UNIT_3GPC/sv3_v1.0_mycosmo/h5py/
 
 2) Prepare mocks into a format that can be interpreted by fiber assigment, unifying QSO, ELG and LRGs (dark time)
+>> prepare_files_SV3-UNITmocks_fromhdf5.py 
 OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits'
 
 3) Run fba_run in mocks:
-fba_run --targets targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks
+fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks
 
 4) RuNING mkCAT
-python mkMock_SV3.py --type dark --verspec mock --mockmtl y
+>> python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y
 
 5) Finally, run for LRG as:
 python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y 
+
+
+----------------
+
+For randoms:
+
+2) Prepare randoms for fiber assigment (we will only use FAVAIL, therefore, it doesnt matter if they are together or not):
+>> python prepare_files_SV3-UNITmocks_fromhdf5_randoms.py 
+OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits'
+
+3) Run fba_run in randoms:
+fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_random1 --prefix ran1
+
+4) RuNING mkCAT
+>> python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y
+
+5) Finally, for the LRG as:
+>> python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y
 

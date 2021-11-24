@@ -115,6 +115,62 @@ def calc_rosr(rosn,ra,dec):
         print(rosn,ra,dec,rac,decc)
     return ad
 
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.31519):
+    
+    cd = distance(om,1-om)
+    ranf = fitsio.read(fcr) #should have originally had 2500/deg2 density, so can convert to area
+    area = len(ranf)/2500.
+    print('area is '+str(area))
+    
+    df = fitsio.read(fcd)
+    
+    nbin = int((zmax-zmin)/bs)
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
+    outf = open(fout,'w')
+    outf.write('#area is '+str(area)+'square degrees\n')
+    outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+    for i in range(0,nbin):
+        zl = zhist[1][i]
+        zh = zhist[1][i+1]
+        zm = (zh+zl)/2.
+        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(cd.dc(zh)**3.-cd.dc(zl)**3.)
+        nbarz =  zhist[0][i]/voli
+        outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
+    outf.close()
+
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
+    nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
+    fn = fb+'_clustering.dat.fits'
+    fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+    zl = fd['Z']
+    nl = np.zeros(len(zl))
+    for ii in range(0,len(zl)):
+        z = zl[ii]
+        zind = int((z-zmin)/bs)
+        if z > zmin and z < zmax:
+            nl[ii] = nzd[zind]
+    del fd
+    ft = Table.read(fn)
+    ft['NZ'] = nl
+    ft.write(fn,format='fits',overwrite=True)        
+    print('done with data')
+    for rann in range(0,nran):
+        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
+        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+        zl = fd['Z']
+        nl = np.zeros(len(zl))
+        for ii in range(0,len(zl)):
+            z = zl[ii]
+            zind = int((z-zmin)/bs)
+            if z > zmin and z < zmax:
+                nl[ii] = nzd[zind]
+        del fd
+        ft = Table.read(fn)
+        ft['NZ'] = nl
+        ft.write(fn,format='fits',overwrite=True)      
+        print('done with random number '+str(rann))  
+    return True        
+
 #Reading the target file, create a file per tile, with duplicates of the targets
 def randomtiles_allSV3(tiles, mytargets, directory_output='.'):
 #AURE def randomtiles_allSV3(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random',imin=0,imax=18):
@@ -756,3 +812,223 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #    ff[wn].write(outfn,format='fits', overwrite=True)
 #    outfn = fl+wzm+'S_clustering.dat.fits'
 #    ff[~wn].write(outfn,format='fits', overwrite=True)
+
+def combran_wdup(tiles, randir, tp, sv3dir, specf, keepcols=[]):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+
+    outf = os.path.join(randir, 'rancomb_'+tp+'wdup_Alltiles.fits')
+    '''
+    if os.path.isfile(outf):
+        fgu = Table.read(outf)
+        #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
+        s = 1
+        tdone = np.unique(fgu['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+    '''
+    tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile in tiles[tmask]['TILEID']:
+        ffa = os.path.join('fba_random1', 'ran1' +str(tile).zfill(6)+'.fits')
+        ffna = os.path.join('mtlran', 'tilenofa-'+str(tile)+'.fits') #tilenofa-382.fits
+        if os.path.isfile(ffa):
+            fa = Table.read(ffa, hdu='FAVAIL')
+            ffna = Table.read(ffna)
+            fgun = join(fa,ffna,keys=['TARGETID'])
+            #fgun.remove_columns(delcols)
+
+            td += 1
+            fgun['TILEID'] = int(tile)
+            fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
+            if s == 0:
+                fgu = fgun
+                s = 1
+            else:
+                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+            fgu.sort('TARGETID')
+            print(tile, len(fa), len(ffna),len(fgun))
+            print('size fgu ',len(fgu))
+        else:
+            print('did not find '+ffa)
+
+    if len(tiles[tmask]['TILEID']) > 0:
+        fgu.write(outf,format='fits', overwrite=True)
+    #specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    specf.keep_columns(keepcols)
+    #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'])
+    fgu.sort('TARGETID')
+    outf = os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')
+    print(outf)
+    fgu.write(outf,format='fits', overwrite=True)
+
+
+def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
+    '''
+    indir is directory with inputs
+    rann is the random file number (0-17)
+    imbits are the maskbits for the imaging veto mask
+    outf is the name (including full path) of the output file
+    tp is the target type
+    pd is the program, dark or bright
+    bit is the bit to use to select to the target type
+    randir doesn't get used anymore
+    desitarg is the column to use to select the target type
+    tsnr is the tsnr2 used for this sample
+    '''
+
+    #first, need to find locations to veto based on data
+    #the same is done in mkfulldat
+    #fs = fitsio.read(indir+'datcomb_'+pd+'_specwdup_Alltiles.fits')
+    wf = fs[fbcol] == 0
+    stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    gtl = np.unique(stlid[wf])
+    #gtl now contains the list of good locations
+    #we now want to load in the bigger data file with all the target info
+    #we use it to find the locations where observations of the given type were not possible and then mask them
+    zf = os.path.join(indir,'datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
+    #datcomb_dark_tarspecwdup_Alltiles.fits
+    dz = Table.read(zf)
+    wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & qsobit) == 0)
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wtype&wg]
+    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    lznp = find_znotposs(dz)
+    #lznp will later be used to veto
+    #load in random file
+
+    zf = os.path.join(indir,'rancomb_'+pd+'wdupspec_Alltiles.fits')
+    dz = Table.read(zf)
+    #load in tileloc info for this random file and join it
+    zfpd = os.path.join(randir,'rancomb_'+pd+'_Alltilelocinfo.fits')
+    dzpd = Table.read(zfpd)
+    dz = join(dz,dzpd,keys=['TARGETID'])
+    print('length before cutting to good positions '+str(len(dz)))
+    #cut to good and possible locations
+    wk = ~np.isin(dz['TILELOCID'],lznp)
+    wk &= np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wk]
+    dz['LOCATION_ASSIGNED'] = np.ones(len(dz))#.astype('bool')
+    #dz['LOCATION_ASSIGNED'] = 1
+
+    print('length after cutting to good positions '+str(len(dz)))
+    #get all the additional columns desired from original random files through join
+    tarf = Table.read(os.path.join(randir,'alltilesnofa_random1.fits'))
+    delcols = ['RA','DEC','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','NUMOBS_INIT',\
+    'NUMOBS_MORE','PRIORITY']
+    tarf.remove_columns(delcols)
+    dz = join(dz,tarf,keys=['TARGETID'])
+
+    #apply imaging vetos
+    #dz = cutphotmask(dz,imbits)
+    print('length after cutting to based on imaging veto mask '+str(len(dz)))
+    #sort by tsnr, like done for data, so that the highest tsnr are kept
+#    dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+#    dz['LOCATION_ASSIGNED'][wz] = 1
+
+    dz.sort(tsnr)
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+    print('length after cutting to unique TARGETID '+str(len(dz)))
+    dz['rosette_number'] = 0
+    dz['rosette_r'] = 0
+    for ii in range(0,len(dz)):
+        rosn = tile2rosette(dz[ii]['TILEID'])
+        rosd = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC']) #calculates distance in degrees from the rosette center
+        dz[ii]['rosette_number'] = rosn
+        dz[ii]['rosette_r'] = rosd
+    print(np.unique(dz['NTILE']))
+    dz.write(outf,format='fits', overwrite=True)
+
+
+def mkclusran(dirout, tp, str_notqso, rcols=['Z','WEIGHT'], zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
+    '''
+    fl is the root of our catalog file names
+    rann is the random number
+    rcols are the columns that we randomly select from the data file
+    zmask is whether or not we mask out certain redshift
+    tsnrcut is the tsnr2 value below which we discard data
+    tsnrcol is the specific column used for the tsnrcut
+    '''
+    #fl = dirout+type+notqso+'_'
+    wzm = ''
+    if zmask:
+        wzm = 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'
+    if ccut is not None:
+        wzm += ccut+'_'  #you could change this to however you want the file names to turn out
+
+    #load in data clustering catalog
+    fcd = Table.read(os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering.dat.fits'))
+    #load in full random file
+    ffr = Table.read(os.path.join(dirout,tp+str_notqso+'_full_noveto.ran.fits'))
+    ffr['Z']=ffr['TRUEZ']
+    ffr.remove_columns(['TRUEZ'])
+
+#    LRG_full_noveto.ran.fits
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ffr)))
+        ffr = cutphotmask(ffr,ebits)
+        print('number after imaging mask '+str(len(ffr)))
+        ffr.write(os.path.join(dirout,tp+str_notqso+'_full.ran.fits'),overwrite=True,format='fits')
+
+    #mask mask on tsnr
+#    wz = ffr[tsnrcol] > tsnrcut
+    wz = np.ones(len(ffr)).astype('bool')
+    ffc = ffr[wz]
+#    print('length after,before tsnr cut:')
+#    print(len(ffc),len(ffr))
+    #apply any cut on rosette radius
+    if rcut is not None:
+        wr = ffc['rosette_r'] > rcut[0]
+        wr &= ffc['rosette_r'] <  rcut[1]
+        print('length before rosette radius cut '+str(len(ffc)))
+        ffc = ffc[wr]
+        print('length after rosette radius cut '+str(len(ffc)))
+    #apply cut on ntile
+    if ntilecut > 0:
+        print('length before ntile cut '+str(len(ffc)))
+        wt = ffc['NTILE'] > ntilecut
+        ffc = ffc[wt]
+        print('length after ntile cut '+str(len(ffc)))
+
+
+    #randomly sample data rows to apply redshifts, weights, etc. to randoms
+    inds = np.random.choice(len(fcd),len(ffc))
+    dshuf = fcd[inds]
+    for col in rcols:
+        ffc[col] = dshuf[col]
+    #cut to desired small set of columns and write out files, splitting N/S as well
+#    wn = ffc['PHOTSYS'] == 'N'
+    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
+    outf =  os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering.ran.fits')
+    ffc.write(outf,format='fits', overwrite=True)
+#    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
+#    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+#    ffcn = ffc[wn]
+#    inds = np.random.choice(len(fcdn),len(ffcn))
+#    dshuf = fcdn[inds]
+#    for col in rcols:
+#        ffcn[col] = dshuf[col]
+#    ffcn.write(outfn,format='fits', overwrite=True)
+
+#    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits'
+#    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+#    ffcs = ffc[~wn]
+#    inds = np.random.choice(len(fcds),len(ffcs))
+#    dshuf = fcds[inds]
+#    for col in rcols:
+#        ffcs[col] = dshuf[col]
+#    ffcs.write(outfs,format='fits', overwrite=True)
+
+
