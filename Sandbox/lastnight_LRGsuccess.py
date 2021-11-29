@@ -80,7 +80,7 @@ for tid in tidl:
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
-                nzl[pt].append(z)
+                nzls[pt].append(z)
             else:
                 print('no good lrg data')  
         else:
@@ -96,7 +96,7 @@ print(tzs)
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
     for pt in range(0,10):
-        nzp = np.concatenate(nzl[pt])
+        nzp = np.concatenate(nzls[pt])
         plt.hist(nzp,range=(0.01,1.4),bins=28)
         plt.title('petal '+str(pt))
         plt.xlabel('Z')
