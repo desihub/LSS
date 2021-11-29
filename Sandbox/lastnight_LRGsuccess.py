@@ -8,7 +8,9 @@ from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
+parser.add_argument("--plotnz",default='y')
 args = parser.parse_args()
+
 
 month = args.night[:6]
 #get the right tileids
@@ -54,8 +56,11 @@ tz = np.zeros(10)
 
 zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
+nzls 
+ = {x: [] for x in range(0,10)}
 for tid in tidl:
     for pt in range(0,10):
+        
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
         if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
@@ -76,6 +81,7 @@ for tid in tidl:
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
+                nzl[pt].append(z)
             else:
                 print('no good lrg data')  
         else:
@@ -87,3 +93,12 @@ print(tz)
 tzs = gz/tz
 print('the total fraction of good LRG z per petal for the night is:')
 print(tzs)
+
+if args.plotnz == 'y':
+    from matplotlib import pyplot as plt
+    for pt in range(0,10):
+        nzp = np.concatenate(nzl[pt])
+        plt.hist(nzp,range=(0.01,1.4),bins=28)
+        plt.title('petal '+str(pt))
+        plt.xlabel('Z')
+        plt.show()
