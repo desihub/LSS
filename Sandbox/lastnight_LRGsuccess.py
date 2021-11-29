@@ -80,7 +80,7 @@ for tid in tidl:
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
-                nzls[pt].append(z)
+                nzls[pt].append(zmtlf['Z'])
             else:
                 print('no good lrg data')  
         else:
