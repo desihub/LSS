@@ -56,8 +56,7 @@ tz = np.zeros(10)
 
 zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
-nzls 
- = {x: [] for x in range(0,10)}
+nzls = {x: [] for x in range(0,10)}
 for tid in tidl:
     for pt in range(0,10):
         
