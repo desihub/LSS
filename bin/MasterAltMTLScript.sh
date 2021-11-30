@@ -1,4 +1,6 @@
 #!/bin/bash
+#All Boolean True/False parameters are 0 for False or 1 for True
+#So python interprets them correctly
 
 #Options for InitializeAltMTLs
 
@@ -14,7 +16,7 @@ obscon='DARK'
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
-printf -v outputMTLDirBase "/global/cscratch1/sd/jlasker/TestGeneralizedAltMTLScripts/alt_mtls_masterScriptTest_%03ddirs/" $ndir
+printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs/" $ndir
 hpListFile='SV3HPList.txt'
 #These two options only are considered if the obscon is bright
 #First option indicates whether to shuffle the top level priorities
@@ -31,7 +33,7 @@ exampleledgerbase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 qR=0
 #Number of observation dates to loop through
 #Defaults to 40 dates for SV3
-NObsDates=1 #40 
+NObsDates=40 
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Defaults to 1 for 64 directories
