@@ -1,35 +1,29 @@
-from desitarget import io 
-from desitarget import mtl
 import astropy.io.fits as pf
 from astropy.table import Table,join,unique,vstack
-from desitarget import mtl
-from desitarget.targets import initial_priority_numobs
-from desitarget.targetmask import obsconditions, obsmask
-from desitarget.targetmask import desi_mask
-from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
-import numpy as np
-import matplotlib.pyplot as plt
-import sys
-from numpy import random as rand
 import desitarget
-import numpy.lib.recfunctions as rfn
-import fitsio
-import subprocess
-import os
-from desiutil.log import get_logger
+from desitarget import io, mtl
+from desitarget.cuts import random_fraction_of_trues
+from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+from desitarget.targets import initial_priority_numobs, decode_targetid
+from desitarget.targetmask import obsconditions, obsmask
+from desitarget.targetmask import desi_mask, bgs_mask, mws_mask
+from desiutil.log import get_logger
+import fitsio
+from LSS.bitweights import pack_bitweights
 from LSS.SV3.fatools import get_fba_fromnewmtl
 import LSS.SV3.fatools as fatools
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger
-from desitarget.targets import decode_targetid
+import matplotlib.pyplot as plt
+import numpy as np
+from numpy import random as rand
+import numpy.lib.recfunctions as rfn
+import os
+import subprocess
+import sys
+from time import sleep
 
 log = get_logger()
-
-print(desitarget.__file__)
-print(mtl.__file__)
-print(io.__file__)
-print(pf.__file__)
-print(fatools.__file__)
 
 os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 
@@ -75,6 +69,7 @@ def createFAmap(FAReal, FAAlt, debug = False):
                 continue
             else:
                 print(ta)
+
                 assert(0)
         if debug:
             try:
@@ -172,23 +167,113 @@ def trimToMTL(notMTL, MTL, debug = False):
 
 
 
-def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, seed = 314159, obscon = 'DARK'):
-    rand.seed(seed)
+def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2):
+
+    if ('trunk' in outputMTL.lower()) or  ('ops' in outputMTL.lower()):
+        raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
+
+    ztilefn = ztilefile.split('/')[-1]
+    fn = initMTL.split('/')[-1]
 
     allentries = Table.read(initMTL) 
     
     meta = allentries.meta
+
     firstTS = allentries[0]["TIMESTAMP"] 
     initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
     subpriorsInit = initialentries["SUBPRIORITY"]
-    for n in range(nAlt):
+    if not genSubset is None:
+        if type(genSubset) == int:
+            iterloop = [genSubset]
+        elif (type(genSubset) == list) or (type(genSubset) == np.ndarray):
+            iterloop = genSubset
+    else:
+        iterloop = range(nAlt)
+
+    for n in iterloop:
         outputMTLDir = outputMTL.format(n)
+        outfile = outputMTLDir +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn)
+        if os.path.exists(outfile):
+            if overwrite: 
+                os.remove(outfile)
+            else:
+                continue
+
+
+        if type(hpnum) == int:
+            rand.seed(seed + hpnum + n)
+        else:
+            rand.seed(seed + n)
+        
+        if not os.path.exists(outputMTLDir):
+            os.makedirs(outputMTLDir)
+        if not os.path.isfile(outputMTLDir + ztilefn):
+            os.symlink(ztilefile, outputMTLDir + ztilefn)
         subpriors = initialentries['SUBPRIORITY']
-        shuffler = rand.permutation(len(subpriors))
-        assert(np.std(subpriorsInit - subpriors[shuffler]) > 0.001)
-        initialentries['SUBPRIORITY'] = subpriors[shuffler]
+        #shuffler = rand.permutation(len(subpriors))
+        newSubpriors = rand.uniform(size = len(subpriors))
+        #newSubpriors = subpriors[shuffler]
+        try:
+            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2))
+        except:
+            print('first shuffle failed')
+            print('size of initial subprior array')
+            print(len(subpriorsInit))
+
+            #print('Is initial shuffler sorted')
+            #print(np.all(np.diff(shuffler) >= 0))
+            #shuffler = rand.permutation(len(subpriors))
+            newSubpriors = rand.uniform(size = len(subpriors))
+            #newSubpriors = subpriors[shuffler]
+            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2))
+
+        initialentries['SUBPRIORITY'] = newSubpriors
+        
+
+        
+        if (obscon.lower() == 'bright') and (shuffleBrightPriorities):
+        
+            #BGSBits = initialentries['SV3_BGS_TARGET']
+            #BGSFaintHIP = ((BGSBits & 8) == 8)
+            #BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
+            #BGSPriors = initialentries['PRIORITY']
+
+            #BGSBits[BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~8)
+            #BGSPriors[BGSFaintHIP] = 102000*np.ones(np.sum(BGSFaintHIP))
+
+            BGSBits = initialentries['SV3_BGS_TARGET']
+            BGSFaintHIP = ((BGSBits & 8) == 8)
+            BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
+
+            #Set all BGS_FAINT_HIP to BGS_FAINT
+
+            initialentries['SV3_BGS_TARGET'][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~8)
+            initialentries['PRIORITY'][BGSFaintHIP] = 102000*np.ones(np.sum(BGSFaintHIP))
+
+            NewBGSBits = initialentries['SV3_BGS_TARGET']
+            NewBGSFaintHIP = ((BGSBits & 8) == 8)
+            NewBGSFaintAll = ((BGSBits & 1) == 1) | NewBGSFaintHIP
+            NewBGSPriors = initialentries['PRIORITY']
+            #Select 20% of BGS_FAINT to promote using function from 
+            BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
+            #Promote them
+
+            initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
+            initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
             
-        io.write_mtl(outputMTLDir, initialentries, survey='sv3', obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+        io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+    
+        if saveBackup:
+            if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
+                os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
+            
+            
+            
+            from shutil import copyfile
+
+            copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
+        
+        
 
 def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'dark', multiproc =False, nproc = None):
     print('quick restart running')
@@ -210,11 +295,11 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
             #print('r')
             copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
      
-def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
+def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
                 secondary=False, singletile = None, singleDate = None, debugOrig = False, 
                     getosubp = False, quickRestart = False, redoFA = False,
-                    multiproc = False, nproc = None):
+                    multiproc = False, nproc = None, testDoubleDate = False):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -281,11 +366,16 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
     """
     #print('globals items')
     #print(globals().items())
-    import multiprocessing as mp
-    import logging
+    if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
+        raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
+    assert((singleDate is None) or (type(singleDate) == bool))
+    if multiproc:
+        import multiprocessing as mp
+        import logging
 
-    logger=mp.log_to_stderr(logging.DEBUG)
-
+        logger=mp.log_to_stderr(logging.DEBUG)
+    #print('quickRestart')
+    #print(quickRestart)
     if quickRestart:
         quickRestartFxn(ndirs = ndirs, altmtlbasedir = altmtlbasedir, survey = survey, obscon = obscon, multiproc = multiproc, nproc = nproc)
     # ADM first grab all of the relevant files.
@@ -293,7 +383,7 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
     mtldir = get_mtl_dir(mtldir)
     # ADM construct the full path to the mtl tile file.
     mtltilefn = os.path.join(mtldir, get_mtl_tile_file_name(secondary=secondary))
-    
+    print('mtldir/tilefn')
     print(mtldir)
     print(mtltilefn)
     
@@ -312,7 +402,7 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
-    
+    print('zcatdir/tilefn')
     print(zcatdir)
     print(ztilefn)
     
@@ -352,22 +442,49 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
         print(survey)
         tiles = tiles_to_be_processed(zcatdir, altmtltilefn, obscon, survey)
         print('checkpoint A')
-        
+        print(np.sort(tiles['TILEID']))
         # ADM stop if there are no tiles to process.
         if len(tiles) == 0:
-            if n != ndirs - 1:
+            if (not multiproc) and (n != ndirs - 1):
                 continue
             else:
-                return althpdirname, mtltilefn, ztilefn, tiles
+                if singleDate:
+                    return 0
+                else:
+                    return althpdirname, mtltilefn, ztilefn, tiles
         if not (singletile is None):
             tiles = tiles[tiles['TILEID'] == singletile]
+
         
+        '''
+        if 314 in tiles['TILEID']:
+            print('doubled tiles')
+            print(tiles[tiles['TILEID'] == 314])
+            print(tiles[tiles['TILEID'] == 315])
+            origTile315 = np.copy(tiles[tiles['TILEID'] == 315])
+            tiles['ZDATE'][ tiles['TILEID'] == 315] = tiles['ZDATE'][tiles['TILEID'] == 314]
+            print(tiles[tiles['TILEID'] == 314])
+            print(tiles[tiles['TILEID'] == 315])
+        '''
+        #if 440 in tiles['TILEID']:
+        #    tiles[tiles['TILEID'] == 440]['ZDATE'] = tiles[tiles['TILEID'] == 441]['ZDATE']
+        sorttiles = np.sort(tiles, order = 'ZDATE')
+        if testDoubleDate:
+            print('Testing Rosette with Doubled Date only')
+            cond1 = ((tiles['TILEID'] >= 298) & (tiles['TILEID'] <= 324))
+            cond2 = ((tiles['TILEID'] >= 475) & (tiles['TILEID'] <= 477))
+            print(tiles[tiles['TILEID' ] == 314])
+            print(tiles[tiles['TILEID' ] == 315])
+            #cond3 = ((tiles['TILEID'] > 406) & (tiles['TILEID'] < 432))
+            #cond4 = ((tiles['TILEID'] > 439) & (tiles['TILEID'] < 441))
+            tiles = tiles[cond1 | cond2 ]
+            print(tiles)
         #sorttiles = np.sort(tiles, order = 'ZDATE')
         print('checkpoint b')
-        if not singleDate is None:
-            tiles = tiles[tiles['ZDATE'] == singleDate]
-        else:
-            assert(0)
+        #if not singleDate is None:
+        #    tiles = tiles[tiles['ZDATE'] == singleDate]
+        #else:
+        #    print('LOOPING ALL DATES')
         print('checkpoint c')
         dates = np.sort(np.unique(tiles['ZDATE']))
         print('checkpoint c1')
@@ -379,6 +496,10 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
             dateTiles = tiles[tiles['ZDATE'] == date]
             OrigFAs = []
             AltFAs = []
+            '''
+            OrigFA315 = None
+            AltFA315 = None
+            '''
             for t in dateTiles:
                 print('checkpoint d')
                 ts = str(t['TILEID']).zfill(6)
@@ -398,24 +519,59 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
                     FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
                     fbadir = fbadirbase
 
-                if True or redoFA or (not os.path.exists(FAAltName)):
+                if os.path.exists(FAAltName + '.tmp'):
+                    os.remove(FAAltName + '.tmp')
+
+                #if True or redoFA or (not os.path.exists(FAAltName)):
+                if  redoFA or (not os.path.exists(FAAltName)):
                     print('checkpoint f')
                     #if getosubp:
                     #    redo_fba_fromorig(ts,outdir=fbadirbase)
                     #else:
                     #    print
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp)
+                    print(ts)
+                    print(altmtldir)
+                    print(survey.lower())
+                    print(fbadirbase)
+                    print(getosubp)
+                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA)
                     print('checkpoint g')
+                    print(fbadir)
+                    print('checkpoint g2')
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh'])
+                    print('checkpoint g3')
                     result = subprocess.run(command_run, capture_output = True)
+                    print('checkpoint g4')
+                    #if survey.lower() == 'main':
+                    #    print('result')
+                    #    print(result)
                 print('checkpoitn h')
+                '''
+                if str(t['TILEID']) != '315':
+                    OrigFAs.append(pf.open(FAOrigName)[1].data)
+                    AltFAs.append(pf.open(FAAltName)[1].data)
+                else:
+                    print('special FA tile 315')
+                    OrigFA315 = pf.open(FAOrigName)[1].data
+                    AltFA315 = pf.open(FAAltName)[1].data
+                '''
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
-            
             print('checkpoint i')
             # ADM create the catalog of updated redshifts.
+            '''
+            if '315' in dateTiles['TILEID'].astype(str):
+                print('special zcat tile 315')
+                #tile315 = dateTiles[dateTiles['TILEID'].astype(str) == '315']
+                print(origTile315)
+                print(origTile315.dtype)
+                dateTiles = dateTiles[dateTiles['TILEID'].astype(str) != '315']
+                zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
+                zcat315 = make_zcat(zcatdir, origTile315, obscon, survey)
+            else:
+                zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
+            '''
             zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
-            
             # ADM insist that for an MTL loop with real observations, the zcat
             # ADM must conform to the data model. In particular, it must include
             # ADM ZTILEID, and other columns addes for the Main Survey. These
@@ -436,11 +592,16 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
             
             A2RMap = {}
             R2AMap = {}
+            '''
+            A2RMap315 = {}
+            R2AMap315 = {}
+            '''
             print('checkpoint j')
             for ofa, afa in zip (OrigFAs, AltFAs):
                 A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa)
                 A2RMap.update(A2RMapTemp)
                 R2AMap.update(R2AMapTemp)
+            
             print('checkpoint k')
             print(type(zcat))
             print(zcat.dtype)
@@ -458,6 +619,22 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
             print('checkpoint m')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
             print('checkpoint n')
+            '''
+            if not (OrigFA315 is None):
+                print('special update Tile 315')
+                A2RMap315, R2AMap315 = createFAmap(OrigFA315, AltFA315)
+                altZCat315 = makeAlternateZCat(zcat315, R2AMap315, A2RMap315)
+                update_ledger(althpdirname, altZCat315, obscon=obscon.upper(),
+                          numobs_from_ledger=numobs_from_ledger)
+                if survey == "main":
+                    sleep(1)
+                    tiles["TIMESTAMP"] = get_utc_date(survey=survey)
+                print('checkpoint m')
+                io.write_mtl_tile_file(altmtltilefn,origTile315)
+                print('checkpoint n')
+            '''
+            if singleDate:
+                return 1
         # ADM for the main survey "holding pen" method, ensure the TIMESTAMP
         # ADM in the mtl-done-tiles file is always later than in the ledgers.
         
@@ -466,3 +643,316 @@ def loop_alt_ledger(obscon, survey='main', zcatdir=None, mtldir=None,
         #io.write_mtl_tile_file(altmtltilefn, tiles)
 
     return althpdirname, altmtltilefn, ztilefn, tiles
+
+def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False):
+    """Plots probability that targets were observed among {ndirs} alternate realizations
+    of SV3. Uses default matplotlib colorbar to plot between 1-{ndirs} observations.
+
+    Parameters
+    ----------
+    mtlBaseDir : :class:`str`
+        The home directory of your alternate MTLs. Should not contain obscon
+        or survey. String should be formattable (i.e. '/path/to/dirs/Univ{0:03d}')
+    ndirs   : :class:`int`
+        The number of alternate realizations to plot.
+    survey : :class:`str`, optional, defaults to "sv3"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.
+    obscon : :class:`str`, optional, defaults to "dark"
+        Used to look up the correct ledger, in combination with `survey`.
+        Options are ``'dark'`` and ``'bright``' 
+    hplist : :class:`arraylike`, optional, defaults to None
+        List of healpixels to plot. If None, defaults to plotting all available
+        healpixels
+    outFileName : :class:`str`, optional, defaults to None
+        If desired, save file to this location. This will 
+        usually be desired, but was made optional for use in
+        ipython notebooks.
+    outFileType : :class:`str`, optional, defaults to '.png'
+        If desired, save file with name "outFileName" with
+        type/suffix outFileType. This will usually be desired, 
+        but was made optional for use in ipython notebooks.
+
+
+    
+    Returns
+    -------
+    Nothing
+    
+    """
+    ObsFlagList = np.array([])
+    for i in range(ndirs):
+        mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
+        MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+        try:
+            ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
+        except:
+            print('e')
+            ObsFlagList = MTL['NUMOBS'] > 0.5
+    print(ObsFlagList.shape)
+    ObsArr = np.sum(ObsFlagList, axis = 1)
+
+
+    #MTLList[i] = rfn.append_fields(MTLList[i], 'OBSFLAG', MTLList[i]['NUMOBS'] > 0, dtypes=np.dtype(bool))
+    
+    hist, bins = np.histogram(ObsArr, bins = np.arange(ndirs)+ 0.1)
+
+    plt.figure()
+    plt.plot(bins[1:]- 0.01, hist)
+    plt.xlabel('Number of Realizations in which a target was observed')
+    plt.ylabel('Number of targets')
+    #plt.yscale('log')
+    if len(hplist )> 100:
+        plt.ylim(0, 8000)
+    elif (len(hplist) > 4) & (obscon == 'dark'):
+        plt.ylim(0, 1500)
+    elif (len(hplist) > 4) & (obscon == 'bright'):
+        plt.ylim(0, 500)
+    if not (outFileName is None):
+        plt.savefig(outFileName + '_vsNtarget' + outFileType)
+    if not jupyter:
+        plt.close()
+    plt.figure()
+    plt.scatter(MTL['RA'][ObsArr > 0], MTL['DEC'][ObsArr > 0], c = ObsArr[ObsArr > 0], s = 0.1)
+    plt.xlabel('RA')
+    plt.ylabel('DEC')
+    cbar = plt.colorbar()
+    cbar.set_label('Number of Realizations in which target was observed')
+    if not (outFileName is None):
+        plt.savefig(outFileName + '_vsRADEC' + outFileType )
+    if not jupyter:
+        plt.close()
+
+
+def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False):
+    """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
+    and an optional PROBOBS, the probability that the target was observed over the realizations
+
+    Parameters
+    ----------
+    mtlBaseDir : :class:`str`
+        The home directory of your alternate MTLs. Should not contain obscon
+        or survey. String should be formattable (i.e. '/path/to/dirs/Univ{0:03d}')
+    ndirs   : :class:`int`
+        The number of alternate realizations to process. 
+    survey : :class:`str`, optional, defaults to "sv3"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.
+    obscon : :class:`str`, optional, defaults to "dark"
+        Used to look up the correct ledger, in combination with `survey`.
+        Options are ``'dark'`` and ``'bright``' 
+    hplist : :class:`arraylike`, optional, defaults to None
+        List of healpixels to plot. If None, defaults to plotting all available
+        healpixels
+    debug : :class:`bool`, optional, defaults to False
+        If True, prints extra information showing input observation information
+        and output bitweight information for the first few targets as well as
+        the first few targets that were observed in at least one realization
+    obsprob: class:`bool`, optional, defaults to False
+        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID 
+        and BITWEIGHT only
+    splitByReal: class:`bool`, optional, defaults to False
+        If True, run for only a single realization but for all healpixels in hplist.
+
+    Returns
+    -------
+    :class:`~numpy.array`
+        Array of Target IDs 
+    :class:`~numpy.array`
+        Array of bitweights for those target ids
+    :class:`~numpy.array`, optional if obsprob is True
+        Array of probabilities a target gets observed over {ndirs} realizations
+        
+    """
+    
+    TIDs = None
+    if splitByReal:
+
+        from mpi4py import MPI
+        print(mtlBaseDir)
+        print(mtlBaseDir.format(0))
+        ntar = desitarget.io.read_mtl_in_hp(mtlBaseDir.format(0) + '/' + survey + '/' + obscon, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False).shape[0]
+        
+        comm = MPI.COMM_WORLD
+        mpi_procs = comm.size
+        mpi_rank = comm.rank
+        
+        print('running on {0:d} cores'.format(mpi_procs))
+        n_realization = ndirs
+        realizations = np.arange(ndirs, dtype=np.int32)
+        my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
+        MyObsFlagList = np.empty((my_realizations.shape[0], ntar), dtype = bool)
+        #MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+        for i, r in enumerate(my_realizations):
+            mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
+            MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID') 
+            if TIDs is None:
+                TIDs = MTL['TARGETID']
+            else:
+                assert(np.array_equal(TIDs, MTL['TARGETID']))
+
+            MyObsFlagList[i][:] = MTL['NUMOBS'] > 0.5
+        
+        ObsFlagList = None
+        bitweights = None
+        obsprobs = None
+        #gather_weights = None
+        if mpi_rank == 0:
+            #gather_weights = np.empty(len(bitweights), dtype=bool)
+            ObsFlagList = np.empty ((ndirs, ntar), dtype = bool)
+        comm.Gather(MyObsFlagList, ObsFlagList, root=0)
+        if mpi_rank == 0:    
+            print(ObsFlagList.shape)
+            ObsArr = np.sum(ObsFlagList, axis = 0)
+            obsprobs = ObsArr/ndirs
+            print(np.min(ObsArr))
+            print(np.max(ObsArr))
+            print("ObsFlagList shape here: {0}".format(ObsFlagList.shape))
+            bitweights = pack_bitweights(ObsFlagList.T)
+            print('bitweights shape here: {0}'.format(bitweights.shape))
+            assert(not (TIDs is None))
+        if obsprob:
+            return TIDs, bitweights, obsprobs
+        else:
+            return TIDs, bitweights
+            
+    else:
+        ObsFlagList = np.empty(ndirs)
+        for i in range(ndirs):
+            mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
+            MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+            if TIDs is None:
+                TIDs = MTL['TARGETID']
+            else:
+                assert(np.array_equal(TIDs, MTL['TARGETID']))
+            try:
+                ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
+            except:
+                print('e')
+                ObsFlagList = MTL['NUMOBS'] > 0.5
+        print(ObsFlagList.shape)
+        ObsArr = np.sum(ObsFlagList, axis = 1)
+        print(np.min(ObsArr))
+        print(np.max(ObsArr))
+        bitweights = pack_bitweights(ObsFlagList)
+
+        assert(not (TIDs is None))
+        if obsprob:
+            
+            obsprobs = ObsArr/ndirs
+
+            return TIDs, bitweights, obsprobs
+        else:
+            return TIDs, bitweights
+
+
+
+
+
+def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None):
+    """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
+    and an optional PROBOBS, the probability that the target was observed over the realizations.
+    Then writes them to (a) file(s)
+
+    Parameters
+    ----------
+    mtlBaseDir : :class:`str`
+        The home directory of your alternate MTLs. Should not contain obscon
+        or survey. String should be formattable (i.e. '/path/to/dirs/Univ{0:03d}')
+    ndirs   : :class:`int`
+        The number of alternate realizations to process. 
+    survey : :class:`str`, optional, defaults to "sv3"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.
+    obscon : :class:`str`, optional, defaults to "dark"
+        Used to look up the correct ledger, in combination with `survey`.
+        Options are ``'dark'`` and ``'bright``' 
+    hplist : :class:`arraylike`, optional, defaults to None
+        List of healpixels to plot. If None, defaults to plotting all available
+        healpixels
+    debug : :class:`bool`, optional, defaults to False
+        If True, prints extra information showing input observation information
+        and output bitweight information for the first few targets as well as
+        the first few targets that were observed in at least one realization
+    obsprob: class:`bool`, optional, defaults to False
+        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID 
+        and BITWEIGHT only
+    outdir : :class:`str`, optional, defaults to None
+        The base directory in which to create the BitweightFiles output directory. 
+        If None, defaults to one level above mtlBaseDir
+    overwrite: class:`bool`, optional, defaults to False
+        If True, will clobber already existing bitweight files.
+    ***Fix this Option to autograb all tiles***
+    allfiles: class:`bool`, optional, defaults to False
+        If True, do not generate a bitweight file for each healpixel, but generate
+        one "allTiles" file for the combination of healpixels
+    splitByReal: class:`bool`, optional, defaults to False
+        If True, run for only a single realization but for all healpixels in hplist
+    
+
+    Returns
+    -------
+    :class:`~numpy.array`
+        Array of Target IDs 
+    :class:`~numpy.array`
+        Array of bitweights for those target ids
+    :class:`~numpy.array`, optional if obsprob is True
+        Array of probabilities a target gets observed over {ndirs} realizations
+        
+    """
+    if outdir is None:
+        print('No outdir provided')
+        outdir = mtlBaseDir.split('/')[:-1]
+        print('autogen outdir')
+        print(outdir)
+    if splitByReal:
+        from mpi4py import MPI        
+        comm = MPI.COMM_WORLD
+        mpi_procs = comm.size
+        mpi_rank = comm.rank
+        if mpi_rank == 0:
+            if not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
+                os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
+    elif not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
+        os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
+    if type(hplist) == int:
+        hplist = [hplist]
+    if allFiles:
+        hpstring = 'AllTiles'
+    else:
+        hpstring = 'hp-'
+
+        for hp in hplist:
+            hpstring += str(hp)
+    fn = outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'
+    
+    if (not overwrite) and os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'):
+        return None
+    
+    if not (splitNChunks is None):
+        print("splitting into {0} chunks".format(splitNChunks))
+        splits = np.array_split(hplist, int(splitNChunks))
+
+
+        for i, split in enumerate(splits):
+            print('split {0}'.format(i))
+            print(split)
+            if i == 0:
+                TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+            else:
+                TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+                TIDs = np.column_stack((TIDs, TIDsTemp))
+                bitweights = np.column_stack((bitweights, bitweightsTemp))
+                obsprobs = np.column_stack((obsprobs, obsprobsTemp))
+    else:
+        TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+    
+    data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
+              names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
+    
+    data.write(fn, overwrite = overwrite)
+    
+    
