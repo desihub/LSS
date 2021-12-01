@@ -3,9 +3,6 @@ import argparse
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
-#from this package
-#try:
-import LSS.main.cattools as ct
 import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
@@ -52,7 +49,7 @@ for type in types:
     if ccut is not None:
         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    regl = ['','_N','_S']
+    regl = ['_DN','_DS','','_N','_S']
     
     for reg in regl:
         fb = dirout+type+wzm+reg
@@ -69,4 +66,4 @@ for type in types:
             zmin = 0.01
             zmax = 1.61
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
