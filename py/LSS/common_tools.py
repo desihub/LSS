@@ -1,5 +1,6 @@
 import numpy as np
 import fitsio
+from astropy.table import Table
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
