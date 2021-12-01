@@ -5,18 +5,13 @@ import argparse
 
 #from this package
 #try:
-#import LSS.SV3.cattools as ct
+import LSS.main.cattools as ct
 import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
-
-parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
-parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
-parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
-parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 
 
 args = parser.parse_args()
@@ -35,16 +30,16 @@ if rcut is not None:
     rcut.append(float(rcutstr[1]))
 ccut = args.ccut
 
-sv3dir = basedir +'/SV3/LSS/'
+dadir = basedir +'/DA02/LSS/'
 
 
 
-ldirspec = sv3dir+specrel+'/'
+ldirspec = dadir+specrel+'/'
 
 dirout = ldirspec+'LSScats/'+version+'/'
 
 
-types = ['ELG','ELG_HIP','LRG','LRG_main','QSO','BGS_ANY','BGS_BRIGHT']
+types = ['ELG','ELG_LOP','LRG','ELG_LOPnoqso','QSO','BGS_ANY','BGS_BRIGHT']
 
 for type in types:
     wzm = ''
@@ -74,4 +69,4 @@ for type in types:
             zmin = 0.01
             zmax = 1.61
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
+        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
