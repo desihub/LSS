@@ -1,9 +1,13 @@
-#functions that shouldn't have any dependence on survey go here
+import numpy as np
+import fitsio
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 dis_dc = cosmo.comoving_radial_distance
 
+
+
+#functions that shouldn't have any dependence on survey go here
 
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     '''
