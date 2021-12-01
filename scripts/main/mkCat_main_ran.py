@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
+from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
@@ -41,7 +42,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
-
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -84,6 +85,11 @@ if type == 'bright' or type == 'dark':
     mkclusran = False
     mkfullr = False
 
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
+
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
@@ -101,28 +107,17 @@ imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
 
-#imbits = [1,8,9,11,12,13]
-
-# if type[:3] == 'BGS':
-#     imbits = [1,13]
-# else:
-#     imbits = [1,12,13]    
-# 
-# 
-# mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == 'main'
-#wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
-
-maxnight = 20301231
-if specrel == 'everest':
-    maxnight = 20210801
-
-wd &= mt['LASTNIGHT'] < maxnight    
-
+if specrel != 'daily':
+    if specrel == 'everest':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtld = mt[wd]
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true')
+#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtld['TILEID']
@@ -300,10 +295,14 @@ def doran(ii):
             
             if specrel == 'everest':    
 
-
+                #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+                #wt = np.isin(mtld['TILEID'],specf['TILEID'])
+                #above two lines already done above
                 specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
                 specf = specf[wt]
+                print('number of TILEID in spec data being used:')
+                print(len(np.unique(specf['TILEID'])))
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
             kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
@@ -313,7 +312,7 @@ def doran(ii):
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
 
             ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
-            tc = ct.count_tiles_better(specf,'ran',type,ii,specrel=specrel)
+            tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
 
@@ -323,15 +322,15 @@ def doran(ii):
     if mkfullr:
 
         if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            specf = specf[wt]
+            #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+            #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            #specf = specf[wt]
             fbcol = 'COADD_FIBERSTATUS'
         if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+            #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+'zdone_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
             desitarg='BGS_TARGET'
@@ -339,7 +338,7 @@ def doran(ii):
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
         
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
+        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -359,7 +358,9 @@ def doran(ii):
             dchi2 = 40
             tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+    print('done with random '+str(ii))
+    return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
@@ -369,12 +370,22 @@ if __name__ == '__main__':
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        N = rx-rm
-        p = Pool(N)
+        #N = 32
+        N = rx-rm+1
+        #p = Pool(N)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        p.map(doran,inds)
+        #with sharedmem.MapReduce() as pool:
+        pool = sharedmem.MapReduce(np=N)
+        with pool:
+        
+            def reduce( r):
+                print('chunk done')
+                return r
+            pool.map(doran,inds,reduce=reduce)
+
+        #p.map(doran,inds)
     else:
         for i in range(rm,rx):
             doran(i)

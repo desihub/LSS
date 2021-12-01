@@ -97,7 +97,7 @@ for reg in regl:
     print('data assigned',flush=True)
     recon.assign_randoms(pos_ran,ran_cat['WEIGHT'])
     print('randoms assigned',flush=True)
-    recon.set_density_contrast(ran_min=0.1)
+    recon.set_density_contrast(ran_min=0.01)
     print('density constrast calculated, now doing recon',flush=True)
     recon.run()
     print('recon has been run',flush=True)
