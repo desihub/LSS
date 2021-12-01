@@ -6,6 +6,7 @@ import argparse
 #from this package
 #try:
 import LSS.SV3.cattools as ct
+import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
@@ -72,5 +73,5 @@ for type in types:
             dz = 0.02
             zmin = 0.01
             zmax = 1.61
-        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
