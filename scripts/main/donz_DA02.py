@@ -18,14 +18,6 @@ basedir = args.basedir
 version = args.version
 specrel = args.verspec
 
-ntile = args.ntile
-rcut = args.rcut
-if rcut is not None:
-    rcutstr = rcut.split(',')
-    rcut = []
-    rcut.append(float(rcutstr[0]))
-    rcut.append(float(rcutstr[1]))
-ccut = args.ccut
 
 dadir = basedir +'/DA02/LSS/'
 
@@ -40,14 +32,6 @@ types = ['ELG','ELG_LOP','LRG','ELG_LOPnoqso','QSO','BGS_ANY','BGS_BRIGHT']
 
 for type in types:
     wzm = ''
-#     if zmask:
-#         wzm = 'zmask_'
-    if rcut is not None:
-        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
-    if ntile > 0:
-        wzm += '_ntileg'+str(ntilecut)+'_'    
-    if ccut is not None:
-        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
     regl = ['_DN','_DS','','_N','_S']
     
