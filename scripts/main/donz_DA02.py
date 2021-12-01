@@ -31,7 +31,7 @@ dirout = ldirspec+'LSScats/'+version+'/'
 types = ['ELG','ELG_LOP','LRG','ELG_LOPnoqso','QSO','BGS_ANY','BGS_BRIGHT']
 
 for type in types:
-    wzm = ''
+    wzm = 'zdone'
 
     regl = ['_DN','_DS','','_N','_S']
     
