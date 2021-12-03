@@ -35,7 +35,9 @@ for type in types:
 
     regl = ['_DN','_DS','','_N','_S']
     
+    
     for reg in regl:
+        print(type,reg)
         fb = dirout+type+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'

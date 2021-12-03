@@ -16,6 +16,7 @@ from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
+from LSS.common_tools import find_znotposs
  
 
 
@@ -365,69 +366,6 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def find_znotposs(dz):
-
-    dz.sort('TARGETID')
-    tidnoz = []
-    tids = np.unique(dz['TARGETID'])
-    ti = 0
-    i = 0
-    
-    print('finding targetids that were not observed')
-    while i < len(dz):
-        za = 0
-    
-        while dz[i]['TARGETID'] == tids[ti]:
-            if dz[i]['ZWARN'] != 999999:
-                za = 1
-                #break
-            i += 1
-            if i == len(dz):
-                break
-        if za == 0:
-            tidnoz.append(tids[ti])
-      
-        if ti%30000 == 0:
-            print(ti)
-        ti += 1 
-
-    
-    selnoz = np.isin(dz['TARGETID'],tidnoz)
-    tidsb = np.unique(dz[selnoz]['TILELOCID'])
-    #dz = dz[selnoz]
-    dz.sort('TILELOCID')
-    tids = np.unique(dz['TILELOCID'])
-    print('number of targetids with no obs '+str(len(tidnoz)))
-    tlidnoz = []
-    lznposs = []
-    
-    ti = 0
-    i = 0
-    
-    while i < len(dz):
-        za = 0
-    
-        while dz[i]['TILELOCID'] == tids[ti]:
-            if dz[i]['ZWARN'] != 999999:
-                za = 1
-                #break
-            i += 1
-            if i == len(dz):
-                break
-        if za == 0:
-            tlidnoz.append(tids[ti])
-            #if np.isin(tids[ti],tidsb):
-            #    lznposs.append(tids[ti])
-      
-        if ti%30000 == 0:
-            print(ti,len(tids))
-        ti += 1 
-    #the ones to veto are now the join of the two
-    wtbtlid = np.isin(tlidnoz,tidsb)
-    tlidnoz = np.array(tlidnoz)
-    lznposs = tlidnoz[wtbtlid]
-    print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
-    return lznposs
     
 def get_specdat(indir,pd):
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
@@ -1670,38 +1608,6 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         ffss.write(outfn,format='fits', overwrite=True)
 
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
-    nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
-    fn = fb+'_clustering.dat.fits'
-    fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
-    zl = fd['Z']
-    nl = np.zeros(len(zl))
-    for ii in range(0,len(zl)):
-        z = zl[ii]
-        zind = int((z-zmin)/bs)
-        if z > zmin and z < zmax:
-            nl[ii] = nzd[zind]
-    del fd
-    ft = Table.read(fn)
-    ft['NZ'] = nl
-    ft.write(fn,format='fits',overwrite=True)        
-    print('done with data')
-    for rann in range(0,nran):
-        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
-        zl = fd['Z']
-        nl = np.zeros(len(zl))
-        for ii in range(0,len(zl)):
-            z = zl[ii]
-            zind = int((z-zmin)/bs)
-            if z > zmin and z < zmax:
-                nl[ii] = nzd[zind]
-        del fd
-        ft = Table.read(fn)
-        ft['NZ'] = nl
-        ft.write(fn,format='fits',overwrite=True)      
-        print('done with random number '+str(rann))  
-    return True        
 
 
 

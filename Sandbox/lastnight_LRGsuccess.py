@@ -57,6 +57,7 @@ tz = np.zeros(10)
 zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
+nzla = []
 for tid in tidl:
     for pt in range(0,10):
         
@@ -81,6 +82,7 @@ for tid in tidl:
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
+                nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
         else:
@@ -95,9 +97,11 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
+    nza = np.concatenate(nzla)
     for pt in range(0,10):
         nzp = np.concatenate(nzls[pt])
-        plt.hist(nzp,range=(0.01,1.4),bins=28)
+        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True)
+        plt.hist(nza,bins=a[1],density=True,histtype='step')
         plt.title('petal '+str(pt))
         plt.xlabel('Z')
         plt.show()
