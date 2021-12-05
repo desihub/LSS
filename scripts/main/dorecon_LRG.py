@@ -130,6 +130,3 @@ for reg in regl:
     print('wrote data to '+fcro)
     del datt
     del rant
-   
-    
-    

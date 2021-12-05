@@ -81,8 +81,6 @@ if ttype == 'QSOh':
     #zmin = 1.
     #zmax = 2.1
 
-   
-
 if ttype[:3] == 'BGS':
     #minn = 2
     zl = [0.1,0.3,0.5]
@@ -105,7 +103,7 @@ if ttype[:3] == 'BGS' and ttype[-1] == 'h':
 
 
 wa = ''
-if survey == 'main':
+if survey in ['main', 'DA02']:
     wa = 'zdone'
 
 def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
@@ -240,7 +238,7 @@ for i in range(0,nzr):
     print(zmin,zmax)
     for reg in regl:
         print(reg)
-        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
         fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
         for i in range(0,len(sep)):
             fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
