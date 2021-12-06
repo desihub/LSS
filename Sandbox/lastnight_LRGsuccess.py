@@ -76,7 +76,15 @@ for tid in tidl:
             wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
             zlrg = zmtlf[wfqa&wlrg]
             if len(zlrg) > 0:
-                wzwarn = zmtlf['ZWARN'] == 0
+                drz = (10**(3 - 3.5*zmtlf['Z']))
+                mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
+                mask_bad |= (drz<30) & (zmtlf['DELTACHI2']<drz)
+                mask_bad |= (zmtlf['DELTACHI2']<10)
+                wz = zmtlf['ZWARN'] == 0
+                wz &= zmtlf['Z']<1.4
+                wz &= (~mask_bad)
+
+                wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
