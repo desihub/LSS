@@ -22,7 +22,7 @@ parser.add_argument("--basedir", help="where to find catalogs",default='/global/
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
-parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
+parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10,type=int)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 
 #only relevant for reconstruction
@@ -110,11 +110,16 @@ def compute_power_spectrum(edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Catalog.load_fits(data_fn)
 
-        randoms_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits') 
-        randoms = Catalog.load_fits(randoms_fn) 
+        shifted_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits')
+        shifted = Catalog.load_fits(shifted_fn)
+
+        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+        randoms = Catalog.concatenate(*(Catalog.load_fits(fn) for fn in randoms_fn), keep_order=False)
     else:
         data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
         data = Catalog.load_fits(data_fn)
+
+        shifted = None
 
         randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms = Catalog.concatenate(*(Catalog.load_fits(fn) for fn in randoms_fn), keep_order=False)
@@ -145,9 +150,13 @@ def compute_power_spectrum(edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0
     
     data_positions, data_weights = get_positions_weights(data, name='data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
+    shifted_positions, shifted_weights = None, None
+    if shifted is not None:
+        shifted_positions, shifted_weights = get_positions_weights(shifted, name='shifted')
 
     result = CatalogFFTPower(data_positions1=data_positions, data_weights1=data_weights,
                              randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
+                             shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
                              position_type='rdd', dtype=dtype)
     return result

@@ -5,6 +5,7 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
+# To install pycorr: python -m pip install git+https://github.com/adematti/pycorr
 from pycorr import TwoPointCorrelationFunction, utils, project_to_multipoles, project_to_wp, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -16,7 +17,7 @@ parser.add_argument("--basedir", help="where to find catalogs",default='/global/
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
-parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
+parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=4,type=int)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
@@ -26,7 +27,7 @@ parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
 parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
 
-
+setup_logging()
 args = parser.parse_args()
 
 ttype = args.type
@@ -111,11 +112,16 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
 
-        randoms_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits') 
-        randoms = Table.read(randoms_fn) 
+        shifted_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits')
+        shifted = Table.read(shifted_fn)
+
+        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+        randoms = vstack([Table.read(fn) for fn in randoms_fn])
     else:
         data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
         data = Table.read(data_fn)
+
+        shifted = None
 
         randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms = vstack([Table.read(fn) for fn in randoms_fn])
@@ -132,6 +138,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     
     def get_positions_weights(catalog, name='data'):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
+        print('Using {:d} rows for {}'.format(mask.sum(),name))
         positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
         #if weight_type is None:
         #    weights = None
@@ -152,9 +159,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         return positions, weights
     
     data_positions, data_weights = get_positions_weights(data, name='data')
-    print('using '+str(len(data_positions[0]))+ ' rows for data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
-    print('using '+str(len(randoms_positions[0]))+ ' rows for random')
+    shifted_positions, shifted_weights = None, None
+    if shifted is not None:
+        shifted_positions, shifted_weights = get_positions_weights(shifted, name='shifted')
 
     kwargs = {}
     if 'angular' in weight_type and wang is None:
@@ -175,7 +183,6 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
             return positions, weights
     
         fibered_data_positions, fibered_data_weights = get_positions_weights(parent_data, fibered=True)
-        print(len(fibered_data_weights),len(fibered_data_positions[0]),len(parent_data))
         parent_data_positions, parent_data_weights = get_positions_weights(parent_data)
         parent_randoms_positions, parent_randoms_weights = get_positions_weights(parent_randoms)
         
@@ -200,6 +207,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
 
     result = TwoPointCorrelationFunction(corrmode, edges, data_positions1=data_positions, data_weights1=data_weights,
                                          randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
+                                         shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
                                          engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **kwargs)
     if mode == 'multi':
         return project_to_multipoles(result), wang
