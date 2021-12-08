@@ -18,6 +18,7 @@ from desitarget import targetmask
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 import LSS.imaging.select_samples as ss
 from LSS.globals import main
 #except:
@@ -297,7 +298,7 @@ if args.nz == 'y':
             dz = 0.02
             zmin = 0.01
             zmax = 1.61
-        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
 
         
