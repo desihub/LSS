@@ -19,7 +19,7 @@ from desitarget.sv3 import sv3_targetmask
 #from this package
 from LSS.globals import SV3 
 
-import mycattools as myct
+import mockcattools as myct
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -207,9 +207,9 @@ maxr = 274
 mind = -2.5
 maxd = 68
 
-my_path = '/global/cscratch1/sd/acarnero/fiberassign'
-target_file = os.path.join(my_path, 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits')
-random_file = os.path.join(my_path, 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits')
+my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
+target_file = os.path.join(my_path, 'mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits')
+random_file = os.path.join(my_path, 'mockRandom_5X_FirstGen_CutSky_alltracers_sv3bits.fits')
 
 cutsv3_target_file = os.path.join(sv3dir,'alltilesnofa.fits')
 cutsv3_random_file = os.path.join(randir,'alltilesnofa_random1.fits')
@@ -251,11 +251,10 @@ if combr:
     #print(len(mtld['TILEID']))
     if type == 'dark' or type == 'bright':
 ##comment        spec_file = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
-        spec_file = '/global/cscratch1/sd/acarnero/SV3/LSS/mock/datcomb_dark_specwdup_Alltiles.fits'
+        spec_file = os.path.join(ldirspec, 'datcomb_' + type + '_specwdup_Alltiles.fits')
         kc = ['ZWARN','FIBER','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY']#,'DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-        #for i in range(rm,rx):
-            #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
-        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), keepcols=kc)
+
+        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), ['fba_randoms', 'ran_5X_00_'], ['mtlran', 'tilenofa-'], keepcols=kc)
         tc = myct.count_tiles_better(Table.read(spec_file), os.path.join(ldirspec, 'rancomb_' + type + 'wdupspec_Alltiles.fits'))
         tc.write(os.path.join(randir, 'rancomb_'+pdir+'_Alltilelocinfo.fits'), format='fits', overwrite=True)
     else:

@@ -228,6 +228,7 @@ def combtiles_wdup(tiles, mltTargets, fbaRun, fout='', tarcol=['RA','DEC','TARGE
     n = 0
     tmask = np.ones(len(tiles)).astype('bool')
 
+    print('In combtiles')
     for tile in tiles[tmask]['TILEID']:
         ts = str(tile).zfill(3)
         faf = os.path.join(fbaRun[0], fbaRun[1].format(TILE=ts))
@@ -237,10 +238,12 @@ def combtiles_wdup(tiles, mltTargets, fbaRun, fout='', tarcol=['RA','DEC','TARGE
 
         tars = os.path.join(mltTargets[0], mltTargets[1].format(TILE=tile))
         tars = Table.read(tars)
-
+#        print(len(tars), ' number of targets')    
         tt = Table.read(faf,hdu='FAVAIL')
+#        print(len(tt), ' number of fa')    
         #tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
         tars = join(tars,tt,keys=['TARGETID'])
+#        print(len(tars), ' number after join')
         tars['TILEID'] = tile
         #tars['ZWARN'].name = 'ZWARN_MTL'
         if s == 0:
@@ -812,15 +815,18 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #    ff[wn].write(outfn,format='fits', overwrite=True)
 #    outfn = fl+wzm+'S_clustering.dat.fits'
 #    ff[~wn].write(outfn,format='fits', overwrite=True)
-
-def combran_wdup(tiles, randir, tp, sv3dir, specf, keepcols=[]):
+#ffa_info = ['fba_randoms', 'ran_5X_00_']
+#ffna_info = ['mtlran', 'tilenofa-']
+def combran_wdup(tiles, randir, tp, sv3dir, specf, ffa_info, ffna_info, keepcols=[], outf=None):
 
     s = 0
     td = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
 
-    outf = os.path.join(randir, 'rancomb_'+tp+'wdup_Alltiles.fits')
+    if not outf:
+        outf = [os.path.join(randir, 'rancomb_'+tp+'wdup_Alltiles.fits'), os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')]
+
     '''
     if os.path.isfile(outf):
         fgu = Table.read(outf)
@@ -833,8 +839,8 @@ def combran_wdup(tiles, randir, tp, sv3dir, specf, keepcols=[]):
     tmask = np.ones(len(tiles)).astype('bool')
 
     for tile in tiles[tmask]['TILEID']:
-        ffa = os.path.join('fba_random1', 'ran1' +str(tile).zfill(6)+'.fits')
-        ffna = os.path.join('mtlran', 'tilenofa-'+str(tile)+'.fits') #tilenofa-382.fits
+        ffa = os.path.join(ffa_info[0], ffa_info[1] +str(tile).zfill(6)+'.fits')
+        ffna = os.path.join(ffna_info[0], ffna_info[1]+str(tile)+'.fits') #tilenofa-382.fits
         if os.path.isfile(ffa):
             fa = Table.read(ffa, hdu='FAVAIL')
             ffna = Table.read(ffna)
@@ -856,16 +862,16 @@ def combran_wdup(tiles, randir, tp, sv3dir, specf, keepcols=[]):
             print('did not find '+ffa)
 
     if len(tiles[tmask]['TILEID']) > 0:
-        fgu.write(outf,format='fits', overwrite=True)
+        fgu.write(outf[0], format='fits', overwrite=True)
     #specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'])
     fgu.sort('TARGETID')
-    outf = os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')
-    print(outf)
-    fgu.write(outf,format='fits', overwrite=True)
+#    outf = os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')
+    print(outf[1])
+    fgu.write(outf[1], format='fits', overwrite=True)
 
 
 def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):

@@ -1,13 +1,24 @@
 1) The catalogs I have are stored here:
+	**old
     /global/cscratch1/sd/avariu/desi/ABACUS_2GPC
     /global/cscratch1/sd/avariu/desi/UNIT_3GPC/sv3_v1.0_mycosmo/h5py/
 
+	**First generation:
+	 /global/cfs/cdirs/desi/cosmosim/FirstGenMocks/ 
 2) Prepare mocks into a format that can be interpreted by fiber assigment, unifying QSO, ELG and LRGs (dark time)
 >> prepare_files_SV3-UNITmocks_fromhdf5.py 
 OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits'
 
 3) Run fba_run in mocks:
 fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks
+
+* For FirstGen:
+time fba_run --targets mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks_000_FirstGen
+
+real	68m27.055s
+user	39m33.085s
+sys	0m48.825s
+
 
 4) RuNING mkCAT
 >> python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y
@@ -29,6 +40,9 @@ fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV
 
 4) RuNING mkCAT
 >> python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y
+real	155m11.418s
+user	60m21.542s
+sys	88m56.718s
 
 5) Finally, for the LRG as:
 >> python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y

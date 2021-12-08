@@ -198,17 +198,18 @@ else:
     else:
         print('no done tiles in the MTL')
 
+print(len(ta))
 minr = 148
 maxr = 274
 mind = -2.5
 maxd = 68
 
-my_path = '/global/cscratch1/sd/acarnero/fiberassign'
-target_file = os.path.join(my_path, 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits')
+my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
+target_file = os.path.join(my_path, 'mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits')
 
 cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa.fits')
 
-if ctar and not cutsv3_target_file:
+if ctar and not os.path.isfile(cutsv3_target_file):
     ffile, h = fitsio.read(target_file, header=True)
 
     print('targets before anything', len(ffile))
@@ -235,15 +236,15 @@ if mkmockmtl:
     test_dir('./atest')
     myct.randomtiles_allSV3(ta, target_file, directory_output='./atest')
 
-debug=False
 if combd:
     if type == 'dark' or type == 'bright':
 
         outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles.fits')
-        if not debug:
-            myct.combtiles_wdup(ta, ['./atest', 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks000{TILE}.fits'] , fout=outf)
+
+        myct.combtiles_wdup(ta, ['./atest', 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks_000_FirstGen000{TILE}.fits'] , fout=outf)
 
         print('yeah!')
+
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
         remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
@@ -265,7 +266,6 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-        '''            
         elif specrel == 'daily':
             outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
             ct.combtile_spec(mtld,outf,rel=specrel)
@@ -279,11 +279,9 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-        '''
         elif specrel == 'mock':
             outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
-            if not debug:
-                myct.combtile_specmock(ta, ['./fiberassigment', 'mocks000{TILE}.fits'], target_file, outfile_spec)
+            myct.combtile_specmock(ta, ['./fiberassigment', 'mocks_000_FirstGen000{TILE}.fits'], target_file, outfile_spec)
             specf = Table.read(outfile_spec)
             specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PLATE_RA','PLATE_DEC','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
