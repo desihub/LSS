@@ -168,11 +168,11 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     if 'angular' in weight_type and wang is None:
         
         if tracer != 'LRG_main':
-			data_fn = os.path.join(dirname, '{}_full.dat.fits'.format(tracer))
-			randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, iran)) for iran in range(nrandoms)]
+            data_fn = os.path.join(dirname, '{}_full.dat.fits'.format(tracer))
+            randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, iran)) for iran in range(nrandoms)]
         else:
-			data_fn = os.path.join(dirname, '{}_full.dat.fits'.format(tracer[:3]))
-			randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer[:3], iran)) for iran in range(nrandoms)]
+            data_fn = os.path.join(dirname, '{}_full.dat.fits'.format(tracer[:3]))
+            randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer[:3], iran)) for iran in range(nrandoms)]
         
         parent_data = Table.read(data_fn)
         parent_randoms = vstack([Table.read(fn) for fn in randoms_fn])
