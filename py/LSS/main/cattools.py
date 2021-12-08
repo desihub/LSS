@@ -381,7 +381,7 @@ def get_specdat(indir,pd):
     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
     num_badqa = np.sum(badqa)
     print('number with bad qa '+str(num_badqa))
-    nomtl = nodata & badqa
+    nomtl = nodata | badqa
     wfqa = ~nomtl
     return fs[wfqa]
 
@@ -1391,13 +1391,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''    
-    ff = Table.read(fl+'full.dat.fits')
+    ff = Table.read(fl+'full_noveto.dat.fits')
     
     
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
         ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
+    ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1552,11 +1553,12 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 
     #ffd = Table.read(fl+'full.dat.fits')
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
-    ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+    ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ffr)))
         ffr = cutphotmask(ffr,ebits)
         print('number after imaging mask '+str(len(ffr)))
+    ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
 
     #if type[:3] == 'ELG' or type == 'LRG':
     wz = ffr[tsnrcol] > tsnrcut
