@@ -227,8 +227,8 @@ if len(mtld) > 0:
     #ta['FA_VER'] = fver
     print(np.unique(fver))
     wfv = (np.array(fver) == faver)
-    mtld =  mtld[wfv]
-    ta = ta[wfv]
+    #mtld =  mtld[wfv]
+    #ta = ta[wfv]
 else:
     print('no done tiles in the MTL')
 
@@ -257,7 +257,7 @@ def doran(ii):
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
-        for it in range(0,len(mtld)):
+        for it in range(0,len(mtld[wfv])):
             #print(it,len(mtld))    
             tile = mtld['TILEID'][it]
             ts = str(tile).zfill(6)
@@ -267,7 +267,7 @@ def doran(ii):
             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
                 fav = '2.3.0'
             if fav == faver:
-                ttemp = Table(ta[it])
+                ttemp = Table(ta[wfv][it])
                 ttemp['OBSCONDITIONS'] = 516
                 ttemp['IN_DESI'] = 1
                 try:
