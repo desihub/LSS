@@ -1336,6 +1336,14 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 #             print('why is len(loclz[w]) > 1?') #this should never happen
 #         pd.append((loc,nz/nt))  
     loco,fzo = common.comp_tileloc(dz)
+    for i in range(0,len(fzo)):
+        frac = fzo[i]
+        if type(frac) == list:
+            if len(frac) > 1:
+                nlistg1 += 1
+            fzo[i] = frac[0]
+            nlist += 1
+    print(nlist,nlistg1)        
     print(len(loco),len(fzo),np.min(loco),np.max(loco),np.min(fzo),np.max(fzo))
     pd = dict(zip(loco,fzo))
     probl = np.zeros(len(dz))
