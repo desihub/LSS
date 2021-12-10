@@ -142,7 +142,7 @@ def comp_tileloc(dz):
             print('why is len(loclz[w]) > 1?') #this should never happen
         loco.append(loc)
         frac = nz/nt
-        if type(frac) == list:
+        if type(frac) != float:
             if len(frac) > 1:
                 nlistg1 += 1
             frac = frac[0]

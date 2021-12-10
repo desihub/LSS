@@ -1341,7 +1341,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     for i in range(0,len(fzo)):
         frac = fzo[i]
-        if type(frac) == list:
+        if type(frac) != float:
             if len(frac) > 1:
                 nlistg1 += 1
             fzo[i] = frac[0]
