@@ -108,6 +108,38 @@ def comp_tile(dz):
         ti += 1
     return tll,compa
 
+def comp_tileloc(dz):
+    #get numbers again after the re-assignment
+    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+
+    print('getting fraction assigned for each tilelocid')
+    #should be one (sometimes zero, though) assigned target at each tilelocid and we are now counting how many targets there are per tilelocid
+    #probability of assignment is then estimated as 1/n_tilelocid
+    nm = 0
+    nmt =0
+    
+    loco = []
+    fzo = []
+    for i in range(0,len(locl)):
+        if i%10000 == 0:
+            print('at row '+str(i))
+        nt = nlocl[i]
+        loc = locl[i]
+        w = loclz == loc
+        nz = 0
+        if len(loclz[w]) == 1:
+            nz = nloclz[w] #these are supposed all be 1...            
+        else:            
+            nm += 1.
+            nmt += nt
+        if len(loclz[w]) > 1:
+            print('why is len(loclz[w]) > 1?') #this should never happen
+        loco.append(loc)
+        fzo.appned(nz/nt)
+    return loco,fzo
+
+
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT

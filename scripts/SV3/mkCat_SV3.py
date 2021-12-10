@@ -462,7 +462,7 @@ if mkfulld:
         bitweightfile = SV3p.darkbitweightfile
         #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    if progl == 'bright':
+    if pdir == 'bright':
         bitweightfile = SV3p.brightbitweightfile
 
 

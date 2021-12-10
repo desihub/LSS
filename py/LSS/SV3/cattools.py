@@ -1225,40 +1225,8 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('TILELOCID_ASSIGNED numbers')
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
 
-    probl = np.zeros(len(dz))
-    #get completeness based on unique sets of tiles
-#     compa = []
-#     tll = []
-#     ti = 0
-#     print('getting completenes')
-#     #sorting by tiles makes things quicker with while statements below
-#     dz.sort('TILES')
-#     nts = len(np.unique(dz['TILES']))
-#     tlsl = dz['TILES']
-#     tlslu = np.unique(tlsl)
-#     laa = dz['LOCATION_ASSIGNED']
-#     
-#     i = 0
-#     while i < len(dz):
-#         tls  = []
-#         tlis = []
-#         nli = 0
-#         nai = 0
-#     
-#         while tlsl[i] == tlslu[ti]:
-#             nli += 1 #counting unique targetids within the given TILES value
-#             nai += laa[i] #counting the number assigned
-#             i += 1
-#             if i == len(dz):
-#                 break
-#     
-#         if ti%1000 == 0:
-#             print('at tiles '+str(ti)+' of '+str(nts))
-#         cp = nai/nli #completeness is number assigned over number total
-#         compa.append(cp)
-#         tll.append(tlslu[ti])
-#         ti += 1
-    #turn the above into a dictionary and apply it
+    
+    #get completeness based on unique sets of tiles "comp_tile"
     tll,compa = common.comp_tile(dz)
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
@@ -1316,46 +1284,60 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         if ii%10000 == 0:
             print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
      
-    dz['TILELOCID'] = locs
-    #get numbers again after the re-assignment
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
 
     dz['rosette_number'] = ros
     dz['rosette_r'] = rosr
     print('rosette number and the number on each rosette')
     print(np.unique(dz['rosette_number'],return_counts=True))
-    print('getting fraction assigned for each tilelocid')
-    #should be one (sometimes zero, though) assigned target at each tilelocid and we are now counting how many targets there are per tilelocid
-    #probability of assignment is then estimated as 1/n_tilelocid
-    nm = 0
-    nmt =0
-    pd = []
-    for i in range(0,len(locl)):
-        if i%10000 == 0:
-            print('at row '+str(i))
-        nt = nlocl[i]
-        loc = locl[i]
-        w = loclz == loc
-        nz = 0
-        if len(loclz[w]) == 1:
-            nz = nloclz[w] #these are supposed all be 1...            
-        else:            
-            nm += 1.
-            nmt += nt
-        if len(loclz[w]) > 1:
-            print('why is len(loclz[w]) > 1?') #this should never happen
-        pd.append((loc,nz/nt))  
-    pd = dict(pd)
+
+    dz['TILELOCID'] = locs
+    #get numbers again after the re-assignment
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+# 
+#     print('getting fraction assigned for each tilelocid')
+#     #should be one (sometimes zero, though) assigned target at each tilelocid and we are now counting how many targets there are per tilelocid
+#     #probability of assignment is then estimated as 1/n_tilelocid
+#     nm = 0
+#     nmt =0
+#     pd = []
+#     for i in range(0,len(locl)):
+#         if i%10000 == 0:
+#             print('at row '+str(i))
+#         nt = nlocl[i]
+#         loc = locl[i]
+#         w = loclz == loc
+#         nz = 0
+#         if len(loclz[w]) == 1:
+#             nz = nloclz[w] #these are supposed all be 1...            
+#         else:            
+#             nm += 1.
+#             nmt += nt
+#         if len(loclz[w]) > 1:
+#             print('why is len(loclz[w]) > 1?') #this should never happen
+#         pd.append((loc,nz/nt))  
+    loco,fzo = comp_tileloc(dz)
+    pd = dict(zip(loco,fzo))
+    probl = np.zeros(len(dz))
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
     print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)
-    
+    print(nm,nmt)    
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; dont quite match because some tilelocid still have 0 assigned')
+
+    #write out FRACZ_TILELOCID info
+    loco = np.array(tll).astype(dz['TILELOCID'].dtype)
+    co = Table()
+    co['TILELOCID'] = loco
+    co['FRACZ_TILELOCID'] = fzo
+    cof = outf.strip('_full_noveto.dat.fits')+'_comp_tileloc.fits'
+    print('writing comp_tileloc completeness to '+cof)
+    co.write(cof,overwrite=True,format='fits')    
+
+
+    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, length of input, number of inputs with obs; dont quite match because some tilelocid still have 0 assigned')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz),len(dz[wz]))
-    #dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
+    
     oct = np.copy(dz['COMP_TILE'])
     if bitweightfile is not None:
         fb = fitsio.read(bitweightfile)
