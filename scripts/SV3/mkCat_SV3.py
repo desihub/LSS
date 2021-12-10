@@ -466,7 +466,7 @@ if mkfulld:
         bitweightfile = SV3p.brightbitweightfile
 
 
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits')
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
