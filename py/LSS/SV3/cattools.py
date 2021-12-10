@@ -1343,7 +1343,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     dz['FRACZ_TILELOCID'] = probl
 
     #write out FRACZ_TILELOCID info
-    loco = np.array(loco).astype(dz['TILELOCID'].dtype)
+    #loco = np.array(loco).astype(dz['TILELOCID'].dtype)
     co = Table()
     co['TILELOCID'] = loco
     co['FRACZ_TILELOCID'] = fzo
