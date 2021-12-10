@@ -134,7 +134,7 @@ def comp_tileloc(dz):
         w = loclz == loc
         nz = 0
         if len(loclz[w]) == 1:
-            nz = nloclz[w] #these are supposed all be 1...            
+            nz = nloclz[w][0] #these are supposed all be 1...            
         else:            
             nm += 1.
             nmt += nt
@@ -142,11 +142,11 @@ def comp_tileloc(dz):
             print('why is len(loclz[w]) > 1?') #this should never happen
         loco.append(loc)
         frac = nz/nt
-        if type(frac) != float:
-            if len(frac) > 1:
-                nlistg1 += 1
-            frac = frac[0]
-            nlist += 1
+        #if type(frac) != float:
+        #    if len(frac) > 1:
+        #        nlistg1 += 1
+        #    frac = frac[0]
+        #    nlist += 1
             
         fzo.append(frac)
     print(str(nlist)+ ' were type list for some reason; '+str(nlistg1)+ ' had length greater than 1')
