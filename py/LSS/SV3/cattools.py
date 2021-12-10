@@ -1084,6 +1084,25 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
         dz[ii]['rosette_number'] = rosn
         dz[ii]['rosette_r'] = rosd
     print(np.unique(dz['NTILE']))
+    cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
+    comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILES']))
+    fcompa = []
+    for tl in dz['TILES']:
+        fcompa.append(comp_dicta[tl]) 
+    dz['COMP_TILE'] = np.array(fcompa)
+    wc0 = dz['COMP_TILE'] == 0
+    print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
+    
+    cof = fitsio.read(outf[:-23]+'_comp_tileloc.fits')
+    pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
+    probl = np.zeros(len(dz))
+    for i in range(0,len(dz)):
+        probl[i] = pd[dz['TILELOCID'][i]]
+    dz['FRACZ_TILELOCID'] = probl
+    
+
+
+
     dz.write(outf,format='fits', overwrite=True)
     
 
@@ -1321,8 +1340,6 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     probl = np.zeros(len(dz))
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
-    print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)    
     dz['FRACZ_TILELOCID'] = probl
 
     #write out FRACZ_TILELOCID info

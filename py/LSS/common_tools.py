@@ -140,6 +140,10 @@ def comp_tileloc(dz):
             print('why is len(loclz[w]) > 1?') #this should never happen
         loco.append(loc)
         fzo.append(nz/nt)
+    print('number of fibers with no observation, number targets on those fibers')
+    print(nm,nmt)    
+
+
     return loco,fzo
 
 
