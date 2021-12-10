@@ -124,6 +124,8 @@ def comp_tileloc(dz):
     
     loco = []
     fzo = []
+    nlist = 0
+    nlistg1 = 0
     for i in range(0,len(locl)):
         if i%10000 == 0:
             print('at row '+str(i))
@@ -139,7 +141,15 @@ def comp_tileloc(dz):
         if len(loclz[w]) > 1:
             print('why is len(loclz[w]) > 1?') #this should never happen
         loco.append(loc)
-        fzo.append(nz/nt)
+        frac = nz/nt
+        if type(frac) == list:
+            if len(frac) > 1:
+                nlistg1 += 1
+            frac = frac[0]
+            nlist += 1
+            
+        fzo.append(frac)
+    print(str(nlist)+ ' were type list for some reason; '+str(nlistg1)+ ' had length greater than 1')
     print('number of fibers with no observation, number targets on those fibers')
     print(nm,nmt)    
 
