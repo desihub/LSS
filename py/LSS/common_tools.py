@@ -139,7 +139,7 @@ def comp_tileloc(dz):
         if len(loclz[w]) > 1:
             print('why is len(loclz[w]) > 1?') #this should never happen
         loco.append(loc)
-        fzo.appned(nz/nt)
+        fzo.append(nz/nt)
     return loco,fzo
 
 
