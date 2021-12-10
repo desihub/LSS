@@ -74,6 +74,39 @@ def find_znotposs(dz):
     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
     return lznposs
 
+def comp_tile(dz):
+    compa = []
+    tll = []
+    ti = 0
+    print('getting completenes')
+    #sorting by tiles makes things quicker with while statements below
+    dz.sort('TILES')
+    nts = len(np.unique(dz['TILES']))
+    tlsl = dz['TILES']
+    tlslu = np.unique(tlsl)
+    laa = dz['LOCATION_ASSIGNED']
+    
+    i = 0
+    while i < len(dz):
+        tls  = []
+        tlis = []
+        nli = 0
+        nai = 0
+    
+        while tlsl[i] == tlslu[ti]:
+            nli += 1 #counting unique targetids within the given TILES value
+            nai += laa[i] #counting the number assigned
+            i += 1
+            if i == len(dz):
+                break
+    
+        if ti%1000 == 0:
+            print('at tiles '+str(ti)+' of '+str(nts))
+        cp = nai/nli #completeness is number assigned over number total
+        compa.append(cp)
+        tll.append(tlslu[ti])
+        ti += 1
+    return tll,compa
 
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     '''

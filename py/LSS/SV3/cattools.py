@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 import desimodel.footprint
 import desimodel.focalplane
 from random import random
+from LSS import common_tools as common
 from desitarget.io import read_targets_in_tiles
 from desitarget.sv3 import sv3_targetmask
 
@@ -1226,45 +1227,55 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     probl = np.zeros(len(dz))
     #get completeness based on unique sets of tiles
-    compa = []
-    tll = []
-    ti = 0
-    print('getting completenes')
-    #sorting by tiles makes things quicker with while statements below
-    dz.sort('TILES')
-    nts = len(np.unique(dz['TILES']))
-    tlsl = dz['TILES']
-    tlslu = np.unique(tlsl)
-    laa = dz['LOCATION_ASSIGNED']
-    
-    i = 0
-    while i < len(dz):
-        tls  = []
-        tlis = []
-        nli = 0
-        nai = 0
-    
-        while tlsl[i] == tlslu[ti]:
-            nli += 1 #counting unique targetids within the given TILES value
-            nai += laa[i] #counting the number assigned
-            i += 1
-            if i == len(dz):
-                break
-    
-        if ti%1000 == 0:
-            print('at tiles '+str(ti)+' of '+str(nts))
-        cp = nai/nli #completeness is number assigned over number total
-        compa.append(cp)
-        tll.append(tlslu[ti])
-        ti += 1
+#     compa = []
+#     tll = []
+#     ti = 0
+#     print('getting completenes')
+#     #sorting by tiles makes things quicker with while statements below
+#     dz.sort('TILES')
+#     nts = len(np.unique(dz['TILES']))
+#     tlsl = dz['TILES']
+#     tlslu = np.unique(tlsl)
+#     laa = dz['LOCATION_ASSIGNED']
+#     
+#     i = 0
+#     while i < len(dz):
+#         tls  = []
+#         tlis = []
+#         nli = 0
+#         nai = 0
+#     
+#         while tlsl[i] == tlslu[ti]:
+#             nli += 1 #counting unique targetids within the given TILES value
+#             nai += laa[i] #counting the number assigned
+#             i += 1
+#             if i == len(dz):
+#                 break
+#     
+#         if ti%1000 == 0:
+#             print('at tiles '+str(ti)+' of '+str(nts))
+#         cp = nai/nli #completeness is number assigned over number total
+#         compa.append(cp)
+#         tll.append(tlslu[ti])
+#         ti += 1
     #turn the above into a dictionary and apply it
+    tll,compa = common.comp_tile(dz)
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
     for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl]) 
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
-    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))       
+    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))   
+    
+    #write out comp_tile info
+    tll = np.array(tll).astype(dz['TILES'].dtype)
+    co = Table()
+    co['TILES'] = tll
+    co['COMP_TILE'] = compa
+    cof = outf.strip('_full_noveto.dat.fits')+'_comp_tile.fits'
+    print('writing comp_tile completeness to '+cof)
+    co.write(cof,overwrite=True,format='fits')    
 
     #get counts at unique TILELOCID
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
