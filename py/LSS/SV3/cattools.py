@@ -1085,7 +1085,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
         dz[ii]['rosette_r'] = rosd
     print(np.unique(dz['NTILE']))
     cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
-    comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILES']))
+    comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILE']))
     fcompa = []
     for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl]) 
@@ -1336,7 +1336,6 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 #             print('why is len(loclz[w]) > 1?') #this should never happen
 #         pd.append((loc,nz/nt))  
     loco,fzo = common.comp_tileloc(dz)
-    print(len(loco),len(fzo),np.min(loco),np.max(loco),np.min(fzo),np.max(fzo))
     pd = dict(zip(loco,fzo))
     probl = np.zeros(len(dz))
     for i in range(0,len(dz)):
