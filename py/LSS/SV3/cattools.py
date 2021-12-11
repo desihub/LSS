@@ -1087,8 +1087,13 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
     comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILE']))
     fcompa = []
-    for tl in dz['TILES']:
-        fcompa.append(comp_dicta[tl]) 
+    tls = dz['TILES']
+    ctls = cof['COMP_TILE']
+    for tl in tls:
+        if np.isin(tl,ctls):
+            fcompa.append(comp_dicta[tl]) 
+        else:
+            fcompa.append(0)
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
     print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
