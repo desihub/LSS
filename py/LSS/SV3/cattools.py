@@ -1105,7 +1105,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     probl = np.zeros(len(dz))
     no = 0
     for i in range(0,len(dz)):
-        if np.isin(dz['TILELOCID'],cof['TILELOCID'])
+        if np.isin(dz['TILELOCID'],cof['TILELOCID']):
             probl[i] = pd[dz['TILELOCID'][i]]
         else:
             no += 1
