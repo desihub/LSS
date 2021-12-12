@@ -1094,7 +1094,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     print('number of tiles groups in randoms not in data '+str(len(np.unique(tls[~tlsd]))))
     for i in range(0,len(tls)):
         if tlsd[i]:#np.isin(tl,ctls):
-            ctiles[i] = comp_dicta[tl]
+            ctiles[i] = comp_dicta[tls[i]]
         #    fcompa.append(comp_dicta[tl]) 
         #else:
         #    fcompa.append(0)
