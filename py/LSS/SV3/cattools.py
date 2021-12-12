@@ -1088,7 +1088,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILE']))
     fcompa = []
     tls = dz['TILES']
-    ctls = cof['COMP_TILE']
+    ctls = cof['TILES']
     tlsd = np.isin(np.unique(tls),cof['TILES'])
     print('number of tiles groups in randoms not in data '+str(len(np.unique(tls)[~tlsd])))
     for tl in tls:
@@ -1105,7 +1105,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     probl = np.zeros(len(dz))
     no = 0
     for i in range(0,len(dz)):
-        if np.isin(dz['TILELOCID'],cof['TILELOCID']):
+        if np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
             probl[i] = pd[dz['TILELOCID'][i]]
         else:
             no += 1
