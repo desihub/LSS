@@ -1089,13 +1089,15 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     fcompa = []
     tls = dz['TILES']
     ctls = cof['TILES']
-    tlsd = np.isin(np.unique(tls),cof['TILES'])
-    print('number of tiles groups in randoms not in data '+str(len(np.unique(tls)[~tlsd])))
-    for tl in tls:
-        if np.isin(tl,ctls):
-            fcompa.append(comp_dicta[tl]) 
-        else:
-            fcompa.append(0)
+    ctiles = np.zeros(len(dz))
+    tlsd = np.isin(tls,cof['TILES'])
+    print('number of tiles groups in randoms not in data '+str(len(np.unique(tls[~tlsd]))))
+    for i in range(0,len(tls)):
+        if tlsd[i]:#np.isin(tl,ctls):
+            ctiles[i] = comp_dicta[tl]
+        #    fcompa.append(comp_dicta[tl]) 
+        #else:
+        #    fcompa.append(0)
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
     print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
@@ -1104,8 +1106,9 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
     probl = np.zeros(len(dz))
     no = 0
+    tidsd = np.isin(dz['TILELOCID'],cof['TILELOCID'])
     for i in range(0,len(dz)):
-        if np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
+        if tidsd[i]:#np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
             probl[i] = pd[dz['TILELOCID'][i]]
         else:
             no += 1
