@@ -1089,6 +1089,8 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     fcompa = []
     tls = dz['TILES']
     ctls = cof['COMP_TILE']
+    tlsd = np.isin(np.unique(tls),cof['TILES'])
+    print('number of tiles groups in randoms not in data '+str(len(np.unique(tls)[~tlsd])))
     for tl in tls:
         if np.isin(tl,ctls):
             fcompa.append(comp_dicta[tl]) 
@@ -1101,8 +1103,13 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     cof = fitsio.read(outf[:-23]+'_comp_tileloc.fits')
     pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
     probl = np.zeros(len(dz))
+    no = 0
     for i in range(0,len(dz)):
-        probl[i] = pd[dz['TILELOCID'][i]]
+        if np.isin(dz['TILELOCID'],cof['TILELOCID'])
+            probl[i] = pd[dz['TILELOCID'][i]]
+        else:
+            no += 1
+    print('number of tilelocid in randoms not in data '+str(no))    
     dz['FRACZ_TILELOCID'] = probl
     
 
