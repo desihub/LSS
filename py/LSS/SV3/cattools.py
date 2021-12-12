@@ -1098,7 +1098,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
         #    fcompa.append(comp_dicta[tl]) 
         #else:
         #    fcompa.append(0)
-    dz['COMP_TILE'] = np.array(fcompa)
+    dz['COMP_TILE'] = ctiles#np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
     print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
     
