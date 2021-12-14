@@ -1119,6 +1119,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 
 
     dz.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
     
 
 
