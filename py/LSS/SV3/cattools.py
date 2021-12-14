@@ -1616,11 +1616,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #randomly sample data rows to apply redshifts, weights, etc. to randoms
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES']
-    if tp[:3] == 'BGS':
-        kl.append('flux_r_dered')
-        print(kl)
-        rcols.append('flux_r_dered')
+    kl =  ['RA','DEC','TARGETID','NTILE','rosette_number','rosette_r','TILES'] + rcols 
 
     for col in rcols: 
         ffc[col] = dshuf[col] 

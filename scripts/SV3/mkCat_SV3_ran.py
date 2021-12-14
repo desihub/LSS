@@ -345,8 +345,11 @@ def doran(ii):
             tsnrcol = 'TSNR2_BGS'
             dchi2 = 40
             tsnrcut = 1000
+        rcols=['Z','WEIGHT']
+        if type[:3] == 'BGS':
+            rcols.append('flux_r_dered')
 
-        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,rcols=rcols)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
