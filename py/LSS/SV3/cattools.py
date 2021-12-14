@@ -1616,11 +1616,18 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #randomly sample data rows to apply redshifts, weights, etc. to randoms
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES']
+    if tp[:3] == 'BGS':
+        kl.append('flux_r_dered')
+        print(kl)
+        rcols.append('flux_r_dered')
+
     for col in rcols: 
         ffc[col] = dshuf[col] 
     #cut to desired small set of columns and write out files, splitting N/S as well
     wn = ffc['PHOTSYS'] == 'N'
-    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])  
+    
+    ffc.keep_columns(kl)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
