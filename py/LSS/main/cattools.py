@@ -326,10 +326,11 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
             else:
                 tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
             tarsn.sort('TARGETID')
+            n += 1
+            print(tile,n,len(tls[tmask]),len(tarsn)) 
+
         else:
             print('no overlapping targetid')
-        n += 1
-        print(tile,n,len(tls[tmask]),len(tarsn)) 
     tarsn.write(fout,format='fits', overwrite=True)       
 
 
