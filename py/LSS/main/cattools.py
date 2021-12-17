@@ -290,6 +290,7 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
     s = 0
     n = 0
     
+    tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)
     if os.path.isfile(fout):
         tarsn = Table.read(fout)
@@ -326,13 +327,16 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
             else:
                 tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
             tarsn.sort('TARGETID')
-            n += 1
+            
             print(tile,n,len(tls[tmask]),len(tarsn)) 
 
         else:
             print('no overlapping targetid')
-    tarsn.write(fout,format='fits', overwrite=True)       
-
+        n += 1
+    if tarsn is not None:
+        tarsn.write(fout,format='fits', overwrite=True)       
+    else:
+        print('did not find any targets actually in this pixel '+str(hpx))
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
