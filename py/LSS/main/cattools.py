@@ -8,7 +8,7 @@ import os
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
-import desimodel.footprint
+import desimodel.footprint as foot
 import desimodel.focalplane
 from random import random
 from desitarget.io import read_targets_in_tiles
