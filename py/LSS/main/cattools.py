@@ -316,15 +316,18 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         sel = tpix == hpx
         tars = tars[sel]
         tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
-        tars = join(tars,tt,keys=['TARGETID'])
-        tars['TILEID'] = tile
-        tars.remove_columns(['ZWARN'])
-        if s == 0:
-            tarsn = tars
-            s = 1
+        if np.sum(np.isin(tt['TARGETID'],tars['TARGETID'])) > 0:
+			tars = join(tars,tt,keys=['TARGETID'])
+			tars['TILEID'] = tile
+			tars.remove_columns(['ZWARN'])
+			if s == 0:
+				tarsn = tars
+				s = 1
+			else:
+				tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
+			tarsn.sort('TARGETID')
         else:
-            tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
-        tarsn.sort('TARGETID')
+            print('no overlapping targetid')
         n += 1
         print(tile,n,len(tls[tmask]),len(tarsn)) 
     tarsn.write(fout,format='fits', overwrite=True)       
