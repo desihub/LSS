@@ -285,6 +285,50 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
         print(tile,n,len(tiles[tmask]),len(tarsn)) 
     tarsn.write(fout,format='fits', overwrite=True)       
 
+def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+    s = 0
+    n = 0
+    
+    tls = foot.pix2tiles(8,[hpx],tiles)
+    if os.path.isfile(fout):
+        tarsn = Table.read(fout)
+        s = 1
+        tdone = np.unique(tarsn['TILEID'])
+        tmask = ~np.isin(tls['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tls)).astype('bool')    
+    for tile in tls[tmask]['TILEID']:
+        ts = str(tile).zfill(6)
+        faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+        fht = fitsio.read_header(faf)
+        mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+        if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
+            mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
+        if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
+            mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
+        wt = tls['TILEID'] == tile
+        tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
+        #tars.keep_columns(tarcols)
+        tars = tars[[b for b in tarcol]]
+        theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
+        tpix = hp.ang2pix(8,theta,phi,nest=True)
+        sel = tpix == hpx
+        tars = tars[sel]
+        tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
+        tars = join(tars,tt,keys=['TARGETID'])
+        tars['TILEID'] = tile
+        tars.remove_columns(['ZWARN'])
+        if s == 0:
+            tarsn = tars
+            s = 1
+        else:
+            tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
+        tarsn.sort('TARGETID')
+        n += 1
+        print(tile,n,len(tls[tmask]),len(tarsn)) 
+    tarsn.write(fout,format='fits', overwrite=True)       
+
+
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
     #in current files on SVN, TARGETS has all of the necessary info on potential assignments
