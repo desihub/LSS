@@ -114,7 +114,7 @@ hpxs = foot.tiles2pix(8, tiles=tiles4comb)
 npx = 0
 for px in hpxs:
     print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)'_tarwdup_zdone.fits'
+    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
     ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
 
 if specrel == 'daily':
