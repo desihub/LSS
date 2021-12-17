@@ -307,7 +307,7 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
             mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
         wt = tls['TILEID'] == tile
-        tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True,isodate=fht['MTLTIME'])
+        tars = read_targets_in_tiles(mdir,tls[wt],mtl=True,isodate=fht['MTLTIME'])
         #tars.keep_columns(tarcols)
         tars = tars[[b for b in tarcol]]
         theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
