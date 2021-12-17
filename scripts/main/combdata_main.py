@@ -116,6 +116,7 @@ for px in hpxs:
     print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
     tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
     ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
+    npx += 1
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
