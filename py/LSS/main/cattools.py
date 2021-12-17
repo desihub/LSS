@@ -13,6 +13,7 @@ import desimodel.focalplane
 from random import random
 from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
+import healpy as hp
 
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
