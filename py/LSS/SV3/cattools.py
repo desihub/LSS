@@ -1499,15 +1499,19 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('length after cutting to good z '+str(len(ff)))
     print('minimum,maximum Z',min(ff['Z']),max(ff['Z']))
     ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
+    ff['WEIGHT_COMP'] = np.ones(len(ff))
     if weightmd == 'tileloc':
-        ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+    
     if weightmd == 'probobs' :         
         nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
-        ff['WEIGHT'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
+        ff['WEIGHT_COMP'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
         print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
         #wzer = ff['PROB_OBS'] == 0
         #ff['WEIGHT'][wzer] = 0
         #print(str(len(ff[wzer]))+' galaxies with PROB_OBS 0 getting assigned weight of 0 (should not happen, at minimum adjust weights to reflect 1 real realization happened)')
+    
+    ff['WEIGHT'] *= ff['WEIGHT_COMP']
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
