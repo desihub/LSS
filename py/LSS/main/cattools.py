@@ -34,11 +34,11 @@ def combtile_spec(tiles,outf='',md=''):
     else:
         tmask = np.ones(len(tiles)).astype('bool')    
 
-    for tile,zdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE']):
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         if md == 'zmtl':
-            tspec = combzmtl(tile,zdate)
+            tspec = combzmtl(tile,zdate,tdate)
         else:
-            tspec = combspecdata(tile,zdate)
+            tspec = combspecdata(tile,zdate,tdate)
         if tspec:
             tspec['TILEID'] = tile
             if s == 0:
@@ -59,7 +59,7 @@ def combtile_spec(tiles,outf='',md=''):
     specd.write(outf,format='fits', overwrite=True)       
  
 
-def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',md='' ):
+def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',md='' ):
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
@@ -74,9 +74,9 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
         
 
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         if os.path.isfile(ff):
-            fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
             if os.path.isfile(fq):
 
                 specs.append(si)
@@ -84,9 +84,9 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
                 print('did not find '+fq)    
         elif zfn == 'zbest':
             zfnt = 'redrock'
-            ff = coaddir+str(tile)+'/'+zdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+            ff = coaddir+str(tile)+'/'+zdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
             if os.path.isfile(ff):
-                fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+                fq = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
                 zfn = zfnt
                 zhdu = 'REDSHIFTS'
                 if os.path.isfile(fq):
@@ -103,10 +103,10 @@ def combspecdata(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/
     if len(specs) == 0:
         return None
     for i in range(0,len(specs)):
-        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu=zhdu)
-        tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits')
-        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu='FIBERMAP')
-        tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits',hdu=shdu)
+        tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=zhdu)
+        tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits')
+        tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu='FIBERMAP')
+        tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=shdu)
     
         if i == 0:
            tspec = tn
