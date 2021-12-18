@@ -143,23 +143,26 @@ if specrel == 'daily':
     if prog == 'bright':
         tps = ['BGS_ANY','MWS_ANY']   
     for tp in tps:
-        for px in hpxs:    
+        for px in hpxs:                
             tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-            tarf = Table.read(tarfo)
-            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-            remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
-            for col in remcol:
-                try:
-                    tarf.remove_columns([col] )#we get this where relevant from spec file
-                except:
-                    print('column '+col +' was not in tarwdup file')    
-            sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
-            if s == 0:
-                tarfn = tarf[sel]
-                s = 1
-            else:
-                tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-            print(len(tarfn),tp)
+            if os.path.isfile(tarfo):
+				tarf = Table.read(tarfo)
+				tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+				remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+				for col in remcol:
+					try:
+						tarf.remove_columns([col] )#we get this where relevant from spec file
+					except:
+						print('column '+col +' was not in tarwdup file')    
+				sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+				if s == 0:
+					tarfn = tarf[sel]
+					s = 1
+				else:
+					tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+				print(len(tarfn),tp)
+			else:
+			    print('file '+tarfo+' not found')
         tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
         tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
