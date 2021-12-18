@@ -15,6 +15,7 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
 import desimodel.footprint as foot
+from desitarget import targetmask
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
@@ -123,14 +124,6 @@ for px in hpxs:
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     ct.combtile_spec(tiles4comb,specfo)
-    tarf = Table.read(tarfo)
-    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-    remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
-    for col in remcol:
-        try:
-            tarf.remove_columns([col] )#we get this where relevant from spec file
-        except:
-            print('column '+col +' was not in tarwdup file')    
     specf = Table.read(specfo)
     sel = specf['COADD_FIBERSTATUS'] == 999999
     specf['COADD_FIBERSTATUS'][sel] = specf['FIBERSTATUS'][sel]
@@ -144,6 +137,33 @@ if specrel == 'daily':
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+    s = 0
+    if prog == 'dark':
+        tps = ['LRG','ELG','QSO']
+    if prog == 'bright':
+        tps = ['BGS_ANY','MWS_ANY']   
+    for tp in tps:
+        for px in hpxs:    
+            tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+            tarf = Table.read(tarfo)
+            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+            for col in remcol:
+                try:
+                    tarf.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    print('column '+col +' was not in tarwdup file')    
+            sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+            if s == 0:
+                tarfn = tarf[sel]
+                s = 1
+            else:
+                tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+            print(len(tarfn),tp)
+        tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+        tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
+        tc.write(ldirspec+tp+'_tilelocs.dat.fits',format='fits', overwrite=True)
 
 
 if specrel == 'everest':
@@ -165,7 +185,6 @@ if specrel == 'everest':
 
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)

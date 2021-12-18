@@ -109,7 +109,7 @@ def comp_tile(dz):
     return tll,compa
 
 def comp_tileloc(dz):
-    #get numbers again after the re-assignment
+    
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
