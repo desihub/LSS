@@ -112,13 +112,6 @@ if not os.path.exists(ldirspec+'healpix'):
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 #ct.combtiles_wdup(tiles4comb,tarfo)
-hpxs = foot.tiles2pix(8, tiles=tiles4comb)
-npx = 0
-for px in hpxs:
-    print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-    ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
-    npx += 1
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -143,7 +136,7 @@ if specrel == 'daily':
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+    #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
 
 if specrel == 'everest':
@@ -163,11 +156,19 @@ if specrel == 'everest':
     tarf.remove_columns(['ZWARN_MTL'])
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
 
-    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
+    #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
+hpxs = foot.tiles2pix(8, tiles=tiles4comb)
+npx = 0
+for px in hpxs:
+    print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+    ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
+    npx += 1
 
-tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
-tc = ct.count_tiles_better('dat',prog,specrel=specrel)
-tc.write(ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits',format='fits', overwrite=True)
+
+#tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
+#tc = ct.count_tiles_better('dat',prog,specrel=specrel)
+#tc.write(ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits',format='fits', overwrite=True)
 

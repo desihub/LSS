@@ -35,6 +35,7 @@ def combtile_spec(tiles,outf='',md=''):
         tmask = np.ones(len(tiles)).astype('bool')    
 
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
         if md == 'zmtl':
             tspec = combzmtl(tile,zdate,tdate)
         else:
