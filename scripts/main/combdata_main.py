@@ -54,7 +54,8 @@ print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true f
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
-tiles4comb['ZDATE'] = mtd['LASTNIGHT']
+#tiles4comb['ZDATE'] = mtd['LASTNIGHT']
+tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 
 if len(tiles4comb) > 0:
     ral = []
