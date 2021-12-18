@@ -112,6 +112,13 @@ if not os.path.exists(ldirspec+'healpix'):
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 #ct.combtiles_wdup(tiles4comb,tarfo)
+hpxs = foot.tiles2pix(8, tiles=tiles4comb)
+npx = 0
+for px in hpxs:
+    print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+    ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
+    npx += 1
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -159,13 +166,6 @@ if specrel == 'everest':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
-hpxs = foot.tiles2pix(8, tiles=tiles4comb)
-npx = 0
-for px in hpxs:
-    print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-    ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
-    npx += 1
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
