@@ -28,6 +28,7 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 
 
 args = parser.parse_args()
@@ -115,11 +116,12 @@ if not os.path.exists(ldirspec+'healpix'):
 #ct.combtiles_wdup(tiles4comb,tarfo)
 hpxs = foot.tiles2pix(8, tiles=tiles4comb)
 npx = 0
-for px in hpxs:
-    print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-    ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
-    npx += 1
+if args.counts_only != 'y':
+	for px in hpxs:
+		print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+		tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+		ct.combtiles_wdup_hp(px,tiles4comb,tarfo)
+		npx += 1
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -143,32 +145,33 @@ if specrel == 'daily':
     if prog == 'bright':
         tps = ['BGS_ANY','MWS_ANY']   
     for tp in tps:
-        s = 0
-        np =0 
-        for px in hpxs:                
-            tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-            if os.path.isfile(tarfo):
-                tarf = Table.read(tarfo)
-                tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-                remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
-                for col in remcol:
-                    try:
-                        tarf.remove_columns([col] )#we get this where relevant from spec file
-                    except:
-                        print('column '+col +' was not in tarwdup file')    
-                sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
-                if s == 0:
-                    tarfn = tarf[sel]
-                    s = 1
+        if args.counts_only != 'y':
+            s = 0
+            np =0 
+            for px in hpxs:                
+                tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                if os.path.isfile(tarfo):
+                    tarf = Table.read(tarfo)
+                    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+                    remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+                    for col in remcol:
+                        try:
+                            tarf.remove_columns([col] )#we get this where relevant from spec file
+                        except:
+                            print('column '+col +' was not in tarwdup file')    
+                    sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+                    if s == 0:
+                        tarfn = tarf[sel]
+                        s = 1
+                    else:
+                        tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+                    print(len(tarfn),tp,np,len(hpxs))
                 else:
-                    tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                print(len(tarfn),tp,np,len(hpxs))
-            else:
-                print('file '+tarfo+' not found')
-            np += 1    
-        tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-        tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',prog,specrel=specrel) 
+                    print('file '+tarfo+' not found')
+                np += 1    
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
         tc.write(ldirspec+tp+'_tilelocs.dat.fits',format='fits', overwrite=True)
 
 

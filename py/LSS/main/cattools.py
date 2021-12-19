@@ -464,7 +464,12 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
     #wfqa = ~nomtl
     
     indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
-    fs = get_specdat(indir,pd)
+    ps = pd
+    if pd == 'LRG' or pd == 'ELG' or pd ='QSO':
+        ps = 'dark'
+    if pd == 'BGS_ANY' or pd == 'MWS_ANY':
+        ps = 'bright'    
+    fs = get_specdat(indir,ps)
 
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid)
