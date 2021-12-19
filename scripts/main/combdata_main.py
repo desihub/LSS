@@ -137,12 +137,14 @@ if specrel == 'daily':
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-    s = 0
+    
     if prog == 'dark':
         tps = ['LRG','ELG','QSO']
     if prog == 'bright':
         tps = ['BGS_ANY','MWS_ANY']   
     for tp in tps:
+        s = 0
+        np =0 
         for px in hpxs:                
             tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
             if os.path.isfile(tarfo):
@@ -160,9 +162,10 @@ if specrel == 'daily':
                     s = 1
                 else:
                     tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                print(len(tarfn),tp)
+                print(len(tarfn),tp,np,len(hpxs))
             else:
                 print('file '+tarfo+' not found')
+            np += 1    
         tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
         tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
