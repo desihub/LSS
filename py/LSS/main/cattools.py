@@ -1273,7 +1273,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    if tp[:3] == 'ELG' and azf != '':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
