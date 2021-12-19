@@ -421,9 +421,12 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
     
-def get_specdat(indir,pd):
-    #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
-    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+def get_specdat(indir,pd,ver='daily'):
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    if ver == 'everest':
+        zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    if ver == 'daily':
+        zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
     dz = Table.read(zf) 
     selz = dz['ZWARN'] != 999999
     fs = dz[selz]
