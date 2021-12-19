@@ -1399,22 +1399,24 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     nmt =0
     pd = []
     nloclt = len(locl)
+    lzs = np.isin(locl,loclz)
     for i in range(0,len(locl)):
         if i%10000 == 0:
             print('at row '+str(i)+' of '+str(nloclt))
         nt = nlocl[i]
-        loc = locl[i]
-        w = loclz == loc
-        nz = 0
-        if len(loclz[w]) == 1:
-            nz = nloclz[w] #these are supposed all be 1...
+        nz = lzs[i]
+        #loc = locl[i]
+        #w = loclz == loc
+        #nz = 0
+        #if len(loclz[w]) == 1:
+        #    nz = nloclz[w] #these are supposed all be 1...
             
-        else:
+        #else:
             #print(loclz[w],nt) 
-            nm += 1.
-            nmt += nt
-        if len(loclz[w]) > 1:
-            print('why is len(loclz[w]) > 1?')
+        #    nm += 1.
+        #    nmt += nt
+        #if len(loclz[w]) > 1:
+        #    print('why is len(loclz[w]) > 1?')
             #wa = dz['TILELOCID'] == loc
             #print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
             #probl[wa] = nz/nt
