@@ -168,7 +168,7 @@ if specrel == 'daily':
             np += 1    
         tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
         tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
+        tc = ct.count_tiles_better('dat',prog,specrel=specrel) 
         tc.write(ldirspec+tp+'_tilelocs.dat.fits',format='fits', overwrite=True)
 
 
