@@ -177,13 +177,17 @@ if mkfulld:
             azf = mainp.elgzf
         if type[:3] == 'QSO':
             azf = mainp.qsozf
-
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
+    if specrel == 'daily':
+        dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
+        tlf = ldirspec+type+'_tilelocs.dat.fits'
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
  
     ftar = fitsio.read(tarf)   
 
-    dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+    
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
@@ -191,7 +195,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
