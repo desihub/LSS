@@ -1405,7 +1405,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
             print('at row '+str(i)+' of '+str(nloclt))
         nt = nlocl[i]
         nz = lzs[i]
-        #loc = locl[i]
+        loc = locl[i]
         #w = loclz == loc
         #nz = 0
         #if len(loclz[w]) == 1:
