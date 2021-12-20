@@ -1072,6 +1072,6 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvspar('S','galdepth_g')
+    obiLRGvspar('S','galdepth_g',md='')
     
     
