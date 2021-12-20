@@ -200,7 +200,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs
     w1flux = obi_masked['flux_w1']/obi_masked['mw_transmission_w1']
     zfibflux = obi_masked['fiberflux_z']/obi_masked['mw_transmission_z']
     
-    ws = isLRG_colors(gflux, rflux, zflux, w1flux,
+    ws = cuts.isLRG_colors(gflux, rflux, zflux, w1flux,
                  zfiberflux,  south=south)
     
     print(len(obi_masked[ws])) 
