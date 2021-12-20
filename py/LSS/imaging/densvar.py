@@ -211,12 +211,12 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs
     obi_lrg = obi_masked[ws]             
 
     if vmin is None:
-        vmin = np.min(rl[par])
+        vmin = np.min(obi_lrg[par])
     if vmax is None:
-        vmax = np.max(rl[par])    
+        vmax = np.max(obi_lrg[par])    
         
     rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
-    dh,db = np.histogram(obi_elg[par],bins=bn)
+    dh,db = np.histogram(obi_lrg[par],bins=bn)
     rf = len(obi_masked)/len(obi_elg)
     sv = dh/rh*rf
     ep = np.sqrt(dh)/rh*rf
