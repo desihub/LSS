@@ -171,6 +171,68 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
+def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs/cdirs/desi/users/huikong/decals_ngc/subset/',elgandlrgbits = [1,5,6,7,8,9,11,12,13]):
+    if md == 'sv3':
+        from desitarget.sv3 import sv3_cuts as cuts
+    else:
+        from desitarget import cuts
+    NS = None
+    if reg == 'N':
+        NS = 'north'
+        south = False
+    if reg == 'DS' or reg == 'DN' or reg =='S':
+        NS = 'south' 
+        south = True
+    if NS == None:
+        print('!!!NS not set, you must have chose an invalid reg; should be N, DS, or DN!!!')
+        return(None)
+    print(NS)
+    obif = fitsio.read(obidir+'/subset_rs0.fits')
+    sel = obif['matched'] == True
+    sel &= obif['dec'] < 32.375
+    obif = obif[sel]
+    print(len(obif))
+    obi_masked = masklc(obif,mb=elgandlrgbits)
+    gflux = obi_masked['flux_g']/obi_masked['mw_transmission_g']
+    rflux = obi_masked['flux_r']/obi_masked['mw_transmission_r']
+    zflux = obi_masked['flux_z']/obi_masked['mw_transmission_z']
+    w1flux = obi_masked['flux_w1']/obi_masked['mw_transmission_w1']
+    zfibflux = obi_masked['fiberflux_z']/obi_masked['mw_transmission_z']
+    
+    ws = isLRG_colors(gflux, rflux, zflux, w1flux,
+                 zfiberflux,  south=south)
+    
+    print(len(obi_masked[ws])) 
+    ws &= (obi_masked['ra']*0 == 0)
+    print(len(obi_masked[ws])) 
+    obi_lrg = obi_masked[ws]             
+
+    if vmin is None:
+        vmin = np.min(rl[par])
+    if vmax is None:
+        vmax = np.max(rl[par])    
+        
+    rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
+    dh,db = np.histogram(obi_elg[par],bins=bn)
+    rf = len(obi_masked)/len(obi_elg)
+    sv = dh/rh*rf
+    ep = np.sqrt(dh)/rh*rf
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+    plt.errorbar(bc,sv-1.,ep,fmt='ko')
+    plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
+    plt.ylim(-.3,.3)
+    plt.xlabel(par)
+    plt.ylabel('Ngal/<Ngal> - 1')
+    plt.title('Obiwan LRGs in '+reg + ' footprint')
+    plt.show()
+    wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
+    frac = len(obi_masked[~wv])/len(obi_masked)
+    print('fraction of randoms not included in plot: '+str(frac))
+    return bc,sv,ep
+
+
 def gethpmap(dl,reg=False):
     if reg:
         if reg == 'S' or reg == 'N':
