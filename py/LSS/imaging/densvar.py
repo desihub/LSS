@@ -216,39 +216,39 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
         vmax = np.max(obi_lrg[par])    
         
     if syspix:
-		rth,rphi = radec2thphi(obi_masked['RA'],obi_masked['DEC'])
-		rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
-		pixlr = np.zeros(12*nside*nside)
-		for pix in rpix:
-			pixlr[pix] += 1.
-		dth,dphi = radec2thphi(obi_lrg['RA'],obi_lrg['DEC'])
-		dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
-		pixld = np.zeros(12*nside*nside)
-		for pix in dpix:
-			pixld[pix] += 1.
-		parv = fitsio.read(pixfn)[par]
-		wp = pixlr > 0
-			
-		plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])	
+        rth,rphi = radec2thphi(obi_masked['RA'],obi_masked['DEC'])
+        rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+        pixlr = np.zeros(12*nside*nside)
+        for pix in rpix:
+            pixlr[pix] += 1.
+        dth,dphi = radec2thphi(obi_lrg['RA'],obi_lrg['DEC'])
+        dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+        pixld = np.zeros(12*nside*nside)
+        for pix in dpix:
+            pixld[pix] += 1.
+        parv = fitsio.read(pixfn)[par]
+        wp = pixlr > 0
+            
+        plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])    
 
     else:
-		rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
-		dh,db = np.histogram(obi_lrg[par],bins=bn)
-		rf = len(obi_masked)/len(obi_lrg)
-		sv = dh/rh*rf
-		ep = np.sqrt(dh)/rh*rf
-		bc = []
-		for i in range(0,len(bn)-1):
-			bc.append((bn[i]+bn[i+1])/2.)
-		plt.errorbar(bc,sv-1.,ep,fmt='ko')
-		plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
-		plt.ylim(-.3,.3)
-		plt.xlabel(par)
-		plt.ylabel('Ngal/<Ngal> - 1')
-		plt.title('Obiwan LRGs in '+reg + ' footprint')
-		wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
-		frac = len(obi_masked[~wv])/len(obi_masked)
-		print('fraction of randoms not included in plot: '+str(frac))
+        rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
+        dh,db = np.histogram(obi_lrg[par],bins=bn)
+        rf = len(obi_masked)/len(obi_lrg)
+        sv = dh/rh*rf
+        ep = np.sqrt(dh)/rh*rf
+        bc = []
+        for i in range(0,len(bn)-1):
+            bc.append((bn[i]+bn[i+1])/2.)
+        plt.errorbar(bc,sv-1.,ep,fmt='ko')
+        plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
+        plt.ylim(-.3,.3)
+        plt.xlabel(par)
+        plt.ylabel('Ngal/<Ngal> - 1')
+        plt.title('Obiwan LRGs in '+reg + ' footprint')
+        wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
+        frac = len(obi_masked[~wv])/len(obi_masked)
+        print('fraction of randoms not included in plot: '+str(frac))
 
     plt.show()
     return bc,sv,ep
