@@ -212,12 +212,12 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
 
         
     if syspix:
-        rth,rphi = radec2thphi(obi_masked['RA'],obi_masked['DEC'])
+        rth,rphi = radec2thphi(obi_masked['ra'],obi_masked['dec'])
         rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
         pixlr = np.zeros(12*nside*nside)
         for pix in rpix:
             pixlr[pix] += 1.
-        dth,dphi = radec2thphi(obi_lrg['RA'],obi_lrg['DEC'])
+        dth,dphi = radec2thphi(obi_lrg['ra'],obi_lrg['dec'])
         dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
         pixld = np.zeros(12*nside*nside)
         for pix in dpix:
