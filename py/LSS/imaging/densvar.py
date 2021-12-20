@@ -135,6 +135,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     obif = fitsio.read(obidir+NS+'/file0_rs0_skip0/merged/matched_input.fits')
     print(len(obif))
     obi_masked = masklc(obif,mb=elgandlrgbits)
+    
     if reg != 'N':
         wr = sel_reg(obi_masked['ra'],obi_masked['dec'],reg)
         obi_masked = obi_masked[wr]    
@@ -194,6 +195,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs
     obif = obif[sel]
     print(len(obif))
     obi_masked = masklc(obif,mb=elgandlrgbits)
+    print(len(obi_masked))
     gflux = obi_masked['flux_g']/obi_masked['mw_transmission_g']
     rflux = obi_masked['flux_r']/obi_masked['mw_transmission_r']
     zflux = obi_masked['flux_z']/obi_masked['mw_transmission_z']
@@ -1069,6 +1071,7 @@ class densvar:
         plt.title(title)
         plt.show()    
             
-
+if __name__ == "__main__":
+    obiLRGvspar('S','galdepth_g')
     
     
