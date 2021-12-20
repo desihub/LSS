@@ -210,10 +210,6 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     print(len(obi_masked[ws])) 
     obi_lrg = obi_masked[ws]             
 
-    if vmin is None:
-        vmin = np.min(obi_lrg[par])
-    if vmax is None:
-        vmax = np.max(obi_lrg[par])    
         
     if syspix:
         rth,rphi = radec2thphi(obi_masked['RA'],obi_masked['DEC'])
@@ -232,6 +228,11 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
         plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])    
 
     else:
+        if vmin is None:
+            vmin = np.min(obi_lrg[par])
+        if vmax is None:
+            vmax = np.max(obi_lrg[par])    
+
         rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
         dh,db = np.histogram(obi_lrg[par],bins=bn)
         rf = len(obi_masked)/len(obi_lrg)
