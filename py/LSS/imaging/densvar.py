@@ -217,7 +217,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs
         
     rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
     dh,db = np.histogram(obi_lrg[par],bins=bn)
-    rf = len(obi_masked)/len(obi_elg)
+    rf = len(obi_masked)/len(obi_lrg)
     sv = dh/rh*rf
     ep = np.sqrt(dh)/rh*rf
     bc = []
