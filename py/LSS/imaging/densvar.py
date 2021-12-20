@@ -173,7 +173,7 @@ def obiELGvspar(reg,par,vmin=None,vmax=None,nbin=10,obidir='/global/cscratch1/sd
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
-def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs/cdirs/desi/users/huikong/decals_ngc/subset/',elgandlrgbits = [1,5,6,7,8,9,11,12,13]):
+def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir='/global/cfs/cdirs/desi/users/huikong/decals_ngc/subset/',elgandlrgbits = [1,5,6,7,8,9,11,12,13]):
     if md == 'sv3':
         from desitarget.sv3 import sv3_cuts as cuts
     else:
@@ -215,24 +215,42 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,md='sv3',nbin=10,obidir='/global/cfs
     if vmax is None:
         vmax = np.max(obi_lrg[par])    
         
-    rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
-    dh,db = np.histogram(obi_lrg[par],bins=bn)
-    rf = len(obi_masked)/len(obi_lrg)
-    sv = dh/rh*rf
-    ep = np.sqrt(dh)/rh*rf
-    bc = []
-    for i in range(0,len(bn)-1):
-        bc.append((bn[i]+bn[i+1])/2.)
-    plt.errorbar(bc,sv-1.,ep,fmt='ko')
-    plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
-    plt.ylim(-.3,.3)
-    plt.xlabel(par)
-    plt.ylabel('Ngal/<Ngal> - 1')
-    plt.title('Obiwan LRGs in '+reg + ' footprint')
+    if syspix:
+		rth,rphi = radec2thphi(obi_masked['RA'],obi_masked['DEC'])
+		rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+		pixlr = np.zeros(12*nside*nside)
+		for pix in rpix:
+			pixlr[pix] += 1.
+		dth,dphi = radec2thphi(obi_lrg['RA'],obi_lrg['DEC'])
+		dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+		pixld = np.zeros(12*nside*nside)
+		for pix in dpix:
+			pixld[pix] += 1.
+		parv = fitsio.read(pixfn)[par]
+		wp = pixlr > 0
+			
+		plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])	
+
+    else:
+		rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
+		dh,db = np.histogram(obi_lrg[par],bins=bn)
+		rf = len(obi_masked)/len(obi_lrg)
+		sv = dh/rh*rf
+		ep = np.sqrt(dh)/rh*rf
+		bc = []
+		for i in range(0,len(bn)-1):
+			bc.append((bn[i]+bn[i+1])/2.)
+		plt.errorbar(bc,sv-1.,ep,fmt='ko')
+		plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
+		plt.ylim(-.3,.3)
+		plt.xlabel(par)
+		plt.ylabel('Ngal/<Ngal> - 1')
+		plt.title('Obiwan LRGs in '+reg + ' footprint')
+		wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
+		frac = len(obi_masked[~wv])/len(obi_masked)
+		print('fraction of randoms not included in plot: '+str(frac))
+
     plt.show()
-    wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
-    frac = len(obi_masked[~wv])/len(obi_masked)
-    print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep
 
 
@@ -383,12 +401,13 @@ def densvsinput_pix(rl,ft,parl,xlab='',wsel=None,reg=None,fnc=None,vmin=None,vma
     return bc,sv,ep
 
 
-def plot_pixdens1d(pixlg,pixlr,parv,weights,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10,xlab=''):
+def plot_pixdens1d(pixlg,pixlr,parv,weights=None,vmin=None,vmax=None,smean=True,addhist=True,rng=0.3,titl='',nbin=10,xlab=''):
     if vmin is None:
         vmin = np.min(parv)
     if vmax is None:
         vmax = np.max(parv)
-    
+    if weights == None:
+        weights = np.ones(len(pixlg))
     rh,bn = np.histogram(parv,bins=nbin,range=(vmin,vmax),weights=pixlr)
     dh,db = np.histogram(parv,bins=bn,weights=pixlg*weights)
     norm = sum(rh)/sum(dh)
@@ -1072,6 +1091,6 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvspar('S','galdepth_g',md='')
+    obiLRGvspar('S','GALDEPTH_G',md='',syspix=True)
     
     
