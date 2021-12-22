@@ -319,6 +319,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     obif = fitsio.read(obidir+'/subset_rs0.fits')
     sel = obif['matched'] == True
     sel &= obif['dec'] < 32.375
+    sel &= obif['dec'] > -10
     obif = obif[sel]
     print(len(obif))
     obi_masked = masklc(obif,mb=elgandlrgbits)
@@ -371,10 +372,12 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
     datf = masklc(datf,mb=elgandlrgbits)
     sel = datf['dec'] < 32.375
+    sel &= datf['dec'] > -10
     datf = datf[sel]
     ranf = fitsio.read(obidir+'subset_random.fits')
     ranf = masklc(ranf,mb=elgandlrgbits)
     sel = ranf['dec'] < 32.375
+    sel &= ranf['dec'] > -10
     ranf = ranf[sel]
 
     rth,rphi = radec2thphi(ranf['ra'],ranf['dec'])
@@ -438,8 +441,8 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     print('fraction of randoms not included in plot: '+str(frac))
 
     plt.show()
-    plt.hist(parv[wp],histtype='step')
-    plt.hist(rp,histtype='step')
+    plt.hist(parv[wp],histtype='step',density=True)
+    plt.hist(rp,histtype='step',density=True)
     plt.show()
     return bc,sv,ep
 
