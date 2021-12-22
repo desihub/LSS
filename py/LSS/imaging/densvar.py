@@ -226,8 +226,9 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
         pixld[pix] += 1.
     parv = fitsio.read(pixfn)[par.upper()]
     wp = pixlr > 0
-        
-    bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])   
+    vmin = np.percentile(parv[wp],1)  
+    vmax = np.percentile(parv[wp],99)  
+    bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     
     datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
     datf = masklc(datf)
@@ -251,7 +252,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     parv = fitsio.read(pixfn)[par.upper()]
     wp = pixlr > 0
         
-    bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])   
+    bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     plt.plot(bcpd,svpd-1.,'k-',label='data')
     plt.errorbar(bcp,svp-1.,epp,fmt='rd',label='obiwan')
     plt.title('SV3 selection pixelized')
@@ -261,20 +262,30 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
 
     #else:
     if vmin is None:
-        vmin = np.min(obi_lrg[par])
+        #vmin = np.min(obi_lrg[par])
+        vmin = np.percentile(obi_lrg[par],1)
     if vmax is None:
-        vmax = np.max(obi_lrg[par])    
+        #vmax = np.max(obi_lrg[par]) 
+        vmax = np.percentile(obi_lrg[par],99)   
 
     rh,bn = np.histogram(obi_masked[par],bins=nbin,range=(vmin,vmax))
     dh,db = np.histogram(obi_lrg[par],bins=bn)
     rf = len(obi_masked)/len(obi_lrg)
     sv = dh/rh*rf
     ep = np.sqrt(dh)/rh*rf
+    rh,bn = np.histogram(ranf[par],bins=nbin,range=(vmin,vmax))
+    dh,db = np.histogram(datf[par],bins=bn)
+    rf = len(ranf)/len(datf)
+    svd = dh/rh*rf
+    epd = np.sqrt(dh)/rh*rf
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    plt.errorbar(bc,sv-1.,ep,fmt='ko')
-    plt.errorbar(bcp,svp-1.,epp,fmt='rd')
+    plt.errorbar(bc,sv-1.,ep,fmt='rd',label='obiwan')
+    plt.plot(bc,svd-1.,'k-',label='data')
+    plt.title('SV3 selection points')
+    plt.show()
+   
     #plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
     plt.ylim(-.3,.3)
     plt.xlabel(par)
