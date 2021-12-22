@@ -384,6 +384,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     for pix in dpix:
         pixld[pix] += 1.
     parv = fitsio.read(pixfn)[par.upper()]
+    parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
@@ -405,8 +406,10 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     rf = len(obi_masked)/len(obi_lrg)
     sv = dh/rh*rf
     ep = np.sqrt(dh)/rh*rf
-    rh,bn = np.histogram(ranf[par],bins=nbin,range=(vmin,vmax))
-    dh,db = np.histogram(datf[par],bins=bn)
+    rp = -2.5*(np.log10(5/np.sqrt(ranf[par]))-9)-ec*ranf['ebv']
+    rh,bn = np.histogram(rp,bins=nbin,range=(vmin,vmax))
+    dp = -2.5*(np.log10(5/np.sqrt(datf[par]))-9)-ec*datf['ebv']
+    dh,db = np.histogram(dp,bins=bn)
     rf = len(ranf)/len(datf)
     svd = dh/rh*rf
     epd = np.sqrt(dh)/rh*rf
