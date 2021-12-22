@@ -253,10 +253,6 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     wp = pixlr > 0
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
-    plt.plot(bcpd,svpd-1.,'k-',label='data')
-    plt.errorbar(bcp,svp-1.,epp,fmt='rd',label='obiwan')
-    plt.title('SV3 selection pixelized')
-    plt.show()
     
 
 
@@ -281,16 +277,21 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    plt.errorbar(bc,sv-1.,ep,fmt='rd',label='obiwan')
-    plt.plot(bc,svd-1.,'k-',label='data')
-    plt.title('SV3 selection points')
-    plt.show()
+    plt.errorbar(bc,sv-1.,ep,fmt='r-',label='obiwan points')
+    plt.plot(bc,svd-1.,'k-',label='data points')
+    plt.plot(bcpd,svpd-1.,'k--',label='data pixelized')
+    plt.errorbar(bcp,svp-1.,epp,fmt='r--',label='obiwan pixelized')
+    plt.title('SV3 selection ')
+    #plt.show()
+
+    #plt.title('SV3 selection points')
+    #plt.show()
    
     #plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
-    plt.ylim(-.3,.3)
+    #plt.ylim(-.3,.3)
     plt.xlabel(par)
     plt.ylabel('Ngal/<Ngal> - 1')
-    plt.title('Obiwan LRGs in '+reg + ' footprint')
+    #plt.title('Obiwan LRGs in '+reg + ' footprint')
     wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
     frac = len(obi_masked[~wv])/len(obi_masked)
     print('fraction of randoms not included in plot: '+str(frac))
@@ -1137,5 +1138,7 @@ class densvar:
             
 if __name__ == "__main__":
     obiLRGvspar('S','galdepth_g',md='sv3',syspix=True)
+    obiLRGvspar('S','galdepth_r',md='sv3',syspix=True)
+    obiLRGvspar('S','galdepth_z',md='sv3',syspix=True)
     
     
