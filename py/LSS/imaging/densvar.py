@@ -388,6 +388,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = fitsio.read(pixfn)[par.upper()]
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
+    wp &= parv > 0
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     
@@ -1283,8 +1284,8 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True,vmin=24.3,vmax=25)
-    obiLRGvs_depthmag('S','psfdepth','r',md='sv3',syspix=True,vmin=23.7,vmax=24.5)
-    obiLRGvs_depthmag('S','psfdepth','z',md='sv3',syspix=True,vmin=22.7,vmax=23.7)
+    obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True)#,vmin=24.3,vmax=25)
+    obiLRGvs_depthmag('S','psfdepth','r',md='sv3',syspix=True)#,vmin=23.7,vmax=24.5)
+    obiLRGvs_depthmag('S','psfdepth','z',md='sv3',syspix=True)#,vmin=22.7,vmax=23.7)
     
     
