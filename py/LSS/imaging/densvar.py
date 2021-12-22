@@ -361,6 +361,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
     wp &= parv > 0
+    wp &= parv*0 == 0
     if vmin == None:
         vmin = np.percentile(parv[wp],1)  
     if vmax == None:
@@ -389,6 +390,8 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = fitsio.read(pixfn)[par.upper()]
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
+    wp &= parv > 0
+    wp &= parv*0 == 0
     
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
