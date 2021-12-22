@@ -360,8 +360,10 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = fitsio.read(pixfn)[par.upper()]
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
-    vmin = np.percentile(parv[wp],1)  
-    vmax = np.percentile(parv[wp],99)  
+    if vmin == None:
+        vmin = np.percentile(parv[wp],1)  
+    if vmax == None:
+        vmax = np.percentile(parv[wp],99)  
     bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     
     datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
@@ -1278,8 +1280,8 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvs_depthmag('S','galdepth','g',md='sv3',syspix=True)
-    obiLRGvs_depthmag('S','galdepth','r',md='sv3',syspix=True)
-    obiLRGvs_depthmag('S','galdepth','z',md='sv3',syspix=True)
+    obiLRGvs_depthmag('S','galdepth','g',md='sv3',syspix=True,vmin=24,vmax=24.7)
+    obiLRGvs_depthmag('S','galdepth','r',md='sv3',syspix=True,vmin=23.5,vmax=24.3)
+    obiLRGvs_depthmag('S','galdepth','z',md='sv3',syspix=True,vmin=22.5,23.4)
     
     
