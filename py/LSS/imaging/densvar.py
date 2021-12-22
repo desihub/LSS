@@ -360,6 +360,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = fitsio.read(pixfn)[par.upper()]
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
+    wp &= parv > 0
     if vmin == None:
         vmin = np.percentile(parv[wp],1)  
     if vmax == None:
@@ -388,19 +389,13 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     parv = fitsio.read(pixfn)[par.upper()]
     parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
     wp = pixlr > 0
-    wp &= parv > 0
+    
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     
 
 
     #else:
-    if vmin is None:
-        #vmin = np.min(obi_lrg[par])
-        vmin = np.percentile(obi_lrg[par],1)
-    if vmax is None:
-        #vmax = np.max(obi_lrg[par]) 
-        vmax = np.percentile(obi_lrg[par],99)   
 
     omp = -2.5*(np.log10(5/np.sqrt(obi_masked[par]))-9)-ec*obi_masked['ebv']
     rh,bn = np.histogram(omp,bins=nbin,range=(vmin,vmax))
