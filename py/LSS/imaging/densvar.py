@@ -439,6 +439,9 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     print('fraction of randoms not included in plot: '+str(frac))
 
     plt.show()
+    plt.hist(parv[wp],histtype='step')
+    plt.hist(rp,histtype='step')
+    plt.show()
     return bc,sv,ep
 
 
@@ -1280,8 +1283,8 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True,vmin=24,vmax=24.7)
-    obiLRGvs_depthmag('S','psfdepth','r',md='sv3',syspix=True,vmin=23.5,vmax=24.3)
-    obiLRGvs_depthmag('S','psfdepth','z',md='sv3',syspix=True,vmin=22.5,vmax=23.4)
+    obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True,vmin=24.3,vmax=25)
+    obiLRGvs_depthmag('S','psfdepth','r',md='sv3',syspix=True,vmin=23.7,vmax=24.5)
+    obiLRGvs_depthmag('S','psfdepth','z',md='sv3',syspix=True,vmin=22.7,vmax=23.7)
     
     
