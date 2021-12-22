@@ -252,7 +252,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     wp = pixlr > 0
         
     bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])   
-    plt.plot(bcpd,svpd-1.,fmt='k-',label='data')
+    plt.plot(bcpd,svpd-1.,'k-',label='data')
     plt.errorbar(bcp,svp-1.,epp,fmt='rd',label='obiwan')
     plt.title('SV3 selection pixelized')
     plt.show()
