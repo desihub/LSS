@@ -281,6 +281,7 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     plt.plot(bc,svd-1.,'k-',label='data points')
     plt.plot(bcpd,svpd-1.,'k--',label='data pixelized')
     plt.errorbar(bcp,svp-1.,epp,fmt='r--',label='obiwan pixelized')
+    plt.legend()
     plt.title('SV3 selection ')
     #plt.show()
 
@@ -298,6 +299,143 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
 
     plt.show()
     return bc,sv,ep
+
+def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir='/global/cfs/cdirs/desi/users/huikong/decals_ngc/subset/',elgandlrgbits = [1,5,6,7,8,9,11,12,13]):
+    if md == 'sv3':
+        from desitarget.sv3 import sv3_cuts as cuts
+    else:
+        from desitarget import cuts
+    NS = None
+    if reg == 'N':
+        NS = 'north'
+        south = False
+    if reg == 'DS' or reg == 'DN' or reg =='S':
+        NS = 'south' 
+        south = True
+    if NS == None:
+        print('!!!NS not set, you must have chose an invalid reg; should be N, DS, or DN!!!')
+        return(None)
+    print(NS)
+    obif = fitsio.read(obidir+'/subset_rs0.fits')
+    sel = obif['matched'] == True
+    sel &= obif['dec'] < 32.375
+    obif = obif[sel]
+    print(len(obif))
+    obi_masked = masklc(obif,mb=elgandlrgbits)
+    print(len(obi_masked))
+    gflux = obi_masked['flux_g']/obi_masked['mw_transmission_g']
+    rflux = obi_masked['flux_r']/obi_masked['mw_transmission_r']
+    zflux = obi_masked['flux_z']/obi_masked['mw_transmission_z']
+    w1flux = obi_masked['flux_w1']/obi_masked['mw_transmission_w1']
+    zfiberflux = obi_masked['fiberflux_z']/obi_masked['mw_transmission_z']
+    
+    ws = cuts.isLRG_colors(gflux, rflux, zflux, w1flux,
+                 zfiberflux,  south=south)
+    
+    if md == 'sv3':
+        ws = ws[0]
+    print(len(obi_masked[ws])) 
+    ws &= (obi_masked['ra']*0 == 0)
+    print(len(obi_masked[ws])) 
+    obi_lrg = obi_masked[ws]             
+
+    par = par+'_'+band
+    if band == 'g':
+        ec = R_G   
+    if band == 'r':
+        ec = R_R
+    if band == 	'z':
+        ec = R_Z     
+    #if syspix:
+    rth,rphi = radec2thphi(obi_masked['ra'],obi_masked['dec'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    for pix in rpix:
+        pixlr[pix] += 1.
+    dth,dphi = radec2thphi(obi_lrg['ra'],obi_lrg['dec'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixld = np.zeros(12*nside*nside)
+    for pix in dpix:
+        pixld[pix] += 1.
+    parv = fitsio.read(pixfn)[par.upper()]
+    parv = -2.5*(np.log10(5/np.sqrt(parv))-9)-ec*fitsio.read(pixfn)['EBV']
+    wp = pixlr > 0
+    vmin = np.percentile(parv[wp],1)  
+    vmax = np.percentile(parv[wp],99)  
+    bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
+    
+    datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
+    datf = masklc(datf)
+    sel = datf['dec'] < 32.375
+    datf = datf[sel]
+    ranf = fitsio.read(obidir+'subset_random.fits')
+    ranf = masklc(ranf)
+    sel = ranf['dec'] < 32.375
+    ranf = ranf[sel]
+
+    rth,rphi = radec2thphi(ranf['ra'],ranf['dec'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    for pix in rpix:
+        pixlr[pix] += 1.
+    dth,dphi = radec2thphi(datf['ra'],datf['dec'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixld = np.zeros(12*nside*nside)
+    for pix in dpix:
+        pixld[pix] += 1.
+    parv = fitsio.read(pixfn)[par.upper()]
+    wp = pixlr > 0
+        
+    bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
+    
+
+
+    #else:
+    if vmin is None:
+        #vmin = np.min(obi_lrg[par])
+        vmin = np.percentile(obi_lrg[par],1)
+    if vmax is None:
+        #vmax = np.max(obi_lrg[par]) 
+        vmax = np.percentile(obi_lrg[par],99)   
+
+    omp = -2.5*(np.log10(5/np.sqrt(obi_masked[par]))-9)-ec*obi_masked['ebv']
+    rh,bn = np.histogram(omp,bins=nbin,range=(vmin,vmax))
+    olp = -2.5*(np.log10(5/np.sqrt(obi_lrg[par]))-9)-ec*obi_lrg['ebv']
+    dh,db = np.histogram(olp,bins=bn)
+    rf = len(obi_masked)/len(obi_lrg)
+    sv = dh/rh*rf
+    ep = np.sqrt(dh)/rh*rf
+    rh,bn = np.histogram(ranf[par],bins=nbin,range=(vmin,vmax))
+    dh,db = np.histogram(datf[par],bins=bn)
+    rf = len(ranf)/len(datf)
+    svd = dh/rh*rf
+    epd = np.sqrt(dh)/rh*rf
+    bc = []
+    for i in range(0,len(bn)-1):
+        bc.append((bn[i]+bn[i+1])/2.)
+    plt.errorbar(bc,sv-1.,ep,fmt='r-',label='obiwan points')
+    plt.plot(bc,svd-1.,'k-',label='data points')
+    plt.plot(bcpd,svpd-1.,'k--',label='data pixelized')
+    plt.errorbar(bcp,svp-1.,epp,fmt='r--',label='obiwan pixelized')
+    plt.legend()
+    plt.title('SV3 selection ')
+    #plt.show()
+
+    #plt.title('SV3 selection points')
+    #plt.show()
+   
+    #plt.hist(obi_masked[par],bins=nbin,range=(vmin,vmax),weights=0.2*np.ones(len(obi_masked))/np.max(rh))
+    #plt.ylim(-.3,.3)
+    plt.xlabel(par+ ' magnitudes (ext corrected)')
+    plt.ylabel('Ngal/<Ngal> - 1')
+    #plt.title('Obiwan LRGs in '+reg + ' footprint')
+    wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
+    frac = len(obi_masked[~wv])/len(obi_masked)
+    print('fraction of randoms not included in plot: '+str(frac))
+
+    plt.show()
+    return bc,sv,ep
+
 
 
 def gethpmap(dl,reg=False):
@@ -1137,8 +1275,8 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvspar('S','galdepth_g',md='sv3',syspix=True)
-    obiLRGvspar('S','galdepth_r',md='sv3',syspix=True)
-    obiLRGvspar('S','galdepth_z',md='sv3',syspix=True)
+    obiLRGvs_depthmag('S','galdepth','g',md='sv3',syspix=True)
+    obiLRGvs_depthmag('S','galdepth','r',md='sv3',syspix=True)
+    obiLRGvs_depthmag('S','galdepth','z',md='sv3',syspix=True)
     
     
