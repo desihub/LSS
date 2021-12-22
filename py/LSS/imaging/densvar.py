@@ -367,11 +367,11 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp],vmin=vmin,vmax=vmax)   
     
     datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
-    datf = masklc(datf)
+    datf = masklc(datf,mb=elgandlrgbits)
     sel = datf['dec'] < 32.375
     datf = datf[sel]
     ranf = fitsio.read(obidir+'subset_random.fits')
-    ranf = masklc(ranf)
+    ranf = masklc(ranf,mb=elgandlrgbits)
     sel = ranf['dec'] < 32.375
     ranf = ranf[sel]
 
