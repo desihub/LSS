@@ -1280,8 +1280,8 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvs_depthmag('S','galdepth','g',md='sv3',syspix=True,vmin=24,vmax=24.7)
-    obiLRGvs_depthmag('S','galdepth','r',md='sv3',syspix=True,vmin=23.5,vmax=24.3)
-    obiLRGvs_depthmag('S','galdepth','z',md='sv3',syspix=True,vmin=22.5,vmax=23.4)
+    obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True,vmin=24,vmax=24.7)
+    obiLRGvs_depthmag('S','psfdepth','r',md='sv3',syspix=True,vmin=23.5,vmax=24.3)
+    obiLRGvs_depthmag('S','psfdepth','z',md='sv3',syspix=True,vmin=22.5,vmax=23.4)
     
     
