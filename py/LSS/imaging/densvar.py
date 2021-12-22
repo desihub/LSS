@@ -436,8 +436,8 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     print('fraction of randoms not included in plot: '+str(frac))
 
     plt.show()
-    a,b = plt.hist(parv[wp],histtype='step',density=True,bins=30)
-    plt.hist(rp,histtype='step',density=True,bins=b)
+    plt.hist(parv[wp],histtype='step',density=True,bins=30)
+    plt.hist(rp,histtype='step',density=True,bins=30)
     plt.show()
     return bc,sv,ep
 
