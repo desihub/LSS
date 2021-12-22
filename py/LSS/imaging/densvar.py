@@ -227,7 +227,37 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     parv = fitsio.read(pixfn)[par.upper()]
     wp = pixlr > 0
         
-    bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])    
+    bcp,svp,epp = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])   
+    
+    datf = fitsio.read(obidir+'subset_dr9_lrg_sv3.fits') 
+    datf = masklc(datf)
+    sel = datf['dec'] < 32.375
+    datf = datf[sel]
+    ranf = fitsio.read(obidir+'subset_random.fits')
+    ranf = masklc(ranf)
+    sel = ranf['dec'] < 32.375
+    ranf = ranf[sel]
+
+    rth,rphi = radec2thphi(ranf['ra'],ranf['dec'])
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    pixlr = np.zeros(12*nside*nside)
+    for pix in rpix:
+        pixlr[pix] += 1.
+    dth,dphi = radec2thphi(datf['ra'],datf['dec'])
+    dpix = hp.ang2pix(nside,dth,dphi,nest=nest)
+    pixld = np.zeros(12*nside*nside)
+    for pix in dpix:
+        pixld[pix] += 1.
+    parv = fitsio.read(pixfn)[par.upper()]
+    wp = pixlr > 0
+        
+    bcpd,svpd,eppd = plot_pixdens1d(pixld[wp],pixlr[wp],parv[wp])   
+    plt.plot(bcpd,svpd-1.,fmt='k-',label='data')
+    plt.errorbar(bcp,svp-1.,epp,fmt='rd',label='obiwan')
+    plt.title('SV3 selection pixelized')
+    plt.show()
+    
+
 
     #else:
     if vmin is None:
