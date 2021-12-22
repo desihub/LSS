@@ -205,6 +205,8 @@ def obiLRGvspar(reg,par,vmin=None,vmax=None,syspix=False,md='sv3',nbin=10,obidir
     ws = cuts.isLRG_colors(gflux, rflux, zflux, w1flux,
                  zfiberflux,  south=south)
     
+    if md == 'sv3':
+        ws = ws[0]
     print(len(obi_masked[ws])) 
     ws &= (obi_masked['ra']*0 == 0)
     print(len(obi_masked[ws])) 
@@ -1093,6 +1095,6 @@ class densvar:
         plt.show()    
             
 if __name__ == "__main__":
-    obiLRGvspar('S','galdepth_z',md='',syspix=True)
+    obiLRGvspar('S','galdepth_g',md='sv3',syspix=True)
     
     

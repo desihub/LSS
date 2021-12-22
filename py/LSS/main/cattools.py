@@ -1677,6 +1677,22 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 
 
 
+def random_mtl(rd,outf ):
+    '''
+    rd is the table containing the randoms
+    outf is the file name to save to
+    '''
+	rmtl = Table(rd)
+	#rmtl['TARGETID'] = np.arange(len(rmtl))
+	print(len(rmtl['TARGETID'])) #checking this column is there
+	rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+	rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+	rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+	rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+	rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+	rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+	rmtl.write(fname,format='fits', overwrite=True)
+	print('added columns, wrote to '+fname)
     
 
 def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,rann=1,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
