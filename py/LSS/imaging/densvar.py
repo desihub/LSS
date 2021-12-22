@@ -434,7 +434,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
     plt.xlabel(par+ ' magnitudes (ext corrected)')
     plt.ylabel('Ngal/<Ngal> - 1')
     #plt.title('Obiwan LRGs in '+reg + ' footprint')
-    wv = (obi_masked[par]>vmin) & (obi_masked[par] < vmax)
+    wv = (omp>vmin) & (omp < vmax)
     frac = len(obi_masked[~wv])/len(obi_masked)
     print('fraction of randoms not included in plot: '+str(frac))
 
