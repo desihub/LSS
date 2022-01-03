@@ -1524,7 +1524,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
 
     #weights for imaging systematic go here
-#    ff['WEIGHT_SYS'] =  np.ones(len(ff))
+    ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
 #     if tp[:3] == 'ELG':
 #         zmin = 0.8
 #         zmax = 1.5
@@ -1591,7 +1591,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_COMP']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP']
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         kl.append('flux_r_dered')
