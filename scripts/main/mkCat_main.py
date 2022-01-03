@@ -247,7 +247,7 @@ if args.imsys == 'y':
             fcd = fb+'_clustering.dat.fits'
             dd = Table.read(fcd)
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
+            wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=False)
             sel = wsysl != 1
             dd['WEIGHT_SYS'][sel] = wsysl[sel]
             dd['WEIGHT'][sel] *= wsysl[sel]
