@@ -1440,7 +1440,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
     #print(np.unique(dz['TILE']))
     #dz['NTILE']  = NT
-    dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
+    #dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
             
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
@@ -1518,12 +1518,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
-    ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
+    ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
-        ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT'] *= ff['WEIGHT_COMP']
 
     #weights for imaging systematic go here
-    ff['WEIGHT_SYS'] =  1.
+#    ff['WEIGHT_SYS'] =  np.ones(len(ff))
 #     if tp[:3] == 'ELG':
 #         zmin = 0.8
 #         zmax = 1.5
@@ -1550,7 +1551,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         print('linear fits coefficients to GALDEPTH_G are '+str(m)+' '+str(b))
 #         ff['WEIGHT_SYS'] *= 1./(m*np.log(ff['GALDEPTH_G'])+b)
 
-    ff['WEIGHT'] *= ff['WEIGHT_SYS']
+#    ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
     if zmask:
         whz = ff['Z'] < 1.6
@@ -1590,7 +1591,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP']
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         kl.append('flux_r_dered')
