@@ -248,8 +248,9 @@ if args.imsys == 'y':
             dd = Table.read(fcd)
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
             wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps)
-            dd['WEIGHT_SYS'] = wsysl
-            dd['WEIGHT'] *= wsysl
+            sel = wsysl != 1
+            dd['WEIGHT_SYS'][sel] = wsysl[sel]
+            dd['WEIGHT'][sel] *= wsysl[sel]
             dd.write(fcd,overwrite=True,format='fits')
 
 if mkclusran:
