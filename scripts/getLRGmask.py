@@ -82,21 +82,6 @@ def bitmask_radec(brickid, ra, dec):
     return bitmask
 
 
-def wrapper(bid_index):
-
-    idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-    brickid = bid_unique[bid_index]
-
-    ra, dec = cat['RA'][idx], cat['DEC'][idx]
-
-    bitmask = bitmask_radec(brickid, ra, dec)
-
-    data = Table()
-    data['idx'] = idx
-    data['lrg_mask'] = bitmask
-    data['TARGETID'] = cat['TARGETID'][idx]
-
-    return data
 
 def mkfile(input_path,output_path):
     try:
@@ -128,6 +113,22 @@ def mkfile(input_path,output_path):
     bidcnts = np.insert(bidcnts, 0, 0)
     bidcnts = np.cumsum(bidcnts)
     bidorder = np.argsort(cat['BRICKID'])
+
+    def wrapper(bid_index):
+
+        idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
+        brickid = bid_unique[bid_index]
+
+        ra, dec = cat['RA'][idx], cat['DEC'][idx]
+
+        bitmask = bitmask_radec(brickid, ra, dec)
+
+        data = Table()
+        data['idx'] = idx
+        data['lrg_mask'] = bitmask
+        data['TARGETID'] = cat['TARGETID'][idx]
+
+        return data
 
     # start multiple worker processes
     with Pool(processes=n_processes) as pool:
