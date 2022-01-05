@@ -134,7 +134,7 @@ if len(cat) != len(res):
     print('mismatched lengths, somehow get brick mask removed data!!!')
 
 else:
-    res = join(cat,rec,keys=['TARGETID'])
+    res = join(cat,res,keys=['TARGETID'])
     if output_path.endswith('.fits'):
         res.write(output_path)
     else:
