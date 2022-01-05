@@ -46,7 +46,7 @@ lssdir = args.basedir +'/'+args.survey+'/LSS/'
 
 ldirspec = lssdir+args.verspec+'/'
 
-indirfull = ldirspec+'/LSScats/'+verfull+'/'
+indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = 'LRG'
 
