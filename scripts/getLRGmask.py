@@ -45,7 +45,7 @@ if os.path.isfile(output_path):
 
 
 def bitmask_radec(brickid, ra, dec):
-​
+
     brick_index = np.where(bricks['BRICKID']==brickid)[0][0]
 
     brickname = str(bricks['BRICKNAME'][brick_index])
