@@ -148,7 +148,7 @@ def mkfile(input_path,output_path):
     else:
         res = join(cat,res,keys=['TARGETID'])
         if output_path.endswith('.fits'):
-            res.write(output_path)
+            res.write(output_path,overwrite=True)
         else:
             np.write(output_path, np.array(res['lrg_mask']))
 
