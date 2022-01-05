@@ -70,7 +70,7 @@ def bitmask_radec(brickid, ra, dec):
 
     return bitmask
 
-​
+
 def wrapper(bid_index):
 
     idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
@@ -87,7 +87,7 @@ def wrapper(bid_index):
 
     return data
 
-​
+
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
@@ -105,7 +105,7 @@ print(len(cat))
 
 #for col in cat.colnames:
 #    cat.rename_column(col, col.upper())
-​
+
 #if 'TARGET_RA' in cat.colnames:
 #    cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
 
