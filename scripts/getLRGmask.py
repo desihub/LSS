@@ -6,6 +6,7 @@
 # srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --input /global/cfs/cdirs/desi/users/rongpu/targets/dr9.0/1.0.0/resolve/dr9_lrg_south_1.0.0_basic.fits --output $CSCRATCH/temp/dr9_lrg_south_1.0.0_lrgmask_v1.fits
 
 from __future__ import division, print_function
+from functools import partial
 import sys, os, glob, time, warnings, gc
 import numpy as np
 import matplotlib.pyplot as plt
@@ -81,6 +82,21 @@ def bitmask_radec(brickid, ra, dec):
 
     return bitmask
 
+def wrapper(bid_index,bidorder,bidcnts,bid_unique,cat):
+
+    idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
+    brickid = bid_unique[bid_index]
+
+    ra, dec = cat['RA'][idx], cat['DEC'][idx]
+
+    bitmask = bitmask_radec(brickid, ra, dec)
+
+    data = Table()
+    data['idx'] = idx
+    data['lrg_mask'] = bitmask
+    data['TARGETID'] = cat['TARGETID'][idx]
+
+    return data
 
 
 def mkfile(input_path,output_path):
@@ -114,25 +130,11 @@ def mkfile(input_path,output_path):
     bidcnts = np.cumsum(bidcnts)
     bidorder = np.argsort(cat['BRICKID'])
 
-    def wrapper(bid_index):
-
-        idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-        brickid = bid_unique[bid_index]
-
-        ra, dec = cat['RA'][idx], cat['DEC'][idx]
-
-        bitmask = bitmask_radec(brickid, ra, dec)
-
-        data = Table()
-        data['idx'] = idx
-        data['lrg_mask'] = bitmask
-        data['TARGETID'] = cat['TARGETID'][idx]
-
-        return data
 
     # start multiple worker processes
     with Pool(processes=n_processes) as pool:
-        res = pool.map(wrapper, np.arange(len(bid_unique)))
+        res = pool.map(partial(wrapper,bidorder=bidorder,bidcnts=bidcnts,bid_unique=bid_unique,cat=cat), np.arange(len(bid_unique)))
+        #partial(func, b=second_arg), a_args
 
     res = vstack(res)
     res.sort('idx')
