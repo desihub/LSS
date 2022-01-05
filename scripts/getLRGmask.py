@@ -134,10 +134,10 @@ if len(cat) != len(res):
     print('mismatched lengths, somehow get brick mask removed data!!!')
 
 else:
-​   res = join(cat,rec,keys=['TARGETID'])
-	if output_path.endswith('.fits'):
-		res.write(output_path)
-	else:
-		np.write(output_path, np.array(res['lrg_mask']))
+    res = join(cat,rec,keys=['TARGETID'])
+    if output_path.endswith('.fits'):
+        res.write(output_path)
+    else:
+        np.write(output_path, np.array(res['lrg_mask']))
 
-	print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
+    print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
