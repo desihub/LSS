@@ -168,7 +168,7 @@ output_path = input_path #we will over-write, just adding new column
 mkfile(input_path,output_path)
 
 for ri in range(args.minr,args.maxr):
-    input_path = indirfull+tp+'_'+str(ri)+'_full_noveto.dat.fits'
+    input_path = indirfull+tp+'_'+str(ri)+'_full_noveto.ran.fits'
     output_path = input_path #we will over-write, just adding new column
 
     mkfile(input_path,output_path)
