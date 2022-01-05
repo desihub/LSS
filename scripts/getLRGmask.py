@@ -36,8 +36,8 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--survey", help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
-parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1,type=int) 
 
 #parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
