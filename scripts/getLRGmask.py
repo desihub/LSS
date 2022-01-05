@@ -22,6 +22,7 @@ import argparse
 time_start = time.time()
 
 bitmask_dir = '/global/cscratch1/sd/rongpu/desi/lrg_pixel_bitmask/v1'
+#bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/LRG/v1'
 
 n_processes = 32
 
@@ -30,18 +31,28 @@ debug = False
 ##################
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input', required=True)
-parser.add_argument('-o', '--output', required=True)
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--survey", help="e.g., SV3 or main",default='SV3')
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+
+#parser.add_argument('-i', '--input', required=True)
+#parser.add_argument('-o', '--output', required=True)
 args = parser.parse_args()
 
-input_path = args.input
-output_path = args.output
+lssdir = args.basedir +'/'+args.survey+'/LSS/'
 
-# input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
-# output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
+ldirspec = lssdir+args.verspec+'/'
 
-if os.path.isfile(output_path):
-    raise ValueError(output_path+' already exists!')
+indirfull = ldirspec+'/LSScats/'+verfull+'/'
+
+tp = 'LRG'
+
+if args.survey == 'main':
+    tp += 'zdone'
+
 
 
 def bitmask_radec(brickid, ra, dec):
@@ -87,6 +98,58 @@ def wrapper(bid_index):
 
     return data
 
+def mkfile(input_path,output_path):
+    try:
+        cat = fitsio.read(input_path, rows=None, columns=['lrg_mask'])
+        return 'file already has lrg_mask column'
+    except:
+        print('adding lrg_mask column') 
+
+    try:
+        cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID','TARGETID']))
+    except ValueError:
+        cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC','TARGETID']))
+
+    print(len(cat))
+
+    #for col in cat.colnames:
+    #    cat.rename_column(col, col.upper())
+
+    #if 'TARGET_RA' in cat.colnames:
+    #    cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
+
+    if 'BRICKID' not in cat.colnames:
+        from desiutil import brick
+        tmp = brick.Bricks(bricksize=0.25)
+        cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
+
+    # Just some tricks to speed up things up
+    bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
+    bidcnts = np.insert(bidcnts, 0, 0)
+    bidcnts = np.cumsum(bidcnts)
+    bidorder = np.argsort(cat['BRICKID'])
+
+    # start multiple worker processes
+    with Pool(processes=n_processes) as pool:
+        res = pool.map(wrapper, np.arange(len(bid_unique)))
+
+    res = vstack(res)
+    res.sort('idx')
+    res.remove_column('idx')
+
+    cat = Table(fitsio.read(input_path))
+
+    if len(cat) != len(res):
+        print('mismatched lengths, somehow get brick mask removed data!!!')
+
+    else:
+        res = join(cat,res,keys=['TARGETID'])
+        if output_path.endswith('.fits'):
+            res.write(output_path)
+        else:
+            np.write(output_path, np.array(res['lrg_mask']))
+
+        print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
 
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
@@ -96,48 +159,15 @@ if debug:
 else:
     rows = None
 
-try:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID','TARGETID']))
-except ValueError:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC','TARGETID']))
+input_path = indirfull+tp+'_full_noveto.dat.fits'
+output_path = input_path #we will over-write, just adding new column
 
-print(len(cat))
+mkfile(input_path,output_path)
 
-#for col in cat.colnames:
-#    cat.rename_column(col, col.upper())
+for ri in range(args.minr,args.maxr):
+    input_path = indirfull+tp+'_'+str(ri)+'_full_noveto.dat.fits'
+    output_path = input_path #we will over-write, just adding new column
 
-#if 'TARGET_RA' in cat.colnames:
-#    cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
+    mkfile(input_path,output_path)
+    print('adding mask column to LRGs random number '+str(ri))
 
-if 'BRICKID' not in cat.colnames:
-    from desiutil import brick
-    tmp = brick.Bricks(bricksize=0.25)
-    cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
-
-# Just some tricks to speed up things up
-bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
-bidcnts = np.insert(bidcnts, 0, 0)
-bidcnts = np.cumsum(bidcnts)
-bidorder = np.argsort(cat['BRICKID'])
-
-# start multiple worker processes
-with Pool(processes=n_processes) as pool:
-    res = pool.map(wrapper, np.arange(len(bid_unique)))
-
-res = vstack(res)
-res.sort('idx')
-res.remove_column('idx')
-
-cat = Table(fitsio.read(input_path))
-
-if len(cat) != len(res):
-    print('mismatched lengths, somehow get brick mask removed data!!!')
-
-else:
-    res = join(cat,res,keys=['TARGETID'])
-    if output_path.endswith('.fits'):
-        res.write(output_path)
-    else:
-        np.write(output_path, np.array(res['lrg_mask']))
-
-    print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
