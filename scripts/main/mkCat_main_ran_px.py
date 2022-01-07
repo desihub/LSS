@@ -11,6 +11,8 @@ import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
+import healpy as hp
+
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
@@ -38,8 +40,6 @@ parser.add_argument("--clus", help="make the data/random clustering files; these
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for main should be 5.0.0 or greater",default='5.0.0')
-parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -133,19 +133,12 @@ if not os.path.exists(maindir+'/logs'):
     os.mkdir(maindir+'/logs')
     print('made '+maindir+'/logs')
 
-if not os.path.exists(maindir+'/LSScats'):
-    os.mkdir(maindir+'/LSScats')
-    print('made '+maindir+'/LSScats')
 
-
-
-
-randir = maindir+'random'
+randir = maindir+'randomHP'
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
-for i in range(rm,rx):
-    if not os.path.exists(maindir+'random'+str(i)):
-        os.mkdir(maindir+'random'+str(i))
-        print('made '+str(i)+' random directory')
+if not os.path.exists(randir):
+	os.mkdir(randir)
+	print('made '+randir+' random directory')
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -186,18 +179,10 @@ if len(mtld) > 0:
             try:
                 if int(fav[:1]) >= 5:
                     fav = '5.0.0'
+                else:
+                    print(fav)    
             except:
                 print(fav)        
-            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-                fver.append('2.3.0')
-            else:
-                fver.append(fav)    
-            #try:
-            #    faha = fht['FA_HA']
-            #except:
-            #    faha = 0
-            #    print(tile,'no FA_HA in this tile header')        
-            #pl.append(pro)
             pl.append(pr)
         except:
             print('failed to find and/or get info for tile '+ts)    
@@ -222,27 +207,12 @@ print(len(ta))
 
 
 def doran(ii):
-    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
+    #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/ '  
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        if par:
-            nti = int(len(ta)/rx)+1
-            print(nti,len(ta),ii)
-            for jj in range(rm,rx):
-                print(jj)
-                rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-                print('read random file '+str(jj))
-                tim = nti*ii
-                tix = nti*(ii+1)
-                if tix < len(ta):
-                    tiles = ta[tim:tix]
-                else:
-                    tiles = ta[tim:]
-                print('writing randoms to '+str(len(tiles))+' tiles')
-                ct.randomtiles_main_fromran(tiles,rt )
-        else:
-            ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')

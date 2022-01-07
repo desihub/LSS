@@ -1084,7 +1084,10 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
         dz[ii]['rosette_number'] = rosn
         dz[ii]['rosette_r'] = rosd
     print(np.unique(dz['NTILE']))
-    cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
+    if int(rann) < 10:
+        cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
+    else:
+        cof = fitsio.read(outf[:-24]+'_comp_tile.fits')  
     comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILE']))
     fcompa = []
     tls = dz['TILES']
