@@ -1755,7 +1755,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
             
             #print('length of tile file is (expected to be 1):'+str(len(tiles)))
             tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
-            fname = dirout+str(ii)+'/tilenofa-'+str(tile)+'.fits'
+            fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
             if os.path.isfile(fname):
                 print(fname +' already exists')
             else:
