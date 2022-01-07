@@ -214,7 +214,7 @@ def doran(ii):
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'random-1-'+str(ii))
+        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
