@@ -1405,12 +1405,12 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = Table.read(fl+'full_noveto.dat.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
-        ff = cutphotmask(ff,ebits)
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
-    if tp == 'LRG':
-        print('number before LRG imaging mask '+str(len(ff)))
-        sel = ff['lrg_mask'] == 0
-        ff = ff[sel]
     ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:
@@ -1598,12 +1598,12 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ffr)))
-        ffr = cutphotmask(ffr,ebits)
+        if ebits == 'lrg_mask':
+            sel = ffr['lrg_mask'] == 0
+            ff = ffr[sel]
+        else:    
+            ffr = cutphotmask(ffr,ebits)
         print('number after imaging mask '+str(len(ffr)))
-    if tp == 'LRG':
-        print('number before LRG imaging mask '+str(len(ffr)))
-        sel = ffr['lrg_mask'] == 0
-        ff = ffr[sel]
 
     ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
 
