@@ -210,7 +210,7 @@ print(len(ta))
 
 def doran(ii):
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-    dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/ '  
+    dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
 
     if mkranmtl:
         print('making random mtl files for each tile')
