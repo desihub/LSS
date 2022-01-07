@@ -1105,18 +1105,18 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     wc0 = dz['COMP_TILE'] == 0
     print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
     
-    cof = fitsio.read(outf[:-23]+'_comp_tileloc.fits')
-    pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
-    probl = np.zeros(len(dz))
-    no = 0
-    tidsd = np.isin(dz['TILELOCID'],cof['TILELOCID'])
-    for i in range(0,len(dz)):
-        if tidsd[i]:#np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
-            probl[i] = pd[dz['TILELOCID'][i]]
-        else:
-            no += 1
-    print('number of tilelocid in randoms not in data '+str(no))    
-    dz['FRACZ_TILELOCID'] = probl
+#     cof = fitsio.read(outf[:-23]+'_comp_tileloc.fits')
+#     pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
+#     probl = np.zeros(len(dz))
+#     no = 0
+#     tidsd = np.isin(dz['TILELOCID'],cof['TILELOCID'])
+#     for i in range(0,len(dz)):
+#         if tidsd[i]:#np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
+#             probl[i] = pd[dz['TILELOCID'][i]]
+#         else:
+#             no += 1
+#     print('number of tilelocid in randoms not in data '+str(no))    
+#     dz['FRACZ_TILELOCID'] = probl
     
 
 
