@@ -181,8 +181,8 @@ if len(mtld) > 0:
             try:
                 if int(fav[:1]) >= 5:
                     fav = '5.0.0'
-                else:
-                    print(fav)    
+                #else:
+                #    print(fav)    
             except:
                 print(fav)        
             pl.append(pr)
@@ -214,7 +214,7 @@ def doran(ii):
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'random-1-'+str(ii))
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
