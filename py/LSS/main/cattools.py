@@ -1462,6 +1462,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('number before imaging mask '+str(len(ff)))
         ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
+    if tp == 'LRG':
+        print('number before LRG imaging mask '+str(len(ff)))
+        sel = ff['lrg_mask'] == 0
+        ff = ff[sel]
+
     ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:

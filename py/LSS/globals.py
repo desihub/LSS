@@ -12,8 +12,10 @@ class SV3:
         else:
             self.imbits = [1,12,13]
         self.ebits = None
-        if tp[:3] == 'LRG' or tp[:3] == 'QSO':
+        if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
+        if tp[:3] == 'LRG':
+            self.ebits = 'lrg_mask'
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/ELG/sv3-elg-everest-tiles.fits'
@@ -35,9 +37,17 @@ class main:
             self.imbits = [1,13]
         else:
             self.imbits = [1,12,13]
-        if tp[:3] == 'LRG' or tp[:3] == 'QSO':
+        if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
+        if tp[:3] == 'LRG':
+            self.ebits = 'lrg_mask'
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/ELG/main-elg-everest-tiles.fits'
         self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/QSO/QSO_catalog_MAIN.fits'
+        
+        #recon parameters
+        self.om = 0.31519
+        if tp[:3] == 'LRG':
+            self.bias = 1.8
+            self.ff = 0.4*self.bias
