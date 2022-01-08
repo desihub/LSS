@@ -136,7 +136,7 @@ if not os.path.exists(maindir+'/logs'):
     print('made '+maindir+'/logs')
 
 
-randir = maindir+'randomHP'
+randir = maindir+'random'
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
 if not os.path.exists(randir):
 	os.mkdir(randir)
