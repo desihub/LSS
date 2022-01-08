@@ -34,8 +34,9 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
-parser.add_argument("--combr", help="combine the random tiles together",default='y')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
+parser.add_argument("--combhp", help="combine the random tiles together in healpix",default='y')
+parser.add_argument("--combr", help="combine the random healpix files together",default='n')
+parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -136,11 +137,17 @@ if not os.path.exists(maindir+'/logs'):
     print('made '+maindir+'/logs')
 
 
+
 randir = maindir+'random'
-#logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
-if not os.path.exists(randir):
-	os.mkdir(randir)
-	print('made '+randir+' random directory')
+for ii in range(args.minr,args.maxr):
+    #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
+    if not os.path.exists(randir+str(ii)):
+	    os.mkdir(randir+str(ii))
+	    print('made '+randir+str(ii)+' random directory')
+    if not os.path.exists(randir+str(ii)+'/healpix'):
+	    os.mkdir(randir+str(ii)+'/healpix')
+	    print('made '+randir+str(ii)+'/healpix'+' random directory')
+	    
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -207,6 +214,24 @@ else:
 
 print(len(ta))
 
+if type == 'dark' or type == 'bright':
+    if specrel == 'daily':
+        specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
+        specf = Table.read(specfo)
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
+    if specrel == 'everest':    
+
+        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+        #wt = np.isin(mtld['TILEID'],specf['TILEID'])
+        #above two lines already done above
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+        wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+        specf = specf[wt]
+        print('number of TILEID in spec data being used:')
+        print(len(np.unique(specf['TILEID'])))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
 
 def doran(ii):
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
@@ -253,37 +278,29 @@ def doran(ii):
                     ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
 
- 
+    if combhp:
+        if type == 'dark' or type == 'bright':
+            hpxs = foot.tiles2pix(8, tiles=tiles4comb)
+            npx = 0
+    	    for px in hpxs:
+		        print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+		        ct.combran_wdup_px(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+		        npx += 1
+           
+  
 
     if combr:
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
 
-            if specrel == 'daily':
-                specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
-                specf = Table.read(specfo)
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-            
-            if specrel == 'everest':    
-
-                #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                #wt = np.isin(mtld['TILEID'],specf['TILEID'])
-                #above two lines already done above
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-                specf = specf[wt]
-                print('number of TILEID in spec data being used:')
-                print(len(np.unique(specf['TILEID'])))
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
             kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
             ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
             ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-
-            ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+            
             tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
