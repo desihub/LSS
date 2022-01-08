@@ -71,6 +71,9 @@ if args.rfa == 'n':
 combr = True
 if args.combr == 'n':
     combr = False   
+combhp = True
+if args.combhp == 'n':
+    combr = False    
 
 
 mkfullr = True #make the random files associated with the full data files
