@@ -910,9 +910,9 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)
     if os.path.isfile(outf):
-        tarsn = Table.read(outf)
+        fgu = Table.read(outf)
         s = 1
-        tdone = np.unique(tarsn['TILEID'])
+        tdone = np.unique(fgu['TILEID'])
         tmask = ~np.isin(tls['TILEID'],tdone)
     else:
         tmask = np.ones(len(tls)).astype('bool')  
