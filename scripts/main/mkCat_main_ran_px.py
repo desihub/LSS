@@ -142,12 +142,12 @@ randir = maindir+'random'
 for ii in range(args.minr,args.maxr):
     #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
     if not os.path.exists(randir+str(ii)):
-	    os.mkdir(randir+str(ii))
-	    print('made '+randir+str(ii)+' random directory')
+        os.mkdir(randir+str(ii))
+        print('made '+randir+str(ii)+' random directory')
     if not os.path.exists(randir+str(ii)+'/healpix'):
-	    os.mkdir(randir+str(ii)+'/healpix')
-	    print('made '+randir+str(ii)+'/healpix'+' random directory')
-	    
+        os.mkdir(randir+str(ii)+'/healpix')
+        print('made '+randir+str(ii)+'/healpix'+' random directory')
+        
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -282,10 +282,10 @@ def doran(ii):
         if type == 'dark' or type == 'bright':
             hpxs = foot.tiles2pix(8, tiles=tiles4comb)
             npx = 0
-    	    for px in hpxs:
-		        print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-		        ct.combran_wdup_px(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
-		        npx += 1
+            for px in hpxs:
+                print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+                ct.combran_wdup_px(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+                npx += 1
            
   
 
