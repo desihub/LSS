@@ -74,7 +74,7 @@ if args.combr == 'n':
     combr = False   
 combhp = True
 if args.combhp == 'n':
-    combr = False    
+    combhp = False    
 
 
 mkfullr = True #make the random files associated with the full data files
@@ -293,7 +293,7 @@ def doran(ii):
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-                ct.combran_wdup_hp(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+                ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc)
                 npx += 1
            
   
