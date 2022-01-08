@@ -905,7 +905,7 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     print(len(tiles))
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
-    outf = randir+str(rann)+'/healpix/rancomb_'+tp+'wdup_Alltiles.fits'
+    outf = randir+str(rann)+'/healpix/rancomb_'+tp+'_'+str(px)+'_wdup_Alltiles.fits'
 
     tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)

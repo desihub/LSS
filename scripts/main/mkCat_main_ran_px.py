@@ -288,7 +288,7 @@ def doran(ii):
             npx = 0
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-                ct.combran_wdup_px(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+                ct.combran_wdup_hp(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
                 npx += 1
            
   
