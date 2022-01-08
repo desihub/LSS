@@ -126,9 +126,9 @@ mtld = mt[wd]
 print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 
-tiles4comb = Table()
-tiles4comb['TILEID'] = mtld['TILEID']
-tiles4comb['ZDATE'] = mtld['LASTNIGHT']
+#tiles4comb = Table()
+#tiles4comb['TILEID'] = mtld['TILEID']
+#tiles4comb['ZDATE'] = mtld['LASTNIGHT']
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/main/LSS/'
@@ -284,7 +284,7 @@ def doran(ii):
 
     if combhp:
         if type == 'dark' or type == 'bright':
-            hpxs = foot.tiles2pix(8, tiles=tiles4comb)
+            hpxs = foot.tiles2pix(8, tiles=ta)
             npx = 0
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
