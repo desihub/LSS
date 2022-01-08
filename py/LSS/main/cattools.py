@@ -900,7 +900,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
 def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf=''):
 
     s = 0
-    td = 0
+    
     #tiles.sort('ZDATE')
     print(len(tiles))
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
@@ -915,8 +915,9 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         tdone = np.unique(tarsn['TILEID'])
         tmask = ~np.isin(tls['TILEID'],tdone)
     else:
-        tmask = np.ones(len(tls)).astype('bool')    
-
+        tmask = np.ones(len(tls)).astype('bool')  
+        
+    td = len(tls[tmask])      
 
     for tile in tls[tmask]['TILEID']:
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
@@ -937,11 +938,11 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
             else:   
                 fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgu.sort('TARGETID')
-            print(tile,td, len(tiles), len(fgun),len(fgu))
+            print(tile,td, len(tls), len(fgun),len(fgu))
         else:
             print('did not find '+ffa)
 
-    if len(tiles[tmask]['TILEID']) > 0:
+    if len(tls[tmask]['TILEID']) > 0:
         fgu.write(outf,format='fits', overwrite=True)
     #specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
