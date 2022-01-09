@@ -306,7 +306,7 @@ def doran(ii):
             s = 0
             np =0 
             for px in hpxs:                
-                tarfo = lspecdir+'healpix/rancomb_'+str(ii)+prog+'_'+str(px)+'_wdupspec_zdone.fits'
+                tarfo = ldirspec+'healpix/rancomb_'+str(ii)+prog+'_'+str(px)+'_wdupspec_zdone.fits'
                 if os.path.isfile(tarfo):
                     tarf = Table.read(tarfo)
                     if s == 0:
