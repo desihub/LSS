@@ -314,7 +314,7 @@ def doran(ii):
                         s = 1
                     else:
                         tarfn = vstack([tarfn,tarf],metadata_conflicts='silent')
-                    print(len(tarfn),tp,np,len(hpxs))
+                    print(len(tarfn),np,len(hpxs))
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
