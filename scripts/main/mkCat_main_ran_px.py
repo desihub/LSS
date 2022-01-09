@@ -306,7 +306,7 @@ def doran(ii):
             s = 0
             np =0 
             for px in hpxs:                
-                tarfo = ldirspec+'healpix/rancomb_'+str(ii)+prog+'_'+str(px)+'_wdupspec_zdone.fits'
+                tarfo = ldirspec+'healpix/rancomb_'+str(ii)+type+'_'+str(px)+'_wdupspec_zdone.fits'
                 if os.path.isfile(tarfo):
                     tarf = Table.read(tarfo)
                     if s == 0:
@@ -318,7 +318,7 @@ def doran(ii):
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
-            tarfn.write(ldirspec+'rancomb_'+str(ii)+prog+'wdupspec_zdone.fits',format='fits', overwrite=True)            
+            tarfn.write(ldirspec+'rancomb_'+str(ii)+type+'wdupspec_zdone.fits',format='fits', overwrite=True)            
             tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
