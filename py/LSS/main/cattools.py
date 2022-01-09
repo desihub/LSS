@@ -482,9 +482,11 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
         
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)  
-    fjg = fj[wg]  
+    fjg = fj[wg]
+    fjg.sort('TARGETID')  
 
     tids = np.unique(fjg['TARGETID'])
+    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
     nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
     nt = []
     tl = []
