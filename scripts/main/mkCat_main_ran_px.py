@@ -303,9 +303,22 @@ def doran(ii):
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
 
-            
-            
-            
+            s = 0
+            np =0 
+            for px in hpxs:                
+                tarfo = lspecdir+'healpix/rancomb_'+str(ii)+prog+'_'+str(px)+'_wdupspec_zdone.fits'
+                if os.path.isfile(tarfo):
+                    tarf = Table.read(tarfo)
+                    if s == 0:
+                        tarfn = tarf
+                        s = 1
+                    else:
+                        tarfn = vstack([tarfn,tarf,metadata_conflicts='silent')
+                    print(len(tarfn),tp,np,len(hpxs))
+                else:
+                    print('file '+tarfo+' not found')
+                np += 1    
+            tarfn.write(ldirspec+'rancomb_'+str(ii)+prog+'wdupspec_zdone.fits',format='fits', overwrite=True)            
             tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
