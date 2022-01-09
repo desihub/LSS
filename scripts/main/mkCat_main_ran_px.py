@@ -302,7 +302,7 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-
+            hpxs = foot.tiles2pix(8, tiles=ta)
             s = 0
             np =0 
             for px in hpxs:                
