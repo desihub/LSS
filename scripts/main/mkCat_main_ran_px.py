@@ -302,7 +302,7 @@ def doran(ii):
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
                 ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc)
-                tc = ct.count_tiles_better('ran',type,gtl,ii,specrel=specrel,px=px)
+                tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
                 tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
                 npx += 1
            
