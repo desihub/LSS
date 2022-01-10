@@ -543,7 +543,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     
     return tc
 
-def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False):
+def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go 
     through and get the multi-tile information
@@ -555,7 +555,7 @@ def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERST
         fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
     if dr == 'ran':
-        if px:
+        if px is not None:
             fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
         else: 
             fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
