@@ -218,11 +218,13 @@ else:
 
 print(len(ta))
 
+print(specrel)
 if type == 'dark' or type == 'bright':
     if specrel == 'daily':
         specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
         specf = Table.read(specfo)
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        
 
     if specrel == 'everest':    
 
@@ -235,6 +237,7 @@ if type == 'dark' or type == 'bright':
         print('number of TILEID in spec data being used:')
         print(len(np.unique(specf['TILEID'])))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    print('loaded specf file '+specfo)
 
 
 def doran(ii):
