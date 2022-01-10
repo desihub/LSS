@@ -444,7 +444,6 @@ def get_specdat(indir,pd,ver='daily'):
     return fs[wfqa]
 
 def cut_specdat(dz,ver='daily'):
-    dz = fitsio.read(zf)
     selz = dz['ZWARN'] != 999999
     fs = dz[selz]
 
