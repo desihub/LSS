@@ -238,6 +238,9 @@ if type == 'dark' or type == 'bright':
         print(len(np.unique(specf['TILEID'])))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     print('loaded specf file '+specfo)
+    specfc = ct.cut_specdat(specf,type)
+    gtl = np.unique(specfc['TILELOCID'])
+    del specfc
 
 
 def doran(ii):
@@ -295,9 +298,6 @@ def doran(ii):
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
             
-            specfc = ct.cut_specdat(specf,type)
-            gtl = np.unique(specfc['TILELOCID'])
-            del specfc
 
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
