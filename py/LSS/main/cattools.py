@@ -525,6 +525,66 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     tc['TILELOCIDS'] = tli
     
     return tc
+
+def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False):
+    '''
+    from files with duplicates that have already been sorted by targetid, quickly go 
+    through and get the multi-tile information
+    dr is either 'dat' or 'ran'
+    returns file with TARGETID,NTILE,TILES,TILELOCIDS
+    '''
+        
+    if dr == 'dat':
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
+        #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits' 
+    if dr == 'ran':
+        if px:
+            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
+        else: 
+            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
+        
+        #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
+    wg = np.isin(fj['TILELOCID'],gtl)  
+    fjg = fj[wg]
+    fjg = fjg[np.argsort(fjg['TARGETID'])]  
+
+    tids = np.unique(fjg['TARGETID'])
+    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
+    nt = []
+    tl = []
+    tli = []
+    ti = 0
+    i = 0
+    while i < len(fjg):
+        tls  = []
+        tlis = []
+        nli = 0
+    
+        while fjg[i]['TARGETID'] == tids[ti]:
+            nli += 1
+            tls.append(fjg[i]['TILEID'])
+            tlis.append(fjg[i]['TILELOCID'])
+            i += 1
+            if i == len(fjg):
+                break
+        nloc.append(nli)
+        tlsu = np.unique(tls)
+        tlisu = np.unique(tlis)
+        nt.append(len(tlsu))
+        tl.append("-".join(tlsu.astype(str)))
+        tli.append("-".join(tlisu.astype(str)))
+      
+        if ti%100000 == 0:
+            print(ti)
+        ti += 1 
+    tc = Table()
+    tc['TARGETID'] = tids
+    tc['NTILE'] = nt
+    tc['TILES'] = tl
+    tc['TILELOCIDS'] = tli
+    
+    return tc
     
     
 def count_tiles(tiles,catdir,pd,ttp='ALL',imask=False):
@@ -922,42 +982,45 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     else:
         tmask = np.ones(len(tls)).astype('bool')  
         
-    td = len(tls[tmask])      
+    td = len(tls[tmask])    
+    if td > 0:  
 
-    for tile in tls[tmask]['TILEID']:
-        ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
-        ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
-        if os.path.isfile(ffa):
-            fa = Table.read(ffa,hdu='FAVAIL')
-            
-            ffna = Table.read(ffna)
-            fgun = join(fa,ffna,keys=['TARGETID'])
-            #fgun.remove_columns(delcols)
-                        
-            td += 1
-            fgun['TILEID'] = int(tile)
-            fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
-            if s == 0:
-                fgu = fgun
-                s = 1
-            else:   
-                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-            fgu.sort('TARGETID')
-            print(tile,td, len(tls), len(fgun),len(fgu))
-        else:
-            print('did not find '+ffa)
+		for tile in tls[tmask]['TILEID']:
+			ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
+			ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
+			if os.path.isfile(ffa):
+				fa = Table.read(ffa,hdu='FAVAIL')
+			
+				ffna = Table.read(ffna)
+				fgun = join(fa,ffna,keys=['TARGETID'])
+				#fgun.remove_columns(delcols)
+						
+				td += 1
+				fgun['TILEID'] = int(tile)
+				fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
+				if s == 0:
+					fgu = fgun
+					s = 1
+				else:   
+					fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+				fgu.sort('TARGETID')
+				print(tile,td, len(tls), len(fgun),len(fgu))
+			else:
+				print('did not find '+ffa)
 
-    if len(tls[tmask]['TILEID']) > 0:
-        fgu.write(outf,format='fits', overwrite=True)
-    #specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specf.keep_columns(keepcols)
-    #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
-    fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
-    fgu.sort('TARGETID')
-    outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
-    print(outf)
-    fgu.write(outf,format='fits', overwrite=True)
+		if len(tls[tmask]['TILEID']) > 0:
+			fgu.write(outf,format='fits', overwrite=True)
+		#specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
+		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+		specf.keep_columns(keepcols)
+		#specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+		fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+		fgu.sort('TARGETID')
+		outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
+		print(outf)
+		fgu.write(outf,format='fits', overwrite=True)
+	else:
+	    print('no new data to add')
     
 
 
