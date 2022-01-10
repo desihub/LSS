@@ -985,42 +985,42 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     td = len(tls[tmask])    
     if td > 0:  
 
-		for tile in tls[tmask]['TILEID']:
-			ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
-			ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
-			if os.path.isfile(ffa):
-				fa = Table.read(ffa,hdu='FAVAIL')
-			
-				ffna = Table.read(ffna)
-				fgun = join(fa,ffna,keys=['TARGETID'])
-				#fgun.remove_columns(delcols)
-						
-				td += 1
-				fgun['TILEID'] = int(tile)
-				fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
-				if s == 0:
-					fgu = fgun
-					s = 1
-				else:   
-					fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-				fgu.sort('TARGETID')
-				print(tile,td, len(tls), len(fgun),len(fgu))
-			else:
-				print('did not find '+ffa)
+        for tile in tls[tmask]['TILEID']:
+            ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
+            ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
+            if os.path.isfile(ffa):
+                fa = Table.read(ffa,hdu='FAVAIL')
+            
+                ffna = Table.read(ffna)
+                fgun = join(fa,ffna,keys=['TARGETID'])
+                #fgun.remove_columns(delcols)
+                        
+                td += 1
+                fgun['TILEID'] = int(tile)
+                fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
+                if s == 0:
+                    fgu = fgun
+                    s = 1
+                else:   
+                    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+                fgu.sort('TARGETID')
+                print(tile,td, len(tls), len(fgun),len(fgu))
+            else:
+                print('did not find '+ffa)
 
-		if len(tls[tmask]['TILEID']) > 0:
-			fgu.write(outf,format='fits', overwrite=True)
-		#specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
-		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-		specf.keep_columns(keepcols)
-		#specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
-		fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
-		fgu.sort('TARGETID')
-		outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
-		print(outf)
-		fgu.write(outf,format='fits', overwrite=True)
-	else:
-	    print('no new data to add')
+        if len(tls[tmask]['TILEID']) > 0:
+            fgu.write(outf,format='fits', overwrite=True)
+        #specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        specf.keep_columns(keepcols)
+        #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+        fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+        fgu.sort('TARGETID')
+        outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
+        print(outf)
+        fgu.write(outf,format='fits', overwrite=True)
+    else:
+        print('no new data to add')
     
 
 
