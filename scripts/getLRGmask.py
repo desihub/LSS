@@ -22,8 +22,8 @@ import argparse
 
 time_start = time.time()
 
-bitmask_dir = '/global/cscratch1/sd/rongpu/desi/lrg_pixel_bitmask/v1'
-#bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/LRG/v1'
+#bitmask_dir = '/global/cscratch1/sd/rongpu/desi/lrg_pixel_bitmask/v1'
+bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/LRG/v1'
 
 n_processes = 32
 
