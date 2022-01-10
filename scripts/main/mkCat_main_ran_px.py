@@ -292,7 +292,7 @@ def doran(ii):
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
             
-            fs = get_specdat(ldirspec,type)
+            fs = ct.get_specdat(ldirspec,type)
             stlid = 10000*fs['TILEID'] +fs['LOCATION']
             gtl = np.unique(stlid)
 
