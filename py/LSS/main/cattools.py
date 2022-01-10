@@ -428,6 +428,23 @@ def get_specdat(indir,pd,ver='daily'):
     if ver == 'daily':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
     dz = Table.read(zf) 
+    #dz = fitsio.read(zf)
+    selz = dz['ZWARN'] != 999999
+    fs = dz[selz]
+
+    #first, need to find locations to veto based data
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata | badqa
+    wfqa = ~nomtl
+    return fs[wfqa]
+
+def cut_specdat(dz,ver='daily'):
+    dz = fitsio.read(zf)
     selz = dz['ZWARN'] != 999999
     fs = dz[selz]
 
