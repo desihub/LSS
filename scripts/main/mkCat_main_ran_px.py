@@ -314,7 +314,7 @@ def doran(ii):
         if type == 'dark' or type == 'bright':
             hpxs = foot.tiles2pix(8, tiles=ta)
             s = 0
-            np =0 
+            npx =0 
             for px in hpxs:                
                 tarfo = ldirspec+'healpix/rancomb_'+str(ii)+type+'_'+str(px)+'_wdupspec_zdone.fits'
                 if os.path.isfile(tarfo):
@@ -324,10 +324,10 @@ def doran(ii):
                         s = 1
                     else:
                         tarfn = vstack([tarfn,tarf],metadata_conflicts='silent')
-                    print(len(tarfn),np,len(hpxs))
+                    print(len(tarfn),npx,len(hpxs))
                 else:
                     print('file '+tarfo+' not found')
-                np += 1    
+                npx += 1    
             tarfn.write(ldirspec+'rancomb_'+str(ii)+type+'wdupspec_zdone.fits',format='fits', overwrite=True)            
             tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
