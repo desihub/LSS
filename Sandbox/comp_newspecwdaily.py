@@ -207,7 +207,9 @@ glnew = glrg(lrgtar,'new')
 print('old LRG redshift success was '+str(len(glfid)/len(lrgtar)))
 print('new LRG redshift success was '+str(len(glnew)/len(lrgtar)))
 
-#do per petall
+#do per petal
+sln = []
+slf = []
 for pt in range(0,10):
     sp = lrgtar['PETAL_LOC_fid'] == pt
     spf = glfid['PETAL_LOC_fid'] == pt
@@ -215,4 +217,40 @@ for pt in range(0,10):
     print('for petal '+str(pt))
     print('old success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
     print('new success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
+    sln.append(len(glnew[spn])/len(lrgtar[sp]))
+    slf.append(len(glfid[spf])/len(lrgtar[sp]))
+    
+#plot QSO and ELG using deltachi2 > 25 threshold
+
+sdchi2fid = combpass['DELTACHI2_fid'] > 25
+sdchi2new = combpass['DELTACHI2_new'] > 25
+welg = (combpass['DESI_TARGET_fid'] & 2) > 0
+wqso = (combpass['DESI_TARGET_fid'] & 2) > 0
+sen = []
+sqn = []
+sef = []
+sqn = []
+pts = []
+
+for pt in range(0,10): 
+    pts.append(pt)
+    sp = combpass['PETAL_LOC_fid']
+    spen = len(combpass[sp&welg&sdchi2new])/len(combpass[sp&welg])
+    sen.append(spen)
+    spef = len(combpass[sp&welg&sdchi2fid])/len(combpass[sp&welg])
+    sef.append(spef)
+    spqn = len(combpass[sp&wqso&sdchi2new])/len(combpass[sp&wqso])
+    sqn.append(spqn)
+    spqf = len(combpass[sp&wqso&sdchi2fid])/len(combpass[sp&wqso])
+    sqf.append(spqf)
+
+plt.plot(pts,sln,'o-r')  
+plt.plot(pts,slf,'o--r')
+plt.plot(pts,sen,'o-b')  
+plt.plot(pts,sef,'o--b') 
+plt.plot(pts,sqn,'o-',color='orange')  
+plt.plot(pts,sqf,'o--',color='orange')
+plt.show()   
+    
+  
 
