@@ -84,7 +84,7 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     if len(specs) == 0:
         return None
     for i in range(0,len(specs)):
-        tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+trhu+tdate+'.fits',hdu=zhdu)
+        tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu=zhdu)
         tnq = Table.read(coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits')
         tnf = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu='FIBERMAP')
         tns = Table.read(coaddir+str(tile)+'/'+tdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu=shdu)
