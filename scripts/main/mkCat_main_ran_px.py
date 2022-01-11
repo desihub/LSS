@@ -39,9 +39,10 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
-parser.add_argument("--combhp", help="combine the random tiles together in healpix",default='y')
+parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
+parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -374,7 +375,26 @@ def doran(ii):
             print(outf,npx,len(hpxs))
             ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii))
             npx += 1  
-        
+        npx = 0
+        s = 0
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+
+    if args.combfull == 'y':
+        print('now combining to make '+outf)
+        for px in hpxs:
+            po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
+            if os.path.isfile(po):
+                pf = Table.read(po)
+                if s == 0:
+                    pn = pf
+                    s = 1
+                else:
+                    pn = vstack([pn,pf],metadata_conflicts='silent')
+                    print(len(pn),npx,len(hpxs))
+            else:
+                print('file '+tarfo+' not found')
+            npx += 1    
+        pn.write(outf,overwrite=True,format=fits)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
