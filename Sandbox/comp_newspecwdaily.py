@@ -215,17 +215,18 @@ for pt in range(0,10):
     spf = glfid['PETAL_LOC_fid'] == pt
     spn = glnew['PETAL_LOC_fid'] == pt
     print('for petal '+str(pt))
-    print('old success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
-    print('new success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
+    print('old LRG success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
+    print('new LRG success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
     sln.append(len(glnew[spn])/len(lrgtar[sp]))
     slf.append(len(glfid[spf])/len(lrgtar[sp]))
     
 #plot QSO and ELG using deltachi2 > 25 threshold
 
 sdchi2fid = combpass['DELTACHI2_fid'] > 25
+print(len(combpass),len(combpass[sdchi2fid]))
 sdchi2new = combpass['DELTACHI2_new'] > 25
 welg = (combpass['DESI_TARGET_fid'] & 2) > 0
-wqso = (combpass['DESI_TARGET_fid'] & 2) > 0
+wqso = (combpass['DESI_TARGET_fid'] & 4) > 0
 sen = []
 sqn = []
 sef = []
