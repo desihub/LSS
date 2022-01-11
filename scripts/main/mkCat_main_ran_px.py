@@ -224,7 +224,7 @@ print(len(ta))
 
 print(specrel)
 
-tracemalloc.reset_peak()
+
 print(tracemalloc.get_traced_memory())
 
 if specrel == 'daily':
@@ -265,7 +265,7 @@ if type != 'dark' and type != 'bright':
 
 hpxs = foot.tiles2pix(8, tiles=ta)
 
-tracemalloc.reset_peak()
+
 print(tracemalloc.get_traced_memory())
 
 
