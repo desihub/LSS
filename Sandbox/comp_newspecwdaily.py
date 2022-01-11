@@ -225,6 +225,7 @@ for pt in range(0,10):
 sdchi2fid = combpass['DELTACHI2_fid'] > 25
 print(len(combpass),len(combpass[sdchi2fid]))
 sdchi2new = combpass['DELTACHI2_new'] > 25
+print(len(combpass),len(combpass[sdchi2fid]),len(combpass[sdchi2new]))
 welg = (combpass['DESI_TARGET_fid'] & 2) > 0
 wqso = (combpass['DESI_TARGET_fid'] & 4) > 0
 sen = []
@@ -237,6 +238,7 @@ for pt in range(0,10):
     pts.append(pt)
     sp = combpass['PETAL_LOC_fid']
     spen = len(combpass[sp&welg&sdchi2new])/len(combpass[sp&welg])
+    print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
     sen.append(spen)
     spef = len(combpass[sp&welg&sdchi2fid])/len(combpass[sp&welg])
     sef.append(spef)
