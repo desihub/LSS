@@ -219,28 +219,47 @@ else:
 print(len(ta))
 
 print(specrel)
-if type == 'dark' or type == 'bright':
-    if specrel == 'daily':
-        specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
-        specf = Table.read(specfo)
-        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-        
 
-    if specrel == 'everest':    
+if specrel == 'daily':
+	specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+	specf = Table.read(specfo)
+	specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+	
 
-        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-        #wt = np.isin(mtld['TILEID'],specf['TILEID'])
-        #above two lines already done above
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-        wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-        specf = specf[wt]
-        print('number of TILEID in spec data being used:')
-        print(len(np.unique(specf['TILEID'])))
-        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    print('loaded specf file '+specfo)
-    specfc = ct.cut_specdat(specf,type)
-    gtl = np.unique(specfc['TILELOCID'])
-    del specfc
+if specrel == 'everest':    
+
+	#specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+	#wt = np.isin(mtld['TILEID'],specf['TILEID'])
+	#above two lines already done above
+	specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+	wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+	specf = specf[wt]
+	print('number of TILEID in spec data being used:')
+	print(len(np.unique(specf['TILEID'])))
+	specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+print('loaded specf file '+specfo)
+specfc = ct.cut_specdat(specf,pdir)
+gtl = np.unique(specfc['TILELOCID'])
+del specfc
+if type != 'dark' and type != 'bright':
+	if type == 'BGS_BRIGHT':
+		bit = targetmask.bgs_mask[type]
+		desitarg='BGS_TARGET'
+	else:
+		bit = targetmask.desi_mask[type]    
+		desitarg='DESI_TARGET'
+
+    wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        qsobit=4
+        wtype &= ((specf[desitarg] & qsobit) == 0)
+
+    wg = np.isin(specf['TILELOCID'],gtl)
+    specf = specf[wtype&wg]
+    print('length after selecting type and good hardware '+str(len(specf)))
+    lznp = ct.find_znotposs(specf)
+
+hpxs = foot.tiles2pix(8, tiles=ta)
 
 
 def doran(ii):
@@ -290,7 +309,7 @@ def doran(ii):
 
     if combhp:
         if type == 'dark' or type == 'bright':
-            hpxs = foot.tiles2pix(8, tiles=ta)
+            
             npx = 0
             kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
             ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
@@ -312,7 +331,7 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-            hpxs = foot.tiles2pix(8, tiles=ta)
+            
             s = 0
             npx =0 
             for px in hpxs:                
@@ -332,30 +351,14 @@ def doran(ii):
             tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
-
-
-
         
     if mkfullr:
 
-        if specrel == 'everest':
-            #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-            #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            #specf = specf[wt]
-            fbcol = 'COADD_FIBERSTATUS'
-        if specrel == 'daily':
-            #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-            fbcol = 'FIBERSTATUS'
-
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
-        if type == 'BGS_BRIGHT':
-            bit = targetmask.bgs_mask[type]
-            desitarg='BGS_TARGET'
-        else:
-            bit = targetmask.desi_mask[type]    
-            desitarg='DESI_TARGET'
+        for px in hpxs:
+            outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
         
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+            ct.mkfullran_px(ldirspec,ii,imbits,outf,type,pdir,gtl,lznp,px)
+            npx += 1  
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
