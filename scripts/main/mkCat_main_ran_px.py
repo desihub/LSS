@@ -249,7 +249,7 @@ if type != 'dark' and type != 'bright':
         bit = targetmask.desi_mask[type]    
         desitarg='DESI_TARGET'
 
-    wtype = ((dz[desitarg] & bit) > 0)
+    wtype = ((specf[desitarg] & bit) > 0)
     if notqso == 'notqso':
         qsobit=4
         wtype &= ((specf[desitarg] & qsobit) == 0)

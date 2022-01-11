@@ -1301,6 +1301,36 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px):
+   
+    zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    dz = Table.read(zf)
+    #dz.remove_columns(['TILES','NTILE'])
+
+    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    dzpd = Table.read(zfpd)
+    #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
+    dz = join(dz,dzpd,keys=['TARGETID'])
+    #if maskzfail:
+    #    wk = dz['ZPOSSNOTBAD'] == 1
+    #else:
+    #    wk = dz['ZPOSS'] == 1
+    print('length before cutting to good positions '+str(len(dz)))
+    wk = ~np.isin(dz['TILELOCID'],lznp)
+    wk &= np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wk]    
+    print('length after cutting to good positions '+str(len(dz)))
+    dz = cutphotmask(dz,imbits)
+    print('length after cutting to based on imaging veto mask '+str(len(dz)))
+    dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+    print('length after cutting to unique TARGETID '+str(len(dz)))
+    print(np.unique(dz['NTILE']))
+    
+    dz.write(outf,format='fits', overwrite=True)
+    del dz
+
+
 def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',ecol=['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']):
     dz = fitsio.read(fn)
     tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=ecol)
