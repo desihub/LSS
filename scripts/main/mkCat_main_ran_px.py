@@ -382,7 +382,7 @@ def doran(ii):
     if args.combfull == 'y':
         s = 0
         npx =0 
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
@@ -395,7 +395,7 @@ def doran(ii):
                     pn = vstack([pn,pf],metadata_conflicts='silent')
                     print(len(pn),npx,len(hpxs))
             else:
-                print('file '+tarfo+' not found')
+                print('file '+po+' not found')
             npx += 1    
         
         pn.write(outf,overwrite=True,format=fits)
