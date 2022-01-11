@@ -229,7 +229,7 @@ wqso = (combpass['DESI_TARGET_fid'] & 2) > 0
 sen = []
 sqn = []
 sef = []
-sqn = []
+sqf = []
 pts = []
 
 for pt in range(0,10): 
