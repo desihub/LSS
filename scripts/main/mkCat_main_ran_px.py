@@ -213,7 +213,7 @@ if len(mtld) > 0:
     ta['PROGRAM'] = pl
     #ta['FA_HA'] = fahal
     #ta['FA_VER'] = fver
-    print(np.unique(fver,return_counts=True))
+    #print(np.unique(fver,return_counts=True))
     #wfv = (np.array(fver) == faver)
     #mtld =  mtld[wfv]
     #ta = ta[wfv]
@@ -364,7 +364,7 @@ def doran(ii):
         for px in hpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))
-            ct.mkfullran_px(ldirspec,ii,imbits,outf,type,pdir,gtl,lznp,px)
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px)
             npx += 1  
         
     #logf.write('ran mkfullran\n')
