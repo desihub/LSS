@@ -29,7 +29,7 @@ print('found '+str(len(tls))+' tiles in new reductions')
 mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == 'main'
 wd &= mt['OBSSTATUS'] == 'obsend'
-wd &= mt['FAPRGRM'] == prog
+wd &= mt['FAPRGRM'] == args.prog
 wd &= np.isin(mt['TILEID'],tls)
 mtd = mt[wd]
 print('found '+str(mtd)+' '+args.prog+' tiles with obsend status in new reductions')
