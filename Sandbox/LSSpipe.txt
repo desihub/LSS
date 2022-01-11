@@ -1,0 +1,22 @@
+#LSS to run with every MTL update
+
+source /project/projectdirs/desi/software/desi_environment.sh master
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
+#data
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright
+
+tps = ['LRG','QSO','ELG','ELG_LOP','BGS_ANY','BGS_BRIGHT']
+for tp in tps:
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily
+
+python mkCat_main.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso y
+
+#random
+srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py    --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
+
+#if times out while still running fiberassign files, make sure to delete files with .tmp in the name
+
+srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py    --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --rfa n --combhp n --combr y --fullr y 
+
