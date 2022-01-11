@@ -147,4 +147,10 @@ print('number of tiles where night matches thru night '+str(np.sum(gtls)))
 specdfid = combtiles(tiles4comb[gtls],args.fiddir)
 
 print('comparing lengths of combined data; old,new:')
-print(len(specdnew),len(specdold))
+print(len(specdnew),len(specdfid))
+
+combt = join(specdfid,specdnew,keys=['TARGETID'],table_names=['fid', 'new'])
+
+print(len(combt))
+sel = combt['COADD_NUMEXP_fid'] == combt['COADD_NUMEXP_new']
+print(len(combt[sel]))
