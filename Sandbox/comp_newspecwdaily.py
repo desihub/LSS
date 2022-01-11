@@ -142,7 +142,7 @@ def combtiles(tiles,coadddir,thru='thru'):
 #get fid and new data
 
 specdnew = combtiles(tiles4comb,args.newdir,'')
-gtls = np.isin(specdnew['TILEID'],tiles4comb['TILEID'])
+gtls = np.isin(tiles4comb['TILEID'],specdnew['TILEID'])
 print('number of tiles where night matches thru night '+str(np.sum(gtls)))
 specdfid = combtiles(tiles4comb[gtls],args.fiddir)
 
