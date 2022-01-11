@@ -1315,27 +1315,30 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
     #    wk = dz['ZPOSSNOTBAD'] == 1
     #else:
     #    wk = dz['ZPOSS'] == 1
-    print('length before cutting to good positions '+str(len(dz)))
+    #print('length before cutting to good positions '+str(len(dz)))
     wk = ~np.isin(dz['TILELOCID'],lznp)
     wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]    
-    print('length after cutting to good positions '+str(len(dz)))
+    #print('length after cutting to good positions '+str(len(dz)))
+    if len(dz) > 0:
 
-    tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
-    #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
-    #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-    tarf = fitsio.read(dirrt+'/randoms-1-hp-'+str(px)+'.fits',columns=tcol)
-    dz = join(dz,tarf,keys=['TARGETID'])
-    del tarf
+		tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+		#tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+		#'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+		tarf = fitsio.read(dirrt+'/randoms-1-hp-'+str(px)+'.fits',columns=tcol)
+		dz = join(dz,tarf,keys=['TARGETID'])
+		del tarf
 
-    dz = cutphotmask(dz,imbits)
-    print('length after cutting to based on imaging veto mask '+str(len(dz)))
-    dz.sort(tsnr) #should allow to later cut on tsnr for match to data
-    dz = unique(dz,keys=['TARGETID'],keep='last')
-    print('length after cutting to unique TARGETID '+str(len(dz)))
-    print(np.unique(dz['NTILE']))
-    
-    dz.write(outf,format='fits', overwrite=True)
+		dz = cutphotmask(dz,imbits)
+		#print('length after cutting to based on imaging veto mask '+str(len(dz)))
+		dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+		dz = unique(dz,keys=['TARGETID'],keep='last')
+		#print('length after cutting to unique TARGETID '+str(len(dz)))
+		#print(np.unique(dz['NTILE']))
+	
+		dz.write(outf,format='fits', overwrite=True)
+	else:
+	    print('0 rows left for '+outf+' so nothing got written')	
     del dz
 
 
