@@ -236,7 +236,7 @@ pts = []
 
 for pt in range(0,10): 
     pts.append(pt)
-    sp = combpass['PETAL_LOC_fid']
+    sp = combpass['PETAL_LOC_fid'] == pt
     spen = len(combpass[sp&welg&sdchi2new])/len(combpass[sp&welg])
     print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
     sen.append(spen)
