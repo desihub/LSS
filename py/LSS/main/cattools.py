@@ -1306,42 +1306,46 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
-
-    zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
-    dzpd = Table.read(zfpd)
-    #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
-    dz = join(dz,dzpd,keys=['TARGETID'])
-    #if maskzfail:
-    #    wk = dz['ZPOSSNOTBAD'] == 1
-    #else:
-    #    wk = dz['ZPOSS'] == 1
-    #print('length before cutting to good positions '+str(len(dz)))
-    wk = ~np.isin(dz['TILELOCID'],lznp)
-    wk &= np.isin(dz['TILELOCID'],gtl)
-    dz = dz[wk]    
-    #print('length after cutting to good positions '+str(len(dz)))
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wg]
     if len(dz) > 0:
-
-        tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
-        #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
-        #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-        tarf = fitsio.read(dirrt+'/randoms-1-hp-'+str(px)+'.fits',columns=tcol)
-        dz = join(dz,tarf,keys=['TARGETID'])
-        del tarf
-
-        dz = cutphotmask(dz,imbits)
-        #print('length after cutting to based on imaging veto mask '+str(len(dz)))
+        zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
+        dzpd = Table.read(zfpd)
+        #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
+        dz = join(dz,dzpd,keys=['TARGETID'])
+        #if maskzfail:
+        #    wk = dz['ZPOSSNOTBAD'] == 1
+        #else:
+        #    wk = dz['ZPOSS'] == 1
+        #print('length before cutting to good positions '+str(len(dz)))
+        wk = ~np.isin(dz['TILELOCID'],lznp)
+    
+        dz = dz[wk]    
+        #print('length after cutting to good positions '+str(len(dz)))
         if len(dz) > 0:
-            dz.sort(tsnr) #should allow to later cut on tsnr for match to data
-            dz = unique(dz,keys=['TARGETID'],keep='last')
-            #print('length after cutting to unique TARGETID '+str(len(dz)))
-            #print(np.unique(dz['NTILE']))
-            dz.write(outf,format='fits', overwrite=True)
-        else:
-            print('0 rows left after imaging veto for '+outf+' so nothing got written')
+
+            tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+            #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+            #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+            tarf = fitsio.read(dirrt+'/randoms-1-hp-'+str(px)+'.fits',columns=tcol)
+            dz = join(dz,tarf,keys=['TARGETID'])
+            del tarf
+
+            dz = cutphotmask(dz,imbits)
+            #print('length after cutting to based on imaging veto mask '+str(len(dz)))
+            if len(dz) > 0:
+                dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+                dz = unique(dz,keys=['TARGETID'],keep='last')
+                #print('length after cutting to unique TARGETID '+str(len(dz)))
+                #print(np.unique(dz['NTILE']))
+                dz.write(outf,format='fits', overwrite=True)
+            else:
+                print('0 rows left after imaging veto for '+outf+' so nothing got written')
         
+        else:
+            print('0 rows left for '+outf+' so nothing got written') 
     else:
-        print('0 rows left for '+outf+' so nothing got written')    
+        print('no redshift data after cutting to good obs for '+outf+' so nothing got written')   
     del dz
 
 
