@@ -380,6 +380,7 @@ def doran(ii):
         
 
     if args.combfull == 'y':
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         print('now combining to make '+outf)
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
@@ -394,7 +395,7 @@ def doran(ii):
             else:
                 print('file '+tarfo+' not found')
             npx += 1    
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        
         pn.write(outf,overwrite=True,format=fits)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
