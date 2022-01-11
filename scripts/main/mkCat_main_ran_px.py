@@ -221,33 +221,33 @@ print(len(ta))
 print(specrel)
 
 if specrel == 'daily':
-	specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-	specf = Table.read(specfo)
-	specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-	
+    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+    specf = Table.read(specfo)
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    
 
 if specrel == 'everest':    
 
-	#specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-	#wt = np.isin(mtld['TILEID'],specf['TILEID'])
-	#above two lines already done above
-	specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-	wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-	specf = specf[wt]
-	print('number of TILEID in spec data being used:')
-	print(len(np.unique(specf['TILEID'])))
-	specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+    #wt = np.isin(mtld['TILEID'],specf['TILEID'])
+    #above two lines already done above
+    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+    wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+    specf = specf[wt]
+    print('number of TILEID in spec data being used:')
+    print(len(np.unique(specf['TILEID'])))
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 print('loaded specf file '+specfo)
 specfc = ct.cut_specdat(specf,pdir)
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 if type != 'dark' and type != 'bright':
-	if type == 'BGS_BRIGHT':
-		bit = targetmask.bgs_mask[type]
-		desitarg='BGS_TARGET'
-	else:
-		bit = targetmask.desi_mask[type]    
-		desitarg='DESI_TARGET'
+    if type == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[type]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[type]    
+        desitarg='DESI_TARGET'
 
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
@@ -353,10 +353,10 @@ def doran(ii):
 
         
     if mkfullr:
-
+        npx = 0
         for px in hpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
-        
+            print(outf,npx,len(hpxs))
             ct.mkfullran_px(ldirspec,ii,imbits,outf,type,pdir,gtl,lznp,px)
             npx += 1  
         
