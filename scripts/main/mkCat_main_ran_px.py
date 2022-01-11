@@ -380,6 +380,8 @@ def doran(ii):
         
 
     if args.combfull == 'y':
+        s = 0
+        npx =0 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         print('now combining to make '+outf)
         for px in hpxs:
