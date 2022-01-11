@@ -1301,7 +1301,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG'):
    
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     dz = Table.read(zf)
