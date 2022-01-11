@@ -249,7 +249,7 @@ if type != 'dark' and type != 'bright':
         bit = targetmask.desi_mask[type]    
         desitarg='DESI_TARGET'
     del specf
-    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID'])
+    specf = Table(fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID']))
     wg = np.isin(specf['TILELOCID'],gtl)
     specf = specf[wg]
     print('length after selecting type and good hardware '+str(len(specf)))
