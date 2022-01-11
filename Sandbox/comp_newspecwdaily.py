@@ -114,29 +114,29 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     return tspec
 
 def combtiles(tiles,coadddir):
-	s = 0
-	n = 0
-	nfail = 0
+    s = 0
+    n = 0
+    nfail = 0
 
-	for tile,tdate in zip(tiles['TILEID'],tiles['THRUDATE']):
-		tdate = str(tdate)
-		tspec = combspecdata_simp(tile,tdate,coadddir)
-		if tspec:
-			tspec['TILEID'] = tile
-			if s == 0:
-				specd = tspec
-				s = 1
-			else:
-				specd = vstack([specd,tspec],metadata_conflicts='silent')
-			specd.sort('TARGETID')
-			kp = (specd['TARGETID'] > 0)
-			specd = specd[kp]
+    for tile,tdate in zip(tiles['TILEID'],tiles['THRUDATE']):
+        tdate = str(tdate)
+        tspec = combspecdata_simp(tile,tdate,coadddir)
+        if tspec:
+            tspec['TILEID'] = tile
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                specd = vstack([specd,tspec],metadata_conflicts='silent')
+            specd.sort('TARGETID')
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
 
-			n += 1
-			print(tile,n,len(tiles),len(specd)) 
-		else:
-				print(str(tile)+' failed')
-				nfail += 1  
+            n += 1
+            print(tile,n,len(tiles),len(specd)) 
+        else:
+                print(str(tile)+' failed')
+                nfail += 1  
     return specd
 #get fid and new data
 specdfid = combtiles(tiles4comb,args.fiddir)
