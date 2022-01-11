@@ -254,7 +254,7 @@ print('loaded specf file '+specfo)
 specfc = ct.cut_specdat(specf,pdir)
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
-if type != 'dark' and type != 'bright':
+if type != 'dark' and type != 'bright' and mkfullr:
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
