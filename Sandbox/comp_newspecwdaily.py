@@ -151,6 +151,59 @@ print(len(specdnew),len(specdfid))
 
 combt = join(specdfid,specdnew,keys=['TARGETID'],table_names=['fid', 'new'])
 
-print(len(combt))
+print('length after join is '+str(len(combt)))
 sel = combt['COADD_NUMEXP_fid'] == combt['COADD_NUMEXP_new']
-print(len(combt[sel]))
+print('number of rows where COADD_NUMEXP matches:' +str(len(combt[sel])))
+
+def checkQA(dat,ver):            
+    nodata = dat["ZWARN_MTL_"+ver] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = dat["ZWARN_MTL_"+ver] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata | badqa
+    wfqa = ~nomtl
+    return wqfa
+
+sqafid = checkQA(combt,'fid')
+sqanew = checkQA(combt,'new')
+selt = sel & sqafid & sqanew
+
+combpass = combt[selt]
+
+print('number of rows after keeping only those with COADD_NUMEXP match and good QA for both '+str(len(combpass)))
+
+#now specifically look at LRGs
+
+wlrg = (combpass['DESI_TARGET_fid'] & 1) > 0
+lrgtar = combpass[wlrg]
+
+def glrg(dat,ver):
+    drz = (10**(3 - 3.5*dat['Z_'+ver]))
+    mask_bad = (drz>30) & (dat['DELTACHI2_'+ver]<30)
+    mask_bad |= (drz<30) & (dat['DELTACHI2_'+ver]<drz)
+    mask_bad |= (dat['DELTACHI2_'+ver]<10)
+    wz = dat['ZWARN_'+ver] == 0
+    wz &= dat['Z_'+ver]<1.4
+    wz &= (~mask_bad)
+
+    wzwarn = wz#zmtlf['ZWARN'] == 0
+    gzlrg = dat[wzwarn]
+    return gzlrg
+
+glfid = glrg(lrgtar,'fid')
+glnew = glrg(lrgtar,'new')
+
+print('old LRG redshift success was '+str(len(glfid)/len(lrgtar)))
+print('new LRG redshift success was '+str(len(glnew)/len(lrgtar)))
+
+#do per petall
+for pt in range(0,10):
+    sp = lrgtar['PETAL_LOC_fid'] == pt
+    spf = glfid['PETAL_LOC_fid'] == pt
+    spn = glnew['PETAL_LOC_fid'] == pt
+    print('for petal '+str(pt))
+    print('old success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
+    print('old success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
+
