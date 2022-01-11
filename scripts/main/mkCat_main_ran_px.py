@@ -129,6 +129,11 @@ mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
+selt = np.isin(tiles['TILEID'],mtld['TILEID'])
+ta = Table()
+ta['TILEID'] = tiles[selt]['TILEID']
+ta['RA'] = tiles[selt]['RA']
+ta['DEC'] =tiles[selt]['DEC']
 
 #tiles4comb = Table()
 #tiles4comb['TILEID'] = mtld['TILEID']
@@ -170,55 +175,55 @@ if not os.path.exists(dirout):
 
 
 #construct a table with the needed tile information
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    fver = []
-    fahal = []
-    
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        try:
-            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-            tilel.append(tile)
-            ral.append(fht['TILERA'])
-            decl.append(fht['TILEDEC'])
-            mtlt.append(fht['MTLTIME'])
-            fal.append(fht['FA_RUN'])
-            obsl.append(fht['OBSCON'])
-            fav = fht['FA_VER']
-            try:
-                if int(fav[:1]) >= 5:
-                    fav = '5.0.0'
-                #else:
-                #    print(fav)    
-            except:
-                print(fav)        
-            pl.append(pr)
-        except:
-            print('failed to find and/or get info for tile '+ts)    
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['FA_RUN'] = fal
-    ta['OBSCON'] = obsl
-    ta['PROGRAM'] = pl
-    #ta['FA_HA'] = fahal
-    #ta['FA_VER'] = fver
-    #print(np.unique(fver,return_counts=True))
-    #wfv = (np.array(fver) == faver)
-    #mtld =  mtld[wfv]
-    #ta = ta[wfv]
-else:
-    print('no done tiles in the MTL')
+# if len(mtld) > 0:
+#     tilel = []
+#     ral = []
+#     decl = []
+#     mtlt = []
+#     fal = []
+#     obsl = []
+#     pl = []
+#     fver = []
+#     fahal = []
+#     
+#     #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+#     for tile in mtld['TILEID']:
+#         ts = str(tile).zfill(6)
+#         try:
+#             fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+#             tilel.append(tile)
+#             ral.append(fht['TILERA'])
+#             decl.append(fht['TILEDEC'])
+#             mtlt.append(fht['MTLTIME'])
+#             fal.append(fht['FA_RUN'])
+#             obsl.append(fht['OBSCON'])
+#             fav = fht['FA_VER']
+#             try:
+#                 if int(fav[:1]) >= 5:
+#                     fav = '5.0.0'
+#                 #else:
+#                 #    print(fav)    
+#             except:
+#                 print(fav)        
+#             pl.append(pr)
+#         except:
+#             print('failed to find and/or get info for tile '+ts)    
+#     ta = Table()
+#     ta['TILEID'] = tilel
+#     ta['RA'] = ral
+#     ta['DEC'] = decl
+#     ta['MTLTIME'] = mtlt
+#     ta['FA_RUN'] = fal
+#     ta['OBSCON'] = obsl
+#     ta['PROGRAM'] = pl
+#     #ta['FA_HA'] = fahal
+#     #ta['FA_VER'] = fver
+#     #print(np.unique(fver,return_counts=True))
+#     #wfv = (np.array(fver) == faver)
+#     #mtld =  mtld[wfv]
+#     #ta = ta[wfv]
+# else:
+#     print('no done tiles in the MTL')
 
 print(len(ta))
 
@@ -298,6 +303,9 @@ def doran(ii):
                 ttemp = Table(ta[it])
                 ttemp['OBSCONDITIONS'] = 516
                 ttemp['IN_DESI'] = 1
+                ttemp['MTLTIME'] = fbah['MTLTIME']
+                ttemp['FA_RUN'] = fbah['FA_RUN']
+                ttemp['PROGRAM'] = pl
                 try:
                     ttemp['FA_PLAN'] = fbah['FA_PLAN']
                     ttemp['FA_HA'] = fbah['FA_HA']
@@ -364,7 +372,7 @@ def doran(ii):
         for px in hpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))
-            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px)
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii))
             npx += 1  
         
     #logf.write('ran mkfullran\n')

@@ -1301,7 +1301,7 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt):
    
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     dz = Table.read(zf)
@@ -1320,6 +1320,14 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px):
     wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
+
+    tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+    #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+    #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+    tarf = fitsio.read(dirrt+'/randoms-1-hp-'+str(pix)+'.fits',columns=tcol)
+    dz = join(dz,tarf,keys=['TARGETID'])
+    del tarf
+
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     dz.sort(tsnr) #should allow to later cut on tsnr for match to data
