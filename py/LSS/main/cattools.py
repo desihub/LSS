@@ -1331,12 +1331,15 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
 
         dz = cutphotmask(dz,imbits)
         #print('length after cutting to based on imaging veto mask '+str(len(dz)))
-        dz.sort(tsnr) #should allow to later cut on tsnr for match to data
-        dz = unique(dz,keys=['TARGETID'],keep='last')
-        #print('length after cutting to unique TARGETID '+str(len(dz)))
-        #print(np.unique(dz['NTILE']))
-    
-        dz.write(outf,format='fits', overwrite=True)
+        if len(dz) > 0:
+            dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+            dz = unique(dz,keys=['TARGETID'],keep='last')
+            #print('length after cutting to unique TARGETID '+str(len(dz)))
+            #print(np.unique(dz['NTILE']))
+            dz.write(outf,format='fits', overwrite=True)
+        else:
+            print('0 rows left after imaging veto for '+outf+' so nothing got written')
+        
     else:
         print('0 rows left for '+outf+' so nothing got written')    
     del dz
