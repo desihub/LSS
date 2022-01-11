@@ -377,7 +377,7 @@ def doran(ii):
             npx += 1  
         npx = 0
         s = 0
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        
 
     if args.combfull == 'y':
         print('now combining to make '+outf)
@@ -394,6 +394,7 @@ def doran(ii):
             else:
                 print('file '+tarfo+' not found')
             npx += 1    
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         pn.write(outf,overwrite=True,format=fits)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
