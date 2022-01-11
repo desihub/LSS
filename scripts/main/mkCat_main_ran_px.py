@@ -13,6 +13,10 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import healpy as hp
 
+import tracemalloc
+
+tracemalloc.start()
+
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
@@ -220,6 +224,9 @@ print(len(ta))
 
 print(specrel)
 
+tracemalloc.reset_peak()
+print(tracemalloc.get_traced_memory())
+
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
     specf = Table.read(specfo)
@@ -257,6 +264,9 @@ if type != 'dark' and type != 'bright':
     del specf
 
 hpxs = foot.tiles2pix(8, tiles=ta)
+
+tracemalloc.reset_peak()
+print(tracemalloc.get_traced_memory())
 
 
 def doran(ii):

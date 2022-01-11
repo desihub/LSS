@@ -1303,11 +1303,11 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px):
    
-    zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     dz = Table.read(zf)
     #dz.remove_columns(['TILES','NTILE'])
 
-    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
     #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
     dz = join(dz,dzpd,keys=['TARGETID'])
