@@ -114,7 +114,7 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
-def combtiles(tiles,coadddir,thru):
+def combtiles(tiles,coadddir,thru='thru'):
     s = 0
     n = 0
     nfail = 0
@@ -141,8 +141,10 @@ def combtiles(tiles,coadddir,thru):
     return specd
 #get fid and new data
 
-specdnew = combtiles(tiles4comb,args.newdir,thru='')
-specdfid = combtiles(tiles4comb,args.fiddir)
+specdnew = combtiles(tiles4comb,args.newdir,'thru')
+gtls = np.isin(specdnew['TILEID'],tiles4comb['TILEID'])
+print('number of tiles where night matches thru night '+str(np.sum(gtls)))
+specdfid = combtiles(tiles4comb[gtls],args.fiddir)
 
 print('comparing lengths of combined data; old,new:')
 print(len(specdnew),len(specdold))
