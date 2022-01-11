@@ -214,5 +214,5 @@ for pt in range(0,10):
     spn = glnew['PETAL_LOC_fid'] == pt
     print('for petal '+str(pt))
     print('old success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
-    print('old success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
+    print('new success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
 
