@@ -32,7 +32,7 @@ wd &= mt['OBSSTATUS'] == 'obsend'
 wd &= mt['FAPRGRM'] == args.prog
 wd &= np.isin(mt['TILEID'],tls)
 mtd = mt[wd]
-print('found '+str(mtd)+' '+args.prog+' tiles with obsend status in new reductions')
+print('found '+str(len(mtd))+' '+args.prog+' tiles with obsend status in new reductions')
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
@@ -40,7 +40,7 @@ tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
 
 
-def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',md='' ):
+def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',thru='thru' ):
     #put data from different spectrographs together, one table for fibermap, other for z
     tdate = str(tdate)
     specs = []
@@ -55,9 +55,9 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         
 
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
         if os.path.isfile(ff):
-            fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+            fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
             if os.path.isfile(fq):
 
                 specs.append(si)
@@ -65,9 +65,9 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
                 print('did not find '+fq)    
         elif zfn == 'zbest':
             zfnt = 'redrock'
-            ff = coaddir+str(tile)+'/'+tdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+            ff = coaddir+str(tile)+'/'+tdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
             if os.path.isfile(ff):
-                fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+                fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
                 zfn = zfnt
                 zhdu = 'REDSHIFTS'
                 if os.path.isfile(fq):
@@ -84,10 +84,10 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     if len(specs) == 0:
         return None
     for i in range(0,len(specs)):
-        tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=zhdu)
-        tnq = Table.read(coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits')
-        tnf = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu='FIBERMAP')
-        tns = Table.read(coaddir+str(tile)+'/'+tdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=shdu)
+        tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+trhu+tdate+'.fits',hdu=zhdu)
+        tnq = Table.read(coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits')
+        tnf = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu='FIBERMAP')
+        tns = Table.read(coaddir+str(tile)+'/'+tdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu=shdu)
     
         if i == 0:
            tspec = tn
@@ -114,14 +114,14 @@ def combspecdata_simp(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
-def combtiles(tiles,coadddir):
+def combtiles(tiles,coadddir,thru):
     s = 0
     n = 0
     nfail = 0
 
     for tile,tdate in zip(tiles['TILEID'],tiles['THRUDATE']):
         tdate = str(tdate)
-        tspec = combspecdata_simp(tile,tdate,coadddir)
+        tspec = combspecdata_simp(tile,tdate,coadddir,thru=thru)
         if tspec:
             tspec['TILEID'] = tile
             if s == 0:
@@ -140,8 +140,9 @@ def combtiles(tiles,coadddir):
                 nfail += 1  
     return specd
 #get fid and new data
+
+specdnew = combtiles(tiles4comb,args.newdir,thru='')
 specdfid = combtiles(tiles4comb,args.fiddir)
-specdnew = combtiles(tiles4comb,args.newdir)
 
 print('comparing lengths of combined data; old,new:')
 print(len(specdnew),len(specdold))
