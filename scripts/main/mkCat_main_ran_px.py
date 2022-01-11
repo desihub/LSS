@@ -248,16 +248,13 @@ if type != 'dark' and type != 'bright':
     else:
         bit = targetmask.desi_mask[type]    
         desitarg='DESI_TARGET'
-
-    wtype = ((specf[desitarg] & bit) > 0)
-    if notqso == 'notqso':
-        qsobit=4
-        wtype &= ((specf[desitarg] & qsobit) == 0)
-
+    del specf
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID'])
     wg = np.isin(specf['TILELOCID'],gtl)
-    specf = specf[wtype&wg]
+    specf = specf[wg]
     print('length after selecting type and good hardware '+str(len(specf)))
     lznp = ct.find_znotposs(specf)
+    del specf
 
 hpxs = foot.tiles2pix(8, tiles=ta)
 
