@@ -65,7 +65,8 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
 
-tiles = tiles.keep_columns(['TILEID','RA','DEC'])
+tiles.keep_columns(['TILEID','RA','DEC'])
+print(tiles.dtype.names)
 
 tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
 
