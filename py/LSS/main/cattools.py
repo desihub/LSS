@@ -57,8 +57,11 @@ def combtile_spec(tiles,outf='',md=''):
             print(str(tile)+' failed')
             nfail += 1  
     print('total number of failures was '+str(nfail))
-    specd.write(outf,format='fits', overwrite=True)       
- 
+    if n > 0:
+        specd.write(outf,format='fits', overwrite=True)     
+        return True 
+    else: 
+        return False 
 
 def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',md='' ):
     #put data from different spectrographs together, one table for fibermap, other for z
