@@ -44,7 +44,7 @@ prog = args.prog
 progu = prog.upper()
 
 combpix = True
-if args.combpix == 'n'
+if args.combpix == 'n':
     combpix = False
 
 mainp = main(prog)
