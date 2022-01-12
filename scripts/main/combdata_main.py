@@ -169,7 +169,7 @@ if specrel == 'daily':
         tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
         notqsos = ['','','','','notqso']
     if prog == 'bright':
-        tps = ['BGS_ANY','MWS_ANY']  
+        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
         notqsos = ['',''] 
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
@@ -219,7 +219,7 @@ if specrel == 'daily':
                         s = 1
                     else:
                         tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                    print(len(tarfn),tp,np,len(hpxs))
+                    print(len(tarfn),tp+notqso,np,len(hpxs))
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
