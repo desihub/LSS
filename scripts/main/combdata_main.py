@@ -192,6 +192,7 @@ if specrel == 'daily':
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
                 if len(ctid) == sum(ctid):
                     print('all targetids are in '+outtc+' and all tileids are in '+outf+' so '+outtc+' will not be updated')
+                    uptileloc = False
                 del ftc
                 del fc
             del fo
