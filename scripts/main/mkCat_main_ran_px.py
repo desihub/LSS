@@ -398,7 +398,7 @@ def doran(ii):
                 print('file '+po+' not found')
             npx += 1    
         
-        pn.write(outf,overwrite=True,format=fits)
+        pn.write(outf,overwrite=True,format='fits')
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
