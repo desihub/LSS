@@ -337,10 +337,13 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         else:
             print('no overlapping targetid')
         n += 1
-    if tarsn is not None:
+    if tarsn is not None and n > 0:
         tarsn.write(fout,format='fits', overwrite=True)       
     else:
-        print('did not find any targets actually in this pixel '+str(hpx))
+        if tarsn == None:
+            print('did not find any targets actually in this pixel '+str(hpx))
+        else:
+            print('no tiles to update for this pixel '+str(hpx))    
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
