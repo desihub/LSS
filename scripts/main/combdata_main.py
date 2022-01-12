@@ -22,6 +22,7 @@ from desitarget import targetmask
 #from this package
 #try:
 import LSS.main.cattools as ct
+from LSS.globals import main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
