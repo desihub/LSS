@@ -40,7 +40,11 @@ specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
 
-mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+mainp = main(prog)
+
+mt = mainp.mtld
+tiles = mainp.tiles
+
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
@@ -54,33 +58,42 @@ mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
+
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
-#tiles4comb['ZDATE'] = mtd['LASTNIGHT']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
 
-if len(tiles4comb) > 0:
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in tiles4comb['TILEID']:
-        ts = str(tile).zfill(6)
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        ral.append(fht['TILERA'])
-        decl.append(fht['TILEDEC'])
-        mtlt.append(fht['MTLTIME'])
-        fal.append(fht['FA_RUN'])
-        obsl.append(fht['OBSCON'])
-    tiles4comb['RA'] = ral
-    tiles4comb['DEC'] = decl
-    tiles4comb['MTLTIME'] = mtlt
-    tiles4comb['FA_RUN'] = fal
-    tiles4comb['OBSCON'] = obsl
+tiles = tiles.keep_columns(['TILEID','RA','DEC'])
+
+tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
+
+print('check that length of tiles4comb matches '+str(len(tiles4comb)))
+
+
+
+
+# if len(tiles4comb) > 0:
+#     ral = []
+#     decl = []
+#     mtlt = []
+#     fal = []
+#     obsl = []
+#     pl = []
+#     #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+#     for tile in tiles4comb['TILEID']:
+#         ts = str(tile).zfill(6)
+#         fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+#         ral.append(fht['TILERA'])
+#         decl.append(fht['TILEDEC'])
+#         mtlt.append(fht['MTLTIME'])
+#         fal.append(fht['FA_RUN'])
+#         obsl.append(fht['OBSCON'])
+#     tiles4comb['RA'] = ral
+#     tiles4comb['DEC'] = decl
+#     tiles4comb['MTLTIME'] = mtlt
+#     tiles4comb['FA_RUN'] = fal
+#     tiles4comb['OBSCON'] = obsl
     
 
 
