@@ -387,18 +387,21 @@ def doran(ii):
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
-                pf = Table.read(po)
+                #pf = Table.read(po)
+                pf = fitsio.read(po)
                 if s == 0:
                     pn = pf
                     s = 1
                 else:
-                    pn = vstack([pn,pf],metadata_conflicts='silent')
+                    #pn = vstack([pn,pf],metadata_conflicts='silent')
+                    pn = np.hstack((pn,pf))
                     print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
             npx += 1    
         
-        pn.write(outf,overwrite=True,format='fits')
+        #pn.write(outf,overwrite=True,format='fits')
+        fitsio.write(outf,pn,clobber=True)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
