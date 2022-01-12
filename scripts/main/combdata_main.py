@@ -156,7 +156,7 @@ if specrel == 'daily':
             fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
             nstid = len(np.unique(specf['TILEID']))
             notid = len(np.unique(fo['TILEID']))
-            print('there are '+str(nstid-notid) ' tiles that need to be added to '+outf)
+            print('there are '+str(nstid-notid)+ ' tiles that need to be added to '+outf)
             if nstid == notid:
                 update = False
                 print('we will not update '+outf+' because there are no new tiles')
