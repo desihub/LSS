@@ -1417,6 +1417,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     dz = join(dz,ftar,keys=['TARGETID'])
     #print('length after join to full targets (should be same) '+str(len(dz)))
     dz = cutphotmask(dz,imbits)
+    print('length after imaging mask; should not have changed '+str(len(dz)))
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
