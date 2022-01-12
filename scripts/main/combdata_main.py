@@ -141,11 +141,34 @@ if specrel == 'daily':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
-        tps = ['LRG','ELG','QSO']
+        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+        notqsos = ['','','','','notqso']
     if prog == 'bright':
-        tps = ['BGS_ANY','MWS_ANY']   
-    for tp in tps:
-        if args.counts_only != 'y':
+        tps = ['BGS_ANY','MWS_ANY']  
+        notqsos = ['',''] 
+    for tp,notqso in zip(tps,notqsos):
+        #first test to see if we need to update any
+        outf = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+        update = True
+        uptileloc = True
+        if os.path.isfile(outf):
+            fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
+            nstid = len(np.unique(specf['TILEID']))
+            notid = len(np.unique(fo['TILEID']))
+            print('there are '+str(nstid-notid) ' tiles that need to be added to '+outf)
+            if nstid == notid:
+                update = False
+                print('we will not update '+outf+' because there are no new tiles')
+            #tidc = np.isin(np.unique(specf['TILEID']),np.unique(fo['TILEID']))           
+            if os.path.isfile(outtc) and update == False:
+                ftc = fitsio.read(outtc,columns=['TARGETID'])
+                ctid = np.isin(fo['TARGETID'],ftc['TARGETID'])
+                if len(ctid) == sum(ctid):
+                    print('all targetids are in '+outtc+' and all tileids are in '+outf+' so '+outtc+' will not be updated')
+            
+        if args.counts_only != 'y' and update:
+            print('updating '+outf)
             s = 0
             np =0 
             for px in hpxs:                
@@ -160,6 +183,8 @@ if specrel == 'daily':
                         except:
                             print('column '+col +' was not in tarwdup file')    
                     sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+                    if notqso == 'notqso':
+                        sel &= (tarf['DESI_TARGET'] & 4) == 0
                     if s == 0:
                         tarfn = tarf[sel]
                         s = 1
@@ -170,9 +195,10 @@ if specrel == 'daily':
                     print('file '+tarfo+' not found')
                 np += 1    
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',tp,specrel=specrel) 
-        tc.write(ldirspec+tp+'_tilelocs.dat.fits',format='fits', overwrite=True)
+            tj.write(outf,format='fits', overwrite=True)
+        if uptileloc:
+            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
+            tc.write(outtc,format='fits', overwrite=True)
 
 
 if specrel == 'everest':

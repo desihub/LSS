@@ -481,9 +481,9 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     
     indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
     ps = pd
-    if pd == 'LRG' or pd == 'ELG' or pd =='QSO':
+    if pd[:3] == 'LRG' or pd[:3] == 'ELG' or pd[:3] =='QSO':
         ps = 'dark'
-    if pd == 'BGS_ANY' or pd == 'MWS_ANY':
+    if pd[:3] == 'BGS' or pd[:3] == 'MWS_ANY':
         ps = 'bright'    
     fs = get_specdat(indir,ps)
 
