@@ -149,6 +149,7 @@ if specrel == 'daily':
     newspec = ct.combtile_spec(tiles4comb,specfo)
     specf = Table.read(specfo)
     if newspec:
+        print('new tiles were found for spec data, will update '+specfo)
         sel = specf['COADD_FIBERSTATUS'] == 999999
         specf['COADD_FIBERSTATUS'][sel] = specf['FIBERSTATUS'][sel]
         specf.write(specfo,overwrite=True,format='fits')
@@ -159,6 +160,8 @@ if specrel == 'daily':
         'MEDIAN_COADD_FLUX_Z','MEDIAN_COADD_SNR_Z','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
         'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
         'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
+    else:
+        print('no new tiles were found for spec data, so no updates to '+specfo)
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
@@ -185,7 +188,7 @@ if specrel == 'daily':
             #tidc = np.isin(np.unique(specf['TILEID']),np.unique(fo['TILEID']))           
             if os.path.isfile(outtc) and update == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
-                fc = ct.cut_spec(fo)
+                fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
                 if len(ctid) == sum(ctid):
                     print('all targetids are in '+outtc+' and all tileids are in '+outf+' so '+outtc+' will not be updated')
