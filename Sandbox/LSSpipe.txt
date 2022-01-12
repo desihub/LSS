@@ -1,22 +1,37 @@
 #LSS to run with every MTL update
+#from the LSS/scripts/main directory
 
 source /project/projectdirs/desi/software/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
-#data
+#data, run separately for dark and bright time
+#this script first goes through the fiberassign files, first combining all of the information together split by healpix
+#all "potential assignments" are kept, meaning each targetid will appear many times
+#then, it collects the new spec data for any archived/zdone tiles (incl. the info in the zmtl files used to decide mtl updates)
+#then, it combines data from the healpix files selecting on given target types + notqso combinations; notqso means that targets passing the qso selection are removed
+#for this combination, only data at the tileids/fiberids that were considered good are kept
+tps = ['LRG','QSO','ELG','ELG_LOP','ELG_LOP','BGS_ANY','BGS_BRIGHT']
+notqsos = ['n','n','n','n','y','n','n']
+#after combining, the sample is matched to the spec data based on 'TARGETID','LOCATION','TILEID','TILELOCID'
+#information on the unique groupings of tileids and tilelocid are determined (along with the number of tiles) and this information is joined by a TARGETID match
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright
 
-tps = ['LRG','QSO','ELG','ELG_LOP','BGS_ANY','BGS_BRIGHT']
-for tp in tps:
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily
+#the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
+#in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
+#targets at tileids/fiberid where none of the given type were assigned are masked
+#if enhanced information on qso or ELG targets exists, it is added
+#completeness statistics per tile grouping ('COMP_TILE') and per tileid/fiberid ('FRACZTILELOCID') are calculated
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso notqso
 
-python mkCat_main.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso y
 
 #random
-srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py    --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
+srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
+srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
 
 #if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
-srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py    --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --rfa n --combhp n --combr y --fullr y 
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily--rfa n --combhp n --combr y --fullr y 
 
