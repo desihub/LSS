@@ -30,6 +30,8 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
+parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
+
 
 
 args = parser.parse_args()
@@ -40,6 +42,10 @@ version = args.version
 specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
+
+combpix = True
+if args.combpix == 'n'
+    combpix = False
 
 mainp = main(prog)
 
@@ -66,7 +72,7 @@ tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
 
 tiles.keep_columns(['TILEID','RA','DEC'])
-print(tiles.dtype.names)
+#print(tiles.dtype.names)
 
 tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
 
@@ -131,7 +137,7 @@ if not os.path.exists(ldirspec+'healpix'):
 #ct.combtiles_wdup(tiles4comb,tarfo)
 hpxs = foot.tiles2pix(8, tiles=tiles4comb)
 npx = 0
-if args.counts_only != 'y':
+if args.counts_only != 'y' and combpix:
 	for px in hpxs:
 		print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
 		tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
