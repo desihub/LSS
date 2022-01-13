@@ -182,20 +182,18 @@ if specrel == 'daily':
         s = 0
         if os.path.isfile(outf):
             fo = fitsio.read(outf,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
-            nstid = len(np.unique(specf['TILEID']))
+            nstid = len(np.unique(tiles4comb['TILEID']))
             notid = len(np.unique(fo['TILEID']))
             print('there are '+str(nstid-notid)+ ' tiles that need to be added to '+outf)
             if nstid == notid:
                 update = False
                 print('we will not update '+outf+' because there are no new tiles')
             else:
-                tidsf = np.unique(specf['TILEID'])
-                tidc = np.isin(tidsf,np.unique(fo['TILEID']))
-                ntids = tidsf[~tidc] 
-                print('the new tileids are '+str(ntids))
-                sntids = np.isin(tiles4comb['TILEID'], ntids)
-                print(len(tiles4comb[sntids]))
-                hpxsn = foot.tiles2pix(8, tiles=tiles4comb[sntids])
+                
+                tidc = ~np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
+                print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
+                print(len(tiles4comb[tidc]))
+                hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
                           
             if os.path.isfile(outtc) and update == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
