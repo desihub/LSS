@@ -59,7 +59,14 @@ def combtile_spec(tiles,outf='',md=''):
                 s = 1
             else:
                 #specd = vstack([specd,tspec],metadata_conflicts='silent')
-                specd = np.hstack((specd,tspec))
+                #column order got mixed up
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = fn[colname][...]
+
+                #specd = np.hstack((specd,tspec))
+                specd = np.hstack((specd,new))
             #specd.sort('TARGETID')
             kp = (specd['TARGETID'] > 0)
             specd = specd[kp]
