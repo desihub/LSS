@@ -205,13 +205,13 @@ if specrel == 'daily':
                 del ftc
                 del fc
             del fo
+        if args.counts_only != 'y' and update:
+            print('updating '+outf)
             tarsn = Table.read(outf)
             theta, phi = np.radians(90-tarsn['DEC']), np.radians(tarsn['RA'])
             tpix = hp.ang2pix(8,theta,phi,nest=True)
             pin = np.isin(tpix,hpxsn)
             tarsn = tarsn[~pin] #remove the rows for the healpix that will updated
-        if args.counts_only != 'y' and update:
-            print('updating '+outf)
             
             np =0 
             for px in hpxsn:                
@@ -233,7 +233,7 @@ if specrel == 'daily':
                         s = 1
                     else:
                         tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                    print(len(tarfn),tp+notqso,np,len(hpxs))
+                    print(len(tarfn),tp+notqso,np,len(hpxsn))
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
