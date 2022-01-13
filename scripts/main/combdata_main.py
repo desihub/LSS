@@ -193,7 +193,7 @@ if specrel == 'daily':
                 tidc = np.isin(tidsf,np.unique(fo['TILEID']))
                 ntids = tidsf[~tidc] 
                 print('the new tileids are '+str(ntids))
-                sntids = tiles4comb['TILEID'] == ntids
+                sntids = np.isin(tiles4comb['TILEID'], ntids)
                 print(len(tiles4comb[sntids]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[sntids])
                           
