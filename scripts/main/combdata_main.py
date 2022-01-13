@@ -251,11 +251,12 @@ if specrel == 'daily':
         if args.counts_only != 'y' and update:
             print('updating '+outf)
             if os.path.isfile(outf):
-                tarsn = Table.read(outf)
-                theta, phi = np.radians(90-tarsn['DEC']), np.radians(tarsn['RA'])
+                tarfn = Table.read(outf)
+                theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
-                tarsn = tarsn[~pin] #remove the rows for the healpix that will updated
+                tarfn = tarfn[~pin] #remove the rows for the healpix that will updated
+                s = 1
             
             np =0 
             for px in hpxsn:                
