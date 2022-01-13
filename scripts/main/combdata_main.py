@@ -217,7 +217,8 @@ if specrel == 'daily':
         #first test to see if we need to update any
         print('now doing '+tp+notqso)
         print(len(tiles4comb['TILEID']))
-        outf = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         update = True
         uptileloc = True
@@ -288,8 +289,9 @@ if specrel == 'daily':
                 np += 1    
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+            tarfn.write(outf,format='fits', overwrite=True)
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outf,format='fits', overwrite=True)
+            tj.write(outfs,format='fits', overwrite=True)
         if uptileloc:
             tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
             tc.write(outtc,format='fits', overwrite=True)
