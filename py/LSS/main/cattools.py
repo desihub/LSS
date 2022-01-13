@@ -27,7 +27,8 @@ def combtile_spec(tiles,outf='',md=''):
     n = 0
     nfail = 0
     if os.path.isfile(outf):
-        specd = Table.read(outf)
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
@@ -46,8 +47,9 @@ def combtile_spec(tiles,outf='',md=''):
                 specd = tspec
                 s = 1
             else:
-                specd = vstack([specd,tspec],metadata_conflicts='silent')
-            specd.sort('TARGETID')
+                #specd = vstack([specd,tspec],metadata_conflicts='silent')
+                specd = np.hstack((specd,tspec))
+            #specd.sort('TARGETID')
             kp = (specd['TARGETID'] > 0)
             specd = specd[kp]
     
@@ -58,7 +60,8 @@ def combtile_spec(tiles,outf='',md=''):
             nfail += 1  
     print('total number of failures was '+str(nfail))
     if n > 0:
-        specd.write(outf,format='fits', overwrite=True)     
+        #specd.write(outf,format='fits', overwrite=True)     
+        fitsio.write(outf,specd,clobber=True)
         return True 
     else: 
         return False 
