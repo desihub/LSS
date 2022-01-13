@@ -226,7 +226,10 @@ if specrel == 'daily':
                             tarf.remove_columns([col] )#we get this where relevant from spec file
                         except:
                             print('column '+col +' was not in tarwdup file')    
-                    sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+                    if tp == 'BGS_BRIGHT':
+                        sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
+                    else:
+                        sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
                     if notqso == 'notqso':
                         sel &= (tarf['DESI_TARGET'] & 4) == 0
                     if s == 0:
