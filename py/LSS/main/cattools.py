@@ -303,7 +303,7 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         tmask = ~np.isin(tls['TILEID'],tdone)
     else:
         tmask = np.ones(len(tls)).astype('bool')    
-    print('there are potentially '+str(len(tls[tmask]))+' to get updates from, out of a possible '+len(tls)+' overlapping this pixel')
+    print('there are potentially '+str(len(tls[tmask]))+' to get updates from, out of a possible '+str(len(tls))+' overlapping this pixel')
     for tile in tls[tmask]['TILEID']:
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
