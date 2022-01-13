@@ -258,7 +258,7 @@ if specrel == 'daily':
                 tarfn = tarfn[~pin] #remove the rows for the healpix that will updated
                 s = 1
             
-            np =0 
+            npx =0 
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
@@ -282,7 +282,7 @@ if specrel == 'daily':
                     else:
                         #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
                         tarfn = np.hstack((tarfn,tarf[sel]))
-                    print(len(tarfn),tp+notqso,np,len(hpxsn))
+                    print(len(tarfn),tp+notqso,npx,len(hpxsn))
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
