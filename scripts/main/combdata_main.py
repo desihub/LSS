@@ -263,7 +263,7 @@ if specrel == 'daily':
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
                     tarf = fitsio.read(tarfo)
-                    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+                    #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
                     for col in remcol:
                         try:
@@ -286,6 +286,8 @@ if specrel == 'daily':
                 else:
                     print('file '+tarfo+' not found')
                 np += 1    
+            tarfn = Table(tarfn)
+            tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outf,format='fits', overwrite=True)
         if uptileloc:
