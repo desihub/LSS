@@ -47,8 +47,8 @@ def combtile_spec(tiles,outf='',md=''):
                 specd = tspec
                 s = 1
             else:
-                #specd = vstack([specd,tspec],metadata_conflicts='silent')
-                specd = np.hstack((specd,tspec))
+                specd = vstack([specd,tspec],metadata_conflicts='silent')
+                #specd = np.hstack((specd,tspec))
             #specd.sort('TARGETID')
             kp = (specd['TARGETID'] > 0)
             specd = specd[kp]
@@ -60,8 +60,8 @@ def combtile_spec(tiles,outf='',md=''):
             nfail += 1  
     print('total number of failures was '+str(nfail))
     if n > 0:
-        #specd.write(outf,format='fits', overwrite=True)     
-        fitsio.write(outf,specd,clobber=True)
+        specd.write(outf,format='fits', overwrite=True)     
+        #fitsio.write(outf,specd,clobber=True)
         return True 
     else: 
         return False 
