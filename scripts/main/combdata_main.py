@@ -286,7 +286,7 @@ if specrel == 'daily':
                     print(len(tarfn),tp+notqso,npx,len(hpxsn))
                 else:
                     print('file '+tarfo+' not found')
-                np += 1    
+                npx += 1    
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tarfn.write(outf,format='fits', overwrite=True)
