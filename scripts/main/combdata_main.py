@@ -79,6 +79,29 @@ tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
 
 print('check that length of tiles4comb matches '+str(len(tiles4comb)))
 
+speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
+'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
+'REF_EPOCH','LAMBDA_REF','FA_TARGET','FA_TYPE','OBJTYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY',\
+'SUBPRIORITY','OBSCONDITIONS','RELEASE','BRICKID','BRICK_OBJID','MORPHTYPE','FLUX_G','FLUX_R',\
+'FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MASKBITS','REF_ID','REF_CAT',\
+'GAIA_PHOT_G_MEAN_MAG','GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','BRICKNAME','EBV',\
+'FLUX_W1', 'FLUX_W2', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2', 'FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z',\
+'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z', 'SERSIC', 'SHAPE_R', 'SHAPE_E1', 'SHAPE_E2',\
+'PHOTSYS', 'PRIORITY_INIT', 'NUMOBS_INIT', 'DESI_TARGET', 'BGS_TARGET', 'MWS_TARGET', 'SCND_TARGET',\
+'PLATE_RA', 'PLATE_DEC', 'NUM_ITER', 'FIBER_X', 'FIBER_Y', 'DELTA_X', 'DELTA_Y', 'FIBER_RA',\
+'FIBER_DEC', 'EXPTIME', 'PSF_TO_FIBER_SPECFLUX', 'NIGHT', 'EXPID', 'MJD', 'TILEID',\
+'INTEG_COADD_FLUX_B', 'MEDIAN_COADD_FLUX_B', 'MEDIAN_COADD_SNR_B', 'INTEG_COADD_FLUX_R',\
+'MEDIAN_COADD_FLUX_R', 'MEDIAN_COADD_SNR_R', 'INTEG_COADD_FLUX_Z', 'MEDIAN_COADD_FLUX_Z',\
+'MEDIAN_COADD_SNR_Z', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',\
+'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z',\
+'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS',\
+'TSNR2_QSO', 'TSNR2_LRG', 'ZWARN_MTL', 'Z_QN', 'Z_QN_CONF', 'IS_QSO_QN', 'TSNR2_GPBDARK_B',\
+'TSNR2_GPBBRIGHT_B', 'TSNR2_GPBBACKUP_B', 'TSNR2_GPBDARK_R', 'TSNR2_GPBBRIGHT_R',\
+'TSNR2_GPBBACKUP_R', 'TSNR2_GPBDARK_Z', 'TSNR2_GPBBRIGHT_Z', 'TSNR2_GPBBACKUP_Z',\
+'TSNR2_GPBDARK', 'TSNR2_GPBBRIGHT', 'TSNR2_GPBBACKUP', 'COADD_FIBERSTATUS', 'COADD_NUMEXP',\
+'COADD_EXPTIME', 'COADD_NUMNIGHT', 'COADD_NUMTILE', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y',\
+'RMS_DELTA_Y', 'MEAN_FIBER_RA', 'STD_FIBER_RA', 'MEAN_FIBER_DEC', 'STD_FIBER_DEC',\
+'MEAN_PSF_TO_FIBER_SPECFLUX', 'MEAN_FIBER_X', 'MEAN_FIBER_Y']
 
 
 
@@ -147,13 +170,31 @@ if args.counts_only != 'y' and combpix:
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    if os.path.isfile(specfo):
+        specf = Table.read(specfo)
+        dt = specf.dtype.names
+        wo = 0
+        if np.isin('FIBERSTATUS',dt):
+            sel = specf['COADD_FIBERSTATUS'] == 999999
+            specf['COADD_FIBERSTATUS'][sel] = specf['FIBERSTATUS'][sel]
+            wo = 1
+        if np.isin('NUMEXP',dt):
+            sel = specf['COADD_NUMEXP'] == 999999
+            sel |= specf['COADD_NUMEXP'] == 16959
+            specf['COADD_NUMEXP'][sel] = specf['NUMEXP'][sel]
+            wo = 1
+        
+        specf.keep_columns(speccols)
+        dtn = specf.dtype.names
+        if len(dtn) != len(dt):
+            wo = 1
+        if wo == 1:
+            specf.write(specfo,overwrite=True,format='fits')
+
     newspec = ct.combtile_spec(tiles4comb,specfo)
     specf = Table.read(specfo)
     if newspec:
         print('new tiles were found for spec data, will update '+specfo)
-        sel = specf['COADD_FIBERSTATUS'] == 999999
-        specf['COADD_FIBERSTATUS'][sel] = specf['FIBERSTATUS'][sel]
-        specf.write(specfo,overwrite=True,format='fits')
         specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','ZWARN_MTL','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
         ,'FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','COADD_FIBERSTATUS','PRIORITY'\
         ,'DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE','NIGHT','EXPID','MJD','TILEID','INTEG_COADD_FLUX_B',\

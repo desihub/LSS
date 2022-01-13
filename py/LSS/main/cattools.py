@@ -20,7 +20,6 @@ from LSS.imaging import densvar
 from LSS.common_tools import find_znotposs
  
 
-
    
 def combtile_spec(tiles,outf='',md=''):
     s = 0
@@ -29,6 +28,13 @@ def combtile_spec(tiles,outf='',md=''):
     if os.path.isfile(outf):
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
@@ -45,7 +51,9 @@ def combtile_spec(tiles,outf='',md=''):
             tspec['TILEID'] = tile
             #this is stupid but should speed up concatenation
             tspec.write('temp.fits',format='fits', overwrite=True)
-            tspec = fitsio.read('temp.fits') 
+            tspec = fitsio.read('temp.fits')
+            #tspec = np.empty(len(tspecio),dtype=dt)
+             
             if s == 0:
                 specd = tspec
                 s = 1
