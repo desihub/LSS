@@ -63,7 +63,7 @@ def combtile_spec(tiles,outf='',md=''):
                 new = np.empty(len(tspec),dtype=specd.dtype)
                 cols = specd.dtype.names
                 for colname in cols:
-                    new[colname][...] = fn[colname][...]
+                    new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
                 specd = np.hstack((specd,new))
