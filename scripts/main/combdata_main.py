@@ -6,6 +6,7 @@ import unittest
 from datetime import datetime
 import json
 import numpy as np
+import healpy as hp
 import fitsio
 import glob
 import argparse
@@ -177,6 +178,8 @@ if specrel == 'daily':
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         update = True
         uptileloc = True
+        hpxsn = hpxs
+        s = 0
         if os.path.isfile(outf):
             fo = fitsio.read(outf,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             nstid = len(np.unique(specf['TILEID']))
@@ -185,7 +188,13 @@ if specrel == 'daily':
             if nstid == notid:
                 update = False
                 print('we will not update '+outf+' because there are no new tiles')
-            #tidc = np.isin(np.unique(specf['TILEID']),np.unique(fo['TILEID']))           
+            else:
+                tidsf = np.unique(specf['TILEID'])
+                tidc = np.isin(tidsf,np.unique(fo['TILEID']))
+                ntids = tidsf[~tidc] 
+                sntids = tiles4comb['TILEID'] == nitids
+                hpxsn = foot.tiles2pix(8, tiles=tiles4comb[sntids])
+                          
             if os.path.isfile(outtc) and update == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
@@ -196,11 +205,16 @@ if specrel == 'daily':
                 del ftc
                 del fc
             del fo
+            tarsn = Table.read(outf)
+            theta, phi = np.radians(90-tarsn['DEC']), np.radians(tarsn['RA'])
+            tpix = hp.ang2pix(8,theta,phi,nest=True)
+            pin = np.isin(tpix,hpxsn)
+            tarsn = tarsn[~pin] #remove the rows for the healpix that will updated
         if args.counts_only != 'y' and update:
             print('updating '+outf)
-            s = 0
+            
             np =0 
-            for px in hpxs:                
+            for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
                     tarf = Table.read(tarfo)
