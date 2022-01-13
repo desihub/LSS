@@ -27,8 +27,8 @@ def combtile_spec(tiles,outf='',md=''):
     n = 0
     nfail = 0
     if os.path.isfile(outf):
-        #specd = Table.read(outf)
-        specd = fitsio.read(outf)
+        specd = Table.read(outf)
+        #specd = fitsio.read(outf)
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
