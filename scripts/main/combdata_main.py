@@ -251,7 +251,7 @@ if specrel == 'daily':
         if args.counts_only != 'y' and update:
             print('updating '+outf)
             if os.path.isfile(outf):
-                tarfn = Table.read(outf)
+                tarfn = fitsio.read(outf)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
@@ -262,7 +262,7 @@ if specrel == 'daily':
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
-                    tarf = Table.read(tarfo)
+                    tarf = fitsio.read(tarfo)
                     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
                     for col in remcol:
@@ -280,7 +280,8 @@ if specrel == 'daily':
                         tarfn = tarf[sel]
                         s = 1
                     else:
-                        tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+                        #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+                        tarfn = np.hstack((tarfn,tarf[sel]))
                     print(len(tarfn),tp+notqso,np,len(hpxsn))
                 else:
                     print('file '+tarfo+' not found')
