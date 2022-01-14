@@ -10,7 +10,7 @@ import fitsio
 import glob
 import argparse
 import gc
-gc.enable()
+#gc.enable()
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import healpy as hp
