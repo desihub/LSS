@@ -202,7 +202,7 @@ if specrel == 'daily':
     else:
         print('no new tiles were found for spec data, so no updates to '+specfo)
     specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','ZWARN_MTL','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
-    ,'FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','COADD_FIBERSTATUS','PRIORITY'\
+    ,'FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','COADD_FIBERSTATUS'\
     ,'OBJTYPE','TILEID','INTEG_COADD_FLUX_B','MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y',\
     'RMS_DELTA_Y', 'MEAN_FIBER_RA', 'STD_FIBER_RA',\
     'MEDIAN_COADD_FLUX_B','MEDIAN_COADD_SNR_B','INTEG_COADD_FLUX_R','MEDIAN_COADD_FLUX_R','MEDIAN_COADD_SNR_R','INTEG_COADD_FLUX_Z',\
@@ -300,12 +300,12 @@ if specrel == 'daily':
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID','FIBER'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec:
             tarfn = fitsio.read(outf)
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID','FIBER'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
