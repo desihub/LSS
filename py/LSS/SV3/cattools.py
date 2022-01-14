@@ -9,9 +9,10 @@ import os
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
-import desimodel.footprint
+import desimodel.footprint as foot
 import desimodel.focalplane
 from random import random
+from LSS import common_tools as common
 from desitarget.io import read_targets_in_tiles
 from desitarget.sv3 import sv3_targetmask
 
@@ -1083,7 +1084,45 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
         dz[ii]['rosette_number'] = rosn
         dz[ii]['rosette_r'] = rosd
     print(np.unique(dz['NTILE']))
+    if int(rann) < 10:
+        cof = fitsio.read(outf[:-23]+'_comp_tile.fits')
+    else:
+        cof = fitsio.read(outf[:-24]+'_comp_tile.fits')  
+    comp_dicta = dict(zip(cof['TILES'], cof['COMP_TILE']))
+    fcompa = []
+    tls = dz['TILES']
+    ctls = cof['TILES']
+    ctiles = np.zeros(len(dz))
+    tlsd = np.isin(tls,cof['TILES'])
+    print('number of tiles groups in randoms not in data '+str(len(np.unique(tls[~tlsd]))))
+    for i in range(0,len(tls)):
+        if tlsd[i]:#np.isin(tl,ctls):
+            ctiles[i] = comp_dicta[tls[i]]
+        #    fcompa.append(comp_dicta[tl]) 
+        #else:
+        #    fcompa.append(0)
+    dz['COMP_TILE'] = ctiles#np.array(fcompa)
+    wc0 = dz['COMP_TILE'] == 0
+    print('number of randoms in 0 completeness regions '+str(len(dz[wc0])))   
+    
+#     cof = fitsio.read(outf[:-23]+'_comp_tileloc.fits')
+#     pd = dict(zip(cof['TILELOCID'],cof['FRACZ_TILELOCID']))
+#     probl = np.zeros(len(dz))
+#     no = 0
+#     tidsd = np.isin(dz['TILELOCID'],cof['TILELOCID'])
+#     for i in range(0,len(dz)):
+#         if tidsd[i]:#np.isin(dz['TILELOCID'][i],cof['TILELOCID']):
+#             probl[i] = pd[dz['TILELOCID'][i]]
+#         else:
+#             no += 1
+#     print('number of tilelocid in randoms not in data '+str(no))    
+#     dz['FRACZ_TILELOCID'] = probl
+    
+
+
+
     dz.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
     
 
 
@@ -1224,47 +1263,25 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('TILELOCID_ASSIGNED numbers')
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
 
-    probl = np.zeros(len(dz))
-    #get completeness based on unique sets of tiles
-    compa = []
-    tll = []
-    ti = 0
-    print('getting completenes')
-    #sorting by tiles makes things quicker with while statements below
-    dz.sort('TILES')
-    nts = len(np.unique(dz['TILES']))
-    tlsl = dz['TILES']
-    tlslu = np.unique(tlsl)
-    laa = dz['LOCATION_ASSIGNED']
     
-    i = 0
-    while i < len(dz):
-        tls  = []
-        tlis = []
-        nli = 0
-        nai = 0
-    
-        while tlsl[i] == tlslu[ti]:
-            nli += 1 #counting unique targetids within the given TILES value
-            nai += laa[i] #counting the number assigned
-            i += 1
-            if i == len(dz):
-                break
-    
-        if ti%1000 == 0:
-            print('at tiles '+str(ti)+' of '+str(nts))
-        cp = nai/nli #completeness is number assigned over number total
-        compa.append(cp)
-        tll.append(tlslu[ti])
-        ti += 1
-    #turn the above into a dictionary and apply it
+    #get completeness based on unique sets of tiles "comp_tile"
+    tll,compa = common.comp_tile(dz)
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
     for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl]) 
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
-    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))       
+    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))   
+    
+    #write out comp_tile info
+    tll = np.array(tll).astype(dz['TILES'].dtype)
+    co = Table()
+    co['TILES'] = tll
+    co['COMP_TILE'] = compa
+    cof = outf.strip('_full_noveto.dat.fits')+'_comp_tile.fits'
+    print('writing comp_tile completeness to '+cof)
+    co.write(cof,overwrite=True,format='fits')    
 
     #get counts at unique TILELOCID
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
@@ -1305,46 +1322,58 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         if ii%10000 == 0:
             print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
      
-    dz['TILELOCID'] = locs
-    #get numbers again after the re-assignment
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
 
     dz['rosette_number'] = ros
     dz['rosette_r'] = rosr
     print('rosette number and the number on each rosette')
     print(np.unique(dz['rosette_number'],return_counts=True))
-    print('getting fraction assigned for each tilelocid')
-    #should be one (sometimes zero, though) assigned target at each tilelocid and we are now counting how many targets there are per tilelocid
-    #probability of assignment is then estimated as 1/n_tilelocid
-    nm = 0
-    nmt =0
-    pd = []
-    for i in range(0,len(locl)):
-        if i%10000 == 0:
-            print('at row '+str(i))
-        nt = nlocl[i]
-        loc = locl[i]
-        w = loclz == loc
-        nz = 0
-        if len(loclz[w]) == 1:
-            nz = nloclz[w] #these are supposed all be 1...            
-        else:            
-            nm += 1.
-            nmt += nt
-        if len(loclz[w]) > 1:
-            print('why is len(loclz[w]) > 1?') #this should never happen
-        pd.append((loc,nz/nt))  
-    pd = dict(pd)
+
+    dz['TILELOCID'] = locs
+    #get numbers again after the re-assignment
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+# 
+#     print('getting fraction assigned for each tilelocid')
+#     #should be one (sometimes zero, though) assigned target at each tilelocid and we are now counting how many targets there are per tilelocid
+#     #probability of assignment is then estimated as 1/n_tilelocid
+#     nm = 0
+#     nmt =0
+#     pd = []
+#     for i in range(0,len(locl)):
+#         if i%10000 == 0:
+#             print('at row '+str(i))
+#         nt = nlocl[i]
+#         loc = locl[i]
+#         w = loclz == loc
+#         nz = 0
+#         if len(loclz[w]) == 1:
+#             nz = nloclz[w] #these are supposed all be 1...            
+#         else:            
+#             nm += 1.
+#             nmt += nt
+#         if len(loclz[w]) > 1:
+#             print('why is len(loclz[w]) > 1?') #this should never happen
+#         pd.append((loc,nz/nt))  
+    loco,fzo = common.comp_tileloc(dz)
+    pd = dict(zip(loco,fzo))
+    probl = np.zeros(len(dz))
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
-    print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)
-    
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; dont quite match because some tilelocid still have 0 assigned')
+
+    #write out FRACZ_TILELOCID info
+    #loco = np.array(loco).astype(dz['TILELOCID'].dtype)
+    co = Table()
+    co['TILELOCID'] = loco
+    co['FRACZ_TILELOCID'] = fzo
+    cof = outf.strip('_full_noveto.dat.fits')+'_comp_tileloc.fits'
+    print('writing comp_tileloc completeness to '+cof)
+    co.write(cof,overwrite=True,format='fits')    
+
+
+    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, length of input, number of inputs with obs; dont quite match because some tilelocid still have 0 assigned')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz),len(dz[wz]))
-    #dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
+    
     oct = np.copy(dz['COMP_TILE'])
     if bitweightfile is not None:
         fb = fitsio.read(bitweightfile)
@@ -1379,7 +1408,11 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = Table.read(fl+'full_noveto.dat.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
-        ff = cutphotmask(ff,ebits)
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
     ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
@@ -1473,15 +1506,19 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('length after cutting to good z '+str(len(ff)))
     print('minimum,maximum Z',min(ff['Z']),max(ff['Z']))
     ff['WEIGHT'] = ff['WEIGHT_ZFAIL']
+    ff['WEIGHT_COMP'] = np.ones(len(ff))
     if weightmd == 'tileloc':
-        ff['WEIGHT'] *= 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+    
     if weightmd == 'probobs' :         
         nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
-        ff['WEIGHT'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
+        ff['WEIGHT_COMP'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
         print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
         #wzer = ff['PROB_OBS'] == 0
         #ff['WEIGHT'][wzer] = 0
         #print(str(len(ff[wzer]))+' galaxies with PROB_OBS 0 getting assigned weight of 0 (should not happen, at minimum adjust weights to reflect 1 real realization happened)')
+    
+    ff['WEIGHT'] *= ff['WEIGHT_COMP']
     if zmask:
         whz = ff['Z'] < 1.6
         ff = ff[whz]
@@ -1523,7 +1560,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #if tp[:3] == 'BGS':
     #    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID']
     #else:
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID','PROB_OBS','BITWEIGHTS']    
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID','PROB_OBS','BITWEIGHTS']    
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         kl.append('flux_r_dered')
@@ -1564,8 +1601,13 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ffr)))
-        ffr = cutphotmask(ffr,ebits)
+        if ebits == 'lrg_mask':
+            sel = ffr['lrg_mask'] == 0
+            ff = ffr[sel]
+        else:    
+            ffr = cutphotmask(ffr,ebits)
         print('number after imaging mask '+str(len(ffr)))
+
     ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
 
     #mask mask on tsnr
@@ -1591,11 +1633,14 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #randomly sample data rows to apply redshifts, weights, etc. to randoms
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
+    kl =  ['RA','DEC','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES'] + rcols 
+
     for col in rcols: 
         ffc[col] = dshuf[col] 
     #cut to desired small set of columns and write out files, splitting N/S as well
     wn = ffc['PHOTSYS'] == 'N'
-    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])  
+    
+    ffc.keep_columns(kl)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 

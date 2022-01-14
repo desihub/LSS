@@ -8,7 +8,9 @@ from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
+parser.add_argument("--plotnz",default='y')
 args = parser.parse_args()
+
 
 month = args.night[:6]
 #get the right tileids
@@ -54,8 +56,11 @@ tz = np.zeros(10)
 
 zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
+nzls = {x: [] for x in range(0,10)}
+nzla = []
 for tid in tidl:
     for pt in range(0,10):
+        
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
         if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
@@ -71,11 +76,21 @@ for tid in tidl:
             wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
             zlrg = zmtlf[wfqa&wlrg]
             if len(zlrg) > 0:
-                wzwarn = zmtlf['ZWARN'] == 0
+                drz = (10**(3 - 3.5*zmtlf['Z']))
+                mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
+                mask_bad |= (drz<30) & (zmtlf['DELTACHI2']<drz)
+                mask_bad |= (zmtlf['DELTACHI2']<10)
+                wz = zmtlf['ZWARN'] == 0
+                wz &= zmtlf['Z']<1.4
+                wz &= (~mask_bad)
+
+                wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
+                nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
+                nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
         else:
@@ -87,3 +102,14 @@ print(tz)
 tzs = gz/tz
 print('the total fraction of good LRG z per petal for the night is:')
 print(tzs)
+
+if args.plotnz == 'y':
+    from matplotlib import pyplot as plt
+    nza = np.concatenate(nzla)
+    for pt in range(0,10):
+        nzp = np.concatenate(nzls[pt])
+        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True)
+        plt.hist(nza,bins=a[1],density=True,histtype='step')
+        plt.title('petal '+str(pt))
+        plt.xlabel('Z')
+        plt.show()

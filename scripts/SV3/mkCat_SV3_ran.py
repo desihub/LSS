@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
@@ -41,7 +41,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
-
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -51,8 +51,9 @@ basedir = args.basedir
 version = args.version
 faver = args.faver
 specrel = args.verspec
-rm = args.minr
-rx = args.maxr
+rm = int(args.minr)
+rx = int(args.maxr)
+par = False
 if args.par == 'y':
     par = True
 
@@ -91,6 +92,11 @@ if type == 'bright' or type == 'dark':
     mkclus = False
     mkclusran = False
     mkfullr = False
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     pr = 'BRIGHT'
@@ -221,8 +227,8 @@ if len(mtld) > 0:
     #ta['FA_VER'] = fver
     print(np.unique(fver))
     wfv = (np.array(fver) == faver)
-    mtld =  mtld[wfv]
-    ta = ta[wfv]
+    #mtld =  mtld[wfv]
+    #ta = ta[wfv]
 else:
     print('no done tiles in the MTL')
 
@@ -251,7 +257,7 @@ def doran(ii):
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
-        for it in range(0,len(mtld)):
+        for it in range(0,len(mtld[wfv])):
             #print(it,len(mtld))    
             tile = mtld['TILEID'][it]
             ts = str(tile).zfill(6)
@@ -261,7 +267,7 @@ def doran(ii):
             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
                 fav = '2.3.0'
             if fav == faver:
-                ttemp = Table(ta[it])
+                ttemp = Table(ta[wfv][it])
                 ttemp['OBSCONDITIONS'] = 516
                 ttemp['IN_DESI'] = 1
                 try:
@@ -309,21 +315,19 @@ def doran(ii):
     if mkfullr:
         if specrel == 'everest':
             specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            specf = specf[wt]
             fbcol = 'COADD_FIBERSTATUS'
         if specrel == 'daily':
             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = sv3_targetmask.bgs_mask[type]
             desitarg='SV3_BGS_TARGET'
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
@@ -341,8 +345,11 @@ def doran(ii):
             tsnrcol = 'TSNR2_BGS'
             dchi2 = 40
             tsnrcut = 1000
+        rcols=['Z','WEIGHT']
+        if type[:3] == 'BGS':
+            rcols.append('flux_r_dered')
 
-        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,rcols=rcols)
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
@@ -359,5 +366,5 @@ if __name__ == '__main__':
             inds.append(i)
         p.map(doran,inds)
     else:
-        for i in range(rmin,rmax):
+        for i in range(rm,rx):
             doran(i)
