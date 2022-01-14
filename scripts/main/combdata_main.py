@@ -32,6 +32,7 @@ parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
+parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 
 
 
@@ -47,6 +48,10 @@ progu = prog.upper()
 combpix = True
 if args.combpix == 'n':
     combpix = False
+
+redotarspec = False
+if args.redotarspec == 'y':
+    redotarspec = True
 
 mainp = main(prog)
 
@@ -298,6 +303,12 @@ if specrel == 'daily':
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
+        elif redotarspec:
+            tarfn = fitiso.read(outf)
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            tj.write(outfs,format='fits', overwrite=True)
+            print('joined to spec data and wrote out to '+outfs)
+
         if uptileloc:
             tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
             tc.write(outtc,format='fits', overwrite=True)
