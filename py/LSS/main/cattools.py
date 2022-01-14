@@ -1063,8 +1063,10 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
         print(outf)
         fgu.write(outf,format='fits', overwrite=True)
+        return True
     else:
         print('no new data to add')
+        return False
     
 
 
