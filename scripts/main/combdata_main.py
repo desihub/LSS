@@ -226,7 +226,7 @@ if specrel == 'daily':
         hpxsn = hpxs
         s = 0
         if os.path.isfile(outf):
-            fo = fitsio.read(outf,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
+            fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
             print('there are '+str(nstid-notid)+ ' tiles that need to be added to '+outf)
@@ -239,6 +239,9 @@ if specrel == 'daily':
                 #print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
                 print(len(tiles4comb[tidc]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
+
+        if os.path.isfile(outfs):
+            fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
                           
             if os.path.isfile(outtc) and update == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
