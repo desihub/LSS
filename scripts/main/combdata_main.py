@@ -304,7 +304,7 @@ if specrel == 'daily':
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec:
-            tarfn = fitiso.read(outf)
+            tarfn = fitsio.read(outf)
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
