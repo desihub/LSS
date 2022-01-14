@@ -171,9 +171,61 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
         print('done with random number '+str(rann))  
     return True        
 
+def rantiles_code(tile,ra,tdec,trad,rt,directory_output):
+    fname = os.path.join(directory_output, 'tilenofa-'+str(tile)+'.fits')
+    if os.path.isfile(fname):
+        print(fname +' already exists')
+    else:
+        decmin = tdec - trad
+        decmax = tdec + trad
+        wdec = (rt['DEC'] > decmin) & (rt['DEC'] < decmax)
+        inds = desimodel.footprint.find_points_radec(ra, tdec,rt[wdec]['RA'], rt[wdec]['DEC'])
+        rtw = rt[wdec][inds]
+        rmtl = Table(rtw)
+        if 'ZWARN' in rmtl.keys():
+            del rmtl['ZWARN']
+        if 'TRUEZ' in rmtl.keys():
+            del rmtl['TRUEZ']
+
+        rmtl.write(fname,format='fits', overwrite=True)
+        print('added columns, wrote to '+fname)
+
+#Reading the target file, create a file per tile, with duplicates of the targets
+def randomtiles_allSV3_parallel(tiles, mytargets, directory_output='.'):
+    from multiprocessing import Pool
+    '''
+    tiles should be a table containing the relevant info
+    '''
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+    rt = fitsio.read(mytargets)
+    print('loaded random file')
+
+
+    N = len(tiles)
+    Nproc = 20
+        
+    '''    inds_tiles = []
+    inds_ra = []
+    inds_dec = []
+    inds_trad = []
+    inds_rt = []'''
+    inds_input = []
+    for i in range(0,N):
+        inds_input.append((tiles['TILEID'][i], tiles['RA'][i], tiles['DEC'][i], trad, rt, directory_output))
+        '''
+        inds_tiles.append(tiles['TILEID'][i])
+        inds_ra.append(tiles['RA'][i])
+        inds_dec.append(tiles['DEC'][i])
+        inds_trad.append(trad)
+        inds_rt.append(rt)
+        '''
+    with Pool(Nproc) as pool:
+        pool.starmap(rantiles_code,inds_input) #[inds_tiles,inds_ra,inds_dec,inds_trad,inds_rt])
+
+
 #Reading the target file, create a file per tile, with duplicates of the targets
 def randomtiles_allSV3(tiles, mytargets, directory_output='.'):
-#AURE def randomtiles_allSV3(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random',imin=0,imax=18):
     '''
     tiles should be a table containing the relevant info
     '''
@@ -223,7 +275,7 @@ def randomtiles_allSV3(tiles, mytargets, directory_output='.'):
             print('added columns, wrote to '+fname)
 
 
-def combtiles_wdup(tiles, mltTargets, fbaRun, fout='', tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+def combtiles_wdup(tiles, mltTargets, fbaRun, id_, fout='', tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
     n = 0
     tmask = np.ones(len(tiles)).astype('bool')
@@ -231,7 +283,7 @@ def combtiles_wdup(tiles, mltTargets, fbaRun, fout='', tarcol=['RA','DEC','TARGE
     print('In combtiles')
     for tile in tiles[tmask]['TILEID']:
         ts = str(tile).zfill(3)
-        faf = os.path.join(fbaRun[0], fbaRun[1].format(TILE=ts))
+        faf = os.path.join(fbaRun[0], fbaRun[1].format(ID=id_, TILE=ts))
         #'/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
         fht = fitsio.read_header(faf)
         wt = tiles['TILEID'] == tile
@@ -256,8 +308,7 @@ def combtiles_wdup(tiles, mltTargets, fbaRun, fout='', tarcol=['RA','DEC','TARGE
         print(tile,n,len(tiles[tmask]),len(tarsn))
     tarsn.write(fout,format='fits', overwrite=True)
 
-#combtile_specmock(ta, ['./fiberassigment', 'aure000{TILE}.fits'], target_file, outf)
-def combtile_specmock(tiles, fbaRun, masterTarget, fout=''):
+def combtile_specmock(tiles, fbaRun, masterTarget, id_, fout=''):
     print('Entering my combtile_specmock')
     s = 0
     n = 0
@@ -268,7 +319,7 @@ def combtile_specmock(tiles, fbaRun, masterTarget, fout=''):
     for tile in tiles[tmask]['TILEID']:
         print(tile)
         ts = str(tile).zfill(3)
-        faf = os.path.join(fbaRun[0], fbaRun[1].format(TILE=ts))
+        faf = os.path.join(fbaRun[0], fbaRun[1].format(ID=id_, TILE=ts))
 #        fht = fitsio.read_header(faf)
         wt = tiles['TILEID'] == tile
         tt = Table.read(faf,hdu='FASSIGN')
@@ -286,7 +337,6 @@ def combtile_specmock(tiles, fbaRun, masterTarget, fout=''):
 
 
 
-#count_tiles_better(specf, 'mock', pdir)
 
 def count_tiles_better(fs, somefile, fibcol='ZWARN'):
     '''
@@ -480,10 +530,12 @@ def mkfulldat(fs,zf,imbits,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',
     #dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz, keys=['TARGETID'],keep='last')
+    '''
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    '''
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
@@ -634,7 +686,7 @@ def mkfulldat(fs,zf,imbits,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',
     dz.write(outf,format='fits', overwrite=True)
 
 
-def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128):
+def mkclusdat(fl, id_, weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128, zcolumn = 'RSDZ'):
     '''
     fl is the input file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -643,9 +695,8 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     dchi2 is the threshold for keeping as a good redshift
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
     '''    
-    ff = Table.read(fl)
+    ff = Table.read(fl.format(ID=id_))
 
-    zcolumn = 'TRUEZ'
     rootname = fl.split('full_noveto')[0]
 
     if ebits is not None:
@@ -653,7 +704,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
 
-    ff.write(rootname + 'full.dat.fits', overwrite=True, format='fits')
+    ff.write(rootname + 'full_{ID}.dat.fits'.format(ID=id_), overwrite=True, format='fits')
 
     wzm = ''
     if zmask:
@@ -697,7 +748,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     '''
 
 
-    outf = rootname + wzm + 'clustering.dat.fits'
+    outf = rootname + wzm + 'clustering_{ID}.dat.fits'.format(ID=id_)
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
@@ -708,17 +759,19 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff[zcolumn] != 999999
         wz &= ff[zcolumn] != 1.e20
         wz &= ff['ZWARN'] != 999999
-        wz &= ff['TSNR2_QSO'] > tsnrcut
+
+#        wz &= ff['TSNR2_QSO'] > tsnrcut
     
     if tp == 'ELG' or tp == 'ELG_HIP':
-        wz = ff['o2c'] > dchi2
-        wz &= ff['ZWARN']*0 == 0
+#        wz = ff['o2c'] > dchi2
+#        wz &= ff['ZWARN']*0 == 0
+        wz = ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
         print('length after oII cut '+str(len(ff[wz])))
         wz &= ff['LOCATION_ASSIGNED'] == 1
         print('length after also making sure location assigned '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+#        wz &= ff['TSNR2_ELG'] > tsnrcut
+#        print('length after tsnrcut '+str(len(ff[wz])))
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
@@ -727,7 +780,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #        mask_bad = (drz>30) #& (ff['DELTACHI2']<30)
 #        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
 #        mask_bad |= (ff['DELTACHI2']<10)
-        wz &= ff[zcolumn]<1.4
+###### AURE        wz &= ff[zcolumn]<1.4
 #        wz &= (~mask_bad)
 
         #wz &= ff['DELTACHI2'] > dchi2
@@ -874,7 +927,7 @@ def combran_wdup(tiles, randir, tp, sv3dir, specf, ffa_info, ffna_info, keepcols
     fgu.write(outf[1], format='fits', overwrite=True)
 
 
-def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
+def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',id_='000'):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -897,48 +950,58 @@ def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',
     #gtl now contains the list of good locations
     #we now want to load in the bigger data file with all the target info
     #we use it to find the locations where observations of the given type were not possible and then mask them
-    zf = os.path.join(indir,'datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
+    zf = os.path.join(indir,'datcomb_'+pd+'_tarspecwdup_Alltiles_{ID}.fits'.format(ID=id_))
     #datcomb_dark_tarspecwdup_Alltiles.fits
     dz = Table.read(zf)
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    wg = np.isin(dz['TILELOCID'],gtl)
+    wg = np.isin(dz['TILELOCID'], gtl)
     dz = dz[wtype&wg]
     print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
     #lznp will later be used to veto
     #load in random file
 
-    zf = os.path.join(indir,'rancomb_'+pd+'wdupspec_Alltiles.fits')
+    zf = os.path.join(indir,'rancomb_'+pd+'wdupspec_Alltiles_{ID}.fits'.format(ID=id_))
     dz = Table.read(zf)
     #load in tileloc info for this random file and join it
-    zfpd = os.path.join(randir,'rancomb_'+pd+'_Alltilelocinfo.fits')
+    zfpd = os.path.join(randir,'rancomb_'+pd+'_Alltilelocinfo_{ID}.fits'.format(ID=id_))
     dzpd = Table.read(zfpd)
     dz = join(dz,dzpd,keys=['TARGETID'])
     print('length before cutting to good positions '+str(len(dz)))
     #cut to good and possible locations
     wk = ~np.isin(dz['TILELOCID'],lznp)
+    
     wk &= np.isin(dz['TILELOCID'],gtl)
     dz = dz[wk]
-    dz['LOCATION_ASSIGNED'] = np.ones(len(dz))#.astype('bool')
-    #dz['LOCATION_ASSIGNED'] = 1
+    
+
 
     print('length after cutting to good positions '+str(len(dz)))
     #get all the additional columns desired from original random files through join
-    tarf = Table.read(os.path.join(randir,'alltilesnofa_random1.fits'))
+    tarf = Table.read(os.path.join(randir,'alltilesnofa_random_{ID}.fits'.format(ID=id_)))
     delcols = ['RA','DEC','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','NUMOBS_INIT',\
-    'NUMOBS_MORE','PRIORITY']
+    'NUMOBS_MORE','PRIORITY', 'ZWARN']
     tarf.remove_columns(delcols)
     dz = join(dz,tarf,keys=['TARGETID'])
 
+    wk = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wk &= ((dz[desitarg] & qsobit) == 0)
+    
+    dz = dz[wk]
     #apply imaging vetos
     #dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     #sort by tsnr, like done for data, so that the highest tsnr are kept
 #    dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
 #    dz['LOCATION_ASSIGNED'][wz] = 1
+    dz['LOCATION_ASSIGNED'] = np.ones(len(dz))#.astype('bool')
+    #dz['LOCATION_ASSIGNED'] = 1
+
+
 
     dz.sort(tsnr)
     dz = unique(dz,keys=['TARGETID'],keep='last')
@@ -954,7 +1017,7 @@ def mkfullran(fs,indir,randir, imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',
     dz.write(outf,format='fits', overwrite=True)
 
 
-def mkclusran(dirout, tp, str_notqso, rcols=['Z','WEIGHT'], zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
+def mkclusran(dirout, tp, str_notqso, rcols=['Z','WEIGHT'], zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None, zcolumn= 'RSDZ', id_='000'):
     '''
     fl is the root of our catalog file names
     rann is the random number
@@ -975,18 +1038,18 @@ def mkclusran(dirout, tp, str_notqso, rcols=['Z','WEIGHT'], zmask=False,tsnrcut=
         wzm += ccut+'_'  #you could change this to however you want the file names to turn out
 
     #load in data clustering catalog
-    fcd = Table.read(os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering.dat.fits'))
+    fcd = Table.read(os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering_{ID}.dat.fits'.format(ID=id_)))
     #load in full random file
-    ffr = Table.read(os.path.join(dirout,tp+str_notqso+'_full_noveto.ran.fits'))
-    ffr['Z']=ffr['TRUEZ']
-    ffr.remove_columns(['TRUEZ'])
+    ffr = Table.read(os.path.join(dirout,tp+str_notqso+'_full_noveto_{ID}.ran.fits'.format(ID=id_)))
+    ffr['Z']=ffr[zcolumn]
+    ffr.remove_columns([zcolumn])
 
 #    LRG_full_noveto.ran.fits
     if ebits is not None:
         print('number before imaging mask '+str(len(ffr)))
         ffr = cutphotmask(ffr,ebits)
         print('number after imaging mask '+str(len(ffr)))
-        ffr.write(os.path.join(dirout,tp+str_notqso+'_full.ran.fits'),overwrite=True,format='fits')
+        ffr.write(os.path.join(dirout,tp+str_notqso+'_full_{ID}.ran.fits'.format(ID=id_)),overwrite=True,format='fits')
 
     #mask mask on tsnr
 #    wz = ffr[tsnrcol] > tsnrcut
@@ -1017,7 +1080,7 @@ def mkclusran(dirout, tp, str_notqso, rcols=['Z','WEIGHT'], zmask=False,tsnrcut=
     #cut to desired small set of columns and write out files, splitting N/S as well
 #    wn = ffc['PHOTSYS'] == 'N'
     ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES'])
-    outf =  os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering.ran.fits')
+    outf =  os.path.join(dirout,tp+str_notqso+'_'+wzm+'clustering_{ID}.ran.fits'.format(ID=id_))
     ffc.write(outf,format='fits', overwrite=True)
 #    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
 #    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')

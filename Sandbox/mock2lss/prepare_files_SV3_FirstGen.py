@@ -70,10 +70,10 @@ def permock(i):
         status = data['STATUS'][()]
         idx = np.arange(len(status))
 
-        if type_ != 'LRG':
-            mask_SV = mask(main=0, nz=1, Y5=0, sv3=1)
-        else:
-            mask_SV = mask(main=1, nz=0, Y5=0, sv3=1)
+#        if type_ != 'LRG':
+        mask_SV = mask(main=0, nz=1, Y5=0, sv3=1)
+#        else:
+#            mask_SV = mask(main=1, nz=0, Y5=0, sv3=1)
         
         idx_SV = idx[(status & (mask_SV))==mask_SV]
         data = data[idx_SV]

@@ -35,6 +35,7 @@ parser.add_argument("--combd", help="combine all the tiles together",default='y'
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+parser.add_argument("--id", help="apply sky line mask to redshifts?",default=0)
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -49,6 +50,8 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+id_ = "%03d"%int(args.id)
 
 SV3p = SV3(type)
 
@@ -204,12 +207,14 @@ maxr = 274
 mind = -2.5
 maxd = 68
 
+
+
 my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
-target_file = os.path.join(my_path, 'mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits')
+target_file = os.path.join(my_path, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
 
-cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa.fits')
+cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
 
-if ctar and not os.path.isfile(cutsv3_target_file):
+if ctar:# and not os.path.isfile(cutsv3_target_file):
     ffile, h = fitsio.read(target_file, header=True)
 
     print('targets before anything', len(ffile))
@@ -233,21 +238,21 @@ else:
 
 
 if mkmockmtl:
-    test_dir('./atest')
-    myct.randomtiles_allSV3(ta, target_file, directory_output='./atest')
+    test_dir('./atest{ID}'.format(ID=id_))
+    myct.randomtiles_allSV3_parallel(ta, target_file, directory_output='./atest{ID}'.format(ID=id_))
 
 if combd:
     if type == 'dark' or type == 'bright':
 
-        outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles.fits')
+        outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles_{ID}.fits'.format(ID=id_))
 
-        myct.combtiles_wdup(ta, ['./atest', 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks_000_FirstGen000{TILE}.fits'] , fout=outf)
+####temp        myct.combtiles_wdup(ta, ['./atest{ID}'.format(ID=id_), 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks_{ID}_FirstGen000{TILE}.fits'], id_, fout=outf)
 
         print('yeah!')
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
+        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY', 'TRUEZ', 'RSDZ'] #subpriority in target files doesn't match what is in fiberassign files
         for col in remcol:
             try:
                 tarf.remove_columns([col] )#we get this where relevant from spec file
@@ -280,27 +285,27 @@ if combd:
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
         elif specrel == 'mock':
-            outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
-            myct.combtile_specmock(ta, ['./fiberassigment', 'mocks_000_FirstGen000{TILE}.fits'], target_file, outfile_spec)
+            outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles_{ID}.fits'.format(ID=id_))
+            myct.combtile_specmock(ta, ['./fiberassigment', 'mocks_{ID}_FirstGen000{TILE}.fits'], target_file, id_, outfile_spec)
             specf = Table.read(outfile_spec)
-            specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PLATE_RA','PLATE_DEC','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ'])
+            specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PLATE_RA','PLATE_DEC','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ','RSDZ'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             print('targets', tarf.columns)
             print('spec', specf.columns)
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
-        try:
-            print(np.unique(tj['SV3_DESI_TARGET'], return_counts=True))
-        except:
-            ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
-            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
-            print(len(tj))
-            tj = join(tj,ftar,keys=['TARGETID'])  
-            print(len(tj))  
-        tj.write(os.path.join(ldirspec, 'datcomb_'+type+'_tarspecwdup_Alltiles.fits'), format='fits', overwrite=True)
+#        try:
+        print(np.unique(tj['SV3_DESI_TARGET'], return_counts=True))
+#        except:
+#            ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+type+'_targets.fits')
+#            ftar.keep_columns(['TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET'])
+#            print(len(tj))
+#            tj = join(tj,ftar,keys=['TARGETID'])  
+#            print(len(tj))  
+        tj.write(os.path.join(ldirspec, 'datcomb_'+type+'_tarspecwdup_Alltiles_{ID}.fits'.format(ID=id_)), format='fits', overwrite=True)
 
-        tc = myct.count_tiles_better(specf, os.path.join(ldirspec, 'datcomb_'+type+'_tarspecwdup_Alltiles.fits'))
-        tc.write(os.path.join(ldirspec, 'Alltiles_'+pdir+'_tilelocs.dat.fits'), format='fits', overwrite=True)
+        tc = myct.count_tiles_better(specf, os.path.join(ldirspec, 'datcomb_'+type+'_tarspecwdup_Alltiles_{ID}.fits'.format(ID=id_)))
+        tc.write(os.path.join(ldirspec, 'Alltiles_'+pdir+'_tilelocs_{ID}.dat.fits'.format(ID=id_)), format='fits', overwrite=True)
         print('ole')
     else:
         print('nothing to be done for combd, only done for dark/bright now')
@@ -314,19 +319,21 @@ if mkfulld:
     elif specrel == 'daily':
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
     elif specrel == 'mock':
-        outfile_spec = os.path.join(ldirspec, 'datcomb_dark_specwdup_Alltiles.fits')
+        outfile_spec = os.path.join(ldirspec, 'datcomb_'+pdir+'_specwdup_Alltiles_{ID}.fits'.format(ID=id_))
         specf = Table.read(outfile_spec)
 
 
     azf=''
+    '''
     if type[:3] == 'ELG':
         azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
     if type[:3] == 'QSO':
         azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+    '''
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
-    dz = os.path.join(ldirspec, 'datcomb_dark_tarspecwdup_Alltiles.fits') #new
+    dz = os.path.join(ldirspec, 'datcomb_'+pdir+'_tarspecwdup_Alltiles_{ID}.fits'.format(ID=id_)) #new
     print(dz)
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
@@ -344,7 +351,7 @@ if mkfulld:
         bitweightfile = SV3p.brightbitweightfile
 
 
-    myct.mkfulldat(specf,dz,imbits,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec, 'Alltiles_dark_tilelocs.dat.fits'), azf=azf, desitarg=desitarg,specver=specrel,notqso=notqso)
+    myct.mkfulldat(specf,dz,imbits,type,bit,os.path.join(dirout,type+notqso+'_full_noveto_{ID}.dat.fits'.format(ID=id_)),os.path.join(ldirspec, 'Alltiles_dark_tilelocs_{ID}.dat.fits'.format(ID=id_)), azf=azf, desitarg=desitarg,specver=specrel,notqso=notqso)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
@@ -363,7 +370,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-    myct.mkclusdat(os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'), zmask=zma, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, ebits=None)
+    myct.mkclusdat(os.path.join(dirout,type+notqso+'_full_noveto_{ID}.dat.fits'), id_, zmask=zma, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, ebits=None)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 

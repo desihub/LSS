@@ -1,7 +1,3 @@
-1) The catalogs I have are stored here:
-	**old
-    /global/cscratch1/sd/avariu/desi/ABACUS_2GPC
-    /global/cscratch1/sd/avariu/desi/UNIT_3GPC/sv3_v1.0_mycosmo/h5py/
 
 	**First generation:
 	 /global/cfs/cdirs/desi/cosmosim/FirstGenMocks/ 
@@ -9,8 +5,6 @@
 >> prepare_files_SV3-UNITmocks_fromhdf5.py 
 OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits'
 
-3) Run fba_run in mocks:
-fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks
 
 * For FirstGen:
 time fba_run --targets mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks_000_FirstGen
@@ -21,10 +15,10 @@ sys	0m48.825s
 
 
 4) RuNING mkCAT
->> python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y
+>> python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 1
 
 5) Finally, run for LRG as:
-python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y 
+python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 1 
 
 
 ----------------
@@ -35,8 +29,11 @@ For randoms:
 >> python prepare_files_SV3-UNITmocks_fromhdf5_randoms.py 
 OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits'
 
+
+2) python join_randoms.py 
+
 3) Run fba_run in randoms:
-fba_run --targets /global/cscratch1/sd/acarnero/fiberassign/targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_random1 --prefix ran1
+fba_run --targets mockRandom_5X_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_randoms --prefix ran_5X_00_
 
 4) RuNING mkCAT
 >> python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y
@@ -47,3 +44,9 @@ sys	88m56.718s
 5) Finally, for the LRG as:
 >> python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y
 
+
+Run xi stats on real data:
+
+python xirunpc.py --type LRG --version 2.1
+
+Run xi on mocks:

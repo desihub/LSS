@@ -15,7 +15,7 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
 from desitarget.sv3 import sv3_targetmask
-
+import random
 #from this package
 from LSS.globals import SV3 
 
@@ -36,6 +36,7 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+parser.add_argument("--id", help="apply sky line mask to redshifts?",default=0)
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -50,6 +51,8 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+id_ = "%03d"%int(args.id)
 
 SV3p = SV3(type)
 
@@ -208,14 +211,22 @@ mind = -2.5
 maxd = 68
 
 my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
-target_file = os.path.join(my_path, 'mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits')
-random_file = os.path.join(my_path, 'mockRandom_5X_FirstGen_CutSky_alltracers_sv3bits.fits')
 
-cutsv3_target_file = os.path.join(sv3dir,'alltilesnofa.fits')
-cutsv3_random_file = os.path.join(randir,'alltilesnofa_random1.fits')
+target_file = os.path.join(my_path, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
+
+list_randoms = [0,2,3,4,5,6,7,8]
+if id_ in (3,10,12):
+    ranid = 0
+else:
+    ranid = random.choice(list_randoms)
+
+random_file = os.path.join(my_path, 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(RANID=ranid))
+
+cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
+cutsv3_random_file = os.path.join(randir, 'alltilesnofa_random_{ID}.fits'.format(ID=id_))
 
 
-if cran and not os.path.isfile(cutsv3_random_file):
+if cran:# and not os.path.isfile(cutsv3_random_file):
 #    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 #Make for one random, then change for several ones    for ii in range(rm,rx):
 ##        ranf = fitsio.read(dirrt+'/randoms-1-'+str(ii)+'.fits')
@@ -241,22 +252,20 @@ else:
         random_file = cutsv3_random_file
 
 if mkranmtl:
-    test_dir('./mtlran')
-    myct.randomtiles_allSV3(ta, random_file, directory_output='./mtlran')
+    test_dir('./mtlran{ID}'.format(ID=id_))
+    myct.randomtiles_allSV3_parallel(ta, random_file, directory_output='./mtlran{ID}'.format(ID=id_))
+
     
 
-debug=True
 print('end here')
 if combr:
-    #print(len(mtld['TILEID']))
     if type == 'dark' or type == 'bright':
-##comment        spec_file = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
-        spec_file = os.path.join(ldirspec, 'datcomb_' + type + '_specwdup_Alltiles.fits')
+        spec_file = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles_{ID}.fits'.format(ID=id_))
         kc = ['ZWARN','FIBER','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY']#,'DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-
-        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), ['fba_randoms', 'ran_5X_00_'], ['mtlran', 'tilenofa-'], keepcols=kc)
-        tc = myct.count_tiles_better(Table.read(spec_file), os.path.join(ldirspec, 'rancomb_' + type + 'wdupspec_Alltiles.fits'))
-        tc.write(os.path.join(randir, 'rancomb_'+pdir+'_Alltilelocinfo.fits'), format='fits', overwrite=True)
+        out_rancomb = os.path.join(ldirspec, 'rancomb_' + type + 'wdupspec_Alltiles_{ID}.fits'.format(ID=id_))
+        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), ['fba_randoms', 'ran_5X_0{RANID}_'.format(RANID=ranid)], ['./mtlran{ID}'.format(ID=id_), 'tilenofa-'], keepcols=kc, outf=[os.path.join(randir, 'rancomb_'+type+'wdup_Alltiles_{ID}.fits'.format(ID=id_)), out_rancomb])
+        tc = myct.count_tiles_better(Table.read(spec_file), out_rancomb)
+        tc.write(os.path.join(randir, 'rancomb_'+pdir+'_Alltilelocinfo_{ID}.fits'.format(ID=id_)), format='fits', overwrite=True)
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
@@ -269,10 +278,10 @@ if mkfullr:
         specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
         fbcol = 'FIBERSTATUS'
     if specrel == 'mock':
-        specf = Table.read(os.path.join(ldirspec, 'datcomb_dark_specwdup_Alltiles.fits'))
+        specf = Table.read(os.path.join(ldirspec, 'datcomb_dark_specwdup_Alltiles_{ID}.fits'.format(ID=id_)))
         fbcol = 'FIBERSTATUS'
 
-    outf = os.path.join(dirout, type+notqso+'_full_noveto.ran.fits')
+    outf = os.path.join(dirout, type+notqso+'_full_noveto_{ID}.ran.fits'.format(ID=id_))
 
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
@@ -281,7 +290,7 @@ if mkfullr:
         bit = sv3_targetmask.desi_mask[type]    
         desitarg='SV3_DESI_TARGET'
 
-    myct.mkfullran(specf, ldirspec, randir, imbits,outf,type,pdir,bit,tsnr='LOCATION_ASSIGNED',desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+    myct.mkfullran(specf, ldirspec, randir, imbits,outf,type,pdir,bit,desitarg=desitarg,tsnr='LOCATION_ASSIGNED',fbcol=fbcol,notqso=notqso, id_=id_)
 #    for ii in range(rm,rx):
 #        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
 #        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
@@ -303,7 +312,7 @@ if mkclusran:
         dchi2 = 40
         tsnrcut = 1000
 
-    myct.mkclusran(dirout,type,notqso,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=None)
+    myct.mkclusran(dirout,type,notqso,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=None, id_=id_)
 
 if mknz:
     wzm = ''
