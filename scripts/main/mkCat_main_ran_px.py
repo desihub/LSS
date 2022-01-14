@@ -289,6 +289,7 @@ def doran(ii):
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
+        nd = 0
         for it in range(0,len(ta)):
             #print(it,len(mtld))    
             tile = ta['TILEID'][it]
@@ -325,6 +326,8 @@ def doran(ii):
                 #for i in range(rm,rx):
                     ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
+                    nd += 1
+                    print('completed '+str(nd))
                     del ttemp
                     del fbah
                     gc.collect()
