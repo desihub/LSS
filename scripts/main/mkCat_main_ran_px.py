@@ -306,7 +306,7 @@ def doran(ii):
                 ttemp['IN_DESI'] = 1
                 ttemp['MTLTIME'] = fbah['MTLTIME']
                 ttemp['FA_RUN'] = fbah['FA_RUN']
-                ttemp['PROGRAM'] = pl
+                ttemp['PROGRAM'] = pr
                 try:
                     ttemp['FA_PLAN'] = fbah['FA_PLAN']
                     ttemp['FA_HA'] = fbah['FA_HA']
