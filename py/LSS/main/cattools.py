@@ -1968,19 +1968,22 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
     '''
     
     for ii in range(imin,imax):
-   
+        nd = 0
         for i in range(0,len(tiles)):
             
             #print('length of tile file is (expected to be 1):'+str(len(tiles)))
             tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
             fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
             if os.path.isfile(fname):
-                print(fname +' already exists')
+                #print(fname +' already exists')
+                pass
             else:
+                print('creating '+fname)
                 rtw = read_targets_in_tiles(dirrt,tile)
                 rmtl = Table(rtw)
+                del rtw
                 #rmtl['TARGETID'] = np.arange(len(rmtl))
-                print(len(rmtl['TARGETID'])) #checking this column is there
+                #print(len(rmtl['TARGETID'])) #checking this column is there
                 rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
                 rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
                 rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
@@ -1988,7 +1991,10 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
                 rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
                 rmtl.write(fname,format='fits', overwrite=True)
+                del rmtl
                 print('added columns, wrote to '+fname)
+                nd += 1
+                print(str(nd))
 
 
 def randomtiles_main_fromran(tiles,rt,rann,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random' ):
