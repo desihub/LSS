@@ -9,6 +9,8 @@ import numpy as np
 import fitsio
 import glob
 import argparse
+import gc
+gc.enable()
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import healpy as hp
@@ -233,27 +235,29 @@ print(specrel)
 
 print(tracemalloc.get_traced_memory())
 
-if specrel == 'daily':
-    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-    specf = Table.read(specfo)
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    
+if combhp or mkfullr:
+	hpxs = foot.tiles2pix(8, tiles=ta)
+	if specrel == 'daily':
+		specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+		specf = Table.read(specfo)
+		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+	
 
-if specrel == 'everest':    
+	if specrel == 'everest':    
 
-    #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-    #wt = np.isin(mtld['TILEID'],specf['TILEID'])
-    #above two lines already done above
-    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-    wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-    specf = specf[wt]
-    print('number of TILEID in spec data being used:')
-    print(len(np.unique(specf['TILEID'])))
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-print('loaded specf file '+specfo)
-specfc = ct.cut_specdat(specf,pdir)
-gtl = np.unique(specfc['TILELOCID'])
-del specfc
+		#specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+		#wt = np.isin(mtld['TILEID'],specf['TILEID'])
+		#above two lines already done above
+		specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+		wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+		specf = specf[wt]
+		print('number of TILEID in spec data being used:')
+		print(len(np.unique(specf['TILEID'])))
+		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+	print('loaded specf file '+specfo)
+	specfc = ct.cut_specdat(specf,pdir)
+	gtl = np.unique(specfc['TILELOCID'])
+	del specfc
 if type != 'dark' and type != 'bright' and mkfullr:
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
@@ -269,7 +273,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     lznp = ct.find_znotposs(specf)
     del specf
 
-hpxs = foot.tiles2pix(8, tiles=ta)
+
 
 
 print(tracemalloc.get_traced_memory())
@@ -289,39 +293,44 @@ def doran(ii):
             #print(it,len(mtld))    
             tile = ta['TILEID'][it]
             ts = str(tile).zfill(6)
-            fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-            dt = fbah['RUNDATE'][:19]
-            fav = fbah['FA_VER']
-            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-                fav = '2.3.0'
-            try:
-                if int(fav[:1]) >= 5:
-                    fav = '5.0.0'
-            except:
-                print(fav)        
-
-            if fav == faver:
-                ttemp = Table(ta[it])
-                ttemp['OBSCONDITIONS'] = 516
-                ttemp['IN_DESI'] = 1
-                ttemp['MTLTIME'] = fbah['MTLTIME']
-                ttemp['FA_RUN'] = fbah['FA_RUN']
-                ttemp['PROGRAM'] = pr
+            testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
+            if os.path.isfile(testfbaf):
+                #print('fba file already made')
+                pass
+            else:
+                fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+                dt = fbah['RUNDATE'][:19]
+                fav = fbah['FA_VER']
+                if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
+                    fav = '2.3.0'
                 try:
-                    ttemp['FA_PLAN'] = fbah['FA_PLAN']
-                    ttemp['FA_HA'] = fbah['FA_HA']
-                    ttemp['FIELDROT'] = fbah['FIELDROT']
+                    if int(fav[:1]) >= 5:
+                        fav = '5.0.0'
                 except:
-                    print('did not add FA_PLAN and FIELDROT')
+                    print(fav)        
+
+                if fav == faver:
+                    ttemp = Table(ta[it])
+                    ttemp['OBSCONDITIONS'] = 516
+                    ttemp['IN_DESI'] = 1
+                    ttemp['MTLTIME'] = fbah['MTLTIME']
+                    ttemp['FA_RUN'] = fbah['FA_RUN']
+                    ttemp['PROGRAM'] = pr
+                    try:
+                        ttemp['FA_PLAN'] = fbah['FA_PLAN']
+                        ttemp['FA_HA'] = fbah['FA_HA']
+                        ttemp['FIELDROT'] = fbah['FIELDROT']
+                    except:
+                        print('did not add FA_PLAN and FIELDROT')
                 #for i in range(rm,rx):
-                testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
-                if os.path.isfile(testfbaf):
-                    print('fba file already made')
-                else:                   
-                    print(ttemp)
-                    print(fav,dt)
                     ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
+                    del ttemp
+                    del fbah
+                    gc.collect()
+                else:                   
+                    #print(ttemp)
+                    print('mismatch in fiberassign version, not doing fiberassign for '+str(tile)+' version is ' +fav)
 
     if combhp:
         if type == 'dark' or type == 'bright':
