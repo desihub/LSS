@@ -414,6 +414,7 @@ def doran(ii):
                     print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
+            npx += 1
         pn.write(outf,overwrite=True,format='fits')
         #fitsio.write(outf,pn,clobber=True)
     #logf.write('ran mkfullran\n')
