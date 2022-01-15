@@ -1026,7 +1026,7 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     else:
         tmask = np.ones(len(tls)).astype('bool')  
         
-    td = len(tls[tmask])    
+    td = len(tls[~tmask])    
     if td > 0:  
 
         for tile in tls[tmask]['TILEID']:
