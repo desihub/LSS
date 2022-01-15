@@ -403,18 +403,19 @@ def doran(ii):
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
-                #pf = Table.read(po)
-                pf = fitsio.read(po,columns=cols)
+                pf = Table.read(po)
+                #pf = fitsio.read(po,columns=cols)
                 if s == 0:
                     pn = pf
                     s = 1
                 else:
-                    #pn = vstack([pn,pf],metadata_conflicts='silent')
-                    pn = np.hstack((pn,pf))
+                    pn = vstack([pn,pf],metadata_conflicts='silent')
+                    #pn = np.hstack((pn,pf))
                     print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
-        fitsio.write(outf,pn,clobber=True)
+        pn.write(outf,overwrite=True,format='fits')
+        #fitsio.write(outf,pn,clobber=True)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
