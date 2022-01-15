@@ -1029,6 +1029,7 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     td = len(tls[~tmask])    
     #if td > 0:  
     if hpx == 79:
+        print(outf)
         print(tls)
         print(tls[tmask])
     if len(tls[tmask]) > 0:
