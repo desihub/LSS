@@ -235,8 +235,10 @@ print(specrel)
 
 print(tracemalloc.get_traced_memory())
 
+hpxs = foot.tiles2pix(8, tiles=ta)
+
 if combhp or mkfullr:
-	hpxs = foot.tiles2pix(8, tiles=ta)
+	
 	if specrel == 'daily':
 		specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 		specf = Table.read(specfo)
