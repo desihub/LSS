@@ -1027,7 +1027,8 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         tmask = np.ones(len(tls)).astype('bool')  
         
     td = len(tls[~tmask])    
-    if td > 0:  
+    #if td > 0:  
+    if len(tls[tmask]) > 0:
 
         for tile in tls[tmask]['TILEID']:
             ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'

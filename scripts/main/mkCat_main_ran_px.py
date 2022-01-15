@@ -405,21 +405,21 @@ def doran(ii):
             if os.path.isfile(po):
                 #pf = Table.read(po)
                 pf = fitsio.read(po,columns=cols)
-                ptls = Table.read(po)
-                ptls.keep_columns(['TARGETID','TILES'])
+                #ptls = Table.read(po)
+                #ptls.keep_columns(['TARGETID','TILES'])
                 if s == 0:
                     pn = pf
-                    ptlsn = ptls
+                    #ptlsn = ptls
                     s = 1
                 else:
                     #pn = vstack([pn,pf],metadata_conflicts='silent')
                     pn = np.hstack((pn,pf))
-                    ptlsn = vstack([ptlsn,ptls],metadata_conflicts='silent')
+                    #ptlsn = vstack([ptlsn,ptls],metadata_conflicts='silent')
                     print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
             npx += 1
-        pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
+        #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
         pn.write(outf,overwrite=True,format='fits')
         #fitsio.write(outf,pn,clobber=True)
     #logf.write('ran mkfullran\n')
