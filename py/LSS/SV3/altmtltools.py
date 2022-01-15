@@ -36,11 +36,94 @@ mtltilefiledm = np.array([], dtype=[
     ('TILEID', '>i4'), ('TIMESTAMP', 'U25'),
     ('VERSION', 'U14'), ('PROGRAM', 'U6'), ('ZDATE', 'U8')
     ])
-def createFAmap(FAReal, FAAlt, debug = False):
+
+def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
+    if survey == 'sv3':
+        if obscon == 'dark':
+            altTargBits = altFiber['SV3_DESI_TARGET']
+            altTargBitsSec = altFiber['SV3_BGS_TARGET']
+            altTargBitsMWS = altFiber['SV3_MWS_TARGET']
+
+            origTargBitList = origFiberList['SV3_DESI_TARGET']
+            origTargBitListSec = origFiberList['SV3_BGS_TARGET']
+            origTargBitListMWS = origFiberList['SV3_MWS_TARGET']
+
+        elif obscon == 'bright':
+            altTargBits = altFiber['SV3_BGS_TARGET']
+            altTargBitsSec = altFiber['SV3_DESI_TARGET']
+            altTargBitsMWS = altFiber['SV3_MWS_TARGET']
+
+            origTargBitList = origFiberList['SV3_BGS_TARGET']
+            origTargBitListSec = origFiberList['SV3_DESI_TARGET']
+            origTargBitListMWS = origFiberList['SV3_MWS_TARGET']
+        else:
+            raise ValueError('Invalid value for \'obscon\': {0}'.format(obscon))
+    elif survey == 'main': 
+        if obscon == 'dark':
+            altTargBits = altFiber['DESI_TARGET']
+            altTargBitsSec = altFiber['BGS_TARGET']
+            altTargBitsMWS = altFiber['MWS_TARGET']
+
+            origTargBitList = origFiberList['DESI_TARGET']
+            origTargBitListSec = origFiberList['BGS_TARGET']
+            origTargBitListMWS = origFiberList['MWS_TARGET']
+
+        elif obscon == 'bright':
+            altTargBits = altFiber['BGS_TARGET']
+            altTargBitsSec = altFiber['DESI_TARGET']
+            altTargBitsMWS = altFiber['MWS_TARGET']
+            origTargBitList = origFiberList['BGS_TARGET']
+            origTargBitListSec = origFiberList['DESI_TARGET']
+            origTargBitListMWS = origFiberList['MWS_TARGET']
+
+        else:
+            raise ValueError('Invalid value for \'obscon\': {0}'.format(obscon))
+    else:
+        raise ValueError('Invalid value for \'survey\': {0}'.format(survey))
+
+    altFS = altFiber['FIBERSTATUS']
+    origFS = origFiberList['FIBERSTATUS']
+
+
+
+    BGSBits = initialentries['SV3_BGS_TARGET']
+    BGSFaintHIP = ((BGSBits & 8) == 8)
+    BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
+
+    #Set all BGS_FAINT_HIP to BGS_FAINT
+
+    initialentries['SV3_BGS_TARGET'][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~8)
+    initialentries['PRIORITY'][BGSFaintHIP] = 102000*np.ones(np.sum(BGSFaintHIP))
+
+    NewBGSBits = initialentries['SV3_BGS_TARGET']
+    NewBGSFaintHIP = ((BGSBits & 8) == 8)
+    NewBGSFaintAll = ((BGSBits & 1) == 1) | NewBGSFaintHIP
+    NewBGSPriors = initialentries['PRIORITY']
+    #Select 20% of BGS_FAINT to promote using function from 
+    BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
+    #Promote them
+
+    initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
+    initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
+
+
+
+def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False):
+    # Options for 'changeFiberOpt':
+    # None: do nothing different to version 1
+    # AllTwins: Find a twin fiber with a target of the 
+    #   same type and similar Fiber assignment for all
+    #   unsimilar target types
+    # SomeTwins: Find a twin as above but only for 
+    #   assignments where the original fiber was unassigned
+
     TIDReal = FAReal['TARGETID']
     TIDAlt = FAAlt['TARGETID']
     FibReal = FAReal['FIBER']
     FibAlt = FAAlt['FIBER']
+    if not (changeFiberOpt is None):
+        assert(not(TargAlt is None))
+        jTargs = join(FAAlt, TargAlt, keys = "TARGETID")
     
     Real2Alt = {}
     Alt2Real = {}
@@ -76,7 +159,12 @@ def createFAmap(FAReal, FAAlt, debug = False):
                 assert(ta == trMatch[0])
             except:
                 inc2+=1
-        Alt2Real[ta] = trMatch[0]
+        if (changeFiberOpt is None) or (changeFiberOpt == 'SomeTwins') or (ta == trMatch[0]):
+            Alt2Real[ta] = trMatch[0]
+        elif changeFiberOpt == 'AllTwins':
+            #if jTargs['SV3_']
+            pass
+
     print('no matches for negative tas {0}'.format(negMisMatch))
     if debug:
         print(inc1)
@@ -178,6 +266,11 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     allentries = Table.read(initMTL) 
     
     meta = allentries.meta
+    print('---')
+    print(meta)
+    print(initMTL)
+    print(outputMTL)
+    print('---')
 
     firstTS = allentries[0]["TIMESTAMP"] 
     initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
@@ -260,7 +353,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
             initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
-            
+        print('meta passed to write_mtl')
+        print(meta)
+        print('--')
         io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
     
         if saveBackup:
@@ -299,7 +394,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
                 secondary=False, singletile = None, singleDate = None, debugOrig = False, 
                     getosubp = False, quickRestart = False, redoFA = False,
-                    multiproc = False, nproc = None, testDoubleDate = False):
+                    multiproc = False, nproc = None, testDoubleDate = False, changeFiberOpt = None):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -496,6 +591,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             dateTiles = tiles[tiles['ZDATE'] == date]
             OrigFAs = []
             AltFAs = []
+            AltFAs2 = []
+            TSs = []
+            fadates = []
             '''
             OrigFA315 = None
             AltFA315 = None
@@ -557,6 +655,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 '''
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
+                AltFAs2.append(pf.open(FAAltName)[2].data)
+                TSs.append(ts)
+                fadates.append(fadate)
             print('checkpoint i')
             # ADM create the catalog of updated redshifts.
             '''
@@ -597,8 +698,24 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             R2AMap315 = {}
             '''
             print('checkpoint j')
-            for ofa, afa in zip (OrigFAs, AltFAs):
-                A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa)
+            for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
+                if changeFiberOpt is None:
+                    A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
+                else:
+
+                    FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+
+                    fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
+                    print('checkpoint e')
+                    if getosubp:
+                        FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
+                        fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
+                    else:
+
+                        FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
+                        fbadir = fbadirbase
+
+                    A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, TargAlt = afa2, changeFiberOpt = changeFiberOpt)
                 A2RMap.update(A2RMapTemp)
                 R2AMap.update(R2AMapTemp)
             
@@ -812,6 +929,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
             print("ObsFlagList shape here: {0}".format(ObsFlagList.shape))
             bitweights = pack_bitweights(ObsFlagList.T)
             print('bitweights shape here: {0}'.format(bitweights.shape))
+            print('TIDs shape here: {0}'.format(TIDs.shape))
             assert(not (TIDs is None))
         if obsprob:
             return TIDs, bitweights, obsprobs
@@ -933,6 +1051,7 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         return None
     
     if not (splitNChunks is None):
+        print('makeBitweights1')
         print("splitting into {0} chunks".format(splitNChunks))
         splits = np.array_split(hplist, int(splitNChunks))
 
@@ -944,15 +1063,42 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
                 TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
             else:
                 TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
-                TIDs = np.column_stack((TIDs, TIDsTemp))
-                bitweights = np.column_stack((bitweights, bitweightsTemp))
-                obsprobs = np.column_stack((obsprobs, obsprobsTemp))
+                
+                if mpi_rank == 0:
+                    print('----')
+                    print('mpi_rank: {0}'.format(mpi_rank))
+                    print("TIDs shape: {0}".format(TIDs.shape))
+                    print("bitweights shape: {0}".format(bitweights.shape))
+                    print("obsprobs shape: {0}".format(obsprobs.shape))
+                    print('----')
+                    print('mpi_rank: {0}'.format(mpi_rank))
+                    print("TIDsTemp shape: {0}".format(TIDsTemp.shape))
+                    print("bitweightsTemp shape: {0}".format(bitweightsTemp.shape))
+                    print("obsprobsTemp shape: {0}".format(obsprobsTemp.shape))
+                    TIDs = np.hstack((TIDs, TIDsTemp))
+                    bitweights = np.vstack((bitweights, bitweightsTemp))
+                    obsprobs = np.hstack((obsprobs, obsprobsTemp))
     else:
+        print('makeBitweights2')
         TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
-    
-    data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
+    if splitByReal:
+        print('----')
+        print('mpi_rank: {0}'.format(mpi_rank))
+        if mpi_rank == 0:
+            print("TIDs shape: {0}".format(TIDs.shape))
+            print("bitweights shape: {0}".format(bitweights.shape))
+            print("obsprobs shape: {0}".format(obsprobs.shape))
+            data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
+                      names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
+            
+            data.write(fn, overwrite = overwrite)
+    else:
+        print("TIDs shape: {0}".format(TIDs.shape))
+        print("bitweights shape: {0}".format(bitweights.shape))
+        print("obsprobs shape: {0}".format(obsprobs.shape))
+        data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
               names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
     
-    data.write(fn, overwrite = overwrite)
+        data.write(fn, overwrite = overwrite)
     
     
