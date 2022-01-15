@@ -1015,7 +1015,7 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
     delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
     'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     outf = randir+str(rann)+'/healpix/rancomb_'+tp+'_'+str(hpx)+'_wdup_Alltiles.fits'
-
+    outfs = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
     tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)
     if os.path.isfile(outf):
@@ -1065,13 +1065,24 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
         fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
         fgu.sort('TARGETID')
-        outf = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
-        print(outf)
-        fgu.write(outf,format='fits', overwrite=True)
+        
+        print(outfs)
+        fgu.write(outfs,format='fits', overwrite=True)
         return True
-    else:
-        print('no new data to add')
-        return False
+    elif os.path.isfile(outfs) == False:
+        fgu = fitiso.read(outf)
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        specf.keep_columns(keepcols)
+        #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+        fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+        fgu.sort('TARGETID')
+        
+        print(outfs)
+        fgu.write(outfs,format='fits', overwrite=True)
+        return True
+        else:
+            print('no new data to add')
+            return False
     
 
 
