@@ -420,8 +420,8 @@ def doran(ii):
                 print('file '+po+' not found')
             npx += 1
         #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
-        pn.write(outf,overwrite=True,format='fits')
-        #fitsio.write(outf,pn,clobber=True)
+        #pn.write(outf,overwrite=True,format='fits')
+        fitsio.write(outf,pn,clobber=True)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
