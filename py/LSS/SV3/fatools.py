@@ -16,17 +16,6 @@ from time import time
 from datetime import datetime, timedelta
 
 
-#import some functions from fiberassign
-#from fiberassign.assign import minimal_target_columns
-#from fiberassign.fba_launch_io import (
-#    mv_temp2final,
-#    force_finite_pm,
-#    force_nonzero_refepoch,
-#    gaia_ref_epochs,
-#    mv_write_targets_out
-#)
-
-#from desitarget
 import desitarget
 from desitarget import io 
 from desitarget.mtl import inflate_ledger
@@ -34,8 +23,9 @@ from desitarget.mtl import inflate_ledger
 #hardcode target directories; these are fixed
 
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
+skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
-
+tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
 # AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
 gaia_ref_epochs = {"dr2": 2015.5}
 
@@ -48,6 +38,15 @@ minimal_target_columns= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYP
 'GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','PMRA','PMDEC','PHOTSYS',\
 'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SV3_DESI_TARGET',\
 'SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
+
+minimal_target_columns_main= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MORPHTYPE','RA',\
+'DEC','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_W1','FLUX_W2','FLUX_IVAR_G','FLUX_IVAR_R',\
+'FLUX_IVAR_Z','FLUX_IVAR_W1','FLUX_IVAR_W2','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z',\
+'FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','REF_EPOCH','MASKBITS','SERSIC',\
+'SHAPE_R','SHAPE_E1','SHAPE_E2','REF_ID','REF_CAT','GAIA_PHOT_G_MEAN_MAG',\
+'GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','PMRA','PMDEC','PHOTSYS',\
+'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','DESI_TARGET',\
+'BGS_TARGET','MWS_TARGET','SCND_TARGET']
 
 def comp_neworig(tileid,dirn='/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'):
     """
@@ -155,7 +154,6 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
         
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-    print(indir)        
     tarf = indir+ts+'-targ.fits'
     try:
         fitsio.read(tarf)
@@ -241,25 +239,38 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
-    if fht['DESIROOT'] == '/data/datasystems':
+    if (fht['DESIROOT'] == '/data/datasystems') and not ( ('holding' in indir.lower()) or ('main' in indir.lower())):
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
-        
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-    print(indir)        
     tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
     except:
-        return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)    
+        try:
+            if 'sv3' in indir.lower():
+                date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+                indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+            elif ('main' in indir.lower()) or ('holding' in indir.lower()):
+                indir = '/global/cfs/cdirs/desi/survey/fiberassign/main/' + ts[0:3] +'/'
+            else:
+                raise ValueError('survey not sv3 or main, will have checks for SV2/1/CMX in future.')
+            tilef = indir+ts+'-tiles.fits'
+            fitsio.read(tilef)
+        except:
+            print('failed to read tile file')
+            print('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+            print('indir')
+            print(indir)
+            return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
@@ -276,7 +287,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     try:
         fitsio.read(gfaf)
     except:
-        print('Error! gfa file does not appear to exist')    
+        print('Error! gfa file does not appear to exist')   
     toof = indir+ts+'-too.fits'
     too = os.path.isfile(toof)
     if too:
@@ -288,29 +299,45 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     if mtldir == None:
         tarfn = indir+ts+'-targ.fits' 
     else:
-        tarfn = outdir+ts+'-targ.fits'    
+        tarfn = outdir+ts+'-targ.fits'   
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
     if np.isin('gaiadr2',fht['FAARGS'].split()):
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-    
-    if mtldir is not None:
-        altcreate_mtl(tilef,
-        mtldir+prog,        
-        gaiadr,
-        fht['PMCORR'],
-        tarfn,
-        tdir+prog)
 
+    if mtldir is not None:
+        if 'sv3' in indir.lower():
+            altcreate_mtl(tilef,
+            mtldir+prog,        
+            gaiadr,
+            fht['PMCORR'],
+            tarfn,
+            tdir+prog)
+        elif ('main' in indir.lower()) or ('holding' in indir.lower()):
+            altcreate_mtl(tilef,
+            mtldir+prog,        
+            gaiadr,
+            fht['PMCORR'],
+            tarfn,
+            tdirMain+prog,
+            survey = 'main')
     if getosubp:
-        otar = Table.read(indir+ts+'-targ.fits')
-        otar.keep_columns(['TARGETID','SUBPRIORITY'])
-        ntar = Table.read(tarfn)
-        ntar.remove_columns(['SUBPRIORITY'])
-        ntar = join(ntar,otar,keys=['TARGETID'])
-        ntar.write(tarfn,format='fits', overwrite=True)
+        if tileid == 315:
+            otar = Table.read(indir+ts+'-targ.fits')
+            otar.keep_columns(['TARGETID','PRIORITY','SUBPRIORITY'])
+            ntar = Table.read(tarfn)
+            ntar.remove_columns(['SUBPRIORITY', 'PRIORITY'])
+            ntar = join(ntar,otar,keys=['TARGETID'])
+            ntar.write(tarfn,format='fits', overwrite=True)
+        else:
+            otar = Table.read(indir+ts+'-targ.fits')
+            otar.keep_columns(['TARGETID','SUBPRIORITY'])
+            ntar = Table.read(tarfn)
+            ntar.remove_columns(['SUBPRIORITY'])
+            ntar = join(ntar,otar,keys=['TARGETID'])
+            ntar.write(tarfn,format='fits', overwrite=True)
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
@@ -345,6 +372,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None)
     fo.write(" --fieldrot "+str(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
+    if overwriteFA:
+        fo.write(" --overwrite")
     #fo.write(" --by_tile true")
     if faver >= 2.4:
         fo.write(" --sky_per_slitblock 1")
@@ -422,17 +451,45 @@ def altcreate_mtl(
                     to avoid an over-writting of the SUBPRIORITY; AJR changed to True reproduce SV3
     """
     tiles = fitsio.read(tilesfn)
+    tileIDs = tiles['TILEID']
 
     # AR mtl: read mtl
-    d = io.read_targets_in_tiles(
-        mtldir,
-        tiles,
-        quick=False,
-        mtl=True,
-        unique=True,
-        isodate=mtltime,
-    )
+    if (315 in tileIDs) and (len(tiles) == 1):
+        d0 = io.read_targets_in_tiles(
+            mtldir,
+            tiles,
+            quick=False,
+            mtl=True,
+            unique=False,
+            isodate=None,
+        )
+        mtltime = np.unique(d0[d0['ZTILEID'] == 314]['TIMESTAMP'])
 
+        assert(mtltime.shape[0] == 1)
+        
+        mtltime = str(mtltime[0])
+        d = io.read_targets_in_tiles(
+            mtldir,
+            tiles,
+            quick=False,
+            mtl=True,
+            unique=True,
+            isodate=mtltime,
+        )
+    elif (315 in tileIDs) and (len(tiles) > 1):
+        print('315 in tiles but multiple tiles provided')
+        print(tileIDs)
+        print(tiles)
+        assert(0)
+    else:
+        d = io.read_targets_in_tiles(
+            mtldir,
+            tiles,
+            quick=False,
+            mtl=True,
+            unique=True,
+            isodate=mtltime,
+        )
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
@@ -443,8 +500,16 @@ def altcreate_mtl(
         keep = (d["SV3_MWS_TARGET"] & mws_mask["BACKUP_BRIGHT"]) == 0
         d = d[keep]
 
-    #AJR added this in
-    columns = [key for key in minimal_target_columns if key not in d.dtype.names]
+    #AJR added this in/Modified by JL
+    if survey == "sv3":
+        print('sv3 survey columns')
+        columns = [key for key in minimal_target_columns if key not in d.dtype.names]
+    elif survey == "main":
+        print('main survey columns')
+        columns = [key for key in minimal_target_columns_main if key not in d.dtype.names]
+    else:
+        raise ValueError('survey must be sv3 or main')
+
     #tcol = ['SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
     #for col in tcol:
     #    columns.append(col) 
@@ -453,12 +518,12 @@ def altcreate_mtl(
         )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
     
     if add_plate_cols:
+        print('adding plate cols')
         d = Table(d)
         d["PLATE_RA"] = d["RA"]
         d["PLATE_DEC"] = d["DEC"]
         d["PLATE_REF_EPOCH"] = d["REF_EPOCH"]
         d = d.as_array()
-    
     # AR mtl: PMRA, PMDEC: convert NaN to zeros
     d = force_finite_pm(d)
     # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
@@ -473,6 +538,7 @@ def altcreate_mtl(
     d = Table(d)
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
+        print('making outfndir')
         os.makedirs(outfndir, exist_ok=True)
     d.write(outfn,format='fits', overwrite=True)
     del d
@@ -517,6 +583,7 @@ def mv_write_targets_out(infn, targdir, outfn):
         os.rmdir(os.path.join(*[targdir] + tmpdirs[: i + 1]))
 
 def get_nowradec(ra, dec, pmra, pmdec, parallax, ref_year, pmtime_utc_str, scnd=False):
+    print('get_nowradec')
     """
     Apply proper motion correction
     
@@ -596,6 +663,7 @@ def get_nowradec(ra, dec, pmra, pmdec, parallax, ref_year, pmtime_utc_str, scnd=
 def force_finite_pm(
     d, pmra_key="PMRA", pmdec_key="PMDEC"
 ):
+    print('force_finite_pm')
     """
     Replaces NaN PMRA, PMDEC by 0    
     

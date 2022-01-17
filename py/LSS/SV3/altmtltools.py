@@ -459,8 +459,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
-    #print('globals items')
-    #print(globals().items())
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
         raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
     assert((singleDate is None) or (type(singleDate) == bool))
@@ -469,8 +467,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         import logging
 
         logger=mp.log_to_stderr(logging.DEBUG)
-    #print('quickRestart')
-    #print(quickRestart)
     if quickRestart:
         quickRestartFxn(ndirs = ndirs, altmtlbasedir = altmtlbasedir, survey = survey, obscon = obscon, multiproc = multiproc, nproc = nproc)
     # ADM first grab all of the relevant files.
@@ -478,10 +474,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     mtldir = get_mtl_dir(mtldir)
     # ADM construct the full path to the mtl tile file.
     mtltilefn = os.path.join(mtldir, get_mtl_tile_file_name(secondary=secondary))
-    print('mtldir/tilefn')
-    print(mtldir)
-    print(mtltilefn)
-    
     # ADM construct the relevant sub-directory for this survey and
     # ADM set of observing conditions..
     form = get_mtl_ledger_format()
@@ -497,9 +489,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
-    print('zcatdir/tilefn')
-    print(zcatdir)
-    print(ztilefn)
     
     if altmtlbasedir is None:
         print('This will automatically find the alt mtl dir in the future but fails now. Bye.')
@@ -511,15 +500,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     else:
         iterloop = range(ndirs)
     for n in iterloop:
-        print('')
-        print('')
-        print('')
-        print('**NUMBER OF DIRECTORY*******')
-        print(n)
-        print('')
-        print('')
-        print('')
-        print('')
         if debugOrig:
             altmtldir = altmtlbasedir
         else:
@@ -527,17 +507,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
 
         althpdirname = io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
-                                     survey=survey, obscon=obscon, ender=form)
-        print(althpdirname)
-        
+                                     survey=survey, obscon=obscon, ender=form)        
         # ADM grab an array of tiles that are yet to be processed.
-        print(zcatdir)
-        print(altmtltilefn)
-        print(obscon)
-        print(survey)
         tiles = tiles_to_be_processed(zcatdir, altmtltilefn, obscon, survey)
-        print('checkpoint A')
-        print(np.sort(tiles['TILEID']))
         # ADM stop if there are no tiles to process.
         if len(tiles) == 0:
             if (not multiproc) and (n != ndirs - 1):
@@ -550,19 +522,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         if not (singletile is None):
             tiles = tiles[tiles['TILEID'] == singletile]
 
-        
-        '''
-        if 314 in tiles['TILEID']:
-            print('doubled tiles')
-            print(tiles[tiles['TILEID'] == 314])
-            print(tiles[tiles['TILEID'] == 315])
-            origTile315 = np.copy(tiles[tiles['TILEID'] == 315])
-            tiles['ZDATE'][ tiles['TILEID'] == 315] = tiles['ZDATE'][tiles['TILEID'] == 314]
-            print(tiles[tiles['TILEID'] == 314])
-            print(tiles[tiles['TILEID'] == 315])
-        '''
-        #if 440 in tiles['TILEID']:
-        #    tiles[tiles['TILEID'] == 440]['ZDATE'] = tiles[tiles['TILEID'] == 441]['ZDATE']
         sorttiles = np.sort(tiles, order = 'ZDATE')
         if testDoubleDate:
             print('Testing Rosette with Doubled Date only')
@@ -570,45 +529,25 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             cond2 = ((tiles['TILEID'] >= 475) & (tiles['TILEID'] <= 477))
             print(tiles[tiles['TILEID' ] == 314])
             print(tiles[tiles['TILEID' ] == 315])
-            #cond3 = ((tiles['TILEID'] > 406) & (tiles['TILEID'] < 432))
-            #cond4 = ((tiles['TILEID'] > 439) & (tiles['TILEID'] < 441))
             tiles = tiles[cond1 | cond2 ]
-            print(tiles)
-        #sorttiles = np.sort(tiles, order = 'ZDATE')
-        print('checkpoint b')
-        #if not singleDate is None:
-        #    tiles = tiles[tiles['ZDATE'] == singleDate]
-        #else:
-        #    print('LOOPING ALL DATES')
-        print('checkpoint c')
+        
         dates = np.sort(np.unique(tiles['ZDATE']))
-        print('checkpoint c1')
-        print(dates)
         for date in dates:
-            #print('globals items')
-            #print(globals().items())
-            print(date)
             dateTiles = tiles[tiles['ZDATE'] == date]
             OrigFAs = []
             AltFAs = []
             AltFAs2 = []
             TSs = []
             fadates = []
-            '''
-            OrigFA315 = None
-            AltFA315 = None
-            '''
+
             for t in dateTiles:
-                print('checkpoint d')
                 ts = str(t['TILEID']).zfill(6)
-                print(ts)
                 FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
                 fhtOrig = fitsio.read_header(FAOrigName)
                 fadate = fhtOrig['RUNDATE']
                 fadate = ''.join(fadate.split('T')[0].split('-'))
 
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
-                print('checkpoint e')
                 if getosubp:
                     FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
                     fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
@@ -620,58 +559,16 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 if os.path.exists(FAAltName + '.tmp'):
                     os.remove(FAAltName + '.tmp')
 
-                #if True or redoFA or (not os.path.exists(FAAltName)):
                 if  redoFA or (not os.path.exists(FAAltName)):
-                    print('checkpoint f')
-                    #if getosubp:
-                    #    redo_fba_fromorig(ts,outdir=fbadirbase)
-                    #else:
-                    #    print
-                    print(ts)
-                    print(altmtldir)
-                    print(survey.lower())
-                    print(fbadirbase)
-                    print(getosubp)
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA)
-                    print('checkpoint g')
-                    print(fbadir)
-                    print('checkpoint g2')
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh'])
-                    print('checkpoint g3')
                     result = subprocess.run(command_run, capture_output = True)
-                    print('checkpoint g4')
-                    #if survey.lower() == 'main':
-                    #    print('result')
-                    #    print(result)
-                print('checkpoitn h')
-                '''
-                if str(t['TILEID']) != '315':
-                    OrigFAs.append(pf.open(FAOrigName)[1].data)
-                    AltFAs.append(pf.open(FAAltName)[1].data)
-                else:
-                    print('special FA tile 315')
-                    OrigFA315 = pf.open(FAOrigName)[1].data
-                    AltFA315 = pf.open(FAAltName)[1].data
-                '''
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
                 AltFAs2.append(pf.open(FAAltName)[2].data)
                 TSs.append(ts)
                 fadates.append(fadate)
-            print('checkpoint i')
             # ADM create the catalog of updated redshifts.
-            '''
-            if '315' in dateTiles['TILEID'].astype(str):
-                print('special zcat tile 315')
-                #tile315 = dateTiles[dateTiles['TILEID'].astype(str) == '315']
-                print(origTile315)
-                print(origTile315.dtype)
-                dateTiles = dateTiles[dateTiles['TILEID'].astype(str) != '315']
-                zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
-                zcat315 = make_zcat(zcatdir, origTile315, obscon, survey)
-            else:
-                zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
-            '''
             zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
             # ADM insist that for an MTL loop with real observations, the zcat
             # ADM must conform to the data model. In particular, it must include
@@ -693,11 +590,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             A2RMap = {}
             R2AMap = {}
-            '''
-            A2RMap315 = {}
-            R2AMap315 = {}
-            '''
-            print('checkpoint j')
             for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
                 if changeFiberOpt is None:
                     A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
@@ -706,7 +598,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
 
                     fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
-                    print('checkpoint e')
                     if getosubp:
                         FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
                         fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
@@ -719,46 +610,18 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 A2RMap.update(A2RMapTemp)
                 R2AMap.update(R2AMapTemp)
             
-            print('checkpoint k')
-            print(type(zcat))
-            print(zcat.dtype)
             altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
 
-            print(type(altZCat))
-            print(altZCat.dtype)
             # ADM update the appropriate ledger.
-            print('checkpoint l')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
             if survey == "main":
                 sleep(1)
                 tiles["TIMESTAMP"] = get_utc_date(survey=survey)
-            print('checkpoint m')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
-            print('checkpoint n')
-            '''
-            if not (OrigFA315 is None):
-                print('special update Tile 315')
-                A2RMap315, R2AMap315 = createFAmap(OrigFA315, AltFA315)
-                altZCat315 = makeAlternateZCat(zcat315, R2AMap315, A2RMap315)
-                update_ledger(althpdirname, altZCat315, obscon=obscon.upper(),
-                          numobs_from_ledger=numobs_from_ledger)
-                if survey == "main":
-                    sleep(1)
-                    tiles["TIMESTAMP"] = get_utc_date(survey=survey)
-                print('checkpoint m')
-                io.write_mtl_tile_file(altmtltilefn,origTile315)
-                print('checkpoint n')
-            '''
+            
             if singleDate:
                 return 1
-        # ADM for the main survey "holding pen" method, ensure the TIMESTAMP
-        # ADM in the mtl-done-tiles file is always later than in the ledgers.
-        
-        # ADM write the processed tiles to the MTL tile file.
-        
-        #io.write_mtl_tile_file(altmtltilefn, tiles)
-
     return althpdirname, altmtltilefn, ztilefn, tiles
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False):
