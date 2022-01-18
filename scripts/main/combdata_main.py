@@ -325,12 +325,12 @@ if specrel == 'daily':
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID','FIBER'],join_type='left') 
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec:
             tarfn = fitsio.read(outf)
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID','FIBER'],join_type='left') 
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
