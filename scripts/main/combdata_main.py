@@ -273,6 +273,12 @@ if specrel == 'daily':
             print('updating '+outf)
             if os.path.isfile(outf):
                 tarfn = fitsio.read(outf)
+                cols = tarfn.dtype.names
+                if np.isin('TILELOCID',tarfn.dtype.names):
+                    print('reloading '+outf+' without reading TILELOCID column')
+                    sel = cols != 'TILELOCID'
+                    cols = cols[sel]
+                    tarfn = fitsio.read(outf,columns=cols)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
@@ -285,12 +291,6 @@ if specrel == 'daily':
                 if os.path.isfile(tarfo):
                     tarf = fitsio.read(tarfo)
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-                    remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
-                    for col in remcol:
-                        try:
-                            tarf.remove_columns([col] )#we get this where relevant from spec file
-                        except:
-                            print('column '+col +' was not in tarwdup file')    
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
                     else:
@@ -307,10 +307,17 @@ if specrel == 'daily':
                 else:
                     print('file '+tarfo+' not found')
                 npx += 1    
-            tarfn = Table(tarfn)
-            tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+            tarfn = Table(tarfn)           
+            remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+            for col in remcol:
+                try:
+                    tarfn.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    print('column '+col +' was not in stacked tarwdup table')    
+
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
+            tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID','FIBER'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
