@@ -166,21 +166,21 @@ if not os.path.exists(ldirspec+'healpix'):
 hpxs = foot.tiles2pix(8, tiles=tiles4comb)
 npx = 0
 if args.counts_only != 'y' and combpix:
-	processed_tiles_file = ldirspec+'processed_tiles_'+prog+'.fits'
-	if os.path.isfile(processed_tiles_file):
-	    tiles_proc = Table.read(processed_tiles_file)
-	    tidsp = np.isin(tiles4comb['TILEID'],tiles_proc['TILEID'])
-	    tidsnp = ~tidsp
-	    tiles4hp = tiles4comb[tidsnp]
-	else :
-	    print('didnt load processed tiles file '+processed_tiles_file)
-	    tiles4p = tiles4comb
-	    
-	for px in hpxs:
-		print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs))+' in '+str(len(tiles4hp))+' new tiles')
-		tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-		ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
-		npx += 1
+    processed_tiles_file = ldirspec+'processed_tiles_'+prog+'.fits'
+    if os.path.isfile(processed_tiles_file):
+        tiles_proc = Table.read(processed_tiles_file)
+        tidsp = np.isin(tiles4comb['TILEID'],tiles_proc['TILEID'])
+        tidsnp = ~tidsp
+        tiles4hp = tiles4comb[tidsnp]
+    else :
+        print('didnt load processed tiles file '+processed_tiles_file)
+        tiles4p = tiles4comb
+        
+    for px in hpxs:
+        print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs))+' in '+str(len(tiles4hp))+' new tiles')
+        tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+        ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+        npx += 1
     tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
 if specrel == 'daily':
