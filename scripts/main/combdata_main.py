@@ -167,7 +167,7 @@ hpxs = foot.tiles2pix(8, tiles=tiles4comb)
 npx = 0
 if args.counts_only != 'y' and combpix:
 	processed_tiles_file = ldirspec+'processed_tiles_'+prog+'.fits'
-	if os.path.isfile(processed_tiles_file)
+	if os.path.isfile(processed_tiles_file):
 	    tiles_proc = Table.read(processed_tiles_file)
 	    tidsp = np.isin(tiles4comb['TILEID'],tiles_proc['TILEID'])
 	    tidsnp = ~tidsp
