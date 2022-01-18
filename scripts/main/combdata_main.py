@@ -278,8 +278,12 @@ if specrel == 'daily':
                 cols = tarfn.dtype.names
                 if np.isin('TILELOCID',tarfn.dtype.names):
                     print('reloading '+outf+' without reading TILELOCID column')
-                    sel = cols != 'TILELOCID'
-                    cols = cols[sel]
+                    #sel = cols != 'TILELOCID'
+                    #cols = cols[sel]
+                    cols = []
+                    for col in tarfn.dtype.names:
+                        if col != 'TILELOCID':
+                            cols.append(col)
                     tarfn = fitsio.read(outf,columns=cols)
                     print(tarfn.dtype.names)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
