@@ -177,7 +177,7 @@ if args.counts_only != 'y' and combpix:
 	    tiles4p = tiles4comb
 	    
 	for px in hpxs:
-		print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+		print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs))+' in '+str(len(tiles4hp))+' new tiles')
 		tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
 		ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
 		npx += 1
