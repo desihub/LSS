@@ -176,12 +176,14 @@ if args.counts_only != 'y' and combpix:
         print('didnt load processed tiles file '+processed_tiles_file)
         tiles4hp = tiles4comb
         
-    for px in hpxs:
-        print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs))+' in '+str(len(tiles4hp))+' new tiles')
-        tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-        ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
-        npx += 1
-    tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
+    print('will combine pixels for '+str(len(tiles4hp))+' new tiles')
+    if len(tiles4hp) > 0:
+        for px in hpxs:
+            print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+            tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+            ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+            npx += 1
+        tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -279,6 +281,7 @@ if specrel == 'daily':
                     sel = cols != 'TILELOCID'
                     cols = cols[sel]
                     tarfn = fitsio.read(outf,columns=cols)
+                    print(tarfn.dtype.names)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
