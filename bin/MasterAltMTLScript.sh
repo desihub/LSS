@@ -9,7 +9,7 @@ seed=12345
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 ndir=64
-#Set to true if you want to clobber already existing files for Alt MTL generation
+#Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
 #Observing conditions to generate MTLs for (should be all caps "DARK" or "BRIGHT")
 obscon='DARK'
@@ -33,7 +33,7 @@ exampleledgerbase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 qR=0
 #Number of observation dates to loop through
 #Defaults to 40 dates for SV3
-NObsDates=40 
+NObsDates=40
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Defaults to 1 for 64 directories
@@ -56,18 +56,22 @@ splitByReal=0
 #chunks of healpixels. 
 splitByChunk=100
 
-
+#Set to true if you want to clobber already existing bitweight files
+overwrite2=1
 #Actual running of scripts
 
-srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLs.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase
+srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
 if [ $? -ne 0 ]; then
     exit 1234
 fi
 
-bash dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA 
+bash dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA >& dateLoopAltMTLOutput.out
 
 if [ $? -ne 0 ]; then
-    exit 1234
+    exit 12345
 fi
-
-srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase
+if [ $splitByReal -ne 0 ]; then
+    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+else
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+fi

@@ -35,6 +35,8 @@ NNodes = int(argv[1])
 NProc = int(NNodes*64)
 print('NProc')
 print(NProc)
+print('NNodes')
+print(NNodes)
 
 try:
     try:
@@ -81,6 +83,8 @@ def procFunc(nproc):
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)
 end = int((NodeID + 1)*NProc/SlurmNProcs)
+print("NodeID")
+print(NodeID)
 print('start')
 print(start)
 print('end')
@@ -89,6 +93,8 @@ print(end)
 for i in range(start, end):
     print('i')
     print(i)
+    if i > 65:
+        assert(0)
     files = glob.glob(altmtlbasedir + "Univ{0:03d}/*".format(i))
     if len(files):
         pass
