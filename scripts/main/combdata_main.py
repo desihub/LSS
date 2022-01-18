@@ -174,7 +174,7 @@ if args.counts_only != 'y' and combpix:
         tiles4hp = tiles4comb[tidsnp]
     else :
         print('didnt load processed tiles file '+processed_tiles_file)
-        tiles4p = tiles4comb
+        tiles4hp = tiles4comb
         
     for px in hpxs:
         print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs))+' in '+str(len(tiles4hp))+' new tiles')
