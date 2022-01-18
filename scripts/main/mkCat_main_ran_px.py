@@ -17,7 +17,7 @@ import healpy as hp
 
 import tracemalloc
 
-tracemalloc.start()
+#tracemalloc.start()
 
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
@@ -233,7 +233,7 @@ print(len(ta))
 print(specrel)
 
 
-print(tracemalloc.get_traced_memory())
+#print(tracemalloc.get_traced_memory())
 
 hpxs = foot.tiles2pix(8, tiles=ta)
 
@@ -330,9 +330,9 @@ def doran(ii):
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
                     nd += 1
                     print('completed '+str(nd))
-                    del ttemp
-                    del fbah
-                    gc.collect()
+                    #del ttemp
+                    #del fbah
+                    #gc.collect()
                 else:                   
                     #print(ttemp)
                     print('mismatch in fiberassign version, not doing fiberassign for '+str(tile)+' version is ' +fav)
