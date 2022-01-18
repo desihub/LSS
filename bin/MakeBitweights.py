@@ -8,11 +8,12 @@ log = get_logger()
 
 survey = argv[1]
 obscon = argv[2]
-ndirs = argv[3]
+ndirs = int(argv[3])
 splitByReal = bool(int(argv[4]))
 splitNChunks = int(argv[5])
 HPListFile = argv[6]
 outdir = argv[7]
+overwrite = argv[8]
 mtlBaseDir = outdir + '/Univ{0:03d}/'
 HPList = np.array(open(HPListFile,'r').readlines()[0].split(',')).astype(int)
 print(HPList)
@@ -22,5 +23,5 @@ print(HPList)
 #bw = makeBitweights(mtlBaseDir, ndirs = 64, hplist = hplist, debug = False)
 #writeBitweights(mtlBaseDir, ndirs = 128, hplist = sv3dark, debug = False, outdir = outdir, survey = 'sv3', obscon = 'dark', allFiles = True)
 #writeBitweights(mtlBaseDir, ndirs = 128, hplist = sv3dark, debug = False, outdir = outdir, survey = 'sv3', obscon = 'bright', allFiles = True)
-
-writeBitweights(mtlBaseDir, ndirs = 64, hplist = HPList, debug = False, outdir = outdir, survey = survey, obscon = obscon.lower(), allFiles = True)
+#writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None)
+writeBitweights(mtlBaseDir, ndirs = ndirs, hplist = HPList, debug = False, outdir = outdir, survey = survey, obscon = obscon.lower(), allFiles = True, overwrite = overwrite)
