@@ -261,7 +261,7 @@ if specrel == 'daily':
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
                           
-            if os.path.isfile(outtc) and update == False:
+            if os.path.isfile(outtc) and update == False and redotarspec == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
