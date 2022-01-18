@@ -93,8 +93,6 @@ print(end)
 for i in range(start, end):
     print('i')
     print(i)
-    if i > 65:
-        assert(0)
     files = glob.glob(altmtlbasedir + "Univ{0:03d}/*".format(i))
     if len(files):
         pass

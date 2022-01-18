@@ -502,10 +502,8 @@ def altcreate_mtl(
 
     #AJR added this in/Modified by JL
     if survey == "sv3":
-        print('sv3 survey columns')
         columns = [key for key in minimal_target_columns if key not in d.dtype.names]
     elif survey == "main":
-        print('main survey columns')
         columns = [key for key in minimal_target_columns_main if key not in d.dtype.names]
     else:
         raise ValueError('survey must be sv3 or main')
@@ -518,7 +516,6 @@ def altcreate_mtl(
         )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
     
     if add_plate_cols:
-        print('adding plate cols')
         d = Table(d)
         d["PLATE_RA"] = d["RA"]
         d["PLATE_DEC"] = d["DEC"]
@@ -538,7 +535,6 @@ def altcreate_mtl(
     d = Table(d)
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
-        print('making outfndir')
         os.makedirs(outfndir, exist_ok=True)
     d.write(outfn,format='fits', overwrite=True)
     del d
@@ -583,7 +579,6 @@ def mv_write_targets_out(infn, targdir, outfn):
         os.rmdir(os.path.join(*[targdir] + tmpdirs[: i + 1]))
 
 def get_nowradec(ra, dec, pmra, pmdec, parallax, ref_year, pmtime_utc_str, scnd=False):
-    print('get_nowradec')
     """
     Apply proper motion correction
     
@@ -663,7 +658,6 @@ def get_nowradec(ra, dec, pmra, pmdec, parallax, ref_year, pmtime_utc_str, scnd=
 def force_finite_pm(
     d, pmra_key="PMRA", pmdec_key="PMDEC"
 ):
-    print('force_finite_pm')
     """
     Replaces NaN PMRA, PMDEC by 0    
     
