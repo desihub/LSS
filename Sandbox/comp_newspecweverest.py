@@ -25,8 +25,9 @@ if args.mktable == 'y':
     tls = []
     for fl in fls:
         tl = fl.strip(args.newdir)
-        tl = int(tl)
-        tls.append(tl)
+        if len(tl) > 0:
+            tl = int(tl)
+            tls.append(tl)
 
     print('found '+str(len(tls))+' tiles in new reductions')
 
