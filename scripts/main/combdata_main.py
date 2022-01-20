@@ -296,7 +296,7 @@ if specrel == 'daily':
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
-                    tarf = fitsio.read(tarfo)
+                    tarf = fitsio.read(tarfo,columns=cols)
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
