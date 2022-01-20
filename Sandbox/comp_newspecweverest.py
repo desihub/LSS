@@ -25,7 +25,7 @@ if args.mktable == 'y':
     tls = []
     for fl in fls:
         #tl = fl.strip(args.newdir)
-        tl = tl.replace(args.newdir, '') 
+        tl = fl.replace(args.newdir, '') 
         if len(tl) > 0:
             tl = int(tl)
             tls.append(tl)
