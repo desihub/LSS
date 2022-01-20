@@ -1452,7 +1452,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     #locations where it was possible a target could have been assigned
     
     fs = cut_specdat(dz)
-    
+    fs['sort'] = fs['TSNR2_LRG']
+    fs.sort('sort')
+    fsu = unique(fs,keys=['TARGETID'],keep='last')   
+    gtl = np.unique(fsu['TILELOCID']) 
     
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
@@ -1463,11 +1466,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(len(dz[wtype]))
     print(len(dz[wg]))
     dz = dz[wtype&wg]
-    print('length after selecting type and good hardware '+str(len(dz)))
-    lznp = find_znotposs(dz)
-    wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
-    dz = dz[wk]
-    print('length after priority veto '+str(len(dz)))
+    #print('length after selecting type and good hardware '+str(len(dz)))
+    print('length after selecting to locations where target type was observed '+str(len(dz)))
+    #These steps are not needed if we cut already to only locations where the target type was observed
+    #lznp = find_znotposs(dz)
+    #wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
+    #dz = dz[wk]
+    #print('length after priority veto '+str(len(dz)))
     print('joining to full imaging')
     dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
     dz = join(dz,ftar,keys=['TARGETID'])
@@ -1594,56 +1599,38 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
-    print('number of unique targets left around unassigned locations is '+str(np.sum(natloc)))
-    locs = np.copy(dz['TILELOCID'])
-# 
-# 
-    print('reassigning TILELOCID for duplicates and finding rosette')
-    nch = 0
-    nbl = 0
-    tlids = dz['TILELOCIDS']
-#     nf = 0
-#     #dz.write('temp.fits',format='fits', overwrite=True)
-#     #fdz = fitsio.read('temp.fits')
-    for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-#         NT[ii] = np.char.count(dz['TILES'][ii],'-')+1
-#         #ti[ii] = int(dz['TILE'][ii].split('-')[0])
-#         tiles = dz['TILES'][ii].split('-')
-#         ti = int(tiles[0])
-        ti = dz[ii]['TILEID']
-        
-        if natloc[ii]:# == False:
-            nbl += 1
-            s = 0
-            tids = tlids[ii].split('-')
-            if s == 0:
-                for tl in tids:
-                    ttlocid  = int(tl)              
-                    if np.isin(ttlocid,loclz):
-                        #dz[ii]['TILELOCID'] = ttlocid
-                        locs[ii] = ttlocid #use below instead and assign at end, maybe faster
-                        nch += 1
-                        s = 1
-                        break
-        if ii%100000 == 0:
-            print(ii,len(dz['TILEID']),ti,nch,nbl)
-     
-    dz['TILELOCID'] = locs
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-#     #wa = dzz['LOCATION_ASSIGNED'] == 1
-#     #if len(dzz[wa]) != len(dzz):
-#      #   print('!found some zwarn = 0 without location_assigned = 1!')
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-#     print(np.max(nloclz),np.min(loclz))
-#     #print(np.histogram(nloclz))
-#     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+    print('number of unique targets left around unassigned locations is (should be 0)'+str(np.sum(natloc)))
+    
+    #should not be necessary any more
+#     locs = np.copy(dz['TILELOCID'])
+#     print('reassigning TILELOCID for duplicates ')
+#     nch = 0
+#     nbl = 0
+#     tlids = dz['TILELOCIDS']
+#     for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
+#         ti = dz[ii]['TILEID']
+#         
+#         if natloc[ii]:# == False:
+#             nbl += 1
+#             s = 0
+#             tids = tlids[ii].split('-')
+#             if s == 0:
+#                 for tl in tids:
+#                     ttlocid  = int(tl)              
+#                     if np.isin(ttlocid,loclz):
+#                         locs[ii] = ttlocid #use below instead and assign at end, maybe faster
+#                         nch += 1
+#                         s = 1
+#                         break
+#         if ii%100000 == 0:
+#             print(ii,len(dz['TILEID']),ti,nch,nbl)
+#      
+#     dz['TILELOCID'] = locs
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
 
-    #NT = np.char.count(dz['TILE'],'-')
-    #NT += 1
-    print(np.unique(dz['NTILE']))
+    #print(np.unique(dz['NTILE']))
 
-    #get tilelocid probs
-    #wz = dz['ZWARN'] == 0
     print('getting fraction assigned for each tilelocid')
     nm = 0
     nmt =0
@@ -1656,21 +1643,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         nt = nlocl[i]
         nz = lzs[i]
         loc = locl[i]
-        #w = loclz == loc
-        #nz = 0
-        #if len(loclz[w]) == 1:
-        #    nz = nloclz[w] #these are supposed all be 1...
-            
-        #else:
-            #print(loclz[w],nt) 
-        #    nm += 1.
-        #    nmt += nt
-        #if len(loclz[w]) > 1:
-        #    print('why is len(loclz[w]) > 1?')
-            #wa = dz['TILELOCID'] == loc
-            #print(nz,nt,len(dz[wa]),len(loclz[w]),len(nloclz[w]),len(nz),nloclz[w])
-            #probl[wa] = nz/nt
-            #pd.append((loc,nz/nt)) 
         pd.append((loc,nz/nt))  
     pd = dict(pd)
     for i in range(0,len(dz)):
@@ -1678,14 +1650,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print('number of fibers with no observation, number targets on those fibers')
     print(nm,nmt)
     
-    #print(np.min(probl),np.max(probl))
-    #dz = Table.read(zf) #table is slow, so using fitsio above, Table here
     dz['FRACZ_TILELOCID'] = probl
     print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should match')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
-    #print(np.unique(dz['TILE']))
-    #dz['NTILE']  = NT
-    #dz['WEIGHT_ZFAIL'] = np.ones(len(dz))
             
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
