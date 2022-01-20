@@ -15,7 +15,7 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import healpy as hp
 
-import tracemalloc
+#import tracemalloc
 
 #tracemalloc.start()
 
@@ -257,7 +257,7 @@ if combhp or mkfullr:
 		print(len(np.unique(specf['TILEID'])))
 		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 	print('loaded specf file '+specfo)
-	specfc = ct.cut_specdat(specf,pdir)
+	specfc = ct.cut_specdat(specf)
 	gtl = np.unique(specfc['TILELOCID'])
 	del specfc
 if type != 'dark' and type != 'bright' and mkfullr:
@@ -278,7 +278,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
 
 
 
-print(tracemalloc.get_traced_memory())
+#print(tracemalloc.get_traced_memory())
 
 
 def doran(ii):
