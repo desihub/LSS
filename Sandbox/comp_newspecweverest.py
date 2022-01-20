@@ -66,12 +66,12 @@ if args.mktable == 'y':
         for si in range(0,10):
             ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
             if os.path.isfile(ff):
-                fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
-                if os.path.isfile(fq):
+                #fq = coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
+                #if os.path.isfile(fq):
 
-                    specs.append(si)
-                else:
-                    print('did not find '+fq)    
+                specs.append(si)
+                #else:
+                #    print('did not find '+fq)    
             elif zfn == 'zbest':
                 zfnt = 'redrock'
                 ff = coaddir+str(tile)+'/'+tdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-'+thru+tdate+'.fits'
@@ -94,28 +94,28 @@ if args.mktable == 'y':
             return None
         for i in range(0,len(specs)):
             tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu=zhdu)
-            tnq = Table.read(coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits')
+            #tnq = Table.read(coaddir+str(tile)+'/'+tdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits')
             tnf = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu='FIBERMAP')
             tns = Table.read(coaddir+str(tile)+'/'+tdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-'+thru+tdate+'.fits',hdu=shdu)
     
             if i == 0:
                tspec = tn
-               tq = tnq
+               #tq = tnq
                tf = tnf
                ts = tns
             else:    
                 ts = vstack([ts,tns],metadata_conflicts='silent')
-                tq = vstack([tq,tnq],metadata_conflicts='silent')
+                #tq = vstack([tq,tnq],metadata_conflicts='silent')
                 tspec = vstack([tspec,tn],metadata_conflicts='silent')
                 tf = vstack([tf,tnf],metadata_conflicts='silent')
         
     
         tf = unique(tf,keys=['TARGETID'])
-        tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
-        tq['ZWARN'].name = 'ZWARN_MTL'
+        #tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
+        #tq['ZWARN'].name = 'ZWARN_MTL'
         tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
         tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
-        tspec = join(tspec,tq,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+        #tspec = join(tspec,tq,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
 
         print(len(tspec),len(tf))
         #tspec['LOCATION'] = tf['LOCATION']
@@ -181,8 +181,10 @@ def checkQA(dat,ver):
     wfqa = ~nomtl
     return wfqa
 
-sqafid = checkQA(combt,'fid')
-sqanew = checkQA(combt,'new')
+#sqafid = checkQA(combt,'fid')
+#sqanew = checkQA(combt,'new')
+sqafid = combt['COADD_FIBERSTATUS_fid'] == 0
+sqanew = combt['COADD_FIBERSTATUS_new'] == 0
 selt = sel & sqafid & sqanew
 
 combpass = combt[selt]
