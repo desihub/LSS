@@ -24,7 +24,8 @@ if args.mktable == 'y':
     fls = glob.glob(args.newdir+'*')
     tls = []
     for fl in fls:
-        tl = fl.strip(args.newdir)
+        #tl = fl.strip(args.newdir)
+        tl = tl.replace(args.newdir, '') 
         if len(tl) > 0:
             tl = int(tl)
             tls.append(tl)
