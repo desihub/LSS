@@ -471,7 +471,7 @@ def get_specdat(indir,pd,ver='daily'):
     wfqa = ~nomtl
     return fs[wfqa]
 
-def cut_specdat(dz,ver='daily'):
+def cut_specdat(dz):
     selz = dz['ZWARN'] != 999999
     fs = dz[selz]
 
@@ -1351,11 +1351,15 @@ def mkfullran(indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG'):
    
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
-    dz = Table.read(zf)
-    #dz.remove_columns(['TILES','NTILE'])
-    wg = np.isin(dz['TILELOCID'],gtl)
-    dz = dz[wg]
-    if len(dz) > 0:
+    fe = False
+    if os.path.isfile(zf):
+        dz = Table.read(zf)
+        #dz.remove_columns(['TILES','NTILE'])
+        wg = np.isin(dz['TILELOCID'],gtl)
+        dz = dz[wg]
+        fe = True
+        
+    if len(dz) > 0 and fe:
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
         dzpd = Table.read(zfpd)
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
@@ -1392,7 +1396,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
         else:
             print('0 rows left for '+outf+' so nothing got written') 
     else:
-        print('no redshift data after cutting to good obs for '+outf+' so nothing got written')   
+        print('no input file or redshift data before or after cutting to good obs for '+outf+' so nothing got written')   
     del dz
 
 
@@ -1434,12 +1438,20 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 #     wf = fs[fbcol] == 0
 #     print(len(fs[wf]),len(fs[wfqa]))
     
-    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver
-    fs = get_specdat(indir,pd)
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid)
+    
+    #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver
+    #fs = get_specdat(indir,pd)
+    #stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    #gtl = np.unique(stlid)
 
     dz = Table.read(zf) 
+    
+    #instead of full spec data, we are going to get type specific data and cut to unique entries
+    #in the end, we can only use the data associated with an observation
+    #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
+    #locations where it was possible a target could have been assigned
+    
+    fs = cut_specdat(dz)
     
     
     wtype = ((dz[desitarg] & bit) > 0)
@@ -1471,7 +1483,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     dz['LOCATION_ASSIGNED'][wz] = 1
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
-    dz['TILELOCID_ASSIGNED'] = 0
+    dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['TILELOCID_ASSIGNED'][wtl] = 1
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
@@ -1520,7 +1532,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
     #print('length after join to file with tiles info is '+str(len(dz)))
     #NT = np.zeros(len(dz))
-    ros = np.zeros(len(dz))
     #ti = np.zeros(len(dz))
 
     probl = np.zeros(len(dz))
@@ -1571,9 +1582,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     wc0 = dz['COMP_TILE'] == 0
     print('number of targets in 0 completeness regions '+str(len(dz[wc0])))       
 
-
-
-
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     #wa = dzz['LOCATION_ASSIGNED'] == 1
     #if len(dzz[wa]) != len(dzz):
@@ -1617,8 +1625,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
                         nch += 1
                         s = 1
                         break
-        if ii%10000 == 0:
-            print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
+        if ii%100000 == 0:
+            print(ii,len(dz['TILEID']),ti,nch,nbl)
      
     dz['TILELOCID'] = locs
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
@@ -1643,7 +1651,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     nloclt = len(locl)
     lzs = np.isin(locl,loclz)
     for i in range(0,len(locl)):
-        if i%10000 == 0:
+        if i%100000 == 0:
             print('at row '+str(i)+' of '+str(nloclt))
         nt = nlocl[i]
         nz = lzs[i]
