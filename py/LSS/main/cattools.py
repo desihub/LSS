@@ -1006,14 +1006,14 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
     print(outf)
     fgu.write(outf,format='fits', overwrite=True)
 
-def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf=''):
+def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',redos=False):
 
     s = 0
     
     #tiles.sort('ZDATE')
     print(len(tiles))
-    delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
-    'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
+    #delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
+    #'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     outf = randir+str(rann)+'/healpix/rancomb_'+tp+'_'+str(hpx)+'_wdup_Alltiles.fits'
     outfs = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
     tarsn = None
@@ -1070,7 +1070,7 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         fgu.write(outfs,format='fits', overwrite=True)
         return True
     else:
-        if os.path.isfile(outfs) == False:
+        if os.path.isfile(outfs) == False or redos:
             fgu = fitsio.read(outf)
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             specf.keep_columns(keepcols)
@@ -1388,7 +1388,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             dz = cutphotmask(dz,imbits)
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0:
-                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']
+                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/dz['PRIORITY']
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
                 dz.remove_columns(['sort'])
