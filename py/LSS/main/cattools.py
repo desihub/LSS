@@ -1028,10 +1028,10 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='')
         
     td = len(tls[~tmask])    
     #if td > 0:  
-    if hpx == 79:
-        print(outf)
-        print(tls)
-        print(tls[tmask])
+    #if hpx == 79:
+    #    print(outf)
+    #    print(tls)
+    #    print(tls[tmask])
     if len(tls[tmask]) > 0:
 
         for tile in tls[tmask]['TILEID']:
@@ -1463,10 +1463,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    wg = np.isin(dz['TILELOCID'],gtl)
+    #wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
     print(len(dz[wg]))
-    dz = dz[wtype&wg]
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]   
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
     #print('length after selecting type and good hardware '+str(len(dz)))
     print('length after selecting to locations where target type was observed '+str(len(dz)))
     #These steps are not needed if we cut already to only locations where the target type was observed
@@ -1525,7 +1529,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
 
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']+dz['GOODHARDLOC']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp[:3] == 'ELG' and azf != '':
