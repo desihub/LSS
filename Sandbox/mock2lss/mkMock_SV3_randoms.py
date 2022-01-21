@@ -36,7 +36,7 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
-parser.add_argument("--id", help="apply sky line mask to redshifts?",default=0)
+parser.add_argument("--id", help="Mock id",default=0)
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -214,17 +214,17 @@ my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
 
 target_file = os.path.join(my_path, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
 
-list_randoms = [0,2,3,4,5,6,7,8]
-if id_ in (3,10,12):
-    ranid = 0
-else:
-    ranid = random.choice(list_randoms)
+list_randoms = np.linspace(0, 9, num=10, dtype=np.int)
+ranid = random.choice(list_randoms)
 
 random_file = os.path.join(my_path, 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(RANID=ranid))
 
 cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
 cutsv3_random_file = os.path.join(randir, 'alltilesnofa_random_{ID}.fits'.format(ID=id_))
 
+file_info = open('info_mock_{ID}_randomchoice'.format(ID=id_), 'w')
+file_info.write('random used '+ 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(RANID=ranid))
+file_info.close()
 
 if cran:# and not os.path.isfile(cutsv3_random_file):
 #    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'

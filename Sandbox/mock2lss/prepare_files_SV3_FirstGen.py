@@ -96,12 +96,14 @@ def permock(i):
         targets['SV3_DESI_TARGET'] = np.zeros(n, dtype='i8')+int(types[type_][2])
         targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
         targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
+        targets['PRIORITY_INIT'] =np.zeros(n, dtype='i8')+int(types[type_][3]) #hdu_mtl['PRIORITY'][mask_elg ][0]
         targets['PRIORITY'] =np.zeros(n, dtype='i8')+int(types[type_][3]) #hdu_mtl['PRIORITY'][mask_elg ][0]
         targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
         targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
         targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) #hdu_mtl['OBSCONDITIONS'][mask_elg ][0]
         targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) #hdu_mtl['NUMOBS_MORE'][mask_elg ][0]
         targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(0)
+        targets['SV3_SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
         targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
     #    targets['TRUEZ'] = hdu_data_ez['Z_COSMO']
         #targets['TARGETID'] = np.max(hdu_mtl['TARGETID'])+np.linspace(1,n+1,n,dtype=type(np.max(hdu_mtl['TARGETID'])))
@@ -117,15 +119,16 @@ def permock(i):
     new.write(output_name, overwrite = True)
 
     fits.setval(output_name, 'EXTNAME', value='TARGETS', ext=1)
+    fits.setval(output_name, 'OBSCON', value='DARK', ext=1)
 
 
 if __name__ == '__main__':
     par = True
+    N = 25
     if par:
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        N = 25
         inds = []
         for i in range(0,N):
             inds.append(i)

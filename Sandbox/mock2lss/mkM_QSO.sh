@@ -1,3 +1,4 @@
+python mkMock_SV3.py --type QSO --verspec mock --combd n --fulld y --clus y --id 0
 python mkMock_SV3.py --type QSO --verspec mock --combd n --fulld y --clus y --id 1
 python mkMock_SV3.py --type QSO --verspec mock --combd n --fulld y --clus y --id 2
 python mkMock_SV3.py --type QSO --verspec mock --combd n --fulld y --clus y --id 3

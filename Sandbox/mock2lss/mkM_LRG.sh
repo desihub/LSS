@@ -1,3 +1,5 @@
+python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 0
+python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 1
 python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 2
 python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 3
 python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 4

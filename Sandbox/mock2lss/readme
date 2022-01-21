@@ -1,52 +1,108 @@
-
+PARENTDIR = 
 	**First generation:
 	 /global/cfs/cdirs/desi/cosmosim/FirstGenMocks/ 
-2) Prepare mocks into a format that can be interpreted by fiber assigment, unifying QSO, ELG and LRGs (dark time)
->> prepare_files_SV3-UNITmocks_fromhdf5.py 
-OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2.fits'
+************************************************************************************************************************************************
+************************************************************************************************************************************************
 
+1) Prepare mocks into a format that can be interpreted by fiber assigment, unifying QSO, ELG and LRGs (dark time)
 
-* For FirstGen:
+Run for 25 realizations:
+
+>> python prepare_files_SV3_FirstGen.py
+ 
+OUTPUTFILE = 'mockTargets_{XXX}_FirstGen_CutSky_alltracers_sv3bits.fits'
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+2) Run fiber assigment on mocks:
+
+module swap fiberassign/5.3.0
+
 time fba_run --targets mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks_000_FirstGen
 
 real	68m27.055s
 user	39m33.085s
 sys	0m48.825s
 
+>> ./execute_fba.sh
 
-4) RuNING mkCAT
->> python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 1
+OUTPUTFILES = './fiberassigment/mocks_{XXX}_FirstGen000{TILEID}.fits 
 
-5) Finally, run for LRG as:
-python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 1 
+------------------------------------------------------------------------------------------------------------------------------------------
+3) RuNING mkCAT to generate with duplicate files:
 
+python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 0
 
-----------------
+>> ./mkM_bash.sh
 
-For randoms:
+-----------------------------------------------------------------------------------------------------------------------------------------------
+4) Run mkfull and mkclustering to create final LSS catalogs for LRG, ELG and QSO:
 
-2) Prepare randoms for fiber assigment (we will only use FAVAIL, therefore, it doesnt matter if they are together or not):
->> python prepare_files_SV3-UNITmocks_fromhdf5_randoms.py 
-OUTPUTFILE = 'targets-UNIT-mtlz_SV3_alltracers_sv3bits_v2_random1.fits'
+python mkMock_SV3.py --type LRG --verspec mock --combd n --fulld y --clus y --id 0
 
+>> ./mkM_LRG.sh
+>> ./mkM_ELG.sh
+>> ./mkM_QSO.sh 
 
-2) python join_randoms.py 
+---------------------------------------------------------------------------------------------------------------------------------------------------
+FOR RANDOMS
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
+1) Prepare randoms for fiber assigment:
+
+>> python prepare_files_SV3_FirstGen_randoms.py  
+OUTPUTFILE = 'mockRandom_{SNUM}_FirstGen_CutSky_alltracers_sv3bits.fits'
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+2) Join randoms in batches of 5, selected randomly:
+
+>> python join_randoms.py 
+
+OUTPUTFILES = 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'
+INFO_FILE = 'info_join_randoms'
+
+----------------------------------------------------------------------------------------------------------------------------------------
 3) Run fba_run in randoms:
-fba_run --targets mockRandom_5X_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_randoms --prefix ran_5X_00_
 
-4) RuNING mkCAT
->> python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y
-real	155m11.418s
-user	60m21.542s
-sys	88m56.718s
+module swap fiberassign/5.3.0
 
-5) Finally, for the LRG as:
->> python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y
+fba_run --targets mockRandom_5X_0_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_randoms --prefix ran_5X_00_
 
+OUTPUTFILES = './fba_randoms/ran_5X_{RANDID}_000{TILEID}.fits'
+>> ./execute_ran_fba.sh
 
-Run xi stats on real data:
+--------------------------------------------------------------------------------------------------------------------------------------------
+4) RuNING mkCAT to generate randoms with duplicate files
 
-python xirunpc.py --type LRG --version 2.1
+python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 0
 
-Run xi on mocks:
+>> ./mKM_ran.sh
+
+------------------------------------------------------------------------------------------------------------------------------------
+5) Run randoms for mocks LRG, ELG, QSO:
+
+>> python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 0
+
+>> ./mKM_ran_LRG.sh
+>> ./mKM_ran_ELG.sh
+>> ./mKM_ran_QSO.sh
+
+---------------------------------------------------------------------------------------------------------------------------------------
+LSS ANALYSIS
+---------------------------------------------------------------------------------------------------------------------------------------
+1) Run xi stats on real data:
+
+>> python xirunpc.py --type LRG --version 2.1
+>> python xirunpc.py --type QSO --version 2.1
+>> python xirunpc.py --type ELG --version 2.1
+
+2) Run xi stats on mocks:
+
+python ximock.py --type ELG --id 22
+
+>> ./make_plots.sh 
+
+3) Run xi stats BEFORE fiberassigment
+
+>> ./make_plot_firstgen.sh
+
+----------------------------------------------------------------------------------------------------------------------------------------

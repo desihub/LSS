@@ -1,3 +1,5 @@
+python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 0
+python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 1
 python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 2
 python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 3
 python mkMock_SV3.py --type dark --verspec mock --cuttar y --mockmtl y --id 4

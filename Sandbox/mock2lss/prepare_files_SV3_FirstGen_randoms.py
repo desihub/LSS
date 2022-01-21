@@ -28,7 +28,7 @@ path = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky'
 
 #nametosave = 'mockTargets_{PH}_FirstGen_CutSky_{TARGET}_sv3bits.fits'
 
-types = {'ELG':['z1.100', 131074, 2, 3000, 'ELG_ran_S{NSUM}_shells_ph000_RANDOM_1X.fits'], 'LRG':['z0.800', 65537, 1, 3200, 'LRG_ran_S{NSUM}_shells_ph000_RANDOM_1X.fits'], 'QSO':['z1.400', 262148, 4, 3400, 'QSO_ran_S{NSUM}_shells_ph000_RANDOM_1X.fits']}
+types = {'ELG':['z1.100', 131074, 2, 3000, 'cutsky_ELG_random_S{NSUM}_1X.fits'], 'LRG':['z0.800', 65537, 1, 3200, 'cutsky_LRG_random_S{NSUM}_1X.fits'], 'QSO':['z1.400', 262148, 4, 3400, 'cutsky_QSO_random_S{NSUM}_1X.fits']}
 #zname, desi_target, sv3_desi_target, priority
 
 #desi_target=[131074,65537,262148]
@@ -48,7 +48,7 @@ def mask(main=0, nz=0, Y5=0, sv3=0):
 
 #file_name = '{TYPE}_ran_S{SNUM}_shells_ph000_RANDOM_1X.fits'
 
-SNUMS = np.linspace(1100, 5000, num=40, dtype=np.int) #[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+SNUMS = np.linspace(100, 5000, num=50, dtype=np.int) #[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 
 def permock(i):
     print('Realization {PH}'.format(PH = SNUMS[i]))
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 #        set_start_method("spawn")
         import sys
         #N = int(sys.argv[2])
-        N = 40
+        N = 50
         #p = Pool(N)
         inds = []
         for i in range(0,N):
