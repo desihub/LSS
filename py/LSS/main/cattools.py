@@ -1465,10 +1465,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 
     #wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
-    print(len(dz[wg]))
     #dz = dz[wtype&wg]
     dz = dz[wtype]   
     wg = np.isin(dz['TILELOCID'],gtl)
+    print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
     #print('length after selecting type and good hardware '+str(len(dz)))
