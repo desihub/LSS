@@ -52,7 +52,7 @@ parser.add_argument("--faver", help="version of fiberassign code to use for rand
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18,type=int) 
-
+parser.add_argument("--redos",help="whether or not to redo match to spec data (e.g., to add in a new column)",default='n')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
 args = parser.parse_args()
@@ -83,6 +83,9 @@ combhp = True
 if args.combhp == 'n':
     combhp = False    
 
+redos = False
+if args.redos == 'y':
+    redos = True
 
 mkfullr = True #make the random files associated with the full data files
 if args.fullr == 'n':
@@ -352,7 +355,7 @@ def doran(ii):
 
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-                new = ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc)
+                new = ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc,redos=redos)
                 if new:
                     tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
                     tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
