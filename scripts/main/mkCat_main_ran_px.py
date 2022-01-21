@@ -260,6 +260,7 @@ if combhp or mkfullr:
 	specfc = ct.cut_specdat(specf)
 	gtl = np.unique(specfc['TILELOCID'])
 	del specfc
+
 if type != 'dark' and type != 'bright' and mkfullr:
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
