@@ -1080,7 +1080,10 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',
         
             print(outfs)
             fgu.write(outfs,format='fits', overwrite=True)
-            return True
+            if os.path.isfile(outfs) == False:
+                return True
+            else:
+                return False    
         else:
             print('no new data to add')
             return False
