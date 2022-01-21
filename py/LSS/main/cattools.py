@@ -1357,22 +1357,24 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
         dz = Table.read(zf)
         #dz.remove_columns(['TILES','NTILE'])
         wg = np.isin(dz['TILELOCID'],gtl)
-        dz = dz[wg]
+        dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+        dz['GOODHARDLOC'][wg] = 1
         #fe = True
         
     if len(dz) > 0:# and fe:
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
         dzpd = Table.read(zfpd)
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
-        dz = join(dz,dzpd,keys=['TARGETID'])
+        dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
         #if maskzfail:
         #    wk = dz['ZPOSSNOTBAD'] == 1
         #else:
         #    wk = dz['ZPOSS'] == 1
         #print('length before cutting to good positions '+str(len(dz)))
         wk = ~np.isin(dz['TILELOCID'],lznp)
+        dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     
-        dz = dz[wk]    
+        dz['ZPOSSLOC'][wk] = 1#dz[wk]    
         #print('length after cutting to good positions '+str(len(dz)))
         if len(dz) > 0:
 
@@ -1386,8 +1388,10 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             dz = cutphotmask(dz,imbits)
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0:
-                dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']
+                dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
+                dz.remove_columns(['sort'])
                 #print('length after cutting to unique TARGETID '+str(len(dz)))
                 #print(np.unique(dz['NTILE']))
                 dz.write(outf,format='fits', overwrite=True)
@@ -1656,7 +1660,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(nm,nmt)
     
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should match')
+    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
             
     print(np.unique(dz['NTILE']))
