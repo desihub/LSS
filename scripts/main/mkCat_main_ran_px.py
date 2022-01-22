@@ -397,6 +397,8 @@ def doran(ii):
             npx += 1  
         npx = 0
         s = 0
+        del lznp
+        del gtl
         
 
     if args.combfull == 'y':

@@ -1363,10 +1363,10 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
         dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
         dz['GOODHARDLOC'][wg] = 1
         #fe = True
-        
-    if len(dz) > 0:# and fe:
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
         dzpd = Table.read(zfpd)
+        
+    if len(dz) > 0 and len(dzpd) > 0:# and fe:
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
         dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
         #if maskzfail:
@@ -1405,6 +1405,9 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             print('0 rows left for '+outf+' so nothing got written') 
     else:
         print('no input file or redshift data before or after cutting to good obs for '+outf+' so nothing got written')   
+        if len(dz)>0:
+            print('no entries in the tileloc file: #of targets, #goodloc, #in tileloc file')
+            print(len(dz),np.sum(dz['GOODHARDLOC']),len(dzpd))
     del dz
 
 
