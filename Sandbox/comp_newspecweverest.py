@@ -211,7 +211,7 @@ if args.prog == 'bright':
         spbn = len(bgstar[sp&sdchi2new])/len(bgstar[sp])
         #print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
         sbn.append(spbn)
-        spbf = len(combpass[sp&sdchi2fid])/len(bgstar[sp])
+        spbf = len(bgstar[sp&sdchi2fid])/len(bgstar[sp])
         sbf.append(spbf)
 
     plt.plot(pts,sqn,'^-',color='purple',label='f5')  
