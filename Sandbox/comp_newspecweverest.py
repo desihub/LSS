@@ -19,6 +19,17 @@ parser.add_argument("--mktable",help='whether or not to make output (starts from
 parser.add_argument("--survey",help='sv1, sv3, or main',default='main')
 args = parser.parse_args()
 
+if args.survey == 'sv1':
+    tarcol = 'SV1_DESI_TARGET'
+    bgscol = 'SV1_BGS_TARGET'
+if args.survey == 'sv3':
+    tarcol = 'SV3_DESI_TARGET'
+    bgscol = 'SV3_BGS_TARGET'
+if args.survey == 'main':
+    tarcol = 'DESI_TARGET'
+    bgscol = 'BGS_TARGET'        
+
+
 if args.mktable == 'y':
     #get tile list
     fls = glob.glob(args.newdir+'*')
@@ -34,15 +45,6 @@ if args.mktable == 'y':
 
     mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
     wd = mt['SURVEY'] == args.survey
-    if args.survey == 'sv1':
-        tarcol = 'SV1_DESI_TARGET'
-        bgscol = 'SV1_BGS_TARGET'
-    if args.survey == 'sv3':
-        tarcol = 'SV3_DESI_TARGET'
-        bgscol = 'SV3_BGS_TARGET'
-    if args.survey == 'main':
-        tarcol = 'DESI_TARGET'
-        bgscol = 'BGS_TARGET'        
     #wd &= mt['OBSSTATUS'] == 'obsend'
     wd &= mt['FAPRGRM'] == args.prog
     wd &= np.isin(mt['TILEID'],tls)
