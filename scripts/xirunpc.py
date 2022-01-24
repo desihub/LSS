@@ -262,7 +262,7 @@ for i in range(0,nzr):
             result = TwoPointEstimator.load(pfn)
             result.rebin((bs, 1))
             sep,xiell = project_to_multipoles(result)#, wang
-            fo = open(dirxi+'xi024'+fnroot+'.dat','w')
+            fo = open(dirxi+'xi024'+fnroot+str(bs)+'.dat','w')
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
             fo.close()
