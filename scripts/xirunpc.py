@@ -6,7 +6,7 @@ from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
 # To install pycorr: python -m pip install git+https://github.com/adematti/pycorr
-from pycorr import TwoPointCorrelationFunction, utils, project_to_multipoles, project_to_wp, setup_logging
+from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, utils, project_to_multipoles, project_to_wp, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 distance = cosmo.comoving_radial_distance
