@@ -27,11 +27,19 @@ for tp,notqso in zip(tps,notqsos):
 
 
 #random
+#first, we go through bright and dark, making the mtl files per tile that fiberassign uses, then running fiberassign (to get potential assignments, which is the FAVAIL HDU in the fba files)
+#after fiberassign is run, the potential assignments are combined per healpix
 srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
 srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
 
 #if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
+#then, we go through per type
+#the "full" random files are made for each healpix
+#this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
 for tp,notqso in zip(tps,notqsos):
-    srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily--rfa n --combhp n --combr y --fullr y 
+    srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
 
+
+#apply veto mask column for LRGs
+python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18

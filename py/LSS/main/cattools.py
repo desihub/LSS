@@ -1672,6 +1672,49 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
 
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
+    '''
+    fl is a string with the path to the file name to load 
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    ff = Table.read(fin)#+'full_noveto.'+dr+'.fits')
+    print('length of input '+str(len(ff)))
+    seld = ff['GOODHARDLOC'] == 1
+    print('length after cutting to good locations '+str(len(ff[seld])))
+    seld &= ff['PRIORITY_INIT'] <= maxp  
+    print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
+    ff = ff[seld]
+ 
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ff)))
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = cutphotmask(ff,ebits)
+        print('number after imaging mask '+str(len(ff)))
+
+    if zmask:
+        whz = ff['Z'] < 1.6
+        ff = ff[whz]
+
+        fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
+        zma = []
+        for z in ff['Z']:
+            zind = int(z/1e-6)
+            zma.append(fzm[zind]['RADIAL_MASK'])        
+        zma = np.array(zma)
+        wm = zma == 0
+        ff = ff[wm]    
+
+    ff['Z'].name = 'Z_not4clus'
+
+    ff.write(fout,overwrite=True,format='fits')
+
+
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
     fl is the root of the input/output file
@@ -1682,19 +1725,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''    
-    ff = Table.read(fl+'full_noveto.dat.fits')
-    
-    
-    if ebits is not None:
-        print('number before imaging mask '+str(len(ff)))
-        if ebits == 'lrg_mask':
-            sel = ff['lrg_mask'] == 0
-            ff = ff[sel]
-        else:
-            ff = cutphotmask(ff,ebits)
-        print('number after imaging mask '+str(len(ff)))
-
-    ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1785,36 +1815,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
 #    ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
-    if zmask:
-        whz = ff['Z'] < 1.6
-        ff = ff[whz]
 
-        fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
-        zma = []
-        for z in ff['Z']:
-            zind = int(z/1e-6)
-            zma.append(fzm[zind]['RADIAL_MASK'])        
-        zma = np.array(zma)
-        wm = zma == 0
-        ff = ff[wm]    
-    #apply any cut on rosette radius
-    if rcut is not None:
-        wr = ff['rosette_r'] > rcut[0]
-        wr &= ff['rosette_r'] <  rcut[1]
-        print('length before rosette radius cut '+str(len(ff)))
-        ff = ff[wr]
-        print('length after rosette radius cut '+str(len(ff)))
     #apply cut on ntile
     if ntilecut > 0:
         print('length before ntile cut '+str(len(ff)))
         wt = ff['NTILE'] > ntilecut
         ff = ff[wt]
         print('length after ntile cut '+str(len(ff)))    
-    if ccut == 'notQSO':
-        wc = (ff['SV3_DESI_TARGET'] & sv3_targetmask.desi_mask['QSO']) ==  0
-        print('length before cutting to not QSO '+str(len(ff)))
-        ff = ff[wc]
-        print('length after cutting to not QSO '+str(len(ff)))
     if ccut == 'zQSO':
         wc = ff['SPECTYPE'] ==  'QSO'
         print('length before cutting to spectype QSO '+str(len(ff)))
