@@ -151,7 +151,8 @@ def mkfile(input_path,output_path):
             res.write(output_path,overwrite=True)
         else:
             np.write(output_path, np.array(res['lrg_mask']))
-
+        del cat
+        del res
         print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
 
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
