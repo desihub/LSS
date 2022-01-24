@@ -16,7 +16,7 @@
 #python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 15
 #python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 16
 #python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 17
-python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 18
+#python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 18
 python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 19
 python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 20
 python mkMock_SV3_randoms.py --type dark --verspec mock --combr y --cutran y --ranmtl y --id 21

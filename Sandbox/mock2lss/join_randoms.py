@@ -15,10 +15,10 @@ SNUMS = np.linspace(100, 5000, num=50, dtype=np.int)
 
 sets = select_random_Ns(SNUMS, 5)
 
-file_name = 'mockRandom_{SNUM}_FirstGen_CutSky_alltracers_sv3bits.fits'
+file_name = '/global/cscratch1/sd/acarnero/SV3/mockRandom_{SNUM}_FirstGen_CutSky_alltracers_sv3bits.fits'
 
 
-info_randoms = open('info_join_randoms','w')
+info_randoms = open('/global/cscratch1/sd/acarnero/SV3/info_join_randoms','w')
 
 for i,s in enumerate(sets):
     fits_tables = []
@@ -36,6 +36,6 @@ for i,s in enumerate(sets):
         fits_tables.append(temp)
     info_randoms.write('\n')
     new = vstack(fits_tables)
-    new.write('mockRandom_5X_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=i), overwrite = True)
-    pf.setval('mockRandom_5X_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=i), 'EXTNAME', value='TARGETS', ext=1)
+    new.write('/global/cscratch1/sd/acarnero/SV3/mockRandom_5X_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=i), overwrite = True)
+    pf.setval('/global/cscratch1/sd/acarnero/SV3/mockRandom_5X_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=i), 'EXTNAME', value='TARGETS', ext=1)
 info_randoms.close()

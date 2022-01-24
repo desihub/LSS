@@ -51,7 +51,7 @@ def permock(i):
     fits_tables = []
     sizes = []
     maxall = 0
-    output_name = 'mockTargets_{PH}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(PH = "%03d" % i)
+    output_name = '/global/cscratch1/sd/acarnero/SV3/mockTargets_{PH}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(PH = "%03d" % i)
     for type_ in types: #ii in range(3):
 #        print('Starting FirstGen CutSky with {TARGET}'.format(TARGET = type_))
     

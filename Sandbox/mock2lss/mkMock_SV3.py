@@ -209,7 +209,7 @@ maxd = 68
 
 
 
-my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
+my_path = os.path.join(basedir,'SV3')
 target_file = os.path.join(my_path, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
 
 cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
@@ -238,8 +238,8 @@ else:
 
 
 if mkmockmtl:
-    test_dir('./atest{ID}'.format(ID=id_))
-    myct.randomtiles_allSV3_parallel(ta, target_file, directory_output='./atest{ID}'.format(ID=id_))
+    test_dir(os.path.join(basedir,'SV3','atest{ID}'.format(ID=id_)))
+    myct.randomtiles_allSV3_parallel(ta, target_file, directory_output=os.path.join(basedir,'SV3','atest{ID}'.format(ID=id_)))
 
 if combd:
     if type == 'dark' or type == 'bright':
@@ -286,7 +286,7 @@ if combd:
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
         elif specrel == 'mock':
             outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles_{ID}.fits'.format(ID=id_))
-            myct.combtile_specmock(ta, ['./fiberassigment', 'mocks_{ID}_FirstGen000{TILE}.fits'], target_file, id_, outfile_spec)
+            myct.combtile_specmock(ta, [os.path.join(basedir,'SV3','fiberassigment'), 'mocks_{ID}_FirstGen000{TILE}.fits'], target_file, id_, outfile_spec)
             specf = Table.read(outfile_spec)
             specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PLATE_RA','PLATE_DEC','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ','RSDZ'])
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']

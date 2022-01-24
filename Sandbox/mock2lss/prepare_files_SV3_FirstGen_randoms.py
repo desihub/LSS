@@ -54,7 +54,7 @@ def permock(i):
     print('Realization {PH}'.format(PH = SNUMS[i]))
     fits_tables = []
     maxall = 0
-    output_name = 'mockRandom_{PH}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(PH = SNUMS[i])
+    output_name = '/global/cscratch1/sd/acarnero/SV3/mockRandom_{PH}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(PH = SNUMS[i])
     for type_ in types: #ii in range(3):
 #        print('Starting FirstGen CutSky RANDOMS with {TARGET}'.format(TARGET = type_))
     

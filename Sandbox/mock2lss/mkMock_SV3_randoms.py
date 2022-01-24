@@ -210,7 +210,7 @@ maxr = 274
 mind = -2.5
 maxd = 68
 
-my_path = '/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
+my_path = os.path.join(basedir,'SV3') #'/global/cscratch1/sd/acarnero/codes/LSS/Sandbox/mock2lss'
 
 target_file = os.path.join(my_path, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
 
@@ -222,7 +222,7 @@ random_file = os.path.join(my_path, 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltr
 cutsv3_target_file = os.path.join(sv3dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
 cutsv3_random_file = os.path.join(randir, 'alltilesnofa_random_{ID}.fits'.format(ID=id_))
 
-file_info = open('info_mock_{ID}_randomchoice'.format(ID=id_), 'w')
+file_info = open(os.path.join(basedir,'SV3','info_mock_{ID}_randomchoice'.format(ID=id_)), 'w')
 file_info.write('random used '+ 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(RANID=ranid))
 file_info.close()
 
@@ -252,8 +252,8 @@ else:
         random_file = cutsv3_random_file
 
 if mkranmtl:
-    test_dir('./mtlran{ID}'.format(ID=id_))
-    myct.randomtiles_allSV3_parallel(ta, random_file, directory_output='./mtlran{ID}'.format(ID=id_))
+    test_dir(os.path.join(basedir,'SV3','mtlran{ID}'.format(ID=id_)))
+    myct.randomtiles_allSV3_parallel(ta, random_file, directory_output=os.path.join(basedir,'SV3','mtlran{ID}'.format(ID=id_)))
 
     
 
@@ -263,7 +263,7 @@ if combr:
         spec_file = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles_{ID}.fits'.format(ID=id_))
         kc = ['ZWARN','FIBER','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY']#,'DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
         out_rancomb = os.path.join(ldirspec, 'rancomb_' + type + 'wdupspec_Alltiles_{ID}.fits'.format(ID=id_))
-        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), ['fba_randoms', 'ran_5X_0{RANID}_'.format(RANID=ranid)], ['./mtlran{ID}'.format(ID=id_), 'tilenofa-'], keepcols=kc, outf=[os.path.join(randir, 'rancomb_'+type+'wdup_Alltiles_{ID}.fits'.format(ID=id_)), out_rancomb])
+        myct.combran_wdup(ta,randir,type,ldirspec, Table.read(spec_file), [os.path.join(basedir,'SV3','fba_randoms'), 'ran_5X_0{RANID}_'.format(RANID=ranid)], [os.path.join(basedir,'SV3','mtlran{ID}'.format(ID=id_)), 'tilenofa-'], keepcols=kc, outf=[os.path.join(randir, 'rancomb_'+type+'wdup_Alltiles_{ID}.fits'.format(ID=id_)), out_rancomb])
         tc = myct.count_tiles_better(Table.read(spec_file), out_rancomb)
         tc.write(os.path.join(randir, 'rancomb_'+pdir+'_Alltilelocinfo_{ID}.fits'.format(ID=id_)), format='fits', overwrite=True)
     else:

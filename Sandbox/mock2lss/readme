@@ -10,14 +10,14 @@ Run for 25 realizations:
 
 >> python prepare_files_SV3_FirstGen.py
  
-OUTPUTFILE = 'mockTargets_{XXX}_FirstGen_CutSky_alltracers_sv3bits.fits'
+OUTPUTFILE = '/global/cscratch1/sd/acarnero/SV3/fiberassigment/mockTargets_{XXX}_FirstGen_CutSky_alltracers_sv3bits.fits'
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 2) Run fiber assigment on mocks:
 
 module swap fiberassign/5.3.0
 
-time fba_run --targets mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fiberassigment --prefix mocks_000_FirstGen
+time fba_run --targets /global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir /global/cscratch1/sd/acarnero/SV3/fiberassigment --prefix mocks_000_FirstGen
 
 real	68m27.055s
 user	39m33.085s
@@ -25,7 +25,7 @@ sys	0m48.825s
 
 >> ./execute_fba.sh
 
-OUTPUTFILES = './fiberassigment/mocks_{XXX}_FirstGen000{TILEID}.fits 
+OUTPUTFILES = '/global/cscratch1/sd/acarnero/SV3/fiberassigment/mocks_{XXX}_FirstGen000{TILEID}.fits 
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 3) RuNING mkCAT to generate with duplicate files:
@@ -50,14 +50,14 @@ FOR RANDOMS
 1) Prepare randoms for fiber assigment:
 
 >> python prepare_files_SV3_FirstGen_randoms.py  
-OUTPUTFILE = 'mockRandom_{SNUM}_FirstGen_CutSky_alltracers_sv3bits.fits'
+OUTPUTFILE = '/global/cscratch1/sd/acarnero/SV3/mockRandom_{SNUM}_FirstGen_CutSky_alltracers_sv3bits.fits'
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 2) Join randoms in batches of 5, selected randomly:
 
 >> python join_randoms.py 
 
-OUTPUTFILES = 'mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'
+OUTPUTFILES = '/global/cscratch1/sd/acarnero/SV3/mockRandom_5X_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits'
 INFO_FILE = 'info_join_randoms'
 
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -65,9 +65,9 @@ INFO_FILE = 'info_join_randoms'
 
 module swap fiberassign/5.3.0
 
-fba_run --targets mockRandom_5X_0_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir fba_randoms --prefix ran_5X_00_
+fba_run --targets /global/cscratch1/sd/acarnero/SV3/mockRandom_5X_0_FirstGen_CutSky_alltracers_sv3bits.fits --sky /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/skies.fits --footprint /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits --dir /global/cscratch1/sd/acarnero/SV3/fba_randoms --prefix ran_5X_00_
 
-OUTPUTFILES = './fba_randoms/ran_5X_{RANDID}_000{TILEID}.fits'
+OUTPUTFILES = '/global/cscratch1/sd/acarnero/SV3/fba_randoms/ran_5X_{RANDID}_000{TILEID}.fits'
 >> ./execute_ran_fba.sh
 
 --------------------------------------------------------------------------------------------------------------------------------------------
