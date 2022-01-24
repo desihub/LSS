@@ -261,8 +261,8 @@ for i in range(0,nzr):
         for bs in bsl:
             result = TwoPointEstimator.load(pfn)
             result.rebin((bs, 1))
-            sep,xiell = project_to_multipoles(result), wang
-            fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+str(bs)+'.dat','w')
+            sep,xiell = project_to_multipoles(result)#, wang
+            fo = open(dirxi+'xi024'+fnroot+'.dat','w')
             for i in range(0,len(sep)):
                 fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
             fo.close()
