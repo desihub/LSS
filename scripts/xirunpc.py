@@ -41,7 +41,7 @@ weight_type = args.weight_type
 if args.bintype == 'log':
     bine = np.logspace(-1.5, 2.2, 80)
 if args.bintype == 'lin':
-    bine = np.linspace(1e-4, 200, 40)
+    bine = np.linspace(1e-4, 200, 201)
 
 dirxi = os.environ['CSCRATCH']+'/'+survey+'xi/'
 
@@ -107,7 +107,7 @@ wa = ''
 if survey in ['main', 'DA02']:
     wa = 'zdone'
 
-def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
+def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None,fnroot=''):
     if ttype == 'ELGrec' or ttype == 'LRGrec':
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
@@ -132,10 +132,11 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     if mode == 'multi':
         corrmode = 'smu'
     if corrmode == 'smu':
-        edges = (edges, np.linspace(0., 1., 101))
+        edges = (bine, np.linspace(0., 1., 101)) #s is input edges and mu evenly spaced between 0 and 1
     if corrmode == 'rppi':
-        edges = (edges, np.linspace(0., 40., 41))
-    
+        edges = (bine, bine) #transverse and radial separations are  coded to be the same here
+        if mode == 'wp':
+            edges = (bins,np.linspace(0,40.,41)) #if you want wp, only go out to pi = 40; consider setting pi_max as argument
     def get_positions_weights(catalog, name='data'):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
         print('Using {:d} rows for {}'.format(mask.sum(),name))
@@ -214,11 +215,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
                                          randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
                                          shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
                                          engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **kwargs)
-    if mode == 'multi':
-        return project_to_multipoles(result), wang
-    if mode == 'wp':
-        return project_to_wp(result), wang
-    return result.sep, result.corr, wang    
+    #save paircounts
+    fn = dirxi+'paircounts_'+fnroot+'.npy'
+    result.save(fn)
+    return result, wang
 
 ranwt1=False
 
@@ -239,6 +239,9 @@ if survey == 'main':
         
 
 nzr = len(zl)
+
+bsl = [1,4,5,10]
+
 if len(zl) == 2:
     nzr = len(zl)-1
 for i in range(0,nzr):
@@ -251,15 +254,22 @@ for i in range(0,nzr):
     print(zmin,zmax)
     for reg in regl:
         print(reg)
-        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-        fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
-        for i in range(0,len(sep)):
-            fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
-        fo.close()
-        if args.vis == 'y':
-            if args.bintype == 'log':
-                plt.loglog(sep,xiell[0])
-            if args.bintype == 'lin':
-                plt.plot(sep,sep**2.*xiell[0])
-            plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
-            plt.show()    
+        #(sep, xiell), wang = compute_correlation_function('multi', bs, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+        fnroot = tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype
+        pfn = dirxi+'paircounts_'+fnroot+'.npy'
+        result,wang = compute_correlation_function('multi', tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads,fnroot=fnroot)
+        for bs in bsl:
+            result = TwoPointEstimator.load(fn)
+            result.rebin((bs, 1))
+            sep,xiell = project_to_multipoles(result), wang
+            fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+str(bs)+'.dat','w')
+            for i in range(0,len(sep)):
+                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
+            fo.close()
+            if args.vis == 'y':
+                if args.bintype == 'log':
+                    plt.loglog(sep,xiell[0])
+                if args.bintype == 'lin':
+                    plt.plot(sep,sep**2.*xiell[0])
+                plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
+                plt.show()    
