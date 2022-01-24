@@ -259,7 +259,7 @@ for i in range(0,nzr):
         pfn = dirxi+'paircounts_'+fnroot+'.npy'
         result,wang = compute_correlation_function('multi', tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads,fnroot=fnroot)
         for bs in bsl:
-            result = TwoPointEstimator.load(fn)
+            result = TwoPointEstimator.load(pfn)
             result.rebin((bs, 1))
             sep,xiell = project_to_multipoles(result), wang
             fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+str(bs)+'.dat','w')
