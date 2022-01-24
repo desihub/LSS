@@ -219,6 +219,9 @@ if args.prog == 'bright':
     plt.plot(pts,sbn,'^-',color='purple',label='f5')  
     plt.plot(pts,sbf,'^--',color='purple',label='everest')
     plt.title('BGS_ANY targets from '+args.survey)
+    plt.xlabel('PETAL_LOC')
+    plt.ylabel(r'fraction with $\Delta\chi^2>40$')
+    plt.legend()
     plt.show()   
 
 
