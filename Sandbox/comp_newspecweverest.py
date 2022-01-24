@@ -216,8 +216,8 @@ if args.prog == 'bright':
         spbf = len(bgstar[sp&sdchi2fid])/len(bgstar[sp])
         sbf.append(spbf)
 
-    plt.plot(pts,sqn,'^-',color='purple',label='f5')  
-    plt.plot(pts,sqf,'^--',color='purple',label='everest')
+    plt.plot(pts,sbn,'^-',color='purple',label='f5')  
+    plt.plot(pts,sbf,'^--',color='purple',label='everest')
     plt.title('BGS_ANY targets from '+args.survey)
     plt.show()   
 
