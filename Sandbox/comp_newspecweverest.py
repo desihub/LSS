@@ -36,10 +36,13 @@ if args.mktable == 'y':
     wd = mt['SURVEY'] == args.survey
     if args.survey == 'sv1':
         tarcol = 'SV1_DESI_TARGET'
+        bgscol = 'SV1_BGS_TARGET'
     if args.survey == 'sv3':
         tarcol = 'SV3_DESI_TARGET'
+        bgscol = 'SV3_BGS_TARGET'
     if args.survey == 'main':
-        tarcol = 'DESI_TARGET'        
+        tarcol = 'DESI_TARGET'
+        bgscol = 'BGS_TARGET'        
     #wd &= mt['OBSSTATUS'] == 'obsend'
     wd &= mt['FAPRGRM'] == args.prog
     wd &= np.isin(mt['TILEID'],tls)
@@ -191,77 +194,104 @@ combpass = combt[selt]
 
 print('number of rows after keeping only those with COADD_NUMEXP match and good QA for both '+str(len(combpass)))
 
-#now specifically look at LRGs
+if args.prog == 'bright':
+    wbgs = combpass[bgscol+'_fid'] > 0
+    bgstar = combpass[wbgs]
 
-wlrg = (combpass[tarcol+'_fid'] & 1) > 0
-lrgtar = combpass[wlrg]
+    sbn = []
+    sbf = []
+    pts = []
+    sdchi2fid = bgstar['DELTACHI2_fid'] > 40
+    #print(len(combpass),len(combpass[sdchi2fid]))
+    sdchi2new = bgstar['DELTACHI2_new'] > 40
 
-def glrg(dat,ver):
-    drz = (10**(3 - 3.5*dat['Z_'+ver]))
-    mask_bad = (drz>30) & (dat['DELTACHI2_'+ver]<30)
-    mask_bad |= (drz<30) & (dat['DELTACHI2_'+ver]<drz)
-    mask_bad |= (dat['DELTACHI2_'+ver]<10)
-    wz = dat['ZWARN_'+ver] == 0
-    wz &= dat['Z_'+ver]<1.4
-    wz &= (~mask_bad)
+    for pt in range(0,10): 
+        pts.append(pt)
+        sp = bgstar['PETAL_LOC_fid'] == pt
+        spbn = len(bgstar[sp&sdchi2new])/len(bgstar[sp])
+        #print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
+        sbn.append(spbn)
+        spbf = len(combpass[sp&sdchi2fid])/len(bgstar[sp])
+        sbf.append(spbf)
 
-    wzwarn = wz#zmtlf['ZWARN'] == 0
-    gzlrg = dat[wzwarn]
-    return gzlrg
+    plt.plot(pts,sqn,'^-',color='purple',label='f5')  
+    plt.plot(pts,sqf,'^--',color='purple',label='everest')
+    plt.title('BGS_ANY targets from '+args.survey)
+    plt.show()   
 
-glfid = glrg(lrgtar,'fid')
-glnew = glrg(lrgtar,'new')
 
-print('old LRG redshift success was '+str(len(glfid)/len(lrgtar)))
-print('new LRG redshift success was '+str(len(glnew)/len(lrgtar)))
+if args.prog == 'dark':
+    #now specifically look at LRGs
 
-#do per petal
-sln = []
-slf = []
-for pt in range(0,10):
-    sp = lrgtar['PETAL_LOC_fid'] == pt
-    spf = glfid['PETAL_LOC_fid'] == pt
-    spn = glnew['PETAL_LOC_fid'] == pt
-    print('for petal '+str(pt))
-    print('old LRG success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
-    print('new LRG success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
-    sln.append(len(glnew[spn])/len(lrgtar[sp]))
-    slf.append(len(glfid[spf])/len(lrgtar[sp]))
-    
-#plot QSO and ELG using deltachi2 > 25 threshold
+    wlrg = (combpass[tarcol+'_fid'] & 1) > 0
+    lrgtar = combpass[wlrg]
 
-sdchi2fid = combpass['DELTACHI2_fid'] > 25
-#print(len(combpass),len(combpass[sdchi2fid]))
-sdchi2new = combpass['DELTACHI2_new'] > 25
-#print(len(combpass),len(combpass[sdchi2fid]),len(combpass[sdchi2new]))
-welg = (combpass[tarcol+'_fid'] & 2) > 0
-wqso = (combpass[tarcol+'_fid'] & 4) > 0
-sen = []
-sqn = []
-sef = []
-sqf = []
-pts = []
+    def glrg(dat,ver):
+        drz = (10**(3 - 3.5*dat['Z_'+ver]))
+        mask_bad = (drz>30) & (dat['DELTACHI2_'+ver]<30)
+        mask_bad |= (drz<30) & (dat['DELTACHI2_'+ver]<drz)
+        mask_bad |= (dat['DELTACHI2_'+ver]<10)
+        wz = dat['ZWARN_'+ver] == 0
+        wz &= dat['Z_'+ver]<1.4
+        wz &= (~mask_bad)
 
-for pt in range(0,10): 
-    pts.append(pt)
-    sp = combpass['PETAL_LOC_fid'] == pt
-    spen = len(combpass[sp&welg&sdchi2new])/len(combpass[sp&welg])
-    #print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
-    sen.append(spen)
-    spef = len(combpass[sp&welg&sdchi2fid])/len(combpass[sp&welg])
-    sef.append(spef)
-    spqn = len(combpass[sp&wqso&sdchi2new])/len(combpass[sp&wqso])
-    sqn.append(spqn)
-    spqf = len(combpass[sp&wqso&sdchi2fid])/len(combpass[sp&wqso])
-    sqf.append(spqf)
+        wzwarn = wz#zmtlf['ZWARN'] == 0
+        gzlrg = dat[wzwarn]
+        return gzlrg
 
-plt.plot(pts,sln,'o-r')  
-plt.plot(pts,slf,'o--r')
-plt.plot(pts,sen,'o-b')  
-plt.plot(pts,sef,'o--b') 
-plt.plot(pts,sqn,'o-',color='orange')  
-plt.plot(pts,sqf,'o--',color='orange')
-plt.show()   
-    
-  
+    glfid = glrg(lrgtar,'fid')
+    glnew = glrg(lrgtar,'new')
+
+    print('old LRG redshift success was '+str(len(glfid)/len(lrgtar)))
+    print('new LRG redshift success was '+str(len(glnew)/len(lrgtar)))
+
+    #do per petal
+    sln = []
+    slf = []
+    for pt in range(0,10):
+        sp = lrgtar['PETAL_LOC_fid'] == pt
+        spf = glfid['PETAL_LOC_fid'] == pt
+        spn = glnew['PETAL_LOC_fid'] == pt
+        print('for petal '+str(pt))
+        print('old LRG success rate was '+str(len(glfid[spf])/len(lrgtar[sp])))
+        print('new LRG success rate is '+str(len(glnew[spn])/len(lrgtar[sp])))
+        sln.append(len(glnew[spn])/len(lrgtar[sp]))
+        slf.append(len(glfid[spf])/len(lrgtar[sp]))
+
+    #plot QSO and ELG using deltachi2 > 25 threshold
+
+    sdchi2fid = combpass['DELTACHI2_fid'] > 25
+    #print(len(combpass),len(combpass[sdchi2fid]))
+    sdchi2new = combpass['DELTACHI2_new'] > 25
+    #print(len(combpass),len(combpass[sdchi2fid]),len(combpass[sdchi2new]))
+    welg = (combpass[tarcol+'_fid'] & 2) > 0
+    wqso = (combpass[tarcol+'_fid'] & 4) > 0
+    sen = []
+    sqn = []
+    sef = []
+    sqf = []
+    pts = []
+
+    for pt in range(0,10): 
+        pts.append(pt)
+        sp = combpass['PETAL_LOC_fid'] == pt
+        spen = len(combpass[sp&welg&sdchi2new])/len(combpass[sp&welg])
+        #print(len(combpass[sp&welg&sdchi2new]),len(combpass[sp&welg]))
+        sen.append(spen)
+        spef = len(combpass[sp&welg&sdchi2fid])/len(combpass[sp&welg])
+        sef.append(spef)
+        spqn = len(combpass[sp&wqso&sdchi2new])/len(combpass[sp&wqso])
+        sqn.append(spqn)
+        spqf = len(combpass[sp&wqso&sdchi2fid])/len(combpass[sp&wqso])
+        sqf.append(spqf)
+
+    plt.plot(pts,sln,'o-r')  
+    plt.plot(pts,slf,'o--r')
+    plt.plot(pts,sen,'o-b')  
+    plt.plot(pts,sef,'o--b') 
+    plt.plot(pts,sqn,'o-',color='orange')  
+    plt.plot(pts,sqf,'o--',color='orange')
+    plt.show()   
+
+
 
