@@ -1713,7 +1713,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wm = zma == 0
         ff = ff[wm]    
 
-    ff['Z'].name = 'Z_not4clus'
+    if '.dat' in fin:
+        ff['Z'].name = 'Z_not4clus'
 
     ff.write(fout,overwrite=True,format='fits')
 
