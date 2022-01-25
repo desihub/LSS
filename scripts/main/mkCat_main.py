@@ -199,6 +199,7 @@ if mkfulld:
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 if args.apply_veto == 'y':
+    print('applying vetos')
     maxp = 3400
     if type[:3] == 'LRG' or notqso == 'notqso':
         maxp = 3200
@@ -207,10 +208,12 @@ if args.apply_veto == 'y':
     fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
     fout = dirout+type+notqso+'zdone_full.dat.fits'
     ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    print('data veto done, now doing randoms')
     for rn in range(minr,maxr):
         fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'zdone_'+str(rn)+'full.ran.fits'
         ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(rn)+' done')
         
     
 #needs to happen before randoms so randoms can get z and weights
