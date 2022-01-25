@@ -32,7 +32,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
-parser.add_argument("--apply_vetos", help="apply vetos for imaging, priorities, and hardware failures",default='n')
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
