@@ -390,6 +390,10 @@ def doran(ii):
         
     if mkfullr:
         npx = 0
+        #cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+        #otls = np.unique(fitsio.read(cf,columns=['TILEID'])['TILEID'])
+        #selt = ~np.isin(ta['TILEID',otls['TILEID'])
+        #hpxsn = foot.tiles2pix(8, tiles=ta[selt])
         for px in hpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))

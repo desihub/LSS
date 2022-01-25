@@ -1391,7 +1391,10 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             dz = cutphotmask(dz,imbits)
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0:
-                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/dz['PRIORITY']
+                pl = dz['PRIORITY']
+                sp = pl <= 0
+                pl[sp] = .1
+                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl#/dz['PRIORITY']
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
                 dz.remove_columns(['sort'])
