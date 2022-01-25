@@ -1684,7 +1684,10 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     print('length of input '+str(len(ff)))
     seld = ff['GOODHARDLOC'] == 1
     print('length after cutting to good locations '+str(len(ff[seld])))
-    seld &= ff['PRIORITY_INIT'] <= maxp  
+    if '.dat' in fin:
+        seld &= ff['PRIORITY_INIT'] <= maxp  
+    if '.ran' in fin:
+        seld &= ff['PRIORITY'] <= maxp
     print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
     ff = ff[seld]
  
