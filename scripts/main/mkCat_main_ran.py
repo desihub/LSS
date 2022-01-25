@@ -31,9 +31,10 @@ parser.add_argument("--basedir", help="base directory for output, default is CSC
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
-parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
-parser.add_argument("--combr", help="combine the random tiles together",default='y')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
+parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
+parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_veto", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -330,7 +331,7 @@ def doran(ii):
             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         if type == 'BGS_BRIGHT':
             bit = targetmask.bgs_mask[type]
             desitarg='BGS_TARGET'
@@ -342,6 +343,18 @@ def doran(ii):
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
+    if args.apply_veto == 'y':
+        print('applying vetos')
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
+        fin = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'zdone_'+str(ii)+'full.ran.fits'
+        ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(rn)+' done')
+
 
 
     if mkclusran:
