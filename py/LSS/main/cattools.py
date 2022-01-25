@@ -1688,6 +1688,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         seld &= ff['PRIORITY_INIT'] <= maxp  
     if '.ran' in fin:
         seld &= ff['PRIORITY'] <= maxp
+        seld &= ff['ZPOSSLOC'] == 1
     print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
     ff = ff[seld]
  
