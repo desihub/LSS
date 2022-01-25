@@ -203,7 +203,7 @@ if args.apply_veto == 'y':
     maxp = 3400
     if type[:3] == 'LRG' or notqso == 'notqso':
         maxp = 3200
-    if type[:3] == 'BGS'
+    if type[:3] == 'BGS':
         maxp = 2100
     fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
     fout = dirout+type+notqso+'zdone_full.dat.fits'
