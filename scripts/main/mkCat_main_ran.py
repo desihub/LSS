@@ -119,10 +119,17 @@ mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
+selt = np.isin(tiles['TILEID'],mtld['TILEID'])
+ta = Table()
+ta['TILEID'] = tiles[selt]['TILEID']
+ta['RA'] = tiles[selt]['RA']
+ta['DEC'] =tiles[selt]['DEC']
 
-tiles4comb = Table()
-tiles4comb['TILEID'] = mtld['TILEID']
-tiles4comb['ZDATE'] = mtld['LASTNIGHT']
+
+
+# tiles4comb = Table()
+# tiles4comb['TILEID'] = mtld['TILEID']
+# tiles4comb['ZDATE'] = mtld['LASTNIGHT']
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/main/LSS/'
@@ -160,64 +167,65 @@ if not os.path.exists(dirout):
     print('made '+dirout)
 
 
-#construct a table with the needed tile information
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    fver = []
-    fahal = []
-    
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        try:
-            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-            tilel.append(tile)
-            ral.append(fht['TILERA'])
-            decl.append(fht['TILEDEC'])
-            mtlt.append(fht['MTLTIME'])
-            fal.append(fht['FA_RUN'])
-            obsl.append(fht['OBSCON'])
-            fav = fht['FA_VER']
-            try:
-                if int(fav[:1]) >= 5:
-                    fav = '5.0.0'
-            except:
-                print(fav)        
-            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-                fver.append('2.3.0')
-            else:
-                fver.append(fav)    
-            #try:
-            #    faha = fht['FA_HA']
-            #except:
-            #    faha = 0
-            #    print(tile,'no FA_HA in this tile header')        
-            #pl.append(pro)
-            pl.append(pr)
-        except:
-            print('failed to find and/or get info for tile '+ts)    
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['FA_RUN'] = fal
-    ta['OBSCON'] = obsl
-    ta['PROGRAM'] = pl
-    #ta['FA_HA'] = fahal
-    #ta['FA_VER'] = fver
-    print(np.unique(fver,return_counts=True))
-    #wfv = (np.array(fver) == faver)
-    #mtld =  mtld[wfv]
-    #ta = ta[wfv]
-else:
-    print('no done tiles in the MTL')
+
+# construct a table with the needed tile information
+# if len(mtld) > 0:
+#     tilel = []
+#     ral = []
+#     decl = []
+#     mtlt = []
+#     fal = []
+#     obsl = []
+#     pl = []
+#     fver = []
+#     fahal = []
+#     
+#     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+#     for tile in mtld['TILEID']:
+#         ts = str(tile).zfill(6)
+#         try:
+#             fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+#             tilel.append(tile)
+#             ral.append(fht['TILERA'])
+#             decl.append(fht['TILEDEC'])
+#             mtlt.append(fht['MTLTIME'])
+#             fal.append(fht['FA_RUN'])
+#             obsl.append(fht['OBSCON'])
+#             fav = fht['FA_VER']
+#             try:
+#                 if int(fav[:1]) >= 5:
+#                     fav = '5.0.0'
+#             except:
+#                 print(fav)        
+#             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
+#                 fver.append('2.3.0')
+#             else:
+#                 fver.append(fav)    
+#             try:
+#                faha = fht['FA_HA']
+#             except:
+#                faha = 0
+#                print(tile,'no FA_HA in this tile header')        
+#             pl.append(pro)
+#             pl.append(pr)
+#         except:
+#             print('failed to find and/or get info for tile '+ts)    
+#     ta = Table()
+#     ta['TILEID'] = tilel
+#     ta['RA'] = ral
+#     ta['DEC'] = decl
+#     ta['MTLTIME'] = mtlt
+#     ta['FA_RUN'] = fal
+#     ta['OBSCON'] = obsl
+#     ta['PROGRAM'] = pl
+#     ta['FA_HA'] = fahal
+#     ta['FA_VER'] = fver
+#     print(np.unique(fver,return_counts=True))
+#     wfv = (np.array(fver) == faver)
+#     mtld =  mtld[wfv]
+#     ta = ta[wfv]
+# else:
+#     print('no done tiles in the MTL')
 
 print(len(ta))
 
