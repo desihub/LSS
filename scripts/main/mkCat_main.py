@@ -32,11 +32,12 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--apply_vetos", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -197,6 +198,21 @@ if mkfulld:
     
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
 
+if args.apply_veto == 'y':
+    maxp = 3400
+    if type[:3] == 'LRG' or notqso == 'notqso':
+        maxp = 3200
+    if type[:3] == 'BGS'
+        maxp = 2100
+    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'zdone_full.dat.fits'
+    ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    for rn in range(minr,maxr):
+        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'zdone_'+str(rn)+'full.ran.fits'
+        ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        
+    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     dchi2 = 9
@@ -210,7 +226,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
