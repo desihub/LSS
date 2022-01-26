@@ -276,7 +276,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID'])
     wg = np.isin(specf['TILELOCID'],gtl)
-    specf = specf[wg]
+    specf = Table(specf[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
     lznp = common.find_znotposs(specf)
     del specf
