@@ -274,7 +274,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
         desitarg='DESI_TARGET'
     del specf
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID'])
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
     wg = np.isin(specf['TILELOCID'],gtl)
     specf = Table(specf[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
