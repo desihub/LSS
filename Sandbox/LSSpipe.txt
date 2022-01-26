@@ -39,7 +39,15 @@ srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.p
 #this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
 for tp,notqso in zip(tps,notqsos):
     srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
-
+#if data model is stable since the last updates, add to the arguments
+    --refullr n
 
 #apply veto mask column for LRGs
 python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18
+
+#this applies vetos to both data and randoms (could put randoms in separate script and parallize)
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso
+    
+#to do randoms in parallel:
+    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso notqso
