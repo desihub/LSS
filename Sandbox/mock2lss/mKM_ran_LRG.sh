@@ -1,4 +1,4 @@
-python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 0
+#python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 0
 python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 1
 python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 2
 python mkMock_SV3_randoms.py --type LRG --verspec mock --fullr y --clusran y --id 3

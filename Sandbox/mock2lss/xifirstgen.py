@@ -52,8 +52,8 @@ if not os.path.exists(dirxi):
     os.mkdir(dirxi)
     print('made '+dirxi) 
 
-datafile = 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_)
-random_data = 'mockRandom_5X_{idran}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(idran=args.idran)
+datafile = os.path.join(os.environ['CSCRATCH'], survey, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
+random_data = os.path.join(os.environ['CSCRATCH'], survey, 'mockRandom_5X_{idran}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(idran=args.idran))
 
 #lssdir = os.path.join(basedir,survey,'LSS',specrel,'LSScats')
 #dirname = os.path.join(lssdir,version)
@@ -70,7 +70,7 @@ if ttype[:3] == 'LRG':
 
 if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
-    zl = [0.8,1.1,1.5]
+    zl = [0.8,1.5]
     #zmask = ['','_zmask']
     
     #zmin = 0.8
@@ -78,7 +78,7 @@ if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
 
 
 if ttype == 'QSO':
-    zl = [0.8,1.1,1.5,2.1]
+    zl = [0.8,2.1]
     #zmin = 1.
     #zmax = 2.1
 

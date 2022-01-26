@@ -59,12 +59,14 @@ minn = 0
 subt = None
 
 if ttype[:3] == 'LRG':
-    zl = [0.4,0.6,0.8,1.1]
+####    zl = [0.4,0.6,0.8,1.1]
+    zl = [0.6,1.1]
 
 
 if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
-    zl = [0.8,1.1,1.5]
+###    zl = [0.8,1.1,1.5]
+    zl = [0.8,1.5]
     #zmask = ['','_zmask']
     
     #zmin = 0.8
@@ -72,7 +74,8 @@ if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
 
 
 if ttype == 'QSO':
-    zl = [0.8,1.1,1.5,2.1]
+    zl = [0.8,2.1]
+###    zl = [0.8,1.1,1.5,2.1]
     #zmin = 1.
     #zmax = 2.1
 
