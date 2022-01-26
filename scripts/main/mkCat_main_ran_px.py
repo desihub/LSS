@@ -31,6 +31,7 @@ import desimodel.footprint as foot
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
@@ -273,11 +274,11 @@ if type != 'dark' and type != 'bright' and mkfullr:
         desitarg='DESI_TARGET'
     del specf
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specf = Table(fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID']))
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID'])
     wg = np.isin(specf['TILELOCID'],gtl)
     specf = specf[wg]
     print('length after selecting type and good hardware '+str(len(specf)))
-    lznp = ct.find_znotposs(specf)
+    lznp = common.find_znotposs(specf)
     del specf
 
 
