@@ -45,6 +45,7 @@ parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
 parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
+parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='y')
 parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -392,11 +393,14 @@ def doran(ii):
         
     if mkfullr:
         npx = 0
-        #cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-        #otls = np.unique(fitsio.read(cf,columns=['TILEID'])['TILEID'])
-        #selt = ~np.isin(ta['TILEID',otls['TILEID'])
-        #hpxsn = foot.tiles2pix(8, tiles=ta[selt])
-        for px in hpxs:
+        if args.refullr == 'y':
+            uhpxs = hpxs
+        else:
+            cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+            otls = np.unique(fitsio.read(cf)['TILEID'])
+            selt = ~np.isin(ta['TILEID',otls['TILEID'])
+            uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+        for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))
             ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii))
