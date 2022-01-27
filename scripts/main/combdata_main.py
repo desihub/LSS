@@ -205,7 +205,7 @@ if specrel == 'daily':
                     else:
                         print('tile '+str(tid)+' is mismatched')
                         specf = specf[~sel]
-                        specf = vstack([fs,td])
+                        specf = vstack([specf,td])
                         print(ii,len(tiles4comb))
             specf.write(specfo,format='fits',overwrite=True)
         dt = specf.dtype.names
