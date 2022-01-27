@@ -167,8 +167,8 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     zmax is the upper edge of the last bin
     '''
     #cd = distance(om,1-om)
-    ranf = fitsio.read(fcr) #should have originally had 2500/deg2 density, so can convert to area
-    area = len(ranf)/2500.
+    ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+    area = ranf['NAXIS2']/2500.
     print('area is '+str(area))
     
     df = fitsio.read(fcd)
