@@ -198,16 +198,16 @@ if specrel == 'daily':
                     td = ct.combspecdata(tid,str(adate),str(zdate))
                     kp = (td['TARGETID'] > 0)
                     td = td[kp]
-                    sel = fs['TILEID'] == tid
-                    fst = fs[sel]
+                    sel = specf['TILEID'] == tid
+                    fst = specf[sel]
                     if np.array_equal(fst['ZWARN_MTL'],td['ZWARN_MTL']):
                         print('tile '+str(tid)+' passed')
                     else:
                         print('tile '+str(tid)+' is mismatched')
-                        fs = fs[~sel]
-                        fs = vstack([fs,td])
+                        specf = specf[~sel]
+                        specf = vstack([fs,td])
                         print(ii,len(tiles4comb))
-            
+            specf.write(specfo,format='fits',overwrite=True)
         dt = specf.dtype.names
         wo = 0
         if np.isin('FIBERSTATUS',dt):
