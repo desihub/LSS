@@ -92,7 +92,7 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     zfn = 'zbest'
     zhdu = 'ZBEST'
     shdu = 'SCORES'
-    if int(zdate) >  20210730:
+    if int(tdate) >  20210730:
         zfn = 'redrock'
         zhdu = 'REDSHIFTS'
         #shdu = 'TSNR2' 
