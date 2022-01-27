@@ -1459,6 +1459,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     #gtl = np.unique(stlid)
 
     dz = Table.read(zf) 
+    wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        print('removing QSO targets')
+        wtype &= ((dz[desitarg] & qsobit) == 0)
+
+    #wg = np.isin(dz['TILELOCID'],gtl)
+    print(len(dz[wtype]))
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]   
     
     #instead of full spec data, we are going to get type specific data and cut to unique entries
     #in the end, we can only use the data associated with an observation
@@ -1471,15 +1480,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     fsu = unique(fs,keys=['TARGETID'],keep='last')   
     gtl = np.unique(fsu['TILELOCID']) 
     
-    wtype = ((dz[desitarg] & bit) > 0)
-    if notqso == 'notqso':
-        print('removing QSO targets')
-        wtype &= ((dz[desitarg] & qsobit) == 0)
-
-    #wg = np.isin(dz['TILELOCID'],gtl)
-    print(len(dz[wtype]))
-    #dz = dz[wtype&wg]
-    dz = dz[wtype]   
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
