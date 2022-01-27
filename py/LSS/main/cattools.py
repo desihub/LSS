@@ -1674,6 +1674,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
             
     print(np.unique(dz['NTILE']))
     dz.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
 
 def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     '''
