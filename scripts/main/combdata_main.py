@@ -195,7 +195,7 @@ if specrel == 'daily':
             for tid,adate,zdate in zip(tiles4comb['TILEID'],tiles4comb['ZDATE'],tiles4comb['THRUDATE']):
                 ii += 1
                 if int(zdate) >  20210730:
-                    td = cattools.combspecdata(tid,str(adate),str(zdate))
+                    td = ct.combspecdata(tid,str(adate),str(zdate))
                     kp = (td['TARGETID'] > 0)
                     td = td[kp]
                     sel = fs['TILEID'] == tid
