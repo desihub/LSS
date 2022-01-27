@@ -33,6 +33,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
+parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 
 
 
@@ -189,6 +190,24 @@ if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo):
         specf = Table.read(specfo)
+        if args.fixspecf == 'y':
+            ii = 0
+            for tid,adate,zdate in zip(tiles4comb['TILEID'],tiles4comb['ZDATE'],tiles4comb['THRUDATE']):
+                ii += 1
+                if int(zdate) >  20210730:
+                    td = cattools.combspecdata(tid,str(adate),str(zdate))
+                    kp = (td['TARGETID'] > 0)
+                    td = td[kp]
+                    sel = fs['TILEID'] == tid
+                    fst = fs[sel]
+                    if np.array_equal(fst['ZWARN_MTL'],td['ZWARN_MTL']):
+                        print('tile '+str(tid)+' passed')
+                    else:
+                        print('tile '+str(tid)+' is mismatched')
+                        fs = fs[~sel]
+                        fs = vstack([fs,td])
+                        print(ii,len(tiles4comb))
+            
         dt = specf.dtype.names
         wo = 0
         if np.isin('FIBERSTATUS',dt):
