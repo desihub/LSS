@@ -164,7 +164,7 @@ if specrel != 'daily':
             gtl = np.unique(specdat['TILELOCID'])
             zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
-            wg = np.isin(specf['TILELOCID'],gtl)
+            wg = np.isin(dz['TILELOCID'],gtl)
             dz = dz[wg]
             if type == 'BGS_BRIGHT':
                 bit = targetmask.bgs_mask[type]
@@ -177,6 +177,8 @@ if specrel != 'daily':
                 wtype &= ((dz[desitarg] & 4) == 0)
             dz = dz[wtype]
             lznp = common.find_znotposs(dz)
+            del specdat
+            del dz
 
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
