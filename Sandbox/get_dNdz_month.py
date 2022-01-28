@@ -71,7 +71,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         #    plt.xlim(0,2)
         if tp == 'ELG_LOPnotqso': 
             plt.ylim(0,1.7)
-        plt.savefig(outdir+tp+yearmonth+'.png')
+        plt.savefig(outdir+tp+str(yearmonth)+'.png')
         del zlm
         del wlm
         plt.clf()
