@@ -160,7 +160,7 @@ if specrel != 'daily':
         del specf
         if mkfullr:
             specdat = ct.get_specdat(ldirspec,pdir,specrel)
-            zf = indir+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+            zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
 
 mtld = mt[wd]
