@@ -1280,7 +1280,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(dz,fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',verspec='daily'):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso=''):
 
 #     selz = dz['ZWARN'] != 999999
 #     fs = dz[selz]
@@ -1305,17 +1305,17 @@ def mkfullran(dz,fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',
     #dz = Table.read(zf) 
     
     #fs = get_specdat(indir,pd,verspec)
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid)
-
-    wtype = ((dz[desitarg] & bit) > 0)
-    if notqso == 'notqso':
-        wtype &= ((dz[desitarg] & qsobit) == 0)
-
-    wg = np.isin(dz['TILELOCID'],gtl)
-    dz = dz[wtype&wg]
-    print('length after selecting type and good hardware '+str(len(dz)))
-    lznp = find_znotposs(dz)
+#     stlid = 10000*fs['TILEID'] +fs['LOCATION']
+#     gtl = np.unique(stlid)
+# 
+#     wtype = ((dz[desitarg] & bit) > 0)
+#     if notqso == 'notqso':
+#         wtype &= ((dz[desitarg] & qsobit) == 0)
+# 
+#     wg = np.isin(dz['TILELOCID'],gtl)
+#     dz = dz[wtype&wg]
+#     print('length after selecting type and good hardware '+str(len(dz)))
+#     lznp = find_znotposs(dz)
 
     
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
