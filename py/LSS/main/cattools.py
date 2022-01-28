@@ -1314,7 +1314,7 @@ def mkfullran(dz,fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',
 
     wg = np.isin(dz['TILELOCID'],gtl)
     dz = dz[wtype&wg]
-    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    print('length after selecting type and good hardware '+str(len(dz)))
     lznp = find_znotposs(dz)
 
     
