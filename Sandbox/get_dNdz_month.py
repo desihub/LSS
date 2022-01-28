@@ -1,3 +1,10 @@
+import numpy as np
+import fitsio
+from astropy.table import Table, join, unique,vstack
+import os
+import sys
+from matplotlib import pyplot as plt
+
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 sel = mtld['SURVEY'] == 'main'
