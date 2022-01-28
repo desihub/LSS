@@ -117,7 +117,7 @@ if specrel != 'daily':
         wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
         del specf
         if mkfullr:
-            specdat = get_specdat(ldirspec,pdir,specrel)
+            specdat = ct.get_specdat(ldirspec,pdir,specrel)
             zf = indir+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
 
