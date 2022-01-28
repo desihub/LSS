@@ -1749,6 +1749,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wzm += ccut+'_' #you could change this to however you want the file names to turn out
     outf = fl+wzm+'clustering.dat.fits'
     ff = Table.read(fl+wzm+'full.dat.fits')
+    ff['Z_not4clus'].name = 'Z'
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = ff['Z']*0 == 0
