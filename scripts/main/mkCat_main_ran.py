@@ -100,36 +100,6 @@ else:
 
 pd = pdir
 
-mainp = main(type)
-
-mt = mainp.mtld
-tiles = mainp.tiles
-imbits = mainp.imbits #mask bits applied to targeting
-ebits = mainp.ebits #extra mask bits we think should be applied
-
-
-wd = mt['SURVEY'] == 'main'
-wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == pdir
-if specrel != 'daily':
-    if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
-        del specf
-        if mkfullr:
-            specdat = ct.get_specdat(ldirspec,pdir,specrel)
-            zf = indir+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-            dz = Table.read(zf) 
-
-mtld = mt[wd]
-#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
-
-selt = np.isin(tiles['TILEID'],mtld['TILEID'])
-ta = Table()
-ta['TILEID'] = tiles[selt]['TILEID']
-ta['RA'] = tiles[selt]['RA']
-ta['DEC'] =tiles[selt]['DEC']
 
 
 
@@ -172,6 +142,36 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
+mainp = main(type)
+
+mt = mainp.mtld
+tiles = mainp.tiles
+imbits = mainp.imbits #mask bits applied to targeting
+ebits = mainp.ebits #extra mask bits we think should be applied
+
+
+wd = mt['SURVEY'] == 'main'
+wd &= mt['ZDONE'] == 'true'
+wd &= mt['FAPRGRM'] == pdir
+if specrel != 'daily':
+    if specrel == 'everest':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+        del specf
+        if mkfullr:
+            specdat = ct.get_specdat(ldirspec,pdir,specrel)
+            zf = indir+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+            dz = Table.read(zf) 
+
+mtld = mt[wd]
+#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+
+selt = np.isin(tiles['TILEID'],mtld['TILEID'])
+ta = Table()
+ta['TILEID'] = tiles[selt]['TILEID']
+ta['RA'] = tiles[selt]['RA']
+ta['DEC'] =tiles[selt]['DEC']
 
 
 # construct a table with the needed tile information
