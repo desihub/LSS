@@ -180,9 +180,12 @@ if mkfulld:
             azf = mainp.qsozf
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
+    
     if specrel == 'daily':
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
+        if type[:3] == 'ELG':
+            azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
  
