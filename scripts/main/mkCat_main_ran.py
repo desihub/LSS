@@ -115,6 +115,12 @@ if specrel != 'daily':
     if specrel == 'everest':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
         wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+        del specf
+        if mkfullr:
+            specdat = get_specdat(ldirspec,pdir,specrel)
+            zf = indir+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+            dz = Table.read(zf) 
+
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
@@ -347,7 +353,7 @@ def doran(ii):
             bit = targetmask.desi_mask[type]    
             desitarg='DESI_TARGET'
         
-        ct.mkfullran(ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,verspec=specrel)
+        ct.mkfullran(dz,specdat,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
