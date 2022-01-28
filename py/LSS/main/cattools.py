@@ -1332,8 +1332,15 @@ def mkfullran(dz,fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',
     #    wk = dz['ZPOSS'] == 1
     print('length before cutting to good positions '+str(len(dz)))
     wk = ~np.isin(dz['TILELOCID'],lznp)
-    wk &= np.isin(dz['TILELOCID'],gtl)
-    dz = dz[wk]    
+    dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['ZPOSSLOC'][wk] = 1    
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
+
+
+    #dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' 
     tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now

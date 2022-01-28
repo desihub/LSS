@@ -22,6 +22,7 @@ from desimodel.footprint import is_point_in_desi
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
@@ -160,8 +161,22 @@ if specrel != 'daily':
         del specf
         if mkfullr:
             specdat = ct.get_specdat(ldirspec,pdir,specrel)
+            gtl = np.unique(specdat['TILELOCID'])
             zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
+            wg = np.isin(specf['TILELOCID'],gtl)
+            dz = dz[wg]
+            if type == 'BGS_BRIGHT':
+                bit = targetmask.bgs_mask[type]
+                desitarg='BGS_TARGET'
+            else:
+                bit = targetmask.desi_mask[type]    
+                desitarg='DESI_TARGET'
+            wtype = ((dz[desitarg] & bit) > 0)
+            if notqso == 'notqso':
+                wtype &= ((dz[desitarg] & 4) == 0)
+            dz = dz[wtype]
+            lznp = common.find_znotposs(dz)
 
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -336,24 +351,18 @@ def doran(ii):
         
     if mkfullr:
 
-        if specrel == 'everest':
-            #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-            #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            #specf = specf[wt]
-            fbcol = 'COADD_FIBERSTATUS'
-        if specrel == 'daily':
-            #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-            fbcol = 'FIBERSTATUS'
+#         if specrel == 'everest':
+#             #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+#             #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+#             #specf = specf[wt]
+#             fbcol = 'COADD_FIBERSTATUS'
+#         if specrel == 'daily':
+#             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+#             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-        if type == 'BGS_BRIGHT':
-            bit = targetmask.bgs_mask[type]
-            desitarg='BGS_TARGET'
-        else:
-            bit = targetmask.desi_mask[type]    
-            desitarg='DESI_TARGET'
         
-        ct.mkfullran(dz,specdat,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
