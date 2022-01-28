@@ -1,21 +1,40 @@
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
-
+mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+sel = mtld['SURVEY'] == 'main'
+yms = np.unique(mtld[sel]['LASTNIGHT']//100)
+print('months to go through are:')
+print(yms)
 
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    
+    if tp != 'ELGnotqso' and tp != 'ELGandQSO':
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    else:
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELGzdone_full.dat.fits')
+
     wg = dt['ZWARN'] != 999999
     wg &= dt['GOODHARDLOC'] == 1
-    
-    if tp != 'QSO':
-        zmin = 0
-        zmax = 2
-        if tp[:3] != 'ELG':
-            wz = dt['DELTACHI2'] > 10
-            wz &= dt['SPECTYPE'] == 'GALAXY'
-        else:
-            wg &= dt['o2c'] != 1e20
-            wz = dt['o2c'] > 0.9
-    else:
+    zmin = 0
+    zmax = 2
+
+    if tp == 'LRG':
+        drz = (10**(3 - 3.5*dt[zcol]))
+        mask_bad = (drz>30) & (dt['DELTACHI2']<30)
+        mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
+        mask_bad |= (dt['DELTACHI2']<10)
+        wz = dt[zcol]<1.4
+        wz &= (~mask_bad)    
+    if tp[:3] == 'ELG':
+        wg &= dt['o2c'] != 1e20
+        wz = dt['o2c'] > 0.9
+        if tp == 'ELGnotqso':
+            wg &= (dt['DESI_TARGET'] & 4) == 0
+        if tp == 'ELGandQSO':
+            wg &= (dt['DESI_TARGET'] & 4) > 0
+            wz |= dt['SPECTYPE'] == 'QSO'
+            zmin = 0
+            zmax = 4.5
+    if tp == 'QSO':
         wz = dt['SPECTYPE'] == 'QSO'
         zmin = 0
         zmax = 4.5
@@ -28,7 +47,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     fractot = len(dt[wg&wz])/len(dt[wg])
     for yearmonth in yearmonths:
         sel = mtld['LASTNIGHT']//100 == yearmonth
-        print(len(mtld[sel]))
+        #print(len(mtld[sel]))
         tids = np.unique(mtld[sel]['TILEID'])
         sd = np.isin(dt['TILEID'],tids)
         
@@ -50,3 +69,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         del wlm
         plt.clf()
     del dt
+
+tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
+for tp in tps:
+	dndz_monthall(yms,tp)
