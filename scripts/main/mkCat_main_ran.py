@@ -359,7 +359,7 @@ def doran(ii):
         if type[:3] == 'BGS':
             maxp = 2100
         fin = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-        fout = dirout+type+notqso+'zdone_'+str(ii)+'full.ran.fits'
+        fout = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
         ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         #print('random veto '+str(ii)+' done')
 
