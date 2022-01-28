@@ -1,0 +1,52 @@
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
+
+
+def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    wg = dt['ZWARN'] != 999999
+    wg &= dt['GOODHARDLOC'] == 1
+    
+    if tp != 'QSO':
+        zmin = 0
+        zmax = 2
+        if tp[:3] != 'ELG':
+            wz = dt['DELTACHI2'] > 10
+            wz &= dt['SPECTYPE'] == 'GALAXY'
+        else:
+            wg &= dt['o2c'] != 1e20
+            wz = dt['o2c'] > 0.9
+    else:
+        wz = dt['SPECTYPE'] == 'QSO'
+        zmin = 0
+        zmax = 4.5
+    if tp[:3] == 'BGS':
+        wz = dt['DELTACHI2'] > 40
+        zmin = 0
+        zmax = 1
+    zl = dt[wg&wz][zcol]
+    wl = 1./dt[wg&wz]['FRACZ_TILELOCID']
+    fractot = len(dt[wg&wz])/len(dt[wg])
+    for yearmonth in yearmonths:
+        sel = mtld['LASTNIGHT']//100 == yearmonth
+        print(len(mtld[sel]))
+        tids = np.unique(mtld[sel]['TILEID'])
+        sd = np.isin(dt['TILEID'],tids)
+        
+        zlm = dt[wg&wz&sd][zcol]
+        wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
+        fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
+        plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
+        plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(len(mtld[sel]))+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+        plt.title(tp)
+        plt.xlabel('Z')
+        plt.ylabel('dN/dz')
+        plt.legend()
+        #if tp == 'LRG' or tp[:3] == 'ELG':
+        #    plt.xlim(0,2)
+        if tp == 'ELG_LOPnotqso': 
+            plt.ylim(0,1.7)
+        plt.savefig(outdir+tp+yearmonth+'.png')
+        del zlm
+        del wlm
+        plt.clf()
+    del dt
