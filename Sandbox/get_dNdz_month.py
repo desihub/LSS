@@ -69,8 +69,18 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         plt.legend()
         #if tp == 'LRG' or tp[:3] == 'ELG':
         #    plt.xlim(0,2)
-        if tp == 'ELG_LOPnotqso': 
+        if tp == 'ELG_LOPnotqso' or tp == 'ELGnotqso': 
             plt.ylim(0,1.7)
+        if tp == 'ELGandQSO': 
+            plt.ylim(0,0.8)
+        if tp == 'BGS_ANY':
+            plt.ylim(0,3.8)
+        if tp == 'BGS_BRIGHT':
+            plt.ylim(0,4.1)
+        if tp == 'LRG':
+            plt.ylim(0,2.2)
+        if tp == 'QSO':
+            plt.ylim(0,0.7)
         plt.savefig(outdir+tp+str(yearmonth)+'.png')
         del zlm
         del wlm
