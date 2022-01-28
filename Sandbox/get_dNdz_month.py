@@ -57,12 +57,12 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         #print(len(mtld[sel]))
         tids = np.unique(mtld[sel]['TILEID'])
         sd = np.isin(dt['TILEID'],tids)
-        
+        ntls = len(np.unique(dt[sd]['TILEID']))
         zlm = dt[wg&wz&sd][zcol]
         wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
         fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
         plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
-        plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(len(mtld[sel]))+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+        plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
         plt.title(tp)
         plt.xlabel('Z')
         plt.ylabel('dN/dz')
