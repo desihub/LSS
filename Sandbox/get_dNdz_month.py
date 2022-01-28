@@ -8,7 +8,8 @@ from matplotlib import pyplot as plt
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 sel = mtld['SURVEY'] == 'main'
-yms = np.unique(mtld[sel]['LASTNIGHT']//100)
+mtld = mtld[sel]
+yms = np.unique(mtld['LASTNIGHT']//100)
 print('months to go through are:')
 print(yms)
 
