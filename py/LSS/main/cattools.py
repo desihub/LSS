@@ -997,6 +997,9 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
 
     if len(tiles[tmask]['TILEID']) > 0:
         fgu.write(outf,format='fits', overwrite=True)
+        rv = True
+    else:
+        rv = False
     #specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(keepcols)
@@ -1006,6 +1009,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
     outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print(outf)
     fgu.write(outf,format='fits', overwrite=True)
+    return rv
 
 def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',redos=False):
 
