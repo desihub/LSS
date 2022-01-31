@@ -1782,6 +1782,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
         drz = (10**(3 - 3.5*ff['Z']))
         mask_bad = (drz>30) & (ff['DELTACHI2']<30)
         mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
@@ -1795,6 +1799,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after tsnrcut '+str(len(ff[wz])))
 
     if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
         print('applying extra cut for BGS')
         wz &= ff['DELTACHI2'] > dchi2
         print('length after dchi2 cut '+str(len(ff[wz])))
