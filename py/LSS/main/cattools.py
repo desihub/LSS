@@ -1355,7 +1355,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='')
     del tarf
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
-    dz.sort(tsnr) #should allow to later cut on tsnr for match to data
+    pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
+    sp = pl <= 0
+    pl[sp] = .1
+
+    dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
+    dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
     print(np.unique(dz['NTILE']))
