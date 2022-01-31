@@ -246,7 +246,7 @@ if combd:
 
         outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles_{ID}.fits'.format(ID=id_))
 
-####temp        myct.combtiles_wdup(ta, ['./atest{ID}'.format(ID=id_), 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks_{ID}_FirstGen000{TILE}.fits'], id_, fout=outf)
+        myct.combtiles_wdup(ta, [os.path.join(basedir,'SV3','atest{ID}'.format(ID=id_)), 'tilenofa-{TILE}.fits'], ['./fiberassigment', 'mocks_{ID}_FirstGen000{TILE}.fits'], id_, fout=outf)
 
         print('yeah!')
 
