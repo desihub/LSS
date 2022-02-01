@@ -11,8 +11,10 @@ import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
+#from desihub
 from desitarget import targetmask
-
+#from regressis, must be installed
+from regressis import DR9Footprint
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
@@ -40,6 +42,8 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+
+parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -274,6 +278,43 @@ if args.imsys == 'y':
             dd['WEIGHT_SYS'][sel] = wsysl[sel]
             dd['WEIGHT'][sel] *= wsysl[sel]
             dd.write(fcd,overwrite=True,format='fits')
+
+if args.regressis = 'y':
+    from LSS.imaging import regressis_tools as rt
+    dirreg = dirout+'/regressis_data'
+    nside = 128
+    if type[:3] == 'ELG':
+        zl = (0.8,1.5)
+    if type[:3] == 'QSO':
+        zl = (0.8,2.1)#,(2.1,3.5)]    
+    if type[:3] == 'LRG':
+        zl = (0.4,1.1)
+    if type[:3] == 'BGS':
+        zl = (0.1,0.5)  
+
+
+    if not os.path.exists(dirreg):
+        os.mkdir(dirreg)
+        print(made+' '+dirreg)   
+    rt.save_desi_data(dirout, 'main', type, nside, dirreg, zl) 
+    dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
+
+    suffix_tracer = ''
+    suffix_regressor = ''
+
+    param = dict()
+    param['data_dir'] = dirreg
+    param['output_dir'] = dirreg
+    param['use_median'] = False
+    param['use_new_norm'] = False
+    param['regions'] = ['North', 'South', 'Des']
+    max_plot_cart = 1000
+
+    cut_fracarea = False
+    seed = 42
+
+    rt._compute_weight('main', type, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart)
+
 
 if mkclusran:
     print('doing clustering randoms')
