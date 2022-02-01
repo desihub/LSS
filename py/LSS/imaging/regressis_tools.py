@@ -6,6 +6,10 @@ import os
 import shutil
 import logging
 
+import numpy as np
+import pandas as pd
+import healpy as hp
+
 from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logging
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
