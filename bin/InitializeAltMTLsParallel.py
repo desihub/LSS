@@ -99,8 +99,11 @@ print('start')
 print(start)
 print('end')
 print(end)
-
+if ndir < start:
+    raise ValueError('ndir is too low for the number of nodes requested. Either request more realizations (ndir) or fewer nodes')
 for i in range(start, end):
+    if i >= ndir: 
+        break
     print('i')
     print(i)
     inds.append(i)
