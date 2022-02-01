@@ -279,7 +279,7 @@ if args.imsys == 'y':
             dd['WEIGHT'][sel] *= wsysl[sel]
             dd.write(fcd,overwrite=True,format='fits')
 
-if args.regressis = 'y':
+if args.regressis == 'y':
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
     nside = 128
