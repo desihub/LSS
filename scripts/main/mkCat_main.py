@@ -295,7 +295,7 @@ if args.regressis == 'y':
 
     if not os.path.exists(dirreg):
         os.mkdir(dirreg)
-        print(made+' '+dirreg)   
+        print('made '+dirreg)   
     rt.save_desi_data(dirout, 'main', type, nside, dirreg, zl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
