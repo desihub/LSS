@@ -1744,6 +1744,28 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 
     ff.write(fout,overwrite=True,format='fits')
 
+def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
+    ff['relSSR_tile'] = np.zeros(len(ff))
+    wo = ff['ZWARN']*0 == 0
+    wo &= ff['ZWARN'] != 999999
+    wo &= ff['LOCATION_ASSIGNED'] == 1
+    wo &= ff['TSNR2_ELG'] > tsnrcut
+    wno = ff['SPECTYPE'] == 'QSO'
+    wno &= ff['SPECTYPE'] == 'STAR'
+    wno &= ((ff['ZWARN'] == 0) & (ff['Z']<0.6))
+    fall = ff[wo&~wno]
+    wg = ff['o2c'] > o2c_thresh
+    ssr_all = len(ff[wo&~wno&wg])/len(fall)
+    print('overall success rate: '+str(ssr_all))
+
+    tids = np.unique(ff['TILEID'])
+    for tid in tids:
+        selt = ff['TILEID'] == tid
+        ssr_t = len(ff[wo&~wno&wg&selt])/len(ff[wo&~wno&selt])
+        ff['relSSR_tile'][selt] = ssr_t
+        print(tid,ssr_t)
+    return ff
+    
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
@@ -1776,6 +1798,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['TSNR2_QSO'] > tsnrcut
     
     if tp[:3] == 'ELG':
+        ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
         wz = ff['o2c'] > dchi2
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
@@ -1784,6 +1807,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after also making sure location assigned '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
@@ -1818,6 +1842,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
+    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if tp[:3] == 'ELG':
+        ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
@@ -1867,7 +1895,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         kl.append('flux_r_dered')
