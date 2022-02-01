@@ -28,7 +28,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
     dir_out : str
         Path where the ouputs will be saved.
     """
-    logger.info(f"Collect "+survey+" data for {tracer}:")
+    #logger.info(f"Collect "+survey+" data for {tracer}:")
 
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_clustering.dat.fits'))
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
@@ -56,10 +56,10 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
     filename_data = os.path.join(dir_out, f'{survey}_{tracer}_{nside}.npy')
-    logger.info(f'Save data: {filename_data}')
+    #logger.info(f'Save data: {filename_data}')
     np.save(filename_data, map_data)
     filename_fracarea = os.path.join(dir_out, f'{survey}_{tracer}_fracarea_{nside}.npy')
-    logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
+    #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
 
 
