@@ -1762,8 +1762,8 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
     for tid in tids:
         selt = ff['TILEID'] == tid
         ssr_t = len(ff[wo&~wno&wg&selt])/len(ff[wo&~wno&selt])
-        ff['relSSR_tile'][selt] = ssr_t
-        print(tid,ssr_t)
+        ff['relSSR_tile'][selt] = ssr_t/ssr_all
+        print(tid,ssr_t,ssr_t/ssr_all)
     return ff
     
 
