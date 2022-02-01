@@ -36,10 +36,10 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
 
     #load photometric regions:
     north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()
-    logger.info("Number of pixels observed in each region:")
-    logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
-    logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
-    logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
+    #logger.info("Number of pixels observed in each region:")
+    #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
+    #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
+    #logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
 
     randoms = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_{i}_clustering.ran.fits'), columns=['RA', 'DEC', 'Z']) for i in range(10)], ignore_index=True)
     # load in deg2 since we know the density of generated randoms in deg2
@@ -52,7 +52,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
     # remove pixels with too small fracarea
     sel = 1/fracarea > 5.0
     fracarea[sel] = np.NaN
-    logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
+    #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
     filename_data = os.path.join(dir_out, f'{survey}_{tracer}_{nside}.npy')
