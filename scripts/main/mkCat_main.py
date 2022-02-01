@@ -282,7 +282,7 @@ if args.imsys == 'y':
 if args.regressis == 'y':
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
-    nside = 128
+    nside = 256
     if type[:3] == 'ELG':
         zl = (0.8,1.5)
     if type[:3] == 'QSO':
@@ -296,6 +296,7 @@ if args.regressis == 'y':
     if not os.path.exists(dirreg):
         os.mkdir(dirreg)
         print('made '+dirreg)   
+    pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
     rt.save_desi_data(dirout, 'main', type, nside, dirreg, zl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
@@ -313,7 +314,7 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
 
-    rt._compute_weight('main', type, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart)
+    rt._compute_weight('main', type, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
 
 
 if mkclusran:
