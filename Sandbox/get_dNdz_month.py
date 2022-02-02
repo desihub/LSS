@@ -33,6 +33,7 @@ if testym == False:
     print('ERROR: the provided yearmonth is not a valid choice')
     print('The valid choices are:')
     print(yms)
+    sys.exit()
 
 def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
     
