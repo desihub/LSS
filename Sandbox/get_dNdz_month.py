@@ -118,4 +118,5 @@ def dndz_monthall(tp,zcol='Z_not4clus'):
 
 tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
 for tp in tps:
+    print('doing '+tp)
     dndz_monthall(tp)
