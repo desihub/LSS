@@ -1,19 +1,39 @@
+'''
+Script to produce plots comparing the dN/dz of good redshifts for a given month,
+comparing it to the dN/dz for the full set of data.
+Plots are produced for the following tracer types: 
+'LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT'
+Requires updated "full" LSS catalogs. Good ELG information requires the OII flux 
+information was up to date before those LSS catalogs were run.
+'''
+
 import numpy as np
 import fitsio
 from astropy.table import Table, join, unique,vstack
 import os
 import sys
+import argparse
 from matplotlib import pyplot as plt
+
+parser.add_argument("--yearmonth",help="the month you want to produce plots for, e.g. 202201 ",default=202201)
+args = parser.parse_args()
+
+yearmonth = int(args.yearmonth)
+
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 sel = mtld['SURVEY'] == 'main'
 mtld = mtld[sel]
 yms = np.unique(mtld['LASTNIGHT']//100)
-print('months to go through are:')
-print(yms)
+testym = np.isin(yearmonth,yms)
 
-def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
+if testym == False:
+    print('ERROR: the provided yearmonth is not a valid choice')
+    print('The valid choices are:')
+    print(yms)
+
+def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
     
     if tp != 'ELGnotqso' and tp != 'ELGandQSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
@@ -53,39 +73,39 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     zl = dt[wg&wz][zcol]
     wl = 1./dt[wg&wz]['FRACZ_TILELOCID']
     fractot = len(dt[wg&wz])/len(dt[wg])
-    for yearmonth in yearmonths:
-        sel = mtld['LASTNIGHT']//100 == yearmonth
-        #print(len(mtld[sel]))
-        tids = np.unique(mtld[sel]['TILEID'])
-        sd = np.isin(dt['TILEID'],tids)
-        ntls = len(np.unique(dt[sd]['TILEID']))
-        zlm = dt[wg&wz&sd][zcol]
-        wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
-        fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
-        plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
-        plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
-        plt.title(tp)
-        plt.xlabel('Z')
-        plt.ylabel('dN/dz')
-        plt.legend()
-        #if tp == 'LRG' or tp[:3] == 'ELG':
-        #    plt.xlim(0,2)
-        if tp == 'ELG_LOPnotqso' or tp == 'ELGnotqso': 
-            plt.ylim(0,1.7)
-        if tp == 'ELGandQSO': 
-            plt.ylim(0,0.8)
-        if tp == 'BGS_ANY':
-            plt.ylim(0,3.8)
-        if tp == 'BGS_BRIGHT':
-            plt.ylim(0,4.1)
-        if tp == 'LRG':
-            plt.ylim(0,2.2)
-        if tp == 'QSO':
-            plt.ylim(0,0.7)
-        plt.savefig(outdir+tp+str(yearmonth)+'.png')
-        del zlm
-        del wlm
-        plt.clf()
+    #for yearmonth in yearmonths:
+	sel = mtld['LASTNIGHT']//100 == yearmonth
+	#print(len(mtld[sel]))
+	tids = np.unique(mtld[sel]['TILEID'])
+	sd = np.isin(dt['TILEID'],tids)
+	ntls = len(np.unique(dt[sd]['TILEID']))
+	zlm = dt[wg&wz&sd][zcol]
+	wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
+	fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
+	plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
+	plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+	plt.title(tp)
+	plt.xlabel('Z')
+	plt.ylabel('dN/dz')
+	plt.legend()
+	#if tp == 'LRG' or tp[:3] == 'ELG':
+	#    plt.xlim(0,2)
+	if tp == 'ELG_LOPnotqso' or tp == 'ELGnotqso': 
+		plt.ylim(0,1.7)
+	if tp == 'ELGandQSO': 
+		plt.ylim(0,0.8)
+	if tp == 'BGS_ANY':
+		plt.ylim(0,3.8)
+	if tp == 'BGS_BRIGHT':
+		plt.ylim(0,4.1)
+	if tp == 'LRG':
+		plt.ylim(0,2.2)
+	if tp == 'QSO':
+		plt.ylim(0,0.7)
+	plt.savefig(outdir+tp+str(yearmonth)+'.png')
+	del zlm
+	del wlm
+	plt.clf()
     del dt
 
 tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
