@@ -35,7 +35,7 @@ if testym == False:
     print(yms)
     sys.exit()
 
-sel = mtld['LASTNIGHT']//100 == yearmonth
+sel = (mtld['LASTNIGHT']//100 == yearmonth)
 print('there are possibly '+str(len(mtld[sel]))+' tiles to collect redshifts from (includes both dark and bright time)')
 tids = np.unique(mtld[sel]['TILEID'])
 
@@ -108,7 +108,7 @@ def dndz_monthall(tp,zcol='Z_not4clus'):
         if tp == 'QSO':
             plt.ylim(0,0.7)
         plt.savefig(outdir+tp+str(yearmonth)+'.png')
-        print('there were '+str(len(ntls))+ ' for '+tp)
+        print('there were '+str(ntls)+ ' for '+tp)
     else:
         print('no tiles found in full LSS catalogs for '+str(yearmonth)+' '+tp)
     del zlm
