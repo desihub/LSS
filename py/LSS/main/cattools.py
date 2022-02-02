@@ -1843,9 +1843,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    if tp[:3] == 'ELG':
-        ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
-        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+    #if tp[:3] == 'ELG':
+    #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
+    #    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
