@@ -36,7 +36,7 @@ if testym == False:
     sys.exit()
 
 sel = mtld['LASTNIGHT']//100 == yearmonth
-print('there are possibly '+str(len(mtld[sel]))+' tiles to collect redshifts from includes both dark and bright time)')
+print('there are possibly '+str(len(mtld[sel]))+' tiles to collect redshifts from (includes both dark and bright time)')
 tids = np.unique(mtld[sel]['TILEID'])
 
 
