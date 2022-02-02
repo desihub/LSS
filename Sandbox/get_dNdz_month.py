@@ -15,6 +15,7 @@ import sys
 import argparse
 from matplotlib import pyplot as plt
 
+parser = argparse.ArgumentParser()
 parser.add_argument("--yearmonth",help="the month you want to produce plots for, e.g. 202201 ",default=202201)
 args = parser.parse_args()
 
