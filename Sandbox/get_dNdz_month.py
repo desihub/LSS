@@ -77,7 +77,7 @@ def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
     fractot = len(dt[wg&wz])/len(dt[wg])
     #for yearmonth in yearmonths:
     sel = mtld['LASTNIGHT']//100 == yearmonth
-    #print(len(mtld[sel]))
+    print(len(mtld[sel]))
     tids = np.unique(mtld[sel]['TILEID'])
     sd = np.isin(dt['TILEID'],tids)
     ntls = len(np.unique(dt[sd]['TILEID']))
