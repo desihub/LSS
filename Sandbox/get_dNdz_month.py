@@ -35,7 +35,12 @@ if testym == False:
     print(yms)
     sys.exit()
 
-def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
+sel = mtld['LASTNIGHT']//100 == yearmonth
+print('there are possibly '+str(len(mtld[sel]))+' tiles to collect redshifts from includes both dark and bright time)')
+tids = np.unique(mtld[sel]['TILEID'])
+
+
+def dndz_monthall(tp,zcol='Z_not4clus'):
     
     if tp != 'ELGnotqso' and tp != 'ELGandQSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
@@ -76,35 +81,35 @@ def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
     wl = 1./dt[wg&wz]['FRACZ_TILELOCID']
     fractot = len(dt[wg&wz])/len(dt[wg])
     #for yearmonth in yearmonths:
-    sel = mtld['LASTNIGHT']//100 == yearmonth
-    print(len(mtld[sel]))
-    tids = np.unique(mtld[sel]['TILEID'])
     sd = np.isin(dt['TILEID'],tids)
     ntls = len(np.unique(dt[sd]['TILEID']))
-    zlm = dt[wg&wz&sd][zcol]
-    wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
-    fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
-    plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
-    plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
-    plt.title(tp)
-    plt.xlabel('Z')
-    plt.ylabel('dN/dz')
-    plt.legend()
-    #if tp == 'LRG' or tp[:3] == 'ELG':
-    #    plt.xlim(0,2)
-    if tp == 'ELG_LOPnotqso' or tp == 'ELGnotqso': 
-        plt.ylim(0,1.7)
-    if tp == 'ELGandQSO': 
-        plt.ylim(0,0.8)
-    if tp == 'BGS_ANY':
-        plt.ylim(0,3.8)
-    if tp == 'BGS_BRIGHT':
-        plt.ylim(0,4.1)
-    if tp == 'LRG':
-        plt.ylim(0,2.2)
-    if tp == 'QSO':
-        plt.ylim(0,0.7)
-    plt.savefig(outdir+tp+str(yearmonth)+'.png')
+    if ntls > 0:
+		zlm = dt[wg&wz&sd][zcol]
+		wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
+		fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
+		plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
+		plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+		plt.title(tp)
+		plt.xlabel('Z')
+		plt.ylabel('dN/dz')
+		plt.legend()
+		#if tp == 'LRG' or tp[:3] == 'ELG':
+		#    plt.xlim(0,2)
+		if tp == 'ELG_LOPnotqso' or tp == 'ELGnotqso': 
+			plt.ylim(0,1.7)
+		if tp == 'ELGandQSO': 
+			plt.ylim(0,0.8)
+		if tp == 'BGS_ANY':
+			plt.ylim(0,3.8)
+		if tp == 'BGS_BRIGHT':
+			plt.ylim(0,4.1)
+		if tp == 'LRG':
+			plt.ylim(0,2.2)
+		if tp == 'QSO':
+			plt.ylim(0,0.7)
+		plt.savefig(outdir+tp+str(yearmonth)+'.png')
+    else:
+        print('no tiles found in full LSS catalogs for '+str(yearmonth)+' '+tp)
     del zlm
     del wlm
     plt.clf()
@@ -112,4 +117,4 @@ def dndz_monthall(yearmonth,tp,zcol='Z_not4clus'):
 
 tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
 for tp in tps:
-    dndz_monthall(yms,tp)
+    dndz_monthall(tp)
