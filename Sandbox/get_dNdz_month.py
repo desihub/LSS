@@ -108,7 +108,7 @@ def dndz_monthall(tp,zcol='Z_not4clus'):
         if tp == 'QSO':
             plt.ylim(0,0.7)
         plt.savefig(outdir+tp+str(yearmonth)+'.png')
-        print('there were '+str(ntls)+ ' for '+tp)
+        print('there were '+str(ntls)+ ' tiles for '+tp)
     else:
         print('no tiles found in full LSS catalogs for '+str(yearmonth)+' '+tp)
     del zlm
