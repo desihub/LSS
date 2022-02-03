@@ -1,10 +1,8 @@
 import sys,os
 import argparse
 
-#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
-
-import LSS.common_tools as common
-
+import numpy as np
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="current choices are SV3,DA02,or main",default='SV3')
