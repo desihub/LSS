@@ -50,6 +50,11 @@ for tp in types:
         if tp[:3] == 'ELG':
             plt.ylim(0,.0013)
             print(tp)
+        if tp[:3] == 'BGS':
+            plt.ylim(0,.01)
+            plt.xlim(0,1)
+            print(tp)
+
         plt.legend()
         plt.xlabel('z (redshift)')
         plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
