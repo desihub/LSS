@@ -7,7 +7,7 @@ import LSS.common_tools as common
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--survey", help="current choices are SV3,DA02,or main",default='')
+parser.add_argument("--survey", help="current choices are SV3,DA02,or main",default='SV3')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 
