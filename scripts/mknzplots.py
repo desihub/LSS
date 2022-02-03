@@ -51,8 +51,8 @@ for tp in types:
             plt.ylim(0,.0013)
             print(tp)
         if tp[:3] == 'BGS':
-            plt.ylim(0,.01)
-            plt.xlim(0,1)
+            plt.ylim(0,.05)
+            plt.xlim(0,.6)
             print(tp)
 
         plt.legend()
