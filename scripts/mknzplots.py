@@ -52,6 +52,7 @@ for tp in types:
     if p:
         if tp[:3] == 'ELG':
             plt.ylim = (0,.0013)
+            print(tp)
 
         plt.savefig(dirout+'nz'+args.survey+tp+'.png')
         plt.clf()
