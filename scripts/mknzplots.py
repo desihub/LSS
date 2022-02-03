@@ -15,7 +15,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 args = parser.parse_args()
 print(args)
 catdir='/global/cfs/cdirs/desi/survey/catalogs/'
-indir = catdir +args.survey+'/LSS/' +args.verspec+'/LSScats/'+args.version
+indir = catdir +args.survey+'/LSS/' +args.verspec+'/LSScats/'+args.version+'/'
 
 dirout = indir+'/plots/'
 
