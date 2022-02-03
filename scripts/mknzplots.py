@@ -37,8 +37,6 @@ for tp in types:
     cl = ['-r','-b']
     ll = ['BASS/MzLS','DECaLS']
     p = False
-    if tp[:3] == 'ELG':
-        plt.ylim = (0,.0013)
     for reg,c,l in zip(regl,cl,ll):
         fn = indir+tp+wzm+reg+'_nz.dat'
         if os.path.exists(fn):
@@ -52,6 +50,9 @@ for tp in types:
         else:
             print('did not find '+fn)
     if p:
+        if tp[:3] == 'ELG':
+            plt.ylim = (0,.0013)
+
         plt.savefig(dirout+'nz'+args.survey+tp+'.png')
         plt.clf()
         
