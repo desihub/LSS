@@ -43,8 +43,9 @@ for tp in types:
             plt.plot(zdat[0],zdat[3],c,label=l)
             plt.legend()
             plt.xlabel('z (redshift)')
-            plt.ylabel(r'$n(z)$ (h$Mpc$)^3$')
+            plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
             plt.title(args.survey+' '+tp)
             plt.savefig(dirout+'nz'+args.survey+tp+'.png')
+            plt.clf()
         else:
             print('did not find '+fn)
