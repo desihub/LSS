@@ -47,15 +47,15 @@ for tp in types:
         else:
             print('did not find '+fn)
     if p:
-        #if tp[:3] == 'ELG':
-        #    plt.ylim = (0,.0013)
-        #    print(tp)
-        #plt.legend()
-        #plt.xlabel('z (redshift)')
-        #plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
-        #plt.title(args.survey+' '+tp)
+        if tp[:3] == 'ELG':
+            plt.ylim(0,.0013)
+            print(tp)
+        plt.legend()
+        plt.xlabel('z (redshift)')
+        plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
+        plt.title(args.survey+' '+tp)
 
-        plt.ylim = (0,.0013)
+        
         plt.savefig(dirout+'nz'+args.survey+tp+'.png')
         plt.clf()
         
