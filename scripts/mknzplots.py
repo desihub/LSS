@@ -39,14 +39,14 @@ for tp in types:
     cl = ['-r','-b']
     ll = ['BASS/MzLS','DECaLS']
     for reg,c,l in zip(regl,cl,ll):
-		fn = indir+tp+wzm+reg+'_nz.dat'
-		if os.path.exists(fn):
-			zdat = np.loadtxt(fn).transpose()
-		    plt.plot(zdat[0],zdat[3],c,label=l)
-		    plt.legend()
-		    plt.xlabel('z (redshift)')
-		    plt.ylabel(r'$n(z)$ (h$Mpc$)^3$')
-		    plt.title(args.survey+' '+tp)
-		    plt.savefig(dirout+'nz'+args.survey+tp+'.png')
-		else:
-			print('did not find '+fn)
+        fn = indir+tp+wzm+reg+'_nz.dat'
+        if os.path.exists(fn):
+            zdat = np.loadtxt(fn).transpose()
+            plt.plot(zdat[0],zdat[3],c,label=l)
+            plt.legend()
+            plt.xlabel('z (redshift)')
+            plt.ylabel(r'$n(z)$ (h$Mpc$)^3$')
+            plt.title(args.survey+' '+tp)
+            plt.savefig(dirout+'nz'+args.survey+tp+'.png')
+        else:
+            print('did not find '+fn)
