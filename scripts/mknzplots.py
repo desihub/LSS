@@ -43,18 +43,19 @@ for tp in types:
             p = True
             zdat = np.loadtxt(fn).transpose()
             plt.plot(zdat[0],zdat[3],c,label=l)
-            plt.legend()
-            plt.xlabel('z (redshift)')
-            plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
-            plt.title(args.survey+' '+tp)
-            plt.ylim = (0,.0013)
+            
         else:
             print('did not find '+fn)
     if p:
         #if tp[:3] == 'ELG':
         #    plt.ylim = (0,.0013)
         #    print(tp)
+        plt.legend()
+        plt.xlabel('z (redshift)')
+        plt.ylabel(r'$n(z)~ (h$Mpc$)^3$')
+        plt.title(args.survey+' '+tp)
 
+        plt.ylim = (0,.0013)
         plt.savefig(dirout+'nz'+args.survey+tp+'.png')
         plt.clf()
         
