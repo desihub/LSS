@@ -22,9 +22,9 @@ if not os.path.exists(dirout):
     print('made '+dirout)    
 
 
-types = ['ELG','ELG_LOP','LRG','ELG_LOPnoqso','QSO','BGS_ANY','BGS_BRIGHT']
+types = ['ELG','ELG_LOP','LRG','ELG_LOPnotqso','QSO','BGS_ANY','BGS_BRIGHT']
 if args.survey == 'SV3':
-    types = ['ELG','ELG_HIP','LRG','LRG_main','ELG_HIPnoqso','QSO','BGS_ANY','BGS_BRIGHT']
+    types = ['ELG','ELG_HIP','LRG','LRG_main','ELG_HIPnotqso','QSO','BGS_ANY','BGS_BRIGHT']
 
 
 
