@@ -314,7 +314,7 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
 
-    rt._compute_weight('main', type, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
+    rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
 
 
 if mkclusran:
