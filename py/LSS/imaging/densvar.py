@@ -500,10 +500,10 @@ def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
     plt.show()
    
 
-def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None,titl=''):
+def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,datweights=None,weights=None,wsel=None,titl=''):
     pixlr = gethpmap(rl,reg)
     print('randoms done')
-    pixlg = gethpmap(ft,reg)
+    pixlg = gethpmap(ft,reg,datweights)
     print('data done')
     
     if weights is None:
