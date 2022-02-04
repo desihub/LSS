@@ -444,7 +444,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
 
 
 
-def gethpmap(dl,reg=False):
+def gethpmap(dl,reg=False,weights=None):
     if reg:
         if reg == 'S' or reg == 'N':
             wr = dl['PHOTSYS'] == reg
@@ -453,9 +453,13 @@ def gethpmap(dl,reg=False):
         dl = dl[wr]
     rth,rphi = radec2thphi(dl['RA'],dl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    wts = np.ones(len(rth))
+    if weights is not None:
+        wts = dl[weights]
     pixlr = np.zeros(12*nside*nside)
-    for pix in rpix:
-        pixlr[pix] += 1.
+    for pix,wt in zip(rpix,wts):
+        
+        pixlr[pix] += wt
     return pixlr
 
 def gethpmap_var(dl,reg=False):
