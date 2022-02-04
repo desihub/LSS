@@ -297,7 +297,7 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
-    rt.save_desi_data(dirout, 'main', type, nside, dirreg, zl) 
+    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
