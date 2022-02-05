@@ -44,6 +44,7 @@ parser.add_argument("--imsys",help="add weights for imaging systematics?",defaul
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
+parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
