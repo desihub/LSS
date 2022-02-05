@@ -153,10 +153,16 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
                 weights *= catalog['WEIGHT_ZFAIL'][mask]
             if 'default' in weight_type:
                 weights *= catalog['WEIGHT'][mask]
+            if 'RF' in weight_type:
+                weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
             if 'completeness' in weight_type:
                 weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
             elif 'bitwise' in weight_type:
                 weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
+        if name == 'randoms':
+            if 'default' in weight_type:
+                weights *= catalog['WEIGHT'][mask]
+                
         return positions, weights
     
     data_positions, data_weights = get_positions_weights(data, name='data')
