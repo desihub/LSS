@@ -44,6 +44,7 @@ parser.add_argument("--imsys",help="add weights for imaging systematics?",defaul
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
+parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -297,7 +298,7 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
-    rt.save_desi_data(dirout, 'main', type, nside, dirreg, zl) 
+    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -314,8 +315,26 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
 
-    rt._compute_weight('main', type, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
+    rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
 
+if args.add_regressis == 'y':
+    from LSS.imaging import densvar
+    fnreg = dirout+'/regressis_data/main_'+type+notqso+'_256/RF/main_'+type+notqso+'_imaging_weight_256.npy'
+    rfw = np.load(fnreg,allow_pickle=True)
+    rfpw = rfw.item()['map']
+    regl = ['_DN','_DS','','_N','_S']
+    for reg in regl:
+        fb = dirout+type+notqso+'zdone'+reg
+        fcd = fb+'_clustering.dat.fits'
+        dd = Table.read(fcd)
+        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        drfw = rfpw[dpix]
+        dd['WEIGHT_RF'] = drfw
+        dd.write(fcd,format='fits',overwrite=True)
+
+    
+    
 
 if mkclusran:
     print('doing clustering randoms')

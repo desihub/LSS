@@ -444,7 +444,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
 
 
 
-def gethpmap(dl,reg=False):
+def gethpmap(dl,reg=False,weights=None):
     if reg:
         if reg == 'S' or reg == 'N':
             wr = dl['PHOTSYS'] == reg
@@ -453,9 +453,13 @@ def gethpmap(dl,reg=False):
         dl = dl[wr]
     rth,rphi = radec2thphi(dl['RA'],dl['DEC'])
     rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    wts = np.ones(len(rth))
+    if weights is not None:
+        wts = dl[weights]
     pixlr = np.zeros(12*nside*nside)
-    for pix in rpix:
-        pixlr[pix] += 1.
+    for pix,wt in zip(rpix,wts):
+        
+        pixlr[pix] += wt
     return pixlr
 
 def gethpmap_var(dl,reg=False):
@@ -496,10 +500,10 @@ def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
     plt.show()
    
 
-def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,weights=None,wsel=None,titl=''):
+def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,datweights=None,weights=None,wsel=None,titl=''):
     pixlr = gethpmap(rl,reg)
     print('randoms done')
-    pixlg = gethpmap(ft,reg)
+    pixlg = gethpmap(ft,reg,datweights)
     print('data done')
     
     if weights is None:
