@@ -316,6 +316,24 @@ if args.regressis == 'y':
 
     rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
 
+if args.add_regressis == 'y':
+    from LSS.imaging import densvar
+    fnreg = dirout+'/regressis_data/main_'+type+notqso+'_256/RF/main_'+type+notqso+'_imaging_weight_256.npy'
+    rfw = np.load(fnreg,allow_pickle=True)
+    rfpw = rfw.item()['map']
+    regl = ['_DN','_DS','','_N','_S']
+    for reg in regl:
+        fb = dirout+type+notqso+'zdone'+reg
+        fcd = fb+'_clustering.dat.fits'
+        dd = Table.read(fcd)
+        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        drfw = rfpw[dpix]
+        dd['WEIGHT_RF'] = drfw
+        dd.write(fcd,format='fits',overwrite=True)
+
+    
+    
 
 if mkclusran:
     print('doing clustering randoms')
