@@ -191,6 +191,8 @@ if mkfulld:
         tlf = ldirspec+type+'_tilelocs.dat.fits'
         if type[:3] == 'ELG':
             azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
+        if type[:3] == 'QSO':
+            azf =ldirspec+'QSO_catalog.fits'
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
  
