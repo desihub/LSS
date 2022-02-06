@@ -283,7 +283,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         old_extname_redrock = True if zhdu == 'ZBEST' else False
         old_extname_for_qn = False if int(tdate) >= 20220118 else True
         #qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
-        qso_cati = Table((qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+        qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
     
         if i == 0:
             qso_cat = qso_cati
