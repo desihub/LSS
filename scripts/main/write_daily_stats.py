@@ -1,5 +1,6 @@
 import fitsio
 import datetime
+import os
 
 today = datetime.date.today()
 
