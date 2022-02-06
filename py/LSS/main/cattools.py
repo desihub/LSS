@@ -2,17 +2,25 @@
 python functions to do various useful date processing/manipulation
 '''
 import numpy as np
-import fitsio
 import glob
 import os
+from random import random
+
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack
+
+import fitsio
+
 from matplotlib import pyplot as plt
+
 import desimodel.footprint as foot
 import desimodel.focalplane
-from random import random
+
 from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
+
+from desispec.qso_cat_utils import qso_catalog_maker
+
 import healpy as hp
 
 #from LSS.Cosmo import distance
