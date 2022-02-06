@@ -29,7 +29,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
+parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
@@ -186,7 +188,11 @@ if args.counts_only != 'y' and combpix:
             npx += 1
         tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
-if specrel == 'daily':
+if specrel == 'daily' and args.doqso == 'y':
+    outf = ldirspec+'QSO_catalog.fits'
+    ct.combtile_qso(tiles4comb,outf)
+
+if specrel == 'daily' and args.dospec == 'y':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo):
         specf = Table.read(specfo)
