@@ -44,7 +44,7 @@ ldirspec = sv3dir+specrel+'/'
 dirout = ldirspec+'LSScats/'+version+'/'
 
 
-types = ['ELG','ELG_HIP','LRG','LRG_main','QSO','BGS_ANY','BGS_BRIGHT']
+types = ['ELG','ELG_HIP','ELG_HIPnotqso','LRG','LRG_main','QSO','BGS_ANY','BGS_BRIGHT']
 
 for type in types:
     wzm = ''
