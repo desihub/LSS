@@ -480,7 +480,7 @@ def gethpmap_var(dl,reg=False):
     return pixlp,pixlv
 
 
-def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
+def plot_hpmap(wp,od,reg=False,sz=.1,vx=1.5,vm=.5,titl=''):
     pixls = np.arange(12*nside*nside,dtype=int)
     th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
     ra,dec = thphi2radec(th,phi)
@@ -492,7 +492,7 @@ def plot_hpmap(wp,od,reg=False,sz=.2,vx=1.5,vm=.5,titl=''):
     if vm == None:
         vm = np.min(od)    
 
-    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
+    plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=sz,edgecolor='none',vmax=vx,vmin=vm)#,vmin=1.,vmax=2)
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
     plt.colorbar()
