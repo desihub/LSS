@@ -146,17 +146,14 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
         #else:
         weights = np.ones_like(positions[0])
         if name == 'data':
-            if 'photometric' in weight_type:
-                rfweight = RFWeight(tracer=tracer)
-                weights *= rfweight(positions[0], positions[1])
             if 'zfail' in weight_type:
                 weights *= catalog['WEIGHT_ZFAIL'][mask]
             if 'default' in weight_type:
                 weights *= catalog['WEIGHT'][mask]
             if 'RF' in weight_type:
                 weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
-            if 'completeness' in weight_type:
-                weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
+            if 'completeness_only' in weight_type:
+                weights = catalog['WEIGHT_COMP'][mask]
             elif 'bitwise' in weight_type:
                 weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
         if name == 'randoms':
