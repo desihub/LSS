@@ -26,6 +26,9 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 from LSS.common_tools import find_znotposs
+
+import logging
+logging.getLogger().setLevel(logging.ERROR)
  
 def combtile_qso(tiles,outf='',restart=False,release='everest'):
     s = 0
