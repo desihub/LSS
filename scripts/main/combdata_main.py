@@ -18,8 +18,8 @@ from desimodel.footprint import is_point_in_desi
 import desimodel.footprint as foot
 from desitarget import targetmask
 
-import logging
-logging.getLogger().setLevel(logging.ERROR)
+#import logging
+#logging.getLogger().setLevel(logging.ERROR)
 
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet

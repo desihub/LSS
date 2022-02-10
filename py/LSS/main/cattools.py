@@ -28,7 +28,7 @@ from LSS.imaging import densvar
 from LSS.common_tools import find_znotposs
 
 import logging
-logging.getLogger().setLevel(logging.ERROR)
+logging.getLogger("desispec.qso_cat_utils").setLevel(logging.ERROR)
  
 def combtile_qso(tiles,outf='',restart=False,release='everest'):
     s = 0
