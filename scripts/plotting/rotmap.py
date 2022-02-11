@@ -158,8 +158,9 @@ for lonv in lon_viewing_angles:
 	# save figure at 150 dpi and show it
 	#plt.savefig('orthographic_map_example_python.png',dpi=150,transparent=True)
 	plt.title(sys.argv[1]+' '+sys.argv[2])
-	plt.show()
-	plt.pause(0.01)
+	#plt.show()
+	#plt.pause(0.01)
 	# iterate to create the GIF animation
 	gif_maker(outdir+'basemap_rotating_DESI'+sys.argv[1]+sys.argv[2]+'.gif','./png_dir/',gif_indx,len(lon_viewing_angles)-1,dpi=90)
 	gif_indx+=1	
+	print(gif_indx)
