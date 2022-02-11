@@ -18,7 +18,7 @@ dat = join(tars,dat,keys=['TARGETID'],jointype='left')
 mrows = dat['COMP_TILE'].mask
 dat['OBS'] = np.zeros(len(dat))
 dat['OBS'][~mrows] = 1
-dat['COMP_TILE'].fill_value = 0
+dat['COMP_TILE'][mrows] = 0
 
 
 
