@@ -123,9 +123,10 @@ def combtile_spec(tiles,outf='',md=''):
             tspec = combspecdata(tile,zdate,tdate)
         if tspec:
             tspec['TILEID'] = tile
+            tspec = np.array(tspec)
             #this is stupid but should speed up concatenation
-            tspec.write('temp.fits',format='fits', overwrite=True)
-            tspec = fitsio.read('temp.fits')
+            #tspec.write('temp.fits',format='fits', overwrite=True)
+            #tspec = fitsio.read('temp.fits')
             #tspec = np.empty(len(tspecio),dtype=dt)
              
             if s == 0:
