@@ -14,7 +14,7 @@ outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 tp = sys.argv[1]
 tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
 dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',columns=['TARGETID',sys.argv[2]])
-dat = join(tars,dat,keys=['TARGETID'],jointype='left')
+dat = join(tars,dat,keys=['TARGETID'],join_type='left')
 mrows = dat['COMP_TILE'].mask
 dat['OBS'] = np.zeros(len(dat))
 dat['OBS'][~mrows] = 1
