@@ -7,6 +7,7 @@ import sys
 import fitsio
 from astropy.table import join,Table
 
+nframe = int(sys.argv[3])
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 #dat = fitsio.read('/Users/ashleyross/Dropbox/DESI/main/'+sys.argv[1]+'zdone_full_noveto.dat.fits',colums=['RA','DEC',sys.argv[2]])
@@ -58,7 +59,7 @@ plt.ion()
 
 # set perspective angle
 lat_viewing_angle = 30#50
-lon_viewing_angles = np.linspace(0,360,20)#[0,30,60,90,120,150,180,210,240,270]#-73
+lon_viewing_angles = np.linspace(0,360,nframe)#[0,30,60,90,120,150,180,210,240,270]#-73
 
 # latitude/longitude line vectors
 lat_line_range = [-90,90]
