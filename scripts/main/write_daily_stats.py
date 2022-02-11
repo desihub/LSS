@@ -2,9 +2,17 @@ import fitsio
 import datetime
 import os
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--add", help="whether or not to add to the tracking file",default='n')
+
+
 today = datetime.date.today()
 
-fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/stats.txt'
+fn = 'temp.txt'
+if args.add == 'y':
+    fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/stats.txt'
+   
 
 if os.path.isfile(fn):
     fo = open(fn,'a')
