@@ -5,7 +5,7 @@ import os
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--add", help="whether or not to add to the tracking file",default='n')
-
+args = parser.parse_args()
 
 today = datetime.date.today()
 
