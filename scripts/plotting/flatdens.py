@@ -5,6 +5,7 @@ import sys
 
 import fitsio
 from astropy.table import join,Table
+import healpy as hp
 
 from LSS.imaging import densvar
 
