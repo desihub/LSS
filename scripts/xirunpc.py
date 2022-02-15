@@ -132,7 +132,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     if mode == 'multi':
         corrmode = 'smu'
     if corrmode == 'smu':
-        edges = (bine, np.linspace(0., 1., 101)) #s is input edges and mu evenly spaced between 0 and 1
+        edges = (bine, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between 0 and 1
     if corrmode == 'rppi':
         edges = (bine, bine) #transverse and radial separations are  coded to be the same here
         if mode == 'wp':

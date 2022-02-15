@@ -24,7 +24,7 @@ class TabulatedDESI(object):
 
     Note
     ----
-    Redshift interpolation range is [0, 10].
+    Redshift interpolation range is [0, 100].
     """
     _filename = os.path.join(_dir_tabulated, 'desi_fiducial_cosmology.dat')
 
@@ -51,5 +51,5 @@ if __name__ == '__main__':
     cosmo = TabulatedDESI()
     distance = cosmo.comoving_radial_distance([0.1, 0.2])
     efunc = cosmo.efunc(0.3)
-    assert np.allclose(distance, [292.58423957, 570.419818], rtol=1e-9, atol=0)
-    assert np.allclose(efunc, 1.1736407651594605, rtol=1e-9, atol=0)
+    assert np.allclose(distance, [292.58423977, 570.41981713], rtol=1e-9, atol=0)
+    assert np.allclose(efunc, 1.1736407657972752, rtol=1e-9, atol=0)
