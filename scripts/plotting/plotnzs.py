@@ -114,6 +114,7 @@ for tp in tps:
     plt.ylabel(r'$n(z)~((h/$Mpc)$^3)$')
     plt.legend()
     plt.title(tp)
+    plt.grid(True)
     
     del dt
 
