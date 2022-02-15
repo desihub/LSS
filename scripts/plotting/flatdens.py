@@ -33,11 +33,13 @@ for tp in tps:
         wg &= dt[zcol] != 1.e20
         wg &= dt[zcol] > 0.8
         wg &= dt[zcol] < 2.1
+        titl = tp +' comp. wt over-density for 0.8<z<2.1'
     
     if tp[:3] == 'ELG':
         wg = dt['o2c'] > 0.9
         wg &= dt[zcol] > 0.8
         wg &= dt[zcol] < 1.6
+        titl = tp +' comp. wt over-density for 0.8<z<1.6'
 
     if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
@@ -50,12 +52,14 @@ for tp in tps:
         wg &= (~mask_bad)
         wg &= dt[zcol] > 0.4
         wg &= dt[zcol] < 1.1
+        titl = tp +' comp. wt over-density for 0.4<z<1.1'
 
 
     if tp[:3] == 'BGS':
         wg = dt['DELTACHI2'] > 40
         wg &= dt[zcol] > 0.1
         wg &= dt[zcol] < .5
+        titl = tp +' comp. wt over-density for 0.1<z<0.5'
 
     dt = dt[wg]
     dt.keep_columns(['RA','DEC',zcol,'FRACZ_TILELOCID'])
@@ -77,7 +81,7 @@ for tp in tps:
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
     plt.colorbar()
-    plt.title(tp +' completenss weighted over-density')
+    plt.title(titl)
 
 
     plt.savefig(outdir+tp+'_compweighteddens.png')
