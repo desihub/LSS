@@ -11,7 +11,7 @@ outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 qt = 'COMP_TILE'
 
 tps = ['ELG','ELG_LOP','LRG','QSO','BGS_ANY','BGS_BRIGHT']
-for tp in tps
+for tp in tps:
 	tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
 	dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',columns=['TARGETID',qt])
 	dat = join(tars,dat,keys=['TARGETID'],join_type='left')
