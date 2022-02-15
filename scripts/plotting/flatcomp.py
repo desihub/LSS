@@ -10,7 +10,7 @@ from astropy.table import join,Table
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 qt = 'COMP_TILE'
 
-tps = ['ELG','ELG_LOP','LRG','QSO','BGS_ANY','BGS_BRIGHT']
+tps = ['QSO','ELG','ELG_LOP','LRG','BGS_ANY','BGS_BRIGHT']
 for tp in tps:
     tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
     dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',columns=['TARGETID',qt])
@@ -48,9 +48,14 @@ for tp in tps:
     
     vm = np.min(dat[qt])
     vx = np.max(dat[qt])
-    
-    plt.scatter(datno['RA'],np.sin(datno['DEC']*np.pi/180.),c=datno[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1)
-    plt.scatter(dato['RA'],np.sin(dato['DEC']*np.pi/180.),c=dato[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1000)
+    ras = datno['RA']
+    sel = ras > 300
+    ras[sel] -= 360
+    plt.scatter(ras,np.sin(datno['DEC']*np.pi/180.),c=datno[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1)
+    ras = dato['RA']
+    sel = ras > 300
+    ras[sel] -= 360    
+    plt.scatter(ras,np.sin(dato['DEC']*np.pi/180.),c=dato[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1000)
     plt.ylim(-0.5,1)
 
     plt.colorbar()
@@ -62,3 +67,4 @@ for tp in tps:
     del dat
     del datno
     del dato
+    print(tp+' done')
