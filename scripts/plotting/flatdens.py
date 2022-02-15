@@ -70,7 +70,7 @@ for tp in tps:
     
     wr = ra > 300
     ra[wr] -=360
-    vs = 1.2
+    vx = 1.2
     vm = 0.8
 
     plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=.1,edgecolor='none',vmax=vx,vmin=vm)
