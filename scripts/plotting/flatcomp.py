@@ -51,7 +51,7 @@ for tp in tps:
 	
 	plt.scatter(datno['RA'],np.sin(datno['DEC']*np.pi/180.),c=datno[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1)
 	plt.scatter(dato['RA'],np.sin(dato['DEC']*np.pi/180.),c=dato[qt],edgecolor='none',s=.1,vmax=vx,vmin=vm,zorder=1000)
-
+    plt.ylim(-0.5,1)
 
 	plt.colorbar()
 	plt.title(tp+' '+qt)
