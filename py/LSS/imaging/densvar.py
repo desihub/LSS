@@ -518,6 +518,25 @@ def plot_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,datweights=None,weig
     od = od/np.mean(od)
     plot_hpmap(wp,od,reg,sz,vx,vm,titl)
 
+def get_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,datweights=None,weights=None,wsel=None,titl=''):
+    pixlr = gethpmap(rl,reg)
+    print('randoms done')
+    pixlg = gethpmap(ft,reg,datweights)
+    print('data done')
+    
+    if weights is None:
+        weights = np.ones(len(pixlr))
+    if wsel is not None:
+        wp = wsel
+        wp &= (pixlr > 0)
+    else:
+        wp = (pixlr > 0) 
+    wp &= (weights*0 == 0)
+    od = pixlg[wp]/pixlr[wp]*weights[wp]
+    od = od/np.mean(od)
+    return wp,od
+
+
 def plot_hpprop(rl,par,reg=False,fnc=None,sz=.2,vx=None,vm=None,weights=None):
     pixlr = gethpmap(rl,reg)
     print('randoms done')
