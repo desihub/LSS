@@ -6,12 +6,15 @@ import sys
 import fitsio
 from astropy.table import join,Table
 
+from LSS.imaging import densvar
+
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 qt = 'COMP_TILE'
 
 nside = 256
 nest = True
+zcol = 'Z_not4clus'
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
