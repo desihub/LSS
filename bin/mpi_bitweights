@@ -4,8 +4,8 @@ Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
      
-srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
-     --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_tarwdup_Alltiles.fits 
+srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
+     --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/dark_targets.fits
      --tiles /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits 
      --format fits --outdir output --realizations 64
 
