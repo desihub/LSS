@@ -389,6 +389,20 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
+        if specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/fuji/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
+            ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
             
         if specrel == 'daily':
             outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
@@ -434,6 +448,10 @@ if combr:
 if mkfulld:
     if specrel == 'everest':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+        specf = specf[wt]
+    if specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/fuji/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
