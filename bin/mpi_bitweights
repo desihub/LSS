@@ -205,5 +205,5 @@ if __name__ == "__main__":
     args = parse()
     print('started')
     print(args)
-    os.system('module swap fiberassign/'+args.faver)
+    #os.system('module swap fiberassign/'+args.faver)
     main(args)
