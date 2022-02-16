@@ -3,9 +3,13 @@
 Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
+     
+srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
+     --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_dark_tarwdup_Alltiles.fits 
+     --tiles /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits 
+     --format fits --outdir output --realizations 64
 
-srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
-     --mtl LRG_oneperztrue_clus.dat.fits --format hdf5 --outdir output --realizations 128
+     
 
 Notes:
 - Runs on master version of all DESI repos except for fiberassign (use 2.3.0 for now)
