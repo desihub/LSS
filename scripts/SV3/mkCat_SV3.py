@@ -435,10 +435,36 @@ if combd:
 if combr:
     #print(len(mtld['TILEID']))
     if type == 'dark' or type == 'bright':
+        if specrel == 'everest':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+        if specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/fuji/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+        if specrel == 'daily':
+            specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            kc = ['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+
+            
+
         for i in range(rm,rx):
             #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
-            ct.combran_wdup(mtld,i,randir,type,sv3dir)
-            tc = ct.count_tiles_better('ran',pdir,i)
+            ct.combran_wdup(mtld,i,randir,type,ldirspec,specf,keepcols=kc)
+            tc = ct.count_tiles_better(specf,'ran',pdir,i,specrel=specrel)
             tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combr, only done for dark/bright now')
