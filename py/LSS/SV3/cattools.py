@@ -1152,7 +1152,8 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     if specver == 'daily':
         fbcol = 'FIBERSTATUS'
-    if specver == 'everest':
+    #if specver == 'everest' or specver == 'fuji':
+    else:
         fbcol = 'COADD_FIBERSTATUS'
     wf = fs[fbcol] == 0
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
