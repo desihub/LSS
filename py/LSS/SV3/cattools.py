@@ -1251,6 +1251,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
+    dz['sort'][~wz] = 0
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp == 'ELG' or tp == 'ELG_HIP':

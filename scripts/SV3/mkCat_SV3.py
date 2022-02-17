@@ -502,9 +502,23 @@ if mkfulld:
     #print('ran get_tilelocweight\n')
 
 if mkfullr:
+    if specrel == 'everest' or specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        fbcol = 'COADD_FIBERSTATUS'
+    if specrel == 'daily':
+        specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+        fbcol = 'FIBERSTATUS'
+
     for ii in range(rm,rx):
         outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
+        if type == 'BGS_BRIGHT':
+            bit = sv3_targetmask.bgs_mask[type]
+            desitarg='SV3_BGS_TARGET'
+        else:
+            bit = sv3_targetmask.desi_mask[type]    
+            desitarg='SV3_DESI_TARGET'
+
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
