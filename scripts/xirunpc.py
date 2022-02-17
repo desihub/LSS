@@ -22,6 +22,7 @@ parser.add_argument("--weight_type",help="types of weights to use; use angular_b
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
+parser.add_argument("--onlyfull",help="only do min max z",default='n')
 
 #only relevant for reconstruction
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
@@ -102,7 +103,9 @@ if ttype[:3] == 'BGS' and ttype[-1] == 'h':
     #zmin = 0.1
     #zmax = 0.5 
 
-
+if args.onlyfull == 'y':
+    zl = [zl[0],zl[-1]]
+    print(zl)
 wa = ''
 if survey in ['main', 'DA02']:
     wa = 'zdone'
