@@ -325,12 +325,12 @@ def doran(ii):
                 specf = Table.read(specfo)
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
-            if specrel == 'everest':    
+            if specrel == 'everest' or specrel == 'fuji':    
 
                 #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
                 #wt = np.isin(mtld['TILEID'],specf['TILEID'])
                 #above two lines already done above
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+type+'-cumulative.fits')
                 wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
                 specf = specf[wt]
                 print('number of TILEID in spec data being used:')
