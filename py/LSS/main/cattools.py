@@ -1922,6 +1922,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         for tl in ff['TILES']:
             fcompa.append(comp_dicta[tl]) 
         ff['COMP_TILE'] = np.array(fcompa)
+        wz = ff['ZWARN'] != 999999
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 1.e20
+        print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match')
+        print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
 
     ff.write(fout,overwrite=True,format='fits')
 
