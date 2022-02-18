@@ -19,7 +19,7 @@ import desimodel.focalplane
 from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
-from desispec.qso_cat_utils import qso_catalog_maker
+
 
 import healpy as hp
 
@@ -236,6 +236,7 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     return tspec
 
 def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
+    from desispec.qso_cat_utils import qso_catalog_maker
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
