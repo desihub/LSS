@@ -248,6 +248,28 @@ if args.fillran == 'y':
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
+if mkclusran:
+    print('doing clustering randoms')
+    tsnrcol = 'TSNR2_ELG'
+    tsnrcut = 0
+   
+    if type[:3] == 'ELG':
+        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+        tsnrcut = 80
+    if type == 'LRG':
+        #dchi2 = 16  
+        tsnrcut = 80  
+    if type[:3] == 'BGS':
+        tsnrcol = 'TSNR2_BGS'
+        dchi2 = 40
+        tsnrcut = 1000
+    rcols=['Z','WEIGHT']
+    if type[:3] == 'BGS':
+        rcols.append('flux_r_dered')
+
+    for ii in range(rm,rx):
+        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+
 
 if args.imsys == 'y':
     from LSS.imaging import densvar
@@ -271,7 +293,7 @@ if args.imsys == 'y':
             zmin = zr[0]
             zmax = zr[1]
             fb = dirout+type+notqso+'zdone'+wzm+reg
-            fcr = fb+'_0_full.ran.fits'
+            fcr = fb+'_0_clustering.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
             dd = Table.read(fcd)
@@ -339,7 +361,7 @@ if args.add_regressis == 'y':
     
 
 if mkclusran:
-    print('doing clustering randoms')
+    print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
     tsnrcol = 'TSNR2_ELG'
     tsnrcut = 0
    
