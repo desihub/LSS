@@ -2124,10 +2124,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcd.dtype.names))
+    rcols = rcols[wc]
     print('columns sampled from data are:')
-    print(rcols[wc])
+    print(rcols)
 
-    for col in rcols[wc]: 
+    for col in rcols: 
         ffc[col] = dshuf[col] 
         kc.append(col)
     wn = ffc['PHOTSYS'] == 'N'
