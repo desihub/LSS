@@ -2126,10 +2126,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         ffc[col] = dshuf[col] 
     wn = ffc['PHOTSYS'] == 'N'
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_RF','WEIGHT_FKP']
+    kc = np.array(kc)
     wc = np.isin(kc,list(ffc.dtype.names))
     print('columns sampled from data are:')
     print(kc[wc])
-    ffc.keep_columns(kc[wc])  
+    ffc.keep_columns(list(kc[wc]))  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
