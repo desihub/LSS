@@ -1883,41 +1883,41 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 
     if '.dat' in fin:
         ff['Z'].name = 'Z_not4clus'
-		print('updating completenes')
-		ff.sort('TILES')
-		nts = len(np.unique(ff['TILES']))
-		tlsl = ff['TILES']
-		tlslu = np.unique(tlsl)
-		laa = ff['LOCATION_ASSIGNED']
-	
-		#for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
-		i = 0
-		while i < len(ff):
-			tls  = []
-			tlis = []
-			nli = 0
-			nai = 0
-	
-			while tlsl[i] == tlslu[ti]:
-				nli += 1
-				nai += laa[i]
-				i += 1
-				if i == len(ff):
-					break
-	
-			if ti%1000 == 0:
-				print('at tiles '+str(ti)+' of '+str(nts))
+        print('updating completenes')
+        ff.sort('TILES')
+        nts = len(np.unique(ff['TILES']))
+        tlsl = ff['TILES']
+        tlslu = np.unique(tlsl)
+        laa = ff['LOCATION_ASSIGNED']
+    
+        #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+        i = 0
+        while i < len(ff):
+            tls  = []
+            tlis = []
+            nli = 0
+            nai = 0
+    
+            while tlsl[i] == tlslu[ti]:
+                nli += 1
+                nai += laa[i]
+                i += 1
+                if i == len(ff):
+                    break
+    
+            if ti%1000 == 0:
+                print('at tiles '+str(ti)+' of '+str(nts))
 
-			cp = nai/nli#no/nt
-			#print(tls,cp,no,nt)
-			compa.append(cp)
-			tll.append(tlslu[ti])
-			ti += 1
-		comp_dicta = dict(zip(tll, compa))
-		fcompa = []
-		for tl in ff['TILES']:
-			fcompa.append(comp_dicta[tl]) 
-		ff['COMP_TILE'] = np.array(fcompa)
+            cp = nai/nli#no/nt
+            #print(tls,cp,no,nt)
+            compa.append(cp)
+            tll.append(tlslu[ti])
+            ti += 1
+        comp_dicta = dict(zip(tll, compa))
+        fcompa = []
+        for tl in ff['TILES']:
+            fcompa.append(comp_dicta[tl]) 
+        ff['COMP_TILE'] = np.array(fcompa)
 
     ff.write(fout,overwrite=True,format='fits')
 
