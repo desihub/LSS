@@ -271,7 +271,7 @@ if args.imsys == 'y':
             zmin = zr[0]
             zmax = zr[1]
             fb = dirout+type+notqso+'zdone'+wzm+reg
-            fcr = fb+'_0_clustering.ran.fits'
+            fcr = fb+'_0_full.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
             dd = Table.read(fcd)
