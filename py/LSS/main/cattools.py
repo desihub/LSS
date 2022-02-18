@@ -1487,6 +1487,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='')
 
     #dz = dz[wk]    
     #print('length after cutting to good positions '+str(len(dz)))
+    print('joining with original randoms to get mask properties')
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' 
     tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
     #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
