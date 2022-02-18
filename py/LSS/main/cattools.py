@@ -2121,16 +2121,18 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     print(len(ffc),len(ffr))
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
-
-    for col in rcols: 
-        ffc[col] = dshuf[col] 
-    wn = ffc['PHOTSYS'] == 'N'
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_RF','WEIGHT_FKP']
-    kc = np.array(kc)
-    wc = np.isin(kc,list(ffc.dtype.names))
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(ffc.dtype.names))
     print('columns sampled from data are:')
-    print(kc[wc])
-    ffc.keep_columns(list(kc[wc]))  
+    print(rcols[wc])
+
+    for col in rcols[wc]: 
+        ffc[col] = dshuf[col] 
+        kc.append(col)
+    wn = ffc['PHOTSYS'] == 'N'
+    
+    ffc.keep_columns(kc)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
