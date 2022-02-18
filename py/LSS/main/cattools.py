@@ -2123,7 +2123,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcd[inds]
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
     rcols = np.array(rcols)
-    wc = np.isin(rcols,list(ffc.dtype.names))
+    wc = np.isin(rcols,list(fcd.dtype.names))
     print('columns sampled from data are:')
     print(rcols[wc])
 
