@@ -1885,6 +1885,9 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     if '.dat' in fin:
         ff['Z'].name = 'Z_not4clus'
         print('updating completenes')
+        compa = []
+        tll = []
+        ti = 0
         ff.sort('TILES')
         nts = len(np.unique(ff['TILES']))
         tlsl = ff['TILES']
