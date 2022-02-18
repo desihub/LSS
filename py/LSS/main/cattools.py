@@ -1475,7 +1475,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='')
     #    wk = dz['ZPOSSNOTBAD'] == 1
     #else:
     #    wk = dz['ZPOSS'] == 1
-    print('length including duplicates'+str(len(dz)))
+    print('length including duplicates '+str(len(dz)))
     wk = ~np.isin(dz['TILELOCID'],lznp)
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     dz['ZPOSSLOC'][wk] = 1    
