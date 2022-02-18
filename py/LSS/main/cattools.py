@@ -1642,8 +1642,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
-    #print('length after selecting type and good hardware '+str(len(dz)))
-    print('length after selecting to locations where target type was observed '+str(len(dz)))
+    print('length after selecting type '+str(len(dz)))
+    #print('length after selecting to locations where target type was observed '+str(len(dz)))
     #These steps are not needed if we cut already to only locations where the target type was observed
     #lznp = find_znotposs(dz)
     #wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
@@ -1776,7 +1776,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     #print(np.histogram(nloclz))
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
-    print('number of unique targets left around unassigned locations is (should be 0)'+str(np.sum(natloc)))
+    print('number of unique targets around unassigned locations is '+str(np.sum(natloc)))
     
     #should not be necessary any more
 #     locs = np.copy(dz['TILELOCID'])
