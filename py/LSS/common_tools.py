@@ -187,7 +187,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to 
@@ -209,6 +209,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
     del fd
     ft = Table.read(fn)
     ft['NZ'] = nl
+    ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(0,nran):
@@ -224,6 +225,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
         del fd
         ft = Table.read(fn)
         ft['NZ'] = nl
+        ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
         ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
     return True        

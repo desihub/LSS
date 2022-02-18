@@ -1883,6 +1883,41 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 
     if '.dat' in fin:
         ff['Z'].name = 'Z_not4clus'
+		print('updating completenes')
+		ff.sort('TILES')
+		nts = len(np.unique(ff['TILES']))
+		tlsl = ff['TILES']
+		tlslu = np.unique(tlsl)
+		laa = ff['LOCATION_ASSIGNED']
+	
+		#for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+		i = 0
+		while i < len(ff):
+			tls  = []
+			tlis = []
+			nli = 0
+			nai = 0
+	
+			while tlsl[i] == tlslu[ti]:
+				nli += 1
+				nai += laa[i]
+				i += 1
+				if i == len(ff):
+					break
+	
+			if ti%1000 == 0:
+				print('at tiles '+str(ti)+' of '+str(nts))
+
+			cp = nai/nli#no/nt
+			#print(tls,cp,no,nt)
+			compa.append(cp)
+			tll.append(tlslu[ti])
+			ti += 1
+		comp_dicta = dict(zip(tll, compa))
+		fcompa = []
+		for tl in ff['TILES']:
+			fcompa.append(comp_dicta[tl]) 
+		ff['COMP_TILE'] = np.array(fcompa)
 
     ff.write(fout,overwrite=True,format='fits')
 
@@ -2081,7 +2116,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     for col in rcols: 
         ffc[col] = dshuf[col] 
     wn = ffc['PHOTSYS'] == 'N'
-    ffc.keep_columns(['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES'])  
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_RF','WEIGHT_FKP']
+    wc = np.isin(kc,list(ffc.dtype.names))
+    print('columns sampled from data are:')
+    print(kc[wc])
+    ffc.keep_columns(kc[wc])  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
