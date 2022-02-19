@@ -159,8 +159,8 @@ class Syst:
 
         #-- same but using dictionary
         model = 1.+pars['constant']
-        print(pars['constant'])
-        print(pars)
+        #print(pars['constant'])
+        #print(pars)
         #model = np.ones(len(self.data_we))+pars['constant']
         for p in pars:
             if p == 'constant': continue
@@ -168,7 +168,7 @@ class Syst:
             edges = self.edges[p]
             edgemin, edgemax = edges[0], edges[-1]
             mp = pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
-            print(p,len(mp))
+            #print(p,len(mp))
             model += mp
         return model
 
@@ -264,6 +264,7 @@ class Syst:
             init_errs['error_'+par] = abs(value)/10. if value!=0 else 0.1
 #             par_names.append(par)
         par_names = [par for par in init_pars]
+        print(par_names)
         pars_values = [ init_pars[par] for par in init_pars]
         mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
