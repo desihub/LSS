@@ -268,11 +268,12 @@ class Syst:
         par_names = [par for par in init_pars]
         #print(par_names)
         pars_values = [ init_pars[par] for par in init_pars]
-        print(tuple(par_names))
+        #print(tuple(par_names))
         mig = Minuit(self.get_chi2, tuple(pars_values))#, name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
 # 
         self.fixes = fixes
+        print(init_errs)
         for par in init_pars:
             mig.errors[par] = init_errs['error_'+par]
             if fixes:
