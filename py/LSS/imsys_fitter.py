@@ -319,9 +319,9 @@ class Syst:
         #self.npars = mig.narg
         self.npars = len(par_names)
         self.covariance = mig.covariance
-        for par in par_names:
-            if mig.fitarg['fix_'+par]:
-                self.npars -= 1
+        #for par in par_names:
+        #    if mig.fitarg['fix_'+par]:
+        #        self.npars -= 1
         self.rchi2min = self.chi2min/(self.ndata-self.npars)
         self.chi2_before = self.get_chi2()
         self.rchi2_before =  self.get_chi2()/self.ndata
