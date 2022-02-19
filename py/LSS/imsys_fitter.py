@@ -160,6 +160,7 @@ class Syst:
         #-- same but using dictionary
         model = 1.+pars['constant']
         print(pars['constant'])
+        print(pars)
         #model = np.ones(len(self.data_we))+pars['constant']
         for p in pars:
             if p == 'constant': continue
