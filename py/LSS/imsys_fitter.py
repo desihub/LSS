@@ -246,14 +246,15 @@ class Syst:
 
 #         par_names = []
         init_pars = {}
+        init_errs ={}
 #         par_names.append('constant')
         init_pars['constant'] = 0.
-        init_pars['error_constant'] = 0.1
+        init_errs['error_constant'] = 0.1
          
         for par in self.fit_maps:
             value = 0
             init_pars[par] = value
-            init_pars['error_'+par] = abs(value)/10. if value!=0 else 0.1
+            init_errs['error_'+par] = abs(value)/10. if value!=0 else 0.1
 #             par_names.append(par)
         par_names = [par for par in init_pars]
         pars_values = [ init_pars[par] for par in init_pars]
@@ -262,7 +263,7 @@ class Syst:
 # 
         self.fixes = fixes
         for par in init_pars:
-            mig.errors[par] = init_pars['error_'+par]
+            mig.errors[par] = init_errs['error_'+par]
             if fixes:
                 mig.fixed[par] = fixes[par] if par in fixes else False
             if limits:
