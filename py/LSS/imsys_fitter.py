@@ -316,7 +316,8 @@ class Syst:
         self.errors = mig.errors
         self.chi2min = mig.fval
         self.ndata = self.nbins*self.nsyst
-        self.npars = mig.narg
+        #self.npars = mig.narg
+        self.npars = len(par_names)
         self.covariance = mig.covariance
         for par in par_names:
             if mig.fitarg['fix_'+par]:
