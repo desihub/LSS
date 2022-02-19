@@ -244,25 +244,39 @@ class Syst:
         #self.fit_index = fit_index
         self.fit_maps = fit_maps
 
-        par_names = []
+#         par_names = []
         init_pars = {}
-        par_names.append('constant')
+#         par_names.append('constant')
         init_pars['constant'] = 0.
         init_pars['error_constant'] = 0.1
+         
         for par in self.fit_maps:
             value = 0
             init_pars[par] = value
             init_pars['error_'+par] = abs(value)/10. if value!=0 else 0.1
-            par_names.append(par)
-
+#             par_names.append(par)
+        par_names = [par for par in init_pars]
+        pars_values = [ init_pars[par] for par in init_pars]
+        mig = Minuit(self, tuple(pars_values), name=tuple(par_names))
+        mig.errordef = Minuit.LEAST_SQUARES
+# 
         self.fixes = fixes
-        if fixes:
-            for key in fixes.keys():
-                init_pars[key] = fixes[key]
-                init_pars['fix_'+key] = True 
-        if limits:
-            for key in limits.keys():
-                init_pars['limit_'+key] = (limits[key][0], limits[key][1])
+        for par in init_pars:
+            mig.errors[par] = par_dict['error_'+par]
+            if fixes:
+                mig.fixed[par] = fixes[par] if par in fixes else False
+            if limits:
+                mig.limits[par] = limits[par] if par in limits else (None, None)
+
+
+#          if fixes:
+#              for key in fixes.keys():
+#                  init_pars[key] = fixes[key]
+#                  init_pars['fix_'+key] = True 
+#          if limits:
+#              for key in limits.keys():
+#                  init_pars['limit_'+key] = (limits[key][0], limits[key][1])
+        
 
         self.priors = priors
         self.par_names = par_names
