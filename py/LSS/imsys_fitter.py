@@ -262,7 +262,7 @@ class Syst:
 # 
         self.fixes = fixes
         for par in init_pars:
-            mig.errors[par] = par_dict['error_'+par]
+            mig.errors[par] = init_pars['error_'+par]
             if fixes:
                 mig.fixed[par] = fixes[par] if par in fixes else False
             if limits:
