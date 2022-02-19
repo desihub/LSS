@@ -268,7 +268,7 @@ class Syst:
         par_names = [par for par in init_pars]
         #print(par_names)
         pars_values = [ init_pars[par] for par in init_pars]
-        print(tuple(par_values))
+        print(tuple(pars_values))
         mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
 # 
