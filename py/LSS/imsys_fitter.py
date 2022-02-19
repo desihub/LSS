@@ -288,10 +288,10 @@ class Syst:
         print(self.par_names)
 
         #mig = Minuit(self.get_chi2,  \
-        mig = Minuit(self.get_chi2, throw_nan=False, \
-                             forced_parameters=par_names, \
-                             print_level=1, errordef=1, \
-                             **init_pars)
+#         mig = Minuit(self.get_chi2, throw_nan=False, \
+#                              forced_parameters=par_names, \
+#                              print_level=1, errordef=1, \
+#                              **init_pars)
                              #frontend=iminuit.frontends.ConsoleFrontend(), \
 
         mig.tol = 1.0 
