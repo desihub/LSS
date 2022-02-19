@@ -214,8 +214,8 @@ class Syst:
         '''
         if len(pars) == 0: 
             self.get_histograms()
-        elif isinstance(pars[0], dict):
-            self.get_histograms(pars=pars[0])
+        #elif isinstance(pars[0], dict):
+        #    self.get_histograms(pars=pars[0])
         else:
             pars_dict = {}
             for par_name, p in zip(self.par_names, list(pars)):
