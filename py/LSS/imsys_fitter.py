@@ -212,6 +212,7 @@ class Syst:
             - but usually it is easy to give a dictionary
             - if no argument is give, compute chi2 for constant=1 and zero slopes
         '''
+        print('length of pars is '+str(len(pars)))
         if len(pars) == 0: 
             self.get_histograms()
         #elif isinstance(pars[0], dict):
@@ -220,6 +221,7 @@ class Syst:
             pars_dict = {}
             for par_name, p in zip(self.par_names, list(pars)):
                 pars_dict[par_name] = p
+            print(pars_dict)
             self.get_histograms(pars=pars_dict)
 
         chi2 = 0.
