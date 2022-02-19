@@ -213,17 +213,17 @@ class Syst:
             - if no argument is give, compute chi2 for constant=1 and zero slopes
         '''
         #print('length of pars is '+str(len(pars)))
-        if len(pars) == 0: 
-            self.get_histograms()
+        #if len(pars) == 0: 
+        #    self.get_histograms()
         #elif isinstance(pars[0], dict):
         #    self.get_histograms(pars=pars[0])
-        else:
-            pars_dict = {}
-            for par_name, p in zip(self.par_names, list(pars)):
-                pars_dict[par_name] = p
-            #print('pars_dict is '+str(pars_dict))
-            self.get_histograms(pars=pars_dict)
-
+        #else:
+        #    pars_dict = {}
+        #    for par_name, p in zip(self.par_names, list(pars)):
+        #        pars_dict[par_name] = p
+        #    #print('pars_dict is '+str(pars_dict))
+        #    self.get_histograms(pars=pars_dict)
+        self.get_histograms()
         chi2 = 0.
         for name in self.syst_names:
             chi2+= np.sum( (self.delta[name]-1)**2/self.edelta[name]**2)
@@ -268,12 +268,12 @@ class Syst:
         par_names = [par for par in init_pars]
         #print(par_names)
         pars_values = [ init_pars[par] for par in init_pars]
-        #print(tuple(par_names))
-        mig = Minuit(self.get_chi2, tuple(pars_values))#, name=tuple(par_names))
+        print(tuple(par_values))
+        mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
 # 
         self.fixes = fixes
-        print(init_errs)
+        #print(init_errs)
         for par in init_pars:
             mig.errors[par] = init_errs['error_'+par]
             if fixes:
