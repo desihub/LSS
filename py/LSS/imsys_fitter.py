@@ -311,7 +311,7 @@ class Syst:
         imin = mig.migrad()
         self.mig = mig
         self.imin = imin
-        self.is_valid = imin[0]['is_valid']
+        #self.is_valid = imin[0]['is_valid']
         self.best_pars = mig.values 
         self.errors = mig.errors
         self.chi2min = mig.fval
