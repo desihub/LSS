@@ -158,12 +158,15 @@ class Syst:
         '''
 
         #-- same but using dictionary
-        model = 1.+pars['constant']
+        #model = 1.+pars['constant']
+        model = np.ones(len(self.datawe))+pars['constant']
         for p in pars:
             if p == 'constant': continue
             edges = self.edges[p]
             edgemin, edgemax = edges[0], edges[-1]
-            model += pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
+            mp = pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
+            print(p,len(mp))
+            model += mp
         return model
 
     def get_histograms(self, pars=None):
@@ -185,7 +188,7 @@ class Syst:
         for name in data_syst:
             #h_dat = np.bincount(h_index[name], weights=data_we*we_model, 
             #                    minlength=self.nbins)
-            print(name,len(data_syst[name]),len(data_we),len(we_model))
+            #print(name,len(data_syst[name]),len(data_we),len(we_model))
             h_dat,_ = np.histogram(data_syst[name],bins=self.edges[name],weights=data_we*we_model)
             h_ran = h_rand[name]
             #-- computing overdensity and error assuming poisson
