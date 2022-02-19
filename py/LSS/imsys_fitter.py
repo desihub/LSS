@@ -158,10 +158,12 @@ class Syst:
         '''
 
         #-- same but using dictionary
-        #model = 1.+pars['constant']
-        model = np.ones(len(self.data_we))+pars['constant']
+        model = 1.+pars['constant']
+        print(pars['constant'])
+        #model = np.ones(len(self.data_we))+pars['constant']
         for p in pars:
             if p == 'constant': continue
+            print(pars[p])
             edges = self.edges[p]
             edgemin, edgemax = edges[0], edges[-1]
             mp = pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
