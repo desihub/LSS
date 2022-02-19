@@ -185,6 +185,7 @@ class Syst:
         for name in data_syst:
             #h_dat = np.bincount(h_index[name], weights=data_we*we_model, 
             #                    minlength=self.nbins)
+            print(name,len(data_syst[name]),len(data_we),len(we_model))
             h_dat,_ = np.histogram(data_syst[name],bins=self.edges[name],weights=data_we*we_model)
             h_ran = h_rand[name]
             #-- computing overdensity and error assuming poisson
