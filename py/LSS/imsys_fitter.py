@@ -258,7 +258,7 @@ class Syst:
 #             par_names.append(par)
         par_names = [par for par in init_pars]
         pars_values = [ init_pars[par] for par in init_pars]
-        mig = Minuit(self, tuple(pars_values), name=tuple(par_names))
+        mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
 # 
         self.fixes = fixes
