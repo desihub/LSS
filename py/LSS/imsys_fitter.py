@@ -264,8 +264,9 @@ class Syst:
             init_errs['error_'+par] = abs(value)/10. if value!=0 else 0.1
 #             par_names.append(par)
         par_names = [par for par in init_pars]
-        print(par_names)
+        #print(par_names)
         pars_values = [ init_pars[par] for par in init_pars]
+        print(tuple(par_names))
         mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
         mig.errordef = Minuit.LEAST_SQUARES
 # 
