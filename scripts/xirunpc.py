@@ -158,7 +158,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
             if 'completeness_only' in weight_type:
                 weights = catalog['WEIGHT_COMP'][mask]
             if 'FKP' in weight_type:
-                weights *= catalog['WEIGHT_FKP']
+                weights *= catalog['WEIGHT_FKP'][mask]
             elif 'bitwise' in weight_type:
                 weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
         if name == 'randoms':
@@ -167,7 +167,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
             if 'RF' in weight_type:
                 weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
             if 'FKP' in weight_type:
-                weights *= catalog['WEIGHT_FKP']
+                weights *= catalog['WEIGHT_FKP'][mask]
                 
         return positions, weights
     
