@@ -397,21 +397,30 @@ if args.nz == 'y':
 
     regl = ['_DN','_DS','','_N','_S']
     
+	if type == 'QSO':
+		zmin = 0.6
+		zmax = 4.5
+		dz = 0.05
+		P0 = 6000
+		
+	else:    
+		dz = 0.02
+		zmin = 0.01
+		zmax = 1.61
+	
+	if type[:3] == 'LRG':
+	    P0 = 10000
+	if type[:3] == 'ELG':
+	    P0 = 4000
+	if type[:3] == 'BGS':
+	    P0 = 7000
+    
     for reg in regl:
         fb = dirout+type+notqso+'zdone'+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'
-        if type == 'QSO':
-            zmin = 0.6
-            zmax = 4.5
-            dz = 0.05
-            
-        else:    
-            dz = 0.02
-            zmin = 0.01
-            zmax = 1.61
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
         

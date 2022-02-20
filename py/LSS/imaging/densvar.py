@@ -113,7 +113,8 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True):
         pars_dict[par_name] = p
     
     if plotr:
-        s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
+        #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
+        s.plot_overdensity(pars=[None, pars_dict], ylim=[0.7, 1.3])
         plt.show()
     #-- Get weights for global fit
     #data_weightsys_global = 1/s.get_model(s.best_pars, data_syst)
