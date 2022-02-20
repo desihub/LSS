@@ -1635,10 +1635,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     #locations where it was possible a target could have been assigned
     
     fs = cut_specdat(dz)
-    fs['sort'] = fs['TSNR2_LRG']
-    fs.sort('sort')
-    fsu = unique(fs,keys=['TARGETID'],keep='last')   
-    gtl = np.unique(fsu['TILELOCID']) 
+    #fs['sort'] = fs['TSNR2_LRG']
+    #fs.sort('sort')
+    #fsu = unique(fs,keys=['TARGETID'],keep='last')   
+    #gtl = np.unique(fsu['TILELOCID']) 
+    gtl = np.unique(fs['TILELOCID']) 
     
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wg]))
@@ -1701,7 +1702,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
-    dz[tscol][~wz] = 0
+    wnts = dz[tscol]*0 != 0
+    dz[tscol][wnts] = 0
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']+dz['GOODHARDLOC']
     
     dz.sort('sort')
