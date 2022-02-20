@@ -182,10 +182,10 @@ class Syst:
         h_data = {} 
         delta = {}
 
-        if pars is None:
-            we_model = data_we*0+1
-        else:
-            we_model = 1/self.get_model(pars, data_syst)
+        #if pars is None:
+        #    we_model = data_we*0+1
+        #else:
+        we_model = 1/self.get_model(pars, data_syst)
 
         #-- doing histograms with np.bincount, it's faster
         for name in data_syst:
@@ -212,18 +212,19 @@ class Syst:
             - but usually it is easy to give a dictionary
             - if no argument is give, compute chi2 for constant=1 and zero slopes
         '''
-        #print('length of pars is '+str(len(pars)))
-        #if len(pars) == 0: 
-        #    self.get_histograms()
-        #elif isinstance(pars[0], dict):
-        #    self.get_histograms(pars=pars[0])
-        #else:
-        #    pars_dict = {}
-        #    for par_name, p in zip(self.par_names, list(pars)):
-        #        pars_dict[par_name] = p
-        #    #print('pars_dict is '+str(pars_dict))
-        #    self.get_histograms(pars=pars_dict)
-        self.get_histograms()
+        print('length of pars is '+str(len(pars)))
+        print(pars)
+        if len(pars) == 0: 
+           self.get_histograms()
+        elif isinstance(pars[0], dict):
+           self.get_histograms(pars=pars[0])
+        else:
+           pars_dict = {}
+           for par_name, p in zip(self.par_names, list(pars)):
+               pars_dict[par_name] = p
+           #print('pars_dict is '+str(pars_dict))
+           self.get_histograms(pars=pars_dict)
+        #self.get_histograms()
         chi2 = 0.
         for name in self.syst_names:
             chi2+= np.sum( (self.delta[name]-1)**2/self.edelta[name]**2)
