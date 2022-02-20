@@ -397,23 +397,23 @@ if args.nz == 'y':
 
     regl = ['_DN','_DS','','_N','_S']
     
-	if type == 'QSO':
-		zmin = 0.6
-		zmax = 4.5
-		dz = 0.05
-		P0 = 6000
-		
-	else:    
-		dz = 0.02
-		zmin = 0.01
-		zmax = 1.61
-	
-	if type[:3] == 'LRG':
-	    P0 = 10000
-	if type[:3] == 'ELG':
-	    P0 = 4000
-	if type[:3] == 'BGS':
-	    P0 = 7000
+    if type == 'QSO':
+        zmin = 0.6
+        zmax = 4.5
+        dz = 0.05
+        P0 = 6000
+        
+    else:    
+        dz = 0.02
+        zmin = 0.01
+        zmax = 1.61
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
     
     for reg in regl:
         fb = dirout+type+notqso+'zdone'+wzm+reg
