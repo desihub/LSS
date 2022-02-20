@@ -182,10 +182,10 @@ class Syst:
         h_data = {} 
         delta = {}
 
-        #if pars is None:
-        #    we_model = data_we*0+1
-        #else:
-        we_model = 1/self.get_model(pars, data_syst)
+        if pars is None:
+            we_model = data_we*0+1
+        else:
+            we_model = 1/self.get_model(pars, data_syst)
 
         #-- doing histograms with np.bincount, it's faster
         for name in data_syst:
