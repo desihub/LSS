@@ -220,7 +220,7 @@ class Syst:
            self.get_histograms(pars=pars[0])
         else:
            pars_dict = {}
-           for par_name, p in zip(self.par_names, list(pars)):
+           for par_name, p in zip(self.par_names, list(pars)[0]):
                pars_dict[par_name] = p
            #print('pars_dict is '+str(pars_dict))
            self.get_histograms(pars=pars_dict)
