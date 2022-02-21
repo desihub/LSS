@@ -658,7 +658,7 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights=None,vmin=None,vmax=None,smean=True,
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep 
 
-def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',bl=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
     if bl is not None:
         wr = np.isin(rl['BRICKID'],bl)
         rl = rl[wr]
@@ -668,7 +668,7 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',bl=None,fnc=None,vmin=N
 
     pixlr = gethpmap(rl,reg)
     print('randoms done')
-    pixlg = gethpmap(ft,reg)
+    pixlg = gethpmap(ft,reg,datweights)
     print('data done')
 
     if weights is None:
@@ -684,12 +684,6 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',bl=None,fnc=None,vmin=N
     if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
         pixlp,pixlv = gethpmap_var(ft,reg)
 
-    if wsel is not None:
-        wp = wsel
-        wp &= (pixlr > 0) 
-    else:
-        wp = (pixlr > 0) 
-    wp &= (weights*0 == 0)
 
     parv = fitsio.read(pixfn)
     ebv = parv['EBV']
