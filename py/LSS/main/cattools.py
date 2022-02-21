@@ -1704,7 +1704,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
 
     wnts = dz[tscol]*0 != 0
     dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']+dz['GOODHARDLOC']
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
     
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')

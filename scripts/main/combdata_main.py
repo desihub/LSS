@@ -71,9 +71,9 @@ wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == prog
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
-    if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+prog+'-cumulative.fits')
-        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+    #if specrel == 'everest':
+    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+    wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
@@ -170,27 +170,28 @@ if not os.path.exists(ldirspec+'healpix'):
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 #ct.combtiles_wdup(tiles4comb,tarfo)
-hpxs = foot.tiles2pix(8, tiles=tiles4comb)
-npx = 0
-if args.counts_only != 'y' and combpix:
-    processed_tiles_file = ldirspec+'processed_tiles_'+prog+'.fits'
-    if os.path.isfile(processed_tiles_file):
-        tiles_proc = Table.read(processed_tiles_file)
-        tidsp = np.isin(tiles4comb['TILEID'],tiles_proc['TILEID'])
-        tidsnp = ~tidsp
-        tiles4hp = tiles4comb[tidsnp]
-    else :
-        print('didnt load processed tiles file '+processed_tiles_file)
-        tiles4hp = tiles4comb
-        
-    print('will combine pixels for '+str(len(tiles4hp))+' new tiles')
-    if len(tiles4hp) > 0:
-        for px in hpxs:
-            print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-            tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-            ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
-            npx += 1
-        tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
+if specrel == 'daily':
+    hpxs = foot.tiles2pix(8, tiles=tiles4comb)
+    npx = 0
+    if args.counts_only != 'y' and combpix:
+        processed_tiles_file = ldirspec+'processed_tiles_'+prog+'.fits'
+        if os.path.isfile(processed_tiles_file):
+            tiles_proc = Table.read(processed_tiles_file)
+            tidsp = np.isin(tiles4comb['TILEID'],tiles_proc['TILEID'])
+            tidsnp = ~tidsp
+            tiles4hp = tiles4comb[tidsnp]
+        else :
+            print('didnt load processed tiles file '+processed_tiles_file)
+            tiles4hp = tiles4comb
+    
+        print('will combine pixels for '+str(len(tiles4hp))+' new tiles')
+        if len(tiles4hp) > 0:
+            for px in hpxs:
+                print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+                tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+                npx += 1
+            tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
 if specrel == 'daily' and args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
@@ -370,7 +371,7 @@ if specrel == 'daily' and args.dospec == 'y':
             tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel == 'everest':
+if specrel == 'everest' or specrel =='guadalupe':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
