@@ -176,15 +176,6 @@ if mktar: #concatenate target files for given type, with column selection hardco
 if mkfulld:
     azf=''
     
-    if specrel == 'everest':
-        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
-        #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
-        if type[:3] == 'ELG':
-            azf = mainp.elgzf
-        if type[:3] == 'QSO':
-            azf = mainp.qsozf
-        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
-        tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
     
     if specrel == 'daily':
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
@@ -195,6 +186,17 @@ if mkfulld:
             azf =ldirspec+'QSO_catalog.fits'
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
+    else:
+        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
+        #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
+        if type[:3] == 'ELG':
+            azf = mainp.elgzf
+        if type[:3] == 'QSO':
+            azf = mainp.qsozf
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
+
+
  
     ftar = fitsio.read(tarf)   
 
