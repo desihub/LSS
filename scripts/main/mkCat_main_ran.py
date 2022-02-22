@@ -157,8 +157,8 @@ wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
 if specrel != 'daily':
-    if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+    if specrel == 'everest' or specrel == 'guadalupe':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
         wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
         del specf
         if mkfullr:
