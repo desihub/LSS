@@ -95,7 +95,7 @@ def combtile_qso(tiles,outf='',restart=False,release='everest'):
         return False 
 
    
-def combtile_spec(tiles,outf='',md=''):
+def combtile_spec(tiles,outf='',md='',specver='daily'):
     s = 0
     n = 0
     nfail = 0
@@ -118,7 +118,9 @@ def combtile_spec(tiles,outf='',md=''):
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         if md == 'zmtl':
-            tspec = combzmtl(tile,zdate,tdate)
+            #if specver == 
+            #tspec = combzmtl(tile,zdate,tdate)
+            tspec = combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
         else:
             tspec = combspecdata(tile,zdate,tdate)
         if tspec:
