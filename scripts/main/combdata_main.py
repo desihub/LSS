@@ -396,7 +396,7 @@ if specrel == 'everest' or specrel =='guadalupe':
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
     tj.write(outfs,format='fits', overwrite=True)
-    tc = ct.count_tiles_better('dat',prog,specrel=specrel) 
+    tc = ct.count_tiles_better('dat',prog,specrel=specrel,survey=args.survey) 
     outtc =  ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits'
     tc.write(outtc,format='fits', overwrite=True)
 

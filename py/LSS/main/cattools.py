@@ -630,7 +630,7 @@ def cut_specdat(dz):
     return fs[wfqa]
 
 
-def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False):
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -650,7 +650,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     #nomtl = nodata & badqa
     #wfqa = ~nomtl
 
-    indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel
     ps = pd
     if pd[:3] == 'LRG' or pd[:3] == 'ELG' or pd[:3] =='QSO':
         ps = 'dark'
