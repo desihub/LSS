@@ -382,14 +382,19 @@ if specrel == 'everest' or specrel =='guadalupe':
     ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
     fzmtl = fitsio.read(specfo)
     specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
+    tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 
 
     tarf = Table.read(tarfo)
     tarf.remove_columns(['ZWARN_MTL'])
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
 
-    #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
+    outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
+    tj.write(outfs,format='fits', overwrite=True)
+    tc = ct.count_tiles_better('dat',prog,specrel=specrel) 
+    outtc =  ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits'
+    tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
