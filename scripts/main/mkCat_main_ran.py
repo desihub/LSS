@@ -160,6 +160,7 @@ if specrel != 'daily':
     if specrel == 'everest' or specrel == 'guadalupe':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
         wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+        #if args.combr == 'n':
         del specf
         if mkfullr:
             specdat = ct.get_specdat(ldirspec,pdir,specrel)
@@ -327,7 +328,7 @@ def doran(ii):
                 specf = Table.read(specfo)
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
-            if specrel == 'everest' or specrel == 'fuji':    
+            if specrel == 'everest' or specrel == 'guadalupe':    
 
                 #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
                 #wt = np.isin(mtld['TILEID'],specf['TILEID'])
