@@ -348,7 +348,7 @@ def doran(ii):
 
             new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
             if new or args.newspec == 'y':
-                tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
+                tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
 
