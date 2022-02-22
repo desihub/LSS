@@ -32,6 +32,7 @@ from LSS.globals import main
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
@@ -141,7 +142,7 @@ speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','S
 
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir +'/main/LSS/'
+maindir = basedir +'/'+args.survey+'/LSS/'
 
 
 
