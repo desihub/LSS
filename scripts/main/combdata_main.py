@@ -382,6 +382,9 @@ if specrel == 'everest' or specrel =='guadalupe':
     ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
     fzmtl = fitsio.read(specfo)
     specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
+    outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    specf.write(outfs,format='fits', overwrite=True)
+    
     tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 
 
