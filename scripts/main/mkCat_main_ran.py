@@ -29,6 +29,7 @@ from LSS.globals import main
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
@@ -45,6 +46,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -109,7 +111,7 @@ pd = pdir
 # tiles4comb['ZDATE'] = mtld['LASTNIGHT']
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir +'/main/LSS/'
+maindir = basedir +'/'+args.survey+'/LSS/'
 
 
 
@@ -143,7 +145,7 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
-mainp = main(type)
+mainp = main(type,args.verspec)
 
 mt = mainp.mtld
 tiles = mainp.tiles
@@ -344,7 +346,7 @@ def doran(ii):
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
 
             new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
-            if new:
+            if new or args.newspec = 'y':
                 tc = ct.count_tiles_better('ran',type,ii,specrel=specrel)
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
