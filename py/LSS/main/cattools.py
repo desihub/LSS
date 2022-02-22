@@ -1696,7 +1696,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',desitarg='DESI_TARGET',sp
     if tp[:3] == 'QSO' and azf != '':
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
-        arz['TILEID'] = f['TILEID'].astype(int)
+        arz['TILEID'] = arz['TILEID'].astype(int)
         print(arz.dtype.names)
         #arz['TILE'].name = 'TILEID'
         dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
