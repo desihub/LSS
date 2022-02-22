@@ -593,7 +593,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
 def get_specdat(indir,pd,ver='daily'):
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
-    if ver == 'everest':
+    if ver == 'everest' or ver == 'guadalupe':
         zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     if ver == 'daily':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
