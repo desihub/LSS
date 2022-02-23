@@ -1672,7 +1672,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
-    if tp[:3] == 'ELG' and azf != '' and azfm = 'cumul':# or tp == 'ELG_HIP':
+    if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
         st = []
         for i in range(0,len(arz)):
@@ -1693,7 +1693,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
-    if tp[:3] == 'QSO' and azf != '' and azfm = 'cumul':
+    if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
