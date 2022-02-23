@@ -176,8 +176,7 @@ if mktar: #concatenate target files for given type, with column selection hardco
         
 if mkfulld:
     azf=''
-    
-    
+    azfm = 'cumul'        
     if specrel == 'daily':
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
@@ -192,8 +191,10 @@ if mkfulld:
         #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
             azf = mainp.elgzf
+            azfm = 'hp'
         if type[:3] == 'QSO':
             azf = mainp.qsozf
+            azfm = 'hp'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
@@ -209,7 +210,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 if args.apply_veto == 'y':
     print('applying vetos')
