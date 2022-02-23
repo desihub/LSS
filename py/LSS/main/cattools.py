@@ -1693,7 +1693,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
-    if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
+    if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
@@ -1711,7 +1711,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp[:3] == 'ELG' and azf != '':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
-    if tp[:3] == 'QSO' and azf != '' and azfm = 'hp':
+    if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         arz = Table(fitsio.read(azf))
         sel = arz['SURVEY'] == 'main'
         arz = arz[sel]
