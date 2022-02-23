@@ -1720,7 +1720,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         
         print(arz.dtype.names)
         #arz['TILE'].name = 'TILEID'
-        dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        print('length of dz before QSO join '+str(len(dz)))
+        dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        print('length of dz after QSO join (shoudl be the same)'+str(len(dz)))
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
