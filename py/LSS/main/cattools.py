@@ -1714,6 +1714,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         arz = Table(fitsio.read(azf))
         sel = arz['SURVEY'] == 'main'
+        sel &= arz['PROGRAM'] == 'dark'
         arz = arz[sel]
         arz.keep_columns(['TARGETID','Z','ZERR','Z_QN','TSNR2_LYA','TSNR2_QSO','QSO_MASKBITS'])
         
