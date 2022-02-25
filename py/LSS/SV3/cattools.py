@@ -1237,6 +1237,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
    
             dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
             print('check length after merge with OII strength file:' +str(len(dz)))
+            #join changes order, so get wz again
+            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+            wz &= dz['ZWARN']*0 == 0 #just in case of nans
 
     if tp[:3] == 'QSO':
         if azf != '':
@@ -1247,6 +1250,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
             dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
             dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
             dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+            #join changes order, so get wz again
+            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+            wz &= dz['ZWARN']*0 == 0 #just in case of nans
 
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
