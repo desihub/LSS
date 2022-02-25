@@ -101,7 +101,7 @@ for tp in tps:
 
         wg = dt[zcol] > 0.1
         wg &= dt[zcol] < .5
-        titl = tp titlb+ '0.1<z<0.5'
+        titl = tp +titlb+ '0.1<z<0.5'
 
     dtf = dtf[wg]
     wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=.2,vm=.8,vx=1.2)
