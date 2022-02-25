@@ -23,6 +23,7 @@ parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 parser.add_argument("--onlyfull",help="only do min max z",default='n')
+parser.add_argument("--outdir",help='base directory for output',os.environ['CSCRATCH']+'/'+survey+'xi/')
 
 #only relevant for reconstruction
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
@@ -44,7 +45,7 @@ if args.bintype == 'log':
 if args.bintype == 'lin':
     bine = np.linspace(1e-4, 200, 201)
 
-dirxi = os.environ['CSCRATCH']+'/'+survey+'xi/'
+dirxi = args.outdir
 
 if not os.path.exists(dirxi):
     os.mkdir(dirxi)
