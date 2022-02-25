@@ -101,8 +101,8 @@ for tp in tps:
 
     if tp[:3] == 'BGS':
 
-        wg = dt[zcol] > 0.1
-        wg &= dt[zcol] < .5
+        wg = dtf[zcol] > 0.1
+        wg &= dtf[zcol] < .5
         titl = tp +titlb+ '0.1<z<0.5'
 
     dtf = dtf[wg]
