@@ -58,7 +58,7 @@ for tp in tps:
     wr = rad > 300
     rad[wr] -=360
     
-    rar = dtf['RA']
+    rar = rt['RA']
     wr = rar > 300
     rar[wr] -=360
    
