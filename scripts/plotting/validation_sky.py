@@ -76,9 +76,11 @@ for tp in tps:
     plt.legend(labelcolor='linecolor')
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
-    plt.title(tp+'data plotted over randoms')
+    plt.title(tp+' data plotted over randoms')
     plt.savefig(outdir+tp+'_datoran.png')
-
+    plt.clf()
+    
+    
     titlb = ' weighted over-density for '
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
@@ -124,6 +126,6 @@ for tp in tps:
 
     plt.savefig(outdir+tp+'_weighteddens.png')
     plt.clf()
-    del dt
+    del dtf
     del rt
     print(tp+' done')
