@@ -17,7 +17,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/''
+indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/'
 
 if not os.path.exists(outdir):
