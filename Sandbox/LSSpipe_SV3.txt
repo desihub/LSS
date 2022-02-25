@@ -50,4 +50,4 @@ for tp,notqso in zip(tps,notqsos):
 	python mkCat_SV3.py --type tp --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y  --nz y --maxr 18 --notqso notqso
 
 also do LRGs cut to main sample targeting cuts:
-python mkCat_SV3.py --type LRG --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y  --nz y --maxr 18 --ccut main
+python mkCat_SV3.py --type LRG --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clus y --clusran y  --nz y --maxr 18 --ccut main
