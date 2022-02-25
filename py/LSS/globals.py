@@ -18,10 +18,10 @@ class SV3:
             self.ebits = 'lrg_mask'
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
-        if specrel == 'everest':
+        if specver == 'everest':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/ELG/sv3-elg-everest-tiles.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
-        if specrel == 'fuji'
+        if specver == 'fuji':
             self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/fuji/sv3-elg-fuji-tiles.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/QSO_cat_fuji_cumulative.fits'
         

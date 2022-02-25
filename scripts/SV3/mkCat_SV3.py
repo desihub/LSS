@@ -32,13 +32,13 @@ parser.add_argument("--vis", help="make a plot of data/randoms on tile",default=
 parser.add_argument("--xi", help="run pair-counting code",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
-parser.add_argument("--combd", help="combine all the tiles together",default='y')
+parser.add_argument("--combd", help="combine all the tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
-parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
-parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
@@ -71,7 +71,7 @@ if rcut is not None:
 
 ccut = args.ccut
 
-SV3p = SV3(type)
+SV3p = SV3(type,specver=specrel)
 
 notqso = ''
 if args.notqso == 'y':
