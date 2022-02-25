@@ -1243,7 +1243,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     if tp[:3] == 'QSO':
         if azf != '':
-            arz = Table.read(azf)
+            arz = Table(fitsio.read(azf))
             arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
             arz['TILEID'] = arz['TILEID'].astype(int)
             print(arz.dtype.names)
