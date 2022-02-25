@@ -1,7 +1,7 @@
 from astropy.table import Table
 
 class SV3:
-    def __init__(self,tp,weightmode='probobs'):
+    def __init__(self,tp,weightmode='probobs',specver='fuji'):
         self.mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/' #location of ledgers
         self.tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'#location of targets
         self.mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
@@ -18,8 +18,13 @@ class SV3:
             self.ebits = 'lrg_mask'
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
-        self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/ELG/sv3-elg-everest-tiles.fits'
-        self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        if specrel == 'everest':
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/ELG/sv3-elg-everest-tiles.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        if specrel == 'fuji'
+            self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/fuji/sv3-elg-fuji-tiles.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/QSO_cat_fuji_cumulative.fits'
+        
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
         self.weightmode = weightmode

@@ -47,6 +47,9 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
+parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
+parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 
 #all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
 
@@ -57,6 +60,16 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+ntile = args.ntile
+rcut = args.rcut
+if rcut is not None:
+    rcutstr = rcut.split(',')
+    rcut = []
+    rcut.append(float(rcutstr[0]))
+    rcut.append(float(rcutstr[1]))
+
+ccut = args.ccut
 
 SV3p = SV3(type)
 
@@ -377,21 +390,8 @@ if combd:
             except:
                 print('column '+col +' was not in tarwdup file')    
 
-        if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
-            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-            specf = specf[wt]
-            specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
-            ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
-            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
-            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
-            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-
-        if specrel == 'fuji':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/fuji/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+        if specrel == 'everest' or specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
             wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
             specf = specf[wt]
             specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
@@ -534,14 +534,15 @@ if mkclusdat:
         tsnrcut = 80  
     if type[:3] == 'BGS':
         dchi2 = 40
-        tsnrcut = 800
-    ct.mkclusdat(dirout+type+'_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)
+        tsnrcut = 1000
+    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
 if mkclusran:
     print('doing clustering randoms')
     tsnrcol = 'TSNR2_ELG'
+    tsnrcut = 0
     if type[:3] == 'ELG':
         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
         tsnrcut = 80
@@ -551,16 +552,17 @@ if mkclusran:
     if type[:3] == 'BGS':
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
-        tsnrcut = 800
+        tsnrcut = 1000
+
     rcols=['Z','WEIGHT']
     if type[:3] == 'BGS':
         rcols.append('flux_r_dered')
-
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,rcols=rcols)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
+#changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
     wzm = ''
 #     if zmask:
@@ -569,8 +571,8 @@ if mknz:
         wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntile > 0:
         wzm += '_ntileg'+str(ntilecut)+'_'    
-    if args.ccut is not None:
-        wzm += '_'+args.ccut #you could change this to however you want the file names to turn out
+    if ccut is not None:
+        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
     regl = ['','_N','_S']
     
@@ -589,5 +591,4 @@ if mknz:
             zmin = 0.01
             zmax = 1.61
         ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
-        
+        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)        
