@@ -38,7 +38,7 @@ for tp,notqso in zip(tps,notqsos):
 #this expects to be on interactive node
 #Ashley does the list by hand, so this is just pseudo code meant for illustration
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_SV3_ran.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --fullr y 
+    python mkCat_SV3_ran.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --fullr y 
 
 #apply veto mask column for LRGs
 #this expects to be on interactive node
