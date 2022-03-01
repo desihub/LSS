@@ -178,7 +178,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     data_positions, data_weights = get_positions_weights(data, name='data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
     shifted_positions, shifted_weights = None, None
-    subsampler = KMeansSubsampler(mode='angular', positions=randoms_positions, nsamples=int(args.njack), nside=512, random_state=42, position_type='rdd')
+    subsampler = KMeansSubsampler(mode='angular', positions=data_positions, nsamples=int(args.njack), nside=512, random_state=42, position_type='rdd')
     labels = subsampler.label(randoms_positions)
     data_samples = subsampler.label(data_positions)
     randoms_samples = subsampler.label(randoms_positions)
