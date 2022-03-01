@@ -40,7 +40,7 @@ import numpy as np
 import pandas as pd
 
 
-log = logging.getlog("QSO_CAT_UTILS")
+log = logging.getLogger("QSO_CAT_UTILS")
 
 
 def desi_target_from_survey(survey):
