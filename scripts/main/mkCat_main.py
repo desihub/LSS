@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
@@ -116,7 +117,7 @@ else:
 
 progl = prog.lower()
 
-mainp = main(args.type)
+mainp = main(args.type,args.verspec)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
 #mtld = mainp.mtld
@@ -139,7 +140,7 @@ keys = ['RA', 'DEC', 'BRICKID', 'BRICKNAME','MORPHTYPE','DCHISQ','FLUX_G', 'FLUX
 
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir +'/main/LSS/'
+maindir = basedir +'/'+args.survey+'/LSS/'
 
 if not os.path.exists(maindir+'/logs'):
     os.mkdir(maindir+'/logs')
@@ -175,8 +176,7 @@ if mktar: #concatenate target files for given type, with column selection hardco
         
 if mkfulld:
     azf=''
-    
-    
+    azfm = 'cumul'        
     if specrel == 'daily':
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
@@ -191,8 +191,10 @@ if mkfulld:
         #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
             azf = mainp.elgzf
+            azfm = 'hp'
         if type[:3] == 'QSO':
             azf = mainp.qsozf
+            azfm = 'hp'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
@@ -208,7 +210,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 if args.apply_veto == 'y':
     print('applying vetos')

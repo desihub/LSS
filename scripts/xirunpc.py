@@ -20,9 +20,10 @@ parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=4,type=int)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
-parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
+parser.add_argument("--nthreads",help="number of threads for parallel comp",default=64,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 parser.add_argument("--onlyfull",help="only do min max z",default='n')
+parser.add_argument("--outdir",help='base directory for output',default=None)
 
 #only relevant for reconstruction
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
@@ -45,6 +46,8 @@ if args.bintype == 'lin':
     bine = np.linspace(1e-4, 200, 201)
 
 dirxi = os.environ['CSCRATCH']+'/'+survey+'xi/'
+if args.outdir is not None:
+    dirxi = args.outdir
 
 if not os.path.exists(dirxi):
     os.mkdir(dirxi)

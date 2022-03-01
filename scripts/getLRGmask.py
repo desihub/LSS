@@ -51,7 +51,7 @@ indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = 'LRG'
 
-if args.survey == 'main':
+if args.survey == 'main' or args.survey == 'DA02':
     tp += 'zdone'
 
 
