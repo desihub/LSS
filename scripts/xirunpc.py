@@ -147,7 +147,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     def get_positions_weights(catalog, name='data'):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
         print('Using {:d} rows for {}'.format(mask.sum(),name))
-        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
+        positions = [catalog['RA'][mask].astype(float), catalog['DEC'][mask].astype(float), distance(catalog['Z'][mask]).astype(float)]
         #if weight_type is None:
         #    weights = None
         #else:
