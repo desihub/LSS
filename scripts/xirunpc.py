@@ -6,7 +6,7 @@ from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
 # To install pycorr: python -m pip install git+https://github.com/adematti/pycorr
-from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, utils, project_to_multipoles, project_to_wp, setup_logging
+from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, utils, project_to_multipoles, project_to_wp, setup_logging,KMeansSubsampler
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 distance = cosmo.comoving_radial_distance
@@ -20,6 +20,7 @@ parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=4,type=int)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
+parser.add_argument("--njack",help="number of jack-knife subsamples",default=100)
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=64,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 parser.add_argument("--onlyfull",help="only do min max z",default='n')
@@ -177,6 +178,11 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     data_positions, data_weights = get_positions_weights(data, name='data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
     shifted_positions, shifted_weights = None, None
+    subsampler = KMeansSubsampler(mode='angular', positions=randoms_positions, nsamples=args.njack, nside=512, random_state=42, position_type='rdd')
+    labels = subsampler.label(positions)
+    data_samples = subsampler.label(data_positions)
+    randoms_samples = subsampler.label(randoms_positions)
+
     if shifted is not None:
         shifted_positions, shifted_weights = get_positions_weights(shifted, name='shifted')
 
@@ -229,6 +235,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     result = TwoPointCorrelationFunction(corrmode, edges, data_positions1=data_positions, data_weights1=data_weights,
                                          randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
                                          shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
+                                         data_samples1=data_samples, randoms_samples1=randoms_samples,
                                          engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **kwargs)
     #save paircounts
     fn = dirxi+'paircounts_'+fnroot+'.npy'
@@ -256,6 +263,8 @@ if survey in ['main','DA02']:
 nzr = len(zl)
 
 bsl = [1,4,5,10]
+ells = (0, 2, 4)
+nells = len(ells)
 
 if len(zl) == 2:
     nzr = len(zl)-1
@@ -276,10 +285,11 @@ for i in range(0,nzr):
         for bs in bsl:
             result = TwoPointEstimator.load(pfn)
             result.rebin((bs, 1))
-            sep,xiell = project_to_multipoles(result)#, wang
+            sep,xiell,cov = project_to_multipoles(result,ells=ells)#, wang
+            std = np.array_split(np.diag(cov)**0.5, nells)
             fo = open(dirxi+'xi024'+fnroot+str(bs)+'.dat','w')
             for i in range(0,len(sep)):
-                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
+                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+' '+str(std[0][i])+' '+str(std[1][i])+' '+str(std[2][i])+'\n')
             fo.close()
             if args.vis == 'y':
                 if args.bintype == 'log':
