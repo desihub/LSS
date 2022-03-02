@@ -28,7 +28,7 @@ from LSS.common_tools import find_znotposs
 import logging
 logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
 
-def combtile_qso(tiles,outf='',restart=False,release='everest'):
+def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
     n = 0
     nfail = 0
