@@ -59,8 +59,9 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         tspec = combQSOdata(tile,zdate,tdate,cols=kl)
         if tspec:
             #this is stupid but should speed up concatenation
-            tspec.write('temp.fits',format='fits', overwrite=True)
-            tspec = fitsio.read('temp.fits')
+            #tspec.write('temp.fits',format='fits', overwrite=True)
+            #tspec = fitsio.read('temp.fits')
+            tspec = np.array(tspec)
             #tspec = np.empty(len(tspecio),dtype=dt)
 
             if s == 0:
@@ -297,6 +298,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
     qso_cat['TILEID'] = tile
+    print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
         qso_cat.keep_columns(cols)
