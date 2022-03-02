@@ -287,6 +287,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
     print(specs)
     if len(specs) == 0:
         return None
+    qsocats = []    
     for i in range(0,len(specs)):
         rr = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         mgii = coaddir+str(tile)+'/'+zdate+'/'+'qso_mgii'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
@@ -295,12 +296,13 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         old_extname_for_qn = False #if int(tdate) >= 20220118 else True
         qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+        qsocats.append(qsocati)
+        #if i == 0:
+        #    qso_cat = qso_cati
+        #else:
+        #    qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
-        if i == 0:
-            qso_cat = qso_cati
-        else:
-            qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
-
+    qso_cat = vstack(qsocats,metadata_conflicts='silent')
     qso_cat['TILEID'] = tile
     #print(qso_cat.dtype.names)
     if cols is not None:
