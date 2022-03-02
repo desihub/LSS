@@ -52,6 +52,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
+    print('will add QSO info for '+str(len(tiles[tmask]))+' tiles')
     kl = list(specd.dtype.names)
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
@@ -286,7 +287,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         mgii = coaddir+str(tile)+'/'+zdate+'/'+'qso_mgii'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         qn = coaddir+str(tile)+'/'+zdate+'/'+'qso_qn'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         old_extname_redrock = True if zhdu == 'ZBEST' else False
-        old_extname_for_qn = False if int(tdate) >= 20220118 else True
+        old_extname_for_qn = False #if int(tdate) >= 20220118 else True
         qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
 
