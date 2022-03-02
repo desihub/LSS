@@ -32,6 +32,8 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
     n = 0
     nfail = 0
+    kl = ['TARGETID', 'Z', 'LOCATION',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS', 'TILEID']
+    
     if os.path.isfile(outf) and restart == False:
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
@@ -48,12 +50,14 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         infl = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog_'+release+'.fits'
-        specd = fitsio.read(infl)
+        specd = Table(fitsio.read(infl))
+        specd.keep_columns(kl)
+        specd = np.array(specd)
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
     print('will add QSO info for '+str(len(tiles[tmask]))+' tiles')
-    kl = list(specd.dtype.names)
+    #kl = list(specd.dtype.names)
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = combQSOdata(tile,zdate,tdate,cols=kl)
@@ -298,7 +302,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
     qso_cat['TILEID'] = tile
-    print(qso_cat.dtype.names)
+    #print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
         qso_cat.keep_columns(cols)
