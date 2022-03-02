@@ -208,22 +208,34 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     print(specs)
     if len(specs) == 0:
         return None
+    tsl = []
+    tql = []
+    tspecl = []
+    tfl = []
     for i in range(0,len(specs)):
         tn = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=zhdu)
+        tspecl.append(tn)
         tnq = Table.read(coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits')
+        tql.append(tnq)
         tnf = Table.read(coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu='FIBERMAP')
+        tfl.append(tnf)
         tns = Table.read(coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=shdu)
+        tsl.append(tns)
+#         if i == 0:
+#            tspec = tn
+#            tq = tnq
+#            tf = tnf
+#            ts = tns
+#         else:
+#             ts = vstack([ts,tns],metadata_conflicts='silent')
+#             tq = vstack([tq,tnq],metadata_conflicts='silent')
+#             tspec = vstack([tspec,tn],metadata_conflicts='silent')
+#             tf = vstack([tf,tnf],metadata_conflicts='silent')
 
-        if i == 0:
-           tspec = tn
-           tq = tnq
-           tf = tnf
-           ts = tns
-        else:
-            ts = vstack([ts,tns],metadata_conflicts='silent')
-            tq = vstack([tq,tnq],metadata_conflicts='silent')
-            tspec = vstack([tspec,tn],metadata_conflicts='silent')
-            tf = vstack([tf,tnf],metadata_conflicts='silent')
+    ts = vstack(tsl,metadata_conflicts='silent')
+    tq = vstack(tql,metadata_conflicts='silent')
+    tspec = vstack(tspecl,metadata_conflicts='silent')
+    tf = vstack(tfl,metadata_conflicts='silent')
 
 
     tf = unique(tf,keys=['TARGETID'])
