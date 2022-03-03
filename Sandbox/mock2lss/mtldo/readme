@@ -1,0 +1,22 @@
+python mkCat_SV3.py --type dark
+python mkCat_SV3.py --type LRG --combd n --fulld y --clus n
+python mkCat_SV3.py --type LRG --combd n --fulld n --clus y
+python mkCat_SV3.py --type LRG --combd n --fulld n --clus n --nz y
+
+
+
+#RANDOMS
+python mkCat_SV3_ran.py --type dark --cutran y --combr n --ranmtl n --rfa n
+python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl y --rfa n
+python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl n --rfa y
+python mkCat_SV3_ran.py --type dark --cutran n --combr y --ranmtl n --rfa n
+
+python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr y --clus n
+python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr n --clus y
+
+
+
+
+For xi
+python ximock.py --type ELG --id 22
+
