@@ -1717,7 +1717,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
         arz = Table(fitsio.read(azf))
-        arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
+        arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
         print(arz.dtype.names)
         #arz['TILE'].name = 'TILEID'
