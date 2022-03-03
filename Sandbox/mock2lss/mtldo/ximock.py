@@ -120,9 +120,10 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
         data = Table.read(data_fn)
 
+##        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering_fromreal.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
         randoms = vstack([Table.read(fn) for fn in randoms_fn])
-  
+ #_fromreal 
     corrmode = mode
     if mode == 'wp':
         corrmode = 'rppi'
@@ -244,6 +245,7 @@ for i in range(0,nzr):
         print(reg)
         (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
         fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'.dat','w')
+        #fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'_randomfromreal.dat','w')
         for i in range(0,len(sep)):
             fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
         fo.close()

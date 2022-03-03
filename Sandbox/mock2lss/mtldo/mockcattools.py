@@ -1668,18 +1668,18 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         print('length after also making sure location assigned '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
-    '''
+
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
-        drz = (10**(3 - 3.5*ff['RSDZ']))
+##        drz = (10**(3 - 3.5*ff['RSDZ']))
 ##AURE        drz = (10**(3 - 3.5*ff['Z']))
-        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
-        mask_bad |= (ff['DELTACHI2']<10)
+##AURE        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
+#AURE        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
+#AURE        mask_bad |= (ff['DELTACHI2']<10)
         wz &= ff['RSDZ']<1.4
 ##AURE        wz &= ff['Z']<1.4
-        wz &= (~mask_bad)
+##AURE        wz &= (~mask_bad)
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
@@ -1691,7 +1691,6 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         print('length after dchi2 cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
-    '''
 
 
     ff = ff[wz]
@@ -1703,6 +1702,7 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
 
     if weightmd == 'probobs' :
+        ff = ff[(ff['PROB_OBS']!=0)]
 ##AURE        nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
         nassign = nreal*ff['PROB_OBS'] #assignment in actual observation counts
         ff['WEIGHT_COMP'] *= (nreal+1)/nassign#1./ff['PROB_OBS']

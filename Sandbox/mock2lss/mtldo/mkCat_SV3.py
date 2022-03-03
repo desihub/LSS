@@ -430,6 +430,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
+##    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
     mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), weightmd='probobs', zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
 ##AURE    ct.mkclusdat(os.path.join(dirout,type+'_'),zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)
     #logf.write('ran mkclusdat\n')
