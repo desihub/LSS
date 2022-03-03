@@ -120,27 +120,27 @@ if not os.path.exists(ldirspec+'healpix'):
     print('made '+ldirspec+'healpix')
 
 if specrel == 'daily':
-	specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-	#if not os.path.isfile(specfo) and args.subguad != 'y':
-	if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
-		specf = fitsio.read(specfo)    
-	else:
+    specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    #if not os.path.isfile(specfo) and args.subguad != 'y':
+    if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
+        specf = fitsio.read(specfo)    
+    else:
         specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
-	speccols = list(specf.dtype.names)
-	if args.subguad == 'y':
-	    dz = Table(fitsio.read(specfo))
-	    dz.keep_columns(speccols)
-	    specf = Table(specf)
-	    gr = np.isin(dz['TILEID'],specf['TILEID'])
-	    dng = dz[~gr]
-	    print('length before/after removing guad tiles from daily')
-	    print(len(dz),len(dng))
-	    ng = vstack([specf,dng])
-	    print('length after adding guad data back in '+str(len(ng)))
-	    print(ng.dtype.names)
-	    ng.write(specfo,format='fits',overwrite=True)
-	del specf
+    speccols = list(specf.dtype.names)
+    if args.subguad == 'y':
+        dz = Table(fitsio.read(specfo))
+        dz.keep_columns(speccols)
+        specf = Table(specf)
+        gr = np.isin(dz['TILEID'],specf['TILEID'])
+        dng = dz[~gr]
+        print('length before/after removing guad tiles from daily')
+        print(len(dz),len(dng))
+        ng = vstack([specf,dng])
+        print('length after adding guad data back in '+str(len(ng)))
+        print(ng.dtype.names)
+        ng.write(specfo,format='fits',overwrite=True)
+    del specf
 
 # speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
 # 'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
