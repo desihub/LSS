@@ -226,52 +226,56 @@ for i in range(rm,rx):
         print('made '+str(i)+' random directory')
 
 
-#construct a table with the needed tile information
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    hal = []
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        tilel.append(tile)
-        ral.append(fht['TILERA'])
-        decl.append(fht['TILEDEC'])
-        mtlt.append(fht['MTLTIME'])
-        fal.append(fht['RUNDATE'])
-        obsl.append(fht['FIELDROT'])
-        hal.append(fht['FA_HA'])
-        #pl.append(pro)
-        pl.append(pr)
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['RUNDATE'] = fal
-    ta['FIELDROT'] = obsl
-    ta['PROGRAM'] = pl
-    ta['FA_HA'] = hal
-    #if pd == 'dark':
-    ta['OBSCONDITIONS'] = 15
-    ta['IN_DESI'] = 1
-    ttf = Table() #to write out to use for fiberassign all at once
-    ttf['TILEID'] = tilel
-    ttf['RA'] = ral
-    ttf['DEC'] = decl
-    ttf['OBSCONDITIONS'] = 15
-    ttf['IN_DESI'] = 1
-    ttf['PROGRAM'] = 'SV3'
-    ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
-
+tilef = sv3dir+'tiles-'+pr+'.fits'
+if os.path.isfile(testfbaf):
+    ta = Table.read(tilef)
 else:
-    print('no done tiles in the MTL')
+	#construct a table with the needed tile information
+	if len(mtld) > 0:
+		tilel = []
+		ral = []
+		decl = []
+		mtlt = []
+		fal = []
+		obsl = []
+		pl = []
+		hal = []
+		#for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+		for tile in mtld['TILEID']:
+			ts = str(tile).zfill(6)
+			fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+			tilel.append(tile)
+			ral.append(fht['TILERA'])
+			decl.append(fht['TILEDEC'])
+			mtlt.append(fht['MTLTIME'])
+			fal.append(fht['RUNDATE'])
+			obsl.append(fht['FIELDROT'])
+			hal.append(fht['FA_HA'])
+			#pl.append(pro)
+			pl.append(pr)
+		ta = Table()
+		ta['TILEID'] = tilel
+		ta['RA'] = ral
+		ta['DEC'] = decl
+		ta['MTLTIME'] = mtlt
+		ta['RUNDATE'] = fal
+		ta['FIELDROT'] = obsl
+		ta['PROGRAM'] = pl
+		ta['FA_HA'] = hal
+		#if pd == 'dark':
+		ta['OBSCONDITIONS'] = 15
+		ta['IN_DESI'] = 1
+		#ttf = Table() #to write out to use for fiberassign all at once
+		#ttf['TILEID'] = tilel
+		#ttf['RA'] = ral
+		#ttf['DEC'] = decl
+		#ttf['OBSCONDITIONS'] = 15
+		#ttf['IN_DESI'] = 1
+		#ttf['PROGRAM'] = 'SV3'
+		ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+
+	else:
+		print('no done tiles in the MTL')
 
 
 minr = 148
