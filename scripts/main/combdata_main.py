@@ -137,6 +137,7 @@ if specrel == 'daily':
 	    ng = vstack([specf,dng])
 	    print('length after adding guad data back in '+str(len(ng)))
 	    print(ng.dtype.names)
+	    ng.write(specfo,format='fits',overwrite=True)
 	del specf
 
 # speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
