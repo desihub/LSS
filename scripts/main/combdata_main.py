@@ -37,6 +37,7 @@ parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
+parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
@@ -120,10 +121,11 @@ if not os.path.exists(ldirspec+'healpix'):
 
 if specrel == 'daily':
 	specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-	if not os.path.isfile(specfo) and args.subguad != 'y':
+	#if not os.path.isfile(specfo) and args.subguad != 'y':
+	if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
 		specf = fitsio.read(specfo)    
 	else:
-		specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
+        specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
 	speccols = list(specf.dtype.names)
 	if args.subguad == 'y':
@@ -261,7 +263,7 @@ if specrel == 'daily' and args.dospec == 'y':
         if wo == 1:
             specf.write(specfo,overwrite=True,format='fits')
 
-    newspec = ct.combtile_spec(tiles4comb,specfo)
+    newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
     specf = Table.read(specfo)
     if newspec:
         print('new tiles were found for spec dataso there were updates to '+specfo)
@@ -400,7 +402,7 @@ if specrel == 'everest' or specrel =='guadalupe':
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
     ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY'])
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
     fzmtl = fitsio.read(specfo)

@@ -99,11 +99,11 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         return False
 
 
-def combtile_spec(tiles,outf='',md='',specver='daily'):
+def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',prog='dark'):
     s = 0
     n = 0
     nfail = 0
-    if os.path.isfile(outf):
+    if os.path.isfile(outf) and redo == 'n':
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
         #dt = specd.dtype
@@ -112,7 +112,12 @@ def combtile_spec(tiles,outf='',md='',specver='daily'):
         #for colname in cols:
         #    specd[colname][...] = specio[colname][...]
         #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
 
+    elif redo == 'y':
+        spec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits')
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
