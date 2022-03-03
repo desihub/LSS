@@ -117,7 +117,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
         tmask = ~np.isin(tiles['TILEID'],tdone)
 
     elif redo == 'y':
-        spec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits')
+        spec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits')
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)

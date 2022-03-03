@@ -125,7 +125,7 @@ if specrel == 'daily':
     if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
         specf = fitsio.read(specfo)    
     else:
-        specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
+        specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
     if args.subguad == 'y':
