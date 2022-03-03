@@ -41,6 +41,8 @@ parser.add_argument("--counts_only",help="skip to just counting overlaps",defaul
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
+parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
+
 
 
 
@@ -92,28 +94,73 @@ tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
 
 print('check that length of tiles4comb matches '+str(len(tiles4comb)))
 
-speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
-'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
-'REF_EPOCH','LAMBDA_REF','FA_TARGET','FA_TYPE','OBJTYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY',\
-'SUBPRIORITY','OBSCONDITIONS','RELEASE','BRICKID','BRICK_OBJID','MORPHTYPE','FLUX_G','FLUX_R',\
-'FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MASKBITS','REF_ID','REF_CAT',\
-'GAIA_PHOT_G_MEAN_MAG','GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','BRICKNAME','EBV',\
-'FLUX_W1', 'FLUX_W2', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2', 'FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z',\
-'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z', 'SERSIC', 'SHAPE_R', 'SHAPE_E1', 'SHAPE_E2',\
-'PHOTSYS', 'PRIORITY_INIT', 'NUMOBS_INIT', 'DESI_TARGET', 'BGS_TARGET', 'MWS_TARGET', 'SCND_TARGET',\
-'PLATE_RA', 'PLATE_DEC', 'TILEID',\
-'INTEG_COADD_FLUX_B', 'MEDIAN_COADD_FLUX_B', 'MEDIAN_COADD_SNR_B', 'INTEG_COADD_FLUX_R',\
-'MEDIAN_COADD_FLUX_R', 'MEDIAN_COADD_SNR_R', 'INTEG_COADD_FLUX_Z', 'MEDIAN_COADD_FLUX_Z',\
-'MEDIAN_COADD_SNR_Z', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',\
-'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z',\
-'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS',\
-'TSNR2_QSO', 'TSNR2_LRG', 'ZWARN_MTL', 'Z_QN', 'Z_QN_CONF', 'IS_QSO_QN', 'TSNR2_GPBDARK_B',\
-'TSNR2_GPBBRIGHT_B', 'TSNR2_GPBBACKUP_B', 'TSNR2_GPBDARK_R', 'TSNR2_GPBBRIGHT_R',\
-'TSNR2_GPBBACKUP_R', 'TSNR2_GPBDARK_Z', 'TSNR2_GPBBRIGHT_Z', 'TSNR2_GPBBACKUP_Z',\
-'TSNR2_GPBDARK', 'TSNR2_GPBBRIGHT', 'TSNR2_GPBBACKUP', 'COADD_FIBERSTATUS', 'COADD_NUMEXP',\
-'COADD_EXPTIME', 'COADD_NUMNIGHT', 'COADD_NUMTILE', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y',\
-'RMS_DELTA_Y', 'MEAN_FIBER_RA', 'STD_FIBER_RA', 'MEAN_FIBER_DEC', 'STD_FIBER_DEC',\
-'MEAN_PSF_TO_FIBER_SPECFLUX', 'MEAN_FIBER_X', 'MEAN_FIBER_Y']
+#share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
+maindir = basedir +'/'+args.survey+'/LSS/'
+
+if not os.path.exists(maindir+'/logs'):
+    os.mkdir(maindir+'/logs')
+    print('made '+maindir+'/logs')
+
+if not os.path.exists(maindir+'/LSScats'):
+    os.mkdir(maindir+'/LSScats')
+    print('made '+maindir+'/LSScats')
+
+dirout = maindir+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+
+ldirspec = maindir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
+if not os.path.exists(ldirspec+'healpix'):
+    os.mkdir(ldirspec+'healpix')
+    print('made '+ldirspec+'healpix')
+
+if specrel == 'daily':
+	specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+	if not os.path.isfile(specfo) and args.subguad != 'y':
+		specf = fitsio.read(specfo)    
+	else:
+		specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//main/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
+
+	speccols = list(specf.dtype.names)
+	if args.subguad == 'y':
+	    dz = Table(fitsio.read(specfo))
+	    dz.keep_columns(speccols)
+	    specf = Table(specf)
+	    gr = np.isin(dz['TILEID'],specf['TILEID'])
+	    dng = dz[~gr]
+	    print('length before/after removing guad tiles from daily')
+	    print(len(dz),len(dng))
+	    ng = vstack([specf,dng])
+	    print('length after adding guad data back in '+str(len(ng)))
+	    print(ng.dtype.names)
+	del specf
+
+# speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
+# 'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
+# 'REF_EPOCH','LAMBDA_REF','FA_TARGET','FA_TYPE','OBJTYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY',\
+# 'SUBPRIORITY','OBSCONDITIONS','RELEASE','BRICKID','BRICK_OBJID','MORPHTYPE','FLUX_G','FLUX_R',\
+# 'FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MASKBITS','REF_ID','REF_CAT',\
+# 'GAIA_PHOT_G_MEAN_MAG','GAIA_PHOT_BP_MEAN_MAG','GAIA_PHOT_RP_MEAN_MAG','PARALLAX','BRICKNAME','EBV',\
+# 'FLUX_W1', 'FLUX_W2', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2', 'FIBERFLUX_G', 'FIBERFLUX_R', 'FIBERFLUX_Z',\
+# 'FIBERTOTFLUX_G', 'FIBERTOTFLUX_R', 'FIBERTOTFLUX_Z', 'SERSIC', 'SHAPE_R', 'SHAPE_E1', 'SHAPE_E2',\
+# 'PHOTSYS', 'PRIORITY_INIT', 'NUMOBS_INIT', 'DESI_TARGET', 'BGS_TARGET', 'MWS_TARGET', 'SCND_TARGET',\
+# 'PLATE_RA', 'PLATE_DEC', 'TILEID',\
+# 'INTEG_COADD_FLUX_B', 'MEDIAN_COADD_FLUX_B', 'MEDIAN_COADD_SNR_B', 'INTEG_COADD_FLUX_R',\
+# 'MEDIAN_COADD_FLUX_R', 'MEDIAN_COADD_SNR_R', 'INTEG_COADD_FLUX_Z', 'MEDIAN_COADD_FLUX_Z',\
+# 'MEDIAN_COADD_SNR_Z', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',\
+# 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z',\
+# 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS',\
+# 'TSNR2_QSO', 'TSNR2_LRG', 'ZWARN_MTL', 'Z_QN', 'Z_QN_CONF', 'IS_QSO_QN', 'TSNR2_GPBDARK_B',\
+# 'TSNR2_GPBBRIGHT_B', 'TSNR2_GPBBACKUP_B', 'TSNR2_GPBDARK_R', 'TSNR2_GPBBRIGHT_R',\
+# 'TSNR2_GPBBACKUP_R', 'TSNR2_GPBDARK_Z', 'TSNR2_GPBBRIGHT_Z', 'TSNR2_GPBBACKUP_Z',\
+# 'TSNR2_GPBDARK', 'TSNR2_GPBBRIGHT', 'TSNR2_GPBBACKUP', 'COADD_FIBERSTATUS', 'COADD_NUMEXP',\
+# 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'COADD_NUMTILE', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y',\
+# 'RMS_DELTA_Y', 'MEAN_FIBER_RA', 'STD_FIBER_RA', 'MEAN_FIBER_DEC', 'STD_FIBER_DEC',\
+# 'MEAN_PSF_TO_FIBER_SPECFLUX', 'MEAN_FIBER_X', 'MEAN_FIBER_Y']
 
 
 
@@ -141,32 +188,6 @@ speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','S
     
 
 
-#share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir +'/'+args.survey+'/LSS/'
-
-
-
-
-if not os.path.exists(maindir+'/logs'):
-    os.mkdir(maindir+'/logs')
-    print('made '+maindir+'/logs')
-
-if not os.path.exists(maindir+'/LSScats'):
-    os.mkdir(maindir+'/LSScats')
-    print('made '+maindir+'/LSScats')
-
-dirout = maindir+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    print('made '+dirout)
-
-ldirspec = maindir+specrel+'/'
-if not os.path.exists(ldirspec):
-    os.mkdir(ldirspec)
-    print('made '+ldirspec)
-if not os.path.exists(ldirspec+'healpix'):
-    os.mkdir(ldirspec+'healpix')
-    print('made '+ldirspec+'healpix')
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
