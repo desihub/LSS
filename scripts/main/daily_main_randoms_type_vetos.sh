@@ -3,5 +3,6 @@
 #to be run after getting interaction node (e.g., via salloc -N 1 -C haswell -t 04:00:00 --qos interactive --account desi)
 #1st argument should be tracer type and 2nd should be whether or not to reject qso targets
 
-python mkCat_main_ran.py --type $1 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso $2 --maxr 9
-python mkCat_main_ran.py --type $1 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso $2 --minr 9
+python mkCat_main_ran.py --type $1 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso $2 --maxr 6
+python mkCat_main_ran.py --type $1 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso $2 --minr 6 --maxr 12
+python mkCat_main_ran.py --type $1 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso $2 --minr 12 
