@@ -224,7 +224,7 @@ if specrel == 'daily' and args.doqso == 'y':
 
 if specrel == 'daily' and args.dospec == 'y':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    if os.path.isfile(specfo):
+    if os.path.isfile(specfo) and args.redospec == 'n':
         specf = Table.read(specfo)
         if args.fixspecf == 'y':
             ii = 0
