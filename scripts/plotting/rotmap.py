@@ -143,7 +143,7 @@ for lonv in lon_viewing_angles:
 	m.drawparallels(lats,zorder=ct)
 	ct += 1
 	for lat in lats:
-		plt.annotate(np.str(lat),xy=m(20,lat),xycoords='data',color='k',zorder=ct)
+		plt.annotate(str(lat),xy=m(20,lat),xycoords='data',color='k',zorder=ct)
 		ct += 1
 
 	mers = np.arange(merid_range[0],merid_range[1],merid_count)
@@ -152,7 +152,7 @@ for lonv in lon_viewing_angles:
 	for mer in mers:
 		if mer < 0:
 		    mer = 360+mer
-		plt.annotate(np.str(mer),xy=m(mer,-10),xycoords='data',color='k',zorder=ct)
+		plt.annotate(str(mer),xy=m(mer,-10),xycoords='data',color='k',zorder=ct)
 		ct += 1
 
 	# save figure at 150 dpi and show it
