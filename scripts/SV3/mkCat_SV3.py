@@ -227,7 +227,7 @@ for i in range(rm,rx):
 
 
 tilef = sv3dir+'tiles-'+pr+'.fits'
-if os.path.isfile(testfbaf):
+if os.path.isfile(tilef):
     ta = Table.read(tilef)
 else:
 	#construct a table with the needed tile information
