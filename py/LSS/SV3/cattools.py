@@ -1609,10 +1609,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #load in full random file
     ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
     if ebits is not None:
+        #print(ebits)
         print('number before imaging mask '+str(len(ffr)))
         if ebits == 'lrg_mask':
             sel = ffr['lrg_mask'] == 0
-            ff = ffr[sel]
+            ffr = ffr[sel]
         else:    
             ffr = cutphotmask(ffr,ebits)
         print('number after imaging mask '+str(len(ffr)))

@@ -9,8 +9,8 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 #data, run separately for dark and bright time
 #this only needs to be done once for each data release 
 #it has been done for the fuji soft release, probably doesn't need to be done again but might want to double check
-python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --prog dark --combd y
-python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --prog bright --combd y
+python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --type dark --combd y
+python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --type bright --combd y
 
 #Similarly, has been run for randoms for fuji already
 #Randoms are intended to be parallized, so Ashley uses an interactive node via:
@@ -47,7 +47,7 @@ python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey 
 #get all of the clustering catalogs
 #getting clustering randoms is pretty quick, though one can make it quicker if the randoms are done in parallel
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_SV3.py --type tp --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y  --nz y --maxr 18 --notqso notqso
+	python mkCat_SV3.py --type tp --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clus y --clusran y  --nz y --maxr 18 --notqso notqso
 
 also do LRGs cut to main sample targeting cuts:
 python mkCat_SV3.py --type LRG --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clus y --clusran y  --nz y --maxr 18 --ccut main
