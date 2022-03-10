@@ -116,7 +116,7 @@ else:
 
 pd = pdir
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/sv3/dark'  #SV3p.mdir+pdir+'/' #location of ledgers
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/sv3/dark'  #SV3p.mdir+pdir+'/' #location of ledgers
 tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits' #SV3p.tdir+pdir+'/' #location of targets
 #tdir = '/global/cscratch1/sd/acarnero/SV3/atest000' #SV3p.tdir+pdir+'/' #location of targets
 mtld = SV3p.mtld
@@ -141,7 +141,7 @@ def test_dir(value):
 
 
 #sv3dir = basedir +'/SV3/LSS/'
-sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL')
+sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_1')
 test_dir(sv3dir)
 
 #tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
@@ -289,7 +289,7 @@ if mkdtiles:
 #CREATE A DICTIONARY WITH TILEID AND THE DIRECTORY OF THE ALTMTL FBA RUN
 ##############################################################################################
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/mtl-done-tiles.ecsv')
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/mtl-done-tiles.ecsv')
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
     faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -310,7 +310,9 @@ if combd:
         outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles.fits')
         #AUREct.combtiles_wdup(ta,mdir,outf)
         if run_tarwdup:
-            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/mtl-done-tiles.ecsv', isodate='2022-02-11T16:42:58.000')
+            #Univ001 2022-02-14T19:37:05.000
+            #Univ000 2022-02-11T16:42:58.000
+            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/mtl-done-tiles.ecsv', isodate='2022-02-14T19:37:07.000')
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -343,7 +345,7 @@ if combd:
 #######################################################################################################################################
             outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
 
-            namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/fa/SV3','{stamp}','fba-{ts}.fits') 
+            namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/fa/SV3','{stamp}','fba-{ts}.fits') 
             if run_specwdup:
                 mt.combtile_specmock_mtl(ta, namecomb, list_runFA, tdir, outfile_spec)
 

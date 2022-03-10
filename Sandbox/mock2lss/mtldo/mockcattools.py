@@ -635,9 +635,9 @@ def mkfulldat(fs,zf,imbits,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',
 
 #CHECK HERE
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
-    dz['sort'] = dz['LOCATION_ASSIGNED']
+##    dz['sort'] = dz['LOCATION_ASSIGNED']
     #dz['sort'] = dz['TILELOCID_ASSIGNED']
-    #dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']   ##Try this one
     dz.sort('sort')
     dz = unique(dz, keys=['TARGETID'],keep='last')
     '''
@@ -1256,7 +1256,7 @@ def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','
             faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             fht = fitsio.read_header(faf_d)
             stamp = fht['RUNDATE'].split('T')[0].replace('-','')
-            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/fa/SV3',stamp,'fba-'+ts+'.fits')
+            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/fa/SV3',stamp,'fba-'+ts+'.fits')
             wt = tiles['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True, isodate=isodate, columns=tarcol)
             
@@ -1397,7 +1397,8 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     dz['TILELOCID_ASSIGNED'][wtl] = 1
     print('AQUI number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
-    
+   
+    '''
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
         if azf != '':
@@ -1430,16 +1431,18 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
             dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
             dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
             dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
-
+    '''
 
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
+    '''
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    '''
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
@@ -1660,8 +1663,9 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         wz &= ff['TSNR2_QSO'] > tsnrcut
 
     if tp == 'ELG' or tp == 'ELG_HIP':
-        wz = ff['o2c'] > dchi2
-        wz &= ff['ZWARN']*0 == 0
+        #AUREwz = ff['o2c'] > dchi2
+        #AUREwz &= ff['ZWARN']*0 == 0
+        wz = ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
         print('length after oII cut '+str(len(ff[wz])))
         wz &= ff['LOCATION_ASSIGNED'] == 1
