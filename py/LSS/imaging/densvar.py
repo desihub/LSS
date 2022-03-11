@@ -79,16 +79,33 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
         zd = 'zdone'
     rcol = ['RA','DEC','PHOTSYS']
     rd = fitsio.read(indir+sample+zd+'_0_full.ran.fits',columns=rcol)
-    sel = sel_reg(rd['RA'],rd['DEC'],reg)
-    rd = rd[sel]
+    if reg == 'DN' or reg == 'DS':
+        sel = sel_reg(rd['RA'],rd['DEC'],reg)
+        rd = rd[sel]
+    else: 
+        iss = rd['PHOTSYS'] == 'S'
+        if reg == 'S':
+            sel = iss
+        if reg == 'N':
+            sel = ~iss
+        rd = rd[sel]
+    
     if sample[:3] == 'ELG':
         dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
     rd = Table(rd)
     rd = add_par(rd,par)
 
     dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=rcol)
-    sel = sel_reg(dd['RA'],dd['DEC'],reg)
-    dd = dd[sel]
+    if reg == 'DN' or reg == 'DS':
+		sel = sel_reg(dd['RA'],dd['DEC'],reg)
+		dd = dd[sel]
+    else:
+        iss = dd['PHOTSYS'] == 'S'
+        if reg == 'S':
+            sel = iss
+        if reg == 'N':
+            sel = ~iss
+        dd = dd[sel]
     sel = dd['ZWARN'] != 999999
     if sample[:3] == 'ELG':
         sel &= dd['o2c'] > 0.9
