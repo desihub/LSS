@@ -112,7 +112,7 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
     if sample[:3] == 'ELG':
         sel &= dd['o2c'] > 0.9
     print(len(dd),len(dd[sel]))
-    dd = dd[sd]
+    dd = dd[sel]
     dd = Table(dd)
     dd = add_par(dd,par)
     perl = []
