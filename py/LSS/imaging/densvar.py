@@ -67,7 +67,7 @@ def add_par(dd,par):
     hpxr = hp.ang2pix(nside,th,phi,nest=nest)
     gvp = []
     parl = fitsio.read(pixfn)[par]
-    for px in hpxd:
+    for px in hpxr:
         gvp.append(parl[px])
     dd[par+'_pix'] = np.array(gvp)
     return dd        
