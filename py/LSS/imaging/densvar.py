@@ -91,12 +91,13 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
             sel = ~iss
         rd = rd[sel]
     
-    if sample[:3] == 'ELG':
-        dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
     rd = Table(rd)
     rd = add_par(rd,par)
 
-    dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=rcol)
+    if sample[:3] == 'ELG':
+        dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
+
+    dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=dcols)
     if reg == 'DN' or reg == 'DS':
         sel = sel_reg(dd['RA'],dd['DEC'],reg)
         dd = dd[sel]
