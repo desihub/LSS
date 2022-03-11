@@ -97,8 +97,8 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
 
     dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=rcol)
     if reg == 'DN' or reg == 'DS':
-		sel = sel_reg(dd['RA'],dd['DEC'],reg)
-		dd = dd[sel]
+        sel = sel_reg(dd['RA'],dd['DEC'],reg)
+        dd = dd[sel]
     else:
         iss = dd['PHOTSYS'] == 'S'
         if reg == 'S':
@@ -440,7 +440,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
         ec = R_G   
     if band == 'r':
         ec = R_R
-    if band == 	'z':
+    if band ==  'z':
         ec = R_Z     
     #if syspix:
     rth,rphi = radec2thphi(obi_masked['ra'],obi_masked['dec'])
