@@ -61,6 +61,72 @@ def sel_reg(ra,dec,reg):
 def get_pix(nside, ra, dec, nest=0):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
 
+def add_par(dd,par):
+    th,phi =radec2thphi(dd['RA'],dd['DEC'])
+    hpxr = hp.ang2pix(nside,th,phi,nest=nest)
+    gvp = []
+    parl = fitsio.read(pixfn)[par]
+    for px in hpxd:
+        gvp.append(parl[px])
+    dd[par+'_pix'] = np.array(gvp)
+    return dd        
+
+def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='main',specrel='daily',version='test',basedir='/global/cfs/cdirs/desi/survey/catalogs/'):
+    indir = basedir+survey+'/LSS/'+specrel+'/LSScats/'+version+'/'
+    rcols = ['RA','DEC','PHOTSYS']
+    zd = ''
+    if survey != 'SV3':
+        zd = 'zdone'
+    rd = fitsio.read(indir+sample+zd+'_0_full.ran.fits',columns=rcol)
+    sel = sel_reg(rd['RA'],rd['DEC'],reg)
+    rd = rd[sel]
+    if sample[:3] == 'ELG':
+        dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
+    rd = Table(rd)
+    rd = add_par(rd,par)
+
+    dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=rcol)
+    sel = sel_reg(dd['RA'],dd['DEC'],reg)
+    dd = dd[sel]
+    sel = dd['ZWARN'] != 999999
+    if sample[:3] == 'ELG':
+        sel &= dd['o2c'] > 0.9
+    print(len(dd),len(dd[sel]))
+    dd = dd[sd]
+    dd = Table(dd)
+    dd = add_par(dd,par)
+    perl = []
+    div = 100/nper
+    for i in range(nper+1):
+        perl.append(div*i)
+    print('percentiles are '+str(perl))
+    gdp = []
+    for per in perl:
+        gdp.append(np.percentile(dd[par+'_pix'],per))
+    print(gdp)
+    #cl = ['b','r','k','purple','brown']
+    dndz_ot,be = np.histogram(dd['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd['FRACZ_TILELOCID'])
+    bs = (zmax-zmin)/nbin
+    fac = len(rd)
+    for i in range(0,nper):
+        sd = dd_ng[par+'_pix'] >gdp[i]
+        sd &= dd_ng[par+'_pix'] <gdp[i+1]
+        dndz_ob,be = np.histogram(dd[sd]['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd_ng[sd]['FRACZ_TILELOCID'])    
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ot,'--',color=cl[i])
+        sdi = rd[par+'_pix'] >gdpdn[i]
+        sdi &= rd[par+'_pix'] <gdpdn[i+1]
+        facb = len(rd[sdi])#/len(obi_sel[sd])
+        print(facb)
+        #print(fac,facb,len(obi_sel[sd]))
+        #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(i))
+    plt.legend()
+    ol = np.zeros(len(be[:-1]))
+    plt.plot(be[:-1]+bs/2.,ol,':')
+    plt.show()
+
+
 def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
     
     #-- Dictionaries containing all different systematic values
