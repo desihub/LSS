@@ -129,9 +129,9 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
     bs = (zmax-zmin)/nbin
     fac = len(rd)
     for i in range(0,nper):
-        sd = dd_ng[par+'_pix'] >gdp[i]
-        sd &= dd_ng[par+'_pix'] <gdp[i+1]
-        dndz_ob,be = np.histogram(dd[sd]['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd_ng[sd]['FRACZ_TILELOCID'])    
+        sd = dd[par+'_pix'] >gdp[i]
+        sd &= dd[par+'_pix'] <gdp[i+1]
+        dndz_ob,be = np.histogram(dd[sd]['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd[sd]['FRACZ_TILELOCID'])    
         #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ot,'--',color=cl[i])
         sdi = rd[par+'_pix'] >gdpdn[i]
         sdi &= rd[par+'_pix'] <gdpdn[i+1]
