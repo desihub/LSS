@@ -77,6 +77,7 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
     zd = ''
     if survey != 'SV3':
         zd = 'zdone'
+    rcol = ['RA','DEC','PHOTSYS']
     rd = fitsio.read(indir+sample+zd+'_0_full.ran.fits',columns=rcol)
     sel = sel_reg(rd['RA'],rd['DEC'],reg)
     rd = rd[sel]
