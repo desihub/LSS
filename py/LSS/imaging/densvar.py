@@ -1,5 +1,6 @@
 import fitsio
 import astropy.io.fits as fits
+from astropy.table import Table
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
