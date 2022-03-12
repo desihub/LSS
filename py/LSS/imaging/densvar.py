@@ -146,7 +146,7 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
         #print(fac,facb,len(obi_sel[sd]))
         #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
         #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
-        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(gdp[i]+'<'+par+'<'+str(gdp[i+1])))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(gdp[i])+'<'+par+'<'+str(gdp[i+1]))
     plt.legend()
     ol = np.zeros(len(be[:-1]))
     plt.plot(be[:-1]+bs/2.,ol,':')
