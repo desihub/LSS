@@ -152,7 +152,7 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
     plt.plot(be[:-1]+bs/2.,ol,':')
     plt.xlabel('redshift')
     plt.ylabel('relative change in n(z)')
-    plt.title(survey+' 'sample+' '+reglab)
+    plt.title(survey+' '+sample+' '+reglab)
     plt.grid(True)
     plt.show()
 
