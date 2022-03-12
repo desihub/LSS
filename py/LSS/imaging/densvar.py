@@ -98,15 +98,21 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
         dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
 
     dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=dcols)
+    reglab = ''
     if reg == 'DN' or reg == 'DS':
         sel = sel_reg(dd['RA'],dd['DEC'],reg)
         dd = dd[sel]
+        reglab = 'DECaLS SGC'
+        if reg == 'DN':
+            reglab = 'DECaLS NGC'
     else:
         iss = dd['PHOTSYS'] == 'S'
         if reg == 'S':
             sel = iss
+            reglab = 'DECaLS'
         if reg == 'N':
             sel = ~iss
+            reglab = 'BASS/MzLS'
         dd = dd[sel]
     sel = dd['ZWARN'] != 999999
     if sample[:3] == 'ELG':
@@ -140,10 +146,14 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
         #print(fac,facb,len(obi_sel[sd]))
         #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
         #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
-        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(i))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(gdp[i]+'<'+par+'<'+str(gdp[i+1])))
     plt.legend()
     ol = np.zeros(len(be[:-1]))
     plt.plot(be[:-1]+bs/2.,ol,':')
+    plt.xlabel('redshift')
+    plt.ylabel('relative change in n(z)')
+    plt.title(survey+' 'sample+' '+reglab)
+    plt.grid(True)
     plt.show()
 
 
