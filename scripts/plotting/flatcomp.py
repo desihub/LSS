@@ -62,7 +62,7 @@ for tp in tps:
     plt.title(tp+' '+qt)
     plt.xlabel('RA')
     plt.ylabel('sin(DEC)')
-    plt.savefig(outdir+tp+'_flat'+qt+'.png')
+    plt.savefig(outdir+tp+'_flat'+qt+'.png',dpi=1000)
     plt.clf()
     del dat
     del datno
