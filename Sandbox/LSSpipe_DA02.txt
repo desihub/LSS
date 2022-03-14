@@ -12,8 +12,8 @@ python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --vers
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --prog bright --survey DA02
 
 #for randoms
-python mkCat_main_ran.py  --type dark  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02
-python mkCat_main_ran.py  --type bright  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02
+python mkCat_main_ran.py  --type dark  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02 --newspec y
+python mkCat_main_ran.py  --type bright  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02 --newspec y
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
 #in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
