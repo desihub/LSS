@@ -185,7 +185,7 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     dd = add_par(dd,par)
     if 'RF' in weightcol:
         weights = np.ones(len(dd))
-        weights *= catalog['WEIGHT_RF']*catalog['WEIGHT_COMP']
+        weights *= dd['WEIGHT_RF']*dd['WEIGHT_COMP']
         dd[weightcol] = weights
     perl = []
     div = 100/nper
