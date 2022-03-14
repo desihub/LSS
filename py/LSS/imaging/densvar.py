@@ -169,7 +169,7 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     rd = add_par(rd,par)
 
 
-    dd = fitsio.read(indir+sample+zd+reg+'_clustering.dat.fits',columns=dcols)
+    dd = fitsio.read(indir+sample+zd+reg+'_clustering.dat.fits')
     reglab = ''
     if reg == '_DN' or reg == '_DS':
         reglab = 'DECaLS SGC'
