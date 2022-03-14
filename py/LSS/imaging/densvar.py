@@ -156,6 +156,67 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
     plt.grid(True)
     plt.show()
 
+def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='DA02',specrel='guadalupe',version='test',basedir='/global/cfs/cdirs/desi/survey/catalogs/'):
+    indir = basedir+survey+'/LSS/'+specrel+'/LSScats/'+version+'/'
+    rd = fitsio.read(indir+sample+zd+reg+'_0_clustering.ran.fits')
+    
+    rd = Table(rd)
+    rd = add_par(rd,par)
+
+
+    dd = fitsio.read(indir+sample+zd+reg+'_clustering.dat.fits',columns=dcols)
+    reglab = ''
+    if reg == '_DN' or reg == '_DS':
+        reglab = 'DECaLS SGC'
+        if reg == '_DN':
+            reglab = 'DECaLS NGC'
+    else:
+        if reg == '_S':
+            reglab = 'DECaLS'
+        if reg == '_N':
+            reglab = 'BASS/MzLS'
+        dd = dd[sel]
+    dd = Table(dd)
+    dd = add_par(dd,par)
+    if 'RF' in weightcol:
+        weights = np.ones(len(dd))
+        weights *= catalog['WEIGHT_RF']*catalog['WEIGHT_COMP']
+        dd[weightcol] = weights
+    perl = []
+    div = 100/nper
+    for i in range(nper+1):
+        perl.append(div*i)
+    print('percentiles are '+str(perl))
+    gdp = []
+    for per in perl:
+        gdp.append(np.percentile(dd[par+'_pix'],per))
+    print(gdp)
+    #cl = ['b','r','k','purple','brown']
+    dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[wweightcol])
+    bs = (zmax-zmin)/nbin
+    fac = len(rd)
+    for i in range(0,nper):
+        sd = dd[par+'_pix'] >gdp[i]
+        sd &= dd[par+'_pix'] <gdp[i+1]
+        dndz_ob,be = np.histogram(dd[sd]['Z'],range=(zmin,zmax),bins=nbin,weights=dd[sd][weightcol])    
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ot,'--',color=cl[i])
+        sdi = rd[par+'_pix'] >gdp[i]
+        sdi &= rd[par+'_pix'] <gdp[i+1]
+        facb = len(rd[sdi])#/len(obi_sel[sd])
+        print(facb)
+        #print(fac,facb,len(obi_sel[sd]))
+        #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(round(gdp[i],3))+'<'+par+'<'+str(round(gdp[i+1],3)))
+    plt.legend()
+    ol = np.zeros(len(be[:-1]))
+    plt.plot(be[:-1]+bs/2.,ol,':')
+    plt.xlabel('redshift')
+    plt.ylabel('relative change in n(z)')
+    plt.title(survey+' '+sample+' '+reglab)
+    plt.grid(True)
+    plt.show()
+
 
 def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
     
