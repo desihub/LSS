@@ -195,6 +195,7 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     roundfac = 2-roundfac
     if roundfac < 0:
         roundfac = None
+    print(par,roundfac)
     gdp = []
     for per in perl:
         gdp.append(np.percentile(dd[par+'_pix'],per))
