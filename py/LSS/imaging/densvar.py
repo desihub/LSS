@@ -158,6 +158,11 @@ def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='m
 
 def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='DA02',specrel='guadalupe',version='test',basedir='/global/cfs/cdirs/desi/survey/catalogs/'):
     indir = basedir+survey+'/LSS/'+specrel+'/LSScats/'+version+'/'
+    zd = ''
+    if survey != 'SV3':
+        zd = 'zdone'
+
+
     rd = fitsio.read(indir+sample+zd+reg+'_0_clustering.ran.fits')
     
     rd = Table(rd)
