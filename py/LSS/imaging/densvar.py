@@ -220,6 +220,7 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     plt.ylabel('relative change in n(z)')
     plt.title(survey+' '+sample+' '+reglab)
     plt.grid(True)
+    plt.ylim(-.2,.2)
     plt.show()
 
 
