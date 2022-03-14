@@ -197,7 +197,7 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
         gdp.append(np.percentile(dd[par+'_pix'],per))
     print(gdp)
     #cl = ['b','r','k','purple','brown']
-    dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[wweightcol])
+    dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[weightcol])
     bs = (zmax-zmin)/nbin
     fac = len(rd)
     for i in range(0,nper):
