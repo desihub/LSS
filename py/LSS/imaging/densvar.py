@@ -191,15 +191,17 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     for i in range(nper+1):
         perl.append(div*i)
     print('percentiles are '+str(perl))
-    roundfac = int(np.log10(perl[-1]))
-    roundfac = 2-roundfac
-    if roundfac < 0:
-        roundfac = None
-    print(par,roundfac)
     gdp = []
     for per in perl:
         gdp.append(np.percentile(dd[par+'_pix'],per))
     print(gdp)
+
+    roundfac = int(np.log10(gdp[-1]))
+    roundfac = 2-roundfac
+    if roundfac < 0:
+        roundfac = None
+    print(par,roundfac)
+
     #cl = ['b','r','k','purple','brown']
     dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[weightcol])
     dndz_nt,_ = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin)
