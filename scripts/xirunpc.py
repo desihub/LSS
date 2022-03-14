@@ -70,6 +70,9 @@ if ttype[:3] == 'LRG':
 if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
     zl = [0.8,1.1,1.5]
+    if 'safez' in ttype:
+        zl = [0.9,1.48]
+        ttype = ttype.strip('safez')
     #zmask = ['','_zmask']
     
     #zmin = 0.8
