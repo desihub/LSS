@@ -180,7 +180,6 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
             reglab = 'DECaLS'
         if reg == '_N':
             reglab = 'BASS/MzLS'
-        dd = dd[sel]
     dd = Table(dd)
     dd = add_par(dd,par)
     if 'RF' in weightcol:
