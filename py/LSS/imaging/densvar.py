@@ -197,7 +197,11 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     print(gdp)
     #cl = ['b','r','k','purple','brown']
     dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[weightcol])
+    dndz_nt,_ = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin)
+    perr = np.sqrt(dndz_nt)/dndz_nt
+    
     bs = (zmax-zmin)/nbin
+    plt.fill_between(be[:-1]+bs/2.,-perr,perr,color='gray')
     fac = len(rd)
     for i in range(0,nper):
         sd = dd[par+'_pix'] >gdp[i]
