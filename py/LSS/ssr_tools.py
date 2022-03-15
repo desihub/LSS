@@ -1,3 +1,6 @@
+#Tools to study and correct for trends in spectroscopic succes rate (ssr)
+#LRG taken from Ronpgpu Zhou's notebook
+
 import sys, os, glob, time, warnings, gc
 import numpy as np
 import matplotlib.pyplot as plt
