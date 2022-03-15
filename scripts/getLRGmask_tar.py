@@ -43,9 +43,6 @@ lssdir = args.basedir +'/'+args.survey+'/LSS/'
 
 tp = 'LRG'
 
-if args.survey == 'main' or args.survey == 'DA02':
-    tp += 'zdone'
-
 
 
 def bitmask_radec(brickid, ra, dec):
