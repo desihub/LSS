@@ -1,5 +1,5 @@
 #Tools to study and correct for trends in spectroscopic succes rate (ssr)
-#LRG taken from Ronpgpu Zhou's notebook
+#Initial LRG model fitting taken from Ronpgpu Zhou's notebook
 
 import sys, os, glob, time, warnings, gc
 import numpy as np
