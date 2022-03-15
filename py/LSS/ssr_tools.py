@@ -59,7 +59,7 @@ def get_LRG_data(specrel='fuji'):
     sel &= cat_sv3all['PRIORITY'] == 103200 #we don't want to include the failed repeats in the statistics
     cat_sv3lrg = cat_sv3all[sel]
     del cat_sv3all
-    cat_sv3lrg = LRG_goodobs(cat_sv3lrg,'COADD_FIBERSTATUS','SV1_DESI_TARGET') 
+    cat_sv3lrg = LRG_goodobs(cat_sv3lrg,'COADD_FIBERSTATUS','SV3_DESI_TARGET') 
      
     if specrel == 'fuji':
         specrelmain = 'guadalupe'
