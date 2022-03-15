@@ -24,7 +24,7 @@ def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     data['q'] = data['ZWARN']==0
     data['q'] &= data['Z']<1.5
     data['q'] &= data['DELTACHI2']>15  
-    print('failure rate is '+np.sum(~data['q'])/len(data))
+    print('failure rate is '+str(np.sum(~data['q'])/len(data)))
     return data
 
 
