@@ -86,7 +86,7 @@ class LRG_ssr:
     def __init__(self,specrel='fuji'):
         self.cat = get_LRG_data(specrel)
 
-    def lrg_cost(self,q_predict):
+    def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
 
     def wrapper(self,params):
