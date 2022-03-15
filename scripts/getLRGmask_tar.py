@@ -156,7 +156,7 @@ else:
     rows = None
 
 if args.survey == 'main':
-    input_path = LSSdir+tp+'targetsDR9v1.1.1.fits'
+    input_path = lssdir+tp+'targetsDR9v1.1.1.fits'
     output_path = input_path #we will over-write, just adding new column
 
 mkfile(input_path,output_path)
