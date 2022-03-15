@@ -18,7 +18,7 @@ def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     #print('& LRG imaging mask', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
 
     # Remove QSO targets
-    mask &= perexp[dt_col] & 2**2 ==0
+    mask &= data[dt_col] & 2**2 ==0
     print('& Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
     data = data[mask]
     data['quality'] = data['ZWARN']==0
