@@ -5,7 +5,7 @@ from astropy.table import Table, vstack, hstack, join
 import fitsio
 from scipy.optimize import curve_fit, minimize
 
-def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET')
+def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     mask = data[fbs_col]==0
     print(fbs_col,np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
 
