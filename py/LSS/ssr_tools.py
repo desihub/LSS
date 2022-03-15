@@ -40,7 +40,7 @@ def get_LRG_data(specrel='fuji'):
     sel = np.isin(perexpall['TARGETID'],maintids['TARGETID'])
     perexplrg = perexpall[sel]
     del perexpall
-    perexplrg = LRG_goodobs(perexplrg,'FIBERSTATUS','SV1_DESI_TARGET')
+    perexplrg = LRG_goodobs(perexplrg,'COADD_FIBERSTATUS','SV1_DESI_TARGET')
     
     cat_1xall = Table(fitsio.read(zcatdir+'ztile-sv1-dark-1x_depth.fits'))
     sel = np.isin(cat_1xall['TARGETID'],maintids['TARGETID'])
