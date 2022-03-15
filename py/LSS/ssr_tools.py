@@ -93,9 +93,9 @@ class LRG_ssr:
         q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_Z_EC'], self.cat['EFFTIME_LRG'], *params)
         return self.cost(q_predict)
 
-	def failure_rate(self,flux, efftime, a, b, c):
-		sn = flux * np.sqrt(efftime)
-		return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+    def failure_rate(self,flux, efftime, a, b, c):
+        sn = flux * np.sqrt(efftime)
+        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
         res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
