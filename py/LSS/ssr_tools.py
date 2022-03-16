@@ -88,9 +88,9 @@ def get_LRG_data(specrel='fuji'):
 class LRG_ssr:
     def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
         self.cat = get_LRG_data(specrel)
-		mask = self.cat['EFFTIME_LRG']>efftime_min
-		mask &= self.cat['EFFTIME_LRG']<efftime_max
-		self.cat = self.cat[mask]
+        mask = self.cat['EFFTIME_LRG']>efftime_min
+        mask &= self.cat['EFFTIME_LRG']<efftime_max
+        self.cat = self.cat[mask]
 
     def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
