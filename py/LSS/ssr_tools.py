@@ -24,12 +24,17 @@ def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     mask &= data[dt_col] & 2**2 ==0
     print('& Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
     data = data[mask]
-    data['q'] = data['ZWARN']==0
-    data['q'] &= data['Z']<1.5
-    data['q'] &= data['DELTACHI2']>15  
+    data['q'] = LRG_goodz(data)#data['ZWARN']==0
+    #data['q'] &= data['Z']<1.5
+    #data['q'] &= data['DELTACHI2']>15  
     print('failure rate is '+str(np.sum(~data['q'])/len(data)))
     return data
 
+def LRG_goodz(data):
+    sel = data['ZWARN']==0
+    sel &= data['Z']<1.5
+    sel &= data['DELTACHI2']>15  
+    return sel
 
 def get_LRG_data(specrel='fuji'):
     

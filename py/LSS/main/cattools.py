@@ -24,6 +24,7 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 from LSS.common_tools import find_znotposs
+from LSS import ssr_tools
 
 import logging
 logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
@@ -2048,12 +2049,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
 
-        drz = (10**(3 - 3.5*ff['Z']))
-        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
-        mask_bad |= (ff['DELTACHI2']<10)
-        wz &= ff['Z']<1.4
-        wz &= (~mask_bad)
+        selg = ssr_tools.LRG_goodz(ff)
+        #drz = (10**(3 - 3.5*ff['Z']))
+        #mask_bad = (drz>30) & (ff['DELTACHI2']<30)
+        #mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
+        #mask_bad |= (ff['DELTACHI2']<10)
+        #wz &= ff['Z']<1.4
+        #wz &= (~mask_bad)
+        wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
@@ -2076,6 +2079,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if tp[:3] == 'LRG':
+        lrg = ssr_tools.LRG_ssr()
+        ff = lrg.add_modpre(ff)
+        ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
     #if tp[:3] == 'ELG':
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
     #    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
