@@ -1434,16 +1434,16 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''    
-    ff = Table.read(fl+'full_noveto.dat.fits')
-    if ebits is not None:
-        print('number before imaging mask '+str(len(ff)))
-        if ebits == 'lrg_mask':
-            sel = ff['lrg_mask'] == 0
-            ff = ff[sel]
-        else:
-            ff = cutphotmask(ff,ebits)
-        print('number after imaging mask '+str(len(ff)))
-    ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
+    ff = Table.read(fl+'full.dat.fits')
+#     if ebits is not None:
+#         print('number before imaging mask '+str(len(ff)))
+#         if ebits == 'lrg_mask':
+#             sel = ff['lrg_mask'] == 0
+#             ff = ff[sel]
+#         else:
+#             ff = cutphotmask(ff,ebits)
+#         print('number after imaging mask '+str(len(ff)))
+#    ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1464,7 +1464,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print(len(ff),len(ff[sel]))
             ff = ff[sel]   
             ff.write(fl+wzm+'full.dat.fits',format='fits',overwrite='True')
-    
+    ff['Z_not4clus'].name = 'Z'    
     '''
     This is where redshift failure weights go
     '''
@@ -1627,18 +1627,18 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #load in data clustering catalog
     fcd = Table.read(fl+wzm+'clustering.dat.fits')
     #load in full random file
-    ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
-    if ebits is not None:
-        #print(ebits)
-        print('number before imaging mask '+str(len(ffr)))
-        if ebits == 'lrg_mask':
-            sel = ffr['lrg_mask'] == 0
-            ffr = ffr[sel]
-        else:    
-            ffr = cutphotmask(ffr,ebits)
-        print('number after imaging mask '+str(len(ffr)))
-
-    ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
+    ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+#     if ebits is not None:
+#         #print(ebits)
+#         print('number before imaging mask '+str(len(ffr)))
+#         if ebits == 'lrg_mask':
+#             sel = ffr['lrg_mask'] == 0
+#             ffr = ffr[sel]
+#         else:    
+#             ffr = cutphotmask(ffr,ebits)
+#         print('number after imaging mask '+str(len(ffr)))
+# 
+#     ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
 
     #mask mask on tsnr
     wz = ffr[tsnrcol] > tsnrcut
