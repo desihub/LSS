@@ -537,8 +537,8 @@ if args.apply_veto == 'y':
         maxp = 103100
     if type[:3] == 'BGS':
         maxp = 102100
-    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
-    fout = dirout+type+notqso+'zdone_full.dat.fits'
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'_full.dat.fits'
     common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
     print('data veto done, now doing randoms')
     for rn in range(rm,rx):

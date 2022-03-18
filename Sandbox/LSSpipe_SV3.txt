@@ -43,6 +43,14 @@ for tp,notqso in zip(tps,notqsos):
 #apply veto mask column for LRGs
 #this expects to be on interactive node
 python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey SV3 --verspec fuji --maxr 18 
+
+#this applies vetos to both data and randoms (could put randoms in separate script and parallize)
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_SV3.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec fuji --notqso notqso
+    
+#to do randoms in parallel:
+    python mkCat_SV3_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec fuji --notqso notqso
+
     
 #get all of the clustering catalogs
 #getting clustering randoms is pretty quick, though one can make it quicker if the randoms are done in parallel
