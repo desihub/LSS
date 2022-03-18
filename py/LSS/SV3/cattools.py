@@ -1184,7 +1184,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     print(len(dz[wtype]))
     print('length after selecting type '+str(len(dz)))
-    print(len(dz[wg]))
+    #print(len(dz[wg]))
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
     wg = np.isin(dz['TILELOCID'],gtl)
