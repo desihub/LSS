@@ -39,6 +39,7 @@ parser.add_argument("--dodt", help="process individual tiles; not really necessa
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -526,6 +527,26 @@ if mkfullr:
         ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
+
+if args.apply_veto == 'y':
+    print('applying vetos')
+    maxp = 103400
+    if type[:3] == 'LRG' or notqso == 'notqso':
+        maxp = 103200
+    if type[:3] == 'ELG' and notqso == 'notqso':
+        maxp = 103100
+    if type[:3] == 'BGS':
+        maxp = 102100
+    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'zdone_full.dat.fits'
+    common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    print('data veto done, now doing randoms')
+    for rn in range(rm,rx):
+        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'zdone_'+str(rn)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(rn)+' done')
+
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:

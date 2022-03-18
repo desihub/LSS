@@ -381,7 +381,7 @@ def doran(ii):
             maxp = 2100
         fin = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
-        ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         #print('random veto '+str(ii)+' done')
 
 
