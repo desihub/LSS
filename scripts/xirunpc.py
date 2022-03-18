@@ -231,7 +231,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
             
             if fibered: mask &= catalog['LOCATION_ASSIGNED']
             positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
-            if fibered and 'bitwise' not in weight_type: weights = list(catalog['BITWEIGHTS'][mask].T)
+            if fibered and 'bitwise' in weight_type: weights = list(catalog['BITWEIGHTS'][mask].T)
             else: weights = np.ones_like(positions[0])
             return positions, weights
     
