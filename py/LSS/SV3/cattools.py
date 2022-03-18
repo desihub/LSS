@@ -1181,12 +1181,13 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
     #find the rows that are 'good' tilelocid
-    wg = np.isin(dz['TILELOCID'],gtl)
+    
     print(len(dz[wtype]))
     print('length after selecting type '+str(len(dz)))
     print(len(dz[wg]))
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
+    wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
