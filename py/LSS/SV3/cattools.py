@@ -1046,20 +1046,23 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 
     
     dz = dz[wtype]#&wg]
-    wg = np.isin(dz['TILELOCID'],gtl)
-    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['GOODHARDLOC'][wg] = 1
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     lznp = find_znotposs(dz)
-    wk = ~np.isin(dz['TILELOCID'],lznp)
-    dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['ZPOSSLOC'][wk] = 1
 
     #lznp will later be used to veto
     #load in random file
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits'
     dz = Table.read(zf)
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
+
+    wk = ~np.isin(dz['TILELOCID'],lznp)
+    dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['ZPOSSLOC'][wk] = 1
+
     #load in tileloc info for this random file and join it
     zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
