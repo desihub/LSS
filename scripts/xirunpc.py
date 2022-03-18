@@ -227,7 +227,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
             if reg != '' and reg != '_DS' and reg != '_DN':
                 mask &= catalog['PHOTSYS'] == region.strip('_')
             if reg == '_DS' or reg == '_DN':
-                mask &= sel_reg(catalog['RA'],catalog['DEC'],region.strip('_')
+                mask &= sel_reg(catalog['RA'],catalog['DEC'],region.strip('_'))
             
             if fibered: mask &= catalog['LOCATION_ASSIGNED']
             positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
