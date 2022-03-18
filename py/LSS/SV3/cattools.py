@@ -1358,7 +1358,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('rosette number and the number on each rosette')
     print(np.unique(dz['rosette_number'],return_counts=True))
 
-    dz['TILELOCID'] = locs
+#    dz['TILELOCID'] = locs
     #get numbers again after the re-assignment
 #     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 #     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
