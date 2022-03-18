@@ -18,7 +18,7 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=4,type=int)
-parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
+parser.add_argument("--weight_type",help="types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--njack",help="number of jack-knife subsamples",default=20)
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=64,type=int)
@@ -117,6 +117,21 @@ wa = ''
 if survey in ['main', 'DA02']:
     wa = 'zdone'
 
+if 'completeness_only' in weight_type and 'bitwise' in weight_type:
+    sys.exit('inconsistent choices were put into weight_type, not proceeding!')
+
+def sel_reg(ra,dec,reg):
+    wra = (ra > 100-dec)
+    wra &= (ra < 280 +dec)
+    if reg == 'DN':
+        w = dec < 32.375
+        w &= wra
+    if reg == 'DS':
+        w = ~wra
+        w &= dec > -25
+    return w        
+
+
 def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None,fnroot=''):
     if ttype == 'ELGrec' or ttype == 'LRGrec':
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
@@ -155,10 +170,11 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
         #    weights = None
         #else:
         weights = np.ones_like(positions[0])
+        
         if name == 'data':
             if 'zfail' in weight_type:
                 weights *= catalog['WEIGHT_ZFAIL'][mask]
-            if 'default' in weight_type:
+            if 'default' in weight_type and 'bitwise' not in weight_type:
                 weights *= catalog['WEIGHT'][mask]
             if 'RF' in weight_type:
                 weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
@@ -166,13 +182,17 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
                 weights = catalog['WEIGHT_COMP'][mask]
             if 'FKP' in weight_type:
                 weights *= catalog['WEIGHT_FKP'][mask]
-            elif 'bitwise' in weight_type:
+            if 'bitwise' in weight_type:
                 weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
         if name == 'randoms':
             if 'default' in weight_type:
                 weights *= catalog['WEIGHT'][mask]
             if 'RF' in weight_type:
                 weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
+            if 'zfail' in weight_type:
+                weights *= catalog['WEIGHT_ZFAIL'][mask]
+            if 'completeness_only' in weight_type:
+                weights = catalog['WEIGHT_COMP'][mask]
             if 'FKP' in weight_type:
                 weights *= catalog['WEIGHT_FKP'][mask]
                 
@@ -204,11 +224,14 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
         
         def get_positions_weights(catalog, fibered=False):
             mask = np.ones(len(catalog),dtype='bool')
-            if reg != '':
+            if reg != '' and reg != '_DS' and reg != '_DN':
                 mask &= catalog['PHOTSYS'] == region.strip('_')
+            if reg == '_DS' or reg == '_DN':
+                mask &= sel_reg(catalog['RA'],catalog['DEC'],region.strip('_')
+            
             if fibered: mask &= catalog['LOCATION_ASSIGNED']
             positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
-            if fibered: weights = list(catalog['BITWEIGHTS'][mask].T)
+            if fibered and 'bitwise' not in weight_type: weights = list(catalog['BITWEIGHTS'][mask].T)
             else: weights = np.ones_like(positions[0])
             return positions, weights
     
