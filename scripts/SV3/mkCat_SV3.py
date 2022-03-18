@@ -602,7 +602,7 @@ if mknz:
 
     regl = ['','_N','_S']
     
-    for reg in regl:
+    
     if type[:3] == 'QSO':
         zmin = 0.6
         zmax = 4.5
