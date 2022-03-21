@@ -5,8 +5,7 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-# To install pycorr: python -m pip install git+https://github.com/adematti/pycorr
-from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, utils, project_to_multipoles, project_to_wp, setup_logging,KMeansSubsampler
+from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 distance = cosmo.comoving_radial_distance
@@ -42,9 +41,9 @@ nran = int(args.nran)
 weight_type = args.weight_type
 
 if args.bintype == 'log':
-    bine = np.logspace(-1.5, 2.2, 80)
+    sedges = np.logspace(-1.5, 2.2, 80)
 if args.bintype == 'lin':
-    bine = np.linspace(1e-4, 200, 201)
+    sedges = np.linspace(1e-4, 200, 201)
 
 dirxi = os.environ['CSCRATCH']+'/'+survey+'xi/'
 if args.outdir is not None:
@@ -118,11 +117,12 @@ if survey in ['main', 'DA02']:
     wa = 'zdone'
 
 if 'completeness_only' in weight_type and 'bitwise' in weight_type:
-    sys.exit('inconsistent choices were put into weight_type, not proceeding!')
+    raise ValueError('inconsistent choices were put into weight_type, exiting!')
+
 
 def sel_reg(ra,dec,reg):
     wra = (ra > 100-dec)
-    wra &= (ra < 280 +dec)
+    wra &= (ra < 280+dec)
     if reg == 'DN':
         w = dec < 32.375
         w &= wra
@@ -132,7 +132,7 @@ def sel_reg(ra,dec,reg):
     return w        
 
 
-def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None,fnroot=''):
+def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
     if ttype == 'ELGrec' or ttype == 'LRGrec':
         data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
@@ -153,22 +153,17 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
   
     corrmode = mode
     if mode == 'wp':
+        edges = (bins, np.linspace(0, 40., 41)) #if you want wp, only go out to pi = 40; consider setting pi_max as argument
         corrmode = 'rppi'
-    if mode == 'multi':
-        corrmode = 'smu'
-    if corrmode == 'smu':
-        edges = (bine, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between 0 and 1
-    if corrmode == 'rppi':
-        edges = (bine, bine) #transverse and radial separations are  coded to be the same here
-        if mode == 'wp':
-            edges = (bins,np.linspace(0,40.,41)) #if you want wp, only go out to pi = 40; consider setting pi_max as argument
+    if mode == 'smu':
+        edges = (sedges, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between 0 and 1
+    if mode == 'rppi':
+        edges = (sedges, sedges) #transverse and radial separations are  coded to be the same here
+
     def get_positions_weights(catalog, name='data'):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
         print('Using {:d} rows for {}'.format(mask.sum(),name))
-        positions = [catalog['RA'][mask].astype(float), catalog['DEC'][mask].astype(float), distance(catalog['Z'][mask]).astype(float)]
-        #if weight_type is None:
-        #    weights = None
-        #else:
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
         weights = np.ones_like(positions[0])
         
         if name == 'data':
@@ -201,8 +196,7 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
     data_positions, data_weights = get_positions_weights(data, name='data')
     randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
     shifted_positions, shifted_weights = None, None
-    subsampler = KMeansSubsampler(mode='angular', positions=data_positions, nsamples=int(args.njack), nside=512, random_state=42, position_type='rdd')
-    labels = subsampler.label(randoms_positions)
+    subsampler = KMeansSubsampler(mode='angular', positions=data_positions, nsamples=int(args.njack), nside=512, random_state=42, position_type='rdd', dtype=dtype)
     data_samples = subsampler.label(data_positions)
     randoms_samples = subsampler.label(randoms_positions)
 
@@ -263,12 +257,8 @@ def compute_correlation_function(mode, tracer='LRG', region='_N', nrandoms=4, zl
                                          shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
                                          data_samples1=data_samples, randoms_samples1=randoms_samples,
                                          engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **kwargs)
-    #save paircounts
-    fn = dirxi+'paircounts_'+fnroot+'.npy'
-    result.save(fn)
     return result, wang
 
-ranwt1=False
 
 regl = ['_N','_S','']
 
@@ -284,43 +274,41 @@ if survey in ['main','DA02']:
         regl = ['_DN','_N']
         tcorr = 'ELG'
         tw = 'ELG'+args.rectype+args.convention
-        
 
 nzr = len(zl)
 
-bsl = [1,4,5,10]
+bsl = [1, 4, 5, 10]
 ells = (0, 2, 4)
 nells = len(ells)
 
 if len(zl) == 2:
     nzr = len(zl)-1
-for i in range(0,nzr):
+for i in range(0, nzr):
     if i == len(zl)-1:
         zmin=zl[0]
         zmax=zl[-1]
     else:
         zmin = zl[i]
         zmax = zl[i+1]
-    print(zmin,zmax)
+    print(zmin, zmax)
     for reg in regl:
         print(reg)
         #(sep, xiell), wang = compute_correlation_function('multi', bs, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
         fnroot = tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype
-        pfn = dirxi+'paircounts_'+fnroot+'.npy'
-        result,wang = compute_correlation_function('multi', tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads,fnroot=fnroot)
+        pfn = os.path.join(dirxi, 'paircounts_{}.npy'.format(fnroot))
+        result, wang = compute_correlation_function('smu', tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+        #save paircounts
+        result.save(pfn)
         for bs in bsl:
-            result = TwoPointEstimator.load(pfn)
-            result.rebin((bs, 1))
-            sep,xiell,cov = project_to_multipoles(result,ells=ells)#, wang
-            std = np.array_split(np.diag(cov)**0.5, nells)
-            fo = open(dirxi+'xi024'+fnroot+str(bs)+'.dat','w')
-            for i in range(0,len(sep)):
-                fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+' '+str(std[0][i])+' '+str(std[1][i])+' '+str(std[2][i])+'\n')
-            fo.close()
+            #result = TwoPointEstimator.load(pfn)
+            fn_txt = os.path.join(dirxi, 'xi024{}{}.dat'.format(fnroot, bs))
+            rebinned = result[::bs]
+            rebinned.save_txt(fn_txt, ells=ells)
+            sep, xiell = rebinned(ells=ells)#, wang
             if args.vis == 'y':
                 if args.bintype == 'log':
-                    plt.loglog(sep,xiell[0])
+                    plt.loglog(sep, xiell[0])
                 if args.bintype == 'lin':
-                    plt.plot(sep,sep**2.*xiell[0])
+                    plt.plot(sep, sep**2 * xiell[0])
                 plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
-                plt.show()    
+                plt.show()
