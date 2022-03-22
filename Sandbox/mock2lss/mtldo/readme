@@ -11,6 +11,9 @@ python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl y --rfa n
 python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl n --rfa y
 python mkCat_SV3_ran.py --type dark --cutran n --combr y --ranmtl n --rfa n
 
+
+python mkCat_SV3_ran.py --type dark --cutran y --combr y --ranmtl y --rfa y
+
 python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr y --clus n
 python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr n --clus y
 
@@ -18,5 +21,11 @@ python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --ful
 
 
 For xi
-python ximock.py --type ELG --id 22
+python ximock.py --nran 10 --ranmockdata data --univ 1 --type LRG --weight_column tileloc
+python ximock.py --nran 10 --ranmockdata data --univ 1 --type LRG --weight_column probobs
+python ximock.py --nran 10 --ranmockdata mock --univ 1 --type LRG --weight_column tileloc
+python ximock.py --nran 10 --ranmockdata mock --univ 1 --type LRG --weight_column probobs
 
+
+For FirstGen mocks:
+python xifirstgen.py --type ELG --nran 10 --id 0

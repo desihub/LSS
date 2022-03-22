@@ -60,7 +60,7 @@ splitByChunk=100
 overwrite2=1
 #Actual running of scripts
 
-srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
+###srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
 if [ $? -ne 0 ]; then
     exit 1234
 fi
@@ -68,7 +68,7 @@ fi
 
 
 
-bash dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA >& dateLoopAltMTLOutput.out
+bash dateLoopAltMTL_mock.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA >& dateLoopAltMTLOutput.out
 
 if [ $? -ne 0 ]; then
     exit 12345

@@ -1062,7 +1062,7 @@ def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARG
     #we now want to load in the bigger data file with all the target info
     #we use it to find the locations where observations of the given type were not possible and then mask them
     zf = os.path.join(indir,'datcomb_'+pd+'_tarspecwdup_Alltiles.fits')
-    dz = Table.read(zf) 
+    dz = Table.read(zf)
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         wtype &= ((dz[desitarg] & qsobit) == 0)
@@ -1083,6 +1083,7 @@ def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARG
     #cut to good and possible locations
     wk = ~np.isin(dz['TILELOCID'],lznp)
     wk &= np.isin(dz['TILELOCID'],gtl)
+
     dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     #get all the additional columns desired from original random files through join
@@ -1092,7 +1093,12 @@ def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARG
 #AURE 'NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     tarf.remove_columns(delcols)
     dz = join(dz,tarf,keys=['TARGETID'])
-    
+
+    #AURE I put this here!
+    wk = ((dz[desitarg] & bit) > 0)
+    #####
+    dz = dz[wk]
+   
     #apply imaging vetos
 #AURE    dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
@@ -1236,7 +1242,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         ffcs[col] = dshuf[col]     
     ffcs.write(outfs,format='fits', overwrite=True)
     '''
-def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY'], isodate=None):
+def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY'], isodate=None, univ='001'):
     print('entro aqui no combtiles mtl')
     s = 0
     n = 0
@@ -1256,7 +1262,7 @@ def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','
             faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             fht = fitsio.read_header(faf_d)
             stamp = fht['RUNDATE'].split('T')[0].replace('-','')
-            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/fa/SV3',stamp,'fba-'+ts+'.fits')
+            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/fa/SV3'.format(UNIV=univ),stamp,'fba-'+ts+'.fits')
             wt = tiles['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True, isodate=isodate, columns=tarcol)
             
@@ -1644,7 +1650,7 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
     '''
 
 
-    outf = fl+wzm+'clustering.dat.fits'
+    outf = fl+wzm+'clustering_'+weightmd+'.dat.fits'
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))
@@ -1662,7 +1668,7 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         wz &= ff['ZWARN'] != 999999
         wz &= ff['TSNR2_QSO'] > tsnrcut
 
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    if 'ELG' in tp: # == 'ELG' or tp == 'ELG_HIP':
         #AUREwz = ff['o2c'] > dchi2
         #AUREwz &= ff['ZWARN']*0 == 0
         wz = ff['ZWARN']*0 == 0
@@ -1813,7 +1819,7 @@ def addnbar(fb,fbr,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
 def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,om=0.31519):
     
     cd = distance(om,1-om)
-    ranf = fitsio.read(fcr) #should have originally had 2500/deg2 density, so can convert to area
+    ranf = Table.read(fcr) #should have originally had 2500/deg2 density, so can convert to area
     area = len(ranf)/2500.
     print('area is '+str(area))
     

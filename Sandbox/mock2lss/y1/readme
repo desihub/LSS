@@ -1,5 +1,28 @@
-1) Use path 
+#### outputs/targ-after-pass6.fits  Can it work?
+
+diferencia entre targs.fits - targets-UNIT-mtlz
+-----------------------------------------------
+------------------
+
+
+Use path 
 /global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ/fba001/
+
+
+Check /global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ/fba001/inputs
+seems like 2 steps:
+1) tiles-targ-settings.asc
+
+python ./desi_fa_smallrun_abacus --desi_target_env /global/cfs/cdirs/desi/target --dr dr9 --dtver 1.1.1 --infn /global/project/projectdirs/desi/users/mvargas/for_EZmocks/EZ3gpc/targets-UNIT-mtlz_SV3_alltracers_sv3bits_1years_001.fits --margin_gfa 0.4 --margin_petal 0.4 --margin_pos 0.05 --nolog n --npass 7 --numproc 1 --outdir /global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ/fba001/ --program dark --radec 0,360,-90,90 --radec_margin 2 --rundate 2021-12-04T00:00:00+00:00 --sky_per_petal 40 --sky_per_slitblock 1 --standards_per_petal 10 --steps tiles,targ --survey main --tilesfn /project/projectdirs/desi/users/mvargas/for_EZmocks/Tiles_year1_formated.fits
+
+2) fa-settings.asc
+
+python ./desi_fa_smallrun_abacus --desi_target_env /global/cfs/cdirs/desi/target --dr dr9 --dtver 1.1.1 --infn /global/project/projectdirs/desi/users/mvargas/for_EZmocks/EZ3gpc/targets-UNIT-mtlz_SV3_alltracers_sv3bits_1years_001.fits --margin_gfa 0.4 --margin_petal 0.4 --margin_pos 0.05 --nolog n --npass 7 --numproc 32 --outdir /global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ/fba001/ --program dark --radec 0,360,-90,90 --radec_margin 2 --rundate 2021-12-04T00:00:00+00:00 --sky_per_petal 40 --sky_per_slitblock 1 --standards_per_petal 10 --steps fa --survey main --tilesfn /project/projectdirs/desi/users/mvargas/for_EZmocks/Tiles_year1_formated.fits
+
+
+** Where is desi_fa_smallrun_abacus ???? it was in /global/project/projectdirs/desi/users/mvargas/for_EZmocks
+** Put output dir: /global/cscratch1/sd/acarnero/Y1/
+** Works only in source /global/cfs/cdirs/desi/software/desi_environment.sh 21.7e
 
 OUTPUTFILE = PATH/inputs/targ.fits
 

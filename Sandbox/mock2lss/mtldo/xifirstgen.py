@@ -4,6 +4,7 @@ import logging
 import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
+from desitarget.sv3 import sv3_targetmask
 import itertools
 import random
 from pycorr import TwoPointCorrelationFunction, utils, project_to_multipoles, project_to_wp, setup_logging
@@ -15,27 +16,24 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="where to find catalogs",default='/global/cscratch1/sd/acarnero')
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='mock')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
-parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=5)
+parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
 parser.add_argument("--bintype",help="log or lin",default='lin')
 parser.add_argument("--nthreads",help="number of threads for parallel comp",default=32,type=int)
 parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
+parser.add_argument("--id",help="id of mock ",default=0)
+
+#parser.add_argument("--idran",help="id of mock ",default=0)
 
 #only relevant for reconstruction
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
 parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
-parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
-parser.add_argument("--ranmockdata", help="If use randoms from mocks or data",default='data')
-
-parser.add_argument("--weight_column",help="Which definition of weight in clustering WEIGHT column, options are probobs or tileloc",default='tileloc')
 
 
 args = parser.parse_args()
 
-tagclustering = args.weight_column
-id_ = "%03d"%int(args.univ)
 ttype = args.type
 basedir = args.basedir
 version = args.version
@@ -43,33 +41,26 @@ specrel = args.verspec
 survey = args.survey
 nran = int(args.nran)
 weight_type = args.weight_type
-
-mockordata = args.ranmockdata
+id_ = "%03d"%int(args.id)
 
 if args.bintype == 'log':
     bine = np.logspace(-1.5, 2.2, 80)
 if args.bintype == 'lin':
     bine = np.linspace(1e-4, 200, 40)
 
-dirxi = os.environ['CSCRATCH']+'/'+survey+'MTL_{UNIV}_xi/'.format(UNIV=args.univ)
+dirxi = os.path.join(os.environ['CSCRATCH'],survey+'xi')
 
 if not os.path.exists(dirxi):
     os.mkdir(dirxi)
     print('made '+dirxi) 
 
-lssdir = os.path.join(basedir, survey, 'LSS_MTL_{UNIV}'.format(UNIV=args.univ),specrel,'LSScats')
+datafile = os.path.join(os.environ['CSCRATCH'], survey, 'mockTargets_{ID}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(ID=id_))
 
-mock_lssdir = os.path.join(lssdir, version)
-data_lssdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/2.1' 
+ran_ids = np.linspace(100,5000,50)
+ran_ids = random.sample(list(ran_ids), nran)
+random_data = os.path.join(os.environ['CSCRATCH'], survey, 'mockRandom_{RANID}_FirstGen_CutSky_alltracers_sv3bits.fits') #.format(RANID=int(ran_ids[ii])))
 
-if mockordata == 'data':
-    dirname = data_lssdir
-    tagrandom = 'datarandoms'
-elif mockordata == 'mock':
-    dirname = mock_lssdir
-    tagrandom = 'mockrandoms'
-else:
-    raise Exception("You need to select randoms from mock or data correctly, options are mock or data, you selected "+mockordata) 
+
 
 zmask = ['']
 minn = 0
@@ -77,23 +68,15 @@ minn = 0
 subt = None
 
 if ttype[:3] == 'LRG':
-#    zl = [0.6,1.1]
     zl = [0.4,0.6,0.8,1.1]
 
 
 if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
     zl = [0.8,1.1,1.5]
-    #zmask = ['','_zmask']
-    
-    #zmin = 0.8
-    #zmax = 1.6
-
 
 if ttype == 'QSO':
     zl = [0.8,1.1,1.5,2.1]
-    #zmin = 1.
-    #zmax = 2.1
 
 if ttype == 'QSOh':
     zl = [2.1,3.5]
@@ -128,26 +111,33 @@ wa = ''
 if survey == 'main':
     wa = 'zdone'
 
+#bit = sv3_targetmask.desi_mask[type]
 
-ran_ids = np.linspace(0,19,20)
-ran_ids = random.sample(list(ran_ids), nran)
+#wtype = ((dz['SV3_DESI_TARGET'] & bit) > 0)
 
 
-def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=[4], zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
+def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, nthreads=8, dtype='f8', wang=None):
     if ttype == 'ELGrec' or ttype == 'LRGrec':
-        data_fn = os.path.join(mock_lssdir, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'_'+tagclustering+'.dat.fits')
+        data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
         data = Table.read(data_fn)
 
         randoms_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits') 
         randoms = Table.read(randoms_fn) 
     else:
-        data_fn = os.path.join(mock_lssdir, '{}{}_clustering_{}.dat.fits'.format(tracer+wa, region,tagclustering))
+        data_fn = datafile #os.path.join(dirname, '{}{}_clustering_{}.dat.fits'.format(tracer+wa, region, id_))
         data = Table.read(data_fn)
-        print('aure',nrandoms)
-        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, int(iran))) for iran in nrandoms]
-        ##AURErandoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
+
+        bit = sv3_targetmask.desi_mask[ttype]
+        wtype = ((data['SV3_DESI_TARGET'] & bit) > 0)
+        data = data[wtype]
+
+
+        randoms_fn = [random_data.format(RANID=int(ran_ids[iran])) for iran in range(nrandoms)]
         randoms = vstack([Table.read(fn) for fn in randoms_fn])
-    
+
+        wtype = ((randoms['SV3_DESI_TARGET'] & bit) > 0)
+        randoms = randoms[wtype]
+
     corrmode = mode
     if mode == 'wp':
         corrmode = 'rppi'
@@ -158,9 +148,9 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     if corrmode == 'rppi':
         edges = (edges, np.linspace(0., 40., 41))
     
-    def get_positions_weights(catalog, name='data'):
-        mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
+    def get_positions_weights(catalog, name='data', zname='Z'):
+        mask = (catalog[zname] >= zlim[0]) & (catalog[zname] < zlim[1])
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog[zname][mask])]
         #if weight_type is None:
         #    weights = None
         #else:
@@ -179,18 +169,18 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
                 weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
         return positions, weights
     
-    data_positions, data_weights = get_positions_weights(data, name='data')
+    data_positions, data_weights = get_positions_weights(data, name='firstgen', zname='RSDZ')
     print('using '+str(len(data_positions[0]))+ ' rows for data')
-    randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
+    randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms', zname='RSDZ') #'TRUEZ'
     print('using '+str(len(randoms_positions[0]))+ ' rows for random')
 
     kwargs = {}
     if 'angular' in weight_type and wang is None:
         
-        data_fn = os.path.join(mock_lssdir, '{}_full.dat.fits'.format(tracer))
-        randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, iran)) for iran in range(nrandoms)]
+        data_fn = os.path.join(dirname, '{}_full_{}.dat.fits'.format(tracer, id_))
+        randoms_fn = os.path.join(dirname, '{}_full_{}.ran.fits'.format(tracer, id_))
         parent_data = Table.read(data_fn)
-        parent_randoms = vstack([Table.read(fn) for fn in randoms_fn])
+        parent_randoms = Table.read(randoms_fn)
         
         def get_positions_weights(catalog, fibered=False):
             mask = np.ones(len(catalog),dtype='bool')
@@ -238,7 +228,7 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
 ranwt1=False
 
 regl = ['']
-#AUREregl = ['_N','_S','']
+#regl = ['_N','_S','']
 
 tcorr = ttype
 tw = ttype
@@ -260,9 +250,9 @@ for zlims in zlimits_comb:
     print(zmin,zmax)
     for reg in regl:
         print(reg)
-        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type, nthreads=args.nthreads, nrandoms=ran_ids)
-        fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+tagclustering+tagrandom+'.dat','w')
-        #fo = open(dirxi+'xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'_randomfromreal.dat','w')
+        (sep, xiell), wang = compute_correlation_function(mode='multi', edges=bine, tracer=tcorr, region=reg, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads, nrandoms=nran)
+        outfile = os.path.join(dirxi, 'FirstGen_xi024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+args.bintype+'_'+id_+'_numran'+str(nran)+'.dat')
+        fo = open(outfile, 'w')
         for i in range(0,len(sep)):
             fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
         fo.close()

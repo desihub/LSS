@@ -39,8 +39,9 @@ parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for SV3 are '2.3.0' '2.4.0' '2.5.0' '2.5.1' '3.0.0' '4.0.0'",default='2.3.0')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=5) 
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=20) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
+parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
@@ -109,7 +110,12 @@ else:
 pd = pdir
 
 SV3p = SV3(type)
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/sv3/dark' #SV3p.mdir+pdir+'/' #location of ledgers
+
+id_ = "%03d"%int(args.univ)
+
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/sv3/dark'.format(UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
+
+###mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/sv3/dark' #SV3p.mdir+pdir+'/' #location of ledgers
 tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits' #location of targets
 mtld = SV3p.mtld
 tiles = SV3p.tiles
@@ -129,7 +135,9 @@ def test_dir(value):
 
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL')
+sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_{UNIV}'.format(UNIV=args.univ))
+
+###sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL')
 test_dir(sv3dir)
 
 from desitarget.sv3 import sv3_targetmask
@@ -222,7 +230,8 @@ else:
 ran_ids = np.linspace(100,5000,50)
 
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ000/mtl-done-tiles.ecsv')
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_))
+
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
     faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -299,7 +308,7 @@ def doran(ii):
                 print('fba file already made')
             else:
                 stamp = list_runFA[tile]
-                myfa.dofa(os.path.join(randir+str(ii),'tilenofa-'+str(tile)+'.fits'),ts,stamp,randir+str(ii))
+                myfa.dofa(os.path.join(randir+str(ii),'tilenofa-'+str(tile)+'.fits'),ts,stamp,randir+str(ii),id_)
 #AURE                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
  
 

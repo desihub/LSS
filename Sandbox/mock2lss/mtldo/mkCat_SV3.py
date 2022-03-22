@@ -36,6 +36,8 @@ parser.add_argument("--redodt", help="remake already done data tiles",default='n
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
+parser.add_argument("--isoMTL", help="isodate for initial ledger",default='2022-03-10T16:32:15.000')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -48,7 +50,7 @@ parser.add_argument("--notqso",help="if y, do not include any qso targets",defau
 ##########################################################################
 args = parser.parse_args()
 print(args)
-
+id_ = "%03d"%int(args.univ)
 type = args.type
 basedir = args.basedir
 version = args.version
@@ -116,7 +118,7 @@ else:
 
 pd = pdir
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/sv3/dark'  #SV3p.mdir+pdir+'/' #location of ledgers
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/sv3/dark'.format(UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
 tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits' #SV3p.tdir+pdir+'/' #location of targets
 #tdir = '/global/cscratch1/sd/acarnero/SV3/atest000' #SV3p.tdir+pdir+'/' #location of targets
 mtld = SV3p.mtld
@@ -141,7 +143,7 @@ def test_dir(value):
 
 
 #sv3dir = basedir +'/SV3/LSS/'
-sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_1')
+sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_{UNIV}'.format(UNIV=args.univ))
 test_dir(sv3dir)
 
 #tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
@@ -289,7 +291,7 @@ if mkdtiles:
 #CREATE A DICTIONARY WITH TILEID AND THE DIRECTORY OF THE ALTMTL FBA RUN
 ##############################################################################################
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/mtl-done-tiles.ecsv')
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_))
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
     faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -312,7 +314,7 @@ if combd:
         if run_tarwdup:
             #Univ001 2022-02-14T19:37:05.000
             #Univ000 2022-02-11T16:42:58.000
-            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/mtl-done-tiles.ecsv', isodate='2022-02-14T19:37:07.000')
+            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_), univ=id_, isodate=args.isoMTL)
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -345,7 +347,7 @@ if combd:
 #######################################################################################################################################
             outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
 
-            namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/fa/SV3','{stamp}','fba-{ts}.fits') 
+            namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/fa/SV3'.format(UNIV=id_),'{stamp}','fba-{ts}.fits') 
             if run_specwdup:
                 mt.combtile_specmock_mtl(ta, namecomb, list_runFA, tdir, outfile_spec)
 
@@ -418,7 +420,8 @@ if mkfulld:
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
-
+###weightmd='probobs'
+weightmd='tileloc'
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     dchi2 = 9
@@ -432,8 +435,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-##    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
-    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), weightmd='probobs', zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
+    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), weightmd='tileloc', zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
 ##AURE    ct.mkclusdat(os.path.join(dirout,type+'_'),zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')

@@ -35,7 +35,7 @@ parser.add_argument("--combd", help="combine all the tiles together",default='y'
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
-parser.add_argument("--id", help="apply sky line mask to redshifts?",default=0)
+parser.add_argument("--id", help="mock id",default=1)
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -56,7 +56,8 @@ specrel = args.verspec
 
 id_ = "%03d"%int(args.id)
 
-SV3p = SV3(type)
+SV3p = main(type)
+###SV3p = SV3(type)
 
 notqso = ''
 if args.notqso == 'y':
@@ -124,12 +125,14 @@ else:
 
 pd = pdir
 
-marpath = '/global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ'
+#marpath = '/global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ'
+marpath = '/global/cscratch1/sd/acarnero/Y1'
 
 mdir = os.path.join(SV3p.mdir, pdir) #location of ledgers
 tdir = os.path.join(SV3p.tdir, pdir) #location of targets
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv') #SV3p.mtld
-tiles = Table.read(os.path.join(marpath,'fba{ID}'.format(ID=id_), 'inputs', 'tiles.fits')) #SV3p.tiles
+tiles = Table.read(os.path.join(marpath, 'inputs', 'tiles.fits')) #SV3p.tiles
+###tiles = Table.read(os.path.join(marpath,'fba{ID}'.format(ID=id_), 'inputs', 'tiles.fits')) #SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
 ebits = SV3p.ebits #extra mask bits we think should be applied
 
@@ -219,8 +222,8 @@ mind = -2.5
 maxd = 68
 '''
 
-my_path = '/global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ' #os.path.join(basedir,'Y1')
-target_file = os.path.join(my_path,'fba{ID}'.format(ID=id_),'inputs','targ.fits')
+###my_path = '/global/cscratch1/sd/mmagana/for_EZmocks/fiberassign_EZ' #os.path.join(basedir,'Y1')
+target_file = '/global/project/projectdirs/desi/users/mvargas/for_EZmocks/EZ3gpc/targets-UNIT-mtlz_SV3_alltracers_sv3bits_1years_001.fits' #os.path.join(my_path,'fba{ID}'.format(ID=id_),'inputs','targ.fits')
 
 cutsy1_target_file = os.path.join(y1dir, 'alltilesnofa_{ID}.fits'.format(ID=id_))
 
@@ -262,8 +265,10 @@ if combd:
         tas = []
         files = []
         for pas in passes:
-            tas.append(Table.read(os.path.join(marpath,'fba{ID}'.format(ID=id_), 'faruns', 'farun-pass{PAS}'.format(PAS=pas), 'tiles-pass{PAS}.fits'.format(PAS=pas))))
-            files.append([os.path.join(marpath,'fba{ID}'.format(ID=id_), 'faruns', 'farun-pass{PAS}'.format(PAS=pas)), 'fba-{TILE}.fits'])
+            tas.append(Table.read(os.path.join(marpath, 'faruns', 'farun-pass{PAS}'.format(PAS=pas), 'tiles-pass{PAS}.fits'.format(PAS=pas))))
+###            tas.append(Table.read(os.path.join(marpath,'fba{ID}'.format(ID=id_), 'faruns', 'farun-pass{PAS}'.format(PAS=pas), 'tiles-pass{PAS}.fits'.format(PAS=pas))))
+            files.append([os.path.join(marpath, 'faruns', 'farun-pass{PAS}'.format(PAS=pas)), 'fba-{TILE}.fits'])
+###            files.append([os.path.join(marpath,'fba{ID}'.format(ID=id_), 'faruns', 'farun-pass{PAS}'.format(PAS=pas)), 'fba-{TILE}.fits'])
 
         if not os.path.isfile(outf):
             print('creating ',outf)
