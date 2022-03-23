@@ -1093,7 +1093,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
     dz['rosette_number'] = 0
-    dz['rosette_r'] = 0
+    dz['rosette_r'] = np.zeros(len(dz))
     for ii in range(0,len(dz)):
         rosn = tile2rosette(dz[ii]['TILEID'])
         rosd = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC']) #calculates distance in degrees from the rosette center
