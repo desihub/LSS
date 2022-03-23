@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is desi catalog directory",default='/global/cfs/cdirs/desi/survey/catalogs')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10)
 
@@ -46,8 +46,8 @@ if type == 'LRGAlltiles' or type == 'LRGAlltiles_main':
     #zmin=0.32
     #zmax=1.05
 
-if type == 'LRG':
-    zl = [0.4,0.8,1.1]
+if type[:3] == 'LRG':
+    zl = [0.4,0.6,0.8,1.1]
 #    minn = 5
     #zmin=0.32
     #zmax=1.05
@@ -66,9 +66,9 @@ if type == 'LRG_IR':
     type = 'LRG'
 
 
-if type == 'ELG' or type == 'ELG_HIP':
+if type[:3] == 'ELG':# or type == 'ELG_HIP':
     #minn = 5
-    zl = [0.8,1.05,1.3,1.6]
+    zl = [0.8,1.1,1.5]
     #zmask = ['','_zmask']
     
     #zmin = 0.8
@@ -114,7 +114,7 @@ if type == 'ELGhz497':
     type = 'ELG'
 
 if type == 'QSO':
-    zl = [0.8,1.05,1.3,1.6,2.1]
+    zl = [0.8,1.1,1.5,2.1]
     #zmin = 1.
     #zmax = 2.1
 
@@ -122,6 +122,13 @@ if type == 'QSOhiz':
     zmin = 1.6
     zmax = 2.1
     type = 'QSO'
+
+if type == 'QSOlya':
+    #zmin = 2.1
+    #zmax = 3.5
+    zl = [2.1,3.5]
+    type = 'QSO'
+
 
 if type == 'QSO_RF_4PASS':
     subt = type
@@ -150,6 +157,9 @@ if type == 'BGS_hiz':
 ranwt1=False
 
 regl = ['_N','_S']
+
+if survey == 'main':
+    regl = ['_DN','_DS','_N','_S']
 
 for i in range(0,len(zl)):
     if i == len(zl)-1:

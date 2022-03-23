@@ -30,14 +30,6 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
-parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='y')
-parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='y')
-parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-
-parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
-parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 
 
 args = parser.parse_args()
@@ -47,10 +39,6 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
-ntile = args.ntile
-ccut = args.ccut
-rm = int(args.minr)
-rx = int(args.maxr)
 
 
 print('running catalogs for tracer type '+type)
@@ -66,29 +54,6 @@ if args.fulld == 'n':
 if mkfulld:
     print('making "full" catalog file for data')    
     
-    
-#mkfullr = True #make the random files associated with the full data files
-#if args.fullr == 'n':
-#    mkfullr = False
-    
-#if mkfullr:
-#    print('making full catalog for randoms, files '+str(rm)+ ' through '+str(rx))
-#    print('(if running all, consider doing in parallel)')    
-    
-mkclusdat = False
-mkclusran = False
-if args.clusd == 'y':
-    mkclusdat = True
-    
-if mkclusdat:
-    print('making clustering catalog for data')
-    
-if args.clusran == 'y':
-    mkclusran = True
-    
-if mkclusran:
-    print('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx))
-    print('(if running all, consider doing in parallel)')  
     
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
@@ -163,36 +128,6 @@ if mkfulld:
     
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+'zdone_full.dat.fits',ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
 
-#needs to happen before randoms so randoms can get z and weights
-if mkclusdat:
-    dchi2 = 9
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        dchi2 = 40
-        tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)#,ntilecut=ntile,ccut=ccut)
 
-if mkclusran:
-    print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
-
-    for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'zdone_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
 
         

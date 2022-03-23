@@ -18,23 +18,22 @@ from desitarget.sv3 import sv3_targetmask
 #from this package
 #try:
 import LSS.SV3.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
+from LSS.globals import SV3 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
-parser.add_argument("--verfull",help="version for full catalogs",default='1')
-parser.add_argument("--cpfull",help="whether to copy over the full catalogs; necessary the first run",default='y')
+parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verfull",help="version for full catalogs",default='test')
+parser.add_argument("--cpfull",help="whether to copy over the full catalogs; necessary the first run",default='n')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
 
+parser.add_argument("--weightmode",help="what to use as option for completeness weights",default="probobs")
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
@@ -58,7 +57,8 @@ if rcut is not None:
     rcut.append(float(rcutstr[1]))
 cpfull = args.cpfull
 ccut = args.ccut
-print('using ccut '+ccut)
+if rcut is not None:
+    print('using ccut '+ccut)
 
 print('running catalogs for tracer type '+type)
 
@@ -86,10 +86,6 @@ mknz = False #get n(z) for type and all subtypes
 if args.nz == 'y':
     mknz = True
 
-if mknz:
-    print('creating n(z); note, this does so for all tracer types and requires updated randoms to be done properly')
-
-
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
@@ -99,11 +95,29 @@ else:
 
 progl = prog.lower()
 
-tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,5,6,7,8,9,11,12,13]
+SV3p = SV3(type,weightmode=args.weightmode)
+mdir = SV3p.mdir+progl+'/' #location of ledgers
+tdir = SV3p.tdir+progl+'/' #location of targets
+mtld = SV3p.mtld
+tiles = SV3p.tiles
+imbits = SV3p.imbits #mask bits applied to targeting
+ebits = SV3p.ebits #extra mask bits we think should be applied
 
-#location of targets
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
+
+# tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+# #change imaging bits to just what was applied to targeting
+# ebits = None
+# if type[:3] == 'BGS':
+#     imbits = [1,13]
+# else:
+#     imbits = [1,12,13]
+#     if type[:3] == 'LRG' or type[:3] == 'QSO':
+#         ebits = [8,9,11]    
+#     if type[:3] == 'ELG' or type[:3] == 'BGS':
+#         ebits = [11]    
+# 
+# #location of targets
+# tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+progl+'/' 
 #basedir for your outputs
 sv3dir = basedir +'/SV3/LSS/'
 if not os.path.exists(basedir +'/SV3'):
@@ -138,10 +152,10 @@ indirfull = indir+specrel+'/LSScats/'+verfull+'/'
 
 
 if cpfull == 'y':
-    cpdatcom = 'cp '+indirfull+ type+'Alltiles_full.dat.fits '+dirout
+    cpdatcom = 'cp '+indirfull+ type+'_full.dat.fits '+dirout
     os.system(cpdatcom)
     for i in range(0,18):       
-        cprancom = 'cp '+indirfull+ type+'Alltiles_'+str(i)+'_full.ran.fits '+dirout
+        cprancom = 'cp '+indirfull+ type+'_'+str(i)+'_full_veto.ran.fits '+dirout
         os.system(cprancom)
         
 
@@ -158,13 +172,14 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
 if mkclusran:
     print('doing clustering randoms')
     tsnrcol = 'TSNR2_ELG'
+    tsnrcut = 0
     if type[:3] == 'ELG':
         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
         tsnrcut = 80
@@ -176,26 +191,44 @@ if mkclusran:
         dchi2 = 40
         tsnrcut = 1000
 
+    rcols=['Z','WEIGHT']
+    if type[:3] == 'BGS':
+        rcols.append('flux_r_dered')
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
+#changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
+    wzm = ''
+#     if zmask:
+#         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntile > 0:
+        wzm += '_ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += '_'+ccut #you could change this to however you want the file names to turn out
+
     regl = ['','_N','_S']
+    
     for reg in regl:
-        if zma:
-            reg = '_zmask'+reg
-        fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
-        fout = dirout+type+reg+'_nz.dat'
+        fb = dirout+type+wzm+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.dat'
         if type == 'QSO':
             zmin = 0.6
             zmax = 4.5
             dz = 0.05
-            ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+            
         else:    
-            ct.mknz(fcd,fcr,fout,bs=0.02)
+            dz = 0.02
+            zmin = 0.01
+            zmax = 1.61
+        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)
 
 
         

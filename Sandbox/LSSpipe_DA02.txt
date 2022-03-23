@@ -1,0 +1,48 @@
+#LSS to run with every MTL update
+#from the LSS/scripts/main directory
+
+source /project/projectdirs/desi/software/desi_environment.sh master
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/ #needed for regressis for some reason
+
+
+#data, run separately for dark and bright time
+#this only needs to be done once for each data release (so no need to do it for everest again)
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --prog dark --survey DA02
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --prog bright --survey DA02
+
+#for randoms
+python mkCat_main_ran.py  --type dark  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02 --newspec y
+python mkCat_main_ran.py  --type bright  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --combr y --survey DA02 --newspec y
+
+#the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
+#in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
+#targets at tileids/fiberid where none of the given type were assigned are masked
+#if enhanced information on qso or ELG targets exists, it is added
+#completeness statistics per tile grouping ('COMP_TILE') and per tileid/fiberid ('FRACZTILELOCID') are calculated
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec guadalupe --survey DA02 --notqso notqso 
+
+
+#random
+# go through per type
+# make the "full" random files for each tuype
+#this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main_ran.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec guadalupe --fullr y --survey DA02
+#if data model is stable since the last updates, add to the arguments
+    --refullr n
+
+#apply veto mask column for LRGs
+python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --verspec guadalupe --maxr 18 
+
+#this applies vetos to both data and randoms (could put randoms in separate script and parallize)
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec guadalupe --survey DA02 --notqso notqso
+    
+#to do randoms in parallel:
+    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec guadalupe --survey DA02 --notqso notqso
+    
+#get all of the clustering catalogs
+for tp,notqso in zip(tps,notqsos):
+	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys y --nz y --regressis y --add_regressis y --survey DA02

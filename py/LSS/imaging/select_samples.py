@@ -37,8 +37,12 @@ def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
 	   except:
 		   print(key+' not in target file!')
 	if survey == 'main':
-	    bs = targetmask.desi_mask[type]
-	    tp = 'DESI_TARGET'  
+	    if type[:3] == 'BGS':
+	        bs = targetmask.bgs_mask[type]
+	        tp = 'BGS_TARGET'
+	    else:
+	        bs = targetmask.desi_mask[type]
+	        tp = 'DESI_TARGET'  
 	    ws = '' 
 	if survey == 'sv1':
 	    bs = sv1_targetmask.desi_mask[type]

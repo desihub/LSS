@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
+parser.add_argument("--zmtl",help="if yes, only concatenate zmtl file",default='y')
 
 args = parser.parse_args()
 print(args)
@@ -34,7 +35,7 @@ version = args.version
 prog = args.prog
 progu = prog.upper()
 
-mt = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
+mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
@@ -68,5 +69,10 @@ if not os.path.exists(dirout):
 
 
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
-outf = maindir+'datcomb_'+prog+'_spec_zdone.fits'
-ct.combtile_spec(tiles4comb,outf)
+if args.zmtl == 'n':
+    outf = maindir+'datcomb_'+prog+'_spec_zdone.fits'
+    md = ''
+if args.zmtl == 'y':
+    outf = maindir+'datcomb_'+prog+'_zmtl_zdone.fits'   
+    md = 'zmtl'
+ct.combtile_spec(tiles4comb,outf,md=md)

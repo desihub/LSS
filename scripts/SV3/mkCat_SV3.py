@@ -16,15 +16,11 @@ from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
 from desitarget.sv3 import sv3_targetmask
 
-#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
-
 #from this package
-#try:
 import LSS.SV3.cattools as ct
-#except:
-#    print('import of LSS.mkCat_singletile.cattools failed')
-#    print('are you in LSS/bin?, if not, that is probably why the import failed')   
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
+from LSS.globals import SV3 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -37,19 +33,25 @@ parser.add_argument("--vis", help="make a plot of data/randoms on tile",default=
 parser.add_argument("--xi", help="run pair-counting code",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
-parser.add_argument("--combd", help="combine all the tiles together",default='y')
+parser.add_argument("--combd", help="combine all the tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
-parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
-parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
+parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
+parser.add_argument("--rcut",help="add any cut on the rosette radius, use string like rmin,rmax",default=None)
+parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 
 #all random set to n by default since mkCat_SV3_ran.py exists and does it in parallel
 
@@ -60,6 +62,23 @@ type = args.type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
+
+ntile = args.ntile
+rcut = args.rcut
+if rcut is not None:
+    rcutstr = rcut.split(',')
+    rcut = []
+    rcut.append(float(rcutstr[0]))
+    rcut.append(float(rcutstr[1]))
+
+ccut = args.ccut
+
+SV3p = SV3(type,specver=specrel)
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
 
 zma = False
 if args.maskz == 'y':
@@ -136,14 +155,30 @@ else:
 
 pd = pdir
 
-mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
-tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
+mdir = SV3p.mdir+pdir+'/' #location of ledgers
+tdir = SV3p.tdir+pdir+'/' #location of targets
+mtld = SV3p.mtld
+tiles = SV3p.tiles
+imbits = SV3p.imbits #mask bits applied to targeting
+ebits = SV3p.ebits #extra mask bits we think should be applied
+
+#mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'
+#tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
 #mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv') #log of tiles completed for mtl
-mtld = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/tiles.csv')
-wdone = mtld['ZDONE'] == 'true'
-mtld = mtld[wdone]
-tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
-imbits = [1,5,6,7,8,9,11,12,13]
+#mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv ')
+#wdone = mtld['ZDONE'] == 'true'
+#mtld = mtld[wdone]
+#tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+#change imaging bits to just what was applied to targeting
+#ebits = None
+#if type[:3] == 'BGS':
+#    imbits = [1,13]
+#else:
+#    imbits = [1,12,13]
+#    if type[:3] == 'LRG' or type[:3] == 'QSO':
+#        ebits = [8,9,11]    
+#    if type[:3] == 'ELG' or type[:3] == 'BGS':
+#        ebits = [11]    
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 sv3dir = basedir +'/SV3/LSS/'
@@ -193,52 +228,56 @@ for i in range(rm,rx):
         print('made '+str(i)+' random directory')
 
 
-#construct a table with the needed tile information
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    hal = []
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        tilel.append(tile)
-        ral.append(fht['TILERA'])
-        decl.append(fht['TILEDEC'])
-        mtlt.append(fht['MTLTIME'])
-        fal.append(fht['RUNDATE'])
-        obsl.append(fht['FIELDROT'])
-        hal.append(fht['FA_HA'])
-        #pl.append(pro)
-        pl.append(pr)
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['RUNDATE'] = fal
-    ta['FIELDROT'] = obsl
-    ta['PROGRAM'] = pl
-    ta['FA_HA'] = hal
-    #if pd == 'dark':
-    ta['OBSCONDITIONS'] = 15
-    ta['IN_DESI'] = 1
-    ttf = Table() #to write out to use for fiberassign all at once
-    ttf['TILEID'] = tilel
-    ttf['RA'] = ral
-    ttf['DEC'] = decl
-    ttf['OBSCONDITIONS'] = 15
-    ttf['IN_DESI'] = 1
-    ttf['PROGRAM'] = 'SV3'
-    ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
-
+tilef = sv3dir+'tiles-'+pr+'.fits'
+if os.path.isfile(tilef):
+    ta = Table.read(tilef)
 else:
-    print('no done tiles in the MTL')
+	#construct a table with the needed tile information
+	if len(mtld) > 0:
+		tilel = []
+		ral = []
+		decl = []
+		mtlt = []
+		fal = []
+		obsl = []
+		pl = []
+		hal = []
+		#for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+		for tile in mtld['TILEID']:
+			ts = str(tile).zfill(6)
+			fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+			tilel.append(tile)
+			ral.append(fht['TILERA'])
+			decl.append(fht['TILEDEC'])
+			mtlt.append(fht['MTLTIME'])
+			fal.append(fht['RUNDATE'])
+			obsl.append(fht['FIELDROT'])
+			hal.append(fht['FA_HA'])
+			#pl.append(pro)
+			pl.append(pr)
+		ta = Table()
+		ta['TILEID'] = tilel
+		ta['RA'] = ral
+		ta['DEC'] = decl
+		ta['MTLTIME'] = mtlt
+		ta['RUNDATE'] = fal
+		ta['FIELDROT'] = obsl
+		ta['PROGRAM'] = pl
+		ta['FA_HA'] = hal
+		#if pd == 'dark':
+		ta['OBSCONDITIONS'] = 15
+		ta['IN_DESI'] = 1
+		#ttf = Table() #to write out to use for fiberassign all at once
+		#ttf['TILEID'] = tilel
+		#ttf['RA'] = ral
+		#ttf['DEC'] = decl
+		#ttf['OBSCONDITIONS'] = 15
+		#ttf['IN_DESI'] = 1
+		#ttf['PROGRAM'] = 'SV3'
+		ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+
+	else:
+		print('no done tiles in the MTL')
 
 
 minr = 148
@@ -273,7 +312,7 @@ if cran:
         wp &= ranf['DEC'] < maxd
         ranf = ranf[wp]
         print(len(ranf))
-        tilesall = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+        tilesall = tiles #Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
         tilesu = unique(tilesall,keys=['RA','DEC'])                
         wi = is_point_in_desi(tilesu, ranf["RA"], ranf["DEC"])
         ranf = ranf[wi]
@@ -357,8 +396,8 @@ if combd:
             except:
                 print('column '+col +' was not in tarwdup file')    
 
-        if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+        if specrel == 'everest' or specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
             wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
             specf = specf[wt]
             specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
@@ -369,6 +408,7 @@ if combd:
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
             
         if specrel == 'daily':
             outf = ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits'
@@ -401,29 +441,51 @@ if combd:
 if combr:
     #print(len(mtld['TILEID']))
     if type == 'dark' or type == 'bright':
+        if specrel == 'everest' or specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+        if specrel == 'daily':
+            specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+            kc = ['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+
+            
+
         for i in range(rm,rx):
             #ct.combran(mtld,i,randir,dirout,type,sv3_targetmask.desi_mask)
-            ct.combran_wdup(mtld,i,randir,type,sv3dir)
-            tc = ct.count_tiles_better('ran',pdir,i)
-            tc.write(randir+str(i)+'/rancomb_'+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+            ct.combran_wdup(mtld,i,randir,type,ldirspec,specf,keepcols=kc)
+            tc = ct.count_tiles_better(specf,'ran',pdir,i,specrel=specrel)
+            tc.write(ldirspec+'/rancomb_'+str(i)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
         
         
 if mkfulld:
-    if specrel == 'everest':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+    if specrel == 'everest' or specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
         wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         specf = specf[wt]
     if specrel == 'daily':
         specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
-    azf = '/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
+    azf=''
+    if type[:3] == 'ELG':
+        azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+    if type[:3] == 'QSO':
+        azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+    #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
     dz = ldirspec+'datcomb_'+pdir+'_tarspecwdup_Alltiles.fits' #new
+    print(dz)
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
         desitarg='SV3_BGS_TARGET'
@@ -431,17 +493,60 @@ if mkfulld:
         bit = sv3_targetmask.desi_mask[type]
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+'Alltiles_full.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel)
+    bitweightfile = None
+    if pdir == 'dark':
+        bitweightfile = SV3p.darkbitweightfile
+        #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+        #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+    if pdir == 'bright':
+        bitweightfile = SV3p.brightbitweightfile
+
+
+    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
 if mkfullr:
+    if specrel == 'everest' or specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        fbcol = 'COADD_FIBERSTATUS'
+    if specrel == 'daily':
+        specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+        fbcol = 'FIBERSTATUS'
+
     for ii in range(rm,rx):
-        outf = dirout+type+'Alltiles_'+str(ii)+'_full.ran.fits'
-        ct.mkfullran(randir,ii,imbits,outf,type,pdir,sv3_targetmask.desi_mask[type])
+        outf = dirout+type+'_'+str(ii)+'_full_noveto.ran.fits'
+        if type == 'BGS_BRIGHT':
+            bit = sv3_targetmask.bgs_mask[type]
+            desitarg='SV3_BGS_TARGET'
+        else:
+            bit = sv3_targetmask.desi_mask[type]    
+            desitarg='SV3_DESI_TARGET'
+
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
+
+if args.apply_veto == 'y':
+    print('applying vetos')
+    maxp = 103400
+    if type[:3] == 'LRG' or notqso == 'notqso':
+        maxp = 103200
+    if type[:3] == 'ELG' and notqso == 'notqso':
+        maxp = 103100
+    if type[:3] == 'BGS':
+        maxp = 102100
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'_full.dat.fits'
+    common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    print('data veto done, now doing randoms')
+    for rn in range(rm,rx):
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(rn)+' done')
+
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
@@ -456,13 +561,14 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'Alltiles_',zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut)
+    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
 if mkclusran:
     print('doing clustering randoms')
     tsnrcol = 'TSNR2_ELG'
+    tsnrcut = 0
     if type[:3] == 'ELG':
         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
         tsnrcut = 80
@@ -474,29 +580,53 @@ if mkclusran:
         dchi2 = 40
         tsnrcut = 1000
 
+    rcols=['Z','WEIGHT']
+    if type[:3] == 'BGS':
+        rcols.append('flux_r_dered')
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
+#changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
-    regl = ['','_N','_S']
-    for reg in regl:
-        if zma:
-            reg = '_zmask'+reg
-        fcr = dirout+type+'Alltiles'+reg+'_0_clustering.ran.fits'
-        fcd = dirout+type+'Alltiles'+reg+'_clustering.dat.fits'
-        fout = dirout+type+reg+'_nz.dat'
-        if type == 'QSO':
-            zmin = 0.6
-            zmax = 4.5
-            dz = 0.05
-            ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        else:    
-            ct.mknz(fcd,fcr,fout,bs=0.02)
+    wzm = ''
+#     if zmask:
+#         wzm = 'zmask_'
+    if rcut is not None:
+        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntile > 0:
+        wzm += '_ntileg'+str(ntilecut)+'_'    
+    if ccut is not None:
+        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-if fillNZ:
-    e2e.fillNZ(target_type,program,P0=P0,truez=truez)   
-    logf.write('put NZ and weight_fkp into clustering catalogs\n')    
-    print('put NZ and weight_fkp into clustering catalogs\n')
+    regl = ['','_N','_S']
+    
+    
+    if type[:3] == 'QSO':
+        zmin = 0.6
+        zmax = 4.5
+        dz = 0.05
+        P0 = 6000
         
+    else:    
+        dz = 0.02
+        zmin = 0.01
+        zmax = 1.61
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
+    
+    for reg in regl:
+        fb = dirout+type+notqso+'zdone'+wzm+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.dat'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+
