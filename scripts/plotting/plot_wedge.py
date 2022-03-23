@@ -25,7 +25,7 @@ zmin = 0
 zmax = 3.5
 
 
-
+plt.figure(dpi=1000)
 fig, ax = plt.subplots()
 ax.set_aspect('equal')
 
