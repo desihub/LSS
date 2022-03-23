@@ -57,8 +57,8 @@ for tp,c in zip(tps,cl):
     sel &= dt['RA'] < rax
     sel &= dt['DEC'] > decm
     sel &= dt['DEC'] < decx
-    sel &= dt[zcol] < zmax
-    sel &= dt[zcol] > zmin
+    #sel &= dt[zcol] < zmax
+    #sel &= dt[zcol] > zmin
 
     dt = dt[sel]
     
@@ -96,6 +96,10 @@ for tp,c in zip(tps,cl):
     print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
 
     dt = dt[wg&wz]
+    sel = dt[zcol] < zmax
+    sel &= dt[zcol] > zmin
+    dt = dt[sel]
+
     
     r = dis_dc(dt[zcol])
     th = (90-dt['DEC'])*np.pi/180.
@@ -104,6 +108,7 @@ for tp,c in zip(tps,cl):
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
     plt.plot(x,y,',',color=c)
+    plt.show()
     
     
     del dt
