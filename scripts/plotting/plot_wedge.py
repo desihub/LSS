@@ -103,7 +103,7 @@ for tp,c in zip(tps,cl):
     x = r*np.cos(phi)*sin(th)
     y = r*np.sin(phi)*sin(th)
     z = r*np.cos(th)
-    plt.plot(x,y,color=c,',')
+    plt.plot(x,y,',',color=c)
     
     
     del dt
