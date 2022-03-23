@@ -16,10 +16,10 @@ outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 nside = 256
 zcol = 'Z_not4clus'
 ram = 130
-rax = 150
+rax = 170
 ra0 = (ram+rax)/2.
-decm = -1
-decx = 1
+decm = -0.5
+decx = .5
 zmin = 0
 zmax = 3.5
 
@@ -52,6 +52,7 @@ for tp,c in zip(tps,cl):
     cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
     if tp == 'ELG':
         cols.append('o2c')
+        zmin = 0.6
     dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits',columns=cols)
     sel = dt['RA'] > ram
     sel &= dt['RA'] < rax
