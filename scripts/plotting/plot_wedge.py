@@ -100,8 +100,8 @@ for tp,c in zip(tps,cl):
     r = dis_dc(dt[zcol])
     th = (90-dt['DEC'])*np.pi/180.
     phi = dt['RA']*np.pi/180
-    x = r*np.cos(phi)*sin(th)
-    y = r*np.sin(phi)*sin(th)
+    x = r*np.cos(phi)*np.sin(th)
+    y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
     plt.plot(x,y,',',color=c)
     
