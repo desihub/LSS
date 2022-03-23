@@ -15,7 +15,7 @@ outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 
 zcol = 'Z_not4clus'
 ram = 130
-rax = 150
+rax = 220
 ra0 = (ram+rax)/2.
 decm = -0.5
 decx = .5
