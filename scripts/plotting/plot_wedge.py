@@ -90,7 +90,7 @@ for tp,c in zip(tps,cl):
     if tp[:3] == 'BGS':
         wg = dt['DELTACHI2'] > 40
     print(tp+':')
-    print('area: '+str(area))
+    
     print('# of good obs: '+str(len(dt[wz])))
     print('# of good z: '+str(len(dt[wz&wg])))
     print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
