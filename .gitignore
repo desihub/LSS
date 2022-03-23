@@ -61,3 +61,6 @@ target/
 *.swo
 *.swp
 
+# Script Output Files
+*.out
+bin/*.out
