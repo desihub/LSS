@@ -49,7 +49,7 @@ def mknz(zin,wl,fcr,bs=0.01,zmin=0.01,zmax=1.6):
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','g','b']
 for tp,c in zip(tps,cl):
-    cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2']
+    cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
     if tp == 'ELG':
         cols.append('o2c')
     dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits',columns=cols)
