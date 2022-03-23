@@ -25,8 +25,8 @@ zmin = 0
 zmax = 3.5
 
 
-plt.figure(dpi=1000)
-fig, ax = plt.subplots()
+#plt.figure()
+fig, ax = plt.subplots(dpi=1000)
 ax.set_aspect('equal')
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
