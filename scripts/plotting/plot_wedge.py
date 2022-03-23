@@ -102,5 +102,5 @@ for tp,c,zo in zip(tps,cl,zordl):
 
 
     print(tp+' done')
-plt.axis('off')    
+#plt.axis('off')    
 plt.show()
