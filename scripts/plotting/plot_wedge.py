@@ -25,27 +25,9 @@ zmin = 0
 zmax = 3.5
 
 
-def mknz(zin,wl,fcr,bs=0.01,zmin=0.01,zmax=1.6):
-    #cd = distance(om,1-om)
-    ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
-    area = ranf['NAXIS2']/2500.
-    print('area is '+str(area))
-    
-    
-    nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(zin,bins=nbin,range=(zmin,zmax),weights=wl)
-    zs = []
-    nz = []
-    for i in range(0,nbin):
-        zl = zhist[1][i]
-        zh = zhist[1][i+1]
-        zm = (zh+zl)/2.
-        zs.append(zm)
-        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
-        nbarz =  zhist[0][i]/voli
-        nz.append(nbarz)
-    return zs,nz
 
+fig, ax = plt.subplots()
+ax.set_aspect('equal')
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','g','b']
@@ -109,7 +91,7 @@ for tp,c in zip(tps,cl):
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
-    plt.plot(x,y,',',color=c)
+    ax.plot(x,y,',',color=c)
     #plt.show()
     
     
