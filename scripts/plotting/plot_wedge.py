@@ -18,8 +18,8 @@ zcol = 'Z_not4clus'
 ram = 130
 rax = 150
 ra0 = (ram+rax)/2.
-decm = -5
-decx = 5
+decm = -1
+decx = 1
 zmin = 0
 zmax = 3.5
 
@@ -103,15 +103,16 @@ for tp,c in zip(tps,cl):
     
     r = dis_dc(dt[zcol])
     th = (90-dt['DEC'])*np.pi/180.
-    phi = dt['RA']*np.pi/180
+    phi = (dt['RA']-ra0)*np.pi/180
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
     plt.plot(x,y,',',color=c)
-    plt.show()
+    #plt.show()
     
     
     del dt
 
 
     print(tp+' done')
+plt.show()
