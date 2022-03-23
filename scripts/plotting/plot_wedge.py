@@ -31,7 +31,8 @@ ax.set_aspect('equal')
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','g','b']
-for tp,c in zip(tps,cl):
+zordl = [10,5,2,1]
+for tp,c,zo in zip(tps,cl,zordl):
     cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
     if tp == 'ELG':
         cols.append('o2c')
@@ -91,7 +92,7 @@ for tp,c in zip(tps,cl):
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
-    ax.plot(x,y,',',color=c)
+    ax.plot(x,y,',',color=c,zorder=zo)
     #plt.show()
     
     
