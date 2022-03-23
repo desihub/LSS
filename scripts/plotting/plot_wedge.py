@@ -28,6 +28,7 @@ zmax = 3.5
 #plt.figure()
 fig, ax = plt.subplots(dpi=1000)
 ax.set_aspect('equal')
+ax.patch.set_facecolor('black')
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','g','b']
