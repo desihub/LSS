@@ -97,7 +97,7 @@ for tp,c,zo in zip(tps,cl,zordl):
     ax.plot(x,y,',',color=c,zorder=zo,lw=.1)
     if tp == 'QSO':
         sel = dt[zcol] > 2.1
-        ax.plot(x[sel],y[sel],',',color='white',zorder=zo,lw=.1)
+        ax.plot(x[sel],y[sel],',',color='white',zorder=zo,lw=.3)
     #plt.show()
     
     
