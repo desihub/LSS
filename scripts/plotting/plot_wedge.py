@@ -111,3 +111,4 @@ for spine in ax.spines.values():
 ax.tick_params(bottom=False, labelbottom=False,
                left=False, labelleft=False)   
 plt.show()
+plt.savefig('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/plots/wedge_all.png')
