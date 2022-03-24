@@ -32,7 +32,7 @@ ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
-cl = ['y','r','g','b']
+cl = ['y','r','lime','b']
 zordl = [10,5,2,1]
 for tp,c,zo in zip(tps,cl,zordl):
     cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
