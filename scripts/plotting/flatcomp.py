@@ -6,11 +6,20 @@ import sys
 import fitsio
 from astropy.table import join,Table
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--type", help="tracer type to be selected",default='all')
+
+args = parser.parse_args()
+
+
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
 qt = 'COMP_TILE'
 
-tps = ['QSO','ELG','ELG_LOP','LRG','BGS_ANY','BGS_BRIGHT']
+if args.type == 'all':
+    tps = ['QSO','ELG','ELG_LOP','LRG','BGS_ANY','BGS_BRIGHT']
+else:
+    tps = args.type.split(',')    
 for tp in tps:
     tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
     dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',columns=['TARGETID',qt])
