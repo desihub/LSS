@@ -1015,7 +1015,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
+def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',maxp=103400):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -1083,11 +1083,16 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #apply imaging vetos
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
-    pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
-    sp = pl <= 0
-    pl[sp] = .1
+    #pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
+    #sp = pl <= 0
+    #pl[sp] = .1
+    dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+    sel = dz['PRIORITY'] <= map
+    dz['GOODPRI'][sel] = 1
+    
 
-    dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+    #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
     #sort by tsnr, like done for data, so that the highest tsnr are kept
     dz.sort('sort') 
     dz = unique(dz,keys=['TARGETID'],keep='last')
