@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys
+import argparse
 
 import fitsio
 from astropy.table import join,Table
