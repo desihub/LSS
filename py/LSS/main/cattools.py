@@ -1454,7 +1454,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso=''):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',maxp=3400):
 
 #     selz = dz['ZWARN'] != 999999
 #     fs = dz[selz]
@@ -1526,11 +1526,20 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='')
     del tarf
     dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
-    pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
-    sp = pl <= 0
-    pl[sp] = .1
+#     pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
+#     sp = pl <= 0
+#     pl[sp] = .1
+# 
+#     dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
 
-    dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
+    dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+    sel = dz['PRIORITY'] <= maxp
+    dz['GOODPRI'][sel] = 1
+    
+
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+
+
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
@@ -1579,10 +1588,16 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             dz = cutphotmask(dz,imbits)
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0:
-                pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
-                sp = pl <= 0
-                pl[sp] = .1
-                dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl#/dz['PRIORITY']
+                #pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
+                #sp = pl <= 0
+                #pl[sp] = .1
+                #dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl#/dz['PRIORITY']
+                dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+                sel = dz['PRIORITY'] <= maxp
+                dz['GOODPRI'][sel] = 1
+                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+
+
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
                 dz.remove_columns(['sort'])

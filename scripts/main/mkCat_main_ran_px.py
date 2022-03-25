@@ -392,6 +392,12 @@ def doran(ii):
 
         
     if mkfullr:
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
+
         npx = 0
         if args.refullr == 'y':
             uhpxs = hpxs
@@ -403,7 +409,7 @@ def doran(ii):
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))
-            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii))
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
             npx += 1  
         npx = 0
         s = 0
