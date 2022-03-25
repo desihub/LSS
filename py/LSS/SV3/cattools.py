@@ -324,69 +324,70 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
     return tt
 
-def find_znotposs(dz):
-
-    dz.sort('TARGETID')
-    tidnoz = []
-    tids = np.unique(dz['TARGETID'])
-    ti = 0
-    i = 0
-    
-    print('finding targetids that were not observed')
-    while i < len(dz):
-        za = 0
-    
-        while dz[i]['TARGETID'] == tids[ti]:
-            if dz[i]['ZWARN'] != 999999:
-                za = 1
-                #break
-            i += 1
-            if i == len(dz):
-                break
-        if za == 0:
-            tidnoz.append(tids[ti])
-      
-        if ti%30000 == 0:
-            print(ti)
-        ti += 1 
-
-    
-    selnoz = np.isin(dz['TARGETID'],tidnoz)
-    tidsb = np.unique(dz[selnoz]['TILELOCID'])
-    #dz = dz[selnoz]
-    dz.sort('TILELOCID')
-    tids = np.unique(dz['TILELOCID'])
-    print('number of targetids with no obs '+str(len(tidnoz)))
-    tlidnoz = []
-    lznposs = []
-    
-    ti = 0
-    i = 0
-    
-    while i < len(dz):
-        za = 0
-    
-        while dz[i]['TILELOCID'] == tids[ti]:
-            if dz[i]['ZWARN'] != 999999:
-                za = 1
-                #break
-            i += 1
-            if i == len(dz):
-                break
-        if za == 0:
-            tlidnoz.append(tids[ti])
-            #if np.isin(tids[ti],tidsb):
-            #    lznposs.append(tids[ti])
-      
-        if ti%30000 == 0:
-            print(ti,len(tids))
-        ti += 1 
-    #the ones to veto are now the join of the two
-    wtbtlid = np.isin(tlidnoz,tidsb)
-    tlidnoz = np.array(tlidnoz)
-    lznposs = tlidnoz[wtbtlid]
-    print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
-    return lznposs
+#moved to common_tools 
+#def find_znotposs(dz):
+# 
+#     dz.sort('TARGETID')
+#     tidnoz = []
+#     tids = np.unique(dz['TARGETID'])
+#     ti = 0
+#     i = 0
+#     
+#     print('finding targetids that were not observed')
+#     while i < len(dz):
+#         za = 0
+#     
+#         while dz[i]['TARGETID'] == tids[ti]:
+#             if dz[i]['ZWARN'] != 999999:
+#                 za = 1
+#                 #break
+#             i += 1
+#             if i == len(dz):
+#                 break
+#         if za == 0:
+#             tidnoz.append(tids[ti])
+#       
+#         if ti%30000 == 0:
+#             print(ti)
+#         ti += 1 
+# 
+#     
+#     selnoz = np.isin(dz['TARGETID'],tidnoz)
+#     tidsb = np.unique(dz[selnoz]['TILELOCID'])
+#     #dz = dz[selnoz]
+#     dz.sort('TILELOCID')
+#     tids = np.unique(dz['TILELOCID'])
+#     print('number of targetids with no obs '+str(len(tidnoz)))
+#     tlidnoz = []
+#     lznposs = []
+#     
+#     ti = 0
+#     i = 0
+#     
+#     while i < len(dz):
+#         za = 0
+#     
+#         while dz[i]['TILELOCID'] == tids[ti]:
+#             if dz[i]['ZWARN'] != 999999:
+#                 za = 1
+#                 #break
+#             i += 1
+#             if i == len(dz):
+#                 break
+#         if za == 0:
+#             tlidnoz.append(tids[ti])
+#             #if np.isin(tids[ti],tidsb):
+#             #    lznposs.append(tids[ti])
+#       
+#         if ti%30000 == 0:
+#             print(ti,len(tids))
+#         ti += 1 
+#     #the ones to veto are now the join of the two
+#     wtbtlid = np.isin(tlidnoz,tidsb)
+#     tlidnoz = np.array(tlidnoz)
+#     lznposs = tlidnoz[wtbtlid]
+#     print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
+#     return lznposs
     
 def count_tiles_better(fs,dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS'):
     '''
@@ -1048,7 +1049,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = dz[wtype]#&wg]
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
-    lznp = find_znotposs(dz)
+    lznp = common.find_znotposs(dz)
 
     #lznp will later be used to veto
     #load in random file
@@ -1087,7 +1088,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #sp = pl <= 0
     #pl[sp] = .1
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
-    sel = dz['PRIORITY'] <= map
+    sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
     
 
