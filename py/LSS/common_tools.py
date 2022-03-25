@@ -10,6 +10,16 @@ dis_dc = cosmo.comoving_radial_distance
 
 #functions that shouldn't have any dependence on survey go here
 
+def cutphotmask(aa,bits):
+    print(str(len(aa)) +' before imaging veto' )
+    keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+    for biti in bits:
+        keep &= ((aa['MASKBITS'] & 2**biti)==0)
+    aa = aa[keep]
+    print(str(len(aa)) +' after imaging veto' )
+    return aa
+
+
 def find_znotposs(dz):
 
     dz.sort('TARGETID')

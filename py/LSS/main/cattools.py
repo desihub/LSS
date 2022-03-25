@@ -24,6 +24,7 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 from LSS.common_tools import find_znotposs
+import LSS.common_tools as common
 from LSS import ssr_tools
 
 import logging
@@ -434,14 +435,14 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def cutphotmask(aa,bits):
-    print(str(len(aa)) +' before imaging veto' )
-    keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
-    for biti in bits:
-        keep &= ((aa['MASKBITS'] & 2**biti)==0)
-    aa = aa[keep]
-    print(str(len(aa)) +' after imaging veto' )
-    return aa
+# def cutphotmask(aa,bits):
+#     print(str(len(aa)) +' before imaging veto' )
+#     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+#     for biti in bits:
+#         keep &= ((aa['MASKBITS'] & 2**biti)==0)
+#     aa = aa[keep]
+#     print(str(len(aa)) +' after imaging veto' )
+#     return aa
 
 def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
@@ -1524,7 +1525,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
     dz = join(dz,tarf,keys=['TARGETID'])
     del tarf
-    dz = cutphotmask(dz,imbits)
+    dz = common.cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
 #     pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
 #     sp = pl <= 0
@@ -1585,7 +1586,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
             dz = join(dz,tarf,keys=['TARGETID'])
             del tarf
 
-            dz = cutphotmask(dz,imbits)
+            dz = common.cutphotmask(dz,imbits)
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0:
                 #pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
@@ -1699,7 +1700,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
     dz = join(dz,ftar,keys=['TARGETID'])
     #print('length after join to full targets (should be same) '+str(len(dz)))
-    dz = cutphotmask(dz,imbits)
+    dz = common.cutphotmask(dz,imbits)
     print('length after imaging mask; should not have changed '+str(len(dz)))
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])

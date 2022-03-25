@@ -200,14 +200,14 @@ def goodlocdict(tf):
     pdict = dict(zip(tf['LOCATION'], tf['PRIORITY'])) #to be used later for randoms
     return pdict,goodloc
 
-def cutphotmask(aa,bits):
-    print(str(len(aa)) +' before imaging veto' )
-    keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
-    for biti in bits:
-        keep &= ((aa['MASKBITS'] & 2**biti)==0)
-    aa = aa[keep]
-    print(str(len(aa)) +' after imaging veto' )
-    return aa
+# def cutphotmask(aa,bits):
+#     print(str(len(aa)) +' before imaging veto' )
+#     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+#     for biti in bits:
+#         keep &= ((aa['MASKBITS'] & 2**biti)==0)
+#     aa = aa[keep]
+#     print(str(len(aa)) +' after imaging veto' )
+#     return aa
 
 def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     s = 0
@@ -1082,7 +1082,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = join(dz,tarf,keys=['TARGETID'])
     
     #apply imaging vetos
-    dz = cutphotmask(dz,imbits)
+    dz = common.cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
     #pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
     #sp = pl <= 0
@@ -1221,7 +1221,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     print('length after join to full targets (should be same) '+str(len(dz)))
     
     #apply imaging veto mask
-    dz = cutphotmask(dz,imbits)
+    dz = common.cutphotmask(dz,imbits)
     
     #load in file with information about where repeats occurred and join it
     dtl = Table.read(ftiles)
