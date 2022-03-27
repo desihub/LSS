@@ -1549,7 +1549,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG'):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG',maxp=3400):
 
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     #fe = False
