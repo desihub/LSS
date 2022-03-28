@@ -5,8 +5,11 @@ import os
 import h5py
 import numpy as np
 from astropy.table import Table
-from fiberassign.targets import (Targets, TargetsAvailable,
+try:
+    from fiberassign.targets import (Targets, TargetsAvailable, TargetTree,
                                  LocationsAvailable, load_target_table)
+except:
+    from fiberassign.targets import (Targets, TargetsAvailable,
 from fiberassign.assign import Assignment
 
 

@@ -329,7 +329,15 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+        maxp = 103400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 103200
+        if type[:3] == 'ELG' and notqso == 'notqso':
+            maxp = 103100
+        if type[:3] == 'BGS':
+            maxp = 102100
+
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.apply_veto == 'y':

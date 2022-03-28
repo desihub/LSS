@@ -622,7 +622,7 @@ if mknz:
         P0 = 7000
     
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+wzm+reg
+        fb = dirout+type+notqso+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'
