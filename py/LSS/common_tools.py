@@ -10,6 +10,16 @@ dis_dc = cosmo.comoving_radial_distance
 
 #functions that shouldn't have any dependence on survey go here
 
+def cutphotmask(aa,bits):
+    print(str(len(aa)) +' before imaging veto' )
+    keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
+    for biti in bits:
+        keep &= ((aa['MASKBITS'] & 2**biti)==0)
+    aa = aa[keep]
+    print(str(len(aa)) +' after imaging veto' )
+    return aa
+
+
 def find_znotposs(dz):
 
     dz.sort('TARGETID')
@@ -229,3 +239,97 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
     return True        
+
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
+    '''
+    fl is a string with the path to the file name to load
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    ff = Table.read(fin)#+'full_noveto.'+dr+'.fits')
+    print('length of input '+str(len(ff)))
+    seld = ff['GOODHARDLOC'] == 1
+    print('length after cutting to good locations '+str(len(ff[seld])))
+    if '.dat' in fin:
+        seld &= ff['PRIORITY_INIT'] <= maxp
+        print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
+    if '.ran' in fin:
+        seld &= ff['ZPOSSLOC'] == 1
+        print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
+        seld &= ff['PRIORITY'] <= maxp
+        print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
+
+
+    ff = ff[seld]
+
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ff)))
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = cutphotmask(ff,ebits)
+        print('number after imaging mask '+str(len(ff)))
+
+    if zmask:
+        whz = ff['Z'] < 1.6
+        ff = ff[whz]
+
+        fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
+        zma = []
+        for z in ff['Z']:
+            zind = int(z/1e-6)
+            zma.append(fzm[zind]['RADIAL_MASK'])
+        zma = np.array(zma)
+        wm = zma == 0
+        ff = ff[wm]
+
+    if '.dat' in fin:
+        ff['Z'].name = 'Z_not4clus'
+        print('updating completenes')
+        compa = []
+        tll = []
+        ti = 0
+        ff.sort('TILES')
+        nts = len(np.unique(ff['TILES']))
+        tlsl = ff['TILES']
+        tlslu = np.unique(tlsl)
+        laa = ff['LOCATION_ASSIGNED']
+
+        #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+        i = 0
+        while i < len(ff):
+            tls  = []
+            tlis = []
+            nli = 0
+            nai = 0
+
+            while tlsl[i] == tlslu[ti]:
+                nli += 1
+                nai += laa[i]
+                i += 1
+                if i == len(ff):
+                    break
+
+            if ti%1000 == 0:
+                print('at tiles '+str(ti)+' of '+str(nts))
+
+            cp = nai/nli#no/nt
+            #print(tls,cp,no,nt)
+            compa.append(cp)
+            tll.append(tlslu[ti])
+            ti += 1
+        comp_dicta = dict(zip(tll, compa))
+        fcompa = []
+        for tl in ff['TILES']:
+            fcompa.append(comp_dicta[tl])
+        ff['COMP_TILE'] = np.array(fcompa)
+        wz = ff['ZWARN'] != 999999
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 1.e20
+        print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
+        print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
+
+    ff.write(fout,overwrite=True,format='fits')

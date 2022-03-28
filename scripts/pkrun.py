@@ -1,4 +1,4 @@
-# To run: mpiexec -np 16 python pkrun.py --type ELG...
+# To run: srun -n 64 python pkrun.py --type ELG...
 
 import os
 import argparse
@@ -7,9 +7,8 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-# To install pypower: python -m pip install git+https://github.com/adematti/pypower
 # To install mockfactory: python -m pip install git+https://github.com/adematti/mockfactory
-from pypower import CatalogFFTPower, utils, setup_logging
+from pypower import CatalogFFTPower, PowerSpectrumStatistics, utils, setup_logging
 from mockfactory import Catalog
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -40,7 +39,7 @@ survey = args.survey
 nran = int(args.nran)
 weight_type = args.weight_type
 
-edges = {'min':0., 'step':0.005}
+edges = {'min':0., 'step':0.001}
 
 dirpk = os.environ['CSCRATCH']+'/'+survey+'pk/'
 
@@ -67,7 +66,6 @@ if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
     
     #zmin = 0.8
     #zmax = 1.6
-
 
 if ttype == 'QSO':
     zl = [0.8,1.1,1.5,2.1]
@@ -130,22 +128,31 @@ def compute_power_spectrum(edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0
         nmask = catalog.mpicomm.allreduce(mask.sum())
         if catalog.mpicomm.rank == 0:
             catalog.log_info('Using {} rows for {}'.format(nmask, name))
-        #if weight_type is None:
-        #    weights = None
-        #else:
         weights = np.ones_like(positions[0])
         if name == 'data':
-            if 'photometric' in weight_type:
-                rfweight = RFWeight(tracer=tracer)
-                weights *= rfweight(positions[0], positions[1])
             if 'zfail' in weight_type:
                 weights *= catalog['WEIGHT_ZFAIL'][mask]
+            if 'default' in weight_type and 'bitwise' not in weight_type:
+                weights *= catalog['WEIGHT'][mask]
+            if 'RF' in weight_type:
+                weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
+            if 'completeness_only' in weight_type:
+                weights = catalog['WEIGHT_COMP'][mask]
+            if 'FKP' in weight_type:
+                weights *= catalog['WEIGHT_FKP'][mask]
+            if 'bitwise' in weight_type:
+                weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
+        if name in ['randoms', 'shifted']:
             if 'default' in weight_type:
                 weights *= catalog['WEIGHT'][mask]
-            if 'completeness' in weight_type:
-                weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
-            elif 'bitwise' in weight_type:
-                weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
+            if 'RF' in weight_type:
+                weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
+            if 'zfail' in weight_type:
+                weights *= catalog['WEIGHT_ZFAIL'][mask]
+            if 'completeness_only' in weight_type:
+                weights = catalog['WEIGHT_COMP'][mask]
+            if 'FKP' in weight_type:
+                weights *= catalog['WEIGHT_FKP'][mask]
         return positions, weights
     
     data_positions, data_weights = get_positions_weights(data, name='data')
@@ -161,7 +168,6 @@ def compute_power_spectrum(edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0
                              position_type='rdd', dtype=dtype)
     return result
 
-ranwt1=False
 
 regl = ['_N','_S']
 
@@ -177,7 +183,8 @@ if survey == 'main':
         regl = ['_DN','_N']
         tcorr = 'ELG'
         tw = 'ELG'+args.rectype+args.convention
-        
+
+bsl = [1, 5, 10]
 
 nzr = len(zl)
 if len(zl) == 2:
@@ -192,11 +199,12 @@ for i in range(0,nzr):
     print(zmin,zmax)
     for reg in regl:
         print(reg)
-        result = compute_power_spectrum(edges, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type)
-        poles = result.poles
-        fo = open(dirpk+'pk024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+'lin.dat','w')
-        fo.write('#norm = {}\n'.format(poles.wnorm))
-        fo.write('#shotnoise = {}\n'.format(poles.shotnoise))
-        for k,p in zip(poles.k, poles.power.T.real):
-            fo.write(' '.join([str(k)] + [str(p_) for p_ in p]) + '\n')
-        fo.close()
+        fnroot = tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+'lin'
+        pfn = os.path.join(dirpk, 'power_{}.npy'.format(fnroot))
+        result = compute_power_spectrum(edges, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type).poles
+        result.save(pfn)
+        for bs in bsl:
+            #result = PowerSpectrumStatistics.load(pfn)
+            fn_txt = os.path.join(dirpk, 'pk024{}{}.dat'.format(fnroot, bs))
+            imax = (result.shape[0]//bs)*bs # cutting last bins to allow rebinning factor bs to divide shape
+            result[:imax:bs].save_txt(fn_txt, complex=False)

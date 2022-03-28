@@ -221,12 +221,12 @@ if args.apply_veto == 'y':
         maxp = 2100
     fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
     fout = dirout+type+notqso+'zdone_full.dat.fits'
-    ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
     print('data veto done, now doing randoms')
     for rn in range(rm,rx):
         fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'zdone_'+str(rn)+'_full.ran.fits'
-        ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
         
     

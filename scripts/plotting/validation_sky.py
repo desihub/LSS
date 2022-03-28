@@ -11,7 +11,7 @@ import healpy as hp
 from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='1.1')
+parser.add_argument("--version", help="catalog version",default='1.1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 args = parser.parse_args()

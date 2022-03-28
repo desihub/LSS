@@ -356,6 +356,11 @@ def doran(ii):
 
         
     if mkfullr:
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
 
 #         if specrel == 'everest':
 #             #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
@@ -368,7 +373,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -381,7 +386,7 @@ def doran(ii):
             maxp = 2100
         fin = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
-        ct.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         #print('random veto '+str(ii)+' done')
 
 

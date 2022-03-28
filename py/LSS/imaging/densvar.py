@@ -1,5 +1,6 @@
 import fitsio
 import astropy.io.fits as fits
+from astropy.table import Table
 import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
@@ -60,6 +61,178 @@ def sel_reg(ra,dec,reg):
 
 def get_pix(nside, ra, dec, nest=0):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
+
+def add_par(dd,par):
+    th,phi =radec2thphi(dd['RA'],dd['DEC'])
+    hpxr = hp.ang2pix(nside,th,phi,nest=nest)
+    gvp = []
+    parl = fitsio.read(pixfn)[par]
+    for px in hpxr:
+        gvp.append(parl[px])
+    dd[par+'_pix'] = np.array(gvp)
+    return dd        
+
+def plot_relnz_pixpar(sample,par,reg,zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='main',specrel='daily',version='test',basedir='/global/cfs/cdirs/desi/survey/catalogs/'):
+    indir = basedir+survey+'/LSS/'+specrel+'/LSScats/'+version+'/'
+    rcols = ['RA','DEC','PHOTSYS']
+    zd = ''
+    if survey != 'SV3':
+        zd = 'zdone'
+    rcol = ['RA','DEC','PHOTSYS']
+    rd = fitsio.read(indir+sample+zd+'_0_full.ran.fits',columns=rcol)
+    if reg == 'DN' or reg == 'DS':
+        sel = sel_reg(rd['RA'],rd['DEC'],reg)
+        rd = rd[sel]
+    else: 
+        iss = rd['PHOTSYS'] == 'S'
+        if reg == 'S':
+            sel = iss
+        if reg == 'N':
+            sel = ~iss
+        rd = rd[sel]
+    
+    rd = Table(rd)
+    rd = add_par(rd,par)
+
+    if sample[:3] == 'ELG':
+        dcols = ['RA','DEC','Z_not4clus','ZWARN','PHOTSYS','o2c','FRACZ_TILELOCID']
+
+    dd = fitsio.read(indir+sample+zd+'_full.dat.fits',columns=dcols)
+    reglab = ''
+    if reg == 'DN' or reg == 'DS':
+        sel = sel_reg(dd['RA'],dd['DEC'],reg)
+        dd = dd[sel]
+        reglab = 'DECaLS SGC'
+        if reg == 'DN':
+            reglab = 'DECaLS NGC'
+    else:
+        iss = dd['PHOTSYS'] == 'S'
+        if reg == 'S':
+            sel = iss
+            reglab = 'DECaLS'
+        if reg == 'N':
+            sel = ~iss
+            reglab = 'BASS/MzLS'
+        dd = dd[sel]
+    sel = dd['ZWARN'] != 999999
+    if sample[:3] == 'ELG':
+        sel &= dd['o2c'] > 0.9
+    print(len(dd),len(dd[sel]))
+    dd = dd[sel]
+    dd = Table(dd)
+    dd = add_par(dd,par)
+    perl = []
+    div = 100/nper
+    for i in range(nper+1):
+        perl.append(div*i)
+    print('percentiles are '+str(perl))
+    gdp = []
+    for per in perl:
+        gdp.append(np.percentile(dd[par+'_pix'],per))
+    print(gdp)
+    #cl = ['b','r','k','purple','brown']
+    dndz_ot,be = np.histogram(dd['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd['FRACZ_TILELOCID'])
+    bs = (zmax-zmin)/nbin
+    fac = len(rd)
+    for i in range(0,nper):
+        sd = dd[par+'_pix'] >gdp[i]
+        sd &= dd[par+'_pix'] <gdp[i+1]
+        dndz_ob,be = np.histogram(dd[sd]['Z_not4clus'],range=(zmin,zmax),bins=nbin,weights=1/dd[sd]['FRACZ_TILELOCID'])    
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ot,'--',color=cl[i])
+        sdi = rd[par+'_pix'] >gdp[i]
+        sdi &= rd[par+'_pix'] <gdp[i+1]
+        facb = len(rd[sdi])#/len(obi_sel[sd])
+        print(facb)
+        #print(fac,facb,len(obi_sel[sd]))
+        #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(round(gdp[i],3))+'<'+par+'<'+str(round(gdp[i+1],3)))
+    plt.legend()
+    ol = np.zeros(len(be[:-1]))
+    plt.plot(be[:-1]+bs/2.,ol,':')
+    plt.xlabel('redshift')
+    plt.ylabel('relative change in n(z)')
+    plt.title(survey+' '+sample+' '+reglab)
+    plt.grid(True)
+    plt.show()
+
+def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,nbin=8,nper = 5,survey='DA02',specrel='guadalupe',version='test',basedir='/global/cfs/cdirs/desi/survey/catalogs/'):
+    indir = basedir+survey+'/LSS/'+specrel+'/LSScats/'+version+'/'
+    zd = ''
+    if survey != 'SV3':
+        zd = 'zdone'
+
+
+    rd = fitsio.read(indir+sample+zd+reg+'_0_clustering.ran.fits')
+    
+    rd = Table(rd)
+    rd = add_par(rd,par)
+
+
+    dd = fitsio.read(indir+sample+zd+reg+'_clustering.dat.fits')
+    reglab = ''
+    if reg == '_DN' or reg == '_DS':
+        reglab = 'DECaLS SGC'
+        if reg == '_DN':
+            reglab = 'DECaLS NGC'
+    else:
+        if reg == '_S':
+            reglab = 'DECaLS'
+        if reg == '_N':
+            reglab = 'BASS/MzLS'
+    dd = Table(dd)
+    dd = add_par(dd,par)
+    if 'RF' in weightcol:
+        weights = np.ones(len(dd))
+        weights *= dd['WEIGHT_RF']*dd['WEIGHT_COMP']
+        dd[weightcol] = weights
+    perl = []
+    div = 100/nper
+    for i in range(nper+1):
+        perl.append(div*i)
+    print('percentiles are '+str(perl))
+    gdp = []
+    for per in perl:
+        gdp.append(np.percentile(dd[par+'_pix'],per))
+    print(gdp)
+
+    roundfac = int(np.log10(gdp[-1]))
+    roundfac = 2-roundfac
+    if roundfac < 0:
+        roundfac = None
+    print(par,roundfac)
+
+    #cl = ['b','r','k','purple','brown']
+    dndz_ot,be = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin,weights=dd[weightcol])
+    dndz_nt,_ = np.histogram(dd['Z'],range=(zmin,zmax),bins=nbin)
+    perr = np.sqrt(dndz_nt)/dndz_nt*np.sqrt(nper)
+    
+    bs = (zmax-zmin)/nbin
+    plt.fill_between(be[:-1]+bs/2.,-perr,perr,color='gray')
+    fac = len(rd)
+    for i in range(0,nper):
+        sd = dd[par+'_pix'] >gdp[i]
+        sd &= dd[par+'_pix'] <gdp[i+1]
+        dndz_ob,be = np.histogram(dd[sd]['Z'],range=(zmin,zmax),bins=nbin,weights=dd[sd][weightcol])    
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ot,'--',color=cl[i])
+        sdi = rd[par+'_pix'] >gdp[i]
+        sdi &= rd[par+'_pix'] <gdp[i+1]
+        facb = len(rd[sdi])#/len(obi_sel[sd])
+        print(facb)
+        #print(fac,facb,len(obi_sel[sd]))
+        #plt.plot(be[:-1]+0.05,dndz_db/dndz_dt,':',color=cl[i])
+        #plt.plot(be[:-1]+0.05,dndz_ob/dndz_ib*facb,label=str(i))
+        plt.plot(be[:-1]+bs/2.,(dndz_ob*fac/facb-dndz_ot)/dndz_ot,label=str(round(gdp[i],roundfac))+'<'+par+'<'+str(round(gdp[i+1],roundfac)))
+    plt.legend()
+    ol = np.zeros(len(be[:-1]))
+    plt.plot(be[:-1]+bs/2.,ol,':')
+    plt.xlabel('redshift')
+    plt.ylabel('relative change in n(z)')
+    plt.title(survey+' '+sample+' '+reglab)
+    plt.grid(True)
+    plt.ylim(-.2,.2)
+    plt.show()
+
 
 def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
     
@@ -356,7 +529,7 @@ def obiLRGvs_depthmag(reg,par,band,vmin=None,vmax=None,syspix=False,md='sv3',nbi
         ec = R_G   
     if band == 'r':
         ec = R_R
-    if band == 	'z':
+    if band ==  'z':
         ec = R_Z     
     #if syspix:
     rth,rphi = radec2thphi(obi_masked['ra'],obi_masked['dec'])

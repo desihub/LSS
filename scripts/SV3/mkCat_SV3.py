@@ -18,6 +18,7 @@ from desitarget.sv3 import sv3_targetmask
 
 #from this package
 import LSS.SV3.cattools as ct
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 
@@ -38,6 +39,7 @@ parser.add_argument("--dodt", help="process individual tiles; not really necessa
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -227,7 +229,7 @@ for i in range(rm,rx):
 
 
 tilef = sv3dir+'tiles-'+pr+'.fits'
-if os.path.isfile(testfbaf):
+if os.path.isfile(tilef):
     ta = Table.read(tilef)
 else:
 	#construct a table with the needed tile information
@@ -526,6 +528,26 @@ if mkfullr:
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
+if args.apply_veto == 'y':
+    print('applying vetos')
+    maxp = 103400
+    if type[:3] == 'LRG' or notqso == 'notqso':
+        maxp = 103200
+    if type[:3] == 'ELG' and notqso == 'notqso':
+        maxp = 103100
+    if type[:3] == 'BGS':
+        maxp = 102100
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'_full.dat.fits'
+    common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    print('data veto done, now doing randoms')
+    for rn in range(rm,rx):
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(rn)+' done')
+
+
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     dchi2 = 9
@@ -580,19 +602,31 @@ if mknz:
 
     regl = ['','_N','_S']
     
+    
+    if type[:3] == 'QSO':
+        zmin = 0.6
+        zmax = 4.5
+        dz = 0.05
+        P0 = 6000
+        
+    else:    
+        dz = 0.02
+        zmin = 0.01
+        zmax = 1.61
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
+    
     for reg in regl:
-        fb = dirout+type+wzm+reg
+        fb = dirout+type+notqso+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.dat'
-        if type == 'QSO':
-            zmin = 0.6
-            zmax = 4.5
-            dz = 0.05
-            
-        else:    
-            dz = 0.02
-            zmin = 0.01
-            zmax = 1.61
-        ct.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        ct.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax)        
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+
