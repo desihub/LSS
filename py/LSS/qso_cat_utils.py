@@ -110,6 +110,114 @@ def save_dataframe_to_fits(dataframe, filename, extname="QSO_CAT", clobber=True)
         fits.close()
 
 
+def compute_RF_TS_proba(dataframe):
+    """
+    Compute the probabilty to be selected with the Random Forest of the Target Selection algorithm.
+    It add the MW_TRANSMISSION for each band and the PROBA_RF.
+
+    Args:
+        * dataframe (pandas DataFrame): dataframe containing at least the flux, ebv, target_RA, target_DEC
+
+    """
+
+    def compute_MW_transmission(dataframe):
+        """ TODO """
+        from desiutil.dust import  ext_odonnell
+        from desitarget.io import desitarget_resolve_dec
+        from speclite import filters # to correct the photometry
+
+        decamwise = filters.load_filters('decam2014-g', 'decam2014-r','decam2014-z', 'wise2010-W1', 'wise2010-W2')
+        bassmzlswise = filters.load_filters('BASS-g', 'BASS-r', 'MzLS-z','wise2010-W1', 'wise2010-W2')
+
+        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300 ) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
+
+        RV = 3.1
+        EBV =  dataframe['EBV']
+
+        mw_transmission = np.array([10**(-0.4 * EBV[i] * RV * ext_odonnell(bassmzlswise.effective_wavelengths.value, Rv=RV)) if north[i]
+                                    else 10**(-0.4 * EBV[i] * RV * ext_odonnell(decamwise.effective_wavelengths.value, Rv=RV)) for i in range(EBV.size)])
+
+        dataframe.insert(20, 'MW_TRANSMISSION_G', mw_transmission[:, 0])
+        dataframe.insert(21, 'MW_TRANSMISSION_R', mw_transmission[:, 0])
+        dataframe.insert(22, 'MW_TRANSMISSION_Z', mw_transmission[:, 0])
+        dataframe.insert(23, 'MW_TRANSMISSION_W1', mw_transmission[:, 0])
+        dataframe.insert(24, 'MW_TRANSMISSION_W2', mw_transmission[:, 0])
+
+    def compute_colors(dataframe):
+        """ TO DO"""
+        from desitarget.cuts import shift_photo_north
+        from desitarget.io import desitarget_resolve_dec
+
+        gflux  = dataframe['FLUX_G'].values/dataframe['MW_TRANSMISSION_G'].values
+        rflux  = dataframe['FLUX_R'].values/dataframe['MW_TRANSMISSION_R'].values
+        zflux  = dataframe['FLUX_Z'].values/dataframe['MW_TRANSMISSION_Z'].values
+        W1flux  = dataframe['FLUX_W1'].values/dataframe['MW_TRANSMISSION_W1'].values
+        W2flux  = dataframe['FLUX_W2'].values/dataframe['MW_TRANSMISSION_W2'].values
+
+        gflux[np.isnan(gflux) | np.isinf(gflux)]=0.
+        rflux[np.isnan(rflux) | np.isinf(rflux)]=0.
+        zflux[np.isnan(zflux) | np.isinf(zflux)]=0.
+        W1flux[np.isnan(W1flux) | np.isinf(W1flux)]=0.
+        W2flux[np.isnan(W2flux) | np.isinf(W2flux)]=0.
+
+        # Shift the North photometry to match the South:
+        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300 ) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
+        log.info(f'shift photometry for {north.sum()} objects')
+        gflux[north], rflux[north], zflux[north] = shift_photo_north(gflux[north], rflux[north], zflux[north])
+
+        # invalid value to avoid warning with log estimation --> deal with nan
+        with np.errstate(divide='ignore', invalid='ignore'):
+            g=np.where(gflux>0,22.5-2.5*np.log10(gflux), 0.)
+            r=np.where(rflux>0,22.5-2.5*np.log10(rflux), 0.)
+            z=np.where(zflux>0,22.5-2.5*np.log10(zflux), 0.)
+            W1=np.where(W1flux>0, 22.5-2.5*np.log10(W1flux), 0.)
+            W2=np.where(W2flux>0, 22.5-2.5*np.log10(W2flux), 0.)
+
+        g[np.isnan(g) | np.isinf(g)]=0.
+        r[np.isnan(r) | np.isinf(r)]=0.
+        z[np.isnan(z) | np.isinf(z)]=0.
+        W1[np.isnan(W1) | np.isinf(W1)]=0.
+        W2[np.isnan(W2) | np.isinf(W2)]=0.
+
+        # Compute the colors:
+        colors = np.zeros((r.size, 11))
+        colors[:,0] = g-r
+        colors[:,1] = r-z
+        colors[:,2] = g-z
+        colors[:,3] = g-W1
+        colors[:,4] = r-W1
+        colors[:,5] = z-W1
+        colors[:,6] = g-W2
+        colors[:,7] = r-W2
+        colors[:,8] = z-W2
+        colors[:,9] = W1-W2
+        colors[:,10] = r
+
+        return colors
+
+    def compute_proba(dataframe):
+        """ TO DO """
+        import desitarget.myRF as myRF
+        rf_fileName = os.path.join(os.path.dirname(myRF.__file__), 'data/rf_model_dr9_final.npz')
+
+        attributes = compute_colors(dataframe)
+
+        log.info('Load Random Forest: ')
+        log.info('    * ' + rf_fileName)
+        log.info(f'Random Forest over: {len(attributes)} objects')
+        log.info('    * start RF calculation...')
+        myrf =  myRF.myRF(attributes, '', numberOfTrees=500, version=2)
+        myrf.loadForest(rf_fileName)
+        proba_rf = myrf.predict_proba()
+
+        dataframe.insert(25, 'PROBA_RF', proba_rf)
+
+    # add the MW_TRANSMISSION columns
+    compute_MW_transmission(dataframe)
+    # Add the PROBA_RF column
+    compute_proba(dataframe)
+
+
 def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_old_extname_for_fitsio=False, keep_all=False):
     """
     Compile the different QSO identifications to build the QSO catalog from a RR, mgII, Qn file.
@@ -130,11 +238,11 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # selection of which column will be in the final QSO_cat:
     columns_zbest = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE'] #, 'SUBTYPE', 'DELTACHI2', 'CHI2']
     # remark: check if the name exist before selecting them
-    # for instance, in healpix directory 'LOCATION' / 'FIBER' will be not added as columns
-    columns_fibermap = ['TARGETID', 'TARGET_RA', 'TARGET_DEC', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME',
+    columns_fibermap = ['TARGETID', 'TARGET_RA', 'TARGET_DEC', 'LOCATION', 'MORPHTYPE', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME',
                         'EBV', 'FLUX_G', 'FLUX_R', 'FLUX_Z', 'FLUX_W1', 'FLUX_W2',
                         'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2', 'MASKBITS',
-                        'CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET']
+                        'CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET',
+                        'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']
 
     columns_tsnr2 = ['TARGETID', 'TSNR2_QSO', 'TSNR2_LYA']
 
@@ -154,7 +262,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
 
     # add DESI_TARGET column to avoid error of conversion when concatenate the different files with pd.concat() which fills with NaN columns that do not exit in a DataFrame.
     # convert int64 to float 64 --> destructive tranformation !!
-    for DESI_TARGET in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET']:
+    for DESI_TARGET in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET', 'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']:
         if not(DESI_TARGET in fibermap.columns):
             fibermap[DESI_TARGET] = np.zeros(fibermap['TARGETID'].size, dtype=np.int64)
 
@@ -227,9 +335,9 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
         if os.path.isfile(redrock):
             if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
                 qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner)
-                qso_cat['TILEID'] = tile
-                qso_cat['LASTNIGHT'] = night
-                qso_cat['PETAL_LOC'] = petal
+                qso_cat['TILEID'] = int(tile)
+                qso_cat['LASTNIGHT'] = int(night)
+                qso_cat['PETAL_LOC'] = int(petal)
                 qso_cat['SURVEY'] = survey
                 qso_cat['PROGRAM'] = program
             else:
@@ -244,7 +352,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
     return pd.concat([run_catalog_maker(path_to_tile, tile, last_night, petal, survey, program) for petal in range(10)], ignore_index=True)
 
 
-def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20):
+def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -255,6 +363,7 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
         * release (str): which release do you want to use (everest, fuji, guadalupe, ect...).
         * dir_output (str): directory where the QSO catalog will be saved.
         * npool (int): nbr of workers used for the parallelisation.
+        * tiles_to_use (list of str): Build the catalog only on this list of tiles. Default=None, use all the tiles collected from tiles-{release}.fits file.
     """
     import multiprocessing
     from itertools import repeat
@@ -267,19 +376,26 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     DIR = os.path.join(redux, release, 'tiles', 'cumulative')
 
     # load tiles info:
-    tile_info = fitsio.FITS(f'/global/cfs/cdirs/desi/spectro/redux/{release}/tiles-{release}.fits')[1][['TILEID', 'LASTNIGHT', 'SURVEY', 'PROGRAM']]
+    tile_info = fitsio.FITS(os.path.join(redux, release, f'tiles-{release}.fits'))[1][['TILEID', 'LASTNIGHT', 'SURVEY', 'PROGRAM']]
 
     tiles = np.array(tile_info['TILEID'][:], dtype='str')
     last_night = np.array(tile_info['LASTNIGHT'][:], dtype='str')
     survey = np.array(tile_info['SURVEY'][:], dtype='str')
     program = np.array(tile_info['PROGRAM'][:], dtype='str')
 
+    if tiles_to_use is not None:
+        sel  = np.isin(tiles, tiles_to_use)
+        tiles, last_night, survey, program = tiles[sel], last_night[sel], survey[sel], program[sel]
+
     log.info(f'There are {tiles.size} tiles to treat with npool={npool}')
-    logging.getlog("QSO_CAT_UTILS").setLevel(logging.ERROR)
+    logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
         arguments = zip(repeat(DIR), tiles, last_night, survey, program)
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_tile, arguments), ignore_index=True)
-    logging.getlog("QSO_CAT_UTILS").setLevel(logging.INFO)
+    logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
+
+    log.info('Compute the TS probas...')
+    compute_RF_TS_proba(QSO_cat)
 
     save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_cumulative.fits'))
 
@@ -307,7 +423,7 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
     if os.path.isfile(redrock):
         if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
             qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all)
-            qso_cat['HPXPIXEL'] = pixel
+            qso_cat['HPXPIXEL'] = int(pixel)
             qso_cat['SURVEY'] = survey
             qso_cat['PROGRAM'] = program
         else:
@@ -355,11 +471,16 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
         pixel_list += pixel_list_tmp
 
     log.info(f'There are {len(pixel_list)} pixels to treat with npool={npool}')
-    logging.getlog("QSO_CAT_UTILS").setLevel(logging.ERROR)
+    logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
         arguments = zip(repeat(DIR), pre_pix_list_long, pixel_list, repeat(survey), repeat(program), repeat(keep_all))
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_pixel, arguments), ignore_index=True)
-    logging.getlog("QSO_CAT_UTILS").setLevel(logging.INFO)
+    logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
+
+    if not keep_all:
+        # to save computational time
+        log.info('Compute the TS probas...')
+        compute_RF_TS_proba(QSO_cat)
 
     if keep_qso_targets:
         log.info('Keep only qso targets...')
