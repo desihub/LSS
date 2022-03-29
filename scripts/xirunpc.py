@@ -80,6 +80,8 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
+    if dat_or_ran == 'ran' and tracer == 'LRG_main' and ctype == 'full':
+        tracer = 'LRG'
     if region: region = '_' + region
     if rec_type:
         return os.path.join(cat_dir, '{}{}_{}_{}{}.{}.fits'.format(tracer, region, ctype, rec_type, dat_or_ran, rec_conv))
