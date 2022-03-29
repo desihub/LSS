@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="where to find catalogs",default='/global/cscratch1/sd/acarnero')
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=5)
 parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
@@ -27,7 +27,8 @@ parser.add_argument("--vis",help="set to y to plot each xi ",default='n')
 parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
 parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
 parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
-parser.add_argument("--ranmockdata", help="If use randoms from mocks or data",default='data')
+parser.add_argument("--ranmockdata", help="If use randoms from mocks or data",default='mock')
+parser.add_argument("--mockrea", help="Which mock realization",default=0)
 
 parser.add_argument("--weight_column",help="Which definition of weight in clustering WEIGHT column, options are probobs or tileloc",default='tileloc')
 
@@ -36,6 +37,7 @@ args = parser.parse_args()
 
 tagclustering = args.weight_column
 id_ = "%03d"%int(args.univ)
+mockrea = "%03d"%int(args.mockrea)
 ttype = args.type
 basedir = args.basedir
 version = args.version
@@ -51,16 +53,19 @@ if args.bintype == 'log':
 if args.bintype == 'lin':
     bine = np.linspace(1e-4, 200, 40)
 
-dirxi = os.environ['CSCRATCH']+'/'+survey+'MTL_{UNIV}_xi/'.format(UNIV=args.univ)
+dirxi = os.environ['CSCRATCH']+'/'+survey+'MTL_rea{MOCKREA}_univ{UNIV}_xi/'.format(MOCKREA=mockrea, UNIV=args.univ)
 
 if not os.path.exists(dirxi):
     os.mkdir(dirxi)
     print('made '+dirxi) 
-
-lssdir = os.path.join(basedir, survey, 'LSS_MTL_{UNIV}'.format(UNIV=args.univ),specrel,'LSScats')
+#LSS_MTL_rea000_univ1
+lssdir = os.path.join(basedir, survey, 'LSS_MTL_rea{MOCKREA}_univ{UNIV}'.format(MOCKREA=mockrea, UNIV=args.univ),specrel,'LSScats')
 
 mock_lssdir = os.path.join(lssdir, version)
-data_lssdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/2.1' 
+if specrel == 'everest':
+    data_lssdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/2.1' 
+elif specrel == 'fuji':
+    data_lssdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3'
 
 if mockordata == 'data':
     dirname = data_lssdir
@@ -176,7 +181,8 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
             if 'completeness' in weight_type:
                 weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
             elif 'bitwise' in weight_type:
-                weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
+                weights = np.array(list(catalog['BITWEIGHTS'][mask].T)) ### + [weights])
+###temp                weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
         return positions, weights
     
     data_positions, data_weights = get_positions_weights(data, name='data')
@@ -188,7 +194,8 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
     if 'angular' in weight_type and wang is None:
         
         data_fn = os.path.join(mock_lssdir, '{}_full.dat.fits'.format(tracer))
-        randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, iran)) for iran in range(nrandoms)]
+        randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, int(iran))) for iran in nrandoms]
+#AURE        randoms_fn = [os.path.join(dirname, '{}_{:d}_full.ran.fits'.format(tracer, iran)) for iran in range(nrandoms)]
         parent_data = Table.read(data_fn)
         parent_randoms = vstack([Table.read(fn) for fn in randoms_fn])
         
@@ -198,11 +205,12 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
                 mask &= catalog['PHOTSYS'] == region.strip('_')
             if fibered: mask &= catalog['LOCATION_ASSIGNED']
             positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
-            if fibered: weights = list(catalog['BITWEIGHTS'][mask].T)
+            if fibered: weights = np.array(list(catalog['BITWEIGHTS'][mask].T))
+###temp            if fibered: weights = list(catalog['BITWEIGHTS'][mask].T)
             else: weights = np.ones_like(positions[0])
             return positions, weights
-    
         fibered_data_positions, fibered_data_weights = get_positions_weights(parent_data, fibered=True)
+
         print(len(fibered_data_weights),len(fibered_data_positions[0]),len(parent_data))
         parent_data_positions, parent_data_weights = get_positions_weights(parent_data)
         parent_randoms_positions, parent_randoms_weights = get_positions_weights(parent_randoms)
@@ -225,7 +233,8 @@ def compute_correlation_function(mode, edges, tracer='LRG', region='_N', nrandom
         wang['D1R2_twopoint_weights'] = wangD1R2
     
     kwargs.update(wang or {})
-
+    print(wang['D1D2_twopoint_weights'])
+    print('holiiii')
     result = TwoPointCorrelationFunction(corrmode, edges, data_positions1=data_positions, data_weights1=data_weights,
                                          randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
                                          engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **kwargs)

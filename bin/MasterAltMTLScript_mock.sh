@@ -8,15 +8,16 @@
 seed=12345
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=16
+ndir=64
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
 #Observing conditions to generate MTLs for (should be all caps "DARK" or "BRIGHT")
 obscon='DARK'
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
+mockrea = 0
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
-printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs/" $ndir
+printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs_rea%03d/" $ndir $mockrea
 hpListFile='SV3HPList_mock.txt'
 #These two options only are considered if the obscon is bright
 #First option indicates whether to shuffle the top level priorities
@@ -25,7 +26,7 @@ hpListFile='SV3HPList_mock.txt'
 shuffleBrightPriorities=0
 PromoteFracBGSFaint=0.2
 #location of original MTLs to shuffle
-exampleledgerbase=/global/cscratch1/sd/acarnero/mtl_test/
+printf -v exampleledgerbase "$CSCRATCH/mtl_test/init_mock%03d/" $mockrea
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
@@ -60,16 +61,15 @@ splitByChunk=100
 overwrite2=1
 #Actual running of scripts
 
-###srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
-if [ $? -ne 0 ]; then
-    exit 1234
-fi
+#srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel_mock.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
+#if [ $? -ne 0 ]; then
+#    exit 1234
+#fi
 
-
+###CHANGE enviroment
 
 
 bash dateLoopAltMTL_mock.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA >& dateLoopAltMTLOutput.out
-
 if [ $? -ne 0 ]; then
     exit 12345
 fi
@@ -78,6 +78,5 @@ fi
 if [ $splitByReal -ne 0 ]; then
     srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
 else
-#python MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 ####>& MakeBitweightsOutput.out
     srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
 fi

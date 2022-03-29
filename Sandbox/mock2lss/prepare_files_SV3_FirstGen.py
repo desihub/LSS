@@ -27,7 +27,7 @@ path = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky'
 
 #nametosave = 'mockTargets_{PH}_FirstGen_CutSky_{TARGET}_sv3bits.fits'
 
-types = {'ELG':['z1.100', 131074, 2, 3000], 'LRG':['z0.800', 65537, 1, 3200], 'QSO':['z1.400', 262148, 4, 3400]}
+types = {'ELG':['z1.100', 131074, 34, 3000], 'LRG':['z0.800', 65537, 1, 3200], 'QSO':['z1.400', 262148, 4, 3400]}
 #zname, desi_target, sv3_desi_target, priority
 
 #desi_target=[131074,65537,262148]

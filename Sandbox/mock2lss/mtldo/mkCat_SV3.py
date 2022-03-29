@@ -15,7 +15,7 @@ from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
 from desimodel.footprint import is_point_in_desi
 from desitarget.sv3 import sv3_targetmask
-
+import random
 #from this package
 import LSS.SV3.cattools as ct
 import LSS.mkCat_singletile.fa4lsscat as fa
@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
 parser.add_argument("--vis", help="make a plot of data/randoms on tile",default='n')
 parser.add_argument("--xi", help="run pair-counting code",default='n')
@@ -37,6 +37,7 @@ parser.add_argument("--fulld", help="make the 'full' catalog containing info on 
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='y')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
+parser.add_argument("--mockrea", help="Which Mock realization",default=0)
 parser.add_argument("--isoMTL", help="isodate for initial ledger",default='2022-03-10T16:32:15.000')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -51,6 +52,9 @@ parser.add_argument("--notqso",help="if y, do not include any qso targets",defau
 args = parser.parse_args()
 print(args)
 id_ = "%03d"%int(args.univ)
+
+mockrea = "%03d"%int(args.mockrea)
+
 type = args.type
 basedir = args.basedir
 version = args.version
@@ -118,8 +122,8 @@ else:
 
 pd = pdir
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/sv3/dark'.format(UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
-tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits' #SV3p.tdir+pdir+'/' #location of targets
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
+tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_{MOCKREA}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(MOCKREA=mockrea) #SV3p.tdir+pdir+'/' #location of targets
 #tdir = '/global/cscratch1/sd/acarnero/SV3/atest000' #SV3p.tdir+pdir+'/' #location of targets
 mtld = SV3p.mtld
 tiles = SV3p.tiles
@@ -143,7 +147,7 @@ def test_dir(value):
 
 
 #sv3dir = basedir +'/SV3/LSS/'
-sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_{UNIV}'.format(UNIV=args.univ))
+sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_rea{MOCKREA}_univ{UNIV}'.format(MOCKREA=mockrea, UNIV=args.univ))
 test_dir(sv3dir)
 
 #tarbit = int(np.log2(sv3_targetmask.desi_mask[type]))
@@ -242,56 +246,11 @@ if ctar:
     del tardi
     del tard
 
-#THIS MATCH TARGET TO REDSHIFTS
-#THIS IS OBSOLETE
-##############################################################################################################################
-if mkdtiles:
-    #for tile,zdate in zip(mtld['TILEID'],mtld['ZDATE']):
-    for tile,zdate in zip(mtld['TILEID'],mtld['LASTNIGHT']): 
-        ffd = os.path.join(dirout,'ALL'+str(tile)+'_full.dat.fits')
-        if os.path.isfile(ffd) and remake_dtile == False:
-            print(ffd +' file already made and remakes not requested')
-        else:
-            zdate = str(zdate)
-            tspec = ct.combspecdata(tile,zdate)
-            pdict,goodloc = ct.goodlocdict(tspec)
-            wloc = (np.isin(tspec['LOCATION'],goodloc))
-            tspec = tspec[wloc]
-            ts = str(tile).zfill(6)
-            fbaf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-            wt = ta['TILEID'] == tile
-            tars = read_targets_in_tiles(mdir,ta[wt],mtl=True)
-            
-            ftar = Table.read(sv3dir+pdir+'_targets.fits')
-            ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
-            'MW_TRANSMISSION_Z','FRACFLUX_G','FRACFLUX_R','FRACFLUX_Z','FRACMASKED_G','FRACMASKED_R','FRACMASKED_Z','FRACIN_G','FRACIN_R',\
-            'FRACIN_Z','NOBS_G','NOBS_R','NOBS_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','FLUX_W1',\
-            'FLUX_W2','FLUX_IVAR_W1','FLUX_IVAR_W2','MW_TRANSMISSION_W1','MW_TRANSMISSION_W2','ALLMASK_G','ALLMASK_R','ALLMASK_Z','FIBERFLUX_G',\
-            'FIBERFLUX_R','FIBERFLUX_Z','FIBERTOTFLUX_G','FIBERTOTFLUX_R','FIBERTOTFLUX_Z','WISEMASK_W1','WISEMASK_W2','MASKBITS',\
-            'RELEASE','BRICKID','BRICKNAME','BRICK_OBJID','MORPHTYPE','PHOTSYS'])
-            ol = len(tars)
-            tars = join(tars,ftar,keys=['TARGETID'])
-            print('lengths after join:'+str(ol),len(tars))
-            #tars = inflate_ledger(tars,tdir) #need to specify columns here or MTL updates will be reversed to original state
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'Z']]
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'ZWARN']]
-            tars = tars[[b for b in list(tars.dtype.names) if b != 'PRIORITY']]
-            tars = join(tars,tspec,keys=['TARGETID'],join_type='left')
-            tout = ct.gettarinfo_type(fbaf,tars,goodloc,pdict)
-            #tout = join(tfa,tspec,keys=['TARGETID','LOCATION'],join_type='left') #targetid should be enough, but all three are in both and should be the same
-            print(tout.dtype.names)
-            wz = tout['ZWARN']*0 == 0
-            wzg = tout['ZWARN'] == 0
-            print('there are '+str(len(tout[wz]))+' rows with spec obs redshifts and '+str(len(tout[wzg]))+' with zwarn=0')
-        
-            tout.write(ffd,format='fits', overwrite=True) 
-            print('wrote matched targets/redshifts to '+ffd)
-            #logf.write('made full data files\n')
 
 #CREATE A DICTIONARY WITH TILEID AND THE DIRECTORY OF THE ALTMTL FBA RUN
 ##############################################################################################
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_))
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
     faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -314,7 +273,7 @@ if combd:
         if run_tarwdup:
             #Univ001 2022-02-14T19:37:05.000
             #Univ000 2022-02-11T16:42:58.000
-            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_), univ=id_, isodate=args.isoMTL)
+            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL)
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -329,7 +288,7 @@ if combd:
         
 #FOR NEWLY CREATED tarwdup FILE, JOIN WITH REAL DATA TO RETRIEVE HARDWARE AND TEMPLATE INFO BASED ON TILEID AND LOCATION, including coadd_fiberstatus
 ################################################################################################################
-        data_specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+        data_specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
         wt = np.isin(data_specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
         data_specf = data_specf[wt]
 
@@ -341,26 +300,25 @@ if combd:
 
         tarf = join(tarf, data_specf, keys=['LOCATION','TILEID'], join_type='left')
         
-        if specrel == 'everest':
 
 #CREATE specwdup FILE READING fba RESULT, USING FASSIGN hdu, MATCH TO masterTarget file
 #######################################################################################################################################
-            outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
+        outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
 
-            namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/fa/SV3'.format(UNIV=id_),'{stamp}','fba-{ts}.fits') 
-            if run_specwdup:
-                mt.combtile_specmock_mtl(ta, namecomb, list_runFA, tdir, outfile_spec)
+        namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_),'{stamp}','fba-{ts}.fits') 
+        if run_specwdup:
+            mt.combtile_specmock_mtl(ta, namecomb, list_runFA, tdir, outfile_spec)
 
-            specf = Table.read(outfile_spec)
-            specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ','RSDZ'])
-            specf['TILELOCID'] = 10000*specf['TILEID'] + specf['LOCATION']
+        specf = Table.read(outfile_spec)
+        specf.keep_columns(['FIBER','TARGETID','LOCATION','FIBERSTATUS','LAMBDA_REF','PETAL_LOC','DEVICE_LOC','DEVICE_TYPE','TARGET_RA','TARGET_DEC','FA_TARGET','FA_TYPE','FIBERASSIGN_X','FIBERASSIGN_Y','TILEID','PRIORITY','SUBPRIORITY','ZWARN','TRUEZ','RSDZ'])
+        specf['TILELOCID'] = 10000*specf['TILEID'] + specf['LOCATION']
 
             ##AUREtj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 #JOIN TARGET WITH DUP TO SPEC WITH DUP 
 ####################################################################################################################
-            tj = join(tarf, specf, keys=['TARGETID','LOCATION','TILEID','TILELOCID'], join_type='left')
+        tj = join(tarf, specf, keys=['TARGETID','LOCATION','TILEID','TILELOCID'], join_type='left')
 
-            tj.write(os.path.join(ldirspec,'datcomb_'+type+'_tarspecwdup_Alltiles.fits'),format='fits', overwrite=True)
+        tj.write(os.path.join(ldirspec,'datcomb_'+type+'_tarspecwdup_Alltiles.fits'),format='fits', overwrite=True)
         
         print(np.unique(tj['SV3_DESI_TARGET'],return_counts=True))
 
@@ -376,16 +334,9 @@ if combd:
         
         
 if mkfulld:
-    if specrel == 'everest':
-        outfile_spec = os.path.join(ldirspec, 'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-        specf = Table.read(outfile_spec)
-##AURE        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-##AURE        wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-##AURE        specf = specf[wt]
-    if specrel == 'daily':
-        specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
+    outfile_spec = os.path.join(ldirspec, 'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+    specf = Table.read(outfile_spec)
 
-    #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
     if type[:3] == 'ELG':
         azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
@@ -404,24 +355,17 @@ if mkfulld:
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
     bitweightfile = None
-    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    '''AURE
-    if pdir == 'dark':
-        bitweightfile = SV3p.darkbitweightfile
-        #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-        #bitweightfile='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-    if pdir == 'bright':
-        bitweightfile = SV3p.brightbitweightfile
-    '''
+    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'.format(MOCKREA=mockrea)
+###    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
 
 ##    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,fbcol='FIBERSTATUS')
-    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,otherspec='/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')#,fbcol='FIBERSTATUS')
+    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,otherspec='/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')#,fbcol='FIBERSTATUS')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
-###weightmd='probobs'
-weightmd='tileloc'
+weightmd='probobs'
+###weightmd='tileloc'
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     dchi2 = 9
@@ -435,7 +379,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 800
-    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), weightmd='tileloc', zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
+    mt.mkclusdat_mtl(os.path.join(dirout,type+'_'), weightmd=weightmd, zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=None)
 ##AURE    ct.mkclusdat(os.path.join(dirout,type+'_'),zmask=zma,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
@@ -457,7 +401,7 @@ if mknz:
     for reg in regl:
         fb = os.path.join(dirout,type+wzm+reg)
         
-        fbr = '/global/cscratch1/sd/acarnero/SV3/LSS_MTL/everest/LSScats/test/'+type+wzm+reg
+        fbr = '/global/cscratch1/sd/acarnero/SV3/LSS_MTL/'+specrel+'/LSScats/test/'+type+wzm+reg
 ##with data real        fbr = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/2.1/'+type+wzm+reg
         
         fcr = fbr+'_0_clustering.ran.fits'

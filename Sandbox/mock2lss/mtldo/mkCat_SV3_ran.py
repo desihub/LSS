@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
@@ -42,6 +42,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=20) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
+parser.add_argument("--mockrea", help="Which mock realization?",default=0)
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
@@ -112,11 +113,12 @@ pd = pdir
 SV3p = SV3(type)
 
 id_ = "%03d"%int(args.univ)
+mockrea = "%03d"%int(args.mockrea)
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/sv3/dark'.format(UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
 
 ###mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/sv3/dark' #SV3p.mdir+pdir+'/' #location of ledgers
-tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_000_FirstGen_CutSky_alltracers_sv3bits.fits' #location of targets
+tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_{MOCKREA}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(MOCKREA=mockrea) #location of targets
 mtld = SV3p.mtld
 tiles = SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
@@ -135,7 +137,7 @@ def test_dir(value):
 
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_{UNIV}'.format(UNIV=args.univ))
+sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL_rea{MOCKREA}_univ{UNIV}'.format(MOCKREA=mockrea, UNIV=args.univ))
 
 ###sv3dir = os.path.join(basedir,'SV3', 'LSS_MTL')
 test_dir(sv3dir)
@@ -265,71 +267,34 @@ def doran(ii):
     if mkranmtl:
         mt.randomtiles_allSV3(ta, os.path.join(sv3dir, 'random'+str(ii), 'alltilesnofa.fits'), directory_output=os.path.join(sv3dir, 'random'+str(ii)))
 
-#Make module swap
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
         for it in range(0,len(mtld)):
-#AURE        for it in range(0,len(mtld[wfv])):
             #print(it,len(mtld))    
             tile = mtld['TILEID'][it]
             ts = str(tile).zfill(6)
-            '''
-            fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-            dt = fbah['RUNDATE'][:19]
-            fav = fbah['FA_VER']
-            if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-                fav = '2.3.0'
 
-#AURE            if fav == faver:
-#            ttemp = Table(ta[wfv][it])
-#            ttemp['OBSCONDITIONS'] = 516
-#            ttemp['IN_DESI'] = 1
-#            try:
-#                ttemp['FA_PLAN'] = fbah['FA_PLAN']
-#                ttemp['FA_HA'] = fbah['FA_HA']
-#                ttemp['FIELDROT'] = fbah['FIELDROT']
-#            except:
-#                print('did not add FA_PLAN and FIELDROT')
-            #for i in range(rm,rx):
-            testfbaf = os.path.join(randir+str(ii),'fba-'+str(tile).zfill(6)+'.fits')
-            if os.path.isfile(testfbaf):
-                print('fba file already made')
-            else:                  
-                if fav != '2.3.0':
-                    pass
-                else:
-                    print(ttemp)
-                    print(fav,dt)
-#AURE                    ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
-##                    os.system('module swap fiberassign/'+fav)
-            '''
             testfbaf = os.path.join(randir+str(ii),'fba-'+str(tile).zfill(6)+'.fits')
             if os.path.isfile(testfbaf):
                 print('fba file already made')
             else:
                 stamp = list_runFA[tile]
                 myfa.dofa(os.path.join(randir+str(ii),'tilenofa-'+str(tile)+'.fits'),ts,stamp,randir+str(ii),id_)
-#AURE                fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
  
 
     if combr:
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-            if specrel == 'everest':
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-                specf = specf[wt]
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-                kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-                ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
-                ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-                'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-                'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-            if specrel == 'daily':
-                specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
-                kc = ['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
+            specf = specf[wt]
+            specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
             ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
             tc = mt.count_tiles_better_mtl(specf,os.path.join(ldirspec,'rancomb_'+str(ii)+type+'wdupspec_Alltiles.fits'),type,ii,specrel=specrel)
             tc.write(os.path.join(ldirspec,'rancomb_'+str(ii)+type+'_Alltilelocinfo.fits'),format='fits', overwrite=True)
@@ -337,12 +302,8 @@ def doran(ii):
 
         
     if mkfullr:
-        if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-            fbcol = 'COADD_FIBERSTATUS'
-        if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-            fbcol = 'FIBERSTATUS'
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        fbcol = 'COADD_FIBERSTATUS'
 
         outf = os.path.join(dirout,type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
         if type == 'BGS_BRIGHT':

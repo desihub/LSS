@@ -1,6 +1,6 @@
 #!/global/common/software/desi/cori/desiconda/20200801-1.4.0-spec/conda/bin/python
 from multiprocessing import Pool
-from LSS.SV3 import altmtltools as amt
+from LSS.SV3 import mockaltmtltools as amt
 #import altmtltools as amt
 import dill
 from sys import argv
