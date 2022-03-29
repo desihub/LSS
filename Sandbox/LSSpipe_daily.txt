@@ -4,6 +4,9 @@
 source /project/projectdirs/desi/software/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
+#if you need to delete temporary fiberassign files
+rm /global/cfs/cdirs/desi/survey/catalogs//main/LSS/random*/*tmp*
+
 #data, run separately for dark and bright time
 #this script first goes through the fiberassign files, first combining all of the information together split by healpix
 #all "potential assignments" are kept, meaning each targetid will appear many times
@@ -16,6 +19,10 @@ notqsos = ['n','n','n','n','y','n','n']
 #information on the unique groupings of tileids and tilelocid are determined (along with the number of tiles) and this information is joined by a TARGETID match
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright
+
+
+#combine quasars:
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --doqso y --dospec n --combpix n
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
 #in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2

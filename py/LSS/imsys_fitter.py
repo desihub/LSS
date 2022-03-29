@@ -159,11 +159,17 @@ class Syst:
 
         #-- same but using dictionary
         model = 1.+pars['constant']
+        #print(pars['constant'])
+        #print(pars)
+        #model = np.ones(len(self.data_we))+pars['constant']
         for p in pars:
             if p == 'constant': continue
+            #print(pars[p])
             edges = self.edges[p]
             edgemin, edgemax = edges[0], edges[-1]
-            model += pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
+            mp = pars[p]* (syst[p]-edgemin)/(edgemax-edgemin)
+            #print(p,len(mp))
+            model += mp
         return model
 
     def get_histograms(self, pars=None):
@@ -185,6 +191,7 @@ class Syst:
         for name in data_syst:
             #h_dat = np.bincount(h_index[name], weights=data_we*we_model, 
             #                    minlength=self.nbins)
+            #print(name,len(data_syst[name]),len(data_we),len(we_model))
             h_dat,_ = np.histogram(data_syst[name],bins=self.edges[name],weights=data_we*we_model)
             h_ran = h_rand[name]
             #-- computing overdensity and error assuming poisson
@@ -205,16 +212,19 @@ class Syst:
             - but usually it is easy to give a dictionary
             - if no argument is give, compute chi2 for constant=1 and zero slopes
         '''
+        #print('length of pars is '+str(len(pars)))
+        #print(pars)
         if len(pars) == 0: 
-            self.get_histograms()
+           self.get_histograms()
         elif isinstance(pars[0], dict):
-            self.get_histograms(pars=pars[0])
+           self.get_histograms(pars=pars[0])
         else:
-            pars_dict = {}
-            for par_name, p in zip(self.par_names, list(pars)):
-                pars_dict[par_name] = p
-            self.get_histograms(pars=pars_dict)
-
+           pars_dict = {}
+           for par_name, p in zip(self.par_names, list(pars)[0]):
+               pars_dict[par_name] = p
+           #print('pars_dict is '+str(pars_dict))
+           self.get_histograms(pars=pars_dict)
+        #self.get_histograms()
         chi2 = 0.
         for name in self.syst_names:
             chi2+= np.sum( (self.delta[name]-1)**2/self.edelta[name]**2)
@@ -244,25 +254,43 @@ class Syst:
         #self.fit_index = fit_index
         self.fit_maps = fit_maps
 
-        par_names = []
+#         par_names = []
         init_pars = {}
-        par_names.append('constant')
+        init_errs ={}
+#         par_names.append('constant')
         init_pars['constant'] = 0.
-        init_pars['error_constant'] = 0.1
+        init_errs['error_constant'] = 0.1
+         
         for par in self.fit_maps:
             value = 0
             init_pars[par] = value
-            init_pars['error_'+par] = abs(value)/10. if value!=0 else 0.1
-            par_names.append(par)
-
+            init_errs['error_'+par] = abs(value)/10. if value!=0 else 0.1
+#             par_names.append(par)
+        par_names = [par for par in init_pars]
+        #print(par_names)
+        pars_values = [ init_pars[par] for par in init_pars]
+        print(tuple(pars_values))
+        mig = Minuit(self.get_chi2, tuple(pars_values), name=tuple(par_names))
+        mig.errordef = Minuit.LEAST_SQUARES
+# 
         self.fixes = fixes
-        if fixes:
-            for key in fixes.keys():
-                init_pars[key] = fixes[key]
-                init_pars['fix_'+key] = True 
-        if limits:
-            for key in limits.keys():
-                init_pars['limit_'+key] = (limits[key][0], limits[key][1])
+        #print(init_errs)
+        for par in init_pars:
+            mig.errors[par] = init_errs['error_'+par]
+            if fixes:
+                mig.fixed[par] = fixes[par] if par in fixes else False
+            if limits:
+                mig.limits[par] = limits[par] if par in limits else (None, None)
+
+
+#          if fixes:
+#              for key in fixes.keys():
+#                  init_pars[key] = fixes[key]
+#                  init_pars['fix_'+key] = True 
+#          if limits:
+#              for key in limits.keys():
+#                  init_pars['limit_'+key] = (limits[key][0], limits[key][1])
+        
 
         self.priors = priors
         self.par_names = par_names
@@ -273,26 +301,28 @@ class Syst:
         print('Fitting for:')
         print(self.par_names)
 
-        mig = Minuit(self.get_chi2, throw_nan=False, \
-                             forced_parameters=par_names, \
-                             print_level=1, errordef=1, \
-                             **init_pars)
+        #mig = Minuit(self.get_chi2,  \
+#         mig = Minuit(self.get_chi2, throw_nan=False, \
+#                              forced_parameters=par_names, \
+#                              print_level=1, errordef=1, \
+#                              **init_pars)
                              #frontend=iminuit.frontends.ConsoleFrontend(), \
 
         mig.tol = 1.0 
         imin = mig.migrad()
         self.mig = mig
         self.imin = imin
-        self.is_valid = imin[0]['is_valid']
+        #self.is_valid = imin[0]['is_valid']
         self.best_pars = mig.values 
         self.errors = mig.errors
         self.chi2min = mig.fval
         self.ndata = self.nbins*self.nsyst
-        self.npars = mig.narg
+        #self.npars = mig.narg
+        self.npars = len(par_names)
         self.covariance = mig.covariance
-        for par in par_names:
-            if mig.fitarg['fix_'+par]:
-                self.npars -= 1
+        #for par in par_names:
+        #    if mig.fitarg['fix_'+par]:
+        #        self.npars -= 1
         self.rchi2min = self.chi2min/(self.ndata-self.npars)
         self.chi2_before = self.get_chi2()
         self.rchi2_before =  self.get_chi2()/self.ndata

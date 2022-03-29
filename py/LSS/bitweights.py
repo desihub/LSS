@@ -10,11 +10,10 @@ try:
                                  LocationsAvailable, load_target_table)
 except:
     from fiberassign.targets import (Targets, TargetsAvailable,
-                                 LocationsAvailable, load_target_table)
 from fiberassign.assign import Assignment
 
 
-def get_targets(mtlfile, skyfile):
+def get_targets(mtlfile, skyfile,faver='5.0.0'):
     """
     Load target and information
     """
@@ -27,33 +26,71 @@ def get_targets(mtlfile, skyfile):
     if 'DESI_TARGET' not in mtl.dtype.names:
         mtl['DESI_TARGET'] = np.ones(len(mtl), dtype=int)
 
-    # Load science targets
+    # Load targets
     tgs = Targets()
-    load_target_table(tgs, mtl)
-
     # Load sky targets
     sky = None
     if skyfile:
         sky = Table.read(skyfile)
-        load_target_table(tgs, sky)
 
+    mver = int(faver[:1])
+    if mver < 5:
+        load_target_table(tgs, mtl)
+        if sky is not None:
+            load_target_table(tgs, sky)
+    else:
+        from fiberassign.targets import TargetTagalong,create_tagalong 
+        tagalong = create_tagalong()
+        load_target_table(tgs,tagalong, mtl) 
+        if sky is not None:
+            load_target_table(tgs, tagalong,sky)
+            
     return mtl, tgs, sky
 
-def setup_fba(mtl, sky, tiles, hw):
+def setup_fba(mtl, sky, tiles, hw,faver='5.0.0'):
     """
     Set up tiles, targets, etc. for fiber assignment
     """
     # Load targets and target tree
     tgs = Targets()
-    load_target_table(tgs, mtl)
-    if sky:
-        load_target_table(tgs, sky)
-    tree = TargetTree(tgs)
+    mver = int(faver[:1])
+    if mver < 5:
+        load_target_table(tgs, mtl)
+        if sky:
+            load_target_table(tgs, sky)
+
+    else:
+        from fiberassign.targets import TargetTagalong,create_tagalong 
+        tagalong = create_tagalong()
+        load_target_table(tgs,tagalong, mtl)  
+        if sky:
+            load_target_table(tgs, tagalong,sky)
+        
+    if mver < 3:
+        from fiberassign.targets import (TargetTree)
+        tree = TargetTree(tgs)
 
     # Compute available targets / locations
-    tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
-    favail = LocationsAvailable(tgsavail)
-    asgn = Assignment(tgs, tgsavail, favail)
+    if faver == '2.3.0':
+        tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail)
+    if faver == '2.4.0' or faver == '2.5.0' or faver == '2.5.1':
+        tgsavail = TargetsAvailable(hw, tgs, tiles, tree)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+    if mver >= 3 and mver < 5:
+        from fiberassign.targets import targets_in_tiles
+        tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles)
+        tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+    if mver >= 5:
+        from fiberassign.targets import targets_in_tiles
+        tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles,tagalong)
+        tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+        favail = LocationsAvailable(tgsavail)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
 
     return asgn
 

@@ -20,6 +20,7 @@ from desimodel.footprint import is_point_in_desi
 #from this package
 #try:
 import LSS.SV3.cattools as ct
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 
@@ -31,10 +32,11 @@ parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
-parser.add_argument("--combr", help="combine the random tiles together",default='y')
-parser.add_argument("--fullr", help="make the random files associated with the full data files",default='y')
-parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='y')
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='y')
+parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_veto", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for SV3 are '2.3.0' '2.4.0' '2.5.0' '2.5.1' '3.0.0' '4.0.0'",default='2.3.0')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
@@ -292,8 +294,8 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-            if specrel == 'everest':
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
+            if specrel == 'everest' or specrel == 'fuji':
+                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+type+'-cumulative.fits')
                 wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
                 specf = specf[wt]
                 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -301,7 +303,7 @@ def doran(ii):
                 ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
                 ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
                 'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-                'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+                'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
             if specrel == 'daily':
                 specf = Table.read(ldirspec+'datcomb_'+type+'_specwdup_Alltiles.fits')
                 kc = ['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
@@ -313,8 +315,8 @@ def doran(ii):
 
         
     if mkfullr:
-        if specrel == 'everest':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        if specrel == 'everest' or specrel == 'fuji':
+            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
             fbcol = 'COADD_FIBERSTATUS'
         if specrel == 'daily':
             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
@@ -327,9 +329,29 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+        maxp = 103400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 103200
+        if type[:3] == 'ELG' and notqso == 'notqso':
+            maxp = 103100
+        if type[:3] == 'BGS':
+            maxp = 102100
+
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
+    if args.apply_veto == 'y':
+        print('applying vetos')
+        maxp = 103400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 103200
+        if type[:3] == 'ELG' and notqso == 'notqso':
+            maxp = 103100
+        if type[:3] == 'BGS':
+            maxp = 102100
+        fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
 
 
     if mkclusran:

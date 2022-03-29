@@ -1,202 +1,160 @@
-# To run: mpiexec -np 16 python pkrun.py --type ELG...
+# To run: srun -n 64 python pkrun.py --type ELG...
 
 import os
 import argparse
 import logging
+
 import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-# To install pypower: python -m pip install git+https://github.com/adematti/pypower
-# To install mockfactory: python -m pip install git+https://github.com/adematti/mockfactory
-from pypower import CatalogFFTPower, utils, setup_logging
-from mockfactory import Catalog
+from pypower import CatalogFFTPower, PowerSpectrumStatistics, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
-cosmo = TabulatedDESI()
-distance = cosmo.comoving_radial_distance
 
-os.environ['NUMEXPR_MAX_THREADS'] = '8'
-parser = argparse.ArgumentParser()
-parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="where to find catalogs",default='/global/cfs/cdirs/desi/survey/catalogs')
-parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
-parser.add_argument("--survey",help="e.g., SV3 or main",default='SV3')
-parser.add_argument("--nran",help="number of random files to combine together (1-18 available)",default=10,type=int)
-parser.add_argument("--weight_type",help="types of weights to use; use angular_bitwise for PIP; default just uses WEIGHT column",default='default')
-
-#only relevant for reconstruction
-parser.add_argument("--rectype",help="IFT or MG supported so far",default='IFT')
-parser.add_argument("--convention",help="recsym or reciso supported so far",default='reciso')
-
-setup_logging()
-args = parser.parse_args()
-
-ttype = args.type
-basedir = args.basedir
-version = args.version
-specrel = args.verspec
-survey = args.survey
-nran = int(args.nran)
-weight_type = args.weight_type
-
-edges = {'min':0., 'step':0.005}
-
-dirpk = os.environ['CSCRATCH']+'/'+survey+'pk/'
-
-utils.mkdir(dirpk)
-print('made '+dirpk) 
-
-lssdir = basedir+'/'+survey+'/LSS/'+specrel+'/LSScats/'
-dirname = lssdir + version
-#dirout = svdir+'LSScats/'+version+'/'
-
-zmask = ['']
-minn = 0
-
-subt = None
-
-if ttype[:3] == 'LRG':
-    zl = [0.4,0.6,0.8,1.1]
+from xirunpc import read_clustering_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims
 
 
-if ttype[:3] == 'ELG':# or type == 'ELG_HIP':
-    #minn = 5
-    zl = [0.8,1.1,1.5]
-    #zmask = ['','_zmask']
-    
-    #zmin = 0.8
-    #zmax = 1.6
+os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
+logger = logging.getLogger('pkrun')
 
 
-if ttype == 'QSO':
-    zl = [0.8,1.1,1.5,2.1]
-    #zmin = 1.
-    #zmax = 2.1
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, mpicomm=None, mpiroot=None, **kwargs):
 
-if ttype == 'QSOh':
-    zl = [2.1,3.5]
-    ttype = 'QSO'
-    #zmin = 1.
-    #zmax = 2.1
+    autocorr = tracer2 is None
+    catalog_kwargs = kwargs.copy()
+    catalog_kwargs['weight_type'] = weight_type
+    with_shifted = rec_type is not None
 
-if ttype[:3] == 'BGS':
-    #minn = 2
-    zl = [0.1,0.3,0.5]
-    #zmin = 0.1
-    #zmax = 0.5 
+    if 'angular' in weight_type and wang is None:
 
-if ttype[:3] == 'BGS' and ttype[-1] == 'l':
-    #minn = 2
-    zl = [0.1,0.3]
-    ttype = ttype[:-1]
-    #zmin = 0.1
-    #zmax = 0.5 
+        wang = compute_angular_weights(nthreads=1, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
 
-if ttype[:3] == 'BGS' and ttype[-1] == 'h':
-    #minn = 2
-    zl = [0.3,0.5]
-    ttype = ttype[:-1]
-    #zmin = 0.1
-    #zmax = 0.5 
+    data_positions1, data_weights1, data_positions2, data_weights2 = None, None, None, None
+    randoms_positions1, randoms_weights1, randoms_positions2, randoms_weights2 = None, None, None, None
+    shifted_positions1, shifted_weights1, shifted_positions2, shifted_weights2 = None, None, None, None
 
+    if mpicomm is None or mpicomm.rank == mpiroot:
 
-wa = ''
-if survey in ['main', 'DA02']:
-    wa = 'zdone'
+        if with_shifted:
+            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+            shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+        else:
+            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+        randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
 
-def compute_power_spectrum(edges, tracer='LRG', region='_N', nrandoms=4, zlim=(0., np.inf), weight_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dtype='f4'):
-    if ttype == 'ELGrec' or ttype == 'LRGrec':
-        data_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.dat.fits')
-        data = Catalog.load_fits(data_fn)
-
-        shifted_fn = os.path.join(dirname, tracer+wa+ region+'_clustering_'+args.rectype+args.convention+'.ran.fits')
-        shifted = Catalog.load_fits(shifted_fn)
-
-        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
-        randoms = Catalog.concatenate(*(Catalog.load_fits(fn) for fn in randoms_fn), keep_order=False)
-    else:
-        data_fn = os.path.join(dirname, '{}{}_clustering.dat.fits'.format(tracer+wa, region))
-        data = Catalog.load_fits(data_fn)
-
-        shifted = None
-
-        randoms_fn = [os.path.join(dirname, '{}{}_{:d}_clustering.ran.fits'.format(tracer+wa, region, iran)) for iran in range(nrandoms)]
-        randoms = Catalog.concatenate(*(Catalog.load_fits(fn) for fn in randoms_fn), keep_order=False)
-    
-    def get_positions_weights(catalog, name='data'):
-        mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
-        nmask = catalog.mpicomm.allreduce(mask.sum())
-        if catalog.mpicomm.rank == 0:
-            catalog.log_info('Using {} rows for {}'.format(nmask, name))
-        #if weight_type is None:
-        #    weights = None
-        #else:
-        weights = np.ones_like(positions[0])
-        if name == 'data':
-            if 'photometric' in weight_type:
-                rfweight = RFWeight(tracer=tracer)
-                weights *= rfweight(positions[0], positions[1])
-            if 'zfail' in weight_type:
-                weights *= catalog['WEIGHT_ZFAIL'][mask]
-            if 'default' in weight_type:
-                weights *= catalog['WEIGHT'][mask]
-            if 'completeness' in weight_type:
-                weights *= catalog['WEIGHT'][mask]/catalog['WEIGHT_ZFAIL'][mask]
-            elif 'bitwise' in weight_type:
-                weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
-        return positions, weights
-    
-    data_positions, data_weights = get_positions_weights(data, name='data')
-    randoms_positions, randoms_weights = get_positions_weights(randoms, name='randoms')
-    shifted_positions, shifted_weights = None, None
-    if shifted is not None:
-        shifted_positions, shifted_weights = get_positions_weights(shifted, name='shifted')
-
-    result = CatalogFFTPower(data_positions1=data_positions, data_weights1=data_weights,
-                             randoms_positions1=randoms_positions, randoms_weights1=randoms_weights,
-                             shifted_positions1=shifted_positions, shifted_weights1=shifted_weights,
+        if not autocorr:
+            if with_shifted:
+                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+                shifted_positions2, shifted_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+            else:
+                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+            randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+    result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
+                             data_positions2=data_positions2, data_weights2=data_weights2,
+                             randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                             randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
+                             shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
+                             shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
-                             position_type='rdd', dtype=dtype)
-    return result
+                             position_type='rdd', dtype=dtype, direct_limits=(0., 1./60.), direct_limit_type='degree',
+                             mpicomm=mpicomm, mpiroot=mpiroot).poles
 
-ranwt1=False
+    return result, wang
 
-regl = ['_N','_S']
 
-tcorr = ttype
-tw = ttype
-if survey == 'main':
-    regl = ['_DN','_DS','_N','_S']
-    if ttype == 'LRGrec':
-        regl = ['_DN','_N']
-        tcorr = 'LRG'
-        tw = 'LRG'+args.rectype+args.convention
-    if ttype == 'ELGrec':
-        regl = ['_DN','_N']
-        tcorr = 'ELG'
-        tw = 'ELG'+args.rectype+args.convention
-        
+def get_edges():
+    return {'min':0., 'step':0.001}
 
-nzr = len(zl)
-if len(zl) == 2:
-    nzr = len(zl)-1
-for i in range(0,nzr):
-    if i == len(zl)-1:
-        zmin=zl[0]
-        zmax=zl[-1]
+
+def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+    if tracer2: tracer += '_' + tracer2
+    if rec_type: tracer += '_' + rec_type
+    if region: tracer += '_' + region
+    root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    if file_type == 'npy':
+        return os.path.join(out_dir, 'pkpoles_{}.npy'.format(root))
+    return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
+    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='everest')
+    parser.add_argument('--version', help='catalog version', type=str, default='test')
+    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
+    parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
+    parser.add_argument('--weight_type', help='types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column', type=str, default='default')
+    parser.add_argument('--boxsize', help='box size', type=float, default=5000.)
+    parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
+    parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
+    parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
+    parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
+
+    #only relevant for reconstruction
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+
+    setup_logging()
+    args = parser.parse_args()
+
+    from pypower import mpi
+    mpicomm = mpi.COMM_WORLD
+    mpiroot = 0
+
+    cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
+    if args.outdir is not None: out_dir = args.outdir
+    tracer, tracer2 = args.tracer[0], None
+    if len(args.tracer) > 1:
+        tracer2 = args.tracer[1]
+        if len(args.tracer) > 2:
+            raise ValueError('Provide <= 2 tracers!')
+    if tracer2 == tracer:
+        tracer2 = None # otherwise counting of self-pairs
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+    distance = TabulatedDESI().comoving_radial_distance
+
+    regions = args.region
+    if regions is None:
+        regions = get_regions(args.survey, rec=bool(args.rec_type))
+
+    if args.zlim is None:
+        zlims = get_zlims(tracer, tracer2=tracer2)
+    elif not args.zlim[0].replace('.', '').isdigit():
+        zlims = get_zlims(tracer, tracer2=tracer2, option=args.zlim[0])
     else:
-        zmin = zl[i]
-        zmax = zl[i+1]
-    print(zmin,zmax)
-    for reg in regl:
-        print(reg)
-        result = compute_power_spectrum(edges, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type)
-        poles = result.poles
-        fo = open(dirpk+'pk024'+tw+survey+reg+'_'+str(zmin)+str(zmax)+version+'_'+weight_type+'lin.dat','w')
-        fo.write('#norm = {}\n'.format(poles.wnorm))
-        fo.write('#shotnoise = {}\n'.format(poles.shotnoise))
-        for k,p in zip(poles.k, poles.power.T.real):
-            fo.write(' '.join([str(k)] + [str(p_) for p_ in p]) + '\n')
-        fo.close()
+        zlims = [float(zlim) for zlim in args.zlim]
+    zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
+
+    bin_type = 'lin'
+    rebinning_factors = [1, 5, 10]
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
+
+    for zmin, zmax in zlims:
+        for region in regions:
+            if mpicomm is None or mpicomm.rank == mpiroot:
+                logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
+            edges = get_edges()
+            wang = None
+            result, wang = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'))
+            fn = power_fn(file_type='npy', **file_kwargs)
+            result.save(fn)
+            txt_kwargs = file_kwargs.copy()
+            for factor in rebinning_factors:
+                #result = PowerSpectrumStatistics.load(fn)
+                rebinned = result[:(result.shape[0]//factor)*factor:factor]
+                txt_kwargs.update(bin_type=bin_type+str(factor))
+                fn_txt = power_fn(file_type='pkpoles', **txt_kwargs)
+                rebinned.save_txt(fn_txt)
+
+                if args.vis and (mpicomm is None or mpicomm.rank == mpiroot):
+                    k, poles = rebinned(return_k=True, complex=False)
+                    for pole in poles: plt.plot(k, k*pole)
+                    tracers = tracer
+                    if tracer2 is not None: tracers += ' x ' + tracer2
+                    plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+                    plt.show()

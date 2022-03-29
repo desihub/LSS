@@ -10,14 +10,14 @@ import fitsio
 import glob
 import argparse
 import gc
-gc.enable()
+#gc.enable()
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 import healpy as hp
 
-import tracemalloc
+#import tracemalloc
 
-tracemalloc.start()
+#tracemalloc.start()
 
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
@@ -31,6 +31,7 @@ import desimodel.footprint as foot
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
@@ -44,6 +45,7 @@ parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
 parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
+parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='y')
 parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -52,7 +54,7 @@ parser.add_argument("--faver", help="version of fiberassign code to use for rand
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18,type=int) 
-
+parser.add_argument("--redos",help="whether or not to redo match to spec data (e.g., to add in a new column)",default='n')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
 args = parser.parse_args()
@@ -83,6 +85,9 @@ combhp = True
 if args.combhp == 'n':
     combhp = False    
 
+redos = False
+if args.redos == 'y':
+    redos = True
 
 mkfullr = True #make the random files associated with the full data files
 if args.fullr == 'n':
@@ -233,10 +238,12 @@ print(len(ta))
 print(specrel)
 
 
-print(tracemalloc.get_traced_memory())
+#print(tracemalloc.get_traced_memory())
+
+hpxs = foot.tiles2pix(8, tiles=ta)
 
 if combhp or mkfullr:
-	hpxs = foot.tiles2pix(8, tiles=ta)
+	
 	if specrel == 'daily':
 		specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 		specf = Table.read(specfo)
@@ -255,9 +262,10 @@ if combhp or mkfullr:
 		print(len(np.unique(specf['TILEID'])))
 		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 	print('loaded specf file '+specfo)
-	specfc = ct.cut_specdat(specf,pdir)
+	specfc = ct.cut_specdat(specf)
 	gtl = np.unique(specfc['TILELOCID'])
 	del specfc
+
 if type != 'dark' and type != 'bright' and mkfullr:
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
@@ -266,22 +274,24 @@ if type != 'dark' and type != 'bright' and mkfullr:
         bit = targetmask.desi_mask[type]    
         desitarg='DESI_TARGET'
     del specf
-    specf = Table(fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits',columns=['TARGETID','ZWARN','TILELOCID']))
+    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
     wg = np.isin(specf['TILELOCID'],gtl)
-    specf = specf[wg]
+    specf = Table(specf[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
-    lznp = ct.find_znotposs(specf)
+    lznp = common.find_znotposs(specf)
     del specf
 
 
 
 
-print(tracemalloc.get_traced_memory())
+#print(tracemalloc.get_traced_memory())
 
 
 def doran(ii):
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-    dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
+    #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
+    dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
     if mkranmtl:
         print('making random mtl files for each tile')
@@ -328,9 +338,9 @@ def doran(ii):
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
                     nd += 1
                     print('completed '+str(nd))
-                    del ttemp
-                    del fbah
-                    gc.collect()
+                    #del ttemp
+                    #del fbah
+                    #gc.collect()
                 else:                   
                     #print(ttemp)
                     print('mismatch in fiberassign version, not doing fiberassign for '+str(tile)+' version is ' +fav)
@@ -343,14 +353,15 @@ def doran(ii):
             ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
             ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
             
 
             for px in hpxs:
                 print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
-                ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc)
-                tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
-                tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
+                new = ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc,redos=redos)
+                if new:
+                    tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
+                    tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
                 npx += 1
            
   
@@ -381,14 +392,29 @@ def doran(ii):
 
         
     if mkfullr:
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
+
         npx = 0
-        for px in hpxs:
+        if args.refullr == 'y':
+            uhpxs = hpxs
+        else:
+            cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+            otls = np.unique(fitsio.read(cf)['TILEID'])
+            selt = ~np.isin(ta['TILEID'],otls['TILEID'])
+            uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+        for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(hpxs))
-            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii))
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
             npx += 1  
         npx = 0
         s = 0
+        #del lznp
+        #del gtl
         
 
     if args.combfull == 'y':
@@ -396,25 +422,30 @@ def doran(ii):
         npx =0 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
-        cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
+        cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
                 #pf = Table.read(po)
                 pf = fitsio.read(po,columns=cols)
+                #ptls = Table.read(po)
+                #ptls.keep_columns(['TARGETID','TILES'])
                 if s == 0:
                     pn = pf
+                    #ptlsn = ptls
                     s = 1
                 else:
                     #pn = vstack([pn,pf],metadata_conflicts='silent')
                     pn = np.hstack((pn,pf))
+                    #ptlsn = vstack([ptlsn,ptls],metadata_conflicts='silent')
                     print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
-            npx += 1    
-        
+            npx += 1
+        #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
         #pn.write(outf,overwrite=True,format='fits')
         fitsio.write(outf,pn,clobber=True)
+        del pn
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 

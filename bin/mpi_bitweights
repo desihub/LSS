@@ -3,9 +3,13 @@
 Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
+     
+srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
+     --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/dark_targets.fits
+     --tiles /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits 
+     --format fits --outdir output --realizations 64
 
-srun -N 16 -c 8 -C haswell -A desi --qos=interactive -t 0:30:0 mpi_bitweights
-     --mtl LRG_oneperztrue_clus.dat.fits --format hdf5 --outdir output --realizations 128
+     
 
 Notes:
 - Runs on master version of all DESI repos except for fiberassign (use 2.3.0 for now)
@@ -29,6 +33,7 @@ Outputs:
   targeted.fits : fits (hdf5) file containing targeted science objects
 """
 import argparse
+import os
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -43,6 +48,8 @@ def parse():
     parser.add_argument("--outdir", type=str, required=False, default=".", help="Output directory")
     parser.add_argument("--realizations", type=int, required=False, default=128, help="Number of realizations")
     parser.add_argument("--survey", type=str, required=False, default="sky", help="e.g., sv3 or main")
+    parser.add_argument("--rundate", type=str, required=False, default="2021-04-06T00:39:37", help="default is right before start of SV3")
+    parser.add_argument("--faver", type=str, required=False, default="5.0.0", help="version of fiberassign to use")
 
     args = parser.parse_args()
     return args
@@ -76,7 +83,7 @@ def main(args):
          tiles = load_tiles()
 
     # Get target and information
-    mtl, tgs, sky = get_targets(args.mtl, args.sky)
+    mtl, tgs, sky = get_targets(args.mtl, args.sky,faver=args.faver)
     print('got targets')
     tg_ids = tgs.ids()
     tg_ids2idx = {y: x for x, y in enumerate(tg_ids)}
@@ -91,7 +98,7 @@ def main(args):
     bitweights = np.zeros(n_realization * n_target, dtype=bool)
 
     # Load hardward for fiber assignment
-    hw = load_hardware(rundate='2021-04-06T00:39:37') #rundate for first SV3 tiles
+    hw = load_hardware(rundate=args.rundate) #rundate for first SV3 tiles
 
     for realization in my_realizations:
         # Set the seed based on the realization, so that the result is reproducible
@@ -118,7 +125,7 @@ def main(args):
                 hw = load_hardware(rundate=rundate[0])
     
                 # Set up and run fiber assignment
-                asgn = setup_fba(mtl, sky, tile, hw)
+                asgn = setup_fba(mtl, sky, tile, hw,faver=args.faver)
                 run(asgn)
     
                 # Update bit weights for assigned science targets
@@ -127,7 +134,7 @@ def main(args):
         # Run all tiles simultaneously if we don't have tile information
         else:
             # Set up and run fiber assignment
-            asgn = setup_fba(mtl, sky, tiles, hw)
+            asgn = setup_fba(mtl, sky, tiles, hw,faver=args.faver)
             run(asgn)
 
             # Update bit weights for assigned science targets
@@ -198,4 +205,5 @@ if __name__ == "__main__":
     args = parse()
     print('started')
     print(args)
+    #os.system('module swap fiberassign/'+args.faver)
     main(args)

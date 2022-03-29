@@ -33,11 +33,7 @@ debug = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
-parser.add_argument("--survey", help="e.g., SV3 or main",default='SV3')
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
-parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1,type=int) 
+parser.add_argument("--survey", help="e.g., SV3 or main",default='main')
 
 #parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
@@ -45,14 +41,7 @@ args = parser.parse_args()
 
 lssdir = args.basedir +'/'+args.survey+'/LSS/'
 
-ldirspec = lssdir+args.verspec+'/'
-
-indirfull = ldirspec+'/LSScats/'+args.version+'/'
-
 tp = 'LRG'
-
-if args.survey == 'main' or args.survey == 'DA02':
-    tp += 'zdone'
 
 
 
@@ -163,15 +152,10 @@ if debug:
 else:
     rows = None
 
-input_path = indirfull+tp+'_full_noveto.dat.fits'
-output_path = input_path #we will over-write, just adding new column
+if args.survey == 'main':
+    input_path = lssdir+tp+'targetsDR9v1.1.1.fits'
+    output_path = input_path #we will over-write, just adding new column
 
 mkfile(input_path,output_path)
 
-for ri in range(args.minr,args.maxr):
-    input_path = indirfull+tp+'_'+str(ri)+'_full_noveto.ran.fits'
-    output_path = input_path #we will over-write, just adding new column
-
-    mkfile(input_path,output_path)
-    print('adding mask column to LRGs random number '+str(ri))
 
