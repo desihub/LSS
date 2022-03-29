@@ -30,9 +30,9 @@ def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     print('failure rate is '+str(np.sum(~data['q'])/len(data)))
     return data
 
-def LRG_goodz(data):
+def LRG_goodz(data,zcol='Z'):
     sel = data['ZWARN']==0
-    sel &= data['Z']<1.5
+    sel &= data[zcol]<1.5
     sel &= data['DELTACHI2']>15  
     return sel
 

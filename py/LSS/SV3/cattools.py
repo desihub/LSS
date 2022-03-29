@@ -13,6 +13,7 @@ import desimodel.footprint as foot
 import desimodel.focalplane
 from random import random
 from LSS import common_tools as common
+from LSS import ssr_tools
 from desitarget.io import read_targets_in_tiles
 from desitarget.sv3 import sv3_targetmask
 
@@ -1520,12 +1521,17 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
-        drz = (10**(3 - 3.5*ff['Z']))
-        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
-        mask_bad |= (ff['DELTACHI2']<10)
-        wz &= ff['Z']<1.4
-        wz &= (~mask_bad)
+        #drz = (10**(3 - 3.5*ff['Z']))
+        #mask_bad = (drz>30) & (ff['DELTACHI2']<30)
+        #mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
+        #mask_bad |= (ff['DELTACHI2']<10)
+        #wz &= ff['Z']<1.4
+        #wz &= (~mask_bad)
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['ZWARN'] != 1.e20
+
+        selg = ssr_tools.LRG_goodz(ff)
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
