@@ -1,6 +1,7 @@
+#!/bin/bash
 #script to run all SV3 xismu
 #first get 16 nodes via salloc -N 16 -C haswell -t 04:00:00 --qos interactive --account desi
-#!/bin/bash
+
 
 VERSPEC = 'fuji'
 VER = '3'
