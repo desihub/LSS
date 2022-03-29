@@ -245,6 +245,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
                         'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']
 
     columns_tsnr2 = ['TARGETID', 'TSNR2_QSO', 'TSNR2_LYA']
+    # for david
+    #columns_tsnr2 = ['TARGETID', 'TSNR2_GPBDARK_B', 'TSNR2_ELG_B', 'TSNR2_GPBBRIGHT_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_GPBBACKUP_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_GPBDARK_R', 'TSNR2_ELG_R', 'TSNR2_GPBBRIGHT_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_GPBBACKUP_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_GPBDARK_Z', 'TSNR2_ELG_Z', 'TSNR2_GPBBRIGHT_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_GPBBACKUP_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z','TSNR2_GPBDARK', 'TSNR2_ELG', 'TSNR2_GPBBRIGHT', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_GPBBACKUP', 'TSNR2_QSO', 'TSNR2_LRG']
 
     columns_mgii = ['TARGETID', 'IS_QSO_MGII', 'DELTA_CHI2', 'A', 'SIGMA', 'B', 'VAR_A', 'VAR_SIGMA', 'VAR_B']
     columns_mgii_rename = {"DELTA_CHI2": "DELTA_CHI2_MGII", "A": "A_MGII", "SIGMA":"SIGMA_MGII", "B":"B_MGII", "VAR_A":"VAR_A_MGII", "VAR_SIGMA":"VAR_SIGMA_MGII", "VAR_B":"VAR_B_MGII"}
@@ -294,7 +296,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
 
     # Correct bump at z~3.7
-    sel_pb_redshift = (QSO_cat['Z'] > 3.65) & ((QSO_cat['C_LYA']<0.95) | (QSO_cat['C_CIV']<0.95))
+    sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA']<0.95) | (QSO_cat['C_CIV']<0.95))
     log.info(f'Remove bump at z~3.7: exclude {sel_pb_redshift.sum()} QSOs.')
     QSO_cat.loc[sel_pb_redshift, 'QSO_MASKBITS'] = 0
 
