@@ -31,8 +31,9 @@ python ximock.py --nran 10 --ranmockdata mock --univ 1 --type LRG --weight_colum
 python ximock.py --nran 20 --ranmockdata mock --univ 1 --type LRG --weight_column probobs --mockrea 0 --verspec fuji
 ###
 For PIP: (for test, using nran=10)
-python ximock.py --nran 10 --ranmockdata mock --univ 1 --type LRG --weight_column probobs --mockrea 0 --verspec fuji --weight_type angular_bitwise
+python xirunpc.py --nran 10 --univ 1 --tracer ['LRG'] --weight_column probobs --mockrea 0 --verspec fuji --region
 #####
+Careful with weight column in randoms. I removed the shuffling thingy, therefore, remove weights from randoms
 
 
 
