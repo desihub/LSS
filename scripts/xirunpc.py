@@ -385,6 +385,7 @@ if __name__ == '__main__':
     zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
 
     rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1]
+    pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
@@ -413,10 +414,13 @@ if __name__ == '__main__':
                         fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
                         rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                     elif corr_type == 'rppi':
-                        fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
-                        rebinned.save_txt(fn_txt)
                         fn_txt = corr_fn(file_type='wp', **txt_kwargs)
                         rebinned.save_txt(fn_txt, pimax=40.)
+                        for pifac in pi_rebinning_factors:
+                            rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
+                            txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
+                            fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
+                            rebinned.save_txt(fn_txt)
                     elif corr_type == 'theta':
                         fn_txt = corr_fn(file_type='theta', **txt_kwargs)
                         rebinned.save_txt(fn_txt)
