@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import os
 import argparse
 import logging
@@ -14,7 +17,7 @@ logger = logging.getLogger('xirunpc')
 
 
 def get_zlims(tracer, tracer2=None, option=None):
-    
+
     if tracer2 is not None:
         zlims1 = get_zlims(tracer, option=option)
         zlims2 = get_zlims(tracer2, option=option)
@@ -39,7 +42,7 @@ def get_zlims(tracer, tracer2=None, option=None):
             zlims = [0.1, 0.3]
         if option == 'highz':
             zlims = [0.3, 0.5]
-    
+
     if option == 'fullonly':
         zlims = [zlims[0], zlims[-1]]
 
@@ -80,30 +83,23 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
-    if dat_or_ran == 'ran' and tracer == 'LRG_main' and ctype == 'full':
+    if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':
         tracer = 'LRG'
     if region: region = '_' + region
     if rec_type:
-        return os.path.join(cat_dir, '{}{}_{}_{}{}.{}.fits'.format(tracer, region, ctype, rec_type, dat_or_ran, rec_conv))
+        dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
         return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
     return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
-def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', **kwargs):
-    
-    cat_fn = catalog_fn(ctype='clustering', name=name, **kwargs)
-    logger.info('Loading {}.'.format(cat_fn))
-    if isinstance(cat_fn, (tuple, list)):
-        catalog = vstack([Table.read(fn) for fn in cat_fn])
-    else:
-        catalog = Table.read(cat_fn)
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False):
 
     mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])
-    
+
     if 'completeness_only' in weight_type and 'bitwise' in weight_type:
         raise ValueError('inconsistent choices were put into weight_type')
 
@@ -121,7 +117,7 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
         if 'bitwise' in weight_type:
             if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
             else: weights = [catalog['BITWEIGHTS'][mask]] + [weights]
-    
+
     if name == 'randoms':
         if 'default' in weight_type:
             weights *= catalog['WEIGHT'][mask]
@@ -134,18 +130,25 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
         if 'FKP' in weight_type:
             weights *= catalog['WEIGHT_FKP'][mask]
 
+    if return_mask:
+        return positions, weights, mask
     return positions, weights
 
 
-def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
-    
-    cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
+def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', **kwargs):
+
+    cat_fn = catalog_fn(ctype='clustering', name=name, **kwargs)
     logger.info('Loading {}.'.format(cat_fn))
     if isinstance(cat_fn, (tuple, list)):
         catalog = vstack([Table.read(fn) for fn in cat_fn])
     else:
         catalog = Table.read(cat_fn)
-    
+
+    return get_clustering_positions_weights(catalog, distance, zlim=zlim, weight_type=weight_type, name=name)
+
+
+def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False):
+
     mask = np.ones(len(catalog), dtype='?')
     if region in ['DS', 'DN']:
         mask &= select_region(catalog['RA'], catalog['DEC'], region)
@@ -158,20 +161,33 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
         if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T)
         else: weights = [catalog['BITWEIGHTS'][mask]]
     else: weights = np.ones_like(positions[0])
+    if return_mask:
+        return positions, weights, mask
     return positions, weights
 
 
+def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
+
+    cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
+    logger.info('Loading {}.'.format(cat_fn))
+    if isinstance(cat_fn, (tuple, list)):
+        catalog = vstack([Table.read(fn) for fn in cat_fn])
+    else:
+        catalog = Table.read(cat_fn)
+    return get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=region)
+
+
 def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None, **kwargs):
-    
+
     autocorr = tracer2 is None
     catalog_kwargs = kwargs
-    
+
     fibered_data_positions1, fibered_data_weights1, fibered_data_positions2, fibered_data_weights2 = None, None, None, None
     parent_data_positions1, parent_data_weights1, parent_data_positions2, parent_data_weights2 = None, None, None, None
     parent_randoms_positions1, parent_randoms_weights1, parent_randoms_positions2, parent_randoms_weights2 = None, None, None, None
-        
+
     if mpicomm is None or mpicomm.rank == mpiroot:
-            
+
         fibered_data_positions1, fibered_data_weights1 = read_full_positions_weights(name='data', fibered=True, tracer=tracer, **catalog_kwargs)
         parent_data_positions1, parent_data_weights1 = read_full_positions_weights(name='data', fibered=False, tracer=tracer, **catalog_kwargs)
         parent_randoms_positions1, parent_randoms_weights1 = read_full_positions_weights(name='randoms', tracer=tracer, **catalog_kwargs)
@@ -179,7 +195,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
             fibered_data_positions2, fibered_data_weights2 = read_full_positions_weights(name='data', fibered=True, tracer=tracer2, **catalog_kwargs)
             parent_data_positions2, parent_data_weights2 = read_full_positions_weights(name='data', fibered=False, tracer=tracer2, **catalog_kwargs)
             parent_randoms_positions2, parent_randoms_weights2 = read_full_positions_weights(name='randoms', tracer=tracer2, **catalog_kwargs)
-        
+
     tedges = np.logspace(-4., 0.5, 41)
     # First D1D2_parent/D1D2_PIP angular weight
     wangD1D2 = TwoPointCorrelationFunction('theta', tedges, data_positions1=fibered_data_positions1, data_weights1=fibered_data_weights1,
@@ -207,33 +223,33 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
                                                randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
                                                estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads,
                                                dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
-    
+
     wang = {}
     wang['D1D2_twopoint_weights'] = wangD1D2
     wang['D1R2_twopoint_weights'] = wangD1R2
     wang['R1D2_twopoint_weights'] = wangR1D2
-    
+
     return wang
 
 
 def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, mpicomm=None, mpiroot=None, **kwargs):
-    
+
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
     with_shifted = rec_type is not None
-    
+
     if 'angular' in weight_type and wang is None:
-        
+
         wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
-    
+
     data_positions1, data_weights1, data_samples1, data_positions2, data_weights2, data_samples2 = None, None, None, None, None, None
     randoms_positions1, randoms_weights1, randoms_samples1, randoms_positions2, randoms_weights2, randoms_samples2 = None, None, None, None, None, None
     shifted_positions1, shifted_weights1, shifted_samples1, shifted_positions2, shifted_weights2, shifted_samples2 = None, None, None, None, None, None
     jack_positions = None
-    
+
     if mpicomm is None or mpicomm.rank == mpiroot:
-        
+
         if with_shifted:
             data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
             shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
@@ -241,7 +257,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
         randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
         jack_positions = data_positions1
-        
+
         if not autocorr:
             if with_shifted:
                 data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
@@ -250,7 +266,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
                 data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
             randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
             jack_positions = [np.concatenate([p1, p2], axis=0) for p1, p2 in zip(jack_positions, data_positions2)]
-    
+
     if njack >= 2:
         subsampler = KMeansSubsampler('angular', positions=jack_positions, nsamples=njack, nside=512, random_state=42, position_type='rdd',
                                       dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
@@ -280,7 +296,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
 
 def get_edges(corr_type='smu', bin_type='lin'):
-    
+
     if bin_type == 'log':
         sedges = np.geomspace(0.1, 30., 16)
     elif bin_type == 'lin':
@@ -312,7 +328,7 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
 
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
@@ -322,7 +338,7 @@ if __name__ == '__main__':
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
-    parser.add_argument('--weight_type', help='types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column', type=str, default='default')
+    parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=120)
@@ -336,7 +352,7 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
-    
+
     mpicomm, mpiroot = None, None
     if True:#args.mpi:
         from pycorr import mpi
@@ -355,11 +371,11 @@ if __name__ == '__main__':
         tracer2 = None # otherwise counting of self-pairs
     catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
     distance = TabulatedDESI().comoving_radial_distance
-    
+
     regions = args.region
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
-    
+
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
@@ -371,7 +387,7 @@ if __name__ == '__main__':
     rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
-    
+
     for zmin, zmax in zlims:
         for region in regions:
             wang = None
@@ -395,7 +411,7 @@ if __name__ == '__main__':
                         fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
                         rebinned.save_txt(fn_txt, ells=(0, 2, 4))
                         fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
-                        rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3., 0., 1./3, 2./3, 1.))
+                        rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                     elif corr_type == 'rppi':
                         fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
                         rebinned.save_txt(fn_txt)
@@ -404,7 +420,7 @@ if __name__ == '__main__':
                     elif corr_type == 'theta':
                         fn_txt = corr_fn(file_type='theta', **txt_kwargs)
                         rebinned.save_txt(fn_txt)
-                    
+
                     if args.vis and (mpicomm is None or mpicomm.rank == mpiroot):
                         if corr_type == 'smu':
                             sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
