@@ -384,7 +384,7 @@ if __name__ == '__main__':
         zlims = [float(zlim) for zlim in args.zlim]
     zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
 
-    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1,2]
+    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1,2,4]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
