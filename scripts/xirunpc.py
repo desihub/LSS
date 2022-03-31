@@ -298,7 +298,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 def get_edges(corr_type='smu', bin_type='lin'):
 
     if bin_type == 'log':
-        sedges = np.geomspace(0.01, 100., 25)
+        sedges = np.geomspace(0.01, 100., 50)
     elif bin_type == 'lin':
         sedges = np.linspace(0., 200, 201)
     else:
@@ -384,7 +384,7 @@ if __name__ == '__main__':
         zlims = [float(zlim) for zlim in args.zlim]
     zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
 
-    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1]
+    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1,2]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
