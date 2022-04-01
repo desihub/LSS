@@ -30,6 +30,10 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims = [0.8, 1.1, 1.5]
         if option == 'safez':
             zlims = [0.9, 1.48]
+        if 'extended' is in option:
+            zlims = [0.8, 1.1, 1.6]
+        if 'smallshells' is in option:
+            zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
 
     if tracer.startswith('QSO'):
         zlims = [0.8, 1.1, 1.5, 2.1]
@@ -93,9 +97,12 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
     return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
-def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False):
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False,option=None):
 
     mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
+    if 'elgzmask' is in option:
+        zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
+        mask &= ~zmask
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])
@@ -135,7 +142,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weigh
     return positions, weights
 
 
-def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', **kwargs):
+def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data',option=None, **kwargs):
 
     cat_fn = catalog_fn(ctype='clustering', name=name, **kwargs)
     logger.info('Loading {}.'.format(cat_fn))
@@ -144,7 +151,7 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
     else:
         catalog = Table.read(cat_fn)
 
-    return get_clustering_positions_weights(catalog, distance, zlim=zlim, weight_type=weight_type, name=name)
+    return get_clustering_positions_weights(catalog, distance, zlim=zlim, weight_type=weight_type, name=name,option=option)
 
 
 def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False):
@@ -232,7 +239,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, mpicomm=None, mpiroot=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120,option=None, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -251,20 +258,20 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     if mpicomm is None or mpicomm.rank == mpiroot:
 
         if with_shifted:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
-            shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
+            shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
         else:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
-        randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
+        randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
         jack_positions = data_positions1
 
         if not autocorr:
             if with_shifted:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
-                shifted_positions2, shifted_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
+                shifted_positions2, shifted_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
             else:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
-            randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
+            randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
             jack_positions = [np.concatenate([p1, p2], axis=0) for p1, p2 in zip(jack_positions, data_positions2)]
 
     if njack >= 2:
@@ -317,10 +324,12 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, out_dir='.'):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, out_dir='.',option=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if option:
+        zmax = str(zmax)+option
     root = '{}_{}_{}_{}_{}_njack{:d}'.format(tracer, zmin, zmax, weight_type, bin_type, njack)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
@@ -376,10 +385,12 @@ if __name__ == '__main__':
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
 
+    option = None
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
-        zlims = get_zlims(tracer, tracer2=tracer2, option=args.zlim[0])
+        option=args.zlim[0]
+        zlims = get_zlims(tracer, tracer2=tracer2,option=option )
     else:
         zlims = [float(zlim) for zlim in args.zlim]
     zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
@@ -396,9 +407,9 @@ if __name__ == '__main__':
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
                 #save pair counts
-                file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, out_dir=os.path.join(out_dir, corr_type))
+                file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, option=option,out_dir=os.path.join(out_dir, corr_type))
                 fn = corr_fn(file_type='npy', **file_kwargs)
                 result.save(fn)
                 txt_kwargs = file_kwargs.copy()
