@@ -1475,7 +1475,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print(len(ff),len(ff[sel]))
             ff = ff[sel]   
             ff.write(fl+wzm+'full.dat.fits',format='fits',overwrite='True')
-    #ff['Z_not4clus'].name = 'Z'    
+    ff['Z_not4clus'].name = 'Z'    
     '''
     This is where redshift failure weights go
     '''
@@ -1679,7 +1679,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #randomly sample data rows to apply redshifts, weights, etc. to randoms
     inds = np.random.choice(len(fcd),len(ffc))
     dshuf = fcd[inds]
-    kl =  ['RA','DEC','TARGETID','NTILE','rosette_number','rosette_r','TILES'] + rcols 
+    kl =  ['RA','DEC','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES'] + rcols 
 
     for col in rcols: 
         ffc[col] = dshuf[col] 
