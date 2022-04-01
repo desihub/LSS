@@ -30,9 +30,9 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims = [0.8, 1.1, 1.5]
         if option == 'safez':
             zlims = [0.9, 1.48]
-        if 'extended' is in option:
+        if 'extended' in option:
             zlims = [0.8, 1.1, 1.6]
-        if 'smallshells' is in option:
+        if 'smallshells' in option:
             zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
 
     if tracer.startswith('QSO'):
@@ -100,7 +100,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False,option=None):
 
     mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-    if 'elgzmask' is in option:
+    if 'elgzmask' in option:
         zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
         mask &= ~zmask
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
