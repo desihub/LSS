@@ -1475,7 +1475,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print(len(ff),len(ff[sel]))
             ff = ff[sel]   
             ff.write(fl+wzm+'full.dat.fits',format='fits',overwrite='True')
-    ff['Z_not4clus'].name = 'Z'    
+    #ff['Z_not4clus'].name = 'Z'    
     '''
     This is where redshift failure weights go
     '''
