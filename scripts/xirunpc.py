@@ -101,9 +101,10 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False,option=None):
 
     mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-    if 'elgzmask' in option:
-        zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
-        mask &= ~zmask
+    if option:
+        if 'elgzmask' in option:
+            zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
+            mask &= ~zmask
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])
