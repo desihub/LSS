@@ -28,12 +28,13 @@ def get_zlims(tracer, tracer2=None, option=None):
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
         zlims = [0.8, 1.1, 1.5]
-        if option == 'safez':
-            zlims = [0.9, 1.48]
-        if 'extended' in option:
-            zlims = [0.8, 1.1, 1.6]
-        if 'smallshells' in option:
-            zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
+        if option:
+            if option == 'safez':
+                zlims = [0.9, 1.48]
+            if 'extended' in option:
+                zlims = [0.8, 1.1, 1.6]
+            if 'smallshells' in option:
+                zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
 
     if tracer.startswith('QSO'):
         zlims = [0.8, 1.1, 1.5, 2.1]
