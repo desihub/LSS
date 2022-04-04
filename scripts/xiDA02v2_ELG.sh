@@ -2,7 +2,7 @@
 
 VERSPEC='guadalupe'
 VER='2'
-WT='RF_FKP'
+WT='RF_FKP_angular'
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
