@@ -295,10 +295,10 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
         ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         cf = coaddir+str(tile)+'/'+zdate+'/coadd-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         if os.path.isfile(ff) and os.path.isfile(cf):
-            d = Table.read(rrfn, "REDSHIFTS")
-            df = Table.read(rrfn, "FIBERMAP")
+            d = Table.read(ff, "REDSHIFTS")
+            df = Table.read(ff, "FIBERMAP")
             tids, zs = d["TARGETID"], d["Z"]            
-            _, _, waves, fluxes, ivars = read_emlines_inputs(rrfn, coaddfn, targetids=tids)
+            _, _, waves, fluxes, ivars = read_emlines_inputs(ff, cf, targetids=tids)
             emdict = get_emlines(zs, waves, fluxes, ivars, emnames=allems)
             t = Table()
             for em in allems:
