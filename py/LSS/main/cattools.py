@@ -270,7 +270,7 @@ def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/gua
         ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         fz = coaddir+str(tile)+'/'+tdate+'/redrock'+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         if os.path.isfile(ff):
-            d = Table(fitsio.read(ff,columns=cols))
+            d = Table(fitsio.read(ff))
             fm = fitsio.read(fz,ext='FIBERMAP',columns=['LOCATION'])
             d['LOCATION'] = fm['LOCATION']
             dl.append(d)
