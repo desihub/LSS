@@ -307,7 +307,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 def get_edges(corr_type='smu', bin_type='lin'):
 
     if bin_type == 'log':
-        sedges = np.geomspace(0.01, 100., 50)
+        sedges = np.geomspace(0.01, 100., 49)
     elif bin_type == 'lin':
         sedges = np.linspace(0., 200, 201)
     else:
