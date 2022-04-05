@@ -30,6 +30,8 @@ from LSS import ssr_tools
 import logging
 logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
 
+
+
 def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
     n = 0
@@ -259,6 +261,55 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
+
+def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/',cols=None):
+
+    zfn = 'emline'
+    dl = []
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        fz = coaddir+str(tile)+'/'+tdate+'/redrock'+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff):
+            d = Table(fitsio.read(ff,columns=cols))
+            fm = fitsio.read(fz,ext='FIBERMAP',columns=['LOCATION'])
+            d['LOCATION'] = fm['LOCATION']
+            dl.append(d)
+    dt = vstack(dl,metadata_conflicts='silent')
+    dt['TILEID'] = tile
+    return dt
+
+def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'):
+    allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
+    props = ['FLUX','FLUX_IVAR','SIGMA','SIGMA_IVAR','CONT','CONT_IVAR','SHARE','SHARE_IVAR','EW','EW_IVAR','CHI2','NDOF']
+    zdate = str(zdate)
+    specs = []
+    #find out which spectrograph have data
+    zfn = 'zbest'
+    zhdu = 'ZBEST'
+    shdu = 'SCORES'
+    if int(tdate) >  20210730:
+        zfn = 'redrock'
+    dl = []
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        cf = coaddir+str(tile)+'/'+tdate+'/coadd-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff) and os.path.isfile(cf):
+            d = Table.read(rrfn, "REDSHIFTS")
+            df = Table.read(rrfn, "FIBERMAP")
+            tids, zs = d["TARGETID"], d["Z"]            
+            _, _, waves, fluxes, ivars = read_emlines_inputs(rrfn, coaddfn, targetids=tids)
+            emdict = get_emlines(zs, waves, fluxes, ivars, emnames=allems)
+            t = Table()
+            for em in allems:
+                for prop in props:
+                t[em+'_'+prop] = emdict[em][prop]
+            t['TARGETID'] = d['TARGETID']
+            t['LOCATION'] = df['LOCATION']
+            dl.append(t)
+    dt = vstack(dl,metadata_conflicts='silent')
+    dt['TILEID'] = tile
+    return dt
+
 
 def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
     from LSS.qso_cat_utils import qso_catalog_maker
