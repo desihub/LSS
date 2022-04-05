@@ -4,6 +4,9 @@ from matplotlib import pyplot as plt
 from astropy.table import Table
 import healpy as hp
 
+def radec2thphi(ra,dec):
+    return (-dec+90.)*np.pi/180.,ra*np.pi/180.
+
 def get_stats(tp,veto='_noveto',prog='dark'):
     zcol = 'Z'
     if veto == '':
