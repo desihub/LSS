@@ -234,7 +234,7 @@ if specrel == 'daily' and args.mkemlin == 'y':
         outf = outdir+'emline-'+str(tile)+'.fits'
         if not os.path.isfile(outf):
             tdate = str(tdate)
-            combEMdata_daily(tile,zdate,tdate,outf=outf)
+            ct.combEMdata_daily(tile,zdate,tdate,outf=outf)
             print('wrote '+outf)
             ndone += 1
             print('completed '+str(ndone)+' tiles')
