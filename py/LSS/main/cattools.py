@@ -19,6 +19,9 @@ import desimodel.focalplane
 from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
+from desispec.io.emlinefit import read_emlines_inputs
+from desispec.emlinefit import get_emlines
+
 import healpy as hp
 
 #from LSS.Cosmo import distance
