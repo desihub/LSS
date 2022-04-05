@@ -262,8 +262,8 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
-def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/',cols=None):
-
+def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
+    remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
     zfn = 'emline'
     dl = []
     for si in range(0,10):
@@ -276,6 +276,7 @@ def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/gua
             dl.append(d)
     dt = vstack(dl,metadata_conflicts='silent')
     dt['TILEID'] = tile
+    dt.remove_columns(remcol)
     return dt
 
 def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'):
@@ -291,8 +292,8 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
         zfn = 'redrock'
     dl = []
     for si in range(0,10):
-        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
-        cf = coaddir+str(tile)+'/'+tdate+'/coadd-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        cf = coaddir+str(tile)+'/'+zdate+'/coadd-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
         if os.path.isfile(ff) and os.path.isfile(cf):
             d = Table.read(rrfn, "REDSHIFTS")
             df = Table.read(rrfn, "FIBERMAP")
@@ -306,8 +307,11 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
             t['TARGETID'] = d['TARGETID']
             t['LOCATION'] = df['LOCATION']
             dl.append(t)
-    dt = vstack(dl,metadata_conflicts='silent')
-    dt['TILEID'] = tile
+    if len(dl) > 0:
+        dt = vstack(dl,metadata_conflicts='silent')
+        dt['TILEID'] = tile
+    else:
+        print('no data to combine for tile '+str(tile))    
     return dt
 
 
