@@ -302,7 +302,7 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
             t = Table()
             for em in allems:
                 for prop in props:
-                t[em+'_'+prop] = emdict[em][prop]
+                    t[em+'_'+prop] = emdict[em][prop]
             t['TARGETID'] = d['TARGETID']
             t['LOCATION'] = df['LOCATION']
             dl.append(t)
