@@ -230,7 +230,7 @@ if specrel == 'daily' and args.mkemlin == 'y':
     gtids = np.isin(tiles4comb['TILEID'],guadtiles)
     tiles4em = tiles4comb[~gtids]
     ndone = 0
-    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles['THRUDATE']):
+    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
         outf = outdir+'emline-'+str(tile)+'.fits'
         if not os.path.isfile(outf):
             tdate = str(tdate)
