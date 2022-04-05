@@ -71,7 +71,7 @@ guadtiles = np.unique(guadtiles['TILEID'])
 gtids = np.isin(tiles4comb['TILEID'],guadtiles)
 tiles4em = tiles4comb[~gtids]
 ndone = 0
-    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
+
 def mkEMtile(ii):
     if ii >= len(tiles4em):
         print('out of range!')
