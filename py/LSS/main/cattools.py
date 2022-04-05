@@ -282,7 +282,7 @@ def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/gua
     dt.remove_columns(remcol)
     return dt
 
-def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outdir='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'):
+def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
     allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
     props = ['FLUX','FLUX_IVAR','SIGMA','SIGMA_IVAR','CONT','CONT_IVAR','SHARE','SHARE_IVAR','EW','EW_IVAR','CHI2','NDOF']
     zdate = str(zdate)
@@ -315,7 +315,8 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
         dt['TILEID'] = tile
     else:
         print('no data to combine for tile '+str(tile))    
-    outf = outdir+'emline-'+str(tile)+'.fits'
+    #outf = outdir+'emline-'+str(tile)+'.fits'
+    #'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
     dt.write(outf,format='fits',overwrite=True)
     #return dt
 
