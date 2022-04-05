@@ -93,4 +93,5 @@ if __name__ == '__main__':
         for i in range(n,n+N):
             inds.append(i)
         p.map(mkEMtile,inds)
+        print(n,len(tiles4em))
 
