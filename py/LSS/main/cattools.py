@@ -269,9 +269,9 @@ def combtile_em(tiles,outf='',md='',prog='dark'):
     s = 0
     n = 0
     nfail = 0
-    gaudtid = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
-    print(len(guadtid))
-    gaudtid = np.unique(guadtid['TILEID'])
+    guadtid = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+    #print(len(guadtid))
+    guadtid = np.unique(guadtid['TILEID'])
 
     if os.path.isfile(outf) and redo == 'n':
         #specd = Table.read(outf)
