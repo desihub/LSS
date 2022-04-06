@@ -1833,12 +1833,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     #dz = dz[wk]
     #print('length after priority veto '+str(len(dz)))
-    print('joining to full imaging')
-    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
-    dz = join(dz,ftar,keys=['TARGETID'])
-    #print('length after join to full targets (should be same) '+str(len(dz)))
-    dz = common.cutphotmask(dz,imbits)
-    print('length after imaging mask; should not have changed '+str(len(dz)))
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
@@ -1852,6 +1846,22 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz['TILELOCID_ASSIGNED'][wtl] = 1
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
+
+    wnts = dz[tscol]*0 != 0
+    dz[tscol][wnts] = 0
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+
+    dz.sort('sort')
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+
+    print('length after cutting to unique targets '+str(len(dz)))
+    print('joining to full imaging')
+    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
+    dz = join(dz,ftar,keys=['TARGETID'])
+    #print('length after join to full targets (should be same) '+str(len(dz)))
+    dz = common.cutphotmask(dz,imbits)
+    print('length after imaging mask; should not have changed '+str(len(dz)))
+
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         #arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
@@ -1888,12 +1898,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
-    wnts = dz[tscol]*0 != 0
-    dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
-
-    dz.sort('sort')
-    dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp[:3] == 'ELG' and azf != '':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
