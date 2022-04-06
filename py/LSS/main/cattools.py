@@ -351,12 +351,12 @@ def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/gua
             d['LOCATION'] = fm['LOCATION']
             dl.append(d)
     if len(dl) > 0:
-		dt = vstack(dl,metadata_conflicts='silent')
-		dt['TILEID'] = tile
-		dt.remove_columns(remcol)
-		return dt
-	else:
-	    return None
+        dt = vstack(dl,metadata_conflicts='silent')
+        dt['TILEID'] = tile
+        dt.remove_columns(remcol)
+        return dt
+    else:
+        return None
 
 def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
     allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
