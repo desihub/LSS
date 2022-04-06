@@ -265,6 +265,78 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
+def combtile_em(tiles,outf='',md='',prog='dark'):
+    s = 0
+    n = 0
+    nfail = 0
+    gaudtid = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+    gaudtid = np.unique(guadtid['TILEID'])
+
+    if os.path.isfile(outf) and redo == 'n':
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        tspec = None
+        if np.isin(tile,guadtid):
+            #if specver ==
+            #tspec = combzmtl(tile,zdate,tdate)
+            tspec = combEMdata_guad(tile,tdate)
+        else:
+            tnm = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/emline-'+str(tile)+'.fits'
+            if os.path.isfile(tnm):
+                tspec = fitsio.read(tnm)
+        if tspec:
+            tspec = np.array(tspec)
+
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                #specd = vstack([specd,tspec],metadata_conflicts='silent')
+                #column order got mixed up
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = tspec[colname][...]
+
+                #specd = np.hstack((specd,tspec))
+                specd = np.hstack((specd,new))
+            #specd.sort('TARGETID')
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+
+            n += 1
+            print(tile,n,len(tiles[tmask]),len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        #specd.write(outf,format='fits', overwrite=True)
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
+
 def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
     remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
     zfn = 'emline'
