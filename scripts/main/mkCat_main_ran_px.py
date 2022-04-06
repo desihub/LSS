@@ -449,6 +449,7 @@ def doran(ii):
         #pn.write(outf,overwrite=True,format='fits')
         print('stacking pixel arrays')
         pn = vstack(pl,metadata_conflicts='silent')
+        print('writing out')
         fitsio.write(outf,pn,clobber=True)
         del pn
     #logf.write('ran mkfullran\n')
