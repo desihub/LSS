@@ -304,7 +304,7 @@ def combtile_em(tiles,outf='',md='',prog='dark'):
             tnm = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/emline-'+str(tile)+'.fits'
             if os.path.isfile(tnm):
                 tspec = fitsio.read(tnm)
-        if tspec:
+        if tspec is not None:
             tspec = np.array(tspec)
 
             if s == 0:
@@ -350,10 +350,13 @@ def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/gua
             fm = fitsio.read(fz,ext='FIBERMAP',columns=['LOCATION'])
             d['LOCATION'] = fm['LOCATION']
             dl.append(d)
-    dt = vstack(dl,metadata_conflicts='silent')
-    dt['TILEID'] = tile
-    dt.remove_columns(remcol)
-    return dt
+    if len(dl) > 0:
+		dt = vstack(dl,metadata_conflicts='silent')
+		dt['TILEID'] = tile
+		dt.remove_columns(remcol)
+		return dt
+	else:
+	    return None
 
 def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
     allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
