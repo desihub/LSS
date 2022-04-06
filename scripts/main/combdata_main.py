@@ -239,7 +239,7 @@ if specrel == 'daily' and args.mkemlin == 'y':
             ndone += 1
             print('completed '+str(ndone)+' tiles')
     outf = ldirspec+'emlin_catalog.fits'
-    ct.combtile_emtiles4comb,outf)
+    ct.combtile_em(tiles4comb,outf)
     
     
 
