@@ -281,6 +281,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     print('length after selecting type and good hardware '+str(len(specf)))
     lznp = common.find_znotposs(specf)
     del specf
+    print('finished finding znotposs')
 
 
 
@@ -403,8 +404,9 @@ def doran(ii):
             uhpxs = hpxs
         else:
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-            otls = np.unique(fitsio.read(cf)['TILEID'])
-            selt = ~np.isin(ta['TILEID'].astype(int),otls['TILEID'].astype(int))
+            tls = fitsio.read(cf,columns=['TILEID'])
+            otls = np.unique(tls['TILEID'])
+            selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
             uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
