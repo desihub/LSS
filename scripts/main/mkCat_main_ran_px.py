@@ -404,7 +404,7 @@ def doran(ii):
         else:
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
             otls = np.unique(fitsio.read(cf)['TILEID'])
-            selt = ~np.isin(ta['TILEID'],otls['TILEID'])
+            selt = ~np.isin(ta['TILEID'].astype(int),otls['TILEID'].astype(int))
             uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
