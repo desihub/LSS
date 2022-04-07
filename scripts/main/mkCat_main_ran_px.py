@@ -45,7 +45,7 @@ parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
 parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
-parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='y')
+parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='n')
 parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -281,6 +281,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     print('length after selecting type and good hardware '+str(len(specf)))
     lznp = common.find_znotposs(specf)
     del specf
+    print('finished finding znotposs')
 
 
 
@@ -403,12 +404,14 @@ def doran(ii):
             uhpxs = hpxs
         else:
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-            otls = np.unique(fitsio.read(cf)['TILEID'])
-            selt = ~np.isin(ta['TILEID'],otls['TILEID'])
+            tls = fitsio.read(cf,columns=['TILEID'])
+            otls = np.unique(tls['TILEID'])
+            print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
+            selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
             uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
-            print(outf,npx,len(hpxs))
+            print(outf,npx,len(uhpxs))
             ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
             npx += 1  
         npx = 0
@@ -448,7 +451,8 @@ def doran(ii):
         #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
         #pn.write(outf,overwrite=True,format='fits')
         print('stacking pixel arrays')
-        pn = vstack(pl,metadata_conflicts='silent')
+        #pn = vstack(pl,metadata_conflicts='silent')
+        pn = np.hstack(pl)
         print('writing out')
         fitsio.write(outf,pn,clobber=True)
         del pn
