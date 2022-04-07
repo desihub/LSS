@@ -19,7 +19,7 @@ zcol = 'Z_not4clus'
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
-    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_1_full.ran.fits'
+    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits'
     dt = Table.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
     wz = dt['ZWARN']*0 == 0
     wz &= dt['ZWARN'] != 1.e20

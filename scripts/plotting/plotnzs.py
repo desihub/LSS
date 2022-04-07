@@ -42,7 +42,7 @@ def mknz(zin,wl,fcr,bs=0.01,zmin=0.01,zmax=1.6):
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
-    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_1_full.ran.fits'
+    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits'
     rt = fitsio.read_header(rf,ext=1)
     area = rt['NAXIS2']/2500
     dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
@@ -95,7 +95,7 @@ for tp in tps:
         dz = 0.02
         plt.ylim(0,.05)
     
-    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/2.1/'
+    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3/'
     svf = svdir + tp+'_nz.dat'
     if tp == 'LRG':
         svf = svdir + 'LRG_main_nz.dat'
