@@ -27,9 +27,16 @@ tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 
 zcol = 'Z_not4clus'
 for tp in tps:
+    print(tp+':)
+    rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full_noveto.ran.fits',ext=1)
+    areanv = rtnv['NAXIS2']/2500
+    dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',ext=1)
+    ngnv = dtnv['NAXIS2']
+    print('number density pre veto '+str(ngnv/areanv))
     rt = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits',ext=1)
     area = rt['NAXIS2']/2500
     dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    print('number density after veto '+str(len(dt)/area))
     #wz = dt[zcol]*0 == 0
     #wz &= dt[zcol] != 999999
     wz = dt['ZWARN']*0 == 0
@@ -59,10 +66,10 @@ for tp in tps:
 
     if tp[:3] == 'BGS':
         wg = dt['DELTACHI2'] > 40
-    print(tp+':\n')
-    print('area: '+str(area)+'\n')
-    print('# of good z: '+str(len(dt[wz&wg]))+'\n')
-    print('completeness: '+str(round(len(dt[wz])/len(dt),3))+'\n')
+    
+    print('area: '+str(area))
+    print('# of good z: '+str(len(dt[wz&wg])))
+    print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
     fo.write(tp+':\n')
     fo.write('area: '+str(area)+'\n')
     fo.write('# of good z: '+str(len(dt[wz&wg]))+'\n')
