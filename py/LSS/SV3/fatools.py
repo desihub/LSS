@@ -226,7 +226,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     if rundate == '2021-04-10T21:28:37':
         rundate = '2021-04-10T20:00:00'
     fo.write(" --rundate "+rundate)
-    fo.write(" --fieldrot "+str(fht['FIELDROT']))
+    fo.write(" --fieldrot "+np.format_float_positional(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     #if indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210416/' and indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210418/':
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
