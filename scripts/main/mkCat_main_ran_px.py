@@ -407,12 +407,11 @@ def doran(ii):
             tls = fitsio.read(cf,columns=['TILEID'])
             otls = np.unique(tls['TILEID'])
             print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
-
             selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
             uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
-            print(outf,npx,len(hpxs))
+            print(outf,npx,len(uhpxs))
             ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
             npx += 1  
         npx = 0
