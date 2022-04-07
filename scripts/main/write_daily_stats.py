@@ -27,7 +27,7 @@ tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 
 zcol = 'Z_not4clus'
 for tp in tps:
-    print(tp+':)
+    print(tp+':')
     rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full_noveto.ran.fits',ext=1)
     areanv = rtnv['NAXIS2']/2500
     dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',ext=1)
