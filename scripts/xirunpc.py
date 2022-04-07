@@ -446,7 +446,7 @@ if __name__ == '__main__':
         zlims = get_zlims(tracer, tracer2=tracer2,option=option )
     else:
         zlims = [float(zlim) for zlim in args.zlim]
-    zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
+    zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
 
     rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1,2,4]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
