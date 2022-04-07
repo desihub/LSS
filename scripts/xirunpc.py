@@ -98,7 +98,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
     return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
-def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False,option=None):
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False, option=None):
 
     mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if option:
@@ -144,16 +144,26 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weigh
     return positions, weights
 
 
-def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data',option=None, **kwargs):
+def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', concatenate=False, option=None, **kwargs):
 
-    cat_fn = catalog_fn(ctype='clustering', name=name, **kwargs)
-    logger.info('Loading {}.'.format(cat_fn))
-    if isinstance(cat_fn, (tuple, list)):
-        catalog = vstack([Table.read(fn) for fn in cat_fn])
-    else:
-        catalog = Table.read(cat_fn)
+    cat_fns = catalog_fn(ctype='clustering', name=name, **kwargs)
+    logger.info('Loading {}.'.format(cat_fns))
+    isscalar = not isinstance(cat_fns, (tuple, list))
+    if isscalar:
+        cat_fns = [cat_fns]
 
-    return get_clustering_positions_weights(catalog, distance, zlim=zlim, weight_type=weight_type, name=name,option=option)
+    toret = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+    if isscalar:
+        return toret[0]
+    positions_weights = [[tmp[0] for tmp in toret], [tmp[1] for tmp in toret]]
+    if concatenate:
+        for iarray, arrays in enumerate(positions_weights):
+            if isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights
+                array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
+            else:
+                array = np.concatenate(arrays, axis=0)
+            positions_weights[iarray] = array
+    return positions_weights
 
 
 def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False):
@@ -241,7 +251,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120,option=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120,option=None, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -282,26 +292,63 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
         if mpicomm is None or mpicomm.rank == mpiroot:
             data_samples1 = subsampler.label(data_positions1)
-            randoms_samples1 = subsampler.label(randoms_positions1)
+            randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
             if with_shifted:
-                shifted_samples1 = subsampler.label(shifted_positions1)
+                shifted_samples1 = [subsampler.label(p) for p in shifted_samples1]
             if not autocorr:
                 data_samples2 = subsampler.label(data_positions2)
-                randoms_samples2 = subsampler.label(randoms_positions2)
+                randoms_samples2 = [subsampler.label(p) for p in randoms_positions2]
                 if with_shifted:
-                    shifted_samples2 = subsampler.label(shifted_positions2)
+                    shifted_samples2 = [subsampler.label(p) for p in shifted_positions2]
 
     kwargs = {}
     kwargs.update(wang or {})
+    randoms_kwargs = dict(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1, randoms_samples1=randoms_samples1,
+                          randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2, randoms_samples2=randoms_samples2,
+                          shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1, shifted_samples1=shifted_samples1,
+                          shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2, shifted_samples2=shifted_samples2)
 
-    result = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
-                                         data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
-                                         randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1, randoms_samples1=randoms_samples1,
-                                         randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2, randoms_samples2=randoms_samples2,
-                                         shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1, shifted_samples1=shifted_samples1,
-                                         shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2, shifted_samples2=shifted_samples2,
-                                         engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
-    return result, wang
+    zedges = np.array(list(zip(edges[0][:-1], edges[0][1:])))
+    mask = zedges[:,0] >= split_randoms_above
+    zedges = [zedges[~mask], zedges[mask]]
+    split_edges, split_randoms = [], []
+    for ii, zedge in enumerate(zedges):
+        if zedge.size:
+            split_edges.append([np.append(zedge[:,0], zedge[-1,-1])] + list(edges[1:]))
+            split_randoms.append(ii > 0)
+
+    results = []
+    for i_split_randoms, edges in zip(split_randoms, split_edges):
+        result = 0
+        D1D2 = None
+        for iran in range(1 if i_split_randoms else len(randoms_positions1)):
+            tmp_randoms_kwargs = {}
+            if i_split_randoms:
+                # On scales below split_randoms_above, concatenate randoms
+                for name, arrays in randoms_kwargs.items():
+                    if arrays is None:
+                        continue
+                    elif isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights
+                        array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
+                    else:
+                        array = np.concatenate(arrays, axis=0)
+                    tmp_randoms_kwargs[name] = array
+            else:
+                # On scales above split_randoms_above, sum correlation function over multiple randoms
+                for name, arrays in randoms_kwargs.items():
+                    if arrays is None:
+                        continue
+                    else:
+                        tmp_randoms_kwargs[name] = arrays[iran]
+
+            tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
+                                              data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
+                                              engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
+                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot)
+            D1D2 = tmp.D1D2
+            result += tmp
+        results.append(result)
+    return results[0].concatenate_x(*results), wang
 
 
 def get_edges(corr_type='smu', bin_type='lin'):
@@ -331,7 +378,7 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if option:
-        zmax = str(zmax)+option
+        zmax = str(zmax) + option
     root = '{}_{}_{}_{}_{}_njack{:d}'.format(tracer, zmin, zmax, weight_type, bin_type, njack)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
@@ -352,6 +399,10 @@ if __name__ == '__main__':
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
+    parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
+                                                   typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
+                                                   see https://arxiv.org/pdf/1905.01133.pdf',
+                        type=float, default=np.inf)
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=120)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
@@ -409,7 +460,7 @@ if __name__ == '__main__':
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
                 #save pair counts
                 file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, option=option,out_dir=os.path.join(out_dir, corr_type))
                 fn = corr_fn(file_type='npy', **file_kwargs)

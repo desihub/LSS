@@ -26,6 +26,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
+    catalog_kwargs['concatenate'] = True
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
@@ -63,7 +64,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
-                             position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree',
+                             position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
 
     return result, wang
