@@ -406,6 +406,8 @@ def doran(ii):
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
             tls = fitsio.read(cf,columns=['TILEID'])
             otls = np.unique(tls['TILEID'])
+            print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
+
             selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
             uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
