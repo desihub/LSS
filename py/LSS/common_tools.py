@@ -1,6 +1,7 @@
 import numpy as np
 import fitsio
 from astropy.table import Table,join
+import datetime
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -208,7 +209,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     
     nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
     fn = fb+'_clustering.dat.fits'
-    fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+    ff = fitsio.FITS(fn,'rw')
+    fd = ff['LSS'].read()
+    #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
     zl = fd['Z']
     nl = np.zeros(len(zl))
     for ii in range(0,len(zl)):
@@ -217,14 +220,21 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
     del fd
-    ft = Table.read(fn)
-    ft['NZ'] = nl
-    ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-    ft.write(fn,format='fits',overwrite=True)        
+    #ft = Table.read(fn)
+    #ft['NZ'] = nl
+    ff['LSS'].insert_column('NZ',nl)
+    fkpl = 1./(1+nl*P0)
+    #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+    ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+    ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    ff.close()
+    #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(0,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+        ff = fitsio.FITS(fn,'rw')
+        fd = ff['LSS'].read()
+        #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
         for ii in range(0,len(zl)):
@@ -233,10 +243,15 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
             if z > zmin and z < zmax:
                 nl[ii] = nzd[zind]
         del fd
-        ft = Table.read(fn)
-        ft['NZ'] = nl
-        ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-        ft.write(fn,format='fits',overwrite=True)      
+        #ft = Table.read(fn)
+        #ft['NZ'] = nl
+        ff['LSS'].insert_column('NZ',nl)
+        fkpl = 1./(1+nl*P0)
+        ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+        ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        ff.close()
+        #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+        #ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
     return True        
 
@@ -331,5 +346,9 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wz &= ff['ZWARN'] != 1.e20
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
-
-    ff.write(fout,overwrite=True,format='fits')
+    os.system('rm '+fout)
+    fd = fitsio.FITS(fout, "rw")
+    fd.write(np.array(ff),extname='LSS')
+    fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()    
+    #ff.write(fout,overwrite=True,format='fits')
