@@ -265,7 +265,7 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
-def combtile_em(tiles,outf='',md='',prog='dark'):
+def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
     s = 0
     n = 0
     nfail = 0
