@@ -407,7 +407,7 @@ if __name__ == '__main__':
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf',
                         type=float, default=np.inf)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=120)
+    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
