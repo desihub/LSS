@@ -273,7 +273,7 @@ if combd:
         if run_tarwdup:
             #Univ001 2022-02-14T19:37:05.000
             #Univ000 2022-02-11T16:42:58.000
-            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL)
+            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL, mockrea=mockrea)
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']

@@ -22,9 +22,9 @@ from fiberassign.assign import (Assignment, write_assignment_fits,
 import desimodel.io as dmio
 
 
-def dofa(ranfile,tile,stamp,outdir,id_):
+def dofa(ranfile,tile,stamp,outdir,id_,mockrea):
     
-    namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/fa/SV3'.format(UNIV=id_), str(stamp), 'fa-%s.sh'%str(tile))
+    namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_), str(stamp), 'fa-%s.sh'%str(tile))
     namecomb.format(stamp=stamp, ts=tile)
     run_fba = os.path.join(outdir,'fa-{ts}.sh'.format(ts=tile))
     fout = open(run_fba,'w')

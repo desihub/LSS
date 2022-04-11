@@ -921,7 +921,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 
     kl =  ['RA','DEC','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES'] + rcols
 
-    shuffle = False
+    shuffle = True
 
     if shuffle:
         #load in data clustering catalog
@@ -942,7 +942,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
-def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY'], isodate=None, univ='001'):
+def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','TARGETID','SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY'], isodate=None, univ='001', mockrea='000'):
     print('entro aqui no combtiles mtl')
     s = 0
     n = 0
@@ -962,7 +962,7 @@ def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','
             faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             fht = fitsio.read_header(faf_d)
             stamp = fht['RUNDATE'].split('T')[0].replace('-','')
-            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/fa/SV3'.format(UNIV=univ),stamp,'fba-'+ts+'.fits')
+            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(UNIV=univ, MOCKREA=mockrea),stamp,'fba-'+ts+'.fits')
             wt = tiles['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True, isodate=isodate, columns=tarcol)
             
@@ -1350,7 +1350,7 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
     '''
 
 
-    outf = fl+wzm+'clustering_'+weightmd+'.dat.fits'
+    outf = fl+wzm+'clustering.dat.fits'
     wz = ff['ZWARN'] == 0
     print('length before cutting to objects with redshifts '+str(len(ff)))
     print('length after cutting to zwarn == 0 '+str(len(ff[wz])))

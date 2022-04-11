@@ -21,10 +21,12 @@ def get_zlims(tracer, tracer2=None, option=None):
         return [zlim for zlim in zlims1 if zlim in zlims2]
 
     if tracer.startswith('LRG'):
-        zlims = [0.4, 0.6, 0.8, 1.1]
+        zlims = [0.6, 1.1]
+        #AUREzlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
-        zlims = [0.8, 1.1, 1.5]
+        zlims = [0.8, 1.5]
+        #AUREzlims = [0.8, 1.1, 1.5]
         if option == 'safez':
             zlims = [0.9, 1.48]
 
@@ -118,11 +120,12 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
             weights *= catalog['WEIGHT_FKP'][mask]
         if 'bitwise' in weight_type:
             if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
-            else: weights = [catalog['BITWEIGHTS'][mask]] + [weights]
-    
+            else: 
+                weights = [catalog['BITWEIGHTS'][mask]] + [weights]
+                #weights = [catalog['BITWEIGHTS'][mask].reshape(-1,1)] + [weights]
     if name == 'randoms':
-##TEMP        if 'default' in weight_type:
-##TEMP            weights *= catalog['WEIGHT'][mask]
+        if 'default' in weight_type:
+            weights *= catalog['WEIGHT'][mask]
         if 'RF' in weight_type:
             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
         if 'zfail' in weight_type:
@@ -135,7 +138,7 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
     return positions, weights
 
 
-def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
+def read_full_positions_weights(name='data', weight_type='default', fibered=False, zlim=None, region='', **kwargs):
     
     cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
     logger.info('Loading {}.'.format(cat_fn))
@@ -151,10 +154,16 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
         mask &= catalog['PHOTSYS'] == region.strip('_')
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
+
+    if zlim:
+        mask &= (catalog['RSDZ'] >= zlim[0]) & (catalog['RSDZ'] < zlim[1])
+
     positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
     if fibered and 'bitwise' in weight_type:
         if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T)
-        else: weights = [catalog['BITWEIGHTS'][mask]]
+        else: 
+            weights = [catalog['BITWEIGHTS'][mask]]
+            #weights = [catalog['BITWEIGHTS'][mask].reshape(-1,1)]
     else: weights = np.ones_like(positions[0])
     return positions, weights
 
@@ -332,7 +341,6 @@ if __name__ == '__main__':
     parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
     parser.add_argument("--mockrea", help="Which mock realization",default=0)
 
-    parser.add_argument("--weight_column",help="Which definition of weight in clustering WEIGHT column, options are probobs or tileloc",default='tileloc')
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)

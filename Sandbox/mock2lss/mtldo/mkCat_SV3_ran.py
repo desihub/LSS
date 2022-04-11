@@ -232,7 +232,7 @@ else:
 ran_ids = np.linspace(100,5000,50)
 
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ{UNIV}/mtl-done-tiles.ecsv'.format(UNIV=id_))
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
 
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
@@ -279,7 +279,7 @@ def doran(ii):
                 print('fba file already made')
             else:
                 stamp = list_runFA[tile]
-                myfa.dofa(os.path.join(randir+str(ii),'tilenofa-'+str(tile)+'.fits'),ts,stamp,randir+str(ii),id_)
+                myfa.dofa(os.path.join(randir+str(ii),'tilenofa-'+str(tile)+'.fits'),ts,stamp,randir+str(ii),id_,mockrea)
  
 
     if combr:

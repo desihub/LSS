@@ -15,10 +15,14 @@ overwrite=0
 obscon='DARK'
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
-mockrea = 0
+#mockrea=1
+#for mockrea in {1..24} 
+for mockrea in {23..24} 
+do
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
 printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs_rea%03d/" $ndir $mockrea
-hpListFile='SV3HPList_mock.txt'
+hpListFile='SV3HPList.txt'
+#hpListFile='SV3HPList_mock.txt'
 #These two options only are considered if the obscon is bright
 #First option indicates whether to shuffle the top level priorities
 #of BGS_FAINT/BGS_FAINT_HIP. Second option indicates what fraction/percent
@@ -61,11 +65,10 @@ splitByChunk=100
 overwrite2=1
 #Actual running of scripts
 
-#srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel_mock.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
-#if [ $? -ne 0 ]; then
-#    exit 1234
-#fi
-
+###srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel_mock.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
+###if [ $? -ne 0 ]; then
+###    exit 1234
+###fi
 ###CHANGE enviroment
 
 
@@ -76,7 +79,9 @@ fi
 
 
 if [ $splitByReal -ne 0 ]; then
-    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights_mock.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 $exampleledgerbase >& MakeBitweightsOutput.out
 else
-    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights_mock.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 $exampleledgerbase >& MakeBitweightsOutput.out
 fi
+
+done

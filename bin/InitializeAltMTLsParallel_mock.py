@@ -88,7 +88,10 @@ def procFunc(nproc):
         else:
             mtlprestr = ''
         exampleledger = exampleledgerbase + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),hpnum, obscon.lower(), mtlprestr)
-        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite)
+        if os.path.isfile(exampleledger):
+            initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite)
+        else:
+            print(hpnum, 'not present')
     print('ending function call')
     return 42           
 
