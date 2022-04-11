@@ -2,7 +2,7 @@
 
 VERSPEC='guadalupe'
 VER='2'
-WT = 'default_FKP'
+WT='default_FKP'
 WTe='RF_FKP'
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
