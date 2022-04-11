@@ -318,10 +318,14 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             split_randoms.append(ii > 0)
 
     results = []
+    if mpicomm is None:
+        nran = len(randoms_positions1)
+    else:
+        nran = mpicomm.bcast(len(randoms_positions1) if mpicomm.rank == mpiroot else None, root=mpiroot)
     for i_split_randoms, edges in zip(split_randoms, split_edges):
         result = 0
         D1D2 = None
-        for iran in range(1 if i_split_randoms else len(randoms_positions1)):
+        for iran in range(1 if i_split_randoms else nran):
             tmp_randoms_kwargs = {}
             if i_split_randoms:
                 # On scales below split_randoms_above, concatenate randoms
