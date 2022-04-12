@@ -57,7 +57,7 @@ def get_zlims(tracer, tracer2=None, option=None):
 def get_regions(survey, rec=False):
     regions = ['N', 'S', '']
     if survey in ['main', 'DA02']:
-        regions = ['DN', 'DS', 'N', 'S', '']
+        regions = ['DN', 'DS', 'N', 'S']
         if rec: regions = ['DN', 'N']
     return regions
 
