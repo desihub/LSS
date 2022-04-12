@@ -325,9 +325,16 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     for i_split_randoms, edges in zip(split_randoms, split_edges):
         result = 0
         D1D2 = None
-        for iran in range(1 if i_split_randoms else nran):
+        for iran in range(nran if i_split_randoms else 1):
             tmp_randoms_kwargs = {}
             if i_split_randoms:
+                # On scales above split_randoms_above, sum correlation function over multiple randoms
+                for name, arrays in randoms_kwargs.items():
+                    if arrays is None:
+                        continue
+                    else:
+                        tmp_randoms_kwargs[name] = arrays[iran]
+            else:
                 # On scales below split_randoms_above, concatenate randoms
                 for name, arrays in randoms_kwargs.items():
                     if arrays is None:
@@ -337,14 +344,6 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
                     else:
                         array = np.concatenate(arrays, axis=0)
                     tmp_randoms_kwargs[name] = array
-            else:
-                # On scales above split_randoms_above, sum correlation function over multiple randoms
-                for name, arrays in randoms_kwargs.items():
-                    if arrays is None:
-                        continue
-                    else:
-                        tmp_randoms_kwargs[name] = arrays[iran]
-
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
@@ -364,7 +363,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
     else:
         raise ValueError('bin_type must be one of ["log", "lin"]')
     if corr_type == 'smu':
-        edges = (sedges, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between 0 and 1
+        edges = (sedges, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between -1 and 1
     elif corr_type == 'rppi':
         if bin_type == 'lin':
             edges = (sedges, sedges) #transverse and radial separations are coded to be the same here
@@ -407,7 +406,7 @@ if __name__ == '__main__':
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf',
                         type=float, default=np.inf)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=120)
+    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
