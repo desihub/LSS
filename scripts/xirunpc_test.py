@@ -57,7 +57,7 @@ def get_zlims(tracer, tracer2=None, option=None):
 def get_regions(survey, rec=False):
     regions = ['N', 'S', '']
     if survey in ['main', 'DA02']:
-        regions = ['DN', 'DS', 'N', 'S']
+        regions = ['DN', 'DS', 'N', 'S', '']
         if rec: regions = ['DN', 'N']
     return regions
 
@@ -325,32 +325,37 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     for i_split_randoms, edges in zip(split_randoms, split_edges):
         result = 0
         D1D2 = None
-        for iran in range(nran if i_split_randoms else 1):
-            tmp_randoms_kwargs = {}
-            if i_split_randoms:
-                # On scales above split_randoms_above, sum correlation function over multiple randoms
-                for name, arrays in randoms_kwargs.items():
-                    if arrays is None:
-                        continue
-                    else:
-                        tmp_randoms_kwargs[name] = arrays[iran]
-            else:
-                # On scales below split_randoms_above, concatenate randoms
-                for name, arrays in randoms_kwargs.items():
-                    if arrays is None:
-                        continue
-                    elif isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights
-                        array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
-                    else:
-                        array = np.concatenate(arrays, axis=0)
-                    tmp_randoms_kwargs[name] = array
-            tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
-                                              data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
-                                              engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
-                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot)
-            D1D2 = tmp.D1D2
-            result += tmp
-        results.append(result)
+        with MemoryMonitor() as mem:
+            for iran in range(nran if i_split_randoms else 1):
+                tmp_randoms_kwargs = {}
+                if i_split_randoms:
+                    # On scales above split_randoms_above, sum correlation function over multiple randoms
+                    for name, arrays in randoms_kwargs.items():
+                        if arrays is None:
+                            continue
+                        else:
+                            tmp_randoms_kwargs[name] = arrays[0]
+                else:
+                    # On scales below split_randoms_above, concatenate randoms
+                    for name, arrays in randoms_kwargs.items():
+                        if arrays is None:
+                            continue
+                        elif isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights
+                            array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
+                        else:
+                            array = np.concatenate(arrays, axis=0)
+                        tmp_randoms_kwargs[name] = array
+                mem('running {:d}'.format(iran))
+                tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
+                                                  data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
+                                                  engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
+                                                  D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot)
+                print('LOOOL', tmp.R1R2.bin_type)
+                mem('finished {:d}'.format(iran))
+                #D1D2 = tmp.D1D2
+            #result += tmp
+        #results.append(result)
+    exit()
     return results[0].concatenate_x(*results), wang
 
 
@@ -387,6 +392,52 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
+import time
+
+class MemoryMonitor(object):
+    """
+    Class that monitors memory usage and clock, useful to check for memory leaks.
+
+    >>> with MemoryMonitor() as mem:
+            '''do something'''
+            mem()
+            '''do something else'''
+    """
+    def __init__(self, pid=None):
+        """
+        Initalize :class:`MemoryMonitor` and register current memory usage.
+
+        Parameters
+        ----------
+        pid : int, default=None
+            Process identifier. If ``None``, use the identifier of the current process.
+        """
+        import psutil
+        self.proc = psutil.Process(os.getpid() if pid is None else pid)
+        self.mem = self.proc.memory_info().rss / 1e6
+        self.time = time.time()
+        msg = 'using {:.3f} [Mb]'.format(self.mem)
+        print(msg, flush=True)
+
+    def __enter__(self):
+        """Enter context."""
+        return self
+
+    def __call__(self, log=None):
+        """Update memory usage."""
+        mem = self.proc.memory_info().rss / 1e6
+        t = time.time()
+        msg = 'using {:.3f} [Mb] (increase of {:.3f} [Mb]) after {:.3f} [s]'.format(mem,mem-self.mem,t-self.time)
+        if log:
+            msg = '[{}] {}'.format(log, msg)
+        print(msg, flush=True)
+        self.mem = mem
+        self.time = t
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        """Exit context."""
+        self()
+
 
 if __name__ == '__main__':
 
@@ -406,7 +457,7 @@ if __name__ == '__main__':
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf',
                         type=float, default=np.inf)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
+    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=120)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
@@ -455,7 +506,8 @@ if __name__ == '__main__':
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
-
+    import Corrfunc
+    print('LOOOOL', Corrfunc.__file__)
     for zmin, zmax in zlims:
         for region in regions:
             wang = None
