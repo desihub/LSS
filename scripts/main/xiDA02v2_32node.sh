@@ -4,7 +4,7 @@ VERSPEC='guadalupe'
 VER='2'
 WT='default_FKP'
 WTe='RF_FKP'
-OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/guadalupe/LSScats/2/xi/'
+OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/2/xi/'
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
