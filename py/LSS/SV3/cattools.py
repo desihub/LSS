@@ -1159,15 +1159,16 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 #     print('number of tilelocid in randoms not in data '+str(no))    
 #     dz['FRACZ_TILELOCID'] = probl
     
-    if os.path.isfile('tmp.fits'):
-        os.system('rm tmp.fits')
-    fd = fitsio.FITS('tmp.fits', "rw")
+    tmpfn = outf+'.tmp'
+    if os.path.isfile(tmpfn):
+        os.system('rm '+tmpfn)
+    fd = fitsio.FITS(tmpfn, "rw")
     fd.write(np.array(dz),extname='LSS')
     fd['LSS'].write_comment("'full' LSS catalog for random # "+str(rann)+" without any vetos applied")
     fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
-    os.system('mv tmp.fits '+outf)
+    os.system('mv '+tmpfn+' '+outf)
 
     #dz.write(outf,format='fits', overwrite=True)
     print('moved output to '+outf)
