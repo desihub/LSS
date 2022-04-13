@@ -353,5 +353,5 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     fd.write(np.array(ff),extname='LSS')
     fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
-    os.system('mv tmp.fits '+outf)
+    os.system('mv tmp.fits '+fout)
     #ff.write(fout,overwrite=True,format='fits')
