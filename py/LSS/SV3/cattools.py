@@ -1777,7 +1777,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
-
+    os.system('mv tmp.fits '+outfn)
     #ffcn.write(outfn,format='fits', overwrite=True)
 
     outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
@@ -1795,7 +1795,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
-
+    os.system('mv tmp.fits '+outfs)
     #ffcs.write(outfs,format='fits', overwrite=True)
 
 # def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):

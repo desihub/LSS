@@ -2,6 +2,7 @@ import numpy as np
 import fitsio
 from astropy.table import Table,join
 import datetime
+import os
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -346,9 +347,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wz &= ff['ZWARN'] != 1.e20
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
-    os.system('rm '+fout)
-    fd = fitsio.FITS(fout, "rw")
+    if os.path.isfile('tmp.fits'):
+        os.system('rm tmp.fits')
+    fd = fitsio.FITS('tmp.fits', "rw")
     fd.write(np.array(ff),extname='LSS')
     fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
+    os.system('mv tmp.fits '+outf)
     #ff.write(fout,overwrite=True,format='fits')
