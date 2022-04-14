@@ -1757,7 +1757,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     
     ffc.keep_columns(kl)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
-    tmpfn = ouf+'.tmp'
+    tmpfn = outf+'.tmp'
     if os.path.isfile(tmpfn):
         os.system('rm '+tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
