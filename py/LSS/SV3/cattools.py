@@ -1159,19 +1159,22 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 #     print('number of tilelocid in randoms not in data '+str(no))    
 #     dz['FRACZ_TILELOCID'] = probl
     
-    tmpfn = outf+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(dz),extname='LSS')
-    fd['LSS'].write_comment("'full' LSS catalog for random # "+str(rann)+" without any vetos applied")
-    fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outf)
+    comments = ["SV3 'full' LSS catalog for random # "+str(rann)+" without any vetos applied","entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    common.write_LSS(dz,outf,comments)
+
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(dz),extname='LSS')
+#     fd['LSS'].write_comment("SV3 'full' LSS catalog for random # "+str(rann)+" without any vetos applied")
+#     fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
 
     #dz.write(outf,format='fits', overwrite=True)
-    print('moved output to '+outf)
+    #print('moved output to '+outf)
     
 
 
@@ -1652,41 +1655,52 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
-    tmpfn = outf+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for data, all regions")
-    fd['LSS'].write_comment("entries are only for data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outf)
+    comments = ["SV3 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    common.write_LSS(ff,outf,comments)
+
+    outfn = fl+wzm+'N_clustering.dat.fits'
+    comments = ["SV3 'clustering' LSS catalog for data, just in BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["SV3 'clustering' LSS catalog for data, just in DECaLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[~wn],outfn,comments)
+
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, all regions")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
 
     #ff.write(outf,format='fits', overwrite=True)
-    outfn = fl+wzm+'N_clustering.dat.fits'
-    tmpfn = outfn+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff[wn]),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for data, just in BASS/MzLS region")
-    fd['LSS'].write_comment("entries are only for data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv tmp.fits '+outfn)
+#     outfn = fl+wzm+'N_clustering.dat.fits'
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff[wn]),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, just in BASS/MzLS region")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
     #ff[wn].write(outfn,format='fits', overwrite=True)
-    outfn = fl+wzm+'S_clustering.dat.fits'
-    tmpfn = outfn+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff[~wn]),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for data, just in DECaLS region")
-    fd['LSS'].write_comment("entries are only for data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outfn)
+#     outfn = fl+wzm+'S_clustering.dat.fits'
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff[~wn]),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, just in DECaLS region")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfn)
     #ff[~wn].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
@@ -1757,16 +1771,21 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     
     ffc.keep_columns(kl)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
-    tmpfn = outf+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ffc),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", all regions")
-    fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outf)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", all regions","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffc,outf,comments)
+
+
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffc),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", all regions")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
     #ffc.write(outf,format='fits', overwrite=True)
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
@@ -1775,16 +1794,21 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcdn[inds]
     for col in rcols: 
         ffcn[col] = dshuf[col]     
-    tmpfn = outfn+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ffcn),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", BASS/MzLS region")
-    fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outfn)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", BASS/MzLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffcn,outfn,comments)
+
+
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffcn),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", BASS/MzLS region")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfn)
     #ffcn.write(outfn,format='fits', overwrite=True)
 
     outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
@@ -1794,16 +1818,21 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcds[inds]
     for col in rcols: 
         ffcs[col] = dshuf[col]     
-    tmpfn = outfs+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ffcs),extname='LSS')
-    fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", DECaLS region")
-    fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outfs)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", DECaLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffcs,outfs,comments)
+
+
+#     tmpfn = outfs+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffcs),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", DECaLS region")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfs)
     #ffcs.write(outfs,format='fits', overwrite=True)
 
 # def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):

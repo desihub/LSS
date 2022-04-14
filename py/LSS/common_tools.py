@@ -374,3 +374,4 @@ def write_LSS(ff,outf,comments=None):
     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
     os.system('mv '+tmpfn+' '+outf)
+    print('moved output to '+outf)
