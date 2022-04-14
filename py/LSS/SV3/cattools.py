@@ -1453,25 +1453,28 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     
     #for debugging writeout
-    for col in dz.dtype.names:
-        to = Table()
-        to[col] = dz[col]
-        #print(col)
-        try:
-            to.write('temp.fits',format='fits', overwrite=True)
-        except:
-            print(col+' failed!')            
+#     for col in dz.dtype.names:
+#         to = Table()
+#         to[col] = dz[col]
+#         #print(col)
+#         try:
+#             to.write('temp.fits',format='fits', overwrite=True)
+#         except:
+#             print(col+' failed!')            
 
-    tmpfn = outf +'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(dz),extname='LSS')
-    fd['LSS'].write_comment("'full' LSS catalog for data without any vetos applied")
-    fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+outf)
+    comments = ["SV3 'full' LSS catalog for data without any vetos applied","entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    common.write_LSS(dz,outf,comments)
+
+#     tmpfn = outf +'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(dz),extname='LSS')
+#     fd['LSS'].write_comment("'full' LSS catalog for data without any vetos applied")
+#     fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
     
     #dz.write(outf,format='fits', overwrite=True)
 
