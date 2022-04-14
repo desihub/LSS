@@ -424,7 +424,10 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-    cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    if args.basedir == '/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/':
+        cat_dir == args.basedir
+    else:
+        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
     out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
     if args.outdir is not None: out_dir = args.outdir
     tracer, tracer2 = args.tracer[0], None
