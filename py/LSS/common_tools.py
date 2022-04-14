@@ -347,14 +347,18 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wz &= ff['ZWARN'] != 1.e20
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
-    tmpfn = fout+'.tmp'
-    if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff),extname='LSS')
-    fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
-    os.system('mv '+tmpfn+' '+fout)
+    
+    comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    write_LSS(ff,fout,comments)
+
+#     tmpfn = fout+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff),extname='LSS')
+#     fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
 
 def write_LSS(ff,outf,comments=None):
