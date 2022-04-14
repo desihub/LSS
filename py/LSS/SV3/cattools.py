@@ -1575,6 +1575,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN'] != 1.e20
 
         selg = ssr_tools.LRG_goodz(ff)
+        wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
