@@ -14,7 +14,7 @@ OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/SV3/mock/test/xi/'
 
 
 srun -N 1  python xirunpc.py --tracer ELG --basedir $BDIR --outdir $OUTDIR  --weight_type $WT --nran 8 &
-srun -N 1  python xirunpc.py --tracer ELG  --basedir $BDIR--outdir $OUTDIR  --weight_type $WT --nran 8 --bin_type log &
+srun -N 1  python xirunpc.py --tracer ELG --basedir $BDIR --outdir $OUTDIR  --weight_type $WT --nran 8 --bin_type log &
 
 srun -N 1  python xirunpc.py --tracer ELG --basedir $BDIR --outdir $OUTDIR  --weight_type $WT2 --nran 8 &
 srun -N 1  python xirunpc.py --tracer ELG --basedir $BDIR --outdir $OUTDIR  --weight_type $WT2 --nran 8 --bin_type log &
