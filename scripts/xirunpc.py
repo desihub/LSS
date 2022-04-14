@@ -425,7 +425,8 @@ if __name__ == '__main__':
         mpiroot = 0
 
     if args.basedir == '/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/':
-        cat_dir == args.basedir
+        cat_dir = args.basedir
+        args.region = ['']
     else:
         cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
     out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
