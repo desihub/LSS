@@ -373,7 +373,7 @@ def write_LSS(ff,outf,comments=None):
     fd = fitsio.FITS(tmpfn, "rw")
     fd.write(np.array(ff),extname='LSS')
     if comments is not None:
-        for comment in comment:
+        for comment in comments:
             fd['LSS'].write_comment(comment)
     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()    
