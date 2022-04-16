@@ -110,7 +110,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(main)))
     main = ELG_goodobs(main)
 
-    cat = vstack([sv1, sv3, maih], join_type='inner')
+    cat = vstack([sv1, sv3, main], join_type='inner')
     print(len(cat))
 
     cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
