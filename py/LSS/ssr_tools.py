@@ -99,7 +99,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     
     elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe'
     
-    main = fitsio.read(elgcatdir+'/main-elg-fuji-tiles.fits',columns=elgcol)
+    main = fitsio.read(elgcatdir+'/main-elg-fuji-guadalupe.fits',columns=elgcol)
     if tr != 'ELG':
         print('cutting main to main '+tr)
         sel = main[tr] == True
