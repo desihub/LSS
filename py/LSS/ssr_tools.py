@@ -8,6 +8,37 @@ from astropy.table import Table, vstack, hstack, join
 import fitsio
 from scipy.optimize import curve_fit, minimize
 
+import LSS.common_tools as common
+
+elgcol = ['EBV','PRIORITY','TARGETID','OII_FLUX','OII_FLUX_IVAR','ELG_LOP','ELG_VLO','TSNR2_ELG','TSNR2_LRG','PHOTSYS','MASKBITS','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','COADD_FIBERSTATUS','Z','ZWARN','DELTACHI2']
+
+
+def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
+    mask = data[fbs_col]==0
+    print(fbs_col,np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
+
+    # Remove "no data" fibers
+    mask &= data['ZWARN'] & 2**9==0
+    print('& No data', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
+
+    # Apply imaging mask
+    #mask &= data['lrg_mask']==0
+    #print('& LRG imaging mask', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
+
+    # Remove QSO targets
+    mask &= data[dt_col] & 2**2 ==0
+    print('& Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
+    data = data[mask]
+    data['q'] = ELG_goodz(data)#data['ZWARN']==0
+    print('failure rate is '+str(np.sum(~data['q'])/len(data)))
+    return data
+
+def ELG_goodz(data,zcol='Z'):
+    o2c = np.log10(data['OII_FLUX'] * np.sqrt(data['OII_FLUX_IVAR']))+0.2*np.log10(data['DELTACHI2'])
+    sel = o2c > 0.9
+    return sel
+
+
 def LRG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     mask = data[fbs_col]==0
     print(fbs_col,np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
@@ -35,6 +66,67 @@ def LRG_goodz(data,zcol='Z'):
     sel &= data[zcol]<1.5
     sel &= data['DELTACHI2']>15  
     return sel
+
+def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
+    maintids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targetsDR9v1.1.1.fits',columns=['TARGETID','DESI_TARGET','MASKBITS','NOBS_G','NOBS_R','NOBS_Z'])
+    maintids = common.cutphotmask(maintids,maskbits)
+    elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/'+specrel
+    
+    sv1 = fitsio.read(elgcatdir+'/sv1-elg-fuji-tiles.fits',columns=elgcol)
+    if tr != 'ELG':
+        print('cutting SV1 to main '+tr)
+        sel = sv1[tr] == True
+        print('length before is '+str(len(sv1)))
+        sv1 = sv1[sel]
+        print('length after is '+str(len(sv1)))
+    sv1 = join(sv1,maintids,keys=['TARGETID'])
+    print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv1)))
+    sv1 = ELG_goodobs(sv1)
+
+    sv3 = fitsio.read(elgcatdir+'/sv3-elg-fuji-tiles.fits',columns=elgcol)
+    if tr != 'ELG':
+        print('cutting SV3 to main '+tr)
+        sel = sv3[tr] == True
+        print('length before is '+str(len(sv3)))
+        sv3 = sv3[sel]
+        print('length after is '+str(len(sv3)))
+    sel = sv3['PRIORITY'] > 10000
+    sv3 = sv3[sel]
+    print('length after cutting to priority > 10000 '+str(len(sv3)))
+    sv3 = join(sv3,maintids,keys=['TARGETID'])
+    print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv3)))
+    sv3 = ELG_goodobs(sv3)
+    
+    elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe'
+    
+    main = fitsio.read(elgcatdir+'/main-elg-fuji-tiles.fits',columns=elgcol)
+    if tr != 'ELG':
+        print('cutting main to main '+tr)
+        sel = main[tr] == True
+        print('length before is '+str(len(main)))
+        main = main[sel]
+        print('length after is '+str(len(main)))
+    main = join(main,maintids,keys=['TARGETID'])
+    print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(main)))
+    main = ELG_goodobs(main)
+
+    cat = vstack([sv1, sv3, maih], join_type='inner')
+    print(len(cat))
+
+    cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
+    cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
+    gextc = 3.214
+    cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
+    cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+    rextc = 2.165
+    cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
+    cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
+    cat['qf'] = np.array(cat['q'], dtype=float)
+    
+    return cat
+    
 
 def get_LRG_data(specrel='fuji'):
     
@@ -113,8 +205,36 @@ class LRG_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
-        dflux = data['FIBERFLUX_Z']*10**(0.4*1.211*data['EBV'])
-        deff = 12.15 * data['TSNR2_LRG']
+        dflux = data['FIBERFLUX_Z_EC']
+        deff = data['EFFTIME_LRG']
+        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
+        return data
+
+class ELG_ssr:
+    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
+        self.cat = get_ELG_data(specrel)
+        mask = self.cat['EFFTIME_LRG']>efftime_min
+        mask &= self.cat['EFFTIME_LRG']<efftime_max
+        self.cat = self.cat[mask]
+
+    def cost(self,q_predict):
+        return np.sum((self.cat['qf']-q_predict)**2)
+
+    def wrapper(self,params):
+        q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_G_EC'], self.cat['EFFTIME_ELG'], *params)
+        return self.cost(q_predict)
+
+    def failure_rate(self,flux, efftime, a, b, c):
+        sn = flux * np.sqrt(efftime)
+        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+
+    def add_modpre(self,data):
+        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+               method='Powell', tol=1e-6)
+        pars = res.x
+        print(pars)
+        dflux = data['FIBERFLUX_G_EC']
+        deff = data['EFFTIME_ELG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
         return data
           
