@@ -205,8 +205,8 @@ class LRG_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
-        dflux = data['FIBERFLUX_Z_EC']
-        deff = data['EFFTIME_LRG']
+        dflux = data['FIBERFLUX_Z']*10**(0.4*1.211*data['EBV'])#data['FIBERFLUX_Z_EC']
+        deff = 12.15 * data['TSNR2_LRG']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
         return data
 
@@ -233,8 +233,9 @@ class ELG_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
-        dflux = data['FIBERFLUX_G_EC']
-        deff = data['EFFTIME_ELG']
+        gextc = 3.214
+        dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
+        deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
         return data
           
