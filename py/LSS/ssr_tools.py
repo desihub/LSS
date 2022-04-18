@@ -83,10 +83,11 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
         print('length before is '+str(len(sv3)))
         sv3 = sv3[sel]
         print('length after is '+str(len(sv3)))
-    sv3 = ELG_goodobs(Table(sv3))
     sel = sv3['PRIORITY'] > 10000
     sv3 = sv3[sel]
     print('length after cutting to priority > 10000 '+str(len(sv3)))
+    sv3 = ELG_goodobs(Table(sv3))
+    
     sv3 = join(sv3,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv3)))
     
@@ -125,7 +126,8 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
     
 
 
-    cat = vstack([sv1, sv3, main], join_type='inner')
+    #cat = vstack([sv1, sv3, main], join_type='inner')
+    cat = vstack([sv1, main], join_type='inner')
     #cat = main
     print(len(cat))
 
