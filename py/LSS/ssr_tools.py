@@ -87,8 +87,8 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     st = []
     for i in range(0,len(sv3)):
         st.append(sv3['SUBSET'][i][:4])
-        st = np.array(st)
-        wg = st == "thru"
+    st = np.array(st)
+    wg = st == "thru"
     sv3 = sv3[wg]
 
     if tr != 'ELG':
@@ -110,8 +110,8 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     st = []
     for i in range(0,len(main)):
         st.append(main['SUBSET'][i][:4])
-        st = np.array(st)
-        wg = st == "thru"
+    st = np.array(st)
+    wg = st == "thru"
     main = main[wg]
 
     if tr != 'ELG':
