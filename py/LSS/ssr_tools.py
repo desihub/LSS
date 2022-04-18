@@ -311,7 +311,7 @@ class ELG_ssr:
         res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars,self.wrapper_hist(*pars))
+        print(pars,self.wrapper_hist(pars))
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
