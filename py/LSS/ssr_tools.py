@@ -236,7 +236,7 @@ class LRG_ssr:
         return data
 
 class ELG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
         self.cat = get_ELG_data(specrel)
         mask = self.cat['EFFTIME_LRG']>efftime_min
         mask &= self.cat['EFFTIME_LRG']<efftime_max
@@ -250,8 +250,9 @@ class ELG_ssr:
         return self.cost(q_predict)
 
     def failure_rate(self,flux, efftime, a, b, c):
-        sn = flux * np.sqrt(efftime)
-        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        #sn = flux * np.sqrt(efftime)
+        #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(-(efftime+a)/b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
         res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
