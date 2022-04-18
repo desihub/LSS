@@ -10,7 +10,7 @@ from scipy.optimize import curve_fit, minimize
 
 import LSS.common_tools as common
 
-elgcol = ['EBV','PRIORITY','TARGETID','OII_FLUX','OII_FLUX_IVAR','ELG_LOP','ELG_VLO','TSNR2_ELG','TSNR2_LRG','PHOTSYS','MASKBITS','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','COADD_FIBERSTATUS','Z','ZWARN','DELTACHI2']
+elgcol = ['SUBSET','EBV','PRIORITY','TARGETID','OII_FLUX','OII_FLUX_IVAR','ELG_LOP','ELG_VLO','TSNR2_ELG','TSNR2_LRG','PHOTSYS','MASKBITS','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','COADD_FIBERSTATUS','Z','ZWARN','DELTACHI2']
 
 
 def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
@@ -84,6 +84,14 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     sv1 = ELG_goodobs(sv1)
 
     sv3 = fitsio.read(elgcatdir+'/sv3-elg-fuji-tiles.fits',columns=elgcol)
+    st = []
+    for i in range(0,len(sv3)):
+        st.append(sv3['SUBSET'][i][:4])
+        st = np.array(st)
+        wg = sv3[fbcol] == 0
+        wg &= st == "thru"
+    sv3 = sv3[wg]
+
     if tr != 'ELG':
         print('cutting SV3 to main '+tr)
         sel = sv3[tr] == True
@@ -100,6 +108,14 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe'
     
     main = fitsio.read(elgcatdir+'/main-elg-guadalupe-tiles.fits',columns=elgcol)
+    st = []
+    for i in range(0,len(main)):
+        st.append(main['SUBSET'][i][:4])
+        st = np.array(st)
+        wg = main[fbcol] == 0
+        wg &= st == "thru"
+    main = main[wg]
+
     if tr != 'ELG':
         print('cutting main to main '+tr)
         sel = main[tr] == True
@@ -111,6 +127,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     main = ELG_goodobs(main)
 
     cat = vstack([sv1, sv3, main], join_type='inner')
+    #cat = main
     print(len(cat))
 
     cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
