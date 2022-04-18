@@ -13,7 +13,7 @@ import LSS.common_tools as common
 elgcol = ['SUBSET','EBV','PRIORITY','TARGETID','OII_FLUX','OII_FLUX_IVAR','ELG_LOP','ELG_VLO','TSNR2_ELG','TSNR2_LRG','PHOTSYS','MASKBITS','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','COADD_FIBERSTATUS','Z','ZWARN','DELTACHI2']
 
 
-def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
+def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS'):#,dt_col='DESI_TARGET'):
     mask = data[fbs_col]==0
     print(fbs_col,np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
 
@@ -25,10 +25,6 @@ def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS',dt_col='DESI_TARGET'):
     #mask &= data['lrg_mask']==0
     #print('& LRG imaging mask', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
 
-    # Remove QSO targets
-    mask &= data[dt_col] & 2**2 ==0
-    print('& Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
-    data = data[mask]
     data['q'] = ELG_goodz(data)#data['ZWARN']==0
     print('failure rate is '+str(np.sum(~data['q'])/len(data)))
     return data
@@ -67,7 +63,7 @@ def LRG_goodz(data,zcol='Z'):
     sel &= data['DELTACHI2']>15  
     return sel
 
-def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
+def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
     maintids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targetsDR9v1.1.1.fits',columns=['TARGETID','DESI_TARGET','MASKBITS','NOBS_G','NOBS_R','NOBS_Z'])
     maintids = common.cutphotmask(maintids,maskbits)
     elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/'+specrel
@@ -132,6 +128,13 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     cat = vstack([sv1, sv3, main], join_type='inner')
     #cat = main
     print(len(cat))
+
+    if notqso:
+        # Remove QSO targets
+        mask = data['DESI_TARGET'] & 2**2 ==0
+        print(' Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
+        cat = cat[mask]
+
 
     cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
     cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
