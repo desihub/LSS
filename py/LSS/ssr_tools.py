@@ -308,10 +308,10 @@ class ELG_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
     def add_modpre(self,data):
-        res = minimize(self.wrapper_hist, [0, 10., 0.01], bounds=((-10000, 10000), (0, 10000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars)
+        print(pars,self.wrapper_hist(pars))
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
