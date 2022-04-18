@@ -272,11 +272,12 @@ class ELG_ssr:
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
-        sel = self.cat == 1
+        sel = self.cat['q'] == 1
         ha,bine = np.histogram(self.cat['EFFTIME_ELG'])
-        hg,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
-        self.nzf = hg/ha
-        self.nzfe = np.sqrt(hg)/ha
+        hf,_ = np.histogram(self.cat['EFFTIME_ELG'][~sel])
+        self.nzf = hf/ha
+        print(self.nzf)
+        self.nzfe = np.sqrt(hf)/ha
         bc = []
         bs = bine[1]-bine[0]
         for i in range(0,len(bine)-1):
