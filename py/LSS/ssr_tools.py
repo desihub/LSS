@@ -63,6 +63,8 @@ def LRG_goodz(data,zcol='Z'):
     sel &= data['DELTACHI2']>15  
     return sel
 
+#def get_ELG_data_full()
+
 def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
     maintids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targetsDR9v1.1.1.fits',columns=['TARGETID','DESI_TARGET','MASKBITS','NOBS_G','NOBS_R','NOBS_Z'])
     maintids = common.cutphotmask(maintids,maskbits)
