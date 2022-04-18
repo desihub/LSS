@@ -63,7 +63,36 @@ def LRG_goodz(data,zcol='Z'):
     sel &= data['DELTACHI2']>15  
     return sel
 
-#def get_ELG_data_full()
+def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+    
+    cats = []
+    for sur,ver,sr in zip(surveys,versions,specrels):
+        dir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
+        tfn = tracer
+        if survey == 'DA02':
+            tfn+='zdone'
+        fn = dir+tfn+'_full.dat.fits'    
+        data = Table(fitsio.read(fn))
+        data['q'] = data['o2c'] > 0.9
+        cats.append(data)
+
+    if len(cats) == 1:
+        cat = cats[0]
+
+    cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
+    cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
+    gextc = 3.214
+    cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
+    cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+    rextc = 2.165
+    cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
+    cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
+    cat['qf'] = np.array(cat['q'], dtype=float)
+    
+    return cat
+
 
 def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
     maintids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targetsDR9v1.1.1.fits',columns=['TARGETID','DESI_TARGET','MASKBITS','NOBS_G','NOBS_R','NOBS_Z'])
@@ -239,7 +268,7 @@ class LRG_ssr:
 
 class ELG_ssr:
     def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
-        self.cat = get_ELG_data(specrel)
+        self.cat = get_ELG_data_full('ELG_LOPnotqso')#get_ELG_data(specrel)
         mask = self.cat['EFFTIME_LRG']>efftime_min
         mask &= self.cat['EFFTIME_LRG']<efftime_max
         self.cat = self.cat[mask]
@@ -257,7 +286,7 @@ class ELG_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-1000, 1000), (0, 1000), (0., 1)),
+        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-10000, 10000), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
