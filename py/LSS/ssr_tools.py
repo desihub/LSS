@@ -127,8 +127,8 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
 
 
     #cat = vstack([sv1, sv3, main], join_type='inner')
-    cat = vstack([sv1, main], join_type='inner')
-    #cat = main
+    #cat = vstack([sv1, main], join_type='inner')
+    cat = main
     print(len(cat))
 
     if notqso:
