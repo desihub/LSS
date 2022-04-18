@@ -87,16 +87,17 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
         print('length before is '+str(len(sv3)))
         sv3 = sv3[sel]
         print('length after is '+str(len(sv3)))
+    sv3 = ELG_goodobs(sv3)
     sel = sv3['PRIORITY'] > 10000
     sv3 = sv3[sel]
     print('length after cutting to priority > 10000 '+str(len(sv3)))
     sv3 = join(sv3,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv3)))
-    sv3 = ELG_goodobs(sv3)
     
-    elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe'
     
-    main = fitsio.read(elgcatdir+'/main-elg-guadalupe-tiles.fits',columns=elgcol)
+    elgcatdirg = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe'
+    
+    main = fitsio.read(elgcatdirg+'/main-elg-guadalupe-tiles.fits',columns=elgcol)
     st = []
     for i in range(0,len(main)):
         st.append(main['SUBSET'][i][:4])
@@ -110,9 +111,10 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
         print('length before is '+str(len(main)))
         main = main[sel]
         print('length after is '+str(len(main)))
+    main = ELG_goodobs(main)
     main = join(main,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(main)))
-    main = ELG_goodobs(main)
+    
 
     sv1 = fitsio.read(elgcatdir+'/sv1-elg-fuji-tiles.fits',columns=elgcol)
     if tr != 'ELG':
@@ -121,9 +123,10 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
         print('length before is '+str(len(sv1)))
         sv1 = sv1[sel]
         print('length after is '+str(len(sv1)))
+    sv1 = ELG_goodobs(sv1)
     sv1 = join(sv1,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv1)))
-    sv1 = ELG_goodobs(sv1)
+    
 
 
     cat = vstack([sv1, sv3, main], join_type='inner')
