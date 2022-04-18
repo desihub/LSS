@@ -72,16 +72,6 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     maintids = common.cutphotmask(maintids,maskbits)
     elgcatdir = '/global/cfs/cdirs/desi/users/raichoor/spectro/'+specrel
     
-    sv1 = fitsio.read(elgcatdir+'/sv1-elg-fuji-tiles.fits',columns=elgcol)
-    if tr != 'ELG':
-        print('cutting SV1 to main '+tr)
-        sel = sv1[tr] == True
-        print('length before is '+str(len(sv1)))
-        sv1 = sv1[sel]
-        print('length after is '+str(len(sv1)))
-    sv1 = join(sv1,maintids,keys=['TARGETID'])
-    print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv1)))
-    sv1 = ELG_goodobs(sv1)
 
     sv3 = fitsio.read(elgcatdir+'/sv3-elg-fuji-tiles.fits',columns=elgcol)
     st = []
@@ -123,6 +113,18 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13]):
     main = join(main,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(main)))
     main = ELG_goodobs(main)
+
+    sv1 = fitsio.read(elgcatdir+'/sv1-elg-fuji-tiles.fits',columns=elgcol)
+    if tr != 'ELG':
+        print('cutting SV1 to main '+tr)
+        sel = sv1[tr] == True
+        print('length before is '+str(len(sv1)))
+        sv1 = sv1[sel]
+        print('length after is '+str(len(sv1)))
+    sv1 = join(sv1,maintids,keys=['TARGETID'])
+    print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv1)))
+    sv1 = ELG_goodobs(sv1)
+
 
     cat = vstack([sv1, sv3, main], join_type='inner')
     #cat = main
