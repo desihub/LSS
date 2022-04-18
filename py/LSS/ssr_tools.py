@@ -69,7 +69,7 @@ def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
     for sur,ver,sr in zip(surveys,versions,specrels):
         dir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
         tfn = tracer
-        if survey == 'DA02':
+        if sur == 'DA02':
             tfn+='zdone'
         fn = dir+tfn+'_full.dat.fits'    
         data = Table(fitsio.read(fn))
