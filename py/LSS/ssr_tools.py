@@ -286,7 +286,7 @@ class ELG_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-10000, 10000), (0, 1000), (0., 1)),
+        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-10000, 10000), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
