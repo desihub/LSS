@@ -83,7 +83,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
         print('length before is '+str(len(sv3)))
         sv3 = sv3[sel]
         print('length after is '+str(len(sv3)))
-    sv3 = ELG_goodobs(sv3)
+    sv3 = ELG_goodobs(Table(sv3))
     sel = sv3['PRIORITY'] > 10000
     sv3 = sv3[sel]
     print('length after cutting to priority > 10000 '+str(len(sv3)))
@@ -107,7 +107,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
         print('length before is '+str(len(main)))
         main = main[sel]
         print('length after is '+str(len(main)))
-    main = ELG_goodobs(main)
+    main = ELG_goodobs(Table(main))
     main = join(main,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(main)))
     
@@ -119,7 +119,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
         print('length before is '+str(len(sv1)))
         sv1 = sv1[sel]
         print('length after is '+str(len(sv1)))
-    sv1 = ELG_goodobs(sv1)
+    sv1 = ELG_goodobs(Table(sv1))
     sv1 = join(sv1,maintids,keys=['TARGETID'])
     print('length after join to main targets to get DESI_TARGET and cut on maskbits values '+str(len(sv1)))
     
@@ -131,7 +131,7 @@ def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
 
     if notqso:
         # Remove QSO targets
-        mask = data['DESI_TARGET'] & 2**2 ==0
+        mask = cat['DESI_TARGET'] & 2**2 ==0
         print(' Remove QSO targets', np.sum(mask), np.sum(~mask), np.sum(~mask)/len(mask))
         cat = cat[mask]
 
