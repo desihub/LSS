@@ -269,10 +269,20 @@ class LRG_ssr:
 class ELG_ssr:
     def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
         self.cat = get_ELG_data_full('ELG_LOPnotqso')#get_ELG_data(specrel)
-        mask = self.cat['EFFTIME_LRG']>efftime_min
-        mask &= self.cat['EFFTIME_LRG']<efftime_max
+        mask = self.cat['EFFTIME_ELG']>efftime_min
+        mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
-
+        sel = self.cat == 1
+        ha,bine = np.hist(self.cat['EFFTIME_ELG'])
+        hg,_ = np.hist(self.cat['EFFTIME_ELG'][sel])
+        self.nzf = hg/ha
+        self.nzfe = np.sqrt(hg)/ha
+        bc = []
+        bs = bine[1]-bine[0]
+        for i in range(0,len(bine)-1):
+            bc.append(bine[i]+bs/2.) 
+        self.bc = np.array(bc)
+        
     def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
 
@@ -280,13 +290,24 @@ class ELG_ssr:
         q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_G_EC'], self.cat['EFFTIME_ELG'], *params)
         return self.cost(q_predict)
 
+    def wrapper_hist(self,params):
+        h_predict = self.failure_rate_eff(self.bc, *params)
+        diff = self.nzf-h_predict
+        cost = np.sum((diff/self.nzfe)**2.)
+        return cost
+
     def failure_rate(self,flux, efftime, a, b, c):
         #sn = flux * np.sqrt(efftime)
         #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
         return np.clip(np.exp(-(efftime+a)/b)+c/flux, 0, 1)
 
+    def failure_rate_eff(self, efftime, a, b, c):
+        #sn = flux * np.sqrt(efftime)
+        #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
+
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-10000, 10000), (0, 10000), (0., 1)),
+        res = minimize(self.wrapper_hist, [0, 10., 0.01], bounds=((-10000, 10000), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
