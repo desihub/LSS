@@ -273,8 +273,8 @@ class ELG_ssr:
         mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
         sel = self.cat == 1
-        ha,bine = np.hist(self.cat['EFFTIME_ELG'])
-        hg,_ = np.hist(self.cat['EFFTIME_ELG'][sel])
+        ha,bine = np.histogram(self.cat['EFFTIME_ELG'])
+        hg,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
         self.nzf = hg/ha
         self.nzfe = np.sqrt(hg)/ha
         bc = []
