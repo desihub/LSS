@@ -375,8 +375,8 @@ class ELG_ssr:
             nzfper.append(hf[0]/ha[0])
             nzfpere.append(np.sqrt(ha[0]-hf[0])/ha[0])
         self.nzfpere = nzfpere    
-        rest = minimize(self.hist_norm, np.ones(1), bounds=((-10, 10)),
-               method='Powell', tol=1e-6)
+        rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
+               #method='Powell', tol=1e-6)
         fcoeff = rest.x
         print(fcoeff,self.hist_norm(fcoeff)) 
         
