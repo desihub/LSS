@@ -386,9 +386,9 @@ class ELG_ssr:
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(1.)) 
+        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.)) 
         
-        data['WEIGHT_ZFAIL'] =  fcoeff*self.mft/self.data[dflux]*(1/drelssr-1)+1
+        data['WEIGHT_ZFAIL'] =  fcoeff*self.mft/data[dflux]*(1/drelssr-1)+1
         return data
           
     
