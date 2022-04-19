@@ -336,7 +336,7 @@ class ELG_ssr:
             sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
             #fper.append(mf)
-            wtf = fluxc*self.mft/mf*(self.wts_fid-1)+1
+            wtf = (fluxc*self.mft/mf+1)*(self.wts_fid-1)+1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
             dl = hf/ha
@@ -388,7 +388,7 @@ class ELG_ssr:
         self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(1.)) 
         
-        data['WEIGHT_ZFAIL'] =  fcoeff*mft/self.data[dflux]*(1/drelssr-1)+1
+        data['WEIGHT_ZFAIL'] =  fcoeff*self.mft/self.data[dflux]*(1/drelssr-1)+1
         return data
           
     
