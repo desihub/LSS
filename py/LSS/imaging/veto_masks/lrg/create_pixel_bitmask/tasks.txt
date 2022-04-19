@@ -1,0 +1,6 @@
+south 3 0
+south 3 1
+south 3 2
+north 3 0
+north 3 1
+north 3 2

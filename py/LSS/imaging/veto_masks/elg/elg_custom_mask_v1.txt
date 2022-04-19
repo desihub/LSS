@@ -1,0 +1,27 @@
+# List of custom masks
+# Two formats:
+# Circle:    RA, DEC, radius (arcsec)
+# Rectangle: RA, DEC, ra_min, ra_max, dec_min, dec_max
+
+# Excess of ELG targets at the locations of MW satellites
+# Drlica-Wagner et al. 2020; https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/893/47
+260.0684,  57.9185, 1440  # Draco
+151.65, 152.65, 11.50, 12.9  # Leo I and bright star ghosts
+168.3627, 22.1529, 360  # Leo II
+153.2628, -1.6133, 1800  # Sextans
+227.242, 67.2221, 1800  # Ursa Minor
+
+# Other imaging artifacts
+322.9, 323.25, -4.3, -4.2  # bright star ghosts
+346.1905, 15.2051, 720  # bright star ghosts
+262.3, 265, 10.9, 13.2  # bright star ghosts
+200, 201.8, 54.55, 55.1  # bright star ghosts
+192.8, 194.3, 55.5, 56.15  # bright star ghosts
+213.3, 215, 18.1, 19.9  # bright star ghosts
+151.55, 152.55, 11.5, 12.9  # bright star ghosts
+114.213802, 65.601354, 900  # large galaxy
+112, 114, 31.5, 32.3  # bright star ghosts
+116.3789, 117.0360, 26.6278, 26.9741  # bright star ghosts
+2.0979, 29.0890, 1440  # bright star ghosts
+93.5, 99, -53.5, -51.0  # bright star ghosts
+23, 26, -58.4, -56.1  # bright star ghosts
