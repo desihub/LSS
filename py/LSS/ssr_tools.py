@@ -247,6 +247,7 @@ def fit_cons(dl,el,minv=0,step=0.01):
         oldcost = newcost
         c += step
         newcost = np.sum((dl-c)**2./el**2.)
+    
     return oldcost,c
 
 
@@ -385,7 +386,7 @@ class ELG_ssr:
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff)) 
+        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(1.)) 
         
         data['WEIGHT_ZFAIL'] =  fcoeff*mft/self.data[dflux]*(1/drelssr-1)+1
         return data
