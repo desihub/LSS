@@ -73,6 +73,8 @@ def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
             tfn+='zdone'
         fn = dir+tfn+'_full.dat.fits'    
         data = Table(fitsio.read(fn))
+        sel = data['ZWARN'] != 999999
+        data = data[sel]
         data['q'] = data['o2c'] > 0.9
         cats.append(data)
 
