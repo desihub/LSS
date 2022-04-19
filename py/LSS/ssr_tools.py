@@ -388,7 +388,7 @@ class ELG_ssr:
         self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.)) 
         
-        data['WEIGHT_ZFAIL'] =  fcoeff*self.mft/data[dflux]*(1/drelssr-1)+1
+        data['WEIGHT_ZFAIL'] =  fcoeff*self.mft/dflux*(1/drelssr-1)+1
         return data
           
     
