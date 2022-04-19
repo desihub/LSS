@@ -346,7 +346,7 @@ class ELG_ssr:
         if self.vis_5hist:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
-                plt.plot(self.bc,np.ones(self.bc)*consl[i])
+                plt.plot(self.bc,np.ones(len(self.bc))*consl[i])
             plt.show()
         return costt    
         
