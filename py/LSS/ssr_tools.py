@@ -272,9 +272,9 @@ class ELG_ssr:
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
-        sel = self.cat['q'] == 1
+        self.selgz = self.cat['q'] == 1
         ha,bine = np.histogram(self.cat['EFFTIME_ELG'])
-        hf,_ = np.histogram(self.cat['EFFTIME_ELG'][~sel])
+        hf,_ = np.histogram(self.cat['EFFTIME_ELG'][~self.selgz])
         self.nzf = hf/ha
         print(self.nzf)
         self.nzfe = np.sqrt(hf)/ha
@@ -283,6 +283,8 @@ class ELG_ssr:
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
         self.bc = np.array(bc)
+        
+        
         
     def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
@@ -307,6 +309,40 @@ class ELG_ssr:
         #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
+    def fit_cons(dl,el,minv=0,step=0.01):
+        c = minv
+        newcost = np.sum((dl-c)**2./el**2.)
+        oldcost = newcost + 1
+        while newcost < oldcost:
+            oc = c
+            oldcost = newcost
+            c += step
+            newcost = np.sum((dl-c)**2./el**2.)
+        return oldcost
+    
+    def hist_norm(self,fluxc):
+        nzfper = []
+        nzfpere = []
+        fper = []
+        consl = []
+        mft = np.median(self.cat['FIBERFLUX_G_EC'])
+        nb = 5
+        pstep = 100//5
+        costt = 0
+        for i in range(0,nb):
+            sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
+            fper.append(mf)
+            wtf = fluxc*mft/mf*(self.wts_fid-1)+1
+            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
+            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf)
+            dl = hf[0]/ha[0]
+            cost = fit_cons(dl,self.nzfpere[i])
+            costt += cost
+        return cost    
+        
+    
     def add_modpre(self,data):
         res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
@@ -316,7 +352,33 @@ class ELG_ssr:
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
-        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)       
+        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_ELG'],*pars)   
+        relssr = assr/np.max(assr) 
+        drelssr = data['mod_success_rate']/np.max(data['mod_success_rate'])
+        self.wts_fid = 1/relssr
+        nzfper = []
+        nzfpere = []
+        fper = []
+        self.mft = np.median(self.cat['FIBERFLUX_G_EC'])
+        nb = 5
+        pstep = 100//5
+        for i in range(0,nb):
+            sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
+            fper.append(mf)
+            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
+            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz])
+            nzfper.append(hf[0]/ha[0])
+            nzfpere.append(np.sqrt(ha[0]-hf[0])/ha[0])
+        self.nzfpere = nzfpere    
+        rest = minimize(self.hist_norm, [1], bounds=((-10, 10)),
+               method='Powell', tol=1e-6)
+        fcoeff = rest.x
+        print(fcoeff,self.hist_norm(fcoeff)) 
+        
+        data['WEIGHT_ZFAIL'] =  fluxc*mft/self.data[dflux]*(1/drelssr-1)+1
         return data
           
     
