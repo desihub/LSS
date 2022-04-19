@@ -338,7 +338,7 @@ class ELG_ssr:
             wtf = fluxc*mft/mf*(self.wts_fid-1)+1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
-            dl = hf[0]/ha[0]
+            dl = hf/ha
             nzfper.append(dl)
             cost,bc = fit_cons(dl,self.nzfpere[i])
             consl.append(bc)
@@ -378,8 +378,8 @@ class ELG_ssr:
             fper.append(mf)
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz])
-            nzfper.append(hf[0]/ha[0])
-            nzfpere.append(np.sqrt(ha[0]-hf[0])/ha[0])
+            nzfper.append(hf/ha)
+            nzfpere.append(np.sqrt(ha-hf)/ha)
         self.nzfpere = nzfpere    
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
