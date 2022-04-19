@@ -338,7 +338,7 @@ class ELG_ssr:
             fper.append(mf)
             wtf = fluxc*mft/mf*(self.wts_fid-1)+1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
-            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf)
+            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
             dl = hf[0]/ha[0]
             cost = fit_cons(dl,self.nzfpere[i])
             costt += cost
