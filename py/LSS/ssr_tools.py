@@ -238,6 +238,18 @@ def get_LRG_data(specrel='fuji'):
     
     return cat
 
+def fit_cons(dl,el,minv=0,step=0.01):
+    c = minv
+    newcost = np.sum((dl-c)**2./el**2.)
+    oldcost = newcost + 1
+    while newcost < oldcost:
+        oc = c
+        oldcost = newcost
+        c += step
+        newcost = np.sum((dl-c)**2./el**2.)
+    return oldcost
+
+
 class LRG_ssr:
     def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
         self.cat = get_LRG_data(specrel)
@@ -309,16 +321,6 @@ class ELG_ssr:
         #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
-    def fit_cons(dl,el,minv=0,step=0.01):
-        c = minv
-        newcost = np.sum((dl-c)**2./el**2.)
-        oldcost = newcost + 1
-        while newcost < oldcost:
-            oc = c
-            oldcost = newcost
-            c += step
-            newcost = np.sum((dl-c)**2./el**2.)
-        return oldcost
     
     def hist_norm(self,fluxc):
         nzfper = []
@@ -340,7 +342,7 @@ class ELG_ssr:
             dl = hf[0]/ha[0]
             cost = fit_cons(dl,self.nzfpere[i])
             costt += cost
-        return cost    
+        return costt    
         
     
     def add_modpre(self,data):
