@@ -339,6 +339,8 @@ class ELG_ssr:
             sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
             sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
+            if self.vis_5hist:
+                print(mf)
             #fper.append(mf)
             wtf = (fluxc*self.mft/mf+1)*(self.wts_fid-1)+1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
