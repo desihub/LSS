@@ -247,7 +247,7 @@ def fit_cons(dl,el,minv=0,step=0.01):
         oldcost = newcost
         c += step
         newcost = np.sum((dl-c)**2./el**2.)
-    return oldcost
+    return oldcost,c
 
 
 class LRG_ssr:
@@ -295,6 +295,7 @@ class ELG_ssr:
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
         self.bc = np.array(bc)
+        self.vis_5hist = False
         
         
         
@@ -324,8 +325,6 @@ class ELG_ssr:
     
     def hist_norm(self,fluxc):
         nzfper = []
-        nzfpere = []
-        fper = []
         consl = []
         mft = np.median(self.cat['FIBERFLUX_G_EC'])
         nb = 5
@@ -340,8 +339,15 @@ class ELG_ssr:
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
             dl = hf[0]/ha[0]
-            cost = fit_cons(dl,self.nzfpere[i])
+            nzfper.append(dl)
+            cost,bc = fit_cons(dl,self.nzfpere[i])
+            consl.append(bc)
             costt += cost
+        if self.vis_5hist:
+            for i in range(0,nb):
+                plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
+                plt.plot(self.bc,np.ones(self.bc)*consl[i])
+            plt.show()
         return costt    
         
     
@@ -378,9 +384,10 @@ class ELG_ssr:
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
+        self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff)) 
         
-        data['WEIGHT_ZFAIL'] =  fluxc*mft/self.data[dflux]*(1/drelssr-1)+1
+        data['WEIGHT_ZFAIL'] =  fcoeff*mft/self.data[dflux]*(1/drelssr-1)+1
         return data
           
     
