@@ -326,7 +326,7 @@ class ELG_ssr:
     def hist_norm(self,fluxc):
         nzfper = []
         consl = []
-        mft = np.median(self.cat['FIBERFLUX_G_EC'])
+        
         nb = 5
         pstep = 100//5
         costt = 0
@@ -335,7 +335,7 @@ class ELG_ssr:
             sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
             #fper.append(mf)
-            wtf = fluxc*mft/mf*(self.wts_fid-1)+1
+            wtf = fluxc*self.mft/mf*(self.wts_fid-1)+1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
             dl = hf/ha
@@ -346,7 +346,7 @@ class ELG_ssr:
         if self.vis_5hist:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
-                plt.plot(self.bc,np.ones(len(self.bc))*consl[i])
+                plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
             plt.show()
         return costt    
         
