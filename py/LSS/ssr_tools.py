@@ -376,6 +376,7 @@ class ELG_ssr:
         assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_ELG'],*pars)   
         relssr = assr/np.max(assr) 
         drelssr = data['mod_success_rate']/np.max(data['mod_success_rate'])
+        print(len(relssr),len(drelssr),np.max(assr),np.max(data['mod_success_rate']))
         self.wts_fid = 1/relssr
         nzfper = []
         nzfpere = []
