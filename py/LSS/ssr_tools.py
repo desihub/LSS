@@ -408,12 +408,13 @@ class ELG_ssr:
         dflux = dflux[seld]
         deff =deff[seld]
         dselgz = data[seld]['o2c'] > 0.9
+        wtf = (1/drelssr[seld]-1)+1
         for i in range(0,nb):
             sel = dflux > np.percentile(dflux,i*pstep)
             sel &= dflux < np.percentile(dflux,(i+1)*pstep)
             mf = np.median(dflux[sel])
             
-            wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
+            
             
             ha,_ = np.histogram(deff[sel])
             hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz])
