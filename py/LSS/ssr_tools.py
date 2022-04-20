@@ -300,6 +300,7 @@ class ELG_ssr:
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
         self.bc = np.array(bc)
+        self.bine = bine
         self.vis_5hist = False
         
         
@@ -344,8 +345,8 @@ class ELG_ssr:
             #fper.append(mf)
             wtf = (fluxc*self.mft/mf+1)*(self.wts_fid-1)+1
             
-            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
-            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz])
+            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
             if self.vis_5hist:
                 print(mf)
                 print(np.sum(ha))
@@ -391,9 +392,9 @@ class ELG_ssr:
             sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
             fper.append(mf)
-            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
-            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz])
-            hfw,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz])
+            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],bins=self.bine)
+            hfw,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             nzfpere.append(np.sqrt(ha-hf)/ha)
             plt.plot(self.bc,hfw/ha)
@@ -409,12 +410,12 @@ class ELG_ssr:
         pstep = 100//5
         costt = 0
         
-        #seld = np.ones(len(dflux),dtype='bool')
+        seld = np.ones(len(dflux),dtype='bool')
         dflux = dflux[seld]
         deff =deff[seld]
         dselgz = data[seld]['o2c'] > 0.9
         wtf = (1/drelssr[seld]-1)+1
-        print('are weight arrays equal?',np.array_equal(self.wts_fid,wtf))
+        #print('are weight arrays equal?',np.array_equal(self.wts_fid,wtf))
         for i in range(0,nb):
             sel = dflux > np.percentile(dflux,i*pstep)
             sel &= dflux < np.percentile(dflux,(i+1)*pstep)
@@ -422,8 +423,8 @@ class ELG_ssr:
             
             
             
-            ha,bins = np.histogram(deff[sel],range=(450,1500))
-            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=bins)
+            ha,_ = np.histogram(deff[sel],bins=self.bine)
+            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
             print(mf)
             print(np.sum(ha))
             print(np.sum(hf))
