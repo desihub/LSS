@@ -408,7 +408,7 @@ class ELG_ssr:
             sel = deff > np.percentile(deff,i*pstep)
             sel &= deff < np.percentile(deff,(i+1)*pstep)
             mf = np.median(dflux[sel])
-            if self.vis_5hist:
+            
             wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
             
             ha,_ = np.histogram(deff[sel])
