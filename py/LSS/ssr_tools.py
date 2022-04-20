@@ -401,7 +401,24 @@ class ELG_ssr:
         fcoeff = rest.x
         self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.)) 
-        
+        nb = 5
+        pstep = 100//5
+        costt = 0
+        for i in range(0,nb):
+            sel = deff > np.percentile(deff,i*pstep)
+            sel &= deff < np.percentile(deff,(i+1)*pstep)
+            mf = np.median(dflux[sel])
+            if self.vis_5hist:
+            wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
+            
+            ha,_ = np.histogram(deff[sel])
+            hf,_ = np.histogram(deff[sel&self.selgz],weights=wtf[sel&self.selgz])
+            print(mf)
+            print(np.sum(ha))
+            print(np.sum(hf))
+            dl = hf/ha
+            plt.plot(self.bc,dl)
+        plt.show()
         data['WEIGHT_ZFAIL'] =  (fcoeff*self.mft/dflux+1)*(1/drelssr-1)+1
         return data
           
