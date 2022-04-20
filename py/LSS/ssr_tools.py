@@ -413,7 +413,7 @@ class ELG_ssr:
             wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
             
             ha,_ = np.histogram(deff[sel])
-            hf,_ = np.histogram(deff[sel&self.selgz],weights=wtf[sel&dselgz])
+            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz])
             print(mf)
             print(np.sum(ha))
             print(np.sum(hf))
