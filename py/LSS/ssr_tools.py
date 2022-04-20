@@ -417,8 +417,8 @@ class ELG_ssr:
             
             
             
-            ha,_ = np.histogram(deff[sel])
-            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz])
+            ha,bins = np.histogram(deff[sel],range=(450,1500))
+            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=bins)
             print(mf)
             print(np.sum(ha))
             print(np.sum(hf))
