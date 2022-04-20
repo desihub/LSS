@@ -404,9 +404,10 @@ class ELG_ssr:
         nb = 5
         pstep = 100//5
         costt = 0
-        dselgz = data['o2c'] > 0.9
+        
         dflux = dflux[seld]
         deff =deff[seld]
+        dselgz = data[seld]['o2c'] > 0.9
         for i in range(0,nb):
             sel = dflux > np.percentile(dflux,i*pstep)
             sel &= dflux < np.percentile(dflux,(i+1)*pstep)
