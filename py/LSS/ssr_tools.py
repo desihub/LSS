@@ -393,8 +393,12 @@ class ELG_ssr:
             fper.append(mf)
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel])
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz])
+            hfw,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz])
             nzfper.append(hf/ha)
             nzfpere.append(np.sqrt(ha-hf)/ha)
+            plt.plot(self.bc,hfw/ha)
+        plt.title('inputs')
+        plt.show()
         self.nzfpere = nzfpere    
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
@@ -410,6 +414,7 @@ class ELG_ssr:
         deff =deff[seld]
         dselgz = data[seld]['o2c'] > 0.9
         wtf = (1/drelssr[seld]-1)+1
+        print('are weight arrays equal?',np.array_equal(self.wts_fid,wtf))
         for i in range(0,nb):
             sel = dflux > np.percentile(dflux,i*pstep)
             sel &= dflux < np.percentile(dflux,(i+1)*pstep)
