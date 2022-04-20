@@ -2154,6 +2154,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+    if tp[:3] == 'ELG_LOPnotqso':
+        elg = ssr_tools.ELG_ssr()
+        ff = elg.add_modpre(ff)
+        print('checking sum of zfail weights compared to length of good z')
+        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
         
     #if tp[:3] == 'ELG':
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
