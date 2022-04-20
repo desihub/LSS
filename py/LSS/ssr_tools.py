@@ -405,7 +405,7 @@ class ELG_ssr:
         pstep = 100//5
         costt = 0
         
-        seld = np.ones(len(dflux),type='bool')
+        seld = np.ones(len(dflux),dtype='bool')
         dflux = dflux[seld]
         deff =deff[seld]
         dselgz = data[seld]['o2c'] > 0.9
