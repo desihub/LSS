@@ -404,6 +404,7 @@ class ELG_ssr:
         nb = 5
         pstep = 100//5
         costt = 0
+        dselgz = data['o2c'] > 0.9
         for i in range(0,nb):
             sel = deff > np.percentile(deff,i*pstep)
             sel &= deff < np.percentile(deff,(i+1)*pstep)
@@ -412,7 +413,7 @@ class ELG_ssr:
             wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
             
             ha,_ = np.histogram(deff[sel])
-            hf,_ = np.histogram(deff[sel&self.selgz],weights=wtf[sel&self.selgz])
+            hf,_ = np.histogram(deff[sel&self.selgz],weights=wtf[sel&dselgz])
             print(mf)
             print(np.sum(ha))
             print(np.sum(hf))
