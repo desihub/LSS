@@ -406,8 +406,8 @@ class ELG_ssr:
         costt = 0
         dselgz = data['o2c'] > 0.9
         for i in range(0,nb):
-            sel = deff > np.percentile(deff,i*pstep)
-            sel &= deff < np.percentile(deff,(i+1)*pstep)
+            sel = dflux > np.percentile(dflux,i*pstep)
+            sel &= dflux < np.percentile(dflux,(i+1)*pstep)
             mf = np.median(dflux[sel])
             
             wtf = (0*self.mft/mf+1)*(1/drelssr-1)+1
