@@ -353,7 +353,11 @@ class ELG_ssr:
                 print(np.sum(hf))
             dl = hf/ha
             nzfper.append(dl)
-            cost,bc = fit_cons(dl,self.nzfpere[i])
+            def ccost(c):
+                return np.sum((dl-c)**2./self.nzfpere[i]**2.)
+            resc = minimize(ccost, np.ones(1))
+            bc = resc.x
+            cost = ccost(bc)
             consl.append(bc)
             costt += cost
         if self.vis_5hist:
