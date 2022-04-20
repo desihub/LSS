@@ -401,15 +401,15 @@ class ELG_ssr:
             hfw,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             nzfpere.append(np.sqrt(ha-hf)/ha)
-            plt.plot(self.bc,hfw/ha)
-        plt.title('inputs')
-        plt.show()
+            #plt.plot(self.bc,hfw/ha)
+        #plt.title('inputs')
+        #plt.show()
         self.nzfpere = nzfpere    
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.)) 
+        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.),self.hist_norm(1.)) 
         nb = 5
         pstep = 100//5
         costt = 0
@@ -420,21 +420,21 @@ class ELG_ssr:
         dselgz = data[seld]['o2c'] > 0.9
         wtf = (1/drelssr[seld]-1)+1
         #print('are weight arrays equal?',np.array_equal(self.wts_fid,wtf))
-        for i in range(0,nb):
-            sel = dflux > np.percentile(dflux,i*pstep)
-            sel &= dflux < np.percentile(dflux,(i+1)*pstep)
-            mf = np.median(dflux[sel])
-            
-            
-            
-            ha,_ = np.histogram(deff[sel],bins=self.bine)
-            hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
-            print(mf)
-            print(np.sum(ha))
-            print(np.sum(hf))
-            dl = hf/ha
-            plt.plot(self.bc,dl)
-        plt.show()
+#         for i in range(0,nb):
+#             sel = dflux > np.percentile(dflux,i*pstep)
+#             sel &= dflux < np.percentile(dflux,(i+1)*pstep)
+#             mf = np.median(dflux[sel])
+#             
+#             
+#             
+#             ha,_ = np.histogram(deff[sel],bins=self.bine)
+#             hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
+#             print(mf)
+#             print(np.sum(ha))
+#             print(np.sum(hf))
+#             dl = hf/ha
+#             plt.plot(self.bc,dl)
+#         plt.show()
         data['WEIGHT_ZFAIL'] =  (fcoeff*self.mft/dflux+1)*(1/drelssr-1)+1
         return data
           
