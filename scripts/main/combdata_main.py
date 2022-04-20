@@ -36,6 +36,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
+parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
@@ -221,6 +222,27 @@ if specrel == 'daily':
 if specrel == 'daily' and args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
     ct.combtile_qso(tiles4comb,outf)
+
+if specrel == 'daily' and args.mkemlin == 'y':
+    outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
+    guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+    guadtiles = np.unique(guadtiles['TILEID'])
+    gtids = np.isin(tiles4comb['TILEID'],guadtiles)
+    tiles4em = tiles4comb[~gtids]
+    ndone = 0
+    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
+        outf = outdir+'emline-'+str(tile)+'.fits'
+        if not os.path.isfile(outf):
+            tdate = str(tdate)
+            ct.combEMdata_daily(tile,zdate,tdate,outf=outf)
+            print('wrote '+outf)
+            ndone += 1
+            print('completed '+str(ndone)+' tiles')
+    outf = ldirspec+'emlin_catalog.fits'
+    ct.combtile_em(tiles4comb,outf)
+    
+    
+
 
 if specrel == 'daily' and args.dospec == 'y':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'

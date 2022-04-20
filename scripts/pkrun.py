@@ -1,4 +1,7 @@
-# To run: srun -n 64 python pkrun.py --type ELG...
+#!/usr/bin/env python
+# coding: utf-8
+
+# To run: srun -n 64 python pkrun.py --tracer ELG...
 
 import os
 import argparse
@@ -23,6 +26,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
+    catalog_kwargs['concatenate'] = True
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
@@ -49,6 +53,10 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             else:
                 data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
             randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+
+    kwargs = {}
+    kwargs.update(wang or {})
+
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
                              data_positions2=data_positions2, data_weights2=data_weights2,
                              randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
@@ -56,8 +64,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
-                             position_type='rdd', dtype=dtype, direct_limits=(0., 1./60.), direct_limit_type='degree',
-                             mpicomm=mpicomm, mpiroot=mpiroot).poles
+                             position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
+                             **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
 
     return result, wang
 
@@ -86,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
-    parser.add_argument('--weight_type', help='types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column', type=str, default='default')
+    parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=5000.)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)

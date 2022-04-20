@@ -10,6 +10,8 @@ try:
                                  LocationsAvailable, load_target_table)
 except:
     from fiberassign.targets import (Targets, TargetsAvailable,
+                                LocationsAvailable, load_target_table)
+
 from fiberassign.assign import Assignment
 
 

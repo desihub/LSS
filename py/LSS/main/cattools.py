@@ -19,6 +19,9 @@ import desimodel.focalplane
 from desitarget.io import read_targets_in_tiles
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
+from desispec.io.emlinefit import read_emlines_inputs
+from desispec.emlinefit import get_emlines
+
 import healpy as hp
 
 #from LSS.Cosmo import distance
@@ -29,6 +32,8 @@ from LSS import ssr_tools
 
 import logging
 logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
+
+
 
 def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
@@ -259,6 +264,138 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
+
+def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
+    s = 0
+    n = 0
+    nfail = 0
+    guadtid = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+    #print(len(guadtid))
+    guadtid = np.unique(guadtid['TILEID'])
+
+    if os.path.isfile(outf) and redo == 'n':
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        tspec = None
+        if np.isin(tile,guadtid):
+            #if specver ==
+            #tspec = combzmtl(tile,zdate,tdate)
+            tspec = combEMdata_guad(tile,tdate)
+        else:
+            tnm = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/emline-'+str(tile)+'.fits'
+            if os.path.isfile(tnm):
+                tspec = fitsio.read(tnm)
+        if tspec is not None:
+            tspec = np.array(tspec)
+
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                #specd = vstack([specd,tspec],metadata_conflicts='silent')
+                #column order got mixed up
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = tspec[colname][...]
+
+                #specd = np.hstack((specd,tspec))
+                specd = np.hstack((specd,new))
+            #specd.sort('TARGETID')
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+
+            n += 1
+            print(tile,n,len(tiles[tmask]),len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        #specd.write(outf,format='fits', overwrite=True)
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
+
+def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
+    remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
+    zfn = 'emline'
+    dl = []
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        fz = coaddir+str(tile)+'/'+tdate+'/redrock'+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff):
+            d = Table(fitsio.read(ff))
+            fm = fitsio.read(fz,ext='FIBERMAP',columns=['LOCATION'])
+            d['LOCATION'] = fm['LOCATION']
+            dl.append(d)
+    if len(dl) > 0:
+        dt = vstack(dl,metadata_conflicts='silent')
+        dt['TILEID'] = tile
+        dt.remove_columns(remcol)
+        return dt
+    else:
+        return None
+
+def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
+    allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
+    props = ['FLUX','FLUX_IVAR','SIGMA','SIGMA_IVAR','CONT','CONT_IVAR','SHARE','SHARE_IVAR','EW','EW_IVAR','CHI2','NDOF']
+    zdate = str(zdate)
+    specs = []
+    #find out which spectrograph have data
+    zfn = 'zbest'
+    zhdu = 'ZBEST'
+    shdu = 'SCORES'
+    if int(tdate) >  20210730:
+        zfn = 'redrock'
+    dl = []
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        cf = coaddir+str(tile)+'/'+zdate+'/coadd-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff) and os.path.isfile(cf):
+            d = Table.read(ff, "REDSHIFTS")
+            df = Table.read(ff, "FIBERMAP")
+            tids, zs = d["TARGETID"], d["Z"]            
+            _, _, waves, fluxes, ivars = read_emlines_inputs(ff, cf, targetids=tids)
+            emdict = get_emlines(zs, waves, fluxes, ivars, emnames=allems)
+            t = Table()
+            for em in allems:
+                for prop in props:
+                    t[em+'_'+prop] = emdict[em][prop]
+            t['TARGETID'] = d['TARGETID']
+            t['LOCATION'] = df['LOCATION']
+            dl.append(t)
+    if len(dl) > 0:
+        dt = vstack(dl,metadata_conflicts='silent')
+        dt['TILEID'] = tile
+    else:
+        print('no data to combine for tile '+str(tile))    
+    #outf = outdir+'emline-'+str(tile)+'.fits'
+    #'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
+    dt.write(outf,format='fits',overwrite=True)
+    #return dt
+
 
 def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
     from LSS.qso_cat_utils import qso_catalog_maker
@@ -1696,12 +1833,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     #dz = dz[wk]
     #print('length after priority veto '+str(len(dz)))
-    print('joining to full imaging')
-    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
-    dz = join(dz,ftar,keys=['TARGETID'])
-    #print('length after join to full targets (should be same) '+str(len(dz)))
-    dz = common.cutphotmask(dz,imbits)
-    print('length after imaging mask; should not have changed '+str(len(dz)))
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')
@@ -1716,25 +1847,45 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
+    wnts = dz[tscol]*0 != 0
+    dz[tscol][wnts] = 0
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+
+    dz.sort('sort')
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+
+    print('length after cutting to unique targets '+str(len(dz)))
+    print('joining to full imaging')
+    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
+    dz = join(dz,ftar,keys=['TARGETID'])
+    #print('length after join to full targets (should be same) '+str(len(dz)))
+    dz = common.cutphotmask(dz,imbits)
+    print('length after imaging mask; should not have changed '+str(len(dz)))
+
+
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
-        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
-        st = []
-        for i in range(0,len(arz)):
-            st.append(arz['SUBSET'][i][:4])
-        st = np.array(st)
+        #arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
+        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR'])
+        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+        #st = []
+        #for i in range(0,len(arz)):
+        #    st.append(arz['SUBSET'][i][:4])
+        #st = np.array(st)
         #wg = arz[fbcol] == 0
-        wg = st == "thru"
-        arz = arz[wg]
-        o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
+        #wg = st == "thru"
+        #arz = arz[wg]
+        #o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
+        o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
-        w |= arz['OII_FLUX'] < 0
+        w |= dz['OII_FLUX'] < 0
         o2c[w] = -20
         #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])
-        arz = Table(arz)
-        arz['o2c'] = o2c
-        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+        #arz = Table(arz)
+        #arz['o2c'] = o2c
+        dz['o2c'] = o2c
+        #dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
 
-        dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
+        #dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
@@ -1747,12 +1898,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
-    wnts = dz[tscol]*0 != 0
-    dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
-
-    dz.sort('sort')
-    dz = unique(dz,keys=['TARGETID'],keep='last')
     if tp[:3] == 'ELG' and azf != '':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
