@@ -347,10 +347,10 @@ class ELG_ssr:
             
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
-            if self.vis_5hist:
-                print(mf)
-                print(np.sum(ha))
-                print(np.sum(hf))
+            #if self.vis_5hist:
+            #    print(mf)
+            #    print(np.sum(ha))
+            #    print(np.sum(hf))
             dl = hf/ha
             nzfper.append(dl)
             def ccost(c):
@@ -409,16 +409,19 @@ class ELG_ssr:
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff),self.hist_norm(0.),self.hist_norm(1.)) 
-        nb = 5
-        pstep = 100//5
-        costt = 0
-        
-        seld = np.ones(len(dflux),dtype='bool')
-        dflux = dflux[seld]
-        deff =deff[seld]
-        dselgz = data[seld]['o2c'] > 0.9
-        wtf = (1/drelssr[seld]-1)+1
+        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
+        data['WEIGHT_ZFAIL'] =  (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        return data
+
+#         nb = 5
+#         pstep = 100//5
+#         costt = 0
+#         
+#         seld = np.ones(len(dflux),dtype='bool')
+#         dflux = dflux[seld]
+#         deff =deff[seld]
+#         dselgz = data[seld]['o2c'] > 0.9
+#         wtf = (1/drelssr[seld]-1)+1
         #print('are weight arrays equal?',np.array_equal(self.wts_fid,wtf))
 #         for i in range(0,nb):
 #             sel = dflux > np.percentile(dflux,i*pstep)
@@ -435,8 +438,6 @@ class ELG_ssr:
 #             dl = hf/ha
 #             plt.plot(self.bc,dl)
 #         plt.show()
-        data['WEIGHT_ZFAIL'] =  (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
-        return data
           
     
      
