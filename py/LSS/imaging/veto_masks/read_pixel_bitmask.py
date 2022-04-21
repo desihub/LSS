@@ -1,8 +1,8 @@
 # Get bitmask values from pixel-level per-brick masks for a catalog
 # Examples:
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --input catalog.fits --output catalog_lrgmask.npy
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --input /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits --output $CSCRATCH/temp/randoms-1-0-lrgmask_v1.fits
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --input /global/cfs/cdirs/desi/users/rongpu/targets/dr9.0/1.0.0/resolve/dr9_lrg_south_1.0.0_basic.fits --output $CSCRATCH/temp/dr9_lrg_south_1.0.0_lrgmask_v1.fits
+# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input catalog.fits --output catalog_lrgmask_v1.1.npy
+# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits --output $CSCRATCH/temp/randoms-1-0-lrgmask_v1.1.fits
+# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/users/rongpu/targets/dr9.0/1.0.0/resolve/dr9_lrg_south_1.0.0_basic.fits --output $CSCRATCH/temp/dr9_lrg_south_1.0.0_lrgmask_v1.1.fits
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
@@ -20,18 +20,25 @@ import argparse
 
 time_start = time.time()
 
-bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/LRG/v1'
-# bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/ELG/v1'
-
 n_processes = 32
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--tracer', required=True)
 parser.add_argument('-i', '--input', required=True)
 parser.add_argument('-o', '--output', required=True)
+parser.add_argument('-v', '--version', default='none', required=False)
 args = parser.parse_args()
 
+tracer = args.tracer.lower()
 input_path = args.input
 output_path = args.output
+version = args.version
+
+version_dict = {'lrg': 'v1.1', 'elg': 'v1'}
+if version=='none':
+    version = version_dict[tracer]
+
+bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/{}/{}'.format(tracer.upper(), version)
 
 # input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
@@ -56,7 +63,7 @@ def bitmask_radec(brickid, ra, dec):
         return bitmask
 
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-lrgmask.fits.gz'.format(field, brickname[:3], brickname, brickname))
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname, tracer))
 
     bitmask_img = fitsio.read(bitmask_fn)
 
@@ -82,7 +89,7 @@ def wrapper(bid_index):
 
     data = Table()
     data['idx'] = idx
-    data['lrg_mask'] = bitmask
+    data['{}_mask'.format(tracer)] = bitmask
 
     return data
 
@@ -125,6 +132,6 @@ res.remove_column('idx')
 if output_path.endswith('.fits'):
     res.write(output_path)
 else:
-    np.write(output_path, np.array(res['lrg_mask']))
+    np.write(output_path, np.array(res['{}_mask'.format(tracer)]))
 
 print('Done!', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
