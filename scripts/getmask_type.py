@@ -51,7 +51,7 @@ ldirspec = lssdir+args.verspec+'/'
 indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = args.tracer
-tpr = tp[:]
+tpr = tp[:3]
 
 bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/'+tpr+'/v'+args.mver
 
