@@ -52,6 +52,8 @@ indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = args.tracer
 tpr = tp[:3]
+tprl = tpr.lower()
+print(tp,tpr,tprl)
 
 bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/'+tpr+'/v'+args.mver
 
@@ -73,7 +75,7 @@ def bitmask_radec(brickid, ra, dec):
     else:
         raise ValueError
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname,tpr.lower()))
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname,tprl))
 
     bitmask_img = fitsio.read(bitmask_fn)
 
@@ -98,7 +100,7 @@ def wrapper(bid_index,bidorder,bidcnts,bid_unique,cat):
 
     data = Table()
     data['idx'] = idx
-    data[tp.lower+'_mask'] = bitmask
+    data[tprl+'_mask'] = bitmask
     data['TARGETID'] = cat['TARGETID'][idx]
 
     return data
@@ -106,10 +108,10 @@ def wrapper(bid_index,bidorder,bidcnts,bid_unique,cat):
 
 def mkfile(input_path,output_path):
     try:
-        cat = fitsio.read(input_path, rows=None, columns=[tpr.lower()+'_mask'])
+        cat = fitsio.read(input_path, rows=None, columns=[tprl+'_mask'])
         return 'file already has '+tpr.lower()+'_mask column'
     except:
-        print('adding '+tpr.lower()+'_mask column') 
+        print('adding '+tprl+'_mask column') 
 
     try:
         cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID','TARGETID']))
@@ -153,7 +155,7 @@ def mkfile(input_path,output_path):
 
     else:
         #res = join(cat,res,keys=['TARGETID'])
-        catf[1].insert_column(tpr.lower+'_mask',res[tpr.lower+'_mask'])
+        catf[1].insert_column(tprl+'_mask',res[tprl+'_mask'])
         catf.close()
         #if output_path.endswith('.fits'):
         #    res.write(output_path,overwrite=True)
