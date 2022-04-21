@@ -2301,7 +2301,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcs,outfs,comments)
 
-    reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
+    for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
         outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
