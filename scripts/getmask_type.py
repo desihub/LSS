@@ -51,8 +51,9 @@ ldirspec = lssdir+args.verspec+'/'
 indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = args.tracer
+trp = tp[:]
 
-bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/'+tp[:3]+'/v'+args.mver
+bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/'+tpr+'/v'+args.mver
 
 
 if args.survey == 'main' or args.survey == 'DA02':
@@ -72,7 +73,7 @@ def bitmask_radec(brickid, ra, dec):
     else:
         raise ValueError
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-'+tp.lower()+'mask.fits.gz'.format(field, brickname[:3], brickname, brickname))
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-'+tpr.lower()+'mask.fits.gz'.format(field, brickname[:3], brickname, brickname))
 
     bitmask_img = fitsio.read(bitmask_fn)
 
@@ -105,10 +106,10 @@ def wrapper(bid_index,bidorder,bidcnts,bid_unique,cat):
 
 def mkfile(input_path,output_path):
     try:
-        cat = fitsio.read(input_path, rows=None, columns=[tp.lower()+'_mask'])
-        return 'file already has '+tp.lower()+'_mask column'
+        cat = fitsio.read(input_path, rows=None, columns=[tpr.lower()+'_mask'])
+        return 'file already has '+tpr.lower()+'_mask column'
     except:
-        print('adding '+tp.lower()+'_mask column') 
+        print('adding '+tpr.lower()+'_mask column') 
 
     try:
         cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID','TARGETID']))
@@ -152,7 +153,7 @@ def mkfile(input_path,output_path):
 
     else:
         #res = join(cat,res,keys=['TARGETID'])
-        catf[1].insert_column(tp.lower+'_mask',res[tp.lower+'_mask'])
+        catf[1].insert_column(tpr.lower+'_mask',res[tpr.lower+'_mask'])
         catf.close()
         #if output_path.endswith('.fits'):
         #    res.write(output_path,overwrite=True)
@@ -180,5 +181,5 @@ for ri in range(args.minr,args.maxr):
     output_path = input_path #we will over-write, just adding new column
 
     mkfile(input_path,output_path)
-    print('adding mask column to LRGs random number '+str(ri))
+    print('adding mask column to '+tp+' random number '+str(ri))
 
