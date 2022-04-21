@@ -73,7 +73,7 @@ def bitmask_radec(brickid, ra, dec):
     else:
         raise ValueError
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-'+tpr.lower()+'mask.fits.gz'.format(field, brickname[:3], brickname, brickname))
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname,tpr.lower()))
 
     bitmask_img = fitsio.read(bitmask_fn)
 
