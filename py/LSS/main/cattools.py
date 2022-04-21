@@ -2312,7 +2312,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
             ffss[col] = dshuf[col]
 
         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
-        common.write_LSS(ffcs,outfn,comments)
+        common.write_LSS(ffss,outfn,comments)
 
 
 
