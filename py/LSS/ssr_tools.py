@@ -344,7 +344,8 @@ class ELG_ssr:
                 print(mf)
             #fper.append(mf)
             wtf = (fluxc*(self.mft-self.cat['FIBERFLUX_G_EC'])/self.mft+1)*(self.wts_fid-1)+1
-            
+            sel = wtf < 1
+            wtf[sel] = 1
             ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
             hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
             #if self.vis_5hist:
@@ -410,7 +411,10 @@ class ELG_ssr:
         fcoeff = rest.x
         self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
-        data['WEIGHT_ZFAIL'] =  (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        sel = wtf < 1
+        wtf[sel] = 1
+        data['WEIGHT_ZFAIL'] =  wtf
         return data
 
 #         nb = 5
