@@ -1297,7 +1297,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             arz['o2c'] = o2c
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
    
-            dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
+            dz.remove_columns(['SUBSET','DELTACHI2_OII'])
             print('check length after merge with OII strength file:' +str(len(dz)))
             #join changes order, so get wz again
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
