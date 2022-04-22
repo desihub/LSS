@@ -33,26 +33,30 @@ zcol = 'Z'
 nran = 18
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
+zdw = 'zdone'
+if survey == 'SV3':
+    tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso']
+    zdw = ''
 for tp in tps:
     
-    dtfh = fitsio.read_header(indir+tp+'zdone_full_noveto.dat.fits',ext=1)
+    dtfh = fitsio.read_header(indir+tp+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tp+'zdone_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
         print(tp+' full no veto number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
-    dtfh = fitsio.read_header(indir+tp+'zdone_full.dat.fits',ext=1)
+    dtfh = fitsio.read_header(indir+tp+zdw+'_full.dat.fits',ext=1)
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tp+'zdone_'+str(nr)+'_full.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
         print(tp+' full (with veto) number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
-    dtf = fitsio.read(indir+tp+'zdone_clustering.dat.fits')
+    dtf = fitsio.read(indir+tp+zdw+'_clustering.dat.fits')
     nc = np.sum(dtf['WEIGHT'])
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tp+'zdone_'+str(nr)+'_clustering.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_clustering.ran.fits',ext=1)   
         print(tp+' weighted clustering number density '+str(nc/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
 
-    rf = indir+tp+'zdone_0_clustering.ran.fits'
+    rf = indir+tp+zdw+'_0_clustering.ran.fits'
     rt = fitsio.read(rf)
     rad = dtf['RA']
     wr = rad > 300
