@@ -1229,7 +1229,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
     
-    fs = common.cut_specdat(dz)
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['COADD_FIBERSTATUS'] == 0
+    fs = dz[wz]
+    print('number of good obs '+str(len(fs)))
+    #fs = common.cut_specdat(dz)
     gtl = np.unique(fs['TILELOCID'])
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
