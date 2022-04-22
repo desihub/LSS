@@ -1266,11 +1266,16 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     #find the rows where we have spectroscopic observations
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    
+    
     #mark them as having LOCATION_ASSIGNED
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     #find the TILELOCID that were assigned and mark them as so
     tlids = np.unique(dz['TILELOCID'][wz])
+    #test that all with goodhardloc have z
+    gin = np.isin(gtl,tlids)
+    print('gtl in tlids, should be all',np.sum(gin),len(gtl))
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = 0
     dz['TILELOCID_ASSIGNED'][wtl] = 1
