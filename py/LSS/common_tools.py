@@ -331,6 +331,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         tlsl = ff['TILES']
         tlslu = np.unique(tlsl)
         laa = ff['LOCATION_ASSIGNED']
+        print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True))
 
         #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
