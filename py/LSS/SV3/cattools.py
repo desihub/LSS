@@ -1320,7 +1320,9 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
+    print(np.max(dz[tscol]))
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
     print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
     dz.sort('sort')
