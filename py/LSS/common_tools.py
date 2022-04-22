@@ -16,6 +16,7 @@ dis_dc = cosmo.comoving_radial_distance
 
 def cut_specdat(dz):
     selz = dz['ZWARN'] != 999999
+    selz &= dz['ZWARN']*0 == 0 #just in case of nans
     fs = dz[selz]
 
     #first, need to find locations to veto based data
