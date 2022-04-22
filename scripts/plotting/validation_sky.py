@@ -34,7 +34,7 @@ nran = 18
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 zdw = 'zdone'
-if survey == 'SV3':
+if args.survey == 'SV3':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso']
     zdw = ''
 for tp in tps:
