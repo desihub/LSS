@@ -4,6 +4,8 @@ from astropy.table import Table,join
 import datetime
 import os
 
+from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
+
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 dis_dc = cosmo.comoving_radial_distance
@@ -11,6 +13,22 @@ dis_dc = cosmo.comoving_radial_distance
 
 
 #functions that shouldn't have any dependence on survey go here
+
+def cut_specdat(dz):
+    selz = dz['ZWARN'] != 999999
+    fs = dz[selz]
+
+    #first, need to find locations to veto based data
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata | badqa
+    wfqa = ~nomtl
+    return fs[wfqa]
+
 
 def cutphotmask(aa,bits):
     print(str(len(aa)) +' before imaging veto' )

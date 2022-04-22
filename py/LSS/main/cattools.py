@@ -781,19 +781,21 @@ def get_specdat(indir,pd,ver='daily'):
     return fs[wfqa]
 
 def cut_specdat(dz):
-    selz = dz['ZWARN'] != 999999
-    fs = dz[selz]
-
-    #first, need to find locations to veto based data
-    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata | badqa
-    wfqa = ~nomtl
-    return fs[wfqa]
+    print('moved to common_tools')
+    return common.cut_specdat(dz)
+#     selz = dz['ZWARN'] != 999999
+#     fs = dz[selz]
+# 
+#     #first, need to find locations to veto based data
+#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+#     num_nod = np.sum(nodata)
+#     print('number with no data '+str(num_nod))
+#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+#     num_badqa = np.sum(badqa)
+#     print('number with bad qa '+str(num_badqa))
+#     nomtl = nodata | badqa
+#     wfqa = ~nomtl
+#     return fs[wfqa]
 
 
 def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main'):
@@ -1815,7 +1817,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    fs = cut_specdat(dz)
+    fs = common.cut_specdat(dz)
     #fs['sort'] = fs['TSNR2_LRG']
     #fs.sort('sort')
     #fsu = unique(fs,keys=['TARGETID'],keep='last')

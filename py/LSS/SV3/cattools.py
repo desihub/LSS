@@ -1178,7 +1178,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     
 
 
-def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4,bitweightfile=None):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1203,13 +1203,15 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #load in the appropriate dark/bright combined spec file and use to denote the tileid + location that had good observations:
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     if specver == 'daily':
-        fbcol = 'FIBERSTATUS'
+        #fbcol = 'FIBERSTATUS'
+        print('no longer supported')
+        return False
     #if specver == 'everest' or specver == 'fuji':
-    else:
-        fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
+    #else:
+    #    fbcol = 'COADD_FIBERSTATUS'
+    #wf = fs[fbcol] == 0
+    #stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    #gtl = np.unique(stlid[wf])
     #gtl now contains the list of 'good' tilelocid
 
     #read in the big combined data file
@@ -1226,6 +1228,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #print(len(dz[wg]))
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
+    
+    fs = common.cut_specdat(dz)
+    gtl = np.unique(fs['TILELOCID'])
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
