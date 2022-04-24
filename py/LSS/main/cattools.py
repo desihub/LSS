@@ -389,11 +389,12 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
     if len(dl) > 0:
         dt = vstack(dl,metadata_conflicts='silent')
         dt['TILEID'] = tile
+        dt.write(outf,format='fits',overwrite=True)
     else:
         print('no data to combine for tile '+str(tile))    
     #outf = outdir+'emline-'+str(tile)+'.fits'
     #'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
-    dt.write(outf,format='fits',overwrite=True)
+    
     #return dt
 
 
