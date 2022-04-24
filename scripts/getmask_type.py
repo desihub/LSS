@@ -146,7 +146,7 @@ def mkfile(input_path,output_path):
     res = vstack(res)
     res.sort('idx')
     res.remove_column('idx')
-
+    print('done, now writing out')
     #cat = Table(fitsio.read(input_path))
     catf = fitsio.FITS(input_path,'rw')
 
