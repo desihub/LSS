@@ -35,8 +35,8 @@ args = parser.parse_args()
 input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'.fits'
 output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'_'+args.tracer+'imask.fits'
 if args.ran:
-    input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(input)+'.fits'
-    output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(input)+args.tracer+'imask.fits'
+    input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(args.input)+'.fits'
+    output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(args.input)+args.tracer+'imask.fits'
 
 tracer = args.tracer.lower()
 version = args.version
