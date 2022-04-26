@@ -27,7 +27,7 @@ parser.add_argument('-t', '--tracer', required=True)
 parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
-arser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
+parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
 parser.add_argument( '--ran', default=False, required=False,type=bool)
 args = parser.parse_args()
 
