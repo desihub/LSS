@@ -91,12 +91,13 @@ def wrapper(bid_index):
     brickid = bid_unique[bid_index]
 
     ra, dec = cat['RA'][idx], cat['DEC'][idx]
-
+    tid = cat['TARGETID'][idx]
     bitmask = bitmask_radec(brickid, ra, dec)
 
     data = Table()
     data['idx'] = idx
     data['{}_mask'.format(tracer)] = bitmask
+    data['TARGETID'] = tid
 
     return data
 
