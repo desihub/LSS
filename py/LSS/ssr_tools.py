@@ -566,7 +566,7 @@ class QSO_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars,self.wrapper_hist(pars))
-        plt.errobar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
         mod = self.failure_rate_eff(self.bc, *par)
         plt.plot(self.bc,mod,'k--')
         plt.show()
