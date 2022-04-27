@@ -567,7 +567,7 @@ class QSO_ssr:
         pars = res.x
         print(pars,self.wrapper_hist(pars))
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
-        mod = self.failure_rate_eff(self.bc, *par)
+        mod = self.failure_rate_eff(self.bc, *pars)
         plt.plot(self.bc,mod,'k--')
         plt.show()
         gextc = 3.214
