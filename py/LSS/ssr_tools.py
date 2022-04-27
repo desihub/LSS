@@ -114,8 +114,8 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         wz &= data['Z_not4clus'] != 999999
         wz &= data['Z_not4clus'] != 1.e20
 
-        print(len(data))
-        data['q'] = data[wz] 
+        print(len(data),len(wz),np.sum(wz))
+        data['q'] = wz
         cats.append(data)
 
     if len(cats) == 1:
