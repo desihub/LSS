@@ -566,6 +566,10 @@ class QSO_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars,self.wrapper_hist(pars))
+        plt.errobar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        mod = self.failure_rate_eff(self.bc, *par)
+        plt.plot(self.bc,mod,'k--')
+        plt.show()
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
