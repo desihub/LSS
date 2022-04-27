@@ -122,6 +122,7 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         cat = cats[0]
 
     cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_QSO'] = 8.60/0.255 * cat['TSNR2_QSO']
     cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
     cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
     cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
@@ -478,12 +479,12 @@ class ELG_ssr:
 class QSO_ssr:
     def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
         self.cat = get_QSO_data_full('QSO')#get_ELG_data(specrel)
-        mask = self.cat['EFFTIME_ELG']>efftime_min
-        mask &= self.cat['EFFTIME_ELG']<efftime_max
+        mask = self.cat['EFFTIME_QSO']>efftime_min
+        mask &= self.cat['EFFTIME_QSO']<efftime_max
         self.cat = self.cat[mask]
         self.selgz = self.cat['q'] == 1
-        ha,bine = np.histogram(self.cat['EFFTIME_ELG'])
-        hf,_ = np.histogram(self.cat['EFFTIME_ELG'][~self.selgz])
+        ha,bine = np.histogram(self.cat['EFFTIME_QSO'])
+        hf,_ = np.histogram(self.cat['EFFTIME_QSO'][~self.selgz])
         self.nzf = hf/ha
         print(self.nzf)
         self.nzfe = np.sqrt(hf)/ha
@@ -501,7 +502,7 @@ class QSO_ssr:
         return np.sum((self.cat['qf']-q_predict)**2)
 
     def wrapper(self,params):
-        q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_G_EC'], self.cat['EFFTIME_ELG'], *params)
+        q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_G_EC'], self.cat['EFFTIME_QSO'], *params)
         return self.cost(q_predict)
 
     def wrapper_hist(self,params):
@@ -538,8 +539,8 @@ class QSO_ssr:
             wtf = (fluxc*(self.mft-self.cat['FIBERFLUX_G_EC'])/self.mft+1)*(self.wts_fid-1)+1
             selw = wtf < 1
             wtf[selw] = 1
-            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
+            ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
             #if self.vis_5hist:
             #    print(mf)
             #    print(np.sum(ha))
@@ -572,10 +573,10 @@ class QSO_ssr:
         plt.show()
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
-        deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
+        deff = 8.60/0.255 * data['TSNR2_QSO']#data['EFFTIME_ELG']
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
         data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
-        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_ELG'],*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_QSO'],*pars)   
         relssr = assr/np.max(assr) 
         drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
         seld = deff > 450
@@ -593,9 +594,9 @@ class QSO_ssr:
             sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
             fper.append(mf)
-            ha,_ = np.histogram(self.cat['EFFTIME_ELG'][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],bins=self.bine)
-            hfw,_ = np.histogram(self.cat['EFFTIME_ELG'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
+            ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],bins=self.bine)
+            hfw,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             nzfpere.append(np.sqrt(ha-hf)/ha)
             #plt.plot(self.bc,hfw/ha)
