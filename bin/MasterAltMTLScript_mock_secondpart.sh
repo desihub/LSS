@@ -8,7 +8,7 @@
 seed=12345
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=64
+ndir=256
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
 #Observing conditions to generate MTLs for (should be all caps "DARK" or "BRIGHT")
@@ -17,8 +17,10 @@ obscon='DARK'
 survey='sv3'
 #mockrea=1 THIS IS THE MOCK REALIZATION
 
-#for mockrea in {1..24} 
-for mockrea in {0..24} 
+#mockrea=0 #THIS IS FOR EACH MOCK REALIZATION
+
+for mockrea in {1..24} 
+###for mockrea in {0..24} 
 do
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
 printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs_rea%03d/" $ndir $mockrea
@@ -43,7 +45,7 @@ NObsDates=40
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Defaults to 1 for 64 directories
-NNodes=1
+NNodes=4
 
 
 #Include secondary targets?

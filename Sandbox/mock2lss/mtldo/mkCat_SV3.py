@@ -18,7 +18,6 @@ from desitarget.sv3 import sv3_targetmask
 import random
 #from this package
 import LSS.SV3.cattools as ct
-import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 import mockcattools as mt 
 
@@ -39,6 +38,7 @@ parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default=
 parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
 parser.add_argument("--mockrea", help="Which Mock realization",default=0)
 parser.add_argument("--isoMTL", help="isodate for initial ledger",default='2022-03-10T16:32:15.000')
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 
@@ -122,7 +122,7 @@ else:
 
 pd = pdir
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
 tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_{MOCKREA}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(MOCKREA=mockrea) #SV3p.tdir+pdir+'/' #location of targets
 #tdir = '/global/cscratch1/sd/acarnero/SV3/atest000' #SV3p.tdir+pdir+'/' #location of targets
 mtld = SV3p.mtld
@@ -176,51 +176,58 @@ test_dir(dirout)
 
 #construct a table with the needed tile information
 ##################################################################################
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    hal = []
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        tilel.append(tile)
-        ral.append(fht['TILERA'])
-        decl.append(fht['TILEDEC'])
-        mtlt.append(fht['MTLTIME'])
-        fal.append(fht['RUNDATE'])
-        obsl.append(fht['FIELDROT'])
-        hal.append(fht['FA_HA'])
-        #pl.append(pro)
-        pl.append(pr)
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['RUNDATE'] = fal
-    ta['FIELDROT'] = obsl
-    ta['PROGRAM'] = pl
-    ta['FA_HA'] = hal
-    #if pd == 'dark':
-    ta['OBSCONDITIONS'] = 15
-    ta['IN_DESI'] = 1
-    ttf = Table() #to write out to use for fiberassign all at once
-    ttf['TILEID'] = tilel
-    ttf['RA'] = ral
-    ttf['DEC'] = decl
-    ttf['OBSCONDITIONS'] = 15
-    ttf['IN_DESI'] = 1
-    ttf['PROGRAM'] = 'SV3'
-    ta.write(os.path.join(sv3dir,'tiles-'+pr+'.fits'),format='fits', overwrite=True)
+tilef = os.path.join(sv3dir,'tiles-'+pr+'.fits')
 
+if os.path.isfile(tilef):
+    ta = Table.read(tilef)
 else:
-    print('no done tiles in the MTL')
+    if len(mtld) > 0:
+        tilel = []
+        ral = []
+        decl = []
+        mtlt = []
+        fal = []
+        obsl = []
+        pl = []
+        hal = []
+        #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+        for tile in mtld['TILEID']:
+            ts = str(tile).zfill(6)
+            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            tilel.append(tile)
+            ral.append(fht['TILERA'])
+            decl.append(fht['TILEDEC'])
+            mtlt.append(fht['MTLTIME'])
+            fal.append(fht['RUNDATE'])
+            obsl.append(fht['FIELDROT'])
+            hal.append(fht['FA_HA'])
+            #pl.append(pro)
+            pl.append(pr)
+        ta = Table()
+        ta['TILEID'] = tilel
+        ta['RA'] = ral
+        ta['DEC'] = decl
+        ta['MTLTIME'] = mtlt
+        ta['RUNDATE'] = fal
+        ta['FIELDROT'] = obsl
+        ta['PROGRAM'] = pl
+        ta['FA_HA'] = hal
+        #if pd == 'dark':
+        ta['OBSCONDITIONS'] = 15
+        ta['IN_DESI'] = 1
+        '''
+        ttf = Table() #to write out to use for fiberassign all at once
+        ttf['TILEID'] = tilel
+        ttf['RA'] = ral
+        ttf['DEC'] = decl
+        ttf['OBSCONDITIONS'] = 15
+        ttf['IN_DESI'] = 1
+        ttf['PROGRAM'] = 'SV3'
+        '''
+        ta.write(os.path.join(sv3dir,'tiles-'+pr+'.fits'),format='fits', overwrite=True)
+
+    else:
+        print('no done tiles in the MTL')
 
 
 #CREATE INITIAL LEDGER FOR NEW RUN. 
@@ -250,7 +257,7 @@ if ctar:
 #CREATE A DICTIONARY WITH TILEID AND THE DIRECTORY OF THE ALTMTL FBA RUN
 ##############################################################################################
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
     faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -273,7 +280,7 @@ if combd:
         if run_tarwdup:
             #Univ001 2022-02-14T19:37:05.000
             #Univ000 2022-02-11T16:42:58.000
-            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL, mockrea=mockrea)
+            mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL, mockrea=mockrea)
 
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -305,7 +312,7 @@ if combd:
 #######################################################################################################################################
         outfile_spec = os.path.join(ldirspec, 'datcomb_'+type+'_specwdup_Alltiles.fits')
 
-        namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_),'{stamp}','fba-{ts}.fits') 
+        namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_),'{stamp}','fba-{ts}.fits') 
         if run_specwdup:
             mt.combtile_specmock_mtl(ta, namecomb, list_runFA, tdir, outfile_spec)
 
@@ -355,14 +362,28 @@ if mkfulld:
         desitarg='SV3_DESI_TARGET'
     print(desitarg,pdir,bit)
     bitweightfile = None
-    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'.format(MOCKREA=mockrea)
-###    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
+    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'.format(MOCKREA=mockrea)
+###    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'.format(MOCKREA=mockrea)
 
 ##    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,fbcol='FIBERSTATUS')
     mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,otherspec='/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')#,fbcol='FIBERSTATUS')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
+
+if args.apply_veto == 'y':
+    print('applying vetos')
+    maxp = 103400
+    if type[:3] == 'LRG' or notqso == 'notqso':
+        maxp = 103200
+    if type[:3] == 'ELG' and notqso == 'notqso':
+        maxp = 103100
+    if type[:3] == 'BGS':
+        maxp = 102100
+    fin = os.path.join(dirout,type+notqso+'_full_noveto.dat.fits')
+    fout = os.path.join(dirout,type+notqso+'_full.dat.fits')
+    mt.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    print('data veto done')
 
 weightmd='probobs'
 ###weightmd='tileloc'

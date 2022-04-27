@@ -3,7 +3,7 @@ import astropy.table as tb
 import numpy as np
 import os
 
-path = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea024/Univ025/sv3/dark/orig' 
+path = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea024/Univ025/sv3/dark/orig' 
 times = []
 for f in glob.glob(os.path.join(path,'*.ecsv')):
         tab = tb.Table.read(f)

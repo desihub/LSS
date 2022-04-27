@@ -20,7 +20,6 @@ from desimodel.footprint import is_point_in_desi
 #from this package
 #try:
 import LSS.SV3.cattools as ct
-import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 import mockcattools as mt
 import myfa
@@ -43,6 +42,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
 parser.add_argument("--mockrea", help="Which mock realization?",default=0)
+parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
@@ -115,7 +115,7 @@ SV3p = SV3(type)
 id_ = "%03d"%int(args.univ)
 mockrea = "%03d"%int(args.mockrea)
 
-mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
+mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/sv3/dark'.format(MOCKREA=mockrea, UNIV=id_)  #SV3p.mdir+pdir+'/' #location of ledgers
 
 ###mdir = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_016dirs/Univ001/sv3/dark' #SV3p.mdir+pdir+'/' #location of ledgers
 tdir = '/global/cscratch1/sd/acarnero/SV3/mockTargets_{MOCKREA}_FirstGen_CutSky_alltracers_sv3bits.fits'.format(MOCKREA=mockrea) #location of targets
@@ -179,60 +179,64 @@ for i in range(rm,rx):
 
 
 #construct a table with the needed tile information
-if len(mtld) > 0:
-    tilel = []
-    ral = []
-    decl = []
-    mtlt = []
-    fal = []
-    obsl = []
-    pl = []
-    fver = []
-    fahal = []
-    #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-    for tile in mtld['TILEID']:
-        ts = str(tile).zfill(6)
-        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-        tilel.append(tile)
-        ral.append(fht['TILERA'])
-        decl.append(fht['TILEDEC'])
-        mtlt.append(fht['MTLTIME'])
-        fal.append(fht['FA_RUN'])
-        obsl.append(fht['OBSCON'])
-        fav = fht['FA_VER']
-        if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-            fver.append('2.3.0')
-        else:
-            fver.append(fav)    
-        #try:
-        #    faha = fht['FA_HA']
-        #except:
-        #    faha = 0
-        #    print(tile,'no FA_HA in this tile header')        
-        #pl.append(pro)
-        pl.append(pr)
-    ta = Table()
-    ta['TILEID'] = tilel
-    ta['RA'] = ral
-    ta['DEC'] = decl
-    ta['MTLTIME'] = mtlt
-    ta['FA_RUN'] = fal
-    ta['OBSCON'] = obsl
-    ta['PROGRAM'] = pl
-    #ta['FA_HA'] = fahal
-    #ta['FA_VER'] = fver
-    print(np.unique(fver))
-    wfv = (np.array(fver) == faver)
-    #mtld =  mtld[wfv]
-    #ta = ta[wfv]
+tilef = os.path.join(sv3dir,'tiles-'+pr+'.fits')
+
+if os.path.isfile(tilef):
+    ta = Table.read(tilef)
 else:
-    print('no done tiles in the MTL')
+    if len(mtld) > 0:
+        tilel = []
+        ral = []
+        decl = []
+        mtlt = []
+        fal = []
+        obsl = []
+        pl = []
+        hal = []
+        #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+        for tile in mtld['TILEID']:
+            ts = str(tile).zfill(6)
+            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            tilel.append(tile)
+            ral.append(fht['TILERA'])
+            decl.append(fht['TILEDEC'])
+            mtlt.append(fht['MTLTIME'])
+            fal.append(fht['RUNDATE'])
+            obsl.append(fht['FIELDROT'])
+            hal.append(fht['FA_HA'])
+            #pl.append(pro)
+            pl.append(pr)
+        ta = Table()
+        ta['TILEID'] = tilel
+        ta['RA'] = ral
+        ta['DEC'] = decl
+        ta['MTLTIME'] = mtlt
+        ta['RUNDATE'] = fal
+        ta['FIELDROT'] = obsl
+        ta['PROGRAM'] = pl
+        ta['FA_HA'] = hal
+        #if pd == 'dark':
+        ta['OBSCONDITIONS'] = 15
+        ta['IN_DESI'] = 1
+        '''
+        ttf = Table() #to write out to use for fiberassign all at once
+        ttf['TILEID'] = tilel
+        ttf['RA'] = ral
+        ttf['DEC'] = decl
+        ttf['OBSCONDITIONS'] = 15
+        ttf['IN_DESI'] = 1
+        ttf['PROGRAM'] = 'SV3'
+        '''
+        ta.write(os.path.join(sv3dir,'tiles-'+pr+'.fits'),format='fits', overwrite=True)
+
+    else:
+        print('no done tiles in the MTL')
 
 
 ran_ids = np.linspace(100,5000,50)
 
 list_runFA = {}
-infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
+infp = Table.read('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_))
 
 for tile in ta['TILEID']:
     ts = str(tile).zfill(6)
@@ -295,7 +299,7 @@ def doran(ii):
             ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-            ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+            mt.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
             tc = mt.count_tiles_better_mtl(specf,os.path.join(ldirspec,'rancomb_'+str(ii)+type+'wdupspec_Alltiles.fits'),type,ii,specrel=specrel)
             tc.write(os.path.join(ldirspec,'rancomb_'+str(ii)+type+'_Alltilelocinfo.fits'),format='fits', overwrite=True)
 
@@ -312,9 +316,32 @@ def doran(ii):
         else:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
-        mt.mkfullran(specf,ldirspec,randir+str(ii),ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+
+        maxp = 103400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 103200
+        if type[:3] == 'ELG' and notqso == 'notqso':
+            maxp = 103100
+        if type[:3] == 'BGS':
+            maxp = 102100
+
+        mt.mkfullran(specf,ldirspec,randir+str(ii),ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
+
+    if args.apply_veto == 'y':
+        print('applying vetos')
+        maxp = 103400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 103200
+        if type[:3] == 'ELG' and notqso == 'notqso':
+            maxp = 103100
+        if type[:3] == 'BGS':
+            maxp = 102100
+        fin = os.path.join(dirout,type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
+        fout = os.path.join(dirout,type+notqso+'_'+str(ii)+'_full.ran.fits')
+        mt.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        print('random veto '+str(ii)+' done')
 
 
     if mkclusran:

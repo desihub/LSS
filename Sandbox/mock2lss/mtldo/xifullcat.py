@@ -5,9 +5,11 @@ import itertools
 import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
+import random
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
+from desitarget.sv3 import sv3_targetmask
 
 
 logger = logging.getLogger('xirunpc')
@@ -71,23 +73,18 @@ def select_region(ra, dec, region):
 
 
 def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/global/cfs/cdirs/desi/survey/catalogs', mockrea='000', univ=1):
-    return os.path.join(base_dir, survey, 'LSS_MTL_rea{MOCKREA}_univ{UNIV}'.format(MOCKREA=mockrea, UNIV=univ), verspec, 'LSScats', version)
+    return '/global/cscratch1/sd/acarnero/SV3/LSS_MTL_rea000_univ1/fuji/LSScats/test'
 
 
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
-    if cat_dir is None:
-        cat_dir = catalog_dir(survey=survey, **kwargs)
-    if survey in ['main', 'DA02']:
-        tracer += 'zdone'
-    if ctype == 'full':
-        region = ''
-    dat_or_ran = name[:3]
-    if region: region = '_' + region
-    if rec_type:
-        return os.path.join(cat_dir, '{}{}_{}_{}{}.{}.fits'.format(tracer, region, ctype, rec_type, dat_or_ran, rec_conv))
     if name == 'data':
-        return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
-    return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+        return os.path.join(cat_dir,'{TRACER}_full_v2.dat.fits'.format(TRACER=tracer))
+#        return os.path.join(cat_dir,'{TRACER}_full.dat.fits'.format(TRACER=tracer))
+
+#    ran_ids = np.linspace(100,5000,50)
+#    ran_ids = random.sample(list(ran_ids), nrandoms)
+    return [os.path.join(cat_dir,'{TRACER}_{IRAN}_clustering.ran.fits'.format(TRACER=tracer, IRAN=int(iran))) for iran in range(nrandoms)]
+    #return [os.path.join(cat_dir,'{TRACER}_{IRAN}_full.ran.fits'.format(TRACER=tracer, IRAN=int(iran))) for iran in range(nrandoms)]
 
 
 def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', **kwargs):
@@ -99,9 +96,24 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
     else:
         catalog = Table.read(cat_fn)
 
-    mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
-    logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
-    positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
+##    bit = sv3_targetmask.desi_mask[tracer]
+##    wtype = ((catalog['SV3_DESI_TARGET'] & bit) > 0)
+    if name == 'data':
+
+        mask = (catalog['RSDZ_MOCK'] >= zlim[0]) & (catalog['RSDZ_MOCK'] < zlim[1]) ##& wtype
+##TEMP    ###mask = (catalog['RSDZ'] >= zlim[0]) & (catalog['RSDZ'] < zlim[1]) ##& wtype
+
+        logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['RSDZ_MOCK'][mask])]
+##TEMP    ###positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['RSDZ'][mask])]
+    else:
+        mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) ##& wtype
+##TEMP    ###mask = (catalog['RSDZ'] >= zlim[0]) & (catalog['RSDZ'] < zlim[1]) ##& wtype
+
+        logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
+        positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
+##TEMP    ###positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['RSDZ'][mask])]
+
     weights = np.ones_like(positions[0])
     
     if 'completeness_only' in weight_type and 'bitwise' in weight_type:
@@ -138,7 +150,7 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
     return positions, weights
 
 
-def read_full_positions_weights(name='data', weight_type='default', fibered=False, zlim=None, region='', **kwargs):
+def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
     
     cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
     logger.info('Loading {}.'.format(cat_fn))
@@ -154,10 +166,6 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
         mask &= catalog['PHOTSYS'] == region.strip('_')
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
-
-###    if zlim:
-###        mask &= (catalog['RSDZ'] >= zlim[0]) & (catalog['RSDZ'] < zlim[1])
-
     positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
     if fibered and 'bitwise' in weight_type:
         if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T)
@@ -227,7 +235,9 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
+    
     catalog_kwargs['weight_type'] = weight_type
+    print(catalog_kwargs)
     with_shifted = rec_type is not None
     
     if 'angular' in weight_type and wang is None:
@@ -288,7 +298,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 def get_edges(corr_type='smu', bin_type='lin'):
     
     if bin_type == 'log':
-        sedges = np.geomspace(0.01, 100., 49)
+        sedges = np.geomspace(0.1, 30., 16)
     elif bin_type == 'lin':
         sedges = np.linspace(0., 200, 201)
     else:
@@ -307,11 +317,11 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, out_dir='.'):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, out_dir='.', mockrea='000'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
-    root = '{}_{}_{}_{}_{}_njack{:d}'.format(tracer, zmin, zmax, weight_type, bin_type, njack)
+    root = 'fullcat_v2_{}_{}_{}_{}_{}_njack{:d}_mockrea{}'.format(tracer, zmin, zmax, weight_type, bin_type, njack, mockrea)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
@@ -323,12 +333,10 @@ if __name__ == '__main__':
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cscratch1/sd/acarnero')
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='fuji')
-    parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=[''])
 ##    parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
-    parser.add_argument('--weight_type', help='types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column', type=str, default='default_angular_bitwise')
+    parser.add_argument('--weight_type', help='types of weights to use; use default_angular_bitwise for PIP with angular upweighting; default just uses WEIGHT column', type=str, default='none')
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=10)
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=0)
@@ -338,14 +346,11 @@ if __name__ == '__main__':
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
 
-    parser.add_argument("--univ", help="Which AltMTL realization?",default=1)
     parser.add_argument("--mockrea", help="Which mock realization",default=0)
-
-
-    #only relevant for reconstruction
+    parser.add_argument("--univ", help="Which AltMTL universe",default=1)
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='fuji')
+    parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
-
-
 
 
 
@@ -358,8 +363,8 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-    cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version, mockrea="%03d"%int(args.mockrea), univ=args.univ)
-    out_dir = os.path.join(os.environ['CSCRATCH'], args.survey+'MTL_rea{MOCKREA}_univ{UNIV}_xi'.format(MOCKREA="%03d"%int(args.mockrea), UNIV=args.univ))
+    cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version, mockrea="%03d"%int(args.mockrea))
+    out_dir = os.path.join(os.environ['CSCRATCH'], 'SV3MTL_rea{MOCKREA}_univ{UNIV}_xi'.format(MOCKREA="%03d"%int(args.mockrea), UNIV=args.univ)) 
     if args.outdir is not None: out_dir = args.outdir
     tracer, tracer2 = args.tracer[0], None
     if len(args.tracer) > 1:
@@ -368,7 +373,7 @@ if __name__ == '__main__':
             raise ValueError('Provide <= 2 tracers!')
     if tracer2 == tracer:
         tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type, mockrea="%03d"%int(args.mockrea)) # survey required for zdone
     distance = TabulatedDESI().comoving_radial_distance
     
     regions = args.region
@@ -397,7 +402,7 @@ if __name__ == '__main__':
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
                 #save pair counts
-                file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, out_dir=os.path.join(out_dir, corr_type))
+                file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, out_dir=os.path.join(out_dir, corr_type), mockrea="%03d"%int(args.mockrea))
                 fn = corr_fn(file_type='npy', **file_kwargs)
                 result.save(fn)
                 txt_kwargs = file_kwargs.copy()

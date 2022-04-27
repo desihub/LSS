@@ -7,7 +7,7 @@ import numpy as np
 import fitsio
 import desimodel
 
-from fiberassign.targets import (TargetsAvailable)
+##from fiberassign.targets import (TargetsAvailable)
 from fiberassign.utils import option_list, GlobalTimers
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles, Tiles
@@ -24,7 +24,7 @@ import desimodel.io as dmio
 
 def dofa(ranfile,tile,stamp,outdir,id_,mockrea):
     
-    namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_), str(stamp), 'fa-%s.sh'%str(tile))
+    namecomb = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(MOCKREA=mockrea, UNIV=id_), str(stamp), 'fa-%s.sh'%str(tile))
     namecomb.format(stamp=stamp, ts=tile)
     run_fba = os.path.join(outdir,'fa-{ts}.sh'.format(ts=tile))
     fout = open(run_fba,'w')

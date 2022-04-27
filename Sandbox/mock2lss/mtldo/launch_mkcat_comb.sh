@@ -1,10 +1,3 @@
-check_isomax.py
-python mkCat_SV3.py --type dark --mockrea 0 --univ 1 --verspec fuji
-python mkCat_SV3.py --type LRG --combd n --fulld y --clus n --mockrea 0 --univ 1 --verspec fuji
-python mkCat_SV3.py --type LRG --combd n --fulld y --clus y --mockrea 0 --univ 1 --verspec fuji --apply_veto y
-python mkCat_SV3.py --type LRG --combd n --fulld n --clus n --nz y
-
-¿Check isodate again!!!! ********************
 python mkCat_SV3.py --type dark --mockrea 1 --univ 2 --verspec fuji --isoMTL 2022-03-31T15:44:00.000
 python mkCat_SV3.py --type dark --mockrea 2 --univ 3 --verspec fuji --isoMTL 2022-03-29T10:39:57.000
 python mkCat_SV3.py --type dark --mockrea 3 --univ 4 --verspec fuji --isoMTL 2022-03-29T10:41:43.000
@@ -29,56 +22,3 @@ python mkCat_SV3.py --type dark --mockrea 21 --univ 22 --verspec fuji --isoMTL 2
 python mkCat_SV3.py --type dark --mockrea 22 --univ 23 --verspec fuji --isoMTL 2022-03-29T10:56:16.000
 python mkCat_SV3.py --type dark --mockrea 23 --univ 24 --verspec fuji --isoMTL 2022-03-29T10:57:17.000
 python mkCat_SV3.py --type dark --mockrea 24 --univ 25 --verspec fuji --isoMTL 2022-03-29T10:58:18.000
-
-
-#RANDOMS
-
-python mkCat_SV3_ran.py --type dark --cutran n --combr y --ranmtl n --rfa n --mockrea 0 --univ 1 --verspec fuji
-
-python mkCat_SV3_ran.py --type dark --cutran y --combr n --ranmtl n --rfa n
-python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl y --rfa n
-python mkCat_SV3_ran.py --type dark --cutran n --combr n --ranmtl n --rfa y
-python mkCat_SV3_ran.py --type dark --cutran n --combr y --ranmtl n --rfa n
-
-
-python mkCat_SV3_ran.py --type dark --cutran y --combr y --ranmtl y --rfa y
-
-python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr y --clus n
-python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr n --clus y
-
-python mkCat_SV3_ran.py --type LRG --cutran n --combr n --ranmtl n --rfa n --fullr y --clus y --mockrea 0 --univ 1 --verspec fuji --apply_veto y
-
-
-For xi
-python ximock.py --nran 10 --ranmockdata data --univ 1 --type LRG --weight_column tileloc
-python ximock.py --nran 10 --ranmockdata data --univ 1 --type LRG --weight_column probobs
-python ximock.py --nran 10 --ranmockdata mock --univ 1 --type LRG --weight_column tileloc
-###
-python ximock.py --nran 20 --ranmockdata mock --univ 1 --type LRG --weight_column probobs --mockrea 0 --verspec fuji
-###
-For PIP: (for test, using nran=10)
-python xirunpc.py --nran 10 --univ 1 --tracer 'LRG' --mockrea 0 --verspec fuji 
-#####
-
-#remember to do cosmodesi setup
-Log:
-nohup python xirunpc.py --nran 20 --univ 1 --tracer 'QSO' --mockrea 0 --verspec fuji --bin_type log
-nohup python xirunpc.py --nran 20 --univ 1 --tracer 'QSO' --mockrea 0 --verspec fuji --bin_type log --weight_type default &
-
-
-
-For FirstGen mocks:
-python xifirstgen_v2.py --tracer 'QSO' --mockrea 0 --nran 20 --bin_type lin
-
-
-old -------------
-python xifirstgen.py --type ELG --nran 20 --id 0
-----------------
-
-
-for firstgen log (or not)
-python xifirstgen_v2.py --tracer 'LRG'--mockrea 0 --nran 20 --bin_type log
-
-
-For full cat
-#python xifullcat.py --tracer LRG --mockrea 0 --nran 20 --bin_type log --univ 1

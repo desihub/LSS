@@ -14,9 +14,103 @@ import desimodel.focalplane
 from random import random
 from desitarget.io import read_targets_in_tiles
 from desitarget.sv3 import sv3_targetmask
-
 from LSS.Cosmo import distance
 from LSS import common_tools as common
+
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
+    '''
+    fl is a string with the path to the file name to load
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    ff = Table.read(fin)#+'full_noveto.'+dr+'.fits')
+    print('length of input '+str(len(ff)))
+    seld = ff['GOODHARDLOC'] == 1
+    print('length after cutting to good locations '+str(len(ff[seld])))
+    if '.dat' in fin:
+        seld &= ff['PRIORITY_INIT'] <= maxp
+        print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
+    if '.ran' in fin:
+        seld &= ff['ZPOSSLOC'] == 1
+        print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
+        seld &= ff['PRIORITY'] <= maxp
+        print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
+
+
+    ff = ff[seld]
+    '''
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ff)))
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = cutphotmask(ff,ebits)
+        print('number after imaging mask '+str(len(ff)))
+    '''
+    if zmask:
+        whz = ff['Z'] < 1.6
+        ff = ff[whz]
+
+        fzm = fitsio.read('/global/homes/m/mjwilson/desi/DX2DROPOUT/radial_mask.fits')
+        zma = []
+        for z in ff['Z']:
+            zind = int(z/1e-6)
+            zma.append(fzm[zind]['RADIAL_MASK'])
+        zma = np.array(zma)
+        wm = zma == 0
+        ff = ff[wm]
+
+    if '.dat' in fin:
+###TEMP        ff['Z'].name = 'Z_not4clus'
+        print('updating completenes')
+        compa = []
+        tll = []
+        ti = 0
+        ff.sort('TILES')
+        nts = len(np.unique(ff['TILES']))
+        tlsl = ff['TILES']
+        tlslu = np.unique(tlsl)
+        laa = ff['LOCATION_ASSIGNED']
+
+        #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+        i = 0
+        while i < len(ff):
+            tls  = []
+            tlis = []
+            nli = 0
+            nai = 0
+
+            while tlsl[i] == tlslu[ti]:
+                nli += 1
+                nai += laa[i]
+                i += 1
+                if i == len(ff):
+                    break
+
+            if ti%1000 == 0:
+                print('at tiles '+str(ti)+' of '+str(nts))
+
+            cp = nai/nli#no/nt
+            #print(tls,cp,no,nt)
+            compa.append(cp)
+            tll.append(tlslu[ti])
+            ti += 1
+        comp_dicta = dict(zip(tll, compa))
+        fcompa = []
+        for tl in ff['TILES']:
+            fcompa.append(comp_dicta[tl])
+        ff['COMP_TILE'] = np.array(fcompa)
+        wz = ff['ZWARN'] != 999999
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 1.e20
+        print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
+        print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
+
+    ff.write(fout,overwrite=True,format='fits')
+
 
 def find_znotposs(dz):
 
@@ -693,64 +787,71 @@ def mkclusdat(fl, id_, weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,r
 #    ff[~wn].write(outfn,format='fits', overwrite=True)
 #ffa_info = ['fba_randoms', 'ran_5X_00_']
 #ffna_info = ['mtlran', 'tilenofa-']
-def combran_wdup(tiles, randir, tp, sv3dir, specf, ffa_info, ffna_info, keepcols=[], outf=None):
+def combran_wdup(tiles,rann,randir,tp,sv3dir,specf,keepcols=[]):
 
     s = 0
     td = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
+    delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
+    'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
 
-    if not outf:
-        outf = [os.path.join(randir, 'rancomb_'+tp+'wdup_Alltiles.fits'), os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')]
+    outf = os.path.join(randir+str(rann),'rancomb_'+tp+'wdup_Alltiles.fits')
 
-    '''
-    if os.path.isfile(outf):
-        fgu = Table.read(outf)
+##    if os.path.isfile(outf):
+##        fgu = Table.read(outf)
         #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
-        s = 1
-        tdone = np.unique(fgu['TILEID'])
-        tmask = ~np.isin(tiles['TILEID'],tdone)
-    else:
-    '''
-    tmask = np.ones(len(tiles)).astype('bool')
-
+##        s = 1
+##        tdone = np.unique(fgu['TILEID'])
+##        tmask = ~np.isin(tiles['TILEID'],tdone)
+##    else:
+    tmask = np.ones(len(tiles)).astype('bool')    
     for tile in tiles[tmask]['TILEID']:
-        ffa = os.path.join(ffa_info[0], ffa_info[1] +str(tile).zfill(6)+'.fits')
-        ffna = os.path.join(ffna_info[0], ffna_info[1]+str(tile)+'.fits') #tilenofa-382.fits
+        ffa = os.path.join(randir+str(rann),'fba-'+str(tile).zfill(6)+'.fits')
+        ffna = os.path.join(randir+str(rann),'tilenofa-'+str(tile)+'.fits')
         if os.path.isfile(ffa):
-            fa = Table.read(ffa, hdu='FAVAIL')
+            fa = Table.read(ffa,hdu='FAVAIL')
+            
             ffna = Table.read(ffna)
             fgun = join(fa,ffna,keys=['TARGETID'])
             #fgun.remove_columns(delcols)
-
+                        
             td += 1
             fgun['TILEID'] = int(tile)
-            fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
+            fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID','SV3_DESI_TARGET'])
             if s == 0:
                 fgu = fgun
                 s = 1
-            else:
+            else:   
                 fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             fgu.sort('TARGETID')
-            print(tile, len(fa), len(ffna),len(fgun))
-            print('size fgu ',len(fgu))
+            print(tile,td, len(tiles), len(fgun),len(fgu))
         else:
             print('did not find '+ffa)
 
     if len(tiles[tmask]['TILEID']) > 0:
-        fgu.write(outf[0], format='fits', overwrite=True)
+        fgu.write(outf,format='fits', overwrite=True)
     #specf = Table.read(sv3dir+'datcomb_'+tp+'_specwdup_Alltiles.fits')
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'])
     fgu.sort('TARGETID')
-#    outf = os.path.join(sv3dir, 'rancomb_' + tp + 'wdupspec_Alltiles.fits')
-    print(outf[1])
-    fgu.write(outf[1], format='fits', overwrite=True)
+    outf = os.path.join(sv3dir,'rancomb_'+str(rann)+tp+'wdupspec_Alltiles.fits')
+    print(outf)
+    '''
+    if os.path.isfile('tmp.fits'):
+        os.system('rm tmp.fits')
+    fd = fitsio.FITS('tmp.fits', "rw")
+    fd.write(np.array(fgu),extname='POTENTIAL_ASSINGMENT')
+    fd['POTENTIAL_ASSINGMENT'].write_comment("concatenation of SV3 POTENTIAL_ASSIGNMENT information for randoms, joined to columns in targe files")
+    fd['POTENTIAL_ASSINGMENT'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()    
+    os.system('mv tmp.fits '+fout)
+    '''
+    fgu.write(outf,format='fits', overwrite=True)
 
-
-def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS'):
+def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',maxp=103400):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -779,47 +880,70 @@ def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARG
     if notqso == 'notqso':
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    wg = np.isin(dz['TILELOCID'],gtl)
-    dz = dz[wtype&wg]
-    print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
+    dz = dz[wtype]
     lznp = find_znotposs(dz)
+
+
     #lznp will later be used to veto
     #load in random file
     zf = os.path.join(indir,'rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits')
     dz = Table.read(zf)
+    '''AURE TEST'''
+    wk = ((dz[desitarg] & bit) > 0)
+    #####
+    dz = dz[wk]
+
+    ''''''
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
+
+    wk = ~np.isin(dz['TILELOCID'],lznp)
+    dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['ZPOSSLOC'][wk] = 1
+
     #load in tileloc info for this random file and join it
     zfpd = os.path.join(indir,'rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits')
     dzpd = Table.read(zfpd)
     dz = join(dz,dzpd,keys=['TARGETID'])
     print('length before cutting to good positions '+str(len(dz)))
     #cut to good and possible locations
-    wk = ~np.isin(dz['TILELOCID'],lznp)
-    wk &= np.isin(dz['TILELOCID'],gtl)
+    #wk = ~np.isin(dz['TILELOCID'],lznp)
+    #wk &= np.isin(dz['TILELOCID'],gtl)
 
-    dz = dz[wk]    
+    #dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     #get all the additional columns desired from original random files through join
     tarf = Table.read(os.path.join(randir,'alltilesnofa.fits'))
-    delcols = ['RA','DEC']
+    delcols = ['RA','DEC','SV3_DESI_TARGET']
 #AURE PRIORITY_INIT','NUMOBS_INIT','SCND_TARGET',\
 #AURE 'NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     tarf.remove_columns(delcols)
     dz = join(dz,tarf,keys=['TARGETID'])
-
     #AURE I put this here!
-    wk = ((dz[desitarg] & bit) > 0)
+    #wk = ((dz[desitarg] & bit) > 0)
     #####
-    dz = dz[wk]
+    #dz = dz[wk]
    
     #apply imaging vetos
 #AURE    dz = cutphotmask(dz,imbits)
     print('length after cutting to based on imaging veto mask '+str(len(dz)))
+    dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+    sel = dz['PRIORITY'] <= maxp
+    dz['GOODPRI'][sel] = 1
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+    dz.sort('sort')
+
     #sort by tsnr, like done for data, so that the highest tsnr are kept
-    dz.sort(tsnr) 
     dz = unique(dz,keys=['TARGETID'],keep='last')
+
+
+    dz['Z'] = dz['RSDZ']
+
     print('length after cutting to unique TARGETID '+str(len(dz)))
     dz['rosette_number'] = 0
-    dz['rosette_r'] = 0
+    dz['rosette_r'] = np.zeros(len(dz))
     for ii in range(0,len(dz)):
         rosn = tile2rosette(dz[ii]['TILEID'])
         rosd = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC']) #calculates distance in degrees from the rosette center
@@ -862,7 +986,7 @@ def mkfullran(fs,indir,randir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARG
     
 
 
-    dz['Z'] = dz['RSDZ']
+    
     dz.write(outf,format='fits', overwrite=True)
     print('wrote '+outf)
 
@@ -887,18 +1011,8 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         wzm += ccut+'_'  #you could change this to however you want the file names to turn out
 
     #load in full random file
-    ffr = Table.read(fl+str(rann)+'_full_noveto.ran.fits')
-    '''
-    if ebits is not None:
-        print('number before imaging mask '+str(len(ffr)))
-        if ebits == 'lrg_mask':
-            sel = ffr['lrg_mask'] == 0
-            ff = ffr[sel]
-        else:    
-            ffr = cutphotmask(ffr,ebits)
-        print('number after imaging mask '+str(len(ffr)))
-    '''
-    ffr.write(fl+str(rann)+'_full.ran.fits',overwrite=True,format='fits')
+    ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+
 
     #mask mask on tsnr
     wz = ffr[tsnrcol] > tsnrcut
@@ -925,7 +1039,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 
     if shuffle:
         #load in data clustering catalog
-        fcd = Table.read(fl+wzm+'clustering.dat.fits')
+        fcd = Table.read(fl+wzm+'clustering.dat.fits') 
 
         #randomly sample data rows to apply redshifts, weights, etc. to randoms
         inds = np.random.choice(len(fcd),len(ffc))
@@ -938,7 +1052,10 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #cut to desired small set of columns and write out files, splitting N/S as well
 ##AURE    wn = ffc['PHOTSYS'] == 'N'
     
-    ffc.keep_columns(kl)  
+    ffc.keep_columns(kl) 
+###    comments = ["SV3 MOCK 'clustering' LSS catalog for random #"+str(rann)+", all regions","columns that are not ra,dec are sampled from data with good redshifts"]
+### common.write_LSS(ffc,outf,comments)
+
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
     ffc.write(outf,format='fits', overwrite=True)
 
@@ -962,7 +1079,7 @@ def combtiles_wdup_mtl(tiles,mdir='',fout='',mtl_done=None, tarcol=['RA','DEC','
             faf_d = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
             fht = fitsio.read_header(faf_d)
             stamp = fht['RUNDATE'].split('T')[0].replace('-','')
-            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(UNIV=univ, MOCKREA=mockrea),stamp,'fba-'+ts+'.fits')
+            faf = os.path.join('/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/fa/SV3'.format(UNIV=univ, MOCKREA=mockrea),stamp,'fba-'+ts+'.fits')
             wt = tiles['TILEID'] == tile
             tars = read_targets_in_tiles(mdir,tiles[wt],mtl=True, isodate=isodate, columns=tarcol)
             
@@ -1056,6 +1173,15 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
         print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
     #find the rows that are 'good' tilelocid
+
+    print(len(dz[wtype]))
+    print('length before selecting type '+str(len(dz)))
+    dz = dz[wtype]
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
+
+    ''' AURE
     wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
     print('normal',len(dz[wg]))
@@ -1069,7 +1195,6 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
     dz = dz[wk] #0 probability locations now vetoed
     print('length after priority veto '+str(len(dz)))
-    ''' AURE
     print('joining to full imaging')
     ftar = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+pd+'_targets.fits')
     ftar.keep_columns(['TARGETID','EBV','FLUX_G','FLUX_R','FLUX_Z','FLUX_IVAR_G','FLUX_IVAR_R','FLUX_IVAR_Z','MW_TRANSMISSION_G','MW_TRANSMISSION_R',\
@@ -1095,13 +1220,12 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     #mark them as having LOCATION_ASSIGNED
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
-    print('eeeh old', len(dz[(dz['LOCATION_ASSIGNED']==1)]))
     #find the TILELOCID that were assigned and mark them as so
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = 0
     dz['TILELOCID_ASSIGNED'][wtl] = 1
-    print('AQUI number of unique targets at assigned tilelocid:')
+    print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
    
     '''
@@ -1140,10 +1264,19 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     '''
 
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
+    wnts = dz[tscol]*0 != 0
+    dz[tscol][wnts] = 0
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+
+    dz.sort('sort')
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+    dz['Z'] = dz['RSDZ']
+
+    '''
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]+dz['TILELOCID_ASSIGNED']
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
-    '''
+    
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
@@ -1200,20 +1333,20 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
         rosn = tile2rosette(ti) #get rosette id
         rosr[ii] = calc_rosr(rosn,dz[ii]['RA'],dz[ii]['DEC']) #calculates distance in degrees from rosette center
         ros[ii] = rosn
-        if natloc[ii]:# == False:
-            nbl += 1
-            s = 0
-            tids = tlids[ii].split('-')
-            if s == 0:
-                for tl in tids:
-                    ttlocid  = int(tl)
-                    if np.isin(ttlocid,loclz):
-                        locs[ii] = ttlocid
-                        nch += 1
-                        s = 1
-                        break
-        if ii%10000 == 0:
-            print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
+#        if natloc[ii]:# == False:
+#            nbl += 1
+#            s = 0
+#            tids = tlids[ii].split('-')
+#            if s == 0:
+#                for tl in tids:
+#                    ttlocid  = int(tl)
+#                    if np.isin(ttlocid,loclz):
+#                        locs[ii] = ttlocid
+#                        nch += 1
+#                        s = 1
+#                        break
+#        if ii%10000 == 0:
+#            print(ii,len(dz['TILEID']),ti,ros[ii],nch,nbl)
 
 
     dz['rosette_number'] = ros
@@ -1221,7 +1354,7 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     print('rosette number and the number on each rosette')
     print(np.unique(dz['rosette_number'],return_counts=True))
 
-    dz['TILELOCID'] = locs
+#    dz['TILELOCID'] = locs
     #get numbers again after the re-assignment
 #     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
 #     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
@@ -1264,12 +1397,12 @@ def mkfulldat_mtl(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI
     co.write(cof,overwrite=True,format='fits')
 
 
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, length of input, number of inputs with obs; dont quite match because some tilelocid still have 0 assigned')
+    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, length of input, number of inputs with obs; no longer rejecting unobserved loc, so wont match')
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz),len(dz[wz]))
 
     oct = np.copy(dz['COMP_TILE'])
     if bitweightfile is not None:
-        fb = fitsio.read(bitweightfile)
+        fb = Table.read(bitweightfile)
         dz = join(dz,fb,keys=['TARGETID'])
     wz = dz['LOCATION_ASSIGNED'] == 1 #join re-ordered array, reget mask for assigned locations and check comp_tile
     print('length after join with bitweight file and sum of 1/comp_tile',len(dz),np.sum(1./dz[wz]['COMP_TILE']),len(dz[wz]))
@@ -1297,6 +1430,7 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
     dchi2 is the threshold for keeping as a good redshift
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
     '''
+    '''
     ff = Table.read(fl+'full_noveto.dat.fits')
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
@@ -1307,6 +1441,8 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
             ff = cutphotmask(ff,ebits)
         print('number after imaging mask '+str(len(ff)))
     ff.write(fl+'full.dat.fits',overwrite=True,format='fits')
+    '''
+    ff = Table.read(fl+'full.dat.fits')
     wzm = ''
     if zmask:
         wzm = 'zmask_'
@@ -1362,9 +1498,9 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         '''
-        wz = ff['RSDZ']*0 == 0
-        wz &= ff['RSDZ'] != 999999
-        wz &= ff['RSDZ'] != 1.e20
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
         wz &= ff['TSNR2_QSO'] > tsnrcut
 
@@ -1381,19 +1517,14 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
-        # Custom DELTACHI2 vs z cut from Rongpu
-##        drz = (10**(3 - 3.5*ff['RSDZ']))
-##AURE        drz = (10**(3 - 3.5*ff['Z']))
-##AURE        mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-#AURE        mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
-#AURE        mask_bad |= (ff['DELTACHI2']<10)
-        wz &= ff['RSDZ']<1.4
-##AURE        wz &= ff['Z']<1.4
-##AURE        wz &= (~mask_bad)
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['ZWARN'] != 1.e20
+        wz &= ff['ZWARN']==0
+        wz &= ff['Z']<1.5
 
-        #wz &= ff['DELTACHI2'] > dchi2
-        print('length after Rongpu cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
+
         print('length after tsnrcut '+str(len(ff[wz])))
     if tp[:3] == 'BGS':
         print('applying extra cut for BGS')
@@ -1414,8 +1545,8 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
     if weightmd == 'probobs' :
         ff = ff[(ff['PROB_OBS']!=0)]
 ##AURE        nassign = nreal*ff['PROB_OBS']+1 #assignment in actual observation counts
-        nassign = nreal*ff['PROB_OBS'] #assignment in actual observation counts
-        ff['WEIGHT_COMP'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
+        ff['WEIGHT_COMP'] *= 1./ff['PROB_OBS']
+##AURE        ff['WEIGHT_COMP'] *= (nreal+1)/nassign#1./ff['PROB_OBS']
         print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
         #wzer = ff['PROB_OBS'] == 0
         #ff['WEIGHT'][wzer] = 0
@@ -1463,7 +1594,6 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
     #if tp[:3] == 'BGS':
     #    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID']
     #else:
-    ff['Z'] = ff['RSDZ']
 
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID','PROB_OBS','BITWEIGHTS']
     if tp[:3] == 'BGS':
@@ -1472,6 +1602,9 @@ def mkclusdat_mtl(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcu
         print(kl)
 
     ff.keep_columns(kl)#,'PROB_OBS'
+###    comments = ["SV3 MOCK 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+###    common.write_LSS(ff,outf,comments)
+
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
     ff.write(outf,format='fits', overwrite=True)
