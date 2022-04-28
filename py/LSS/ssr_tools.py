@@ -398,14 +398,19 @@ class BGS_ssr:
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars,self.wrapper(pars))
-        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
-        mod = self.failure_rate(self.bc, *pars)
-        plt.plot(self.bc,mod,'k--')
-        plt.show()
 
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        ha,_ = np.histogram(self.cat['EFFTIME_BGS'],bins=self.be)
+        hf,_ = np.histogram(self.cat['EFFTIME_BGS'][self.selgz],weights=1/data['mod_success_rate'],bins=self.be)
+        plt.errorbar(self.bc,1.-self.nzf,self.nzfe,fmt='ko')
+        plt.errorbar(self.bc,hf/ha,self.nzfe,fmt='rd')
+        
+        plt.show()
+
+
         return data
 
 
