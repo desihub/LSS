@@ -399,7 +399,7 @@ class BGS_ssr:
         pars = res.x
         print(pars,self.wrapper(pars))
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
-        mod = self.failure_rate_eff(self.bc, *pars)
+        mod = self.failure_rate(self.bc, *pars)
         plt.plot(self.bc,mod,'k--')
         plt.show()
 
