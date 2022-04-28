@@ -573,7 +573,9 @@ class QSO_ssr:
         plt.plot(self.bc,mod,'k--')
         plt.show()
         gextc = 3.214
-        dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
+        rextc = 2.165
+        dflux = data['FIBERFLUX_R']*10**(0.4*rextc*data['EBV']) #data['FIBERFLUX_G_EC']
+
         deff = 8.60/0.255 * data['TSNR2_QSO']#data['EFFTIME_ELG']
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
         data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
@@ -591,9 +593,9 @@ class QSO_ssr:
         nb = 5
         pstep = 100//5
         for i in range(0,nb):
-            sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
-            sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
-            mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
+            sel = self.cat['FIBERFLUX_R_EC'] > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_R_EC'] < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_R_EC'][sel])
             fper.append(mf)
             ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
             hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],bins=self.bine)
