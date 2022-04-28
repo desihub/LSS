@@ -403,8 +403,8 @@ class BGS_ssr:
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
-        ha,_ = np.histogram(self.cat['EFFTIME_BGS'],bins=self.be)
-        hf,_ = np.histogram(self.cat['EFFTIME_BGS'][self.selgz],weights=1/data['mod_success_rate'],bins=self.be)
+        ha,_ = np.histogram(self.cat['EFFTIME_BGS'],bins=self.bine)
+        hf,_ = np.histogram(self.cat['EFFTIME_BGS'][self.selgz],weights=1/data['mod_success_rate'],bins=self.bine)
         plt.errorbar(self.bc,1.-self.nzf,self.nzfe,fmt='ko')
         plt.errorbar(self.bc,hf/ha,self.nzfe,fmt='rd')
         
