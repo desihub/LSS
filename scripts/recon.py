@@ -17,7 +17,7 @@ from xirunpc import get_clustering_positions_weights, catalog_dir, catalog_fn, g
 logger = logging.getLogger('recon')
 
 
-def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=0.8, bias=1.2, boxsize=None, nmesh=None, cellsize=7, nthreads=8, convention='reciso', dtype='f4', **kwargs):
+def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=0.8, bias=1.2, boxsize=None, nmesh=None, cellsize=7, smoothing_radius=15, nthreads=8, convention='reciso', dtype='f4', **kwargs):
 
     if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
     if np.ndim(randoms_rec_fn) == 0: randoms_rec_fn = [randoms_rec_fn]
@@ -36,7 +36,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         randoms_positions = utils.sky_to_cartesian(dist, ra, dec, dtype=dtype)
         recon.assign_randoms(randoms_positions, randoms_weights)
 
-    recon.set_density_contrast()
+    recon.set_density_contrast(smoothing_radius=smoothing_radius)
     recon.run()
 
     field = 'disp+rsd'
@@ -93,6 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('--boxsize', help='box size', type=float, default=None)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=None)
     parser.add_argument('--cellsize', help='cell size', type=float, default=7)
+    parser.add_argument('--smoothing_radius', help='smoothing radius', type=float, default=15)
 
     setup_logging()
     args = parser.parse_args()
@@ -129,4 +130,4 @@ if __name__ == '__main__':
             randoms_fn = catalog_fn(**catalog_kwargs, name='randoms')
             data_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='data')
             randoms_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='randoms')
-            run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, nthreads=args.nthreads, convention=args.convention, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
+            run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, smoothing_radius=args.smoothing_radius, nthreads=args.nthreads, convention=args.convention, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
