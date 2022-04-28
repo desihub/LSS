@@ -97,6 +97,44 @@ def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
     
     return cat
 
+def get_BGS_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+    
+    cats = []
+    for sur,ver,sr in zip(surveys,versions,specrels):
+        dir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
+        tfn = tracer
+        if sur == 'DA02':
+            tfn+='zdone'
+        fn = dir+tfn+'_full.dat.fits'    
+        data = Table(fitsio.read(fn))
+        print(len(data))
+        sel = data['ZWARN'] != 999999
+        data = data[sel]
+        print(len(data))
+        gz = data['ZWARN'] == 0
+        gz &= data['DELTACHI2'] > 40
+        data['q'] = gz
+        cats.append(data)
+
+    if len(cats) == 1:
+        cat = cats[0]
+
+    cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['EFFTIME_BGS'] = 12.15/89.8 * cat['TSNR2_BGS']
+    cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
+    cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
+    gextc = 3.214
+    cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
+    cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+    rextc = 2.165
+    cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
+    cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
+    cat['qf'] = np.array(cat['q'], dtype=float)
+    
+    return cat
+
+
 def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
     
     cats = []
@@ -322,6 +360,54 @@ class LRG_ssr:
         deff = 12.15 * data['TSNR2_LRG']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
         return data
+
+class BGS_ssr:
+    def __init__(self,specrel='fuji',efftime_min=100,efftime_max=300):
+        
+        self.cat = get_BGS_data_full()
+        mask = self.cat['EFFTIME_BGS']>efftime_min
+        mask &= self.cat['EFFTIME_BGS']<efftime_max
+        self.cat = self.cat[mask]
+        self.selgz = self.cat['q'] == 1
+        ha,bine = np.histogram(self.cat['EFFTIME_BGS'])
+        hf,_ = np.histogram(self.cat['EFFTIME_BGS'][~self.selgz])
+        self.nzf = hf/ha
+        print(self.nzf)
+        self.nzfe = np.sqrt(hf)/ha
+        bc = []
+        bs = bine[1]-bine[0]
+        for i in range(0,len(bine)-1):
+            bc.append(bine[i]+bs/2.) 
+        self.bc = np.array(bc)
+        self.bine = bine
+
+
+    def cost(self,q_predict):
+        return np.sum((self.cat['qf']-q_predict)**2)
+
+    def wrapper(self,params):
+        q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_R_EC'], self.cat['EFFTIME_BGS'], *params)
+        return self.cost(q_predict)
+
+    def failure_rate(self,flux, efftime, a, b, c):
+        sn = flux * np.sqrt(efftime)
+        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+
+    def add_modpre(self,data):
+        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+               method='Powell', tol=1e-6)
+        pars = res.x
+        print(pars,self.wrapper(pars))
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        mod = self.failure_rate_eff(self.bc, *pars)
+        plt.plot(self.bc,mod,'k--')
+        plt.show()
+
+        dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
+        deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
+        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
+        return data
+
 
 class ELG_ssr:
     def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
