@@ -2243,8 +2243,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
-    comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
-    common.write_LSS(ff,outf,comments)
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
 
     outfn = fl+wzm+'N_clustering.dat.fits'
     comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
@@ -2295,9 +2295,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     wn = ffc['PHOTSYS'] == 'N'
 
     ffc.keep_columns(kc)
-    outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
-    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
-    common.write_LSS(ffc,outf,comments)
+    #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
+    #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ffc,outf,comments)
 
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
