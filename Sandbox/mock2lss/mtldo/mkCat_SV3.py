@@ -215,15 +215,6 @@ else:
         #if pd == 'dark':
         ta['OBSCONDITIONS'] = 15
         ta['IN_DESI'] = 1
-        '''
-        ttf = Table() #to write out to use for fiberassign all at once
-        ttf['TILEID'] = tilel
-        ttf['RA'] = ral
-        ttf['DEC'] = decl
-        ttf['OBSCONDITIONS'] = 15
-        ttf['IN_DESI'] = 1
-        ttf['PROGRAM'] = 'SV3'
-        '''
         ta.write(os.path.join(sv3dir,'tiles-'+pr+'.fits'),format='fits', overwrite=True)
 
     else:
@@ -278,20 +269,17 @@ if combd:
         outf = os.path.join(sv3dir,'datcomb_'+type+'_tarwdup_Alltiles.fits')
         #AUREct.combtiles_wdup(ta,mdir,outf)
         if run_tarwdup:
-            #Univ001 2022-02-14T19:37:05.000
-            #Univ000 2022-02-11T16:42:58.000
             mt.combtiles_wdup_mtl(ta, mdir, outf, mtl_done='/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_256dirs_rea{MOCKREA}/Univ{UNIV}/mtl-done-tiles.ecsv'.format(MOCKREA=mockrea, UNIV=id_), univ=id_, isodate=args.isoMTL, mockrea=mockrea)
-
         tarf = Table.read(outf)
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        remcol = ['PRIORITY','Z','ZWARN','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
+        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
 #AURE        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
         for col in remcol:
             try:
                 tarf.remove_columns([col] )#we get this where relevant from spec file
             except:
                 print('column '+col +' was not in tarwdup file')    
-        print('hasta aquio')
+        
         
 #FOR NEWLY CREATED tarwdup FILE, JOIN WITH REAL DATA TO RETRIEVE HARDWARE AND TEMPLATE INFO BASED ON TILEID AND LOCATION, including coadd_fiberstatus
 ################################################################################################################
@@ -366,7 +354,7 @@ if mkfulld:
 ###    bitweightfile = '/global/cscratch1/sd/acarnero/alt_mtls_masterScriptTest_064dirs_rea{MOCKREA}/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'.format(MOCKREA=mockrea)
 
 ##    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,fbcol='FIBERSTATUS')
-    mt.mkfulldat_mtl(specf,dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,otherspec='/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')#,fbcol='FIBERSTATUS')
+    mt.mkfulldat_mtl(dz,imbits,tdir,type,bit,os.path.join(dirout,type+notqso+'_full_noveto.dat.fits'),os.path.join(ldirspec,'Alltiles_'+pdir+'_tilelocs.dat.fits'),azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)#,otherspec='/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')#,fbcol='FIBERSTATUS')
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')

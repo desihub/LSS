@@ -19,7 +19,7 @@ survey='sv3'
 
 #mockrea=0 #THIS IS FOR EACH MOCK REALIZATION
 
-for mockrea in {1..24} 
+for mockrea in {16..24} 
 ###for mockrea in {0..24} 
 do
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
