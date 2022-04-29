@@ -12,6 +12,8 @@ srun -N 32 -C haswell -n 32 -t 04:00:00 -q interactive   python xirunpc.py --tra
 
 srun -N 32 -C haswell -n 32 -t 04:00:00 -q interactive   python xirunpc.py --tracer QSO --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
 
+srun -N 32 -C haswell -n 32 -t 04:00:00 -q interactive   python xirunpc.py --tracer QSO --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu --zlim lowz
+
 srun -N 32 -C haswell -n 32 -t 04:00:00 -q interactive   python xirunpc.py --tracer LRG --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
 
 srun -N 32 -C haswell -n 32 -t 04:00:00 -q interactive   python xirunpc.py --tracer ELG_LOPnotqso  --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
