@@ -373,7 +373,11 @@ if args.add_regressis == 'y':
         drfw = rfpw[dpix]
         dd['WEIGHT_SYS'] = drfw
         dd['WEIGHT'] *= dd['WEIGHT_SYS']
-        dd.write(fcd,format='fits',overwrite=True)
+        #dd.write(fcd,format='fits',overwrite=True)
+        comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin+'<z<'+str(zmax))]
+        comments = ["Using regressis for WEIGHT_SYS"]
+
+        common.write_LSS(dd,fdc,comments)
 
     
     
