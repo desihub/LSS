@@ -391,7 +391,7 @@ class BGS_ssr:
 
     def failure_rate(self,flux, efftime, a, b, c):
         sn = flux * np.sqrt(efftime)
-        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0.5, 1)
 
     def add_modpre(self,data):
         res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
@@ -402,7 +402,7 @@ class BGS_ssr:
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
-        
+        #print(len(data),np.sum(data['mod_success_rate']))
         ha,_ = np.histogram(deff,bins=self.bine)
         gz = data['ZWARN'] == 0
         gz &= data['DELTACHI2'] > 40
