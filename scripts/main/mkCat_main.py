@@ -377,7 +377,7 @@ if args.add_regressis == 'y':
         comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax)]
         comments = ["Using regressis for WEIGHT_SYS"]
 
-        common.write_LSS(dd,fdc,comments)
+        common.write_LSS(dd,fcd,comments)
 
     
     
