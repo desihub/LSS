@@ -402,7 +402,7 @@ class BGS_ssr:
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
-        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        
         ha,_ = np.histogram(deff,bins=self.bine)
         gz = data['ZWARN'] == 0
         gz &= data['DELTACHI2'] > 40
