@@ -2255,11 +2255,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ffs = ff[~wn]
     common.write_LSS(ffs,outfn,comments)
 
-    for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
-        outfn = fl+wzm+reg+'_clustering.dat.fits'
-        sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
-        comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
-        common.write_LSS(ffs[sel],outfn,comments)
+#     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
+#         outfn = fl+wzm+reg+'_clustering.dat.fits'
+#         sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
+#         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
+#         common.write_LSS(ffs[sel],outfn,comments)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -2320,18 +2320,18 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcs,outfs,comments)
 
-    for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
-        outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
-        sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
-        fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
-        ffss = ffcs[sel]
-        inds = np.random.choice(len(fcd),len(ffss))
-        dshuf = fcd[inds]
-        for col in rcols:
-            ffss[col] = dshuf[col]
-
-        comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
-        common.write_LSS(ffss,outfn,comments)
+#     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
+#         outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
+#         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
+#         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
+#         ffss = ffcs[sel]
+#         inds = np.random.choice(len(fcd),len(ffss))
+#         dshuf = fcd[inds]
+#         for col in rcols:
+#             ffss[col] = dshuf[col]
+# 
+#         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
+#         common.write_LSS(ffss,outfn,comments)
 
 
 
