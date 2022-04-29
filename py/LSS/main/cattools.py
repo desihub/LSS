@@ -2233,7 +2233,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after cutting to spectype QSO '+str(len(ff)))
 
     #select down to specific columns below and then also split N/S
+    
+    selz = ff['Z'] > zmin
+    selz &= ff['Z'] < zmax
+    ff = ff[selz]
+
     wn = ff['PHOTSYS'] == 'N'
+
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
@@ -2242,9 +2248,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff.keep_columns(kl)
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
-    selz = ff['Z'] > zmin
-    selz &= ff['Z'] < zmax
-    ff = ff[selz]
 
     #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
     #common.write_LSS(ff,outf,comments)
