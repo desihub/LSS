@@ -391,7 +391,7 @@ class BGS_ssr:
 
     def failure_rate(self,flux, efftime, a, b, c):
         sn = flux * np.sqrt(efftime)
-        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0.5, 1)
+        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, .5)
 
     def add_modpre(self,data):
         res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
