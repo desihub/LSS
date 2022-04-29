@@ -397,7 +397,7 @@ if mkclusran:
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_FKP']#,'WEIGHT_RF']
+    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
     if type[:3] == 'BGS':
         rcols.append('flux_r_dered')
 
