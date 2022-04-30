@@ -243,6 +243,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     #ft = Table.read(fn)
     #ft['NZ'] = nl
     ff['LSS'].insert_column('NZ',nl)
+    print(np.min(ff['NZ'),np.max(ff['NZ']))
     fkpl = 1./(1+nl*P0)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
