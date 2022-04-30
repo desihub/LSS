@@ -2161,7 +2161,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp == 'BGS_BRIGHT':
         lrg = ssr_tools.LRG_ssr()
         ff = lrg.add_modpre(ff)
-        ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],0,1)
+        ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
