@@ -26,8 +26,8 @@ for tr in trs:
     if tr == 'BGS_BRIGHT':
         zws = ['0.1_0.3','0.3_0.5','0.1_0.5']
     for zw in zws:
-        result_N = pycorr.TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_N_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
-        result_S = pycorr.TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_S_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
+        result_N = TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_N_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
+        result_S = TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_S_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
         result_NS = result_N.normalize() + result_S.normalize()
         fn = dirxi+'allcounts_'+tr+'_NScomb_'+zw+'_default_FKP_lin_njack'+njack+'.npy'
         result_NS.save(fn)
