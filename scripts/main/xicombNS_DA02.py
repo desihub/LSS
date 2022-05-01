@@ -12,12 +12,14 @@ from matplotlib import pyplot as plt
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 
 njack = '60'
-trs = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
+trs = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT','QSO_ELG_LOPnotqso','LRG_QSO','LRG_ELG_LOPnotqso']
 bsl = [1,2,4,5,10]
 dirxi = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/xi/smu/'
 xit = 'poles'
 for tr in trs:
     if tr == 'ELG_LOPnotqso':
+        zws = ['0.8_1.6','0.8_1.1','1.1_1.6']
+    if tr == 'QSO_ELG_LOPnotqso':
         zws = ['0.8_1.6','0.8_1.1','1.1_1.6']
     if tr == 'QSO':
         zws = ['0.8_1.1','0.8_2.1lowz','1.1_1.6','1.6_2.1','2.1_3.5','0.8_3.5']
@@ -25,6 +27,8 @@ for tr in trs:
         zws = ['0.4_0.6','0.6_0.8','0.8_1.1','0.4_1.1']
     if tr == 'BGS_BRIGHT':
         zws = ['0.1_0.3','0.3_0.5','0.1_0.5']
+    if tr == 'LRG_QSO' or tr == 'LRG_ELG_LOPnotqso':
+        zws = ['0.8_1.1']
     for zw in zws:
         result_N = TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_N_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
         result_S = TwoPointCorrelationFunction.load(dirxi+'allcounts_'+tr+'_S_'+zw+'_default_FKP_lin_njack'+njack+'.npy')
