@@ -33,7 +33,7 @@ for tr in trs:
         result_NS.save(fn)
         for bs in bsl:
             rebinned = result_NS[:(result_NS.shape[0]//bs)*bs:bs]
-            fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin_njack'+njack+'.txt'
+            fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
             rebinned.save_txt(fn_txt, ells=(0, 2, 4))
 
 
