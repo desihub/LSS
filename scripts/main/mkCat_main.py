@@ -35,6 +35,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
@@ -213,6 +214,13 @@ if mkfulld:
     
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
 
+if args.add_veto == 'y':
+    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    add_veto_col(fin,ran=False,tracer_mask=type[:3].lower())#,rann=0
+    for rn in range(rm,rx):
+        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        
 if args.apply_veto == 'y':
     print('applying vetos')
     maxp = 3400

@@ -3,6 +3,7 @@
 
 source /project/projectdirs/desi/software/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+module swap fiberassign/5.0.0
 
 #if you need to delete temporary fiberassign files
 rm /global/cfs/cdirs/desi/survey/catalogs//main/LSS/random*/*tmp*
@@ -23,6 +24,13 @@ python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --vers
 
 #combine quasars:
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --doqso y --dospec n --combpix n
+
+#to make the emission line files for each tile
+python mkemlin.py
+
+to combine the emission line files:
+python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --mkemlin y --dospec n --combpix n
+
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
 #in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
@@ -45,7 +53,11 @@ srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.p
 #the "full" random files are made for each healpix
 #this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
 for tp,notqso in zip(tps,notqsos):
-    srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
+    salloc -N 2 -C haswell -t 04:00:00 --qos interactive --account desi
+    ./daily_main_randoms_type_2nodes_noveto.sh tp notqso
+    #or run all
+    ./daily_main_randoms_all_2nodes_noveto.sh
+    #srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
 #if data model is stable since the last updates, add to the arguments
     --refullr n
 
