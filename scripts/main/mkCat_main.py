@@ -216,7 +216,7 @@ if mkfulld:
 
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
-    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower())#,rann=0
+    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
