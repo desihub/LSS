@@ -219,7 +219,7 @@ if args.add_veto == 'y':
     common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower())#,rann=0
     for rn in range(rm,rx):
         fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
-        add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
 if args.apply_veto == 'y':
     print('applying vetos')
