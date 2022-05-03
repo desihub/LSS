@@ -276,7 +276,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         print('done with random number '+str(rann))  
     return True        
 
-def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'):
+def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
@@ -284,7 +284,12 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     df = fitsio.read(fn)
     if np.isin(tracer_mask+'_mask',list(df.dtype.names)):
         print('mask column already in '+fn)
-        return True
+        if redo:
+            df = Table(df)
+            df.remove_columns([tracer_mask+'_mask'])
+            print('will replace '+tracer_mask)
+        else:
+            return True
     else:
         print('adding '+tracer_mask)        
     print(len(df))
