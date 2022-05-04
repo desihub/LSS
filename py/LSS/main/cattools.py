@@ -1802,7 +1802,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #stlid = 10000*fs['TILEID'] +fs['LOCATION']
     #gtl = np.unique(stlid)
 
-    dz = Table.read(zf)
+    dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         print('removing QSO targets')
