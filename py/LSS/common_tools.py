@@ -391,6 +391,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
     
+    if '.ran' in fin:
+        print('area is '+str(len(ff)/2500))
     comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
     write_LSS(ff,fout,comments)
 
