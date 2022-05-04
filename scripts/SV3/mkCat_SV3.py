@@ -502,7 +502,8 @@ if mkfulld:
         bitweightfile = SV3p.brightbitweightfile
 
 
-    ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
+    #ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
@@ -561,7 +562,7 @@ if mkclusdat:
     if type[:3] == 'BGS':
         dchi2 = 40
         tsnrcut = 1000
-    ct.mkclusdat(dirout+type+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
+    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -584,7 +585,7 @@ if mkclusran:
     if type[:3] == 'BGS':
         rcols.append('flux_r_dered')
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
+        ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
@@ -625,7 +626,7 @@ if mknz:
         fb = dirout+type+notqso+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
-        fout = fb+'_nz.dat'
+        fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 

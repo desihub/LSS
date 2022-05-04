@@ -1,6 +1,10 @@
 import numpy as np
 import fitsio
 from astropy.table import Table,join
+import datetime
+import os
+
+from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -9,6 +13,23 @@ dis_dc = cosmo.comoving_radial_distance
 
 
 #functions that shouldn't have any dependence on survey go here
+
+def cut_specdat(dz):
+    selz = dz['ZWARN'] != 999999
+    selz &= dz['ZWARN']*0 == 0 #just in case of nans
+    fs = dz[selz]
+
+    #first, need to find locations to veto based data
+    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+    num_nod = np.sum(nodata)
+    print('number with no data '+str(num_nod))
+    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+    num_badqa = np.sum(badqa)
+    print('number with bad qa '+str(num_badqa))
+    nomtl = nodata | badqa
+    wfqa = ~nomtl
+    return fs[wfqa]
+
 
 def cutphotmask(aa,bits):
     print(str(len(aa)) +' before imaging veto' )
@@ -206,9 +227,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
     
-    nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values
+    nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb+'_clustering.dat.fits'
-    fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+    ff = fitsio.FITS(fn,'rw')
+    fd = ff['LSS'].read()
+    #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
     zl = fd['Z']
     nl = np.zeros(len(zl))
     for ii in range(0,len(zl)):
@@ -217,14 +240,22 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
     del fd
-    ft = Table.read(fn)
-    ft['NZ'] = nl
-    ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-    ft.write(fn,format='fits',overwrite=True)        
+    #ft = Table.read(fn)
+    #ft['NZ'] = nl
+    ff['LSS'].insert_column('NZ',nl)
+    print(np.min(nl),np.max(nl))
+    fkpl = 1./(1+nl*P0)
+    #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+    ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+    ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    ff.close()
+    #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(0,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+        ff = fitsio.FITS(fn,'rw')
+        fd = ff['LSS'].read()
+        #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
         for ii in range(0,len(zl)):
@@ -233,12 +264,39 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
             if z > zmin and z < zmax:
                 nl[ii] = nzd[zind]
         del fd
-        ft = Table.read(fn)
-        ft['NZ'] = nl
-        ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-        ft.write(fn,format='fits',overwrite=True)      
+        #ft = Table.read(fn)
+        #ft['NZ'] = nl
+        ff['LSS'].insert_column('NZ',nl)
+        fkpl = 1./(1+nl*P0)
+        ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+        ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        ff.close()
+        #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+        #ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
     return True        
+
+def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
+    mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
+    if ran:
+        mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
+    maskf = fitsio.read(mask_fn)
+    df = fitsio.read(fn)
+    if np.isin(tracer_mask+'_mask',list(df.dtype.names)):
+        print('mask column already in '+fn)
+        if redo:
+            df = Table(df)
+            df.remove_columns([tracer_mask+'_mask'])
+            print('will replace '+tracer_mask)
+        else:
+            return True
+    else:
+        print('adding '+tracer_mask)        
+    print(len(df))
+    df = join(df,maskf,keys=['TARGETID'])
+    print(len(df),'should match above')
+    comments = ['Adding imaging mask column']
+    write_LSS(df,fn,comments)
 
 def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     '''
@@ -297,6 +355,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         tlsl = ff['TILES']
         tlslu = np.unique(tlsl)
         laa = ff['LOCATION_ASSIGNED']
+        print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True))
 
         #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
@@ -331,5 +390,38 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wz &= ff['ZWARN'] != 1.e20
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
+    
+    if '.ran' in fin:
+        print('area is '+str(len(ff)/2500))
+    comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    write_LSS(ff,fout,comments)
 
-    ff.write(fout,overwrite=True,format='fits')
+#     tmpfn = fout+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff),extname='LSS')
+#     fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+fout)
+    #ff.write(fout,overwrite=True,format='fits')
+
+def write_LSS(ff,outf,comments=None):
+    '''
+    ff is the structured array/Table to be written out as an LSS catalog
+    outf is the full path to write out
+    comments is a list of comments to include in the header
+    '''
+    tmpfn = outf+'.tmp'
+    if os.path.isfile(tmpfn):
+        os.system('rm '+tmpfn)
+    fd = fitsio.FITS(tmpfn, "rw")
+    fd.write(np.array(ff),extname='LSS')
+    if comments is not None:
+        for comment in comments:
+            fd['LSS'].write_comment(comment)
+    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()    
+    print('closed fits file')
+    os.system('mv '+tmpfn+' '+outf)
+    print('moved output to '+outf)

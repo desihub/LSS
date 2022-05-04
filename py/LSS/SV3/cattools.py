@@ -16,6 +16,7 @@ from LSS import common_tools as common
 from LSS import ssr_tools
 from desitarget.io import read_targets_in_tiles
 from desitarget.sv3 import sv3_targetmask
+import datetime
 
 from LSS.Cosmo import distance
 
@@ -242,7 +243,15 @@ def combtiles_wdup(tiles,mdir='',fout='',tarcol=['RA','DEC','TARGETID','SV3_DESI
         tarsn.sort('TARGETID')
         n += 1
         print(tile,n,len(tiles[tmask]),len(tarsn)) 
-    tarsn.write(fout,format='fits', overwrite=True)       
+    if os.path.isfile('tmp.fits'):
+        os.system('rm tmp.fits')
+    fd = fitsio.FITS('tmp.fits', "rw")
+    fd.write(np.array(tarsn),extname='POTENTIAL_ASSINGMENT')
+    fd['POTENTIAL_ASSINGMENT'].write_comment("concatenation of SV3 POTENTIAL_ASSIGNMENT information, joined to columns in targe files")
+    fd['POTENTIAL_ASSINGMENT'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()    
+    os.system('mv tmp.fits '+fout)
+    #tarsn.write(fout,format='fits', overwrite=True)       
 
 def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     #get target info
@@ -824,7 +833,16 @@ def combran_wdup(tiles,rann,randir,tp,sv3dir,specf,keepcols=[]):
     fgu.sort('TARGETID')
     outf = sv3dir+'/rancomb_'+str(rann)+tp+'wdupspec_Alltiles.fits'
     print(outf)
-    fgu.write(outf,format='fits', overwrite=True)
+    if os.path.isfile('tmp.fits'):
+        os.system('rm tmp.fits')
+    fd = fitsio.FITS('tmp.fits', "rw")
+    fd.write(np.array(fgu),extname='POTENTIAL_ASSINGMENT')
+    fd['POTENTIAL_ASSINGMENT'].write_comment("concatenation of SV3 POTENTIAL_ASSIGNMENT information for randoms, joined to columns in targe files")
+    fd['POTENTIAL_ASSINGMENT'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()    
+    os.system('mv tmp.fits '+fout)
+
+    #fgu.write(outf,format='fits', overwrite=True)
     
 
 
@@ -1141,15 +1159,26 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 #     print('number of tilelocid in randoms not in data '+str(no))    
 #     dz['FRACZ_TILELOCID'] = probl
     
+    comments = ["SV3 'full' LSS catalog for random # "+str(rann)+" without any vetos applied","entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    common.write_LSS(dz,outf,comments)
 
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(dz),extname='LSS')
+#     fd['LSS'].write_comment("SV3 'full' LSS catalog for random # "+str(rann)+" without any vetos applied")
+#     fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
 
-
-    dz.write(outf,format='fits', overwrite=True)
-    print('wrote '+outf)
+    #dz.write(outf,format='fits', overwrite=True)
+    #print('moved output to '+outf)
     
 
 
-def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4,bitweightfile=None):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1174,13 +1203,15 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #load in the appropriate dark/bright combined spec file and use to denote the tileid + location that had good observations:
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     if specver == 'daily':
-        fbcol = 'FIBERSTATUS'
+        #fbcol = 'FIBERSTATUS'
+        print('no longer supported')
+        return False
     #if specver == 'everest' or specver == 'fuji':
-    else:
-        fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
+    #else:
+    #    fbcol = 'COADD_FIBERSTATUS'
+    #wf = fs[fbcol] == 0
+    #stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    #gtl = np.unique(stlid[wf])
     #gtl now contains the list of 'good' tilelocid
 
     #read in the big combined data file
@@ -1197,6 +1228,14 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #print(len(dz[wg]))
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
+    
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['COADD_FIBERSTATUS'] == 0
+    fs = dz[wz]
+    print('number of good obs '+str(len(fs)))
+    #fs = common.cut_specdat(dz)
+    gtl = np.unique(fs['TILELOCID'])
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
@@ -1232,11 +1271,16 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #find the rows where we have spectroscopic observations
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    
+    
     #mark them as having LOCATION_ASSIGNED
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     #find the TILELOCID that were assigned and mark them as so
     tlids = np.unique(dz['TILELOCID'][wz])
+    #test that all with goodhardloc have z
+    gin = np.isin(gtl,tlids)
+    print('gtl in tlids, should be all',np.sum(gin),len(gtl))
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = 0
     dz['TILELOCID_ASSIGNED'][wtl] = 1
@@ -1246,13 +1290,13 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
         if azf != '':
-            arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
+            arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
             st = []
             for i in range(0,len(arz)):
                 st.append(arz['SUBSET'][i][:4])
             st = np.array(st)
-            wg = arz[fbcol] == 0
-            wg &= st == "thru"
+            #wg = arz[fbcol] == 0
+            wg = st == "thru"
             arz = arz[wg]
             o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
             w = (o2c*0) != 0
@@ -1263,7 +1307,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
             arz['o2c'] = o2c
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
    
-            dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
+            dz.remove_columns(['SUBSET','DELTACHI2_OII'])
             print('check length after merge with OII strength file:' +str(len(dz)))
             #join changes order, so get wz again
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
@@ -1286,9 +1330,11 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
-
+    print(np.max(dz[tscol]))
+    dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
@@ -1296,6 +1342,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    dz['Z'] = dz['Z'].filled(999999)
+    selm = dz['Z'] == 999999
+    print('999999s for Z',len(dz[selm]))
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
@@ -1424,16 +1473,30 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
 
     
     #for debugging writeout
-    for col in dz.dtype.names:
-        to = Table()
-        to[col] = dz[col]
-        #print(col)
-        try:
-            to.write('temp.fits',format='fits', overwrite=True)
-        except:
-            print(col+' failed!')            
+#     for col in dz.dtype.names:
+#         to = Table()
+#         to[col] = dz[col]
+#         #print(col)
+#         try:
+#             to.write('temp.fits',format='fits', overwrite=True)
+#         except:
+#             print(col+' failed!')            
+
+    comments = ["SV3 'full' LSS catalog for data without any vetos applied","entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    common.write_LSS(dz,outf,comments)
+
+#     tmpfn = outf +'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(dz),extname='LSS')
+#     fd['LSS'].write_comment("'full' LSS catalog for data without any vetos applied")
+#     fd['LSS'].write_comment("entries are for all targetid that showed up in POTENTIAL_ASSIGNMENTS")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
     
-    dz.write(outf,format='fits', overwrite=True)
+    #dz.write(outf,format='fits', overwrite=True)
 
 def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128):
     '''
@@ -1532,6 +1595,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN'] != 1.e20
 
         selg = ssr_tools.LRG_goodz(ff)
+        wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
@@ -1614,11 +1678,54 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff.keep_columns(kl)#,'PROB_OBS'
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
-    ff.write(outf,format='fits', overwrite=True)
+
+    comments = ["SV3 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    common.write_LSS(ff,outf,comments)
+
     outfn = fl+wzm+'N_clustering.dat.fits'
-    ff[wn].write(outfn,format='fits', overwrite=True)
+    comments = ["SV3 'clustering' LSS catalog for data, just in BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
     outfn = fl+wzm+'S_clustering.dat.fits'
-    ff[~wn].write(outfn,format='fits', overwrite=True)
+    comments = ["SV3 'clustering' LSS catalog for data, just in DECaLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[~wn],outfn,comments)
+
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, all regions")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
+
+    #ff.write(outf,format='fits', overwrite=True)
+#     outfn = fl+wzm+'N_clustering.dat.fits'
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff[wn]),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, just in BASS/MzLS region")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
+    #ff[wn].write(outfn,format='fits', overwrite=True)
+#     outfn = fl+wzm+'S_clustering.dat.fits'
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ff[~wn]),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for data, just in DECaLS region")
+#     fd['LSS'].write_comment("entries are only for data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfn)
+    #ff[~wn].write(outfn,format='fits', overwrite=True)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
@@ -1688,7 +1795,22 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     
     ffc.keep_columns(kl)  
     outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
-    ffc.write(outf,format='fits', overwrite=True)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", all regions","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffc,outf,comments)
+
+
+#     tmpfn = outf+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffc),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", all regions")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outf)
+    #ffc.write(outf,format='fits', overwrite=True)
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     ffcn = ffc[wn]
@@ -1696,7 +1818,22 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcdn[inds]
     for col in rcols: 
         ffcn[col] = dshuf[col]     
-    ffcn.write(outfn,format='fits', overwrite=True)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", BASS/MzLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffcn,outfn,comments)
+
+
+#     tmpfn = outfn+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffcn),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", BASS/MzLS region")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfn)
+    #ffcn.write(outfn,format='fits', overwrite=True)
 
     outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
     fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
@@ -1705,7 +1842,22 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcds[inds]
     for col in rcols: 
         ffcs[col] = dshuf[col]     
-    ffcs.write(outfs,format='fits', overwrite=True)
+
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", DECaLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+    common.write_LSS(ffcs,outfs,comments)
+
+
+#     tmpfn = outfs+'.tmp'
+#     if os.path.isfile(tmpfn):
+#         os.system('rm '+tmpfn)
+#     fd = fitsio.FITS(tmpfn, "rw")
+#     fd.write(np.array(ffcs),extname='LSS')
+#     fd['LSS'].write_comment("'cluster' LSS catalog for random #"+str(rann)+", DECaLS region")
+#     fd['LSS'].write_comment("columns that are not ra,dec are sampled from data with good redshifts")
+#     fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+#     fd.close()    
+#     os.system('mv '+tmpfn+' '+outfs)
+    #ffcs.write(outfs,format='fits', overwrite=True)
 
 # def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6):
 #     nzd = np.loadtxt(fb+'_nz.dat').transpose()[3] #column with nbar values

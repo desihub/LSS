@@ -35,6 +35,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
@@ -181,7 +182,8 @@ if mkfulld:
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
         if type[:3] == 'ELG':
-            azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
+            #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
+            azf = ldirspec+'emlin_catalog.fits'
         if type[:3] == 'QSO':
             azf =ldirspec+'QSO_catalog.fits'
     #if specrel == 'daily':
@@ -212,6 +214,13 @@ if mkfulld:
     
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
 
+if args.add_veto == 'y':
+    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
+    for rn in range(rm,rx):
+        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        
 if args.apply_veto == 'y':
     print('applying vetos')
     maxp = 3400
@@ -228,22 +237,33 @@ if args.apply_veto == 'y':
         fout = dirout+type+notqso+'zdone_'+str(rn)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
+
+dchi2 = 9
+tsnrcut = 0
+if type[:3] == 'ELG':
+	dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+	tsnrcut = 80
+	zmin = 0.8
+	zmax = 1.6
+if type == 'LRG':
+	dchi2 = 16  
+	tsnrcut = 80
+	zmin = 0.4
+	zmax = 1.1  
+if type[:3] == 'BGS':
+	dchi2 = 40
+	tsnrcut = 1000
+	zmin = 0.1
+	zmax = 0.5
+if type == 'QSO':
+	zmin = 0.8
+	zmax = 3.5
         
-    
+
+regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    dchi2 = 9
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        dchi2 = 40
-        tsnrcut = 1000
-    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
@@ -267,7 +287,7 @@ if mkclusran:
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_RF','WEIGHT_FKP']
+    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
     if type[:3] == 'BGS':
         rcols.append('flux_r_dered')
 
@@ -277,7 +297,7 @@ if mkclusran:
 
 if args.imsys == 'y':
     from LSS.imaging import densvar
-    regl = ['_DN','_DS','','_N','_S']
+    #regl = ['_DN','_DS','','_N','_S']
     wzm = ''
     fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
     use_maps = fit_maps
@@ -308,18 +328,19 @@ if args.imsys == 'y':
             dd['WEIGHT'][sel] *= wsysl[sel]
             dd.write(fcd,overwrite=True,format='fits')
 
+zl = (zmin,zmax)
 if args.regressis == 'y':
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
     nside = 256
-    if type[:3] == 'ELG':
-        zl = (0.8,1.5)
-    if type[:3] == 'QSO':
-        zl = (0.8,2.1)#,(2.1,3.5)]    
-    if type[:3] == 'LRG':
-        zl = (0.4,1.1)
-    if type[:3] == 'BGS':
-        zl = (0.1,0.5)  
+#     if type[:3] == 'ELG':
+#         zl = (0.8,1.5)
+#     if type[:3] == 'QSO':
+#         zl = (0.8,2.1)#,(2.1,3.5)]    
+#     if type[:3] == 'LRG':
+#         zl = (0.4,1.1)
+#     if type[:3] == 'BGS':
+#         zl = (0.1,0.5)  
 
 
     if not os.path.exists(dirreg):
@@ -350,7 +371,7 @@ if args.add_regressis == 'y':
     fnreg = dirout+'/regressis_data/main_'+type+notqso+'_256/RF/main_'+type+notqso+'_imaging_weight_256.npy'
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
-    regl = ['_DN','_DS','','_N','_S']
+    #regl = ['_DN','_DS','','_N','_S']
     for reg in regl:
         fb = dirout+type+notqso+'zdone'+reg
         fcd = fb+'_clustering.dat.fits'
@@ -358,8 +379,13 @@ if args.add_regressis == 'y':
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
-        dd['WEIGHT_RF'] = drfw
-        dd.write(fcd,format='fits',overwrite=True)
+        dd['WEIGHT_SYS'] = drfw
+        dd['WEIGHT'] *= dd['WEIGHT_SYS']
+        #dd.write(fcd,format='fits',overwrite=True)
+        comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax)]
+        comments = ["Using regressis for WEIGHT_SYS"]
+
+        common.write_LSS(dd,fcd,comments)
 
     
     
@@ -379,7 +405,7 @@ if mkclusran:
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_RF','WEIGHT_FKP']
+    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
     if type[:3] == 'BGS':
         rcols.append('flux_r_dered')
 
@@ -399,18 +425,18 @@ if args.nz == 'y':
 #     if ccut is not None:
 #         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    regl = ['_DN','_DS','','_N','_S']
+#    regl = ['_DN','_DS','','_N','_S']
     
     if type == 'QSO':
-        zmin = 0.6
-        zmax = 4.5
+        #zmin = 0.6
+        #zmax = 4.5
         dz = 0.05
         P0 = 6000
         
     else:    
         dz = 0.02
-        zmin = 0.01
-        zmax = 1.61
+        #zmin = 0.01
+        #zmax = 1.61
     
     if type[:3] == 'LRG':
         P0 = 10000
@@ -423,7 +449,7 @@ if args.nz == 'y':
         fb = dirout+type+notqso+'zdone'+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
-        fout = fb+'_nz.dat'
+        fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 

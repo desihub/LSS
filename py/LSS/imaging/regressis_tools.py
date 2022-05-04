@@ -36,7 +36,8 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
 
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_clustering.dat.fits'))
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
-    map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=data['WEIGHT_COMP'].values, in_deg2=False)
+    wts = data['WEIGHT_COMP'].values*data['WEIGHT_ZFAIL'].values
+    map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
     north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()

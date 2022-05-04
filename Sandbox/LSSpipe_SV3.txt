@@ -46,7 +46,7 @@ python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey 
 
 #this applies vetos to both data and randoms (could put randoms in separate script and parallize)
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_SV3.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec fuji --notqso notqso
+    python mkCat_SV3.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec fuji --maxr 18 --notqso notqso
     
 #to do randoms in parallel:
     python mkCat_SV3_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec fuji --notqso notqso

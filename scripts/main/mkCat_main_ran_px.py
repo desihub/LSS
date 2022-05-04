@@ -45,7 +45,7 @@ parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
 parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
 parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
-parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='y')
+parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='n')
 parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -281,6 +281,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     print('length after selecting type and good hardware '+str(len(specf)))
     lznp = common.find_znotposs(specf)
     del specf
+    print('finished finding znotposs')
 
 
 
@@ -403,12 +404,20 @@ def doran(ii):
             uhpxs = hpxs
         else:
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-            otls = np.unique(fitsio.read(cf)['TILEID'])
-            selt = ~np.isin(ta['TILEID'],otls['TILEID'])
-            uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+            try:
+                tls = fitsio.read(cf,columns=['TILEID'])
+                dosel = True
+            except:
+                print('problem reading '+cf+' redoing all')
+                uhpxs = hpxs
+            if dosel:
+                otls = np.unique(tls['TILEID'])
+                print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
+                selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
+                uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
-            print(outf,npx,len(hpxs))
+            print(outf,npx,len(uhpxs))
             ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
             npx += 1  
         npx = 0
@@ -423,27 +432,34 @@ def doran(ii):
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
         cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
+        pl = []
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
                 #pf = Table.read(po)
                 pf = fitsio.read(po,columns=cols)
+                pl.append(pf)
+                print(npx,len(hpxs))
                 #ptls = Table.read(po)
                 #ptls.keep_columns(['TARGETID','TILES'])
-                if s == 0:
-                    pn = pf
-                    #ptlsn = ptls
-                    s = 1
-                else:
+                #if s == 0:
+                #    pn = pf
+                #    #ptlsn = ptls
+                #    s = 1
+                #else:
                     #pn = vstack([pn,pf],metadata_conflicts='silent')
-                    pn = np.hstack((pn,pf))
+                #    pn = np.hstack((pn,pf))
                     #ptlsn = vstack([ptlsn,ptls],metadata_conflicts='silent')
-                    print(len(pn),npx,len(hpxs))
+                #    print(len(pn),npx,len(hpxs))
             else:
                 print('file '+po+' not found')
             npx += 1
         #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
         #pn.write(outf,overwrite=True,format='fits')
+        print('stacking pixel arrays')
+        #pn = vstack(pl,metadata_conflicts='silent')
+        pn = np.hstack(pl)
+        print('writing out')
         fitsio.write(outf,pn,clobber=True)
         del pn
     #logf.write('ran mkfullran\n')
