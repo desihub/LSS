@@ -1695,14 +1695,14 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
     #fe = False
     dz = []
     if os.path.isfile(zf):
-        dz = Table.read(zf)
+        dz = Table(fitsio.read(zf))
         #dz.remove_columns(['TILES','NTILE'])
         wg = np.isin(dz['TILELOCID'],gtl)
         dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
         dz['GOODHARDLOC'][wg] = 1
         #fe = True
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
-        dzpd = Table.read(zfpd)
+        dzpd = Table(fitsio.read(zfpd))
 
     if len(dz) > 0 and len(dzpd) > 0:# and fe:
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
@@ -1736,6 +1736,10 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
                 dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
                 sel = dz['PRIORITY'] <= maxp
                 dz['GOODPRI'][sel] = 1
+                t0 = dz[tsnr]*0 != 0
+                t0 |= dz[tsnr] == 999999
+                t0 |= dz[tsnr] == 1.e20
+                dz[tsnr][t0] = 0
                 dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
 
 
