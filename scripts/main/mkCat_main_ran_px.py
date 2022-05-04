@@ -263,6 +263,10 @@ if combhp or mkfullr:
 		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 	print('loaded specf file '+specfo)
 	specfc = ct.cut_specdat(specf)
+	ntls = len(np.unique(specf['TILEID']))
+	if ntls != len(ta):
+	    print(ntls,len(ta))
+	    sys.exit('mismatch in number of tileids NOT PROCEEDING')
 	gtl = np.unique(specfc['TILELOCID'])
 	del specfc
 
@@ -276,6 +280,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     del specf
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    
     wg = np.isin(specf['TILELOCID'],gtl)
     specf = Table(specf[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
