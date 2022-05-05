@@ -1706,7 +1706,11 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
         dz['GOODHARDLOC'][wg] = 1
         #fe = True
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
-        dzpd = Table(fitsio.read(zfpd))
+        try:
+            dzpd = Table(fitsio.read(zfpd))
+        except:
+            print('failed to load '+zfpd)
+            return False
 
     if len(dz) > 0 and len(dzpd) > 0:# and fe:
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
