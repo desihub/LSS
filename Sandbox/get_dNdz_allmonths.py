@@ -21,16 +21,20 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELGzdone_full.dat.fits')
 
     wg = dt['ZWARN'] != 999999
+    wg &= dt['ZWARN'] != 1e20
+    wg &= dt['ZWARN']*0 == 0
     wg &= dt['GOODHARDLOC'] == 1
     zmin = 0
     zmax = 2
 
     if tp == 'LRG':
-        drz = (10**(3 - 3.5*dt[zcol]))
-        mask_bad = (drz>30) & (dt['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
-        mask_bad |= (dt['DELTACHI2']<10)
-        wz = dt[zcol]<1.4
+        #drz = (10**(3 - 3.5*dt[zcol]))
+        #mask_bad = (drz>30) & (dt['DELTACHI2']<30)
+        #mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
+        #mask_bad |= (dt['DELTACHI2']<10)
+        wz = dt['DELTACHI2'] > 15
+        wz &= dt['ZWARN'] == 0
+        wz &= dt[zcol]<1.5
         wz &= (~mask_bad)    
     if tp[:3] == 'ELG':
         wg &= dt['o2c'] != 1e20
