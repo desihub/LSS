@@ -1676,6 +1676,10 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
+    t0 = dz[tsnr]*0 != 0
+    t0 |= dz[tsnr] == 999999
+    t0 |= dz[tsnr] == 1.e20
+    dz[tsnr][t0] = 0
     
 
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
