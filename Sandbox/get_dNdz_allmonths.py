@@ -35,7 +35,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         wz = dt['DELTACHI2'] > 15
         wz &= dt['ZWARN'] == 0
         wz &= dt[zcol]<1.5
-        wz &= (~mask_bad)    
+        #wz &= (~mask_bad)    
     if tp[:3] == 'ELG':
         wg &= dt['o2c'] != 1e20
         wz = dt['o2c'] > 0.9
