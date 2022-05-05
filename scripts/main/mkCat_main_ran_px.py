@@ -263,10 +263,11 @@ if combhp or mkfullr:
 		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 	print('loaded specf file '+specfo)
 	specfc = ct.cut_specdat(specf)
-	ntls = len(np.unique(specf['TILEID']))
-	if ntls != len(ta):
-	    print(ntls,len(ta))
-	    sys.exit('mismatch in number of tileids NOT PROCEEDING')
+	if combhp:
+        ntls = len(np.unique(specf['TILEID']))
+        if ntls != len(ta):
+            print(ntls,len(ta))
+            sys.exit('mismatch in number of tileids NOT PROCEEDING')
 	gtl = np.unique(specfc['TILELOCID'])
 	del specfc
 
