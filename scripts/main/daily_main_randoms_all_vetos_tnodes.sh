@@ -10,3 +10,4 @@ srun -N 1 python mkCat_main_ran.py --type ELG --basedir /global/cfs/cdirs/desi/s
 srun -N 1 python mkCat_main_ran.py --type BGS_ANY --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --par n &
 srun -N 1 python mkCat_main_ran.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --par n &
 srun -N 1 python mkCat_main_ran.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --par n &
+wait
