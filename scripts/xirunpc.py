@@ -297,7 +297,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             data_samples1 = subsampler.label(data_positions1)
             randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
             if with_shifted:
-                shifted_samples1 = [subsampler.label(p) for p in shifted_samples1]
+                shifted_samples1 = [subsampler.label(p) for p in shifted_positions1]
             if not autocorr:
                 data_samples2 = subsampler.label(data_positions2)
                 randoms_samples2 = [subsampler.label(p) for p in randoms_positions2]
