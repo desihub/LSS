@@ -273,9 +273,13 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         del fd
         #ft = Table.read(fn)
         #ft['NZ'] = nl
-        ff['LSS'].insert_column('NZ',nl)
+        #ff['LSS'].insert_column('NZ',nl)
+        fd['NZ'] = nl
         fkpl = 1./(1+nl*P0*mean_comp)
-        ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+        fd['WEIGHT_FKP'] = fkpl
+        #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+        fd = np.array(fd)
+        ff['LSS'].write(fd)
         ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         ff.close()
         #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
