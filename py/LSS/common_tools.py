@@ -270,7 +270,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
             zind = int((z-zmin)/bs)
             if z > zmin and z < zmax:
                 nl[ii] = nzd[zind]
-        del fd
+        #del fd
         #ft = Table.read(fn)
         #ft['NZ'] = nl
         #ff['LSS'].insert_column('NZ',nl)
