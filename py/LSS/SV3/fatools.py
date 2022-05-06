@@ -294,7 +294,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         print('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
-    if getosubp == True or mtldir == None:
+    if getosubp == True or (mtldir == None and newdir == None):
         outdir += 'orig/'
     if newdir == None:
         if mtldir == None:
