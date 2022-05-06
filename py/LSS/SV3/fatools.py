@@ -297,10 +297,10 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if getosubp == True or mtldir == None:
         outdir += 'orig/'
     if newdir == None:
-		if mtldir == None:
-			tarfn = indir+ts+'-targ.fits' 
-		else:
-			tarfn = outdir+ts+'-targ.fits'   
+        if mtldir == None:
+            tarfn = indir+ts+'-targ.fits' 
+        else:
+            tarfn = outdir+ts+'-targ.fits'   
     else:
         tarfn = newdir+ts+'-targ.fits' 
     prog = fht['FAPRGRM'].lower()
