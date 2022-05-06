@@ -240,6 +240,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
     mean_comp = len(fd)/np.sum(fd['WEIGHT'])
+    print('mean completeness '+str(mean_comp))
     del fd
     #ft = Table.read(fn)
     #ft['NZ'] = nl
