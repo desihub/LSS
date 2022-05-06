@@ -1178,7 +1178,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     
 
 
-def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='daily',notqso='',qsobit=4,bitweightfile=None):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1203,13 +1203,15 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #load in the appropriate dark/bright combined spec file and use to denote the tileid + location that had good observations:
     #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/'+specver+'/datcomb_'+pd+'_specwdup_Alltiles.fits')
     if specver == 'daily':
-        fbcol = 'FIBERSTATUS'
+        #fbcol = 'FIBERSTATUS'
+        print('no longer supported')
+        return False
     #if specver == 'everest' or specver == 'fuji':
-    else:
-        fbcol = 'COADD_FIBERSTATUS'
-    wf = fs[fbcol] == 0
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
+    #else:
+    #    fbcol = 'COADD_FIBERSTATUS'
+    #wf = fs[fbcol] == 0
+    #stlid = 10000*fs['TILEID'] +fs['LOCATION']
+    #gtl = np.unique(stlid[wf])
     #gtl now contains the list of 'good' tilelocid
 
     #read in the big combined data file
@@ -1226,6 +1228,14 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #print(len(dz[wg]))
     #down-select to target type of interest and good tilelocid
     dz = dz[wtype]#&wg]
+    
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['COADD_FIBERSTATUS'] == 0
+    fs = dz[wz]
+    print('number of good obs '+str(len(fs)))
+    #fs = common.cut_specdat(dz)
+    gtl = np.unique(fs['TILELOCID'])
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
@@ -1261,11 +1271,16 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #find the rows where we have spectroscopic observations
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    
+    
     #mark them as having LOCATION_ASSIGNED
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     #find the TILELOCID that were assigned and mark them as so
     tlids = np.unique(dz['TILELOCID'][wz])
+    #test that all with goodhardloc have z
+    gin = np.isin(gtl,tlids)
+    print('gtl in tlids, should be all',np.sum(gin),len(gtl))
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = 0
     dz['TILELOCID_ASSIGNED'][wtl] = 1
@@ -1275,13 +1290,13 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     #get OII flux info for ELGs
     if tp == 'ELG' or tp == 'ELG_HIP':
         if azf != '':
-            arz = fitsio.read(azf,columns=[fbcol,'TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
+            arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
             st = []
             for i in range(0,len(arz)):
                 st.append(arz['SUBSET'][i][:4])
             st = np.array(st)
-            wg = arz[fbcol] == 0
-            wg &= st == "thru"
+            #wg = arz[fbcol] == 0
+            wg = st == "thru"
             arz = arz[wg]
             o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
             w = (o2c*0) != 0
@@ -1292,7 +1307,7 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
             arz['o2c'] = o2c
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
    
-            dz.remove_columns(['SUBSET','DELTACHI2_OII',fbcol+'_OII'])
+            dz.remove_columns(['SUBSET','DELTACHI2_OII'])
             print('check length after merge with OII strength file:' +str(len(dz)))
             #join changes order, so get wz again
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
@@ -1315,9 +1330,11 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
     
     #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
     wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
-
+    print(np.max(dz[tscol]))
+    dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
@@ -1325,6 +1342,9 @@ def mkfulldat(fs,zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TAR
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    dz['Z'] = dz['Z'].filled(999999)
+    selm = dz['Z'] == 999999
+    print('999999s for Z',len(dz[selm]))
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
     print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))

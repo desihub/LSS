@@ -25,13 +25,20 @@ n_processes = 32
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
 parser.add_argument('-i', '--input', required=True)
-parser.add_argument('-o', '--output', required=True)
+#parser.add_argument('-o', '--output', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
+parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
+parser.add_argument( '--ran', default=False, required=False,type=bool)
 args = parser.parse_args()
 
+
+input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'.fits'
+output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'_'+args.tracer+'imask.fits'
+if args.ran:
+    input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(args.input)+'.fits'
+    output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(args.input)+args.tracer+'imask.fits'
+
 tracer = args.tracer.lower()
-input_path = args.input
-output_path = args.output
 version = args.version
 
 version_dict = {'lrg': 'v1.1', 'elg': 'v1'}
@@ -84,12 +91,13 @@ def wrapper(bid_index):
     brickid = bid_unique[bid_index]
 
     ra, dec = cat['RA'][idx], cat['DEC'][idx]
-
+    tid = cat['TARGETID'][idx]
     bitmask = bitmask_radec(brickid, ra, dec)
 
     data = Table()
     data['idx'] = idx
     data['{}_mask'.format(tracer)] = bitmask
+    data['TARGETID'] = tid
 
     return data
 
@@ -98,9 +106,9 @@ def wrapper(bid_index):
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
 try:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID']))
+    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
 except ValueError:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC']))
+    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
 
 print(len(cat))
 

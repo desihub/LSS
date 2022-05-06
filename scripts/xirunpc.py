@@ -27,19 +27,22 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
-        zlims = [0.8, 1.1, 1.5]
+        zlims = [0.8, 1.1, 1.6]
         if option:
             if option == 'safez':
                 zlims = [0.9, 1.48]
             if 'extended' in option:
-                zlims = [0.8, 1.1, 1.6]
+                print('extended is no longer a meaningful option')
+                #zlims = [0.8, 1.1, 1.6]
             if 'smallshells' in option:
                 zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
 
     if tracer.startswith('QSO'):
-        zlims = [0.8, 1.1, 1.5, 2.1]
+        zlims = [0.8, 1.1, 1.6, 2.1,3.5]
         if option == 'highz':
             zlims = [2.1, 3.5]
+        if option == 'lowz':
+            zlims = [0.8, 2.1]
 
     if tracer.startswith('BGS'):
         zlims = [0.1, 0.3, 0.5]
@@ -55,10 +58,10 @@ def get_zlims(tracer, tracer2=None, option=None):
 
 
 def get_regions(survey, rec=False):
-    regions = ['N', 'S', '']
-    if survey in ['main', 'DA02']:
-        regions = ['DN', 'DS', 'N', 'S']
-        if rec: regions = ['DN', 'N']
+    regions = ['N', 'S']#, '']
+    #if survey in ['main', 'DA02']:
+    #    regions = ['DN', 'DS', 'N', 'S']
+    #    if rec: regions = ['DN', 'N']
     return regions
 
 
@@ -294,7 +297,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             data_samples1 = subsampler.label(data_positions1)
             randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
             if with_shifted:
-                shifted_samples1 = [subsampler.label(p) for p in shifted_samples1]
+                shifted_samples1 = [subsampler.label(p) for p in shifted_positions1]
             if not autocorr:
                 data_samples2 = subsampler.label(data_positions2)
                 randoms_samples2 = [subsampler.label(p) for p in randoms_positions2]
@@ -394,9 +397,9 @@ if __name__ == '__main__':
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='everest')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
+    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
@@ -461,6 +464,7 @@ if __name__ == '__main__':
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
     for zmin, zmax in zlims:
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, option=option)
         for region in regions:
             wang = None
             for corr_type in args.corr_type:
@@ -469,10 +473,20 @@ if __name__ == '__main__':
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
                 #save pair counts
-                file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, option=option,out_dir=os.path.join(out_dir, corr_type))
-                fn = corr_fn(file_type='npy', **file_kwargs)
-                result.save(fn)
-                txt_kwargs = file_kwargs.copy()
+                result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+
+        # Save combination and .txt files
+        for corr_type in args.corr_type:
+            all_regions = regions.copy()
+            if 'N' in regions and 'S' in regions:  # let's combine
+                corr = sum([TwoPointCorrelationFunction.load(
+                            corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in 'NS'])
+                corr.save(corr_fn(file_type='npy', region='NScomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+                all_regions.append('NScomb')
+            for region in all_regions:
+                txt_kwargs = base_file_kwargs.copy()
+                txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
+                result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
                 for factor in rebinning_factors:
                     #result = TwoPointEstimator.load(fn)
                     rebinned = result[:(result.shape[0]//factor)*factor:factor]

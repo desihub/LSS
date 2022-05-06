@@ -389,11 +389,12 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
     if len(dl) > 0:
         dt = vstack(dl,metadata_conflicts='silent')
         dt['TILEID'] = tile
+        dt.write(outf,format='fits',overwrite=True)
     else:
         print('no data to combine for tile '+str(tile))    
     #outf = outdir+'emline-'+str(tile)+'.fits'
     #'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
-    dt.write(outf,format='fits',overwrite=True)
+    
     #return dt
 
 
@@ -781,19 +782,21 @@ def get_specdat(indir,pd,ver='daily'):
     return fs[wfqa]
 
 def cut_specdat(dz):
-    selz = dz['ZWARN'] != 999999
-    fs = dz[selz]
-
-    #first, need to find locations to veto based data
-    nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-    num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
-    badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-    num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
-    nomtl = nodata | badqa
-    wfqa = ~nomtl
-    return fs[wfqa]
+    print('moved to common_tools')
+    return common.cut_specdat(dz)
+#     selz = dz['ZWARN'] != 999999
+#     fs = dz[selz]
+# 
+#     #first, need to find locations to veto based data
+#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
+#     num_nod = np.sum(nodata)
+#     print('number with no data '+str(num_nod))
+#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
+#     num_badqa = np.sum(badqa)
+#     print('number with bad qa '+str(num_badqa))
+#     nomtl = nodata | badqa
+#     wfqa = ~nomtl
+#     return fs[wfqa]
 
 
 def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main'):
@@ -1673,6 +1676,10 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
+    t0 = dz[tsnr]*0 != 0
+    t0 |= dz[tsnr] == 999999
+    t0 |= dz[tsnr] == 1.e20
+    dz[tsnr][t0] = 0
     
 
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
@@ -1692,14 +1699,18 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
     #fe = False
     dz = []
     if os.path.isfile(zf):
-        dz = Table.read(zf)
+        dz = Table(fitsio.read(zf))
         #dz.remove_columns(['TILES','NTILE'])
         wg = np.isin(dz['TILELOCID'],gtl)
         dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
         dz['GOODHARDLOC'][wg] = 1
         #fe = True
         zfpd = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'__Alltilelocinfo.fits'
-        dzpd = Table.read(zfpd)
+        try:
+            dzpd = Table(fitsio.read(zfpd))
+        except:
+            print('failed to load '+zfpd)
+            return False
 
     if len(dz) > 0 and len(dzpd) > 0:# and fe:
         #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
@@ -1733,6 +1744,10 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
                 dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
                 sel = dz['PRIORITY'] <= maxp
                 dz['GOODPRI'][sel] = 1
+                t0 = dz[tsnr]*0 != 0
+                t0 |= dz[tsnr] == 999999
+                t0 |= dz[tsnr] == 1.e20
+                dz[tsnr][t0] = 0
                 dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
 
 
@@ -1799,7 +1814,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #stlid = 10000*fs['TILEID'] +fs['LOCATION']
     #gtl = np.unique(stlid)
 
-    dz = Table.read(zf)
+    dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         print('removing QSO targets')
@@ -1815,7 +1830,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    fs = cut_specdat(dz)
+    fs = common.cut_specdat(dz)
     #fs['sort'] = fs['TSNR2_LRG']
     #fs.sort('sort')
     #fsu = unique(fs,keys=['TARGETID'],keep='last')
@@ -2069,7 +2084,7 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
     return ff
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -2154,6 +2169,31 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+    if tp == 'BGS_BRIGHT':
+        lrg = ssr_tools.LRG_ssr()
+        ff = lrg.add_modpre(ff)
+        ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+        print('checking sum of zfail weights compared to length of good z')
+        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+
+    if tp == 'ELG_LOP':
+        elg = ssr_tools.ELG_ssr()
+        ff = elg.add_modpre(ff)
+        print('checking sum of zfail weights compared to length of good z')
+        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+    if tp == 'QSO':
+        qso = ssr_tools.QSO_ssr()
+        ff = qso.add_modpre(ff)
+        print('checking sum of zfail weights compared to length of good z')
+        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
         
     #if tp[:3] == 'ELG':
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
@@ -2206,7 +2246,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after cutting to spectype QSO '+str(len(ff)))
 
     #select down to specific columns below and then also split N/S
+    
+    selz = ff['Z'] > zmin
+    selz &= ff['Z'] < zmax
+    ff = ff[selz]
+
     wn = ff['PHOTSYS'] == 'N'
+
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
     if tp[:3] == 'BGS':
         ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
@@ -2215,16 +2261,24 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff.keep_columns(kl)
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
-    ff.write(outf,format='fits', overwrite=True)
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
     outfn = fl+wzm+'N_clustering.dat.fits'
-    ff[wn].write(outfn,format='fits', overwrite=True)
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
     outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
     ffs = ff[~wn]
-    ffs.write(outfn,format='fits', overwrite=True)
-    for reg in ['DS','DN']: #split DECaLS NGC/SGC
-        outfn = fl+wzm+reg+'_clustering.dat.fits'
-        sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
-        ffs[sel].write(outfn,format='fits', overwrite=True)
+    common.write_LSS(ffs,outfn,comments)
+
+#     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
+#         outfn = fl+wzm+reg+'_clustering.dat.fits'
+#         sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
+#         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
+#         common.write_LSS(ffs[sel],outfn,comments)
 
 def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -2260,8 +2314,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     wn = ffc['PHOTSYS'] == 'N'
 
     ffc.keep_columns(kc)
-    outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
-    ffc.write(outf,format='fits', overwrite=True)
+    #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
+    #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ffc,outf,comments)
 
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
@@ -2270,7 +2325,9 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcdn[inds]
     for col in rcols:
         ffcn[col] = dshuf[col]
-    ffcn.write(outfn,format='fits', overwrite=True)
+
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcn,outfn,comments)
 
     outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
@@ -2279,19 +2336,22 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     dshuf = fcds[inds]
     for col in rcols:
         ffcs[col] = dshuf[col]
-    ffcs.write(outfs,format='fits', overwrite=True)
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcs,outfs,comments)
 
-    for reg in ['DS','DN']: #split DECaLS NGC/SGC
-        outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
-        sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
-        fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
-        ffss = ffcs[sel]
-        inds = np.random.choice(len(fcd),len(ffss))
-        dshuf = fcd[inds]
-        for col in rcols:
-            ffss[col] = dshuf[col]
+#     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
+#         outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
+#         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
+#         fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
+#         ffss = ffcs[sel]
+#         inds = np.random.choice(len(fcd),len(ffss))
+#         dshuf = fcd[inds]
+#         for col in rcols:
+#             ffss[col] = dshuf[col]
+# 
+#         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
+#         common.write_LSS(ffss,outfn,comments)
 
-        ffss.write(outfn,format='fits', overwrite=True)
 
 
 

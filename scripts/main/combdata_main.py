@@ -73,7 +73,11 @@ tiles = mainp.tiles
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
+print('number of tiles with zdone true '+str(len(mt[wd])))
+wd &= mt['ARCHIVEDATE'] > 0
+print('and with archivedate > 0 '+str(len(mt[wd])))
 wd &= mt['FAPRGRM'] == prog
+print('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
     #if specrel == 'everest':
