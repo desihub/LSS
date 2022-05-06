@@ -230,7 +230,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb+'_clustering.dat.fits'
     ff = fitsio.FITS(fn,'rw')
-    fd = ff['LSS'].read()
+    fd = Table(ff['LSS'].read())
     #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
     zl = fd['Z']
     nl = np.zeros(len(zl))
@@ -241,15 +241,19 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
             nl[ii] = nzd[zind]
     mean_comp = len(fd)/np.sum(fd['WEIGHT'])
     print('mean completeness '+str(mean_comp))
-    del fd
+    #del fd
     #ft = Table.read(fn)
     #ft['NZ'] = nl
-    ff['LSS'].insert_column('NZ',nl)
+    fd['NZ'] = nl
+    #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
     
     fkpl = 1./(1+nl*P0*mean_comp)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-    ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+    fd['WEIGHT_FKP'] = fkpl
+    fd = np.array(fd)
+    #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
+    ff['LSS'].write(fd)
     ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     ff.close()
     #ft.write(fn,format='fits',overwrite=True)        
@@ -270,7 +274,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         #ft = Table.read(fn)
         #ft['NZ'] = nl
         ff['LSS'].insert_column('NZ',nl)
-        fkpl = 1./(1+nl*P0)
+        fkpl = 1./(1+nl*P0*mean_comp)
         ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
         ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         ff.close()
