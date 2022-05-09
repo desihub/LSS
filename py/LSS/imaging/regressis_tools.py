@@ -38,7 +38,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     for reg in regl:
         dr = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_clustering.dat.fits'))
         dfs.append(dr)
-    data = pd.concat(dfs)
+    data = pd.concat(dfs, ignore_index=True)
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
     wts = data['WEIGHT_COMP'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
@@ -56,7 +56,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
         for i in range(0,nran):
             ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','Z']) 
         ranl.append(ran)
-    randoms = pd.concat(ranl)
+    randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
     # load in deg2 since we know the density of generated randoms in deg2
     map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
