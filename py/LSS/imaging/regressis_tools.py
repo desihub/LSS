@@ -14,7 +14,7 @@ from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logg
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
 
-def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
+def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S']):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
@@ -34,7 +34,11 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
     """
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
-    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_clustering.dat.fits'))
+    dfs = []
+    for reg in regl:
+        dr = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_clustering.dat.fits'))
+        dfs.append(dr)
+    data = pd.concat(dfs)
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
     wts = data['WEIGHT_COMP'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
