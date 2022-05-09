@@ -158,7 +158,7 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
-if blinded == 'y':
+if args.blinded == 'y':
     dirout += 'blinded/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
