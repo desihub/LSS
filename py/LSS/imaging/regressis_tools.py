@@ -57,10 +57,11 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
             ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','Z']) 
         ranl.append(ran)
     randoms = pd.concat(ranl)
+    print(len(data),len(randoms))
     # load in deg2 since we know the density of generated randoms in deg2
     map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
     # a random file is 2500 randoms per deg2
-    mean = 10*2500
+    mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
     fracarea[fracarea == 0] = np.NaN
