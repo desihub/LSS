@@ -2332,7 +2332,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ffcn[col] = dshuf[col]
         kc.append(col)
     ffcn.keep_columns(kc)
-    ffc.keep_columns(kc)
+    
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcn,outfn,comments)
 
@@ -2343,6 +2343,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     dshuf = fcds[inds]
     for col in rcols:
         ffcs[col] = dshuf[col]
+    ffcs.keep_columns(kc)
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcs,outfs,comments)
 
