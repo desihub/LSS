@@ -63,24 +63,9 @@ progl = prog.lower()
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
-if not os.path.exists(maindir+'/logs'):
-    os.mkdir(maindir+'/logs')
-    print('made '+maindir+'/logs')
-
 ldirspec = maindir+specrel+'/'
-if not os.path.exists(ldirspec):
-    os.mkdir(ldirspec)
-    print('made '+ldirspec)
-    
-if not os.path.exists(ldirspec+'LSScats'):
-    os.mkdir(ldirspec+'LSScats')
-    print('made '+ldirspec+'LSScats')
 
 dirin = ldirspec+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    print('made '+dirout)    
-
 
 dirout = ldirspec+'LSScats/'+version+'/blinded/'
 if not os.path.exists(dirout):
