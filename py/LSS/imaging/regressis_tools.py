@@ -14,7 +14,7 @@ from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logg
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
 
-def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S']):
+def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],nran=18):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
