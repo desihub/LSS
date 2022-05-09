@@ -55,7 +55,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
         #ran = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_{i}_clustering.ran.fits'), columns=['RA', 'DEC','Z']) for i in range(10)], ignore_index=True)
         for i in range(0,nran):
             ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','Z']) 
-        	ranl.append(ran)
+            ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
     # load in deg2 since we know the density of generated randoms in deg2
