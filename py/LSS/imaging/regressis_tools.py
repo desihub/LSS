@@ -50,7 +50,11 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S']):
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
 
-    randoms = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_{i}_clustering.ran.fits'), columns=['RA', 'DEC','Z']) for i in range(10)], ignore_index=True)
+    ranl = []
+    for reg = regl:
+        ran = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_{i}_clustering.ran.fits'), columns=['RA', 'DEC','Z']) for i in range(10)], ignore_index=True)
+        ranl.append(ran)
+    randoms = pd.concat(ranl)
     # load in deg2 since we know the density of generated randoms in deg2
     map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
     # a random file is 2500 randoms per deg2
