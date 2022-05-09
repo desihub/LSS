@@ -2291,7 +2291,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         wzm = 'zmask_'
 
     #ffd = Table.read(fl+'full.dat.fits')
-    fcd = Table.read(fl+wzm+'clustering.dat.fits')
+    #fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
 
     #if type[:3] == 'ELG' or type == 'LRG':
@@ -2303,18 +2303,19 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     ffc = ffr[wz]
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
-    inds = np.random.choice(len(fcd),len(ffc))
-    dshuf = fcd[inds]
+    #inds = np.random.choice(len(fcd),len(ffc))
+    #dshuf = fcd[inds]
+    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
     rcols = np.array(rcols)
-    wc = np.isin(rcols,list(fcd.dtype.names))
+    wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
     print('columns sampled from data are:')
     print(rcols)
 
-    for col in rcols:
-        ffc[col] = dshuf[col]
-        kc.append(col)
+    #for col in rcols:
+    #    ffc[col] = dshuf[col]
+    #    kc.append(col)
     wn = ffc['PHOTSYS'] == 'N'
 
     ffc.keep_columns(kc)
@@ -2323,7 +2324,7 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     #common.write_LSS(ffc,outf,comments)
 
     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
-    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+    
     ffcn = ffc[wn]
     inds = np.random.choice(len(fcdn),len(ffcn))
     dshuf = fcdn[inds]
