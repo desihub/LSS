@@ -21,7 +21,7 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     #wa is the change in w0 w.r.t. the scale factor
     #zcol is the column name
     #data = Table(fitsio.read(in_file))
-    cosmo_d = Cosmology(h=cosmo_fid['h'],Omega_m=cosmo_fid['Omega_m'],w0_fld=w0,wa_fld=wa)
+    cosmo_d = Cosmology(h=cosmo_fid['h'],Omega_m=cosmo_fid['Omega_m'],w0_fld=w0,wa_fld=wa,engine='class')
     dis_val = dis_fid(data[zcol])
     d2z = DistanceToRedshift(cosmo_d.comoving_radial_distance)
     z_shift = d2z(dis_val)
