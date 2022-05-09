@@ -4,7 +4,7 @@
 import fitsio
 from astropy.table import Table
 
-from LSS.common import write_LSS
+from LSS.common_tools import write_LSS
 
 from cosmoprimo.fiducial import DESI
 from cosmoprimo.utils import DistanceToRedshift
