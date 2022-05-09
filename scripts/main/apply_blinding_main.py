@@ -44,7 +44,6 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -158,8 +157,6 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
-if blinded == 'y':
-    dirout += 'blinded/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
