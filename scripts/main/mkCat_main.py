@@ -462,6 +462,6 @@ if args.nz == 'y':
 
 if args.swapz == 'y':
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+wzm+reg+'_clustering.dat.fits'
+        fb = dirout+type+notqso+'zdone'+reg+'_clustering.dat.fits'
         data = Table(fitsio.read(fb))
         blind.swap_z(data,fb,frac=0.01)        
