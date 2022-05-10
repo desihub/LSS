@@ -158,8 +158,9 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
+dirin = dirout
 if args.blinded == 'y':
-    dirin = dirout
+    
     dirout += 'blinded/'
 
 if not os.path.exists(dirout):
@@ -415,7 +416,7 @@ if mkclusran:
         rcols.append('flux_r_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 
