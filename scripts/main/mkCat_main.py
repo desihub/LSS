@@ -32,7 +32,7 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
@@ -45,6 +45,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
+parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -395,6 +396,9 @@ if args.add_regressis == 'y':
 
     
     
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+if type[:3] == 'BGS':
+    rcols.append('flux_r_dered')
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
@@ -411,9 +415,6 @@ if mkclusran:
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-    if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
 
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
@@ -459,4 +460,8 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-        
+if args.swapz == 'y':
+    for reg in regl:
+        fb = dirout+type+notqso+'zdone'+wzm+reg+'_clustering.dat.fits'
+        data = Table(fitsio.read(fb))
+        blind.swap_z(data,fb,frac=0.01)        

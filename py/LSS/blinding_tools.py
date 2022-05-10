@@ -28,3 +28,17 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     data['Z'] = z_shift
     write_LSS(data,out_file,comments=None)
 
+def swap_z(data,out_file,frac=0.01,zcols=['Z']):
+    #swap some fraction of the redshifts
+    #data is table of LSS catalog info
+    #out_file is the full path for where to write the output
+    #frac is the fraction to swap (twice this fraction get swapped)
+    #zcols is the list of columns associated with the redshift column that should be swapped around
+    sel1 = np.random.binomial(1, frac,len(data))
+    sel2 = np.random.binomial(1, frac,len(data))
+    for col in zcols:
+        d1 = data[col][sel1]
+        d2 = data[col][sel2]
+        data[col][sel1] = d2
+        data[col][sel2] = d1
+    write_LSS(data,out_file,comments=None)

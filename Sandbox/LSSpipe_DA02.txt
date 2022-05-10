@@ -45,8 +45,9 @@ for tp,notqso in zip(tps,notqsos):
     
 #get all of the clustering catalogs
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys y --nz y --regressis y --add_regressis y --survey DA02
+	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
 
 #do blinding
 python main/apply_blinding_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02
-python mkCat_main.py --type tp --blinding y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys y --nz y --regressis y --add_regressis y --survey DA02
+python mkCat_main.py --type tp --blinding y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
+python mkCat_main.py --type tp --blinding y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swapz y --survey DA02
