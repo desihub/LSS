@@ -44,6 +44,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -157,6 +158,11 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
+dirin = dirout
+if args.blinded == 'y':
+    
+    dirout += 'blinded/'
+
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
@@ -292,7 +298,7 @@ if mkclusran:
         rcols.append('flux_r_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.imsys == 'y':
@@ -347,7 +353,7 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
-    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl) 
+    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl,regl=regl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -410,7 +416,7 @@ if mkclusran:
         rcols.append('flux_r_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 

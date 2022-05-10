@@ -239,7 +239,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -294,12 +294,15 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         print('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
-    if getosubp == True or mtldir == None:
+    if getosubp == True or (mtldir == None and newdir == None):
         outdir += 'orig/'
-    if mtldir == None:
-        tarfn = indir+ts+'-targ.fits' 
+    if newdir == None:
+        if mtldir == None:
+            tarfn = indir+ts+'-targ.fits' 
+        else:
+            tarfn = outdir+ts+'-targ.fits'   
     else:
-        tarfn = outdir+ts+'-targ.fits'   
+        tarfn = newdir+ts+'-targ.fits' 
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
     if np.isin('gaiadr2',fht['FAARGS'].split()):
