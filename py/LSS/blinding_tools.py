@@ -33,6 +33,8 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     d2z = DistanceToRedshift(dis_fid) 
     z_shift = d2z(dis_val)
     data['Z'] = z_shift
+    
+    #writeout
     write_LSS(data,out_file,comments=None)
 
 def swap_z(data,out_file,frac=0.01,zcols=['Z']):
@@ -41,8 +43,17 @@ def swap_z(data,out_file,frac=0.01,zcols=['Z']):
     #out_file is the full path for where to write the output
     #frac is the fraction to swap (twice this fraction get swapped)
     #zcols is the list of columns associated with the redshift column that should be swapped around
-    sel1 = np.random.binomial(1, frac,len(data)).astype(bool)
-    sel2 = np.random.binomial(1, frac,len(data)).astype(bool)
+    Nt= len(data)
+    idxl = np.arange(Nt)
+    Nsh = int(frac*Nt)
+    idxsh = np.random.choice(idxl,Nsh*2,replace=False)
+    idxsh1 = idxsh[:Nsh]
+    idxsh2 = idxsh[Nsh:]
+    sel1 = np.zeros(Nt).astype(bool)
+    sel2 = np.zeros(Nt).astype(bool)
+    for i in range(0,Nsh):
+        sel1[idxsh1[i]] = 1
+        sel2[idxsh2[i]] = 1
     print(len(data[sel1]))
     print(len(data[sel2]))
     for col in zcols:
