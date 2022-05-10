@@ -461,6 +461,7 @@ if args.nz == 'y':
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
 if args.swapz == 'y':
+    import LSS.blinding_tools as blind
     for reg in regl:
         fb = dirout+type+notqso+'zdone'+reg+'_clustering.dat.fits'
         data = Table(fitsio.read(fb))
