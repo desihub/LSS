@@ -41,8 +41,8 @@ def swap_z(data,out_file,frac=0.01,zcols=['Z']):
     #out_file is the full path for where to write the output
     #frac is the fraction to swap (twice this fraction get swapped)
     #zcols is the list of columns associated with the redshift column that should be swapped around
-    sel1 = np.random.binomial(1, frac,len(data))
-    sel2 = np.random.binomial(1, frac,len(data))
+    sel1 = np.random.binomial(1, frac,len(data)).astype(bool)
+    sel2 = np.random.binomial(1, frac,len(data)).astype(bool)
     print(len(data[sel1]))
     print(len(data[sel2]))
     for col in zcols:
