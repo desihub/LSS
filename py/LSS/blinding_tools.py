@@ -3,6 +3,7 @@
 
 import fitsio
 from astropy.table import Table
+import numpy as np
 
 from LSS.common_tools import write_LSS
 
