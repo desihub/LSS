@@ -229,9 +229,10 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     
     nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb+'_clustering.dat.fits'
-    ff = fitsio.FITS(fn,'rw')
-    fd = Table(ff['LSS'].read())
+    #ff = fitsio.FITS(fn,'rw')
+    #fd = Table(ff['LSS'].read())
     #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
+    fd = Table(fitsio.read(fn))
     zl = fd['Z']
     nl = np.zeros(len(zl))
     for ii in range(0,len(zl)):
@@ -251,17 +252,19 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     fkpl = 1./(1+nl*P0*mean_comp)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     fd['WEIGHT_FKP'] = fkpl
-    fd = np.array(fd)
+    write_LSS(fd,fn)
+    #fd = np.array(fd)
     #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
-    ff['LSS'].write(fd)
-    ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    ff.close()
+    #ff['LSS'].write(fd)
+    #ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    #ff.close()
     #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(0,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        ff = fitsio.FITS(fn,'rw')
-        fd = ff['LSS'].read()
+        #ff = fitsio.FITS(fn,'rw')
+        #fd = ff['LSS'].read()
+        fd = Table(fitsio.read(fn))
         #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
@@ -277,11 +280,12 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         fd['NZ'] = nl
         fkpl = 1./(1+nl*P0*mean_comp)
         fd['WEIGHT_FKP'] = fkpl
+        write_LSS(fd,fn)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
-        fd = np.array(fd)
-        ff['LSS'].write(fd)
-        ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-        ff.close()
+        #fd = np.array(fd)
+        #ff['LSS'].write(fd)
+        #ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        #ff.close()
         #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
         #ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
