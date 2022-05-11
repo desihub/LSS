@@ -60,7 +60,10 @@ def dm(z):
 def AbsMag(mag,z):
     return mag - dm(z)
 
-def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100):
+def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
+    selz = data['Z'] > zmin
+    selz &= data['Z'] < zmax
+    data = data[selz]
     r_dered = 22.5 - 2.5*np.log10(data['flux_r_dered'])
     g_dered = 22.5 - 2.5*np.log10(data['flux_g_dered'])
 
