@@ -298,7 +298,7 @@ if mkclusran:
     if type[:3] == 'BGS':
         fcols = ['G','R','Z','W1','W2']
         for col in fcols:
-            rcols.append(flux_'+col.lower()+'_dered')
+            rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
@@ -402,7 +402,7 @@ rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'
 if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
-        rcols.append(flux_'+col.lower()+'_dered')
+        rcols.append('flux_'+col.lower()+'_dered')
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')

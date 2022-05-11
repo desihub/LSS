@@ -585,7 +585,7 @@ if mkclusran:
     if type[:3] == 'BGS':
         fcols = ['G','R','Z','W1','W2']
         for col in fcols:
-            rcols.append(flux_'+col.lower()+'_dered')
+            rcols.append('flux_'+col.lower()+'_dered')
         
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
