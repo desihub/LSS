@@ -71,7 +71,7 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100):
 ctc = 0.7 #rough red/blue cut
 abl = [-21.5,-20.5,-19.5]
 
-dat = fitsio.read(dirin+args.tracer+zw+'_clustering.dat.fits'
+dat = fitsio.read(dirin+args.tracer+zw+'_clustering.dat.fits')
 for ab in abl:
     dato = cut_abr_ct(dat,maxr=ab)
     outf = dirout+args.tracer+zw+str(ab)+'_clustering.dat.fits'
@@ -84,7 +84,7 @@ for ab in abl:
     common.write_LSS(dato,outf)
 
 for rann in range(args.minr,args.maxr):
-    dat = fitsio.read(dirin+args.tracer+zw+'_'+str(rann)+'_clustering.ran.fits'
+    dat = fitsio.read(dirin+args.tracer+zw+'_'+str(rann)+'_clustering.ran.fits')
 	for ab in abl:
 		dato = cut_abr_ct(dat,maxr=ab)
 		outf = dirout+args.tracer+zw+str(ab)+'_clustering.dat.fits'
