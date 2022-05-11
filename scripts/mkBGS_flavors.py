@@ -95,12 +95,12 @@ for rann in range(args.minr,args.maxr):
     dat = fitsio.read(dirin+args.tracer+zw+'_'+str(rann)+'_clustering.ran.fits')
     for ab in abl:
         dato = cut_abr_ct(dat,maxr=ab)
-        outf = dirout+args.tracer+zw+str(ab)+'_clustering.dat.fits'
+        outf = dirout+args.tracer+zw+str(ab)+'_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(dato,outf)
         dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'blue_clustering.dat.fits'
+        outf = dirout+args.tracer+zw+str(ab)+'blue'+'_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(dato,outf)
         dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'red_clustering.dat.fits'
+        outf = dirout+args.tracer+zw+str(ab)+'red'+'_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(dato,outf)
 
