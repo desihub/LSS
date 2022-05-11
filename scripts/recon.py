@@ -63,7 +63,44 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         logger.info('Saving {}.'.format(rec_fn))
         catalog.write(rec_fn, format='fits', overwrite=True)
 
+def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, f=0.8, bias=1.2, boxsize=None, nmesh=None, cellsize=7, smoothing_radius=15, nthreads=8, dtype='f4', **kwargs):
 
+    convention='RSD'
+    
+    if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
+    if np.ndim(randoms_rec_fn) == 0: randoms_rec_fn = [randoms_rec_fn]
+
+    logger.info('Loading {}.'.format(data_fn))
+    data = Table.read(data_fn)
+    (ra, dec, dist), data_weights, mask = get_clustering_positions_weights(data, distance, name='data', return_mask=True, **kwargs)
+    data = data[mask]
+    data_positions = utils.sky_to_cartesian(dist, ra, dec, dtype=dtype)
+    recon = Reconstruction(f=f, bias=bias, boxsize=boxsize, nmesh=nmesh, cellsize=cellsize, los='local', positions=data_positions, nthreads=nthreads, fft_engine='fftw', dtype=dtype)
+
+    recon.assign_data(data_positions, data_weights)
+    for fn in randoms_fn:
+        logger.info('Loading {}.'.format(fn))
+        (ra, dec, dist), randoms_weights = get_clustering_positions_weights(Table.read(fn), distance, name='randoms', **kwargs)
+        randoms_positions = utils.sky_to_cartesian(dist, ra, dec, dtype=dtype)
+        recon.assign_randoms(randoms_positions, randoms_weights)
+
+    recon.set_density_contrast(smoothing_radius=smoothing_radius)
+    recon.run()
+
+    field = 'rsd'
+    if type(recon) is IterativeFFTParticleReconstruction:
+        data_positions_rec = recon.read_shifted_positions('data', field=field)
+    else:
+        data_positions_rec = recon.read_shifted_positions(data_positions, field=field)
+
+    distance_to_redshift = utils.DistanceToRedshift(distance)
+    catalog = Table(data)
+    dist, ra, dec = utils.cartesian_to_sky(data_positions_rec)
+    catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
+    logger.info('Saving {}.'.format(data_rec_fn))
+    catalog.write(data_rec_fn, format='fits', overwrite=True)
+        
+        
 def get_f_bias(tracer='ELG'):
     if tracer.startswith('ELG') or tracer.startswith('QSO'):
         return 0.8, 1.

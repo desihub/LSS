@@ -30,7 +30,43 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     dis_val = dis_d(data[zcol]) 
     
     #put back to z assuming fiducial cosmo
-    d2z = DistanceToRedshift(dis_fid) 
+    d2z = DistanceToRedshift(dis_fid)
+    z_shift = d2z(dis_val)
+    data['Z'] = z_shift
+    
+    #writeout
+    write_LSS(data,out_file,comments=None)
+
+    
+def apply_zshift_RSD(data,data_realspace,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9,zcol='Z'):
+    #data is table of LSS catalog info
+    #data_realspace is table of reconstructed-realspace catalog, which must be created via 'run_realspace_reconstruction' in '../scripts/recon.py' prior to calling this function.
+    #out_file is the full path for where to write the output
+    #fgrowth is the redshift-dependent growth rate f(a) = dln(D)/dln(a) with growth factor D(a) and scale factor a, given the fiducial cosmology and effective redshift of the Sample
+    #fgrowth_blind is the growth rate to use to shift the redshifts
+    #zcol is the column name
+    from cosmoprimo.fiducial import DESI
+    from cosmoprimo.utils import DistanceToRedshift
+    from cosmoprimo import Cosmology
+    
+    #fiducial cosmo
+    cosmo_fid = DESI()
+    dis_fid = cosmo_fid.comoving_radial_distance
+    
+    #convert both the original and the realspace redshift columns to distances using the fiducial cosmology
+    dis_original = cosmofid(data[zcol])
+    dis_realspace = cosmofid(data_realspace[zcol])
+    
+    #create the blinded redshift by creating the redshift-space distances corresponding to the blinded growth rate.
+    # this makes use of the fact, that the displacement field along the line of sight is directly proportional to the difference between blinded and fiducial growth rates.
+    # The following equation comes from eq. (3.18) of 2006.10857, combined with the fact that the term (psi*r^hat)*r^hat can be inferred from the reconstructed realspace positions,
+    # for which fshift=0, meaning that dis_original-dis_realspace = fgrowth_fid*(psi*r^hat)*r^hat:
+    # dis_blind = dis_original - ((fgrowth_fid-fgrowth_blind)/fgrowth_fid * (dis_original-dis_realspace))
+    # further sijmplification gives:
+    dis_val = dis_realspace + ( (fgrowth_blind / fgrowth_fid) * (dis_original - dis_realspace) )
+    
+    #put back to z assuming fiducial cosmo
+    d2z = DistanceToRedshift(dis_fid)
     z_shift = d2z(dis_val)
     data['Z'] = z_shift
     
