@@ -294,7 +294,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
     for col in fcols:
-        data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/ff['MW_TRANSMISSION_'+col]
+        data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
     return data
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
