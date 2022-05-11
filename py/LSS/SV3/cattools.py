@@ -1671,8 +1671,11 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #else:
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','COMP_TILE','rosette_number','rosette_r','TILES','WEIGHT_ZFAIL','FRACZ_TILELOCID','PROB_OBS','BITWEIGHTS']    
     if tp[:3] == 'BGS':
-        ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
-        kl.append('flux_r_dered')
+        #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
+        fcols = ['G','R','Z','W1','W2']
+        ff = common.add_dered_flux(ff,fcols)
+        for col in fcols:
+            kl.append('flux_'+col.lower()+'_dered')
         print(kl)
 
     ff.keep_columns(kl)#,'PROB_OBS'
