@@ -37,6 +37,8 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 
 parser.add_argument("--nz", help="get n(z) ",default='y')
 
+args = parser.parse_args()
+
 dirin = args.basedir+'/'+args.survey+ '/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
 dirout = dirin +'BGSsubcats/'
 
