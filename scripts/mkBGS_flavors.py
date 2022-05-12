@@ -10,11 +10,6 @@ import fitsio
 import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
-from matplotlib import pyplot as plt
-from desitarget.io import read_targets_in_tiles
-from desitarget.mtl import inflate_ledger
-from desimodel.footprint import is_point_in_desi
-from desitarget.sv3 import sv3_targetmask
 
 #from this package
 import LSS.SV3.cattools as ct
