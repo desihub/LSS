@@ -73,7 +73,7 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
     
 ctc = 0.7 #rough red/blue cut
 abl = [-21.5,-20.5,-19.5]
-
+P0 = 7000
 regl = ['_N','_S']
 for reg in regl:
 	dat = fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits')
@@ -100,4 +100,13 @@ for reg in regl:
 			dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
 			outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_'+str(rann)+'_clustering.ran.fits'
 			common.write_LSS(dato,outf)
+    
+    for ab in abl:
+        for cl in ['','blue',red]:
+			fb = dirout+args.tracer+zw+str(ab)+cl+reg
+			fcr = fb+'_0_clustering.ran.fits'
+			fcd = fb+'_clustering.dat.fits'
+			fout = fb+'_nz.txt'
+			common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+			common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
