@@ -79,28 +79,30 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
 ctc = 0.7 #rough red/blue cut
 abl = [-21.5,-20.5,-19.5]
 
-dat = fitsio.read(dirin+args.tracer+zw+'_clustering.dat.fits')
-for ab in abl:
-    dato = cut_abr_ct(dat,maxr=ab)
-    outf = dirout+args.tracer+zw+str(ab)+'_clustering.dat.fits'
-    common.write_LSS(dato,outf)
-    dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
-    outf = dirout+args.tracer+zw+str(ab)+'blue_clustering.dat.fits'
-    common.write_LSS(dato,outf)
-    dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
-    outf = dirout+args.tracer+zw+str(ab)+'red_clustering.dat.fits'
-    common.write_LSS(dato,outf)
+regl = ['_N','_S']
+for reg in regl:
+	dat = fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits')
+	for ab in abl:
+		dato = cut_abr_ct(dat,maxr=ab)
+		outf = dirout+args.tracer+zw+str(ab)+reg+'_clustering.dat.fits'
+		common.write_LSS(dato,outf)
+		dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
+		outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_clustering.dat.fits'
+		common.write_LSS(dato,outf)
+		dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
+		outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_clustering.dat.fits'
+		common.write_LSS(dato,outf)
 
-for rann in range(args.minr,args.maxr):
-    dat = fitsio.read(dirin+args.tracer+zw+'_'+str(rann)+'_clustering.ran.fits')
-    for ab in abl:
-        dato = cut_abr_ct(dat,maxr=ab)
-        outf = dirout+args.tracer+zw+str(ab)+'_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(dato,outf)
-        dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'blue'+'_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(dato,outf)
-        dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'red'+'_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(dato,outf)
+	for rann in range(args.minr,args.maxr):
+		dat = fitsio.read(dirin+args.tracer+zw+reg+'_'+str(rann)+'_clustering.ran.fits')
+		for ab in abl:
+			dato = cut_abr_ct(dat,maxr=ab)
+			outf = dirout+args.tracer+zw+str(ab)+reg+'_'+str(rann)+'_clustering.ran.fits'
+			common.write_LSS(dato,outf)
+			dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
+			outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_'+str(rann)+'_clustering.ran.fits'
+			common.write_LSS(dato,outf)
+			dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
+			outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_'+str(rann)+'_clustering.ran.fits'
+			common.write_LSS(dato,outf)
 
