@@ -11,9 +11,10 @@ import healpy as hp
 from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--version", help="catalog version",default='1.1')
+parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='fuji')
+parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 args = parser.parse_args()
 
 
@@ -37,6 +38,8 @@ zdw = 'zdone'
 if args.survey == 'SV3':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso']
     zdw = ''
+    if args.data != 'LSS':
+        tps = ['QSO','LRG','ELG']
 for tp in tps:
     
     dtfh = fitsio.read_header(indir+tp+zdw+'_full_noveto.dat.fits',ext=1)
