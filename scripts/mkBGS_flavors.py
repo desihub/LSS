@@ -30,6 +30,7 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 
+parser.add_argument("--mkcats", help="make the subsampled catalogs ",default='y')
 parser.add_argument("--nz", help="get n(z) ",default='y')
 
 args = parser.parse_args()
@@ -76,37 +77,38 @@ abl = [-21.5,-20.5,-19.5]
 P0 = 7000
 regl = ['_N','_S']
 for reg in regl:
-    dat = fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits')
-    for ab in abl:
-        dato = cut_abr_ct(dat,maxr=ab)
-        outf = dirout+args.tracer+zw+str(ab)+reg+'_clustering.dat.fits'
-        common.write_LSS(dato,outf)
-        dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_clustering.dat.fits'
-        common.write_LSS(dato,outf)
-        dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
-        outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_clustering.dat.fits'
-        common.write_LSS(dato,outf)
+    if args.mkcats == 'y':
+		dat = fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits')
+		for ab in abl:
+			dato = cut_abr_ct(dat,maxr=ab)
+			outf = dirout+args.tracer+zw+str(ab)+reg+'_clustering.dat.fits'
+			common.write_LSS(dato,outf)
+			dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
+			outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_clustering.dat.fits'
+			common.write_LSS(dato,outf)
+			dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
+			outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_clustering.dat.fits'
+			common.write_LSS(dato,outf)
 
-    for rann in range(args.minr,args.maxr):
-        dat = fitsio.read(dirin+args.tracer+zw+reg+'_'+str(rann)+'_clustering.ran.fits')
-        for ab in abl:
-            dato = cut_abr_ct(dat,maxr=ab)
-            outf = dirout+args.tracer+zw+str(ab)+reg+'_'+str(rann)+'_clustering.ran.fits'
-            common.write_LSS(dato,outf)
-            dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
-            outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_'+str(rann)+'_clustering.ran.fits'
-            common.write_LSS(dato,outf)
-            dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
-            outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_'+str(rann)+'_clustering.ran.fits'
-            common.write_LSS(dato,outf)
-    
-    for ab in abl:
-        for cl in ['','blue',red]:
-            fb = dirout+args.tracer+zw+str(ab)+cl+reg
-            fcr = fb+'_0_clustering.ran.fits'
-            fcd = fb+'_clustering.dat.fits'
-            fout = fb+'_nz.txt'
-            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+		for rann in range(args.minr,args.maxr):
+			dat = fitsio.read(dirin+args.tracer+zw+reg+'_'+str(rann)+'_clustering.ran.fits')
+			for ab in abl:
+				dato = cut_abr_ct(dat,maxr=ab)
+				outf = dirout+args.tracer+zw+str(ab)+reg+'_'+str(rann)+'_clustering.ran.fits'
+				common.write_LSS(dato,outf)
+				dato = cut_abr_ct(dat,maxr=ab,maxct=ctc)
+				outf = dirout+args.tracer+zw+str(ab)+'blue'+reg+'_'+str(rann)+'_clustering.ran.fits'
+				common.write_LSS(dato,outf)
+				dato = cut_abr_ct(dat,maxr=ab,minct=ctc)
+				outf = dirout+args.tracer+zw+str(ab)+'red'+reg+'_'+str(rann)+'_clustering.ran.fits'
+				common.write_LSS(dato,outf)
+    if args.nz== 'y':
+		for ab in abl:
+			for cl in ['','blue','red']:
+				fb = dirout+args.tracer+zw+str(ab)+cl+reg
+				fcr = fb+'_0_clustering.ran.fits'
+				fcd = fb+'_clustering.dat.fits'
+				fout = fb+'_nz.txt'
+				common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+				common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
