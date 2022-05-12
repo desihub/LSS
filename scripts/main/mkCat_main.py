@@ -32,7 +32,7 @@ parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
@@ -44,6 +44,8 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
+parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -157,6 +159,11 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
+dirin = dirout
+if args.blinded == 'y':
+    
+    dirout += 'blinded/'
+
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
@@ -241,23 +248,23 @@ if args.apply_veto == 'y':
 dchi2 = 9
 tsnrcut = 0
 if type[:3] == 'ELG':
-	dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-	tsnrcut = 80
-	zmin = 0.8
-	zmax = 1.6
+    dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+    tsnrcut = 80
+    zmin = 0.8
+    zmax = 1.6
 if type == 'LRG':
-	dchi2 = 16  
-	tsnrcut = 80
-	zmin = 0.4
-	zmax = 1.1  
+    dchi2 = 16  
+    tsnrcut = 80
+    zmin = 0.4
+    zmax = 1.1  
 if type[:3] == 'BGS':
-	dchi2 = 40
-	tsnrcut = 1000
-	zmin = 0.1
-	zmax = 0.5
+    dchi2 = 40
+    tsnrcut = 1000
+    zmin = 0.1
+    zmax = 0.5
 if type == 'QSO':
-	zmin = 0.8
-	zmax = 3.5
+    zmin = 0.8
+    zmax = 3.5
         
 
 regl = ['_N','_S']    
@@ -289,10 +296,12 @@ if mkclusran:
         tsnrcut = 1000
     rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
     if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
+        fcols = ['G','R','Z','W1','W2']
+        for col in fcols:
+            rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.imsys == 'y':
@@ -347,7 +356,7 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
-    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl) 
+    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl,regl=regl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -389,6 +398,11 @@ if args.add_regressis == 'y':
 
     
     
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+if type[:3] == 'BGS':
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
@@ -405,12 +419,9 @@ if mkclusran:
         tsnrcol = 'TSNR2_BGS'
         dchi2 = 40
         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-    if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 
@@ -453,4 +464,9 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-        
+if args.swapz == 'y':
+    import LSS.blinding_tools as blind
+    for reg in regl:
+        fb = dirout+type+notqso+'zdone'+reg+'_clustering.dat.fits'
+        data = Table(fitsio.read(fb))
+        blind.swap_z(data,fb,frac=0.01)        

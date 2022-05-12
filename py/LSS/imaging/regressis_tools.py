@@ -14,7 +14,7 @@ from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logg
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
 
-def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
+def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],nran=18):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
@@ -34,7 +34,11 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
     """
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
-    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_clustering.dat.fits'))
+    dfs = []
+    for reg in regl:
+        dr = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_clustering.dat.fits'))
+        dfs.append(dr)
+    data = pd.concat(dfs, ignore_index=True)
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
     wts = data['WEIGHT_COMP'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
@@ -46,11 +50,18 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim):
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
 
-    randoms = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone_{i}_clustering.ran.fits'), columns=['RA', 'DEC','Z']) for i in range(10)], ignore_index=True)
+    ranl = []
+    for reg in regl:
+        #ran = pd.concat([read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_{i}_clustering.ran.fits'), columns=['RA', 'DEC','Z']) for i in range(10)], ignore_index=True)
+        for i in range(0,nran):
+            ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','Z']) 
+            ranl.append(ran)
+    randoms = pd.concat(ranl, ignore_index=True)
+    print(len(data),len(randoms))
     # load in deg2 since we know the density of generated randoms in deg2
     map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
     # a random file is 2500 randoms per deg2
-    mean = 10*2500
+    mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
     fracarea[fracarea == 0] = np.NaN

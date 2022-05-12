@@ -243,28 +243,33 @@ print(specrel)
 hpxs = foot.tiles2pix(8, tiles=ta)
 
 if combhp or mkfullr:
-	
-	if specrel == 'daily':
-		specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-		specf = Table.read(specfo)
-		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-	
+    
+    if specrel == 'daily':
+        specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+        specf = Table.read(specfo)
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    
 
-	if specrel == 'everest':    
+    if specrel == 'everest':    
 
-		#specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-		#wt = np.isin(mtld['TILEID'],specf['TILEID'])
-		#above two lines already done above
-		specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-		wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-		specf = specf[wt]
-		print('number of TILEID in spec data being used:')
-		print(len(np.unique(specf['TILEID'])))
-		specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-	print('loaded specf file '+specfo)
-	specfc = ct.cut_specdat(specf)
-	gtl = np.unique(specfc['TILELOCID'])
-	del specfc
+        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
+        #wt = np.isin(mtld['TILEID'],specf['TILEID'])
+        #above two lines already done above
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
+        wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
+        specf = specf[wt]
+        print('number of TILEID in spec data being used:')
+        print(len(np.unique(specf['TILEID'])))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    print('loaded specf file '+specfo)
+    specfc = ct.cut_specdat(specf)
+    if combhp:
+        ntls = len(np.unique(specf['TILEID']))
+        if ntls != len(ta):
+            print(ntls,len(ta))
+            sys.exit('mismatch in number of tileids NOT PROCEEDING')
+    gtl = np.unique(specfc['TILELOCID'])
+    del specfc
 
 if type != 'dark' and type != 'bright' and mkfullr:
     if type == 'BGS_BRIGHT':
@@ -276,6 +281,7 @@ if type != 'dark' and type != 'bright' and mkfullr:
     del specf
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    
     wg = np.isin(specf['TILELOCID'],gtl)
     specf = Table(specf[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
