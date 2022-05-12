@@ -43,10 +43,7 @@ args = parser.parse_args()
 target_fns = [f'/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-{idx}.fits' for idx in range(args.nran)]
 fibered_fns = [f'//global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.verspec}/LSScats/{args.version}/{args.tracer}zdone_{idx}_full.ran.fits' for idx in range(args.nran)]
 
-tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.survey}tiles-DARK.fits'
-
-if args.survey=='SV3': tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits'
-if args.survey=='DA02': tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/everest/DA02tiles-DARK.fits'
+tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/{survey}/LSS/tiles-DARK.fits'
 
 if args.outdir: save_fn = os.path.join(args.outdir,healpix_map_ran_comp_{args.tracer}.fits)
 
