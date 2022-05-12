@@ -58,7 +58,7 @@ except:
 
 print('quick Restart')
 print(quickRestart)
-mtldir = '/global/cscratch1/sd/acarnero/mtl_test/'
+mtldir = '/global/cscratch1/sd/acarnero/mtl_test/init_mock000'
 ### AUREmtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/'
 zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/'
 ndirs = None

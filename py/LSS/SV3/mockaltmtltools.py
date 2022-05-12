@@ -25,7 +25,8 @@ from time import sleep
 
 log = get_logger()
 
-os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
+os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/20200801-1.4.0-spec/code/desimodel/master'
+#os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 
 zcatdatamodel = np.array([], dtype=[
     ('RA', '>f8'), ('DEC', '>f8'), ('TARGETID', '>i8'),
@@ -547,7 +548,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 ts = str(t['TILEID']).zfill(6)
                 FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
                 fhtOrig = fitsio.read_header(FAOrigName)
+
                 fadate = fhtOrig['RUNDATE']
+
                 fadate = ''.join(fadate.split('T')[0].split('-'))
 
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'

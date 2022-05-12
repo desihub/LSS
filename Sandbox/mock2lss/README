@@ -1,0 +1,22 @@
+After running AltMTL script, prepare LSS catalogs
+
+1) check_isomax.py
+2) python mkMock_SV3.py --type dark --mockrea 0 --univ 1 --verspec fuji --isoMTL 2022-03-10T16:32:15.000 --combd y
+3) python mkMock_SV3.py --type LRG --combd n --fulld y --clus n --mockrea 0 --univ 1 --verspec fuji --apply_veto n 
+4) python mkMock_SV3.py --type LRG --combd n --fulld n --clus n --mockrea 0 --univ 1 --verspec fuji --apply_veto y
+5) python mkMock_SV3.py --type LRG --combd n --fulld n --clus y --mockrea 0 --univ 1 --verspec fuji --apply_veto n
+
+RANDOMS
+
+6) python mkMock_SV3_ran.py --type dark --mockrea 0 --univ 1 --verspec fuji --cutran y --ranmtl y --maxr 20 
+7) python mkMock_SV3_ran.py --type dark --mockrea 0 --univ 1 --verspec fuji --maxr 20 --rfa y **
+8) python mkMock_SV3_ran.py --type dark --mockrea 0 --univ 1 --verspec fuji --maxr 20 --combr y
+9) python mkMock_SV3_ran.py --type LRG --mockrea 0 --univ 1 --verspec fuji --maxr 20 --fullr y --apply_veto y --clus y
+
+For xi:
+#remember to do cosmodesi setup
+
+
+python xifirstgen.py --tracer LRG --mockrea 0 --nran 20 --bin_type log
+
+

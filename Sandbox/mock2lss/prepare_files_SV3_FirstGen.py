@@ -102,7 +102,7 @@ def permock(i):
         targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
         targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) #hdu_mtl['OBSCONDITIONS'][mask_elg ][0]
         targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) #hdu_mtl['NUMOBS_MORE'][mask_elg ][0]
-        targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(0)
+        targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(9)
         targets['SV3_SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
         targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
     #    targets['TRUEZ'] = hdu_data_ez['Z_COSMO']
