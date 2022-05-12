@@ -18,7 +18,7 @@ parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 args = parser.parse_args()
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/'
 
 if not os.path.exists(outdir):
