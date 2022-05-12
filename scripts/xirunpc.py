@@ -86,8 +86,8 @@ def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/g
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
-    if survey in ['main', 'DA02']:
-        tracer += 'zdone'
+    #if survey in ['main', 'DA02']:
+    #    tracer += 'zdone'
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
