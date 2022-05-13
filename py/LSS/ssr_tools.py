@@ -380,6 +380,7 @@ class BGS_ssr:
             bc.append(bine[i]+bs/2.) 
         self.bc = np.array(bc)
         self.bine = bine
+        self.vis_5hist = False
 
 
     def cost(self,q_predict):
