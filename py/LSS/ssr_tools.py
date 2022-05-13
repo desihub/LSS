@@ -664,7 +664,7 @@ class QSO_ssr:
         print(pars,chi2)
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
-        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3))
+        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
         plt.ylabel('QSO Z failure rate')
         plt.xlabel('QSO EFFECTIVE exp time')
         plt.savefig(fn_root+'overall_failratefit.png')
