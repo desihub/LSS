@@ -36,7 +36,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
 
     dfs = []
     for reg in regl:
-        dr = read_fits_to_pandas(os.path.join(LSS, f'{tracer}zdone'+reg+'_clustering.dat.fits'))
+        dr = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+reg+'_clustering.dat.fits'))
         dfs.append(dr)
     data = pd.concat(dfs, ignore_index=True)
     data = data[(data['Z'] > z_lim[0]) & (data['Z'] < z_lim[1])]
