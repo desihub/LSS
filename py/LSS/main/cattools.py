@@ -2170,6 +2170,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         lrg = ssr_tools.LRG_ssr()
         ff = lrg.add_modpre(ff)
         ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
@@ -2178,6 +2181,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         bgs = ssr_tools.BGS_ssr()
         ff = bgs.add_modpre(ff)
         ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+        print('min/max of zfail weights:')
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
@@ -2187,6 +2191,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp == 'ELG_LOP':
         elg = ssr_tools.ELG_ssr()
         ff = elg.add_modpre(ff)
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
@@ -2196,6 +2203,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff = qso.add_modpre(ff,fl)
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+        print('min/max of zfail weights:')
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
