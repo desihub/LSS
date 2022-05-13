@@ -656,14 +656,18 @@ class QSO_ssr:
         return costt    
         
     
-    def add_modpre(self,data):
+    def add_modpre(self,data,fn_root=''):
         res = minimize(self.wrapper_hist, [-0.001, 1, 0.4], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars,self.wrapper_hist(pars))
-        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko')
+        chi2 = self.wrapper_hist(pars)
+        print(pars,chi2)
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
-        plt.plot(self.bc,mod,'k--')
+        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3))
+        plt.ylabel('QSO Z failure rate')
+        plt.xlabel('QSO EFFECTIVE exp time')
+        plt.savefig(fn_root+'overall_failratefit.png')
         plt.show()
         gextc = 3.214
         rextc = 2.165
