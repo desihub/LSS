@@ -494,6 +494,7 @@ class BGS_ssr:
         #plt.title('inputs')
         #plt.show()
         self.nzfpere = nzfpere    
+        print(nzfpere)
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
