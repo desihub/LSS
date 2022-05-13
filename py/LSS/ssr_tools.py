@@ -389,31 +389,134 @@ class BGS_ssr:
         q_predict = 1-self.failure_rate(self.cat['FIBERFLUX_R_EC'], self.cat['EFFTIME_BGS'], *params)
         return self.cost(q_predict)
 
+    def wrapper_hist(self,params):
+        h_predict = self.failure_rate_eff(self.bc, *params)
+        diff = self.nzf-h_predict
+        cost = np.sum((diff/self.nzfe)**2.)
+        return cost
+
+
     def failure_rate(self,flux, efftime, a, b, c):
         sn = flux * np.sqrt(efftime)
         return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, .5)
 
+    def failure_rate_eff(self, efftime, a, b, c):
+        #sn = flux * np.sqrt(efftime)
+        #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
+
+    def hist_norm(self,fluxc):
+        nzfper = []
+        consl = []
+        
+        nb = 5
+        pstep = 100//5
+        costt = 0
+        for i in range(0,nb):
+            sel = self.cat['FIBERFLUX_R_EC'] > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_R_EC'] < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_R_EC'][sel])
+            if self.vis_5hist:
+                print(mf)
+            #fper.append(mf)
+            wtf = (fluxc*(self.mft-self.cat['FIBERFLUX_R_EC'])/self.mft+1)*(self.wts_fid-1)+1
+            selw = wtf < 1
+            wtf[selw] = 1
+            ha,_ = np.histogram(self.cat['EFFTIME_BGS'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_BGS'][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
+            #if self.vis_5hist:
+            #    print(mf)
+            #    print(np.sum(ha))
+            #    print(np.sum(hf))
+            dl = hf/ha
+            nzfper.append(dl)
+            def ccost(c):
+                return np.sum((dl-c)**2./self.nzfpere[i]**2.)
+            resc = minimize(ccost, np.ones(1))
+            bc = resc.x
+            cost = ccost(bc)
+            consl.append(bc)
+            costt += cost
+        if self.vis_5hist:
+            for i in range(0,nb):
+                plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
+                plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
+            plt.show()
+        return costt    
+
+
+
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+        #res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+        #       method='Powell', tol=1e-6)
+        #pars = res.x
+        #print(pars,self.wrapper(pars))
+        res = minimize(self.wrapper_hist, [-0.001, 1, 0.4], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars,self.wrapper(pars))
+        chi2 = self.wrapper_hist(pars)
+        print(pars,chi2)
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
+        mod = self.failure_rate_eff(self.bc, *pars)
+        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
+        plt.ylabel('BGS_BRIGHT Z failure rate')
+        plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
+        plt.legend()
+        plt.savefig(fn_root+'overall_failratefit.png')
+        plt.show()
 
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
-        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
-        #print(len(data),np.sum(data['mod_success_rate']))
-        ha,_ = np.histogram(deff,bins=self.bine)
-        gz = data['ZWARN'] == 0
-        gz &= data['DELTACHI2'] > 40
-        hf,_ = np.histogram(deff[gz],weights=1/data[gz]['mod_success_rate'],bins=self.bine)
-        plt.errorbar(self.bc,1.-self.nzf,self.nzfe,fmt='ko')
-        plt.errorbar(self.bc,hf/ha,self.nzfe,fmt='rd')
         
-        plt.show()
-
-
+        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_QSO'],*pars)   
+        relssr = assr/np.max(assr) 
+        drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
+        self.wts_fid = 1/relssr
+        nzfper = []
+        nzfpere = []
+        fper = []
+        self.mft = np.median(self.cat['FIBERFLUX_R_EC'])
+        nb = 5
+        pstep = 100//5
+        for i in range(0,nb):
+            sel = self.cat['FIBERFLUX_R_EC'] > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_R_EC'] < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_R_EC'][sel])
+            fper.append(mf)
+            ha,_ = np.histogram(self.cat['EFFTIME_BGS'][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['EFFTIME_BGS'][sel&self.selgz],bins=self.bine)
+            hfw,_ = np.histogram(self.cat['EFFTIME_BGS'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
+            nzfper.append(hf/ha)
+            nzfpere.append(np.sqrt(ha-hf)/ha)
+            #plt.plot(self.bc,hfw/ha)
+        #plt.title('inputs')
+        #plt.show()
+        self.nzfpere = nzfpere    
+        rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
+               #method='Powell', tol=1e-6)
+        fcoeff = rest.x
+        self.vis_5hist = True
+        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        sel = wtf < 1
+        wtf[sel] = 1
+        data['WEIGHT_ZFAIL'] =  wtf
         return data
+
+
+        #print(len(data),np.sum(data['mod_success_rate']))
+#         ha,_ = np.histogram(deff,bins=self.bine)
+#         gz = data['ZWARN'] == 0
+#         gz &= data['DELTACHI2'] > 40
+#         hf,_ = np.histogram(deff[gz],weights=1/data[gz]['mod_success_rate'],bins=self.bine)
+#         plt.errorbar(self.bc,1.-self.nzf,self.nzfe,fmt='ko')
+#         plt.errorbar(self.bc,hf/ha,self.nzfe,fmt='rd')
+#         
+#         plt.show()
+# 
+# 
+#         return data
 
 
 class ELG_ssr:
@@ -691,9 +794,9 @@ class QSO_ssr:
         nb = 5
         pstep = 100//5
         for i in range(0,nb):
-            sel = self.cat['FIBERFLUX_R_EC'] > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
-            sel &= self.cat['FIBERFLUX_R_EC'] < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
-            mf = np.median(self.cat['FIBERFLUX_R_EC'][sel])
+            sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
+            sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
+            mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
             fper.append(mf)
             ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
             hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],bins=self.bine)
