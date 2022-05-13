@@ -219,13 +219,13 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
 
 if args.add_veto == 'y':
-    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
     for rn in range(rm,rx):
-        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
 if args.apply_veto == 'y':
@@ -235,13 +235,13 @@ if args.apply_veto == 'y':
         maxp = 3200
     if type[:3] == 'BGS':
         maxp = 2100
-    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
-    fout = dirout+type+notqso+'zdone_full.dat.fits'
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'_full.dat.fits'
     common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
     print('data veto done, now doing randoms')
     for rn in range(rm,rx):
-        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
-        fout = dirout+type+notqso+'zdone_'+str(rn)+'_full.ran.fits'
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
 
@@ -270,12 +270,12 @@ if type == 'QSO':
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
-        fn = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        fn = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
@@ -301,7 +301,7 @@ if mkclusran:
             rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.imsys == 'y':
@@ -325,7 +325,7 @@ if args.imsys == 'y':
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
-            fb = dirout+type+notqso+'zdone'+wzm+reg
+            fb = dirout+type+notqso+wzm+reg
             fcr = fb+'_0_clustering.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
@@ -382,7 +382,7 @@ if args.add_regressis == 'y':
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+reg
+        fb = dirout+type+notqso+reg
         fcd = fb+'_clustering.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
@@ -421,7 +421,7 @@ if mkclusran:
         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 
@@ -457,7 +457,7 @@ if args.nz == 'y':
         P0 = 7000
     
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+wzm+reg
+        fb = dirout+type+notqso+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
@@ -467,6 +467,6 @@ if args.nz == 'y':
 if args.swapz == 'y':
     import LSS.blinding_tools as blind
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+reg+'_clustering.dat.fits'
+        fb = dirout+type+notqso+reg+'_clustering.dat.fits'
         data = Table(fitsio.read(fb))
         blind.swap_z(data,fb,frac=0.01)        
