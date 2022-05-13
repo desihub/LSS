@@ -451,7 +451,7 @@ class BGS_ssr:
         #       method='Powell', tol=1e-6)
         #pars = res.x
         #print(pars,self.wrapper(pars))
-        res = minimize(self.wrapper_hist, [-0.001, 1, 0.4], bounds=((-1000, 0), (0, 1000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-2, 3, 0.01], bounds=((-1000, 0), (0, 1000), (0., 0.02)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
