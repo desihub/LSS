@@ -667,6 +667,7 @@ class QSO_ssr:
         plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
         plt.ylabel('QSO Z failure rate')
         plt.xlabel('QSO EFFECTIVE exp time')
+        plt.legend()
         plt.savefig(fn_root+'overall_failratefit.png')
         plt.show()
         gextc = 3.214
