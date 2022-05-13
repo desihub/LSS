@@ -2179,7 +2179,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     if tp == 'BGS_BRIGHT':
         bgs = ssr_tools.BGS_ssr()
-        ff = bgs.add_modpre(ff)
+        ff = bgs.add_modpre(ff,fl)
         ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
         print('min/max of zfail weights:')
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))

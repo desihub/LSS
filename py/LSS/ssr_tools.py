@@ -446,7 +446,7 @@ class BGS_ssr:
 
 
 
-    def add_modpre(self,data):
+    def add_modpre(self,data,fn_root):
         #res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
         #       method='Powell', tol=1e-6)
         #pars = res.x
