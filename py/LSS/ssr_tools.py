@@ -469,7 +469,7 @@ class BGS_ssr:
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         
         data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
-        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_QSO'],*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)   
         relssr = assr/np.max(assr) 
         drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
         self.wts_fid = 1/relssr
