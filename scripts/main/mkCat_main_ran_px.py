@@ -293,6 +293,18 @@ if type != 'dark' and type != 'bright' and mkfullr:
 
 
 #print(tracemalloc.get_traced_memory())
+tsnrcol = 'TSNR2_ELG'
+tsnrcut = 0
+if type[:3] == 'ELG':
+    #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+    tsnrcut = 80
+if type == 'LRG':
+    #dchi2 = 16  
+    tsnrcut = 80          
+if type[:3] == 'BGS':
+    tsnrcol = 'TSNR2_BGS'
+    dchi2 = 40
+    tsnrcut = 1000
 
 
 def doran(ii):
@@ -424,7 +436,7 @@ def doran(ii):
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(uhpxs))
-            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tnsr2=tnsrcut)
             npx += 1  
         npx = 0
         s = 0
@@ -473,18 +485,6 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
 
         ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))

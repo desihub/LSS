@@ -1035,7 +1035,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',maxp=103400):
+def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',maxp=103400,min_tsnr2=0):
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -1112,17 +1112,24 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = np.array(dz)
     np.random.shuffle(dz)
     dz = Table(dz)
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
+    t0 = dz[tsnr]*0 != 0
+    t0 |= dz[tsnr] == 999999
+    t0 |= dz[tsnr] == 1.e20
+    dz[tsnr][t0] = 0
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tsnr] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#*(1+dz[tsnr])
     #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
     #sort by tsnr, like done for data, so that the highest tsnr are kept
     dz.sort('sort') 
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
-    tids,cts = np.unique(dz['TILEID'],return_counts=True)
-    plt.plot(tids,cts/np.sum(cts))
-    plt.xlabel('TILEID')
-    plt.ylabel('fraction of randoms')
-    plt.show()
+    #tids,cts = np.unique(dz['TILEID'],return_counts=True)
+    #plt.plot(tids,cts/np.sum(cts))
+    #plt.xlabel('TILEID')
+    #plt.ylabel('fraction of randoms')
+    #plt.show()
     dz['rosette_number'] = 0
     dz['rosette_r'] = np.zeros(len(dz))
     for ii in range(0,len(dz)):

@@ -232,52 +232,52 @@ tilef = sv3dir+'tiles-'+pr+'.fits'
 if os.path.isfile(tilef):
     ta = Table.read(tilef)
 else:
-	#construct a table with the needed tile information
-	if len(mtld) > 0:
-		tilel = []
-		ral = []
-		decl = []
-		mtlt = []
-		fal = []
-		obsl = []
-		pl = []
-		hal = []
-		#for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-		for tile in mtld['TILEID']:
-			ts = str(tile).zfill(6)
-			fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-			tilel.append(tile)
-			ral.append(fht['TILERA'])
-			decl.append(fht['TILEDEC'])
-			mtlt.append(fht['MTLTIME'])
-			fal.append(fht['RUNDATE'])
-			obsl.append(fht['FIELDROT'])
-			hal.append(fht['FA_HA'])
-			#pl.append(pro)
-			pl.append(pr)
-		ta = Table()
-		ta['TILEID'] = tilel
-		ta['RA'] = ral
-		ta['DEC'] = decl
-		ta['MTLTIME'] = mtlt
-		ta['RUNDATE'] = fal
-		ta['FIELDROT'] = obsl
-		ta['PROGRAM'] = pl
-		ta['FA_HA'] = hal
-		#if pd == 'dark':
-		ta['OBSCONDITIONS'] = 15
-		ta['IN_DESI'] = 1
-		#ttf = Table() #to write out to use for fiberassign all at once
-		#ttf['TILEID'] = tilel
-		#ttf['RA'] = ral
-		#ttf['DEC'] = decl
-		#ttf['OBSCONDITIONS'] = 15
-		#ttf['IN_DESI'] = 1
-		#ttf['PROGRAM'] = 'SV3'
-		ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+    #construct a table with the needed tile information
+    if len(mtld) > 0:
+        tilel = []
+        ral = []
+        decl = []
+        mtlt = []
+        fal = []
+        obsl = []
+        pl = []
+        hal = []
+        #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+        for tile in mtld['TILEID']:
+            ts = str(tile).zfill(6)
+            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            tilel.append(tile)
+            ral.append(fht['TILERA'])
+            decl.append(fht['TILEDEC'])
+            mtlt.append(fht['MTLTIME'])
+            fal.append(fht['RUNDATE'])
+            obsl.append(fht['FIELDROT'])
+            hal.append(fht['FA_HA'])
+            #pl.append(pro)
+            pl.append(pr)
+        ta = Table()
+        ta['TILEID'] = tilel
+        ta['RA'] = ral
+        ta['DEC'] = decl
+        ta['MTLTIME'] = mtlt
+        ta['RUNDATE'] = fal
+        ta['FIELDROT'] = obsl
+        ta['PROGRAM'] = pl
+        ta['FA_HA'] = hal
+        #if pd == 'dark':
+        ta['OBSCONDITIONS'] = 15
+        ta['IN_DESI'] = 1
+        #ttf = Table() #to write out to use for fiberassign all at once
+        #ttf['TILEID'] = tilel
+        #ttf['RA'] = ral
+        #ttf['DEC'] = decl
+        #ttf['OBSCONDITIONS'] = 15
+        #ttf['IN_DESI'] = 1
+        #ttf['PROGRAM'] = 'SV3'
+        ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
 
-	else:
-		print('no done tiles in the MTL')
+    else:
+        print('no done tiles in the MTL')
 
 
 minr = 148
@@ -508,6 +508,18 @@ if mkfulld:
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
+tsnrcut = 0
+if type[:3] == 'ELG':
+    dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+    tsnrcut = 80
+if type == 'LRG':
+    dchi2 = 16  
+    tsnrcut = 80  
+if type[:3] == 'BGS':
+    dchi2 = 40
+    tsnrcut = 1000
+
+
 if mkfullr:
     if specrel == 'everest' or specrel == 'fuji':
         specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
@@ -525,7 +537,7 @@ if mkfullr:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
 
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,min_tsnr2=tnsrcut)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
@@ -552,16 +564,6 @@ if args.apply_veto == 'y':
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     dchi2 = 9
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        dchi2 = 40
-        tsnrcut = 1000
     ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')

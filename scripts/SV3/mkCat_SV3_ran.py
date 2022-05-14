@@ -235,6 +235,20 @@ else:
     print('no done tiles in the MTL')
 
 
+tsnrcol = 'TSNR2_ELG'
+tsnrcut = 0
+if type[:3] == 'ELG':
+    #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+    tsnrcut = 80
+if type == 'LRG':
+    #dchi2 = 16  
+    tsnrcut = 80          
+if type[:3] == 'BGS':
+    tsnrcol = 'TSNR2_BGS'
+    dchi2 = 40
+    tsnrcut = 1000
+
+
 def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
     if cran:
@@ -337,7 +351,7 @@ def doran(ii):
         if type[:3] == 'BGS':
             maxp = 102100
 
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.apply_veto == 'y':
@@ -355,18 +369,6 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
         rcols=['Z','WEIGHT']
         if type[:3] == 'BGS':
             rcols.append('flux_r_dered')
