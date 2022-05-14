@@ -1073,7 +1073,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #lznp will later be used to veto
     #load in random file
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits'
-    dz = Table.read(zf)
+    dz = Table(fitsio.read(zf))
 
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
@@ -1085,7 +1085,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 
     #load in tileloc info for this random file and join it
     zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
-    dzpd = Table.read(zfpd)
+    dzpd = fitsio.read(zfpd)
     dz = join(dz,dzpd,keys=['TARGETID'])
     print('length before cutting to good positions '+str(len(dz)))
     #cut to good and possible locations
@@ -1094,7 +1094,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #dz = dz[wk]    
     print('length after cutting to good positions '+str(len(dz)))
     #get all the additional columns desired from original random files through join
-    tarf = Table.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/alltilesnofa.fits')
+    tarf = Table(fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/alltilesnofa.fits'))
     delcols = ['RA','DEC','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','SCND_TARGET',\
     'NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     tarf.remove_columns(delcols)
@@ -1109,14 +1109,19 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
-    
-
+    dz = np.array(dz)
+    np.random.shuffle(dz)
+    dz = Table(dz)
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
     #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
     #sort by tsnr, like done for data, so that the highest tsnr are kept
     dz.sort('sort') 
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
+    tids,cts = np.unique(dz['TILEID'],return_counts=True)
+    plt.plot(tids,cts/np.sum(cts))
+    plt.xlabel('TILEID')
+    plt.ylabel('fraction of randoms')
     dz['rosette_number'] = 0
     dz['rosette_r'] = np.zeros(len(dz))
     for ii in range(0,len(dz)):
