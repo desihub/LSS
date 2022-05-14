@@ -1122,6 +1122,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     plt.plot(tids,cts/np.sum(cts))
     plt.xlabel('TILEID')
     plt.ylabel('fraction of randoms')
+    plt.show()
     dz['rosette_number'] = 0
     dz['rosette_r'] = np.zeros(len(dz))
     for ii in range(0,len(dz)):
