@@ -384,7 +384,7 @@ if __name__ == '__main__':
         import sys
         #N = int(sys.argv[2])
         #N = rx
-        p = Pool(N)
+        p = Pool(rx-rm)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
