@@ -45,7 +45,7 @@ def find_znotposs_tloc(dz):
     tileids = np.unique(dz['TILEID'])
     ual = []
     for tile in tileids:
-        sel = dz['TILEID'] = tile
+        sel = dz['TILEID'] == tile
         dzs = dz[sel]
         sela = dzs['ZWARN'] != 999999
         sela &= dzs['ZWARN']*0 == 0
