@@ -40,6 +40,24 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
+def find_znotposs_tloc(dz):
+
+    tileids = np.unique(dz['TILEID'])
+    ual = []
+    for tile in tileids:
+        sel = dz['TILEID'] = tile
+        dzs = dz[sel]
+        sela = dzs['ZWARN'] != 999999
+        sela &= dzs['ZWARN']*0 == 0 
+        tida = np.unique(dzs[selz]['TARGETID'])
+        ua = ~np.isin(dzs['TARGETID'],tida)
+        ua &= dzs['NUMOBS'] == 0
+        ual.append(np.unique(dzs[ua]['TILELOCID']))
+        print('done with tile '+str(tile))
+    print('concatenating')
+    ualt = np.concatenate(ual)
+    return ualt
+
 
 def find_znotposs(dz):
 

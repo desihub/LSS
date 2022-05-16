@@ -1068,7 +1068,8 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz = dz[wtype]#&wg]
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
-    lznp = common.find_znotposs(dz)
+    #lznp = common.find_znotposs(dz)
+    lznp = common.find_znotposs_tloc(dz)
 
     #lznp will later be used to veto
     #load in random file
