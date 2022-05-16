@@ -396,7 +396,7 @@ if specrel == 'daily' and args.dospec == 'y':
                     print('file '+tarfo+' not found')
                 npx += 1    
             tarfn = Table(tarfn)           
-            remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
             for col in remcol:
                 try:
                     tarfn.remove_columns([col] )#we get this where relevant from spec file
@@ -405,6 +405,7 @@ if specrel == 'daily' and args.dospec == 'y':
 
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
+            specf.remove_columns(['PRIORITY'])
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
@@ -442,7 +443,7 @@ if specrel == 'everest' or specrel =='guadalupe':
     tarf = Table.read(tarfo)
     tarf.remove_columns(['ZWARN_MTL'])
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-
+    specf.remove_columns(['PRIORITY'])
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
     tj.write(outfs,format='fits', overwrite=True)
