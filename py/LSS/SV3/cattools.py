@@ -1084,7 +1084,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
-    wa = np.isin(dz['TILELOCID'][alocid])
+    wa = np.isin(dz['TILELOCID'],alocid)
     dz['LOC_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOC_ASSIGNED'][wa] = 1
 
