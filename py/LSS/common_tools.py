@@ -54,7 +54,7 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         ua = ~np.isin(dzs['TARGETID'],tida)
         #ua &= dzs['NUMOBS'] == 0
         ua &= dzs['PRIORITY'] > priority_thresh
-        ual.append(np.unique(dzs[ua]['TILELOCID']))
+        ual.append(np.unique(dzs[ua&~sela]['TILELOCID']))
         print('done with tile '+str(tile))
     print('concatenating')
     ualt = np.concatenate(ual)
