@@ -389,7 +389,7 @@ if combd:
         ct.combtiles_wdup(ta,mdir,outf)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
+        remcol = ['Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
         for col in remcol:
             try:
                 tarf.remove_columns([col] )#we get this where relevant from spec file
