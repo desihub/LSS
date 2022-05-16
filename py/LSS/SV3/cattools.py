@@ -1070,6 +1070,10 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     #lznp = common.find_znotposs(dz)
     lznp = common.find_znotposs_tloc(dz)
+    
+    aloc = dz['ZWARN'] != 999999
+    aloc &= dz['ZWARN']*0 != 0
+    alocid = np.unique(dz[aloc]['TILELOCID'])
 
     #lznp will later be used to veto
     #load in random file
@@ -1079,6 +1083,11 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
+
+    wa = np.isin(dz['TILELOCID'][alocid])
+    dz['LOC_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    dz['LOC_ASSIGNED'][wa] = 1
+
 
     wk = ~np.isin(dz['TILELOCID'],lznp)
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
@@ -1120,7 +1129,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
     sel = dz[tsnr] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#*(1+dz[tsnr])
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']+0.5*dz['LOC_ASSIGNED']#*(1+dz[tsnr])
     #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
     #sort by tsnr, like done for data, so that the highest tsnr are kept
     dz.sort('sort') 
