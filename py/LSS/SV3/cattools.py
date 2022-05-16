@@ -1135,6 +1135,11 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz.sort('sort') 
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
+    sel = dz['GOODPRI']
+    sel &= dz['ZPOSSLOC']
+    sel &= dz['GOODTSNR']
+    sel &= dz['GOODHARDLOC']
+    print('number passing vetos (not cut) '+str(len(dz[sel])))
     #tids,cts = np.unique(dz['TILEID'],return_counts=True)
     #plt.plot(tids,cts/np.sum(cts))
     #plt.xlabel('TILEID')
