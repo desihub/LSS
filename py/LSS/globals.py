@@ -9,7 +9,7 @@ class SV3:
 
         ebits = None
         self.tsnrcut = 80
-        self.chi2 = 0.9 #used for the ELG OII criteria
+        self.dchi2 = 0.9 #used for the ELG OII criteria
         self.tsnrcol = 'TSNR2_ELG'
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
