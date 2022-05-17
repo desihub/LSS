@@ -13,6 +13,7 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
+from desitarget.sv3 import sv3_targetmask
 from desimodel.footprint import is_point_in_desi
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
@@ -251,6 +252,40 @@ else:
 #     dchi2 = 40
 #     tsnrcut = 1000
 
+if mkfullr:
+	if specrel == 'everest' or specrel == 'fuji':
+		specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+		fbcol = 'COADD_FIBERSTATUS'
+	if specrel == 'daily':
+		specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+		fbcol = 'FIBERSTATUS'
+    wf = specf[fbcol] == 0
+    stlid = 10000*specf['TILEID'] +specf['LOCATION']
+    gtl = np.unique(stlid[wf])
+    #gtl now contains the list of good locations
+    #we now want to load in the bigger data file with all the target info
+    #we use it to find the locations where observations of the given type were not possible and then mask them
+    zf = indir+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+    dz = Table.read(zf) 
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wg]
+    if type == 'BGS_BRIGHT':
+        bit = sv3_targetmask.bgs_mask[type]
+        desitarg='SV3_BGS_TARGET'
+    else:
+        bit = sv3_targetmask.desi_mask[type]    
+        desitarg='SV3_DESI_TARGET'
+    wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & 4) == 0)
+    dz = dz[wtype]
+    #lznp = common.find_znotposs(dz)
+    lznp,tlid_full = common.find_znotposs_tloc(dz)
+
+
+
+
 
 def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
@@ -332,12 +367,12 @@ def doran(ii):
 
         
     if mkfullr:
-        if specrel == 'everest' or specrel == 'fuji':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-            fbcol = 'COADD_FIBERSTATUS'
-        if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-            fbcol = 'FIBERSTATUS'
+#         if specrel == 'everest' or specrel == 'fuji':
+#             specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+#             fbcol = 'COADD_FIBERSTATUS'
+#         if specrel == 'daily':
+#             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+#             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         if type == 'BGS_BRIGHT':
@@ -354,7 +389,8 @@ def doran(ii):
         if type[:3] == 'BGS':
             maxp = 102100
 
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
+        #ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.apply_veto == 'y':
