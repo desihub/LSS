@@ -1037,7 +1037,8 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsnr= 'TSNR2_ELG',notqso='',qsobit=4,fbcol='COADD_FIBERSTATUS',maxp=103400,min_tsnr2=0):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_tsnr2=0,tlid_full=None):
+
     '''
     indir is directory with inputs
     rann is the random file number (0-17)
@@ -1054,28 +1055,28 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     #first, need to find locations to veto based on data
     #the same is done in mkfulldat
     #fs = fitsio.read(indir+'datcomb_'+pd+'_specwdup_Alltiles.fits')
-    wf = fs[fbcol] == 0
-    stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    gtl = np.unique(stlid[wf])
-    #gtl now contains the list of good locations
-    #we now want to load in the bigger data file with all the target info
-    #we use it to find the locations where observations of the given type were not possible and then mask them
-    zf = indir+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
-    dz = Table.read(zf) 
-    wtype = ((dz[desitarg] & bit) > 0)
-    if notqso == 'notqso':
-        wtype &= ((dz[desitarg] & qsobit) == 0)
-
-    
-    dz = dz[wtype]#&wg]
+#     wf = fs[fbcol] == 0
+#     stlid = 10000*fs['TILEID'] +fs['LOCATION']
+#     gtl = np.unique(stlid[wf])
+#     #gtl now contains the list of good locations
+#     #we now want to load in the bigger data file with all the target info
+#     #we use it to find the locations where observations of the given type were not possible and then mask them
+#     zf = indir+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+#     dz = Table.read(zf) 
+#     wtype = ((dz[desitarg] & bit) > 0)
+#     if notqso == 'notqso':
+#         wtype &= ((dz[desitarg] & qsobit) == 0)
+# 
+#     
+#     dz = dz[wtype]#&wg]
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     #lznp = common.find_znotposs(dz)
     lznp,lfull = common.find_znotposs_tloc(dz)
     
-    aloc = dz['ZWARN'] != 999999
-    aloc &= dz['ZWARN']*0 != 0
-    alocid = np.unique(dz[aloc]['TILELOCID'])
+    #aloc = dz['ZWARN'] != 999999
+    #aloc &= dz['ZWARN']*0 != 0
+    #alocid = np.unique(dz[aloc]['TILELOCID'])
 
     #lznp will later be used to veto
     #load in random file
@@ -1086,9 +1087,9 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
-    wa = np.isin(dz['TILELOCID'],alocid)
-    dz['LOC_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
-    dz['LOC_ASSIGNED'][wa] = 1
+    #wa = np.isin(dz['TILELOCID'],alocid)
+    #dz['LOC_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    #dz['LOC_ASSIGNED'][wa] = 1
 
 
     wk = ~np.isin(dz['TILELOCID'],lznp)
