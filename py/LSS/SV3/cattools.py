@@ -80,8 +80,10 @@ def combtile_spec(tiles,outf='',rel='daily'):
         
         n += 1
         print(tile,n,len(tiles[tmask]),len(specd)) 
-    specd.write(outf,format='fits', overwrite=True)       
- 
+    if n > 0:
+        specd.write(outf,format='fits', overwrite=True)       
+    else:
+        print('There was nothing to have done') 
 
 def combspecdata(tile,zdate,specroot='/global/cfs/cdirs/desi/spectro/redux/',rel='daily' ):
     #put data from different spectrographs together, one table for fibermap, other for z
