@@ -265,7 +265,7 @@ if mkfullr:
     #gtl now contains the list of good locations
     #we now want to load in the bigger data file with all the target info
     #we use it to find the locations where observations of the given type were not possible and then mask them
-    zf = indir+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+    zf = ldirspec+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
     dz = Table.read(zf) 
 
     wg = np.isin(dz['TILELOCID'],gtl)
