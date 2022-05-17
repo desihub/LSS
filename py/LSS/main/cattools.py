@@ -1702,7 +1702,11 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG',maxp=3400,min_tsnr2=0):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0):
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
 
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     #fe = False
@@ -1753,12 +1757,12 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
                 dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
                 sel = dz['PRIORITY'] <= maxp
                 dz['GOODPRI'][sel] = 1
-                t0 = dz[tsnr]*0 != 0
-                t0 |= dz[tsnr] == 999999
-                t0 |= dz[tsnr] == 1.e20
-                dz[tsnr][t0] = 0
+                t0 = dz[tscol]*0 != 0
+                t0 |= dz[tscol] == 999999
+                t0 |= dz[tscol] == 1.e20
+                dz[tscol][t0] = 0
                 dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-                sel = dz[tsnr] > min_tsnr2
+                sel = dz[tscol] > min_tsnr2
                 dz['GOODTSNR'][sel] = 1
                 dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#*(1+dz[tsnr])
 
@@ -1877,8 +1881,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
     wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    print(np.max(dz[tscol]))
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tscol] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
 
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
