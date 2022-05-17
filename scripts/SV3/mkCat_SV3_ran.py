@@ -253,12 +253,12 @@ else:
 #     tsnrcut = 1000
 
 if mkfullr:
-	if specrel == 'everest' or specrel == 'fuji':
-		specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-		fbcol = 'COADD_FIBERSTATUS'
-	if specrel == 'daily':
-		specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-		fbcol = 'FIBERSTATUS'
+    if specrel == 'everest' or specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        fbcol = 'COADD_FIBERSTATUS'
+    if specrel == 'daily':
+        specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+        fbcol = 'FIBERSTATUS'
     wf = specf[fbcol] == 0
     stlid = 10000*specf['TILEID'] +specf['LOCATION']
     gtl = np.unique(stlid[wf])
