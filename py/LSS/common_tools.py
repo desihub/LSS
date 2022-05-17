@@ -60,8 +60,8 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         uatlids = np.unique(dzs[ua]['TILELOCID'])
         ual.append(uatlids)
         selp = dzs['PRIORITY'] > priority_thresh
-        tlids_gp = np.unique(dzs[selp])
-        tlids_all = np.unique(dzs)
+        tlids_gp = np.unique(dzs[selp]['TILELOCID'])
+        tlids_all = np.unique(dzs['TILELOCID'])
         tlids_full = tlids_all[~np.isin(tlids_all,tlids_gp)]
         print('done with tile '+str(tile),str(len(uatlids)),str(len(tlids_full)))
         ufl.append(tlids_full)
