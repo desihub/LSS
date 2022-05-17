@@ -1706,7 +1706,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
     if pd == 'bright':
         tscol = 'TSNR2_BGS'
     else:
@@ -1742,6 +1742,12 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
 
         dz['ZPOSSLOC'][wk] = 1#dz[wk]
         #print('length after cutting to good positions '+str(len(dz)))
+        dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
+        if tlid_full is not None:
+            wf = np.isin(dz['TILELOCID'],tlid_full)
+            dz['LOCFULL'][wf] = 1
+
+
         if len(dz) > 0:
 
             tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
@@ -1768,7 +1774,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
                 dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
                 sel = dz[tscol] > min_tsnr2
                 dz['GOODTSNR'][sel] = 1
-                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#*(1+dz[tsnr])
+                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']-0.5*dz['LOCFULL']#*(1+dz[tsnr])
 
                 #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
 
