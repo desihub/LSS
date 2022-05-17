@@ -282,6 +282,8 @@ if mkfullr:
     dz = dz[wtype]
     #lznp = common.find_znotposs(dz)
     lznp,tlid_full = common.find_znotposs_tloc(dz)
+    del dz
+    print('done finding znotposs')
 
 
 
