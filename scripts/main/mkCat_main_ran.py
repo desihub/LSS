@@ -153,6 +153,13 @@ imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
 
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tnsrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+
+
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
@@ -373,7 +380,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -392,18 +399,18 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
+#         tsnrcol = 'TSNR2_ELG'
+#         tsnrcut = 0
+#         if type[:3] == 'ELG':
+#             #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#             tsnrcut = 80
+#         if type == 'LRG':
+#             #dchi2 = 16  
+#             tsnrcut = 80          
+#         if type[:3] == 'BGS':
+#             tsnrcol = 'TSNR2_BGS'
+#             dchi2 = 40
+#             tsnrcut = 1000
 
         ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))
