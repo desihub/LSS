@@ -465,6 +465,17 @@ if combr:
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
+
+tsnrcut = 0
+if type[:3] == 'ELG':
+    dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+    tsnrcut = 80
+if type == 'LRG':
+    dchi2 = 16  
+    tsnrcut = 80  
+if type[:3] == 'BGS':
+    dchi2 = 40
+    tsnrcut = 1000
         
         
 if mkfulld:
@@ -503,21 +514,11 @@ if mkfulld:
 
 
     #ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
 
-tsnrcut = 0
-if type[:3] == 'ELG':
-    dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-    tsnrcut = 80
-if type == 'LRG':
-    dchi2 = 16  
-    tsnrcut = 80  
-if type[:3] == 'BGS':
-    dchi2 = 40
-    tsnrcut = 1000
 
 
 if mkfullr:

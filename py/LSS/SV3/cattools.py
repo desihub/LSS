@@ -1213,7 +1213,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1368,7 +1368,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
     print(np.max(dz[tscol]))
-    dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tsnr] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+
+    #dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+
     print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
