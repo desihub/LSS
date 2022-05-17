@@ -1072,7 +1072,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     #lznp = common.find_znotposs(dz)
-    lznp,lfull = common.find_znotposs_tloc(dz)
+    #lznp,lfull = common.find_znotposs_tloc(dz)
     
     #aloc = dz['ZWARN'] != 999999
     #aloc &= dz['ZWARN']*0 != 0
@@ -1096,9 +1096,11 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     dz['ZPOSSLOC'][wk] = 1
 
-    wf = np.isin(dz['TILELOCID'],lfull)
     dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
-    dz['LOCFULL'][wf] = 1
+    if tlid_full is not None:
+        wf = np.isin(dz['TILELOCID'],tlid_full)
+    
+        dz['LOCFULL'][wf] = 1
 
 
     #load in tileloc info for this random file and join it
