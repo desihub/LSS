@@ -9,18 +9,21 @@ class SV3:
 
         ebits = None
         self.tsnrcut = 80
+        self.chi2 = 0.9 #used for the ELG OII criteria
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
+            self.dchi2 = 40
         else:
             self.imbits = [1,12,13]
         self.ebits = None
         if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
             self.tsnrcut = 0
+            self.dchi2 = 0
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
-            
+            self.dchi2 = 15
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
@@ -46,6 +49,7 @@ class main:
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
+            self.dchi2 = 40
             self.zmin = 0.1
             self.zmax = 0.5
         else:
@@ -53,15 +57,18 @@ class main:
         if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
             self.tsnrcut = 0
+            self.dchi2 = 0
             self.zmin = 0.8
             self.zmax = 3.5
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
             self.tsnrcut = 80
+            self.dchi2 = 15
             self.zmin = 0.4
             self.zmax = 1.1
         if tp[:3] == 'ELG':
             self.tsnrcut = 80
+            self.dchi2 = 0.9
             self.zmin = 0.8
             self.zmax = 1.6
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
