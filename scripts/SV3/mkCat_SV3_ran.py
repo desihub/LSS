@@ -376,13 +376,15 @@ def doran(ii):
 #             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
 #             fbcol = 'FIBERSTATUS'
 
+        print('making full random '+str(ii))
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        if type == 'BGS_BRIGHT':
-            bit = sv3_targetmask.bgs_mask[type]
-            desitarg='SV3_BGS_TARGET'
-        else:
-            bit = sv3_targetmask.desi_mask[type]    
-            desitarg='SV3_DESI_TARGET'
+        #if type == 'BGS_BRIGHT':
+        #    bit = sv3_targetmask.bgs_mask[type]
+        #    desitarg='SV3_BGS_TARGET'
+        #else:
+        #    bit = sv3_targetmask.desi_mask[type]    
+        #    desitarg='SV3_DESI_TARGET'
+        
         maxp = 103400
         if type[:3] == 'LRG' or notqso == 'notqso':
             maxp = 103200

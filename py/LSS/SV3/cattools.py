@@ -1080,9 +1080,10 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
 
     #lznp will later be used to veto
     #load in random file
+    print('in mkfullran')
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits'
     dz = Table(fitsio.read(zf))
-
+    print('loaded wdup file')
     wg = np.isin(dz['TILELOCID'],gtl)
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
