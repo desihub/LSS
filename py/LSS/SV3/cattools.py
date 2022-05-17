@@ -1142,7 +1142,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     t0 = dz[tscol]*0 != 0
     t0 |= dz[tscol] == 999999
     t0 |= dz[tscol] == 1.e20
-    dz[tsnr][t0] = 0
+    dz[tscol][t0] = 0
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
     sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
