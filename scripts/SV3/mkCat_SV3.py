@@ -563,18 +563,18 @@ if mkclusdat:
 
 if mkclusran:
     print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
 
     rcols=['Z','WEIGHT']
     if type[:3] == 'BGS':
