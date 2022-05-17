@@ -186,7 +186,8 @@ if specrel != 'daily':
             if notqso == 'notqso':
                 wtype &= ((dz[desitarg] & 4) == 0)
             dz = dz[wtype]
-            lznp = common.find_znotposs(dz)
+            #lznp = common.find_znotposs(dz)
+            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=3000)
             del specdat
             del dz
 
@@ -380,7 +381,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
