@@ -1369,7 +1369,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     dz[tscol][wnts] = 0
     print(np.max(dz[tscol]))
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tsnr] > min_tsnr2
+    sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
 
     #dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
