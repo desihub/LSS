@@ -1595,7 +1595,12 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',maxp=3400,min_tsnr2=0):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0):
+
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
 
 #     selz = dz['ZWARN'] != 999999
 #     fs = dz[selz]
@@ -1676,13 +1681,13 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
-    t0 = dz[tsnr]*0 != 0
-    t0 |= dz[tsnr] == 999999
-    t0 |= dz[tsnr] == 1.e20
-    dz[tsnr][t0] = 0
+    t0 = dz[tscol]*0 != 0
+    t0 |= dz[tscol] == 999999
+    t0 |= dz[tscol] == 1.e20
+    dz[tscol][t0] = 0
     
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tsnr] > min_tsnr2
+    sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#*(1+dz[tsnr])
 
