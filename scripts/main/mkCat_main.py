@@ -245,26 +245,33 @@ if args.apply_veto == 'y':
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
 
-dchi2 = 9
-tsnrcut = 0
-if type[:3] == 'ELG':
-    dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-    tsnrcut = 80
-    zmin = 0.8
-    zmax = 1.6
-if type == 'LRG':
-    dchi2 = 16  
-    tsnrcut = 80
-    zmin = 0.4
-    zmax = 1.1  
-if type[:3] == 'BGS':
-    dchi2 = 40
-    tsnrcut = 1000
-    zmin = 0.1
-    zmax = 0.5
-if type == 'QSO':
-    zmin = 0.8
-    zmax = 3.5
+
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tnsrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+
+# dchi2 = 9
+# tsnrcut = 0
+# if type[:3] == 'ELG':
+#     dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#     tsnrcut = 80
+#     zmin = 0.8
+#     zmax = 1.6
+# if type == 'LRG':
+#     dchi2 = 16  
+#     tsnrcut = 80
+#     zmin = 0.4
+#     zmax = 1.1  
+# if type[:3] == 'BGS':
+#     dchi2 = 40
+#     tsnrcut = 1000
+#     zmin = 0.1
+#     zmax = 0.5
+# if type == 'QSO':
+#     zmin = 0.8
+#     zmax = 3.5
         
 
 regl = ['_N','_S']    
@@ -281,19 +288,19 @@ if args.fillran == 'y':
 
 if mkclusran:
     print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-   
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#    
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
     rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
     if type[:3] == 'BGS':
         fcols = ['G','R','Z','W1','W2']
@@ -406,19 +413,19 @@ if type[:3] == 'BGS':
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-   
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#    
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
 
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
