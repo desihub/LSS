@@ -466,7 +466,7 @@ if combr:
         print('nothing to be done for combr, only done for dark/bright now')
         
 
-tsnrcut = 0
+tsnrcut = SV3p.tsnrcut
 if type[:3] == 'ELG':
     dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
     tsnrcut = 80
