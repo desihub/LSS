@@ -74,8 +74,3 @@ class main:
             #self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
         
-        #recon parameters
-        self.om = 0.31519
-        if tp[:3] == 'LRG':
-            self.bias = 1.8
-            self.ff = 0.4*self.bias
