@@ -44,6 +44,7 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
 
     tileids = np.unique(dz['TILEID'])
     ual = []
+    ufl = []
     for tile in tileids:
         sel = dz['TILEID'] == tile
         dzs = dz[sel]
@@ -58,10 +59,16 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         ua &= ~np.isin(dzs['TILELOCID'],tlida)
         uatlids = np.unique(dzs[ua]['TILELOCID'])
         ual.append(uatlids)
-        print('done with tile '+str(tile),str(len(uatlids)))
+        selp = dzs['PRIORITY'] > priority_thresh
+        tlids_gp = np.unique(dzs[selp])
+        tlids_all = np.unique(dzs)
+        tlids_full = tlids_all[~np.isin(tlids_all,tlids_gp)]
+        print('done with tile '+str(tile),str(len(uatlids)),str(len(tlids_full)))
+        ufl.append(tlids_full)
     print('concatenating')
     ualt = np.concatenate(ual)
-    return ualt
+    uflt = np.concatenate(ufl)
+    return ualt,uflt
 
 
 def find_znotposs(dz):

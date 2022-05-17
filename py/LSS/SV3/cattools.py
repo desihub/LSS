@@ -1069,7 +1069,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
 
     #print('length after selecting type and fiberstatus == 0 '+str(len(dz)))
     #lznp = common.find_znotposs(dz)
-    lznp = common.find_znotposs_tloc(dz)
+    lznp,lfull = common.find_znotposs_tloc(dz)
     
     aloc = dz['ZWARN'] != 999999
     aloc &= dz['ZWARN']*0 != 0
@@ -1092,6 +1092,11 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     wk = ~np.isin(dz['TILELOCID'],lznp)
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     dz['ZPOSSLOC'][wk] = 1
+
+    wf = np.isin(dz['TILELOCID'],lfull)
+    dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
+    dz['LOCFULL'][wf] = 1
+
 
     #load in tileloc info for this random file and join it
     zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
@@ -1129,7 +1134,7 @@ def mkfullran(fs,indir,rann,imbits,outf,tp,pd,bit,desitarg='SV3_DESI_TARGET',tsn
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
     sel = dz[tsnr] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']#+0.5*dz['LOC_ASSIGNED']/dz['TILEID']#*(1+dz[tsnr])
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']+0.5*dz['LOC_ASSIGNED']-0.5*dz['LOCFULL']#*(1+dz[tsnr])
     #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
     #sort by tsnr, like done for data, so that the highest tsnr are kept
     dz.sort('sort') 
