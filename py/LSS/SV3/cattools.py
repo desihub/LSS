@@ -1419,7 +1419,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     co = Table()
     co['TILES'] = tll
     co['COMP_TILE'] = compa
-    cof = outf.strip('_full_noveto.dat.fits')+'_comp_tile.fits'
+    cof = outf.replace('_full_noveto.dat.fits','_comp_tile.fits')
     print('writing comp_tile completeness to '+cof)
     co.write(cof,overwrite=True,format='fits')    
 
