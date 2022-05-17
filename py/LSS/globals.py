@@ -23,7 +23,7 @@ class SV3:
             self.ebits = [8,9,11]    
             self.tsnrcut = 0
             self.dchi2 = 0
-            self.tsnrcol = 'TSNR2_QSO'
+            #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
             self.dchi2 = 15
@@ -65,7 +65,7 @@ class main:
             self.dchi2 = 0
             self.zmin = 0.8
             self.zmax = 3.5
-            self.tsnrcol = 'TSNR2_QSO'
+            #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
             self.tsnrcut = 80
