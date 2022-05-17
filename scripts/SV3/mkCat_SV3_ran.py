@@ -386,12 +386,15 @@ if __name__ == '__main__':
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        #N = rx
-        p = Pool(rx-rm)
+        N = rx-rm
+        #p = Pool(rx-rm)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        p.map(doran,inds)
+
+        with Pool(N) as pool:
+        
+            pool.map(doran,inds)
     else:
         for i in range(rm,rx):
             doran(i)
