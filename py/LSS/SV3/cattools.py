@@ -1080,6 +1080,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
 
     #lznp will later be used to veto
     #load in random file
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
+
+
     print('in mkfullran')
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_Alltiles.fits'
     dz = Table(fitsio.read(zf))
@@ -1133,12 +1139,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     dz = np.array(dz)
     np.random.shuffle(dz)
     dz = Table(dz)
-    t0 = dz[tsnr]*0 != 0
-    t0 |= dz[tsnr] == 999999
-    t0 |= dz[tsnr] == 1.e20
+    t0 = dz[tscol]*0 != 0
+    t0 |= dz[tscol] == 999999
+    t0 |= dz[tscol] == 1.e20
     dz[tsnr][t0] = 0
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tsnr] > min_tsnr2
+    sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']-0.5*dz['LOCFULL']#+0.5*dz['LOC_ASSIGNED']#*(1+dz[tsnr])
     #dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
