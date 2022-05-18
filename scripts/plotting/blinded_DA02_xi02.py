@@ -41,7 +41,7 @@ def plotxis():
 	ax.axes.yaxis.set_ticks([])
 	plt.xlabel(xlab)
 	plt.ylabel(r'$s^2\times$ configuration-space monopole')
-	(zmin,zmax) = zw.split('_')
+	(zmin,zmax) = zw.strip('lowz').split('_')
 	cfn = fitsio.read(dirc+tr+'_N_clustering.dat.fits')
 	cfs = fitsio.read(dirc+tr+'_S_clustering.dat.fits')
 
@@ -83,6 +83,18 @@ def plotxis():
 
 plotxis()
 
+tr = 'QSO'
+zw = '0.8_2.1lowz'
+bs = '10'
+pt = '^'
+cl = 'forestgreen'
+mfc = cl
+modpar = '0.3954715.00'
+ylim0 = -50,75
+bv = 1.2
+plotxis()
+
+
 tr = 'BGS_BRIGHT'
 zw = '0.1_0.5'
 bs = '5'
@@ -94,13 +106,3 @@ ylim0 = -50,85
 bv = 1.6
 plotxis()
 
-tr = 'QSO'
-zw = '0.8_2.1'
-bs = '10'
-pt = '^'
-cl = 'forestgreen'
-mfc = cl
-modpar = '0.3954715.00'
-ylim0 = -50,75
-bv = 1.2
-plotxis()
