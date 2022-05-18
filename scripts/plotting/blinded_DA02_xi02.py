@@ -43,9 +43,10 @@ ylim = -50,110
 plt.xlim(xlim)
 plt.ylim(ylim)
 plt.legend()
-plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
 plt.text(xlim[0]+5,ylim[0]+20,prelim,rotation=35,size=24,alpha=0.2)
+plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
 plt.show()
+
 ax = plt.gca()
 ax.axes.xaxis.set_ticks([])
 ax.axes.yaxis.set_ticks([])
