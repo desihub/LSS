@@ -16,7 +16,7 @@ cfn = fitsio.read(dirc+'LRG_N_clustering.dat.fits')
 cfs = fitsio.read(dirc+'LRG_S_clustering.dat.fits')
 tr = 'LRG'
 zw = '0.4_1.1'
-bs = '5
+bs = '5'
 
 fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
 xi = np.loadtxt(fn_txt).transpose()
