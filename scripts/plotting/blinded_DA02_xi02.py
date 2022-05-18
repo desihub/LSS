@@ -28,7 +28,7 @@ bs = '5'
 pt = 's'
 cl = 'firebrick'
 mfc = cl
-modpar = '0.43.04.08.015.00'
+modpar = 'DESI0.43.04.08.015.00'
 ylim0 = -50,110
 bv = 2
 
@@ -51,7 +51,7 @@ def plotxis():
 	sels &= cfs['Z'] < float(zmax)
 	ngal = len(cfn[seln])+len(cfs[sels])
 	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
-	xilin = np.loadtxt(baotempdir+'xi0DESI'+modpar+'.dat').transpose()
+	xilin = np.loadtxt(baotempdir+'xi0'+modpar+'.dat').transpose()
 
 	plt.plot(xilin[0],xilin[0]**2.*xilin[1]*bv,'k-.',label='a simplified BAO model (not a fit)')
 
@@ -71,7 +71,7 @@ def plotxis():
 	plt.ylabel(r'$s\times$ configuration-space quadrupole')
 	#plt.minorticks_on()
 	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
-	xilin = np.loadtxt(baotempdir+'xi2DESI'+modpar+'.dat').transpose()
+	xilin = np.loadtxt(baotempdir+'xi2'+modpar+'.dat').transpose()
 	plt.plot(xilin[0],xilin[0]*xilin[1]*bv,'k-.',label='a simplified BAO model (not a fit)')
 	ylim = plt.gca().get_ylim()
 	plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),prelim,rotation=35,size=24,alpha=0.2)
@@ -83,13 +83,15 @@ def plotxis():
 
 plotxis()
 
+
+
 tr = 'QSO'
 zw = '0.8_2.1lowz'
 bs = '10'
 pt = '^'
 cl = 'forestgreen'
 mfc = cl
-modpar = '0.3954715.00'
+modpar = 'DESI0.3954715.00'
 ylim0 = -50,75
 bv = 1.2
 plotxis()
@@ -101,8 +103,19 @@ bs = '5'
 pt = 'o'
 cl = 'k'
 mfc = 'w'
-modpar = '0.43.06.010.015.00'
+modpar = 'DESI0.43.06.010.015.00'
 ylim0 = -50,85
 bv = 1.6
 plotxis()
 
+tr = 'ELG_LOPnotqso'
+zw = '0.8_1.6'
+bs = '10'
+pt = '*'
+cl = 'steelblue'
+mfc = cl
+modpar = 'Challenge_matterpower0.704815.00'
+ylim0 = -25,50
+bv = 0.6
+baotempdir = os.environ['HOME']+'/code/BAOfit/'
+plotxis()
