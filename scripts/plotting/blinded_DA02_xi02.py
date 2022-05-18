@@ -51,7 +51,7 @@ plt.plot(xilin[0],xilin[0]**2.*xilin[1]*2,'k-.',label='a simplified BAO model (n
 plt.xlim(xlim)
 plt.ylim(ylim0)
 plt.legend()
-plt.text(xlim[0]+5,ylim[0]+20,prelim,rotation=35,size=24,alpha=0.2)
+plt.text(xlim[0]+5,ylim0[0]+20,prelim,rotation=35,size=24,alpha=0.2)
 plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
 plt.show()
 
