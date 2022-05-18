@@ -29,49 +29,60 @@ pt = 'o'
 cl = 'r'
 modpar = '0.43.04.08.015.00'
 ylim0 = -50,110
-fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
-xi = np.loadtxt(fn_txt).transpose()
-plt.errorbar(xi[0],xi[0]**2.*xi[2],xi[0]**2.*xi[5],fmt=pt,color=cl,label=labeld)
-ax = plt.gca()
-ax.axes.xaxis.set_ticks([])
-ax.axes.yaxis.set_ticks([])
-plt.xlabel(xlab)
-plt.ylabel(r'$s^2\times$ configuration-space monopole')
-(zmin,zmax) = zw.split('_')
-seln = cfn['Z'] > float(zmin)
-seln &= cfn['Z'] < float(zmax)
-sels = cfs['Z'] > float(zmin)
-sels &= cfs['Z'] < float(zmax)
-ngal = len(cfn[seln])+len(cfs[sels])
-plt.title('1st two months of DESI LRGs; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
-xilin = np.loadtxt(baotempdir+'xi0DESI'+modpar+'.dat').transpose()
 
-plt.plot(xilin[0],xilin[0]**2.*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
+def plotxis():
+	fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
+	xi = np.loadtxt(fn_txt).transpose()
+	plt.errorbar(xi[0],xi[0]**2.*xi[2],xi[0]**2.*xi[5],fmt=pt,color=cl,label=labeld)
+	ax = plt.gca()
+	ax.axes.xaxis.set_ticks([])
+	ax.axes.yaxis.set_ticks([])
+	plt.xlabel(xlab)
+	plt.ylabel(r'$s^2\times$ configuration-space monopole')
+	(zmin,zmax) = zw.split('_')
+	seln = cfn['Z'] > float(zmin)
+	seln &= cfn['Z'] < float(zmax)
+	sels = cfs['Z'] > float(zmin)
+	sels &= cfs['Z'] < float(zmax)
+	ngal = len(cfn[seln])+len(cfs[sels])
+	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
+	xilin = np.loadtxt(baotempdir+'xi0DESI'+modpar+'.dat').transpose()
 
-plt.xlim(xlim)
-plt.ylim(ylim0)
-plt.legend()
-plt.text(xlim[0]+5,ylim0[0]+20,prelim,rotation=35,size=24,alpha=0.2)
-plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
-plt.show()
+	plt.plot(xilin[0],xilin[0]**2.*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
 
-ax = plt.gca()
-ax.axes.xaxis.set_ticks([])
-ax.axes.yaxis.set_ticks([])
+	plt.xlim(xlim)
+	plt.ylim(ylim0)
+	plt.legend()
+	plt.text(xlim[0]+5,ylim0[0]+20,prelim,rotation=35,size=24,alpha=0.2)
+	plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
+	plt.show()
 
-plt.errorbar(xi[0],xi[0]*xi[3],xi[0]*xi[6],fmt='ro',label='data with jack-knife errors')
-plt.xlabel(xlab)
-plt.ylabel(r'$s\times$ configuration-space quadrupole')
-#plt.minorticks_on()
-plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
-xilin = np.loadtxt(baotempdir+'xi2DESI'+modpar+'.dat').transpose()
-plt.plot(xilin[0],xilin[0]*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
-ylim = plt.gca().get_ylim()
-plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),prelim,rotation=35,size=24,alpha=0.2)
-plt.legend()
-plt.xlim(xlim)
-#plt.ylim(-50,100)
-plt.savefig(outdir+'xi2'+tr+zw+str(bs)+'_noaxisnum.png')
-plt.show()
+	ax = plt.gca()
+	ax.axes.xaxis.set_ticks([])
+	ax.axes.yaxis.set_ticks([])
 
+	plt.errorbar(xi[0],xi[0]*xi[3],xi[0]*xi[6],fmt='ro',label='data with jack-knife errors')
+	plt.xlabel(xlab)
+	plt.ylabel(r'$s\times$ configuration-space quadrupole')
+	#plt.minorticks_on()
+	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
+	xilin = np.loadtxt(baotempdir+'xi2DESI'+modpar+'.dat').transpose()
+	plt.plot(xilin[0],xilin[0]*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
+	ylim = plt.gca().get_ylim()
+	plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),prelim,rotation=35,size=24,alpha=0.2)
+	plt.legend()
+	plt.xlim(xlim)
+	#plt.ylim(-50,100)
+	plt.savefig(outdir+'xi2'+tr+zw+str(bs)+'_noaxisnum.png')
+	plt.show()
 
+plotxis()
+
+tr = 'BGS_BRIGHT'
+zw = '0.1_0.5'
+bs = '5'
+pt = 'o'
+cl = 'k'
+modpar = '0.43.06.010.015.00'
+ylim0 = -50,85
+plotxis()
