@@ -20,6 +20,7 @@ cfs = fitsio.read(dirc+'LRG_S_clustering.dat.fits')
 tr = 'LRG'
 zw = '0.4_1.1'
 bs = '5'
+prelim = 'Raw Data. \newline Should Not Be Used For Scientific Analysis.'
 
 fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
 xi = np.loadtxt(fn_txt).transpose()
@@ -43,7 +44,7 @@ plt.xlim(xlim)
 plt.ylim(ylim)
 plt.legend()
 plt.savefig(outdir+'xi0'+tr+zw+str(bs)+'_noaxisnum.png')
-plt.text(xlim[0]+5,ylim[0]+20,'preliminary',rotation=35,size=40,alpha=0.2)
+plt.text(xlim[0]+5,ylim[0]+20,prelim,rotation=35,size=40,alpha=0.2)
 plt.show()
 ax = plt.gca()
 ax.axes.xaxis.set_ticks([])
@@ -57,7 +58,7 @@ plt.title('1st two months of DESI LRGs; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
 xilin = np.loadtxt(os.environ['HOME']+'/code/BAOfit/BAOtemplates/xi2Challenge_matterpower0.43.04.08.015.00.dat').transpose()
 plt.plot(xilin[0],xilin[0]*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
 ylim = plt.gca().get_ylim()
-plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),'preliminary',rotation=35,size=40,alpha=0.2)
+plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),prelim,rotation=35,size=40,alpha=0.2)
 plt.legend()
 plt.xlim(xlim)
 #plt.ylim(-50,100)
