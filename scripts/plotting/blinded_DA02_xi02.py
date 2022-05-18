@@ -25,8 +25,8 @@ labeld = 'data with jack-knife errors'
 tr = 'LRG'
 zw = '0.4_1.1'
 bs = '5'
-pt = 'o'
-cl = 'r'
+pt = 's'
+cl = 'firebrick'
 mfc = cl
 modpar = '0.43.04.08.015.00'
 ylim0 = -50,110
@@ -91,5 +91,16 @@ cl = 'k'
 mfc = 'w'
 modpar = '0.43.06.010.015.00'
 ylim0 = -50,85
-bv = 1.5
+bv = 1.6
+plotxis()
+
+tr = 'QSO'
+zw = '0.8_2.1'
+bs = '10'
+pt = '^'
+cl = 'forestgreen'
+mfc = cl
+modpar = '0.3954715.00'
+ylim0 = -50,75
+bv = 1.2
 plotxis()
