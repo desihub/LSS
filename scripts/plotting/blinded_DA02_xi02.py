@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 import os
 
-matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['font.size'] = 12
 
 njack = '60'
 trs = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
