@@ -1,7 +1,10 @@
 import fitsio
 from matplotlib import pyplot as plt
+import matplotlib.rcParams
 import numpy as np
 import os
+
+matplotlib.rcParams['font.size'] = 16
 
 njack = '60'
 trs = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
@@ -55,7 +58,7 @@ xilin = np.loadtxt(os.environ['HOME']+'/code/BAOfit/BAOtemplates/xi2Challenge_ma
 plt.plot(xilin[0],xilin[0]*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
 ylim = plt.gca().get_ylim()
 plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),'preliminary',rotation=35,size=40,alpha=0.2)
-
+plt.legend()
 plt.xlim(xlim)
 #plt.ylim(-50,100)
 plt.savefig(outdir+'xi2'+tr+zw+str(bs)+'_noaxisnum.png')
