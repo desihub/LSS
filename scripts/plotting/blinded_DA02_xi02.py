@@ -1,6 +1,6 @@
 import fitsio
 from matplotlib import pyplot as plt
-import matplotlib.rcParams
+import matplotlib
 import numpy as np
 import os
 
