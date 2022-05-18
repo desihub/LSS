@@ -117,5 +117,5 @@ mfc = cl
 modpar = 'Challenge_matterpower0.704815.00'
 ylim0 = -25,50
 bv = 0.6
-baotempdir = os.environ['HOME']+'/code/BAOfit/'
+baotempdir = os.environ['HOME']+'/code/BAOfit/BAOtemplates/'
 plotxis()
