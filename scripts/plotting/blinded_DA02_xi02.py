@@ -27,19 +27,24 @@ zw = '0.4_1.1'
 bs = '5'
 pt = 'o'
 cl = 'r'
+mfc = cl
 modpar = '0.43.04.08.015.00'
 ylim0 = -50,110
+bv = 2
 
 def plotxis():
 	fn_txt = dirxi+'xi'+xit+'_'+tr+'_NScomb_'+zw+'_default_FKP_lin'+str(bs)+'_njack'+njack+'.txt'
 	xi = np.loadtxt(fn_txt).transpose()
-	plt.errorbar(xi[0],xi[0]**2.*xi[2],xi[0]**2.*xi[5],fmt=pt,color=cl,label=labeld)
+	plt.errorbar(xi[0],xi[0]**2.*xi[2],xi[0]**2.*xi[5],fmt=pt,color=cl,label=labeld,mfc=mfc)
 	ax = plt.gca()
 	ax.axes.xaxis.set_ticks([])
 	ax.axes.yaxis.set_ticks([])
 	plt.xlabel(xlab)
 	plt.ylabel(r'$s^2\times$ configuration-space monopole')
 	(zmin,zmax) = zw.split('_')
+	cfn = fitsio.read(dirc+tr+'_N_clustering.dat.fits')
+	cfs = fitsio.read(dirc+tr+'_S_clustering.dat.fits')
+
 	seln = cfn['Z'] > float(zmin)
 	seln &= cfn['Z'] < float(zmax)
 	sels = cfs['Z'] > float(zmin)
@@ -48,7 +53,7 @@ def plotxis():
 	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
 	xilin = np.loadtxt(baotempdir+'xi0DESI'+modpar+'.dat').transpose()
 
-	plt.plot(xilin[0],xilin[0]**2.*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
+	plt.plot(xilin[0],xilin[0]**2.*xilin[1]*bv,'k-.',label='a simplified BAO model (not a fit)')
 
 	plt.xlim(xlim)
 	plt.ylim(ylim0)
@@ -61,13 +66,13 @@ def plotxis():
 	ax.axes.xaxis.set_ticks([])
 	ax.axes.yaxis.set_ticks([])
 
-	plt.errorbar(xi[0],xi[0]*xi[3],xi[0]*xi[6],fmt='ro',label='data with jack-knife errors')
+	plt.errorbar(xi[0],xi[0]*xi[3],xi[0]*xi[6],fmt=pt,color=cl,label=labeld,mfc=mfc)
 	plt.xlabel(xlab)
 	plt.ylabel(r'$s\times$ configuration-space quadrupole')
 	#plt.minorticks_on()
 	plt.title('1st two months of DESI '+tr[:3]+'s; '+str(ngal)+ ' with '+zmin+'<z<'+zmax)
 	xilin = np.loadtxt(baotempdir+'xi2DESI'+modpar+'.dat').transpose()
-	plt.plot(xilin[0],xilin[0]*xilin[1]*2,'k-.',label='a simplified BAO model (not a fit)')
+	plt.plot(xilin[0],xilin[0]*xilin[1]*bv,'k-.',label='a simplified BAO model (not a fit)')
 	ylim = plt.gca().get_ylim()
 	plt.text(xlim[0]+5,ylim[0]+0.1*(ylim[1]-ylim[0]),prelim,rotation=35,size=24,alpha=0.2)
 	plt.legend()
@@ -83,6 +88,8 @@ zw = '0.1_0.5'
 bs = '5'
 pt = 'o'
 cl = 'k'
+mfc = 'w'
 modpar = '0.43.06.010.015.00'
 ylim0 = -50,85
+bv = 1.5
 plotxis()
