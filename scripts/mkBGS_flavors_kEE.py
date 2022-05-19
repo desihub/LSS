@@ -47,7 +47,7 @@ args = parser.parse_args()
 dirin = args.basedir+'/'+args.survey+ '/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
 dirout = dirin +'BGSsubcats/'
 
-#zw = ''
+zw = ''
 #if args.survey == 'DA02':
 #    zw = 'zdone'
 
