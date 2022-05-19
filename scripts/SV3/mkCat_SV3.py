@@ -468,7 +468,7 @@ if combr:
 
 tsnrcut = SV3p.tsnrcut
 dchi2 = SV3p.dchi2
-tnsrcol = SV3p.tsnrcol        
+tsnrcol = SV3p.tsnrcol        
         
 if mkfulld:
     if specrel == 'everest' or specrel == 'fuji':
