@@ -86,13 +86,13 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
     gmr = g_dered-r_dered
 
     rest_gmr_0p1, rest_gmr_0p1_warn = smith_rest_gmr(data['Z'], gmr)
-    KCORR_R0P1 = kcorr_r.k(bgs_s['Z'], rest_gmr_0p1)
-    KCORR_G0P1 = kcorr_g.k(bgs_s['Z'], rest_gmr_0p1)
-    KCORR_R0P0 = kcorr_r.k_nonnative_zref(0.0, bgs_s['Z'], rest_gmr_0p1)
-    KCORR_G0P0 = kcorr_g.k_nonnative_zref(0.0, bgs_s['Z'], rest_gmr_0p1)
+    KCORR_R0P1 = kcorr_r.k(data['Z'], rest_gmr_0p1)
+    KCORR_G0P1 = kcorr_g.k(data['Z'], rest_gmr_0p1)
+    KCORR_R0P0 = kcorr_r.k_nonnative_zref(0.0, data['Z'], rest_gmr_0p1)
+    KCORR_G0P0 = kcorr_g.k_nonnative_zref(0.0, data['Z'], rest_gmr_0p1)
     REST_GMR_0P0 = gmr - (KCORR_G0P0 - KCORR_R0P0)
-    EQ_ALL_0P0   = tmr_ecorr(bgs_s['Z'], REST_GMR_0P0, aall=True)
-    EQ_ALL_0P1   = tmr_ecorr(bgs_s['Z'], rest_gmr_0p1, aall=True)
+    EQ_ALL_0P0   = tmr_ecorr(data['Z'], REST_GMR_0P0, aall=True)
+    EQ_ALL_0P1   = tmr_ecorr(data['Z'], rest_gmr_0p1, aall=True)
     abr = r_dered -dm(data['Z'])-KCORR_R0P1-EQ_ALL_0P1 
     abg = g_dered -dm(data['Z'])
     ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05
