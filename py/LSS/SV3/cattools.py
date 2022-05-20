@@ -1807,7 +1807,7 @@ def mkclusran(fl,rann,reg='_S',rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrc
         wzm += ccut+'_'  #you could change this to however you want the file names to turn out
 
     #load in data clustering catalog
-    fcd = Table.read(fl+wzm+reg+'clustering.dat.fits')
+    fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
     #load in full random file
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
     selr = ffr['PHOTSYS'] == reg.strip('_')
