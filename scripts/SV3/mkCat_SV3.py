@@ -556,7 +556,7 @@ if args.apply_veto == 'y':
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
 
-
+regl = ['_N','_S']
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     #dchi2 = 9
@@ -614,7 +614,7 @@ if mknz:
     if ccut is not None:
         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    regl = ['','_N','_S']
+    
     
     
     if type[:3] == 'QSO':
