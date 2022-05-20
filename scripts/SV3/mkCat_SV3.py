@@ -594,7 +594,8 @@ if args.add_ke == 'y':
     ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
     for col in kecols:
         rcols.append(col)
-        
+    if args.test == 'y':
+        print('k+e test passed')    
 if mkclusran:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
