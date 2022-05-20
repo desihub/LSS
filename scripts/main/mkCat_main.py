@@ -53,6 +53,8 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
@@ -295,7 +297,7 @@ if args.fillran == 'y':
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
-if mkclusran:
+if mkclusran and mkclusdat:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
 #     tsnrcut = 0
@@ -419,6 +421,23 @@ if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
         rcols.append('flux_'+col.lower()+'_dered')
+
+if args.add_ke == 'y':
+    for reg in regl:
+        fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
+        dat = Table(fitsio.read(fn))
+        if args.test == 'y':
+            dat = dat[:10]
+        dat = common.add_ke(dat)
+        #if args.test == 'n':
+        common.write_LSS(dat,fn,comments=['added k+e corrections'])
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    for col in kecols:
+        rcols.append(col)
+    #if args.test == 'y':
+    #    print('k+e test passed')    
+
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
