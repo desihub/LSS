@@ -141,7 +141,7 @@ ebits = mainp.ebits #extra mask bits we think should be applied
 
 tsnrcut = mainp.tsnrcut
 dchi2 = mainp.dchi2
-tnsrcol = mainp.tsnrcol        
+tsnrcol = mainp.tsnrcol        
 zmin = mainp.zmin
 zmax = mainp.zmax
 
@@ -430,9 +430,13 @@ if args.add_ke == 'y':
         dat = Table(fitsio.read(fn))
         #if args.test == 'y':
         #    dat = dat[:10]
-        dat = common.add_ke(dat)
-        #if args.test == 'n':
-        common.write_LSS(dat,fn,comments=['added k+e corrections'])
+        cols = list(dat.dtype.names)
+        if 'REST_GMR_0P1' in cols:
+            print('appears columns are already in '+fn)
+        else:
+            dat = common.add_ke(dat)
+            #if args.test == 'n':
+            common.write_LSS(dat,fn,comments=['added k+e corrections'])
     kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
     ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
     for col in kecols:
