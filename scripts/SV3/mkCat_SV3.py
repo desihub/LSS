@@ -574,8 +574,13 @@ if args.add_ke == 'y':
     for reg in regl:
         fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
         dat = Table(fitsio.read(fn))
-        common.add_ke(dat)
-
+        dat = common.add_ke(dat)
+        common.write_LSS(dat,fn,comments=['added k+e corrections'])
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    for col in kecols:
+        rcols.append(col)
+        
 if mkclusran:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
