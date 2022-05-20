@@ -1,7 +1,7 @@
 #LSS to run for SV3, after a new spec release 
 #Ashley just git pulls from the LSS repo and navigates to the LSS/scripts/SV3 directory
 
-source /project/projectdirs/desi/software/desi_environment.sh master
+source /global/common/software/desi/desi_environment.sh master
 #add the LSS/py to python path; Ashley just has LSS in $HOME
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
@@ -24,8 +24,8 @@ python mkCat_SV3_ran.py  --type bright  --basedir /global/cfs/cdirs/desi/survey/
 #targets at tileids/fiberid where none of the given type were assigned are masked
 #if enhanced information on qso or ELG targets exists, it is added
 #completeness statistics per tile grouping ('COMP_TILE') and per tileid/fiberid ('FRACZTILELOCID') are calculated
-tps = ['LRG','BGS_ANY','BGS_BRIGHT','QSO','ELG','ELG_HIP','ELG_HIP']
-notqsos = ['n','n','n','n','n','n','y'] #default for below is 'n', so only need the notqso argument for ELG_HIPnotqso
+tps = ['LRG','BGS_ANY','BGS_BRIGHT','QSO','ELG','ELG_HIP','ELG_HIP','ELG']
+notqsos = ['n','n','n','n','n','n','y','y'] #default for below is 'n', so only need the notqso argument for ELG_HIPnotqso
 #Ashley does the list by hand one by one, so this is just pseudo code meant for illustration
 for tp,notqso in zip(tps,notqsos):
     python mkCat_SV3.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec fuji --notqso notqso 

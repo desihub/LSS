@@ -1,7 +1,7 @@
 #LSS to run with every MTL update
 #from the LSS/scripts/main directory
 
-source /project/projectdirs/desi/software/desi_environment.sh master
+source /global/common/software/desi/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 module swap fiberassign/5.0.0
 
@@ -26,6 +26,7 @@ python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --vers
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --doqso y --dospec n --combpix n
 
 #to make the emission line files for each tile
+on interaction node
 python mkemlin.py
 
 to combine the emission line files:
@@ -62,7 +63,13 @@ for tp,notqso in zip(tps,notqsos):
     --refullr n
 
 #apply veto mask column for LRGs
-python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18
+#!don't need this anymore!
+#python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18
+
+#this adds vetos to both data and randoms (could put randoms in separate script and parallize)
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --notqso notqso
+
 
 #this applies vetos to both data and randoms (could put randoms in separate script and parallize)
 for tp,notqso in zip(tps,notqsos):

@@ -1,7 +1,7 @@
 #LSS to run with every MTL update
 #from the LSS/scripts/main directory
 
-source /project/projectdirs/desi/software/desi_environment.sh master
+source /global/common/software/desi/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/ #needed for regressis for some reason
 
