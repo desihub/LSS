@@ -8,14 +8,19 @@ class SV3:
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
 
         ebits = None
+        #these are all the ELG parameters, they get changed for other tracers below
         self.tsnrcut = 80
         self.dchi2 = 0.9 #used for the ELG OII criteria
         self.tsnrcol = 'TSNR2_ELG'
+        self.zmin = 0.6
+        self.zmax = 1.6
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
             self.dchi2 = 40
             self.tsnrcol = 'TSNR2_BGS'
+            self.zmin = 0.01
+            self.zmax = 0.6
         else:
             self.imbits = [1,12,13]
         self.ebits = None
@@ -23,10 +28,14 @@ class SV3:
             self.ebits = [8,9,11]    
             self.tsnrcut = 0
             self.dchi2 = 0
+            self.zmin = 0.6
+            self.zmax = 3.5
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
             self.dchi2 = 15
+            self.zmin = 0.4
+            self.zmax = 1.1
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
