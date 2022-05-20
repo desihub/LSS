@@ -1549,7 +1549,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     
     #dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128):
+def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128,zmin=0.01,zmax=6):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1714,6 +1714,11 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length before cutting to spectype QSO '+str(len(ff)))
         ff = ff[wc]
         print('length after cutting to spectype QSO '+str(len(ff)))
+
+    selz = ff['Z'] > zmin
+    selz &= ff['Z'] < zmax
+    ff = ff[selz]
+
 
     #select down to specific columns below and then also split N/S
     wn = ff['PHOTSYS'] == 'N'

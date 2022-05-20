@@ -47,6 +47,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -561,6 +562,14 @@ if mkclusdat:
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
+rcols=['Z','WEIGHT']
+if type[:3] == 'BGS':
+	fcols = ['G','R','Z','W1','W2']
+	for col in fcols:
+		rcols.append('flux_'+col.lower()+'_dered')
+
+if args.add_ke == 'y':
+
 if mkclusran:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
@@ -576,11 +585,6 @@ if mkclusran:
 #         dchi2 = 40
 #         tsnrcut = 1000
 
-    rcols=['Z','WEIGHT']
-    if type[:3] == 'BGS':
-        fcols = ['G','R','Z','W1','W2']
-        for col in fcols:
-            rcols.append('flux_'+col.lower()+'_dered')
         
     for ii in range(rm,rx):
         ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
