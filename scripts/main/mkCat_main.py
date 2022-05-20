@@ -139,6 +139,13 @@ tiles = mainp.tiles
 imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tnsrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+
+
 #wt = mtld['FAPRGRM'] == progl
 #wt &= mtld['SURVEY'] == 'main'
 #wt &= mtld['ZDONE'] == 'true'
@@ -230,7 +237,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut)
 
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
@@ -257,11 +264,6 @@ if args.apply_veto == 'y':
         print('random veto '+str(rn)+' done')
 
 
-tsnrcut = mainp.tsnrcut
-dchi2 = mainp.dchi2
-tnsrcol = mainp.tsnrcol        
-zmin = mainp.zmin
-zmax = mainp.zmax
 wzm = ''
 # dchi2 = 9
 # tsnrcut = 0
