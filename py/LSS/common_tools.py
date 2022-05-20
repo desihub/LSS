@@ -342,6 +342,9 @@ def add_ke(dat):
     from   smith_kcorr     import GAMA_KCorrection
     from   rest_gmr        import smith_rest_gmr
     from   tmr_ecorr       import tmr_ecorr, tmr_q
+    
+    kcorr_r   = GAMA_KCorrection(band='R')
+    kcorr_g   = GAMA_KCorrection(band='G')
 
     r_dered = 22.5 - 2.5*np.log10(dat['flux_r_dered'])
     g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
