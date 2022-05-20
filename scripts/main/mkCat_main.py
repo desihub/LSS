@@ -262,7 +262,7 @@ dchi2 = mainp.dchi2
 tnsrcol = mainp.tsnrcol        
 zmin = mainp.zmin
 zmax = mainp.zmax
-
+wzm = ''
 # dchi2 = 9
 # tsnrcut = 0
 # if type[:3] == 'ELG':
@@ -461,7 +461,7 @@ if mkclusran:
     
 
 if args.nz == 'y':
-    wzm = ''
+    
 #     if zmask:
 #         wzm = 'zmask_'
 #     if rcut is not None:
