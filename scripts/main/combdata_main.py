@@ -413,7 +413,10 @@ if specrel == 'daily' and args.dospec == 'y':
 
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
-            specf.remove_columns(['PRIORITY'])
+            try:
+                specf.remove_columns(['PRIORITY'])
+            except:
+                print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
