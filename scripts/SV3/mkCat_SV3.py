@@ -571,6 +571,10 @@ if type[:3] == 'BGS':
 		rcols.append('flux_'+col.lower()+'_dered')
 
 if args.add_ke == 'y':
+    for reg in regl:
+        fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
+        dat = Table(fitsio.read(fn))
+        common.add_ke(dat)
 
 if mkclusran:
     print('doing clustering randoms')
