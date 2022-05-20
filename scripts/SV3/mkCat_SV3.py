@@ -571,7 +571,8 @@ if ccut is not None:
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     #dchi2 = 9
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
+    for reg in regl:
+        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
@@ -613,7 +614,8 @@ if mkclusran:
 
         
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
+        for reg in regl:
+            ct.mkclusran(dirout+type+notqso,ii,reg=reg,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     

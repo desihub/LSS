@@ -1738,8 +1738,8 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
-    comments = ["SV3 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
-    common.write_LSS(ff,outf,comments)
+    #comments = ["SV3 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
 
     outfn = fl+wzm+'N_clustering.dat.fits'
     comments = ["SV3 'clustering' LSS catalog for data, just in BASS/MzLS region","entries are only for data with good redshifts"]
@@ -1786,7 +1786,7 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #     os.system('mv '+tmpfn+' '+outfn)
     #ff[~wn].write(outfn,format='fits', overwrite=True)
 
-def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
+def mkclusran(fl,rann,reg='_S',rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',rcut=None,ntilecut=0,ccut=None,ebits=None):
     '''
     fl is the root of our catalog file names
     rann is the random number
@@ -1807,9 +1807,11 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
         wzm += ccut+'_'  #you could change this to however you want the file names to turn out
 
     #load in data clustering catalog
-    fcd = Table.read(fl+wzm+'clustering.dat.fits')
+    fcd = Table.read(fl+wzm+reg+'clustering.dat.fits')
     #load in full random file
     ffr = Table.read(fl+str(rann)+'_full.ran.fits')
+    selr = ffr['PHOTSYS'] == reg.strip('_')
+    ffr = ffr[selr]
 #     if ebits is not None:
 #         #print(ebits)
 #         print('number before imaging mask '+str(len(ffr)))
@@ -1850,12 +1852,12 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
     for col in rcols: 
         ffc[col] = dshuf[col] 
     #cut to desired small set of columns and write out files, splitting N/S as well
-    wn = ffc['PHOTSYS'] == 'N'
+    #wn = ffc['PHOTSYS'] == 'N'
     
     ffc.keep_columns(kl)  
-    outf =  fl+wzm+str(rann)+'_clustering.ran.fits' 
+    outf =  fl+wzm+reg+str(rann)+'_clustering.ran.fits' 
 
-    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", all regions","columns that are not ra,dec are sampled from data with good redshifts"]
+    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+reg+" regions","columns that are not ra,dec are sampled from data with good redshifts"]
     common.write_LSS(ffc,outf,comments)
 
 
@@ -1870,16 +1872,16 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 #     fd.close()    
 #     os.system('mv '+tmpfn+' '+outf)
     #ffc.write(outf,format='fits', overwrite=True)
-    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
-    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
-    ffcn = ffc[wn]
-    inds = np.random.choice(len(fcdn),len(ffcn))
-    dshuf = fcdn[inds]
-    for col in rcols: 
-        ffcn[col] = dshuf[col]     
-
-    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", BASS/MzLS region","columns that are not ra,dec are sampled from data with good redshifts"]
-    common.write_LSS(ffcn,outfn,comments)
+#     outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits' 
+#     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+#     ffcn = ffc[wn]
+#     inds = np.random.choice(len(fcdn),len(ffcn))
+#     dshuf = fcdn[inds]
+#     for col in rcols: 
+#         ffcn[col] = dshuf[col]     
+# 
+#     comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", BASS/MzLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+#     common.write_LSS(ffcn,outfn,comments)
 
 
 #     tmpfn = outfn+'.tmp'
@@ -1894,16 +1896,16 @@ def mkclusran(fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2
 #     os.system('mv '+tmpfn+' '+outfn)
     #ffcn.write(outfn,format='fits', overwrite=True)
 
-    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
-    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
-    ffcs = ffc[~wn]
-    inds = np.random.choice(len(fcds),len(ffcs))
-    dshuf = fcds[inds]
-    for col in rcols: 
-        ffcs[col] = dshuf[col]     
-
-    comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", DECaLS region","columns that are not ra,dec are sampled from data with good redshifts"]
-    common.write_LSS(ffcs,outfs,comments)
+#     outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits' 
+#     fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+#     ffcs = ffc[~wn]
+#     inds = np.random.choice(len(fcds),len(ffcs))
+#     dshuf = fcds[inds]
+#     for col in rcols: 
+#         ffcs[col] = dshuf[col]     
+# 
+#     comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+", DECaLS region","columns that are not ra,dec are sampled from data with good redshifts"]
+#     common.write_LSS(ffcs,outfs,comments)
 
 
 #     tmpfn = outfs+'.tmp'
