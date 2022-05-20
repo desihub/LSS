@@ -48,6 +48,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+parser.add_argument("--test", help="if 'y', some functions will only be run on a small subset of data",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -584,8 +585,11 @@ if args.add_ke == 'y':
     for reg in regl:
         fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
         dat = Table(fitsio.read(fn))
+        if args.test == 'y':
+            dat = dat[:10]
         dat = common.add_ke(dat)
-        common.write_LSS(dat,fn,comments=['added k+e corrections'])
+        if args.test == 'n':
+            common.write_LSS(dat,fn,comments=['added k+e corrections'])
     kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
     ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
     for col in kecols:

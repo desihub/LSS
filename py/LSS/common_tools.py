@@ -355,7 +355,7 @@ def add_ke(dat):
     dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], dat['REST_GMR_0P1'])
     dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
     dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
-    dat['REST_GMR_0P0'] = gmr - (KCORR_G0P0 - KCORR_R0P0)
+    dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
     dat['EQ_ALL_0P0']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P0'], aall=True)
     dat['EQ_ALL_0P1']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P1'], aall=True)
     dat['ABSMAG_R'] = r_dered -dm(dat['Z'])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
