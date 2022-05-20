@@ -426,8 +426,8 @@ if args.add_ke == 'y':
     for reg in regl:
         fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
         dat = Table(fitsio.read(fn))
-        if args.test == 'y':
-            dat = dat[:10]
+        #if args.test == 'y':
+        #    dat = dat[:10]
         dat = common.add_ke(dat)
         #if args.test == 'n':
         common.write_LSS(dat,fn,comments=['added k+e corrections'])
