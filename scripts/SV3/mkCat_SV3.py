@@ -557,6 +557,16 @@ if args.apply_veto == 'y':
         print('random veto '+str(rn)+' done')
 
 regl = ['_N','_S']
+wzm = ''
+#     if zmask:
+#         wzm = 'zmask_'
+if rcut is not None:
+    wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+if ntile > 0:
+    wzm += '_ntileg'+str(ntilecut)+'_'    
+if ccut is not None:
+    wzm += '_'+ccut #you could change this to however you want the file names to turn out
+
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
     #dchi2 = 9
@@ -566,9 +576,9 @@ if mkclusdat:
 
 rcols=['Z','WEIGHT']
 if type[:3] == 'BGS':
-	fcols = ['G','R','Z','W1','W2']
-	for col in fcols:
-		rcols.append('flux_'+col.lower()+'_dered')
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
 
 if args.add_ke == 'y':
     for reg in regl:
@@ -604,15 +614,6 @@ if mkclusran:
     
 #changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
-    wzm = ''
-#     if zmask:
-#         wzm = 'zmask_'
-    if rcut is not None:
-        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
-    if ntile > 0:
-        wzm += '_ntileg'+str(ntilecut)+'_'    
-    if ccut is not None:
-        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
     
     
