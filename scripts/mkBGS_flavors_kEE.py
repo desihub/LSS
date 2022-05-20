@@ -56,63 +56,31 @@ if not os.path.exists(dirout):
     print('made '+dirout)
 
 
-kcorr_r   = GAMA_KCorrection(band='R')
-kcorr_g   = GAMA_KCorrection(band='G')
-
-
-
-
-def dl(z):   # Luminosity distance from now to z
-    return dis_dc(z)*(1.+z)
-
-def dm(z):
-    return 5.*np.log10(dl(z)) + 25.
-
-
-def AbsMag(mag,z,ke=None,ee=None):
-    amag = mag - dm(z)
-    if ke is not None:
-        amag -= ke
-    if ee is not None:
-        amag -= ee
-    return amag
 
 def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
-    selz = data['Z'] > zmin
-    selz &= data['Z'] < zmax
-    data = data[selz]
-    r_dered = 22.5 - 2.5*np.log10(data['flux_r_dered'])
-    g_dered = 22.5 - 2.5*np.log10(data['flux_g_dered'])
-    gmr = g_dered-r_dered
-
-    rest_gmr_0p1, rest_gmr_0p1_warn = smith_rest_gmr(data['Z'], gmr)
-    KCORR_R0P1 = kcorr_r.k(data['Z'], rest_gmr_0p1)
-    KCORR_G0P1 = kcorr_g.k(data['Z'], rest_gmr_0p1)
-    KCORR_R0P0 = kcorr_r.k_nonnative_zref(0.0, data['Z'], rest_gmr_0p1)
-    KCORR_G0P0 = kcorr_g.k_nonnative_zref(0.0, data['Z'], rest_gmr_0p1)
-    REST_GMR_0P0 = gmr - (KCORR_G0P0 - KCORR_R0P0)
-    EQ_ALL_0P0   = tmr_ecorr(data['Z'], REST_GMR_0P0, aall=True)
-    EQ_ALL_0P1   = tmr_ecorr(data['Z'], rest_gmr_0p1, aall=True)
-    abr = r_dered -dm(data['Z'])-KCORR_R0P1-EQ_ALL_0P1 
-    abg = g_dered -dm(data['Z'])
-    ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05
+    abr = data['ABSMAG_R']
+    ct = data['REST_GMR_0P1']
     sel = abr > minr
     sel &= abr < maxr
     sel &= ct > minct
     sel &= ct < maxct
     return data[sel]
     
-ctc = 0.7 #rough red/blue cut
+ctc = 0.75 #rough red/blue cut
 abl = [-21.5,-20.5,-19.5]
 P0 = 7000
 dz = 0.01
-zmin = 0.1
-zmax = 0.5
+#zmin = 0.1
+#zmax = 0.5
 
 regl = ['_N','_S']
 for reg in regl:
     if args.mkcats == 'y':
-        dat = fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits')
+        dat = Table(fitsio.read(dirin+args.tracer+zw+reg+'_clustering.dat.fits'))
+        #selz = dat['Z'] > zmin
+        #selz &= data['Z'] < zmax
+        #data = data[selz]
+        
         for ab in abl:
             dato = cut_abr_ct(dat,maxr=ab)
             outf = dirout+args.tracer+zw+str(ab)+'ke'+reg+'_clustering.dat.fits'
