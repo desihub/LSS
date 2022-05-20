@@ -3,6 +3,7 @@ import fitsio
 from astropy.table import Table,join
 import datetime
 import os
+import sys
 
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
