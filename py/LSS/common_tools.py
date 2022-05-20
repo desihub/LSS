@@ -351,8 +351,8 @@ def add_ke(dat):
     gmr = g_dered-r_dered
 
     dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat['Z'], gmr)
-    dat['KCORR_R0P1'] = kcorr_r.k(dat['Z'], rest_gmr_0p1)
-    dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], rest_gmr_0p1)
+    dat['KCORR_R0P1'] = kcorr_r.k(dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], dat['REST_GMR_0P1'])
     dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], rest_gmr_0p1)
     dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], rest_gmr_0p1)
     dat['REST_GMR_0P0'] = gmr - (KCORR_G0P0 - KCORR_R0P0)
