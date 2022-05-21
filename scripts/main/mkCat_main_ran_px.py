@@ -436,12 +436,14 @@ def doran(ii):
             uhpxs = hpxs
         else:
             cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+            dosel = False
             try:
                 tls = fitsio.read(cf,columns=['TILEID'])
                 dosel = True
             except:
                 print('problem reading '+cf+' redoing all')
                 uhpxs = hpxs
+                
             if dosel:
                 otls = np.unique(tls['TILEID'])
                 print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
