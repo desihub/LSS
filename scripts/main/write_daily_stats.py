@@ -28,14 +28,14 @@ tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 zcol = 'Z_not4clus'
 for tp in tps:
     print(tp+':')
-    rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full_noveto.ran.fits',ext=1)
+    rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full_noveto.ran.fits',ext=1)
     areanv = rtnv['NAXIS2']/2500
-    dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',ext=1)
+    dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',ext=1)
     ngnv = dtnv['NAXIS2']
     print('number density pre veto '+str(ngnv/areanv))
-    rt = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits',ext=1)
+    rt = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full.ran.fits',ext=1)
     area = rt['NAXIS2']/2500
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
     print('number density after veto '+str(len(dt)/area))
     #wz = dt[zcol]*0 == 0
     #wz &= dt[zcol] != 999999
