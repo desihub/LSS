@@ -435,7 +435,7 @@ def doran(ii):
         if args.refullr == 'y':
             uhpxs = hpxs
         else:
-            cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+            cf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
             dosel = False
             try:
                 tls = fitsio.read(cf,columns=['TILEID'])
@@ -446,7 +446,7 @@ def doran(ii):
                 
             if dosel:
                 otls = np.unique(tls['TILEID'])
-                print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
+                print('got tileids currently in '+dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
                 selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
                 uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
@@ -463,7 +463,7 @@ def doran(ii):
     if args.combfull == 'y':
         s = 0
         npx =0 
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
         cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
         pl = []
@@ -502,7 +502,7 @@ def doran(ii):
 
     if mkclusran:
 
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
