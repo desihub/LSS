@@ -9,7 +9,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 
-srun -N 8 -C haswell -n  -t 04:00:00 -q interactive   python xirunpc.py --tracer ELG_LOPnotqso  --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
+srun -N 8 -C haswell -n 8 -t 04:00:00 -q interactive   python xirunpc.py --tracer ELG_LOPnotqso  --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
 
 srun -N 8 -C haswell -n 8 -t 04:00:00 -q interactive   python xirunpc.py --tracer QSO --outdir $OUTDIR --survey DA02 --verspec $VERSPEC --version $VER --weight_type $WT --corr_type smu
 
