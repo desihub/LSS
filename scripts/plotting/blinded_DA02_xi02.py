@@ -9,14 +9,14 @@ matplotlib.rcParams['font.size'] = 12
 njack = '60'
 trs = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
 bsl = [10,10,5,5]
-dirxi = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/xi/smu/'
+dirxi = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/2.1/xi/smu/'
 xit = 'poles'
 baotempdir = '/global/homes/a/ajross/code/BAOfit_xs/BAOtemplates/'
 
-outdir = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/xi/plots/blinded/'
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/2.1/xi/plots/blinded/'
 xlim = 15,185
 xlab = 'scale (s; arbitrary units)'
-dirc = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/'
+dirc = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/2.1/'
 cfn = fitsio.read(dirc+'LRG_N_clustering.dat.fits')
 cfs = fitsio.read(dirc+'LRG_S_clustering.dat.fits')
 prelim = 'Raw Data \n Not For Scientific Analysis'
