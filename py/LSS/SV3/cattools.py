@@ -1393,7 +1393,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     if azfm == 'hp':
-        azf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specver+'/zcatalog/zpix-sv3-'+pd+'.fits',columns=['TARGETID','Z','DELTACHI2','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS']  )
+        arz = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specver+'/zcatalog/zpix-sv3-'+pd+'.fits',columns=['TARGETID','Z','DELTACHI2','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS']  )
         dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_HP'])
 
 
