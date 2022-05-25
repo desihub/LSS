@@ -494,6 +494,7 @@ if mkfulld:
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
+    azfm = 'hp'
     if type[:3] == 'ELG':
         azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
     if type[:3] == 'QSO':
@@ -520,7 +521,7 @@ if mkfulld:
 
 
     #ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
