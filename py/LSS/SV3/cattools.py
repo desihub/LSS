@@ -1423,7 +1423,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
-        print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+        if azfm == 'hp':
+            print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z_HP'].mask)))
+            dz['Z_HP'] = dz['Z_HP'].filled(999999)
+        else:
+            print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
     dz['Z'] = dz['Z'].filled(999999)
     selm = dz['Z'] == 999999
     print('999999s for Z',len(dz[selm]))
