@@ -441,7 +441,7 @@ if combd:
     else:
         print('nothing to be done for combd, only done for dark/bright now')
 
-if args.comb_emhp:
+if args.comb_emhp == 'y'
     fls = glob.glob('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/healpix/sv3/'+pdir+'/*/*/emline*.fits')
     dl = []
     for fl in fls:
