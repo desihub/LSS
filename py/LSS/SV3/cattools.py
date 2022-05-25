@@ -1578,7 +1578,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     
     #dz.write(outf,format='fits', overwrite=True)
 
-def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128,zmin=0.01,zmax=6):
+def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,nreal=128,zmin=0.01,zmax=6,hp='hp'):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -1618,25 +1618,23 @@ def mkclusdat(fl,weightmd='tileloc',zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print(len(ff),len(ff[sel]))
             ff = ff[sel]   
             ff.write(fl+wzm+'full.dat.fits',format='fits',overwrite='True')
-    ff['Z_not4clus'].name = 'Z'    
+    zfcol = 'Z_not4clus'
+    if hp == 'hp':
+        zfcol = 'Z_HP'
+    ff[zfcol].name = 'Z'    
     '''
-    This is where redshift failure weights go
+    Not doing systematic weights for SV3, just setting them to 1
     '''
 
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     #The LRGs just have this fairly ad hoc model that AJR fit in the notebook, definitely needs refinement/automation
-    if tp == 'LRG':
-        fibfluxz = ff['FIBERFLUX_Z']/ff['MW_TRANSMISSION_Z']
-        coeff = [117.46,-60.91,11.49,-0.513] #from polyfit, 3rd to zeroth order in 1/fiberflu
-        efs = coeff[-1]+coeff[-2]*(1/fibfluxz)+coeff[-3]*(1/fibfluxz)**2.+coeff[-4]*(1/fibfluxz)**3.
-        ems = erf((ff['TSNR2_LRG']-13.2)/39.7)*.9855
-        ff['WEIGHT_ZFAIL'] = 1./(1. -(1.-ems)*efs)
+#     if tp == 'LRG':
+#         fibfluxz = ff['FIBERFLUX_Z']/ff['MW_TRANSMISSION_Z']
+#         coeff = [117.46,-60.91,11.49,-0.513] #from polyfit, 3rd to zeroth order in 1/fiberflu
+#         efs = coeff[-1]+coeff[-2]*(1/fibfluxz)+coeff[-3]*(1/fibfluxz)**2.+coeff[-4]*(1/fibfluxz)**3.
+#         ems = erf((ff['TSNR2_LRG']-13.2)/39.7)*.9855
+#         ff['WEIGHT_ZFAIL'] = 1./(1. -(1.-ems)*efs)
 
-    '''
-    One could plug in imaging systematic weights here
-    Probably better to put it here so that full file only gets written out once and includes
-    all of the weights
-    '''
 
 
     outf = fl+wzm+'clustering.dat.fits'

@@ -38,6 +38,7 @@ parser.add_argument("--comb_emhp", help="combine all the tiles together",default
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
+parser.add_argument("--usehp", help="whether to use the healpix redshifts; use 'hp' or 'cumul'",default='hp')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
@@ -494,11 +495,22 @@ if mkfulld:
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
-    azfm = 'hp'
+    azfm = args.usehp
     if type[:3] == 'ELG':
-        azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        if azfm == 'cumul':
+            azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        elif azfm == 'hp':
+            azf = SV3p.elgzfhp
+        else:
+            sys.exit('not a supported argument for --usehp')    
     if type[:3] == 'QSO':
-        azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        if azfm == 'cumul':
+            azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        elif azfm == 'hp':
+            azf = SV3p.qsozfhp
+        else:
+            sys.exit('not a supported argument for --usehp')    
+        
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
@@ -583,7 +595,7 @@ if ccut is not None:
 if mkclusdat:
     #dchi2 = 9
     for reg in regl:
-        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
+        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits,hp=args.usehp)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
