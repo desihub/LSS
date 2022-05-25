@@ -1392,6 +1392,11 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
 
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
+    if azfm == 'hp':
+        azf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specver+'/zcatalog/zpix-sv3-'+pd+'.fits',columns=['TARGETID','Z','DELTACHI2','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS']  )
+        dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_HP'])
+
+
     if tp[:3] == 'ELG' and azfm == 'hp':
         if azf != '':
             arz = fitsio.read(azf,columns=['TARGETID','OII_FLUX','OII_FLUX_IVAR','DELTACHI2'])
@@ -1412,12 +1417,9 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
             arz.keep_columns(['TARGETID','Z','ZERR','Z_QN'])
             print(arz.dtype.names)
             dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-            dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
-            dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+            dz['Z_HP'].name = 'Z_RR' #rename the original redrock redshifts
+            dz['Z_QF'].name = 'Z_HP' #the redshifts from the quasar file should be used instead
 
-    if azfm == 'hp':
-        azf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/zpix-sv3-'+pd+'.fits',columns=['TARGETID','Z','DELTACHI2','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS']  )
-        dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_HP'])
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
