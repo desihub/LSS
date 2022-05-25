@@ -34,6 +34,7 @@ parser.add_argument("--xi", help="run pair-counting code",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combd", help="combine all the tiles together",default='n')
+parser.add_argument("--comb_emhp", help="combine all the tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
@@ -439,6 +440,15 @@ if combd:
     else:
         print('nothing to be done for combd, only done for dark/bright now')
 
+if comb_emhp:
+    fls = glob.glob('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/healpix/sv3/'+pdir+'/*/*/emline*.fits')
+    dl = []
+    for fl in fls:
+        df = fitsio.read(fl)
+        dl.append(df)
+    dt = np.concatenate(dl)
+    outf = ldirspec+'emline_'+pdir+'allhealpix.fits'
+    common.write_LSS(dt,outf)
 
 if combr:
     #print(len(mtld['TILEID']))

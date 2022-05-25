@@ -19,6 +19,9 @@ python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec 
 python mkCat_SV3_ran.py  --type dark  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --combr y 
 python mkCat_SV3_ran.py  --type bright  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --combr y 
 
+#combine healpix emline files
+python mkCat_SV3.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec fuji --type dark --comb_emhp y
+
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
 #in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
 #targets at tileids/fiberid where none of the given type were assigned are masked
