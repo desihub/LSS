@@ -131,6 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('--nmesh', help='mesh size', type=int, default=None)
     parser.add_argument('--cellsize', help='cell size', type=float, default=7)
     parser.add_argument('--smoothing_radius', help='smoothing radius', type=float, default=15)
+    parser.add_argument('--prepare_blinding', help='Use this flag to create a realspace catalog, thtat can be used as innput for RSD blinding', action='store_true',default=False)
 
     setup_logging()
     args = parser.parse_args()
@@ -167,4 +168,8 @@ if __name__ == '__main__':
             randoms_fn = catalog_fn(**catalog_kwargs, name='randoms')
             data_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='data')
             randoms_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='randoms')
-            run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, smoothing_radius=args.smoothing_radius, nthreads=args.nthreads, convention=args.convention, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
+            data_realspacerec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+'rsd', name='data')
+            if args.prepare_blinding:
+                run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_realspacerec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, smoothing_radius=args.smoothing_radius, nthreads=args.nthreads, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
+            else:
+                run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, smoothing_radius=args.smoothing_radius, nthreads=args.nthreads, convention=args.convention, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
