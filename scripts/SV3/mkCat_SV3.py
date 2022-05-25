@@ -597,6 +597,7 @@ if args.add_ke == 'y':
         rcols.append(col)
     if args.test == 'y':
         print('k+e test passed')    
+
 if mkclusran:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
