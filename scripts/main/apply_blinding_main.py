@@ -72,8 +72,8 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
 
-data = Table(fitsio.read(dirin+type+notqso+'zdone_full.dat.fits'))
-outf = dirout + type+notqso+'zdone_full.dat.fits'
+data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
+outf = dirout + type+notqso+'_full.dat.fits'
 w0 = -0.95
 wa = 0.3
 blind.apply_zshift_DE(data,outf,w0=w0,wa=wa,zcol='Z_not4clus')
