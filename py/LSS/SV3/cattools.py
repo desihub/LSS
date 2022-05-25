@@ -1884,7 +1884,7 @@ def mkclusran(fl,rann,reg='_S',rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrc
     #wn = ffc['PHOTSYS'] == 'N'
     
     ffc.keep_columns(kl)  
-    outf =  fl+wzm+reg+str(rann)+'_clustering.ran.fits' 
+    outf =  fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits' 
 
     comments = ["SV3 'clustering' LSS catalog for random #"+str(rann)+reg+" regions","columns that are not ra,dec are sampled from data with good redshifts"]
     common.write_LSS(ffc,outf,comments)
