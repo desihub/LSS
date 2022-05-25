@@ -1223,7 +1223,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET',specver='guadalupe',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV3_DESI_TARGET',specver='fuji',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1332,8 +1332,25 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
+
+    
+    #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
+    wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
+    dz[tscol][wnts] = 0
+    print(np.max(dz[tscol]))
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tscol] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+
+    #dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+
+    print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
+    dz.sort('sort')
+
     #get OII flux info for ELGs
-    if tp == 'ELG' or tp == 'ELG_HIP':
+    if tp[:3] == 'ELG' and azfm == 'cumul':
         if azf != '':
             arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
             st = []
@@ -1358,7 +1375,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
             wz &= dz['ZWARN']*0 == 0 #just in case of nans
 
-    if tp[:3] == 'QSO':
+    if tp[:3] == 'QSO' and azfm == 'cumul':
         if azf != '':
             arz = Table(fitsio.read(azf))
             arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','ZERR','Z_QN'])
@@ -1372,23 +1389,35 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',desitarg='SV3_DESI_TARGET
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
             wz &= dz['ZWARN']*0 == 0 #just in case of nans
 
-    
-    #sort and then cut to unique targetid; sort prioritizes observed targets and then TSNR2
-    wnts = dz[tscol]*0 != 0
-    wnts |= dz[tscol] == 999999
-    dz[tscol][wnts] = 0
-    print(np.max(dz[tscol]))
-    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tscol] > min_tsnr2
-    dz['GOODTSNR'][sel] = 1
 
-    #dz['sort'] = dz['LOCATION_ASSIGNED']*np.clip(dz[tscol],0,200)*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-
-    print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
-    dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
+    if tp[:3] == 'ELG' and azfm == 'hp':
+        if azf != '':
+            arz = fitsio.read(azf,columns=['TARGETID','OII_FLUX','OII_FLUX_IVAR','DELTACHI2'])
+            o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
+            w = (o2c*0) != 0
+            w |= arz['OII_FLUX'] < 0
+            o2c[w] = -20
+            arz = Table(arz)
+            arz['o2c'] = o2c
+            dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+   
+            dz.remove_columns(['DELTACHI2_OII'])
+            print('check length after merge with OII strength file:' +str(len(dz)))
+
+    if tp[:3] == 'QSO' and azfm == 'hp':
+        if azf != '':
+            arz = Table(fitsio.read(azf))
+            arz.keep_columns(['TARGETID','Z','ZERR','Z_QN'])
+            print(arz.dtype.names)
+            dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+            dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
+            dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+
+    if azfm == 'hp':
+        azf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/zpix-sv3-'+pd+'.fits',columns=['TARGETID','Z','DELTACHI2','TSNR2_ELG','TSNR2_LRG','TSNR2_QSO','TSNR2_BGS']  )
+        dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_HP'])
     if tp == 'ELG' or tp == 'ELG_HIP':
         print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp == 'QSO':
