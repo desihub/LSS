@@ -1964,6 +1964,16 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
+    if tp == 'QSO':
+        #if azfm == 'hp':
+        #    print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z_HP'].mask)))
+        #    dz['Z_HP'] = dz['Z_HP'].filled(999999)
+        #else:
+        print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    dz['Z'] = dz['Z'].filled(999999)
+    selm = dz['Z'] == 999999
+    print('999999s for Z',len(dz[selm]))
+
 
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
