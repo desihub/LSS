@@ -91,5 +91,5 @@ if args.rsdblind == 'y':
 		data_real = Table(fitsio.read(fndr))
 		
 		out_file = fnd
-		apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9)
+		blind.apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9)
 		
