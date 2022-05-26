@@ -131,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('--nmesh', help='mesh size', type=int, default=None)
     parser.add_argument('--cellsize', help='cell size', type=float, default=7)
     parser.add_argument('--smoothing_radius', help='smoothing radius', type=float, default=15)
-    parser.add_argument('--prepare_blinding', help='Use this flag to create a realspace catalog, thtat can be used as innput for RSD blinding', type=bool,action='store_true',default=False)
+    parser.add_argument('--prepare_blinding', help='Use this flag to create a realspace catalog, thtat can be used as innput for RSD blinding', type=bool,default=False)#,action='store_true'
 
     setup_logging()
     args = parser.parse_args()
