@@ -31,8 +31,17 @@ n_processes = 32
 debug = False
 ##################
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--survey", help="e.g., SV3 or main",default='SV3')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
@@ -51,8 +60,8 @@ indirfull = ldirspec+'/LSScats/'+args.version+'/'
 
 tp = 'LRG'
 
-if args.survey == 'main' or args.survey == 'DA02':
-    tp += 'zdone'
+#if args.survey == 'main' or args.survey == 'DA02':
+#    tp += 'zdone'
 
 
 
