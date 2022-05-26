@@ -34,10 +34,10 @@ nest = True
 zcol = 'Z'
 nran = 18
 
-tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
+tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
 zdw = 'zdone'
 if args.survey == 'SV3':
-    tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso']
+    tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
     zdw = ''
     if args.data != 'LSS':
         tps = ['QSO','LRG','ELG']
