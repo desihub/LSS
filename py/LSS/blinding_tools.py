@@ -54,8 +54,8 @@ def apply_zshift_RSD(data,data_realspace,out_file,fgrowth_fid=0.8,fgrowth_blind=
     dis_fid = cosmo_fid.comoving_radial_distance
     
     #convert both the original and the realspace redshift columns to distances using the fiducial cosmology
-    dis_original = cosmofid(data[zcol])
-    dis_realspace = cosmofid(data_realspace[zcol])
+    dis_original = dis_fid(data[zcol])
+    dis_realspace = dis_fid(data_realspace[zcol])
     
     #create the blinded redshift by creating the redshift-space distances corresponding to the blinded growth rate.
     # this makes use of the fact, that the displacement field along the line of sight is directly proportional to the difference between blinded and fiducial growth rates.
