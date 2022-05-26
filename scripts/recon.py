@@ -68,7 +68,7 @@ def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, 
     convention='RSD'
     
     if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
-    if np.ndim(randoms_rec_fn) == 0: randoms_rec_fn = [randoms_rec_fn]
+    #if np.ndim(randoms_rec_fn) == 0: randoms_rec_fn = [randoms_rec_fn]
 
     logger.info('Loading {}.'.format(data_fn))
     data = Table.read(data_fn)
