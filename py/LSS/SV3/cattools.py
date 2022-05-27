@@ -1837,7 +1837,7 @@ def mkclusran(fl,rann,reg='_S',rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrc
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'    
     if ccut is not None:
-        wzm += ccut  #you could change this to however you want the file names to turn out
+        wzm += '_'+ccut  #you could change this to however you want the file names to turn out
 
     #load in data clustering catalog
     fcd = Table.read(fl+wzm+reg+'_clustering.dat.fits')
