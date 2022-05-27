@@ -2,7 +2,7 @@
 
 VERSPEC='fuji'
 VER='3.1'
-WT='default_angular_bitwise'
+WT='default_angular_bitwise_FKP'
 OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3.1/xi/'
 
 
