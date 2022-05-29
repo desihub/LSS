@@ -61,6 +61,7 @@ class main:
         self.ebits = None
         
         self.tsnrcol = 'TSNR2_ELG'
+        self.tsnrcut = 0
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
