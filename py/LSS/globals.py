@@ -62,6 +62,9 @@ class main:
         
         self.tsnrcol = 'TSNR2_ELG'
         self.tsnrcut = 0
+        self.dchi2 = 0
+        self.zmin = 0
+        self.max = 4.5
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
