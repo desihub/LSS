@@ -351,7 +351,7 @@ if specrel == 'daily' and args.dospec == 'y':
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             stids = np.unique(fo['TILEID'])
-            if len(stids) == len(notid):      
+            if len(stids) == notid:      
                 dotarspec = False   
             if os.path.isfile(outtc) and update == False and redotarspec == False and dotarspec == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
