@@ -330,6 +330,7 @@ if specrel == 'daily' and args.dospec == 'y':
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         update = True
         uptileloc = True
+        dotarspec = True
         hpxsn = hpxs
         s = 0
         if os.path.isfile(outf):
@@ -349,8 +350,10 @@ if specrel == 'daily' and args.dospec == 'y':
 
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
-                          
-            if os.path.isfile(outtc) and update == False and redotarspec == False:
+            stids = np.unique(fo['TILEID'])
+            if len(stids) == len(notid):      
+                dotarspec = False   
+            if os.path.isfile(outtc) and update == False and redotarspec == False and dotarspec == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
@@ -421,7 +424,7 @@ if specrel == 'daily' and args.dospec == 'y':
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
-        elif redotarspec:
+        elif redotarspec or dotarspec:
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
