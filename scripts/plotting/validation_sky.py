@@ -137,6 +137,7 @@ for tp in tps:
             plt.ylabel('sin(DEC)')
             plt.colorbar()
             plt.title(titl)
+            plt.grid()
 
 
             plt.savefig(outdir+tp+reg+'_weighteddens.png')
