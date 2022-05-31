@@ -16,6 +16,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
+parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
 
 
@@ -140,7 +141,7 @@ for tp in tps:
             plt.grid()
 
 
-            plt.savefig(outdir+tp+reg+'_weighteddens.png')
+            plt.savefig(outdir+tp+reg+'_weighteddens.png',dpi=args.dpi)
             plt.clf()
             del dtf
             del rt
