@@ -12,7 +12,7 @@ from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='SV3')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
