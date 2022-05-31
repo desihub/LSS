@@ -15,6 +15,7 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 args = parser.parse_args()
 
 
@@ -131,7 +132,7 @@ for tp in tps:
             vx = 1.2
             vm = 0.8
 
-            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=.1,edgecolor='none',vmax=vx,vmin=vm)
+            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=.1,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='s')
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.colorbar()
