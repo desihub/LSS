@@ -132,7 +132,7 @@ for tp in tps:
             vx = 1.2
             vm = 0.8
 
-            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,s=.1,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='s')
+            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='s')
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.colorbar()
