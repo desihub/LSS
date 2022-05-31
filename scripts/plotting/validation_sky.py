@@ -122,7 +122,7 @@ for tp in tps:
                 titl = tp +titlb+ '0.1<z<0.5'
 
             dtf = dtf[wg]
-            wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=.2,vm=.8,vx=1.2)
+            wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=args.ps,vm=.5,vx=1.5)
 
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
@@ -133,7 +133,7 @@ for tp in tps:
             vx = 1.2
             vm = 0.8
 
-            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='s')
+            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='o')
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.colorbar()
