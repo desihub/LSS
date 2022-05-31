@@ -128,10 +128,11 @@ for tp in tps:
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
             ra,dec = densvar.thphi2radec(th,phi)
     
-            wr = ra > 300
-            ra[wr] -=360
-            vx = 1.2
-            vm = 0.8
+            if args.survey != 'DA02':
+                wr = ra > 300
+                ra[wr] -=360
+            vx = 1.5
+            vm = 0.5
 
             plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='o')
             plt.xlabel('RA')
