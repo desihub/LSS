@@ -28,7 +28,7 @@ zmax = args.zmax
 bs = args.bs
 
 datadir =  '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/'+args.dataver+'/xi/'
-
+covdir = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/2.1/xi/'
 try:
     covfn = datadir+'smu/ximonopole_LRG_NScomb_0.4_1.1_'+args.weight+'_lin4_cov_RascalC.txt'
     covth = np.loadtxt(covfn)
