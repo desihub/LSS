@@ -22,6 +22,7 @@ parser.add_argument("--weight", help="weight type used for xi",default='default'
 parser.add_argument("--reg", help="regions used for xi",default='NScomb_')
 args = parser.parse_args()
 
+args.rectype = None
 
 zmin = args.zmin
 zmax = args.zmax
