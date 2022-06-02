@@ -16,6 +16,15 @@ from LSS.tabulated_cosmo import TabulatedDESI
 logger = logging.getLogger('xirunpc')
 
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 def get_zlims(tracer, tracer2=None, option=None):
 
     if tracer2 is not None:
@@ -432,7 +441,7 @@ if __name__ == '__main__':
         args.region = ['']
     else:
         cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
+    out_dir = os.path.join(scratch, args.survey)
     if args.outdir is not None: out_dir = args.outdir
     tracer, tracer2 = args.tracer[0], None
     if len(args.tracer) > 1:
