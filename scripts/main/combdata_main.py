@@ -132,6 +132,7 @@ if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
 
+print('specrel is '+specrel)
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     #if not os.path.isfile(specfo) and args.subguad != 'y':
