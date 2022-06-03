@@ -141,6 +141,9 @@ if specrel == 'daily':
         specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
+    spec_cols_4tar['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
+    ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+    ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
     if args.subguad == 'y':
         dz = Table(fitsio.read(specfo))
         dz.keep_columns(speccols)
@@ -416,10 +419,11 @@ if specrel == 'daily' and args.dospec == 'y':
 
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
-            try:
-                specf.remove_columns(['PRIORITY'])
-            except:
-                print('column PRIORITY was not in spec table')  
+            specf.keep_columns(spec_cols_4tar)
+            #try:
+            #    specf.remove_columns(['PRIORITY'])
+            #except:
+            #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
