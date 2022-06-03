@@ -318,6 +318,7 @@ if specrel == 'daily' and args.dospec == 'y':
 #     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
 
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
@@ -421,7 +422,7 @@ if specrel == 'daily' and args.dospec == 'y':
 
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
-            specf.keep_columns(spec_cols_4tar)
+            
             #try:
             #    specf.remove_columns(['PRIORITY'])
             #except:
