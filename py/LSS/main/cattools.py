@@ -110,9 +110,11 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
     s = 0
     n = 0
     nfail = 0
+    tl = []
     if os.path.isfile(outf) and redo == 'n':
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
+        tl.append(specd)
         #dt = specd.dtype
         #specd = np.empty(len(specio),dtype=dt)
         #cols = fw.dtype.names
@@ -125,6 +127,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
 
     elif redo == 'y':
         specd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits')
+        tl.append(specd)
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
@@ -147,28 +150,32 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
             #tspec = fitsio.read('temp.fits')
             #tspec = np.empty(len(tspecio),dtype=dt)
 
-            if s == 0:
-                specd = tspec
-                s = 1
-            else:
-                #specd = vstack([specd,tspec],metadata_conflicts='silent')
-                #column order got mixed up
-                new = np.empty(len(tspec),dtype=specd.dtype)
-                cols = specd.dtype.names
-                for colname in cols:
-                    new[colname][...] = tspec[colname][...]
+            #if s == 0:
+            #    specd = tspec
+            #    s = 1
+            #else:
+            #specd = vstack([specd,tspec],metadata_conflicts='silent')
+            #column order got mixed up
+            new = np.empty(len(tspec),dtype=specd.dtype)
+            cols = specd.dtype.names
+            for colname in cols:
+                new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                #specd = np.hstack((specd,new))
+            tl.append(new)
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            #kp = (specd['TARGETID'] > 0)
+            #specd = specd[kp]
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            print(tile,n,len(tiles[tmask]))#,len(specd))
         else:
             print(str(tile)+' failed')
             nfail += 1
+    specd = np.hstack(tl)
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     print('total number of failures was '+str(nfail))
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
