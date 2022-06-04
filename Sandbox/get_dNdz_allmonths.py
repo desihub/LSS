@@ -16,9 +16,9 @@ print(yms)
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     
     if tp != 'ELGnotqso' and tp != 'ELGandQSO':
-        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
     else:
-        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELGzdone_full.dat.fits')
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELG_full.dat.fits')
 
     wg = dt['ZWARN'] != 999999
     wg &= dt['ZWARN'] != 1e20
