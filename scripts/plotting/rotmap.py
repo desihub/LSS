@@ -63,7 +63,7 @@ else:
     tpl = args.types.split(',')
 for tp in tpl:
     tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
-    dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full_noveto.dat.fits',columns=['TARGETID',args.comp])
+    dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',columns=['TARGETID',args.comp])
     dat = join(tars,dat,keys=['TARGETID'],join_type='left')
     mrows = dat['COMP_TILE'].mask
     dat['OBS'] = np.zeros(len(dat))
