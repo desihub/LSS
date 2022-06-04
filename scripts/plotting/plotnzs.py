@@ -42,10 +42,10 @@ def mknz(zin,wl,fcr,bs=0.01,zmin=0.01,zmax=1.6):
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
-    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits'
+    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full.ran.fits'
     rt = fitsio.read_header(rf,ext=1)
     area = rt['NAXIS2']/2500
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
 
     wz = dt['ZWARN']*0 == 0
     wz &= dt['ZWARN'] != 1.e20
@@ -95,16 +95,16 @@ for tp in tps:
         dz = 0.02
         plt.ylim(0,.05)
     
-    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3/'
-    svf = svdir + tp+'_nz.dat'
+    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3.1/'
+    svf = svdir + tp+'_nz.txt'
     if tp == 'LRG':
-        svf = svdir + 'LRG_main_nz.dat'
+        svf = svdir + 'LRG_main_nz.txt'
     if tp == 'ELG_LOP':
-        svf = svdir + 'ELG_HIP_nz.dat'
+        svf = svdir + 'ELG_HIP_nz.txt'
     if tp ==  'ELG_LOPnotqso': 
         svf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_nz.dat'
     svz = np.loadtxt(svf).transpose()   
-    plt.plot(svz[0],svz[3],label='SV3 everest, v2.1')
+    plt.plot(svz[0],svz[3],label='SV3 fuji, v3.1')
 
     zm,nz = mknz(zl,wl,rf,bs=bs,zmin=zmin,zmax=zmax)
     if tp[:3] == 'ELG':
