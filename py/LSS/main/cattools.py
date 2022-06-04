@@ -1983,7 +1983,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         print('filling masked Z rows did not succeed')
     selm = dz['Z'] == 999999
     print('999999s for Z',len(dz[selm]))
-
+    selo = dz['LOCATION_ASSIGNED']
+    print('unique Z for unassigned: '+np.unique(dz[~selo]['Z']))
 
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
