@@ -1921,7 +1921,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         #arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
-        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR'])
+        arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         #st = []
         #for i in range(0,len(arz)):
@@ -1977,7 +1977,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         #    dz['Z_HP'] = dz['Z_HP'].filled(999999)
         #else:
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
-    dz['Z'] = dz['Z'].filled(999999)
+    try:
+        dz['Z'] = dz['Z'].filled(999999)
+    except:
+        print('filling masked Z rows did not succeed')
     selm = dz['Z'] == 999999
     print('999999s for Z',len(dz[selm]))
 
