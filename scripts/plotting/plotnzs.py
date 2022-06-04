@@ -103,10 +103,10 @@ for tp in tps:
     svfn = svdir + tp+'_N_nz.txt'
     if tp == 'LRG':
         svfs = svdir + 'LRG_main_S_nz.txt'
-        svfn = svdir + 'LRG_main_n_nz.txt'
+        svfn = svdir + 'LRG_main_N_nz.txt'
     if tp == 'ELG_LOP':
         svfs = svdir + 'ELG_HIP_S_nz.txt'
-        svfn = svdir + 'ELG_HIP_n_nz.txt'
+        svfn = svdir + 'ELG_HIP_N_nz.txt'
     if tp ==  'ELG_LOPnotqso': 
         svfs = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_S_nz.dat'
         svfn = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_N_nz.dat'
