@@ -47,7 +47,9 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
             zmin = 0
             zmax = 4.5
     if tp == 'QSO':
-        wz = dt['SPECTYPE'] == 'QSO'
+        #wz = dt['SPECTYPE'] == 'QSO'
+        wz = dt['Z']*0 == 0
+        wz &= dt['Z'] != 999999
         zmin = 0
         zmax = 4.5
     if tp[:3] == 'BGS':
