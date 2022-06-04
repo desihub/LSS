@@ -19,8 +19,8 @@ zcol = 'Z_not4clus'
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
-    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits'
-    dt = Table.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full.ran.fits'
+    dt = Table.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
     wz = dt['ZWARN']*0 == 0
     wz &= dt['ZWARN'] != 1.e20
     wz &= dt['ZWARN'] != 999999
@@ -42,14 +42,11 @@ for tp in tps:
         titl = tp +' comp. wt over-density for 0.8<z<1.6'
 
     if tp == 'LRG':
-        # Custom DELTACHI2 vs z cut from Rongpu
-        wg = dt['ZWARN'] == 0
-        drz = (10**(3 - 3.5*dt[zcol]))
-        mask_bad = (drz>30) & (dt['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
-        mask_bad |= (dt['DELTACHI2']<10)
-        wg &= dt[zcol]<1.4
-        wg &= (~mask_bad)
+        # LRG criteria from Rongpu
+        wg = dt['DELTACHI2'] > 15
+        wg &= dt['ZWARN'] == 0
+        wg &= dt[zcol]<1.5
+
         wg &= dt[zcol] > 0.4
         wg &= dt[zcol] < 1.1
         titl = tp +' comp. wt over-density for 0.4<z<1.1'
