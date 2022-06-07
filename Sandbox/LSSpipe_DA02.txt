@@ -1,10 +1,10 @@
 #LSS to run with every MTL update
 #from the LSS/scripts/main directory
 
-source /project/projectdirs/desi/software/desi_environment.sh master
+source /global/common/software/desi/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/ #needed for regressis for some reason
-
+salloc -N 1 -q interactive -C cpu -t 4:00:00
 
 #data, run separately for dark and bright time
 #this only needs to be done once for each data release (so no need to do it for everest again)
@@ -45,8 +45,9 @@ for tp,notqso in zip(tps,notqsos):
     
 #get all of the clustering catalogs
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys y --nz y --regressis y --add_regressis y --survey DA02
+	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
 
 #do blinding
 python main/apply_blinding_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02
-python mkCat_main.py --type tp --blinding y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys y --nz y --regressis y --add_regressis y --survey DA02
+python mkCat_main.py --type tp --blinded y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
+python mkCat_main.py --type tp --blinded y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swapz y --survey DA02

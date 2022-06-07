@@ -42,10 +42,10 @@ def mknz(zin,wl,fcr,bs=0.01,zmin=0.01,zmax=1.6):
 
 tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_LOP','ELG_LOPnotqso']
 for tp in tps:
-    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_0_full.ran.fits'
+    rf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full.ran.fits'
     rt = fitsio.read_header(rf,ext=1)
     area = rt['NAXIS2']/2500
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
 
     wz = dt['ZWARN']*0 == 0
     wz &= dt['ZWARN'] != 1.e20
@@ -63,13 +63,16 @@ for tp in tps:
 
     if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
-        wg = dt['ZWARN'] == 0
-        drz = (10**(3 - 3.5*dt[zcol]))
-        mask_bad = (drz>30) & (dt['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
-        mask_bad |= (dt['DELTACHI2']<10)
-        wg &= dt[zcol]<1.4
-        wg &= (~mask_bad)
+        #wg = dt['ZWARN'] == 0
+        #drz = (10**(3 - 3.5*dt[zcol]))
+        #mask_bad = (drz>30) & (dt['DELTACHI2']<30)
+        #mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
+        #mask_bad |= (dt['DELTACHI2']<10)
+        #wg &= dt[zcol]<1.4
+        #wg &= (~mask_bad)
+        wg = dt['DELTACHI2'] > 15
+        wg &= dt['ZWARN'] == 0
+        wg &= dt[zcol]<1.5
 
 
     if tp[:3] == 'BGS':
@@ -95,16 +98,21 @@ for tp in tps:
         dz = 0.02
         plt.ylim(0,.05)
     
-    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3/'
-    svf = svdir + tp+'_nz.dat'
+    svdir = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3.1/'
+    svfs = svdir + tp+'_S_nz.txt'
+    svfn = svdir + tp+'_N_nz.txt'
     if tp == 'LRG':
-        svf = svdir + 'LRG_main_nz.dat'
+        svfs = svdir + 'LRG_main_S_nz.txt'
+        svfn = svdir + 'LRG_main_N_nz.txt'
     if tp == 'ELG_LOP':
-        svf = svdir + 'ELG_HIP_nz.dat'
+        svfs = svdir + 'ELG_HIP_S_nz.txt'
+        svfn = svdir + 'ELG_HIP_N_nz.txt'
     if tp ==  'ELG_LOPnotqso': 
-        svf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_nz.dat'
-    svz = np.loadtxt(svf).transpose()   
-    plt.plot(svz[0],svz[3],label='SV3 everest, v2.1')
+        svfs = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_S_nz.dat'
+        svfn = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/LSScats/test/ELG_HIPnotqso_N_nz.dat'
+    svzs = np.loadtxt(svfs).transpose()  
+    svzn = np.loadtxt(svfn).transpose()   
+    plt.plot(svzs[0],(svzs[3]+svzn[3])/2.,label='SV3 fuji, v3.1')
 
     zm,nz = mknz(zl,wl,rf,bs=bs,zmin=zmin,zmax=zmax)
     if tp[:3] == 'ELG':

@@ -29,8 +29,16 @@ from desitarget import targetmask
 import LSS.main.cattools as ct
 from LSS.globals import main
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
@@ -124,6 +132,7 @@ if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
 
+print('specrel is '+specrel)
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     #if not os.path.isfile(specfo) and args.subguad != 'y':
@@ -133,6 +142,10 @@ if specrel == 'daily':
         specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
+    spec_cols_4tar = ['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
+    ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+    ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    print(spec_cols_4tar)
     if args.subguad == 'y':
         dz = Table(fitsio.read(specfo))
         dz.keep_columns(speccols)
@@ -305,6 +318,7 @@ if specrel == 'daily' and args.dospec == 'y':
 #     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
 
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
@@ -322,6 +336,7 @@ if specrel == 'daily' and args.dospec == 'y':
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         update = True
         uptileloc = True
+        dotarspec = True
         hpxsn = hpxs
         s = 0
         if os.path.isfile(outf):
@@ -341,8 +356,10 @@ if specrel == 'daily' and args.dospec == 'y':
 
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
-                          
-            if os.path.isfile(outtc) and update == False and redotarspec == False:
+            stids = np.unique(fo['TILEID'])
+            if len(stids) == notid:      
+                dotarspec = False   
+            if os.path.isfile(outtc) and update == False and redotarspec == False and dotarspec == False:
                 ftc = fitsio.read(outtc,columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
@@ -396,7 +413,7 @@ if specrel == 'daily' and args.dospec == 'y':
                     print('file '+tarfo+' not found')
                 npx += 1    
             tarfn = Table(tarfn)           
-            remcol = ['PRIORITY','Z','ZWARN','FIBER','ZWARN_MTL']
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
             for col in remcol:
                 try:
                     tarfn.remove_columns([col] )#we get this where relevant from spec file
@@ -405,11 +422,16 @@ if specrel == 'daily' and args.dospec == 'y':
 
             tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
+            
+            #try:
+            #    specf.remove_columns(['PRIORITY'])
+            #except:
+            #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
-        elif redotarspec:
+        elif redotarspec or dotarspec:
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
@@ -442,7 +464,7 @@ if specrel == 'everest' or specrel =='guadalupe':
     tarf = Table.read(tarfo)
     tarf.remove_columns(['ZWARN_MTL'])
     tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-
+    specf.remove_columns(['PRIORITY'])
     tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
     outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
     tj.write(outfs,format='fits', overwrite=True)

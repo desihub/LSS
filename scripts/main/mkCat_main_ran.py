@@ -26,9 +26,18 @@ import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
@@ -153,6 +162,13 @@ imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
 
 
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tnsrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+
+
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
@@ -179,7 +195,8 @@ if specrel != 'daily':
             if notqso == 'notqso':
                 wtype &= ((dz[desitarg] & 4) == 0)
             dz = dz[wtype]
-            lznp = common.find_znotposs(dz)
+            #lznp = common.find_znotposs(dz)
+            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=3000)
             del specdat
             del dz
 
@@ -373,7 +390,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
@@ -392,18 +409,18 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
+#         tsnrcol = 'TSNR2_ELG'
+#         tsnrcut = 0
+#         if type[:3] == 'ELG':
+#             #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#             tsnrcut = 80
+#         if type == 'LRG':
+#             #dchi2 = 16  
+#             tsnrcut = 80          
+#         if type[:3] == 'BGS':
+#             tsnrcol = 'TSNR2_BGS'
+#             dchi2 = 40
+#             tsnrcut = 1000
 
         ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))

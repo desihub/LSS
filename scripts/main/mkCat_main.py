@@ -27,12 +27,21 @@ from LSS.globals import main
 #    print('import of LSS.mkCat_singletile.cattools failed')
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
@@ -44,7 +53,10 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
+parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -126,6 +138,13 @@ tdir = mainp.tdir+progl+'/' #location of targets
 tiles = mainp.tiles
 imbits = mainp.imbits #mask bits applied to targeting
 ebits = mainp.ebits #extra mask bits we think should be applied
+
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tsnrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+
 
 #wt = mtld['FAPRGRM'] == progl
 #wt &= mtld['SURVEY'] == 'main'
@@ -218,13 +237,13 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'zdone_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut)
 
 if args.add_veto == 'y':
-    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
     for rn in range(rm,rx):
-        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
 if args.apply_veto == 'y':
@@ -234,71 +253,75 @@ if args.apply_veto == 'y':
         maxp = 3200
     if type[:3] == 'BGS':
         maxp = 2100
-    fin = dirout+type+notqso+'zdone_full_noveto.dat.fits'
-    fout = dirout+type+notqso+'zdone_full.dat.fits'
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    fout = dirout+type+notqso+'_full.dat.fits'
     common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
     print('data veto done, now doing randoms')
     for rn in range(rm,rx):
-        fin = dirout+type+notqso+'zdone_'+str(rn)+'_full_noveto.ran.fits'
-        fout = dirout+type+notqso+'zdone_'+str(rn)+'_full.ran.fits'
+        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
 
-dchi2 = 9
-tsnrcut = 0
-if type[:3] == 'ELG':
-	dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-	tsnrcut = 80
-	zmin = 0.8
-	zmax = 1.6
-if type == 'LRG':
-	dchi2 = 16  
-	tsnrcut = 80
-	zmin = 0.4
-	zmax = 1.1  
-if type[:3] == 'BGS':
-	dchi2 = 40
-	tsnrcut = 1000
-	zmin = 0.1
-	zmax = 0.5
-if type == 'QSO':
-	zmin = 0.8
-	zmax = 3.5
+
+wzm = ''
+# dchi2 = 9
+# tsnrcut = 0
+# if type[:3] == 'ELG':
+#     dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#     tsnrcut = 80
+#     zmin = 0.8
+#     zmax = 1.6
+# if type == 'LRG':
+#     dchi2 = 16  
+#     tsnrcut = 80
+#     zmin = 0.4
+#     zmax = 1.1  
+# if type[:3] == 'BGS':
+#     dchi2 = 40
+#     tsnrcut = 1000
+#     zmin = 0.1
+#     zmax = 0.5
+# if type == 'QSO':
+#     zmin = 0.8
+#     zmax = 3.5
         
 
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso+'zdone_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
-        fn = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        fn = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
-if mkclusran:
+if mkclusran and mkclusdat:
     print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-   
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#    
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
     rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
     if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
+        fcols = ['G','R','Z','W1','W2']
+        for col in fcols:
+            rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.imsys == 'y':
@@ -322,7 +345,7 @@ if args.imsys == 'y':
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
-            fb = dirout+type+notqso+'zdone'+wzm+reg
+            fb = dirout+type+notqso+wzm+reg
             fcr = fb+'_0_clustering.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
@@ -379,7 +402,7 @@ if args.add_regressis == 'y':
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+reg
+        fb = dirout+type+notqso+reg
         fcd = fb+'_clustering.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
@@ -395,33 +418,56 @@ if args.add_regressis == 'y':
 
     
     
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+if type[:3] == 'BGS':
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
+
+if args.add_ke == 'y':
+    for reg in regl:
+        fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
+        dat = Table(fitsio.read(fn))
+        #if args.test == 'y':
+        #    dat = dat[:10]
+        cols = list(dat.dtype.names)
+        if 'REST_GMR_0P1' in cols:
+            print('appears columns are already in '+fn)
+        else:
+            dat = common.add_ke(dat)
+            #if args.test == 'n':
+            common.write_LSS(dat,fn,comments=['added k+e corrections'])
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    for col in kecols:
+        rcols.append(col)
+    #if args.test == 'y':
+    #    print('k+e test passed')    
+
 
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-   
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-    if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#    
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'zdone_',dirout+type+notqso+'zdone_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 
 if args.nz == 'y':
-    wzm = ''
+    
 #     if zmask:
 #         wzm = 'zmask_'
 #     if rcut is not None:
@@ -452,11 +498,16 @@ if args.nz == 'y':
         P0 = 7000
     
     for reg in regl:
-        fb = dirout+type+notqso+'zdone'+wzm+reg
+        fb = dirout+type+notqso+wzm+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-        
+if args.swapz == 'y':
+    import LSS.blinding_tools as blind
+    for reg in regl:
+        fb = dirout+type+notqso+reg+'_clustering.dat.fits'
+        data = Table(fitsio.read(fb))
+        blind.swap_z(data,fb,frac=0.01)        

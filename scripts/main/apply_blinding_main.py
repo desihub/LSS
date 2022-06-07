@@ -12,17 +12,17 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 #from desihub
-from desitarget import targetmask
+#from desitarget import targetmask
 #from regressis, must be installed
-from regressis import DR9Footprint
+#from regressis import DR9Footprint
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
 #try:
-import LSS.main.cattools as ct
-import LSS.common_tools as common
-import LSS.imaging.select_samples as ss
-from LSS.globals import main
+#import LSS.main.cattools as ct
+#import LSS.common_tools as common
+#import LSS.imaging.select_samples as ss
+#from LSS.globals import main
 import LSS.blinding_tools as blind
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
@@ -32,9 +32,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
+parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+parser.add_argument("--baoblind",help="if y, do the bao blinding shift",default='n')
+parser.add_argument("--rsdblind",help="if y, do the bao blinding shift",default='n')
 
 
 args = parser.parse_args()
@@ -72,8 +74,22 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
 
-data = Table(fitsio.read(dirin+type+notqso+'zdone_full.dat.fits'))
-outf = dirout + type+notqso+'zdone_full.dat.fits'
 w0 = -0.95
 wa = 0.3
-blind.apply_zshift_DE(data,outf,w0=w0,wa=wa,zcol='Z_not4clus')
+
+regl = ['_S','_N']
+if args.baoblind == 'y':
+	data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
+	outf = dirout + type+notqso+'_full.dat.fits'
+	blind.apply_zshift_DE(data,outf,w0=w0,wa=wa,zcol='Z_not4clus')
+
+if args.rsdblind == 'y':	
+	for reg in regl:
+		fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
+		fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
+		data = Table(fitsio.read(fnd))
+		data_real = Table(fitsio.read(fndr))
+		
+		out_file = fnd
+		blind.apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9)
+		

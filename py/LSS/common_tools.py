@@ -3,6 +3,7 @@ import fitsio
 from astropy.table import Table,join
 import datetime
 import os
+import sys
 
 from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
 
@@ -10,6 +11,11 @@ from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 dis_dc = cosmo.comoving_radial_distance
 
+def dl(z):   # Luminosity distance from now to z
+    return dis_dc(z)*(1.+z)
+
+def dm(z):
+    return 5.*np.log10(dl(z)) + 25.
 
 
 #functions that shouldn't have any dependence on survey go here
@@ -39,6 +45,36 @@ def cutphotmask(aa,bits):
     aa = aa[keep]
     print(str(len(aa)) +' after imaging veto' )
     return aa
+
+def find_znotposs_tloc(dz,priority_thresh=10000):
+
+    tileids = np.unique(dz['TILEID'])
+    ual = []
+    ufl = []
+    for tile in tileids:
+        sel = dz['TILEID'] == tile
+        dzs = dz[sel]
+        sela = dzs['ZWARN'] != 999999
+        sela &= dzs['ZWARN']*0 == 0
+        tlida = np.unique(dzs[sela]['TILELOCID'])
+        #print(tile,len(sela),len(dzs),np.sum(sela)) 
+        tida = np.unique(dzs[sela]['TARGETID'])
+        ua = ~np.isin(dzs['TARGETID'],tida)
+        #ua &= dzs['NUMOBS'] == 0
+        ua &= dzs['PRIORITY'] > priority_thresh
+        ua &= ~np.isin(dzs['TILELOCID'],tlida)
+        uatlids = np.unique(dzs[ua]['TILELOCID'])
+        ual.append(uatlids)
+        selp = dzs['PRIORITY'] > priority_thresh
+        tlids_gp = np.unique(dzs[selp]['TILELOCID'])
+        tlids_all = np.unique(dzs['TILELOCID'])
+        tlids_full = tlids_all[~np.isin(tlids_all,tlids_gp)]
+        print('done with tile '+str(tile),str(len(uatlids)),str(len(tlids_full)))
+        ufl.append(tlids_full)
+    print('concatenating')
+    ualt = np.concatenate(ual)
+    uflt = np.concatenate(ufl)
+    return ualt,uflt
 
 
 def find_znotposs(dz):
@@ -290,6 +326,42 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
         #ft.write(fn,format='fits',overwrite=True)      
         print('done with random number '+str(rann))  
     return True        
+
+def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
+    #data should be table with fcols flux columns existing
+    for col in fcols:
+        data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
+    return data
+
+def add_ke(dat):
+    #dat should be table with flux_g_dered and flux_r_dered
+    #from kcorr package, needs to be added to path
+    ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+    sys.path.append(ke_code_root)
+    os.environ['CODE_ROOT'] = ke_code_root
+    from   smith_kcorr     import GAMA_KCorrection
+    from   rest_gmr        import smith_rest_gmr
+    from   tmr_ecorr       import tmr_ecorr, tmr_q
+    
+    kcorr_r   = GAMA_KCorrection(band='R')
+    kcorr_g   = GAMA_KCorrection(band='G')
+
+    r_dered = 22.5 - 2.5*np.log10(dat['flux_r_dered'])
+    g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
+    gmr = g_dered-r_dered
+
+    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat['Z'], gmr)
+    dat['KCORR_R0P1'] = kcorr_r.k(dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
+    dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
+    dat['EQ_ALL_0P0']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P0'], aall=True)
+    dat['EQ_ALL_0P1']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P1'], aall=True)
+    dat['ABSMAG_R'] = r_dered -dm(dat['Z'])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    return dat
+    #abg = g_dered -dm(data['Z'])
+    
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'

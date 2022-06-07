@@ -1,0 +1,24 @@
+#first steps, applying just the BAO blinding
+source /global/common/software/desi/desi_environment.sh master
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+#still running using local install of regressis
+PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/
+
+#this shifts redshifts in the "full" catalogs and saves them in a .../LSScats/<version>/blinded
+python apply_blinding_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --notqso notqso --baoblind y
+
+#then, it gets run through the standard pipeline
+python mkCat_main.py --type tp --blinded y --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
+
+#then, we need to run reconstruction, so the environment needs to change
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
+#for LRGs:
+#on cori
+salloc -N 1 -C haswell -t 01:00:00 --qos interactive --account desi
+python recon.py --tracer LRG --prepare_blinding True --zlim 0.4 1.1 --survey DA02 --verspec guadalupe --version test/blinded \
+--outdir /global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/blinded
+
+
+python apply_blinding_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --notqso notqso --rsdblind y

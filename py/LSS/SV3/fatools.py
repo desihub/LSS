@@ -198,7 +198,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh master\n')
     if faver == None:
         faver = float(fht['FA_VER'][:3])
         if faver == 2.4:
@@ -343,7 +343,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             ntar.write(tarfn,format='fits', overwrite=True)
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh master\n')
 
     if faver == None:
         faver = float(fht['FA_VER'][:3])

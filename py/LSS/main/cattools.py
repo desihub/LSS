@@ -110,9 +110,11 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
     s = 0
     n = 0
     nfail = 0
+    tl = []
     if os.path.isfile(outf) and redo == 'n':
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
+        tl.append(specd)
         #dt = specd.dtype
         #specd = np.empty(len(specio),dtype=dt)
         #cols = fw.dtype.names
@@ -125,6 +127,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
 
     elif redo == 'y':
         specd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/'+specrel+'/datcomb_'+prog+'_spec_zdone.fits')
+        tl.append(specd)
         s = 1
         tdone = np.unique(specd['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
@@ -147,28 +150,32 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
             #tspec = fitsio.read('temp.fits')
             #tspec = np.empty(len(tspecio),dtype=dt)
 
-            if s == 0:
-                specd = tspec
-                s = 1
-            else:
-                #specd = vstack([specd,tspec],metadata_conflicts='silent')
-                #column order got mixed up
-                new = np.empty(len(tspec),dtype=specd.dtype)
-                cols = specd.dtype.names
-                for colname in cols:
-                    new[colname][...] = tspec[colname][...]
+            #if s == 0:
+            #    specd = tspec
+            #    s = 1
+            #else:
+            #specd = vstack([specd,tspec],metadata_conflicts='silent')
+            #column order got mixed up
+            new = np.empty(len(tspec),dtype=specd.dtype)
+            cols = specd.dtype.names
+            for colname in cols:
+                new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                #specd = np.hstack((specd,new))
+            tl.append(new)
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            #kp = (specd['TARGETID'] > 0)
+            #specd = specd[kp]
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            print(tile,n,len(tiles[tmask]))#,len(specd))
         else:
             print(str(tile)+' failed')
             nfail += 1
+    specd = np.hstack(tl)
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     print('total number of failures was '+str(nfail))
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
@@ -1595,7 +1602,12 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',maxp=3400):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None):
+
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
 
 #     selz = dz['ZWARN'] != 999999
 #     fs = dz[selz]
@@ -1654,6 +1666,10 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
+    dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
+    if tlid_full is not None:
+        wf = np.isin(dz['TILELOCID'],tlid_full)
+        dz['LOCFULL'][wf] = 1
 
     #dz = dz[wk]
     #print('length after cutting to good positions '+str(len(dz)))
@@ -1676,13 +1692,17 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
-    t0 = dz[tsnr]*0 != 0
-    t0 |= dz[tsnr] == 999999
-    t0 |= dz[tsnr] == 1.e20
-    dz[tsnr][t0] = 0
+    t0 = dz[tscol]*0 != 0
+    t0 |= dz[tscol] == 999999
+    t0 |= dz[tscol] == 1.e20
+    dz[tscol][t0] = 0
     
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tscol] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1-0.5*dz['LOCFULL']#*(1+dz[tsnr])
 
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+    #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
 
 
     dz.sort('sort') #should allow to later cut on tsnr for match to data
@@ -1693,7 +1713,11 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,tsnr= 'TSNR2_ELG',notqso='',
     dz.write(outf,format='fits', overwrite=True)
     del dz
 
-def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG',maxp=3400):
+def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
 
     zf = indir+'/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits'
     #fe = False
@@ -1725,6 +1749,12 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
 
         dz['ZPOSSLOC'][wk] = 1#dz[wk]
         #print('length after cutting to good positions '+str(len(dz)))
+        dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
+        if tlid_full is not None:
+            wf = np.isin(dz['TILELOCID'],tlid_full)
+            dz['LOCFULL'][wf] = 1
+
+
         if len(dz) > 0:
 
             tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
@@ -1744,11 +1774,16 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,tsnr= 'TSNR2_ELG
                 dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
                 sel = dz['PRIORITY'] <= maxp
                 dz['GOODPRI'][sel] = 1
-                t0 = dz[tsnr]*0 != 0
-                t0 |= dz[tsnr] == 999999
-                t0 |= dz[tsnr] == 1.e20
-                dz[tsnr][t0] = 0
-                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*(1+dz[tsnr])
+                t0 = dz[tscol]*0 != 0
+                t0 |= dz[tscol] == 999999
+                t0 |= dz[tscol] == 1.e20
+                dz[tscol][t0] = 0
+                dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+                sel = dz[tscol] > min_tsnr2
+                dz['GOODTSNR'][sel] = 1
+                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1-0.5*dz['LOCFULL']#*(1+dz[tsnr])
+
+                #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
 
 
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
@@ -1779,7 +1814,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1863,8 +1898,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
     wnts = dz[tscol]*0 != 0
+    wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz[tscol]*dz['GOODHARDLOC']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']+dz['GOODHARDLOC']
+    print(np.max(dz[tscol]))
+    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    sel = dz[tscol] > min_tsnr2
+    dz['GOODTSNR'][sel] = 1
+
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
@@ -1880,7 +1921,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         #arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
-        arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR'])
+        arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         #st = []
         #for i in range(0,len(arz)):
@@ -1930,6 +1971,21 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
+    if tp == 'QSO':
+        #if azfm == 'hp':
+        #    print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z_HP'].mask)))
+        #    dz['Z_HP'] = dz['Z_HP'].filled(999999)
+        #else:
+        print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+    try:
+        dz['Z'] = dz['Z'].filled(999999)
+    except:
+        print('filling masked Z rows did not succeed')
+    selm = dz['Z'] == 999999
+    print('999999s for Z',len(dz[selm]))
+    selo = dz['LOCATION_ASSIGNED'] == True
+    print('unique Z for unassigned:')
+    print(np.unique(dz[~selo]['Z']))
 
     print('length after cutting to unique targetid '+str(len(dz)))
     print('LOCATION_ASSIGNED numbers')
@@ -2170,14 +2226,18 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         lrg = ssr_tools.LRG_ssr()
         ff = lrg.add_modpre(ff)
         ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
     if tp == 'BGS_BRIGHT':
-        lrg = ssr_tools.LRG_ssr()
-        ff = lrg.add_modpre(ff)
+        bgs = ssr_tools.BGS_ssr()
+        ff = bgs.add_modpre(ff,fl)
         ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+        print('min/max of zfail weights:')
         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
@@ -2187,13 +2247,20 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if tp == 'ELG_LOP':
         elg = ssr_tools.ELG_ssr()
         ff = elg.add_modpre(ff)
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
     if tp == 'QSO':
         qso = ssr_tools.QSO_ssr()
-        ff = qso.add_modpre(ff)
+        ff = qso.add_modpre(ff,fl)
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+        ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
         print('checking sum of zfail weights compared to length of good z')
         print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
         ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
@@ -2259,9 +2326,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
     if tp[:3] == 'BGS':
-        ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
-        kl.append('flux_r_dered')
+        #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
+        #kl.append('flux_r_dered')
+        #print(kl)
+        fcols = ['G','R','Z','W1','W2']
+        ff = common.add_dered_flux(ff,fcols)
+        for col in fcols:
+            kl.append('flux_'+col.lower()+'_dered')
         print(kl)
+
     ff.keep_columns(kl)
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))

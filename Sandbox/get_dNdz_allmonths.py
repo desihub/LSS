@@ -16,9 +16,9 @@ print(yms)
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     
     if tp != 'ELGnotqso' and tp != 'ELGandQSO':
-        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits')
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
     else:
-        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELGzdone_full.dat.fits')
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELG_full.dat.fits')
 
     wg = dt['ZWARN'] != 999999
     wg &= dt['ZWARN'] != 1e20
@@ -47,7 +47,9 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
             zmin = 0
             zmax = 4.5
     if tp == 'QSO':
-        wz = dt['SPECTYPE'] == 'QSO'
+        #wz = dt['SPECTYPE'] == 'QSO'
+        wz = dt[zcol]*0 == 0
+        wz &= dt[zcol] != 999999
         zmin = 0
         zmax = 4.5
     if tp[:3] == 'BGS':

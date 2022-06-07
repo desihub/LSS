@@ -24,7 +24,7 @@ from LSS.globals import SV3
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output",default="")#", default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cuttar", help="cut targets to SV3 tiles",default='n')
@@ -34,9 +34,11 @@ parser.add_argument("--xi", help="run pair-counting code",default='n')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combd", help="combine all the tiles together",default='n')
+parser.add_argument("--comb_emhp", help="combine all the tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--dodt", help="process individual tiles; not really necessary anymore",default='n')
 parser.add_argument("--redodt", help="remake already done data tiles",default='n')
+parser.add_argument("--usehp", help="whether to use the healpix redshifts; use 'hp' or 'cumul'",default='hp')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
@@ -47,6 +49,8 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=1) 
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+parser.add_argument("--test", help="if 'y', some functions will only be run on a small subset of data",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
@@ -232,52 +236,52 @@ tilef = sv3dir+'tiles-'+pr+'.fits'
 if os.path.isfile(tilef):
     ta = Table.read(tilef)
 else:
-	#construct a table with the needed tile information
-	if len(mtld) > 0:
-		tilel = []
-		ral = []
-		decl = []
-		mtlt = []
-		fal = []
-		obsl = []
-		pl = []
-		hal = []
-		#for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-		for tile in mtld['TILEID']:
-			ts = str(tile).zfill(6)
-			fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-			tilel.append(tile)
-			ral.append(fht['TILERA'])
-			decl.append(fht['TILEDEC'])
-			mtlt.append(fht['MTLTIME'])
-			fal.append(fht['RUNDATE'])
-			obsl.append(fht['FIELDROT'])
-			hal.append(fht['FA_HA'])
-			#pl.append(pro)
-			pl.append(pr)
-		ta = Table()
-		ta['TILEID'] = tilel
-		ta['RA'] = ral
-		ta['DEC'] = decl
-		ta['MTLTIME'] = mtlt
-		ta['RUNDATE'] = fal
-		ta['FIELDROT'] = obsl
-		ta['PROGRAM'] = pl
-		ta['FA_HA'] = hal
-		#if pd == 'dark':
-		ta['OBSCONDITIONS'] = 15
-		ta['IN_DESI'] = 1
-		#ttf = Table() #to write out to use for fiberassign all at once
-		#ttf['TILEID'] = tilel
-		#ttf['RA'] = ral
-		#ttf['DEC'] = decl
-		#ttf['OBSCONDITIONS'] = 15
-		#ttf['IN_DESI'] = 1
-		#ttf['PROGRAM'] = 'SV3'
-		ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
+    #construct a table with the needed tile information
+    if len(mtld) > 0:
+        tilel = []
+        ral = []
+        decl = []
+        mtlt = []
+        fal = []
+        obsl = []
+        pl = []
+        hal = []
+        #for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
+        for tile in mtld['TILEID']:
+            ts = str(tile).zfill(6)
+            fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+            tilel.append(tile)
+            ral.append(fht['TILERA'])
+            decl.append(fht['TILEDEC'])
+            mtlt.append(fht['MTLTIME'])
+            fal.append(fht['RUNDATE'])
+            obsl.append(fht['FIELDROT'])
+            hal.append(fht['FA_HA'])
+            #pl.append(pro)
+            pl.append(pr)
+        ta = Table()
+        ta['TILEID'] = tilel
+        ta['RA'] = ral
+        ta['DEC'] = decl
+        ta['MTLTIME'] = mtlt
+        ta['RUNDATE'] = fal
+        ta['FIELDROT'] = obsl
+        ta['PROGRAM'] = pl
+        ta['FA_HA'] = hal
+        #if pd == 'dark':
+        ta['OBSCONDITIONS'] = 15
+        ta['IN_DESI'] = 1
+        #ttf = Table() #to write out to use for fiberassign all at once
+        #ttf['TILEID'] = tilel
+        #ttf['RA'] = ral
+        #ttf['DEC'] = decl
+        #ttf['OBSCONDITIONS'] = 15
+        #ttf['IN_DESI'] = 1
+        #ttf['PROGRAM'] = 'SV3'
+        ta.write(sv3dir+'tiles-'+pr+'.fits',format='fits', overwrite=True)
 
-	else:
-		print('no done tiles in the MTL')
+    else:
+        print('no done tiles in the MTL')
 
 
 minr = 148
@@ -389,7 +393,7 @@ if combd:
         ct.combtiles_wdup(ta,mdir,outf)
         tarf = Table.read(sv3dir+'datcomb_'+type+'_tarwdup_Alltiles.fits')
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        remcol = ['PRIORITY','Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
+        remcol = ['Z','ZWARN','FIBER','SUBPRIORITY'] #subpriority in target files doesn't match what is in fiberassign files
         for col in remcol:
             try:
                 tarf.remove_columns([col] )#we get this where relevant from spec file
@@ -437,6 +441,15 @@ if combd:
     else:
         print('nothing to be done for combd, only done for dark/bright now')
 
+if args.comb_emhp == 'y':
+    fls = glob.glob('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/healpix/sv3/'+pdir+'/*/*/emline*.fits')
+    dl = []
+    for fl in fls:
+        df = fitsio.read(fl)
+        dl.append(df)
+    dt = np.concatenate(dl)
+    outf = ldirspec+'emline_'+pdir+'allhealpix.fits'
+    common.write_LSS(dt,outf)
 
 if combr:
     #print(len(mtld['TILEID']))
@@ -465,7 +478,12 @@ if combr:
     else:
         print('nothing to be done for combr, only done for dark/bright now')
         
-        
+
+tsnrcut = SV3p.tsnrcut
+dchi2 = SV3p.dchi2
+tsnrcol = SV3p.tsnrcol  
+zmin = SV3p.zmin
+zmax = SV3p.zmax      
         
 if mkfulld:
     if specrel == 'everest' or specrel == 'fuji':
@@ -477,10 +495,22 @@ if mkfulld:
 
     #ct.mkfulldat(dirout+'ALLAlltiles_'+pd+'_full.dat.fits',imbits,tdir,'SV3_DESI_TARGET',sv3_targetmask.desi_mask[type],dirout+type+'Alltiles_full.dat.fits')
     azf=''
+    azfm = args.usehp
     if type[:3] == 'ELG':
-        azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        if azfm == 'cumul':
+            azf = SV3p.elgzf#'/global/cfs/cdirs/desi/users/raichoor/everest/sv3-elg-everest-tiles.fits'
+        elif azfm == 'hp':
+            azf = SV3p.elgzfhp
+        else:
+            sys.exit('not a supported argument for --usehp')    
     if type[:3] == 'QSO':
-        azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        if azfm == 'cumul':
+            azf = SV3p.qsozf#'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
+        elif azfm == 'hp':
+            azf = SV3p.qsozfhp
+        else:
+            sys.exit('not a supported argument for --usehp')    
+        
     #'/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210521.fits'
     #/global/homes/r/raichoor/sv3/sv3-elg-daily-thru20210506.fits
     #dz = dirout+'datcomb_'+type+'_Alltiles.fits' old
@@ -503,10 +533,12 @@ if mkfulld:
 
 
     #ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
+
+
 
 if mkfullr:
     if specrel == 'everest' or specrel == 'fuji':
@@ -525,7 +557,7 @@ if mkfullr:
             bit = sv3_targetmask.desi_mask[type]    
             desitarg='SV3_DESI_TARGET'
 
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso)
+        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,min_tsnr2=tnsrcut)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
 
@@ -548,60 +580,73 @@ if args.apply_veto == 'y':
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         print('random veto '+str(rn)+' done')
 
+regl = ['_N','_S']
+wzm = ''
+#     if zmask:
+#         wzm = 'zmask_'
+if rcut is not None:
+    wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+if ntile > 0:
+    wzm += '_ntileg'+str(ntilecut)+'_'    
+if ccut is not None:
+    wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    dchi2 = 9
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        dchi2 = 40
-        tsnrcut = 1000
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits)
+    #dchi2 = 9
+    for reg in regl:
+        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits,hp=args.usehp)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 
+rcols=['Z','WEIGHT']
+if type[:3] == 'BGS':
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
+
+if args.add_ke == 'y':
+    for reg in regl:
+        fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
+        dat = Table(fitsio.read(fn))
+        if args.test == 'y':
+            dat = dat[:10]
+        dat = common.add_ke(dat)
+        if args.test == 'n':
+            common.write_LSS(dat,fn,comments=['added k+e corrections'])
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    for col in kecols:
+        rcols.append(col)
+    if args.test == 'y':
+        print('k+e test passed')    
+
 if mkclusran:
     print('doing clustering randoms')
-    tsnrcol = 'TSNR2_ELG'
-    tsnrcut = 0
-    if type[:3] == 'ELG':
-        #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-        tsnrcut = 80
-    if type == 'LRG':
-        #dchi2 = 16  
-        tsnrcut = 80  
-    if type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-        dchi2 = 40
-        tsnrcut = 1000
+#     tsnrcol = 'TSNR2_ELG'
+#     tsnrcut = 0
+#     if type[:3] == 'ELG':
+#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#         tsnrcut = 80
+#     if type == 'LRG':
+#         #dchi2 = 16  
+#         tsnrcut = 80  
+#     if type[:3] == 'BGS':
+#         tsnrcol = 'TSNR2_BGS'
+#         dchi2 = 40
+#         tsnrcut = 1000
 
-    rcols=['Z','WEIGHT']
-    if type[:3] == 'BGS':
-        rcols.append('flux_r_dered')
+        
     for ii in range(rm,rx):
-        ct.mkclusran(dirout+type+notqso+'_',ii,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
+        for reg in regl:
+            ct.mkclusran(dirout+type+notqso,ii,reg=reg,tsnrcut=tsnrcut,tsnrcol=tsnrcol,rcut=rcut,ntilecut=ntile,ccut=ccut,ebits=ebits,rcols=rcols)
     #logf.write('ran mkclusran\n')
     #print('ran mkclusran\n')
     
 #changed to be done at same time as clustering catalogs within mkclusdat
 if mknz:
-    wzm = ''
-#     if zmask:
-#         wzm = 'zmask_'
-    if rcut is not None:
-        wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
-    if ntile > 0:
-        wzm += '_ntileg'+str(ntilecut)+'_'    
-    if ccut is not None:
-        wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
-    regl = ['','_N','_S']
+    
     
     
     if type[:3] == 'QSO':

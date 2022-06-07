@@ -39,7 +39,7 @@ for tp,c,zo in zip(tps,cl,zordl):
     if tp == 'ELG':
         cols.append('o2c')
         zmin = 0.6
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'zdone_full.dat.fits',columns=cols)
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits',columns=cols)
     sel = dt['RA'] > ram
     sel &= dt['RA'] < rax
     sel &= dt['DEC'] > decm
@@ -65,13 +65,16 @@ for tp,c,zo in zip(tps,cl,zordl):
 
     if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
-        wg = dt['ZWARN'] == 0
-        drz = (10**(3 - 3.5*dt[zcol]))
-        mask_bad = (drz>30) & (dt['DELTACHI2']<30)
-        mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
-        mask_bad |= (dt['DELTACHI2']<10)
-        wg &= dt[zcol]<1.4
-        wg &= (~mask_bad)
+        #wg = dt['ZWARN'] == 0
+        #drz = (10**(3 - 3.5*dt[zcol]))
+        #mask_bad = (drz>30) & (dt['DELTACHI2']<30)
+        #mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
+        #mask_bad |= (dt['DELTACHI2']<10)
+        #wg &= dt[zcol]<1.4
+        #wg &= (~mask_bad)
+        wg = dt['DELTACHI2'] > 15
+        wg &= dt['ZWARN'] == 0
+        wg &= dt[zcol]<1.5
 
 
     if tp[:3] == 'BGS':

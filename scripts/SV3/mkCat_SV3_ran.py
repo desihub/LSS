@@ -13,6 +13,7 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
+from desitarget.sv3 import sv3_targetmask
 from desimodel.footprint import is_point_in_desi
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
@@ -24,9 +25,18 @@ import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import SV3 
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='everest')
 parser.add_argument("--cutran", help="cut randoms to SV3 tiles",default='n')
@@ -117,6 +127,9 @@ tiles = SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
 ebits = SV3p.ebits #extra mask bits we think should be applied
 
+tsnrcut = SV3p.tsnrcut
+dchi2 = SV3p.dchi2
+tnsrcol = SV3p.tsnrcol        
 
 
 # mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
@@ -235,6 +248,56 @@ else:
     print('no done tiles in the MTL')
 
 
+# tsnrcol = 'TSNR2_ELG'
+# tsnrcut = 0
+# if type[:3] == 'ELG':
+#     #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#     tsnrcut = 80
+# if type == 'LRG':
+#     #dchi2 = 16  
+#     tsnrcut = 80          
+# if type[:3] == 'BGS':
+#     tsnrcol = 'TSNR2_BGS'
+#     dchi2 = 40
+#     tsnrcut = 1000
+
+if mkfullr:
+    if specrel == 'everest' or specrel == 'fuji':
+        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+        fbcol = 'COADD_FIBERSTATUS'
+    if specrel == 'daily':
+        specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+        fbcol = 'FIBERSTATUS'
+    wf = specf[fbcol] == 0
+    stlid = 10000*specf['TILEID'] +specf['LOCATION']
+    gtl = np.unique(stlid[wf])
+    #gtl now contains the list of good locations
+    #we now want to load in the bigger data file with all the target info
+    #we use it to find the locations where observations of the given type were not possible and then mask them
+    zf = ldirspec+'datcomb_'+pd+'_tarspecwdup_Alltiles.fits'
+    dz = Table.read(zf) 
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wg]
+    if type == 'BGS_BRIGHT':
+        bit = sv3_targetmask.bgs_mask[type]
+        desitarg='SV3_BGS_TARGET'
+    else:
+        bit = sv3_targetmask.desi_mask[type]    
+        desitarg='SV3_DESI_TARGET'
+    wtype = ((dz[desitarg] & bit) > 0)
+    if notqso == 'notqso':
+        wtype &= ((dz[desitarg] & 4) == 0)
+    dz = dz[wtype]
+    #lznp = common.find_znotposs(dz)
+    lznp,tlid_full = common.find_znotposs_tloc(dz)
+    del dz
+    print('done finding znotposs')
+
+
+
+
+
 def doran(ii):
     dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
     if cran:
@@ -315,20 +378,22 @@ def doran(ii):
 
         
     if mkfullr:
-        if specrel == 'everest' or specrel == 'fuji':
-            specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
-            fbcol = 'COADD_FIBERSTATUS'
-        if specrel == 'daily':
-            specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-            fbcol = 'FIBERSTATUS'
+#         if specrel == 'everest' or specrel == 'fuji':
+#             specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-sv3-'+pdir+'-cumulative.fits')
+#             fbcol = 'COADD_FIBERSTATUS'
+#         if specrel == 'daily':
+#             specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
+#             fbcol = 'FIBERSTATUS'
 
+        print('making full random '+str(ii))
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        if type == 'BGS_BRIGHT':
-            bit = sv3_targetmask.bgs_mask[type]
-            desitarg='SV3_BGS_TARGET'
-        else:
-            bit = sv3_targetmask.desi_mask[type]    
-            desitarg='SV3_DESI_TARGET'
+        #if type == 'BGS_BRIGHT':
+        #    bit = sv3_targetmask.bgs_mask[type]
+        #    desitarg='SV3_BGS_TARGET'
+        #else:
+        #    bit = sv3_targetmask.desi_mask[type]    
+        #    desitarg='SV3_DESI_TARGET'
+        
         maxp = 103400
         if type[:3] == 'LRG' or notqso == 'notqso':
             maxp = 103200
@@ -337,7 +402,8 @@ def doran(ii):
         if type[:3] == 'BGS':
             maxp = 102100
 
-        ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp)
+        #ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.apply_veto == 'y':
@@ -355,18 +421,6 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
         rcols=['Z','WEIGHT']
         if type[:3] == 'BGS':
             rcols.append('flux_r_dered')
@@ -381,12 +435,15 @@ if __name__ == '__main__':
         from multiprocessing import Pool
         import sys
         #N = int(sys.argv[2])
-        N = rx
-        p = Pool(N)
+        N = rx-rm
+        #p = Pool(rx-rm)
         inds = []
-        for i in range(0,N):
+        for i in range(rm,rx):
             inds.append(i)
-        p.map(doran,inds)
+
+        with Pool(N) as pool:
+        
+            pool.map(doran,inds)
     else:
         for i in range(rm,rx):
             doran(i)

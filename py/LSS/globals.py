@@ -6,16 +6,36 @@ class SV3:
         self.tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'#location of targets
         self.mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-sv3.ecsv')
+
         ebits = None
+        #these are all the ELG parameters, they get changed for other tracers below
+        self.tsnrcut = 80
+        self.dchi2 = 0.9 #used for the ELG OII criteria
+        self.tsnrcol = 'TSNR2_ELG'
+        self.zmin = 0.6
+        self.zmax = 1.6
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
+            self.tsnrcut = 1000
+            self.dchi2 = 40
+            self.tsnrcol = 'TSNR2_BGS'
+            self.zmin = 0.01
+            self.zmax = 0.6
         else:
             self.imbits = [1,12,13]
         self.ebits = None
         if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
+            self.tsnrcut = 0
+            self.dchi2 = 0
+            self.zmin = 0.6
+            self.zmax = 3.5
+            #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
+            self.dchi2 = 15
+            self.zmin = 0.4
+            self.zmax = 1.1
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
@@ -23,7 +43,9 @@ class SV3:
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/everest/QSO/QSO_catalog_SV3.fits'
         if specver == 'fuji':
             self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/fuji/sv3-elg-fuji-tiles.fits'
+            self.elgzfhp = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/emline_darkallhealpix.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/QSO_cat_fuji_cumulative.fits'
+            self.qsozfhp = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/healpix/QSO_cat_fuji_sv3_dark_healpix_only_qso_targets.fits'
         
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
@@ -38,14 +60,38 @@ class main:
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
         self.ebits = None
         
+        self.tsnrcol = 'TSNR2_ELG'
+        self.tsnrcut = 0
+        self.dchi2 = 0
+        self.zmin = 0
+        self.max = 4.5
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
+            self.tsnrcut = 1000
+            self.tsnrcol = 'TSNR2_BGS'
+            self.dchi2 = 40
+            self.zmin = 0.1
+            self.zmax = 0.5
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
+            self.tsnrcut = 0
+            self.dchi2 = 0
+            self.zmin = 0.8
+            self.zmax = 3.5
+            #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
+            self.tsnrcut = 80
+            self.dchi2 = 15
+            self.zmin = 0.4
+            self.zmax = 1.1
+        if tp[:3] == 'ELG':
+            self.tsnrcut = 80
+            self.dchi2 = 0.9
+            self.zmin = 0.8
+            self.zmax = 1.6
         if tp[:3] == 'ELG' or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
@@ -56,8 +102,3 @@ class main:
             #self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
         
-        #recon parameters
-        self.om = 0.31519
-        if tp[:3] == 'LRG':
-            self.bias = 1.8
-            self.ff = 0.4*self.bias

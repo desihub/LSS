@@ -35,9 +35,18 @@ import LSS.common_tools as common
 import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
@@ -293,6 +302,23 @@ if type != 'dark' and type != 'bright' and mkfullr:
 
 
 #print(tracemalloc.get_traced_memory())
+# tsnrcol = 'TSNR2_ELG'
+# tsnrcut = 0
+# if type[:3] == 'ELG':
+#     #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
+#     tsnrcut = 80
+# if type == 'LRG':
+#     #dchi2 = 16  
+#     tsnrcut = 80          
+# if type[:3] == 'BGS':
+#     tsnrcol = 'TSNR2_BGS'
+#     dchi2 = 40
+#     tsnrcut = 1000
+
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tsnrcol = mainp.tsnrcol        
+
 
 
 def doran(ii):
@@ -409,22 +435,24 @@ def doran(ii):
         if args.refullr == 'y':
             uhpxs = hpxs
         else:
-            cf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+            cf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+            dosel = False
             try:
                 tls = fitsio.read(cf,columns=['TILEID'])
                 dosel = True
             except:
                 print('problem reading '+cf+' redoing all')
                 uhpxs = hpxs
+                
             if dosel:
                 otls = np.unique(tls['TILEID'])
-                print('got tileids currently in '+dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits')
+                print('got tileids currently in '+dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
                 selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
                 uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(uhpxs))
-            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp)
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
             npx += 1  
         npx = 0
         s = 0
@@ -435,7 +463,7 @@ def doran(ii):
     if args.combfull == 'y':
         s = 0
         npx =0 
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
         cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
         pl = []
@@ -473,20 +501,8 @@ def doran(ii):
 
 
     if mkclusran:
-        tsnrcol = 'TSNR2_ELG'
-        tsnrcut = 0
-        if type[:3] == 'ELG':
-            #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-            tsnrcut = 80
-        if type == 'LRG':
-            #dchi2 = 16  
-            tsnrcut = 80          
-        if type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
-            dchi2 = 40
-            tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)

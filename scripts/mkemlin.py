@@ -87,6 +87,9 @@ if __name__ == '__main__':
 
     from multiprocessing import Pool
     N = 64
+    if os.environ['NERSC_HOST'] == 'perlmutter':
+        N = 128
+        print('using 128 cpus')
     for n in range(0,len(tiles4em),N):
         p = Pool(N)
         inds = []
