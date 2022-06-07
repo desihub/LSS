@@ -37,7 +37,7 @@ nest = True
 zcol = 'Z'
 nran = 18
 
-tps = [tp]
+tps = [args.tracers]
 if args.tracers == 'all':
     tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
 
