@@ -38,7 +38,7 @@ zcol = 'Z'
 nran = 18
 
 tps = [tp]
-if args.tracers == 'all'
+if args.tracers == 'all':
     tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
 
 zdw = ''#'zdone'
