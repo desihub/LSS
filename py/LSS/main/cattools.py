@@ -1814,7 +1814,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1865,7 +1865,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    fs = common.cut_specdat(dz)
+    fs = common.cut_specdat(dz,badfib)
     #fs['sort'] = fs['TSNR2_LRG']
     #fs.sort('sort')
     #fsu = unique(fs,keys=['TARGETID'],keep='last')
