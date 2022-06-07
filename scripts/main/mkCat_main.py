@@ -237,7 +237,7 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib)
 
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
