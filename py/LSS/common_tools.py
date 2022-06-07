@@ -37,7 +37,7 @@ def cut_specdat(dz,badfib=None):
     #veto fibers later determined to have poor success rates
     if badfib is not None:
         bad = np.isin(fs['FIBER'],badfib)
-        print('number at bad fibers '+str(bad))
+        print('number at bad fibers '+str(sum(bad)))
         wfqa &= ~bad
     return fs[wfqa]
 
