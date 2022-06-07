@@ -1,4 +1,5 @@
 from astropy.table import Table
+import numpy as np
 
 class SV3:
     def __init__(self,tp,weightmode='probobs',specver='fuji'):
@@ -101,5 +102,5 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe/main-elg-guadalupe-tiles.fits'
             #self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
-            self.badfib = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/lrg+bgs_3sig_bad.txt'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/lrg+bgs_3sig_bad.txt')
         
