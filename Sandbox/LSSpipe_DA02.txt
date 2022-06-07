@@ -34,7 +34,9 @@ for tp,notqso in zip(tps,notqsos):
     --refullr n
 
 #apply veto mask column for LRGs
-python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --verspec guadalupe --maxr 18 
+python mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec guadalupe --survey DA02
+#old
+#python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --verspec guadalupe --maxr 18 
 
 #this applies vetos to both data and randoms (could put randoms in separate script and parallize)
 for tp,notqso in zip(tps,notqsos):
