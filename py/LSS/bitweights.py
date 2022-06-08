@@ -159,7 +159,7 @@ def unpack_bitweights(we):
         array_bool[:,j*Nbits:(j+1)*Nbits] = lg[:,::-1]
     return array_bool
 
-def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
+def write_output(outdir, outfilename, overwrite, fileformat, targets, bitvectors, desi_target_key=None):
     """
     Write output file containing bit weights
     """
@@ -170,7 +170,7 @@ def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
 
     # Output fits files
     if fileformat == 'fits':
-        outfile = os.path.join(outdir, 'targeted.fits')
+        outfile = os.path.join(outdir, outfilename)
         output = Table()
         output['TARGETID'] = targets['TARGETID']
         if desi_target_key:
@@ -180,11 +180,11 @@ def write_output(outdir, fileformat, targets, bitvectors, desi_target_key=None):
         output['Z'] = targets['Z']
         for i in range(bitvectors.shape[1]):
             output['BITWEIGHT{}'.format(i)] = bitvectors[:,i]
-        output.write(outfile)
+        output.write(outfile, overwrite=overwrite)
 
     # Output hdf5 files
     elif fileformat == 'hdf5':
-        outfile = os.path.join(outdir, 'targeted.hdf5')
+        outfile = os.path.join(outdir, outfilename)
         outfile = h5py.File(outfile, 'w')
         outfile.create_dataset('TARGETID', data=targets['TARGETID'])
         if desi_target_key:
