@@ -1277,12 +1277,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     wz &= dz['COADD_FIBERSTATUS'] == 0
-    fs = dz[wz]
+    
     if badfib is not None:
-        bad = np.isin(fs['FIBER'],badfib)
+        bad = np.isin(dz['FIBER'],badfib)
         print('number at bad fibers '+str(sum(bad)))
         wz &= ~bad
-
+    fs = dz[wz]
 
     print('number of good obs '+str(len(fs)))
     #fs = common.cut_specdat(dz)
