@@ -50,7 +50,7 @@ for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
 
 #BGS subcats
-python mkBGS_flavors.py --survey DA02 --verspec guadlupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version 2.1 --clus y --clusran y
+python mkBGS_flavors.py --survey DA02 --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version 2.1 --clus y --clusran y
 
 #do blinding
 python main/apply_blinding_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02
