@@ -74,7 +74,7 @@ else:
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     wz &= dz['COADD_FIBERSTATUS'] == 0
-    fs = dz[wz]
+    ff = dz[wz]
 
     zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
     dz = Table(fitsio.read(zf))
