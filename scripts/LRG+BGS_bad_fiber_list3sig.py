@@ -166,7 +166,7 @@ fstats_comb.sort('frac_suc')
 #mean = np.sum(fstats_comb['n_suc'])/np.sum(fstats_comb['n_tot'])
 n = 3
 maskcheck = fstats_comb['check']>n
-fstats_comb
+print(fstats_comb)
 #np.savetxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt",fstats_comb[maskcheck]['Fiber'],fmt='%i')
 fn = basedir+'/'+survey+'/LSS/'+specver+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt"
 np.savetxt(fn,fstats_comb[maskcheck]['Fiber'],fmt='%i')
