@@ -41,7 +41,7 @@ specver = args.verspec
 #hdul = fits.open(filepathBGS)
 
 if survey != 'SV3':
-    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_spec_zdone.fits'
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_zdone.fits'
     dz = Table(fitsio.read(zf))
     desitarg = 'DESI_TARGET'
     bit = 1 #for selecting LRG
@@ -52,7 +52,7 @@ if survey != 'SV3':
 
     ff = common.cut_specdat(dz)
 
-    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_spec_zdone.fits'
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_zdone.fits'
     dz = Table(fitsio.read(zf))
     desitarg = 'BGS_TARGET'
     wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
