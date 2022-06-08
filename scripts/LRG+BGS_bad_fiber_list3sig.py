@@ -17,7 +17,7 @@ from astropy.io import fits
 parser = argparse.ArgumentParser()
 #parser.add_argument("--type", help="tracer type to be selected")
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=basedir)
+parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
