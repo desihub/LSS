@@ -39,8 +39,8 @@ dirin = args.basedir+'/'+args.survey+ '/LSS/'+args.verspec+'/LSScats/'+args.vers
 dirout = dirin +'BGSsubcats/'
 
 zw = ''
-if args.survey == 'DA02':
-    zw = 'zdone'
+#if args.survey == 'DA02':
+#    zw = 'zdone'
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
@@ -65,7 +65,7 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
 
     abr = r_dered -dm(data['Z'])
     abg = g_dered -dm(data['Z'])
-    ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05
+    ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05 #rough change based on peak of red g-r
     sel = abr > minr
     sel &= abr < maxr
     sel &= ct > minct
