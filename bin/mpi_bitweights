@@ -46,6 +46,8 @@ def parse():
     parser.add_argument("--format", type=str, required=False, default="fits",
                         help="File format for outputs (either fits or hdf5)")
     parser.add_argument("--outdir", type=str, required=False, default=".", help="Output directory")
+    parser.add_argument("--outfilename", type=str, required=False, default="targeted.fits", help="Output filename")
+    parser.add_argument("--overwrite", type=bool, required=False, default=True, help="Overwrite the output or not")
     parser.add_argument("--realizations", type=int, required=False, default=128, help="Number of realizations")
     parser.add_argument("--survey", type=str, required=False, default="sky", help="e.g., sv3 or main")
     parser.add_argument("--rundate", type=str, required=False, default="2021-04-06T00:39:37", help="default is right before start of SV3")
@@ -199,7 +201,7 @@ def main(args):
 
         # Write output files
         #write_output(args.outdir, args.format, targets[idas], bitvectors[idas], desi_target_key=desi_target_key)
-        write_output(args.outdir, args.format, targets, bitvectors, desi_target_key=desi_target_key)
+        write_output(args.outdir, args.outfilename, args.overwrite, args.format, targets, bitvectors, desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()
