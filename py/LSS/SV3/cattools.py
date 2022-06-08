@@ -1223,7 +1223,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV3_DESI_TARGET',specver='fuji',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV3_DESI_TARGET',specver='fuji',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0,badfid=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1278,6 +1278,12 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     wz &= dz['COADD_FIBERSTATUS'] == 0
     fs = dz[wz]
+    if badfib is not None:
+        bad = np.isin(fs['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wz &= ~bad
+
+
     print('number of good obs '+str(len(fs)))
     #fs = common.cut_specdat(dz)
     gtl = np.unique(fs['TILELOCID'])
