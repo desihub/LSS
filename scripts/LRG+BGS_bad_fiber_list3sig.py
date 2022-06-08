@@ -83,8 +83,11 @@ else:
     print(len(dz[wtype]))
     #dz = dz[wtype&wg]
     dz = dz[wtype]
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['COADD_FIBERSTATUS'] == 0
 
-    ff2 = common.cut_specdat(dz)
+    ff2 = dz[wz]
 
 
 z_suc= ff['ZWARN']==0
