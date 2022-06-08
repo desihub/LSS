@@ -47,7 +47,7 @@ class SV3:
             self.elgzfhp = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/emline_darkallhealpix.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/QSO_cat_fuji_cumulative.fits'
             self.qsozfhp = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/healpix/QSO_cat_fuji_sv3_dark_healpix_only_qso_targets.fits'
-        
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/lrg+bgs_3sig_bad_fibers.txt')
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
         self.weightmode = weightmode
@@ -102,5 +102,5 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe/main-elg-guadalupe-tiles.fits'
             #self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
-            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/test/lrg+bgs_3sig_bad.txt')
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
         
