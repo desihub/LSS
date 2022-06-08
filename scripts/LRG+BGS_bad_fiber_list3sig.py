@@ -14,6 +14,8 @@ from astropy.table import Table,join
 from astropy.time import Time
 from astropy.io import fits
 
+import LSS.common_tools as common
+
 parser = argparse.ArgumentParser()
 #parser.add_argument("--type", help="tracer type to be selected")
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
@@ -28,20 +30,68 @@ version = args.version
 survey  = args.survey
 specver = args.verspec
 
-filepathLF = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+'/LRG_full.dat.fits'
-filepathBGS = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+'/BGS_ANY_full.dat.fits'
+#filepathLF = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+'/LRG_full.dat.fits'
+#filepathBGS = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+'/BGS_ANY_full.dat.fits'
 
 
 
-ff = fitsio.read(filepathLF)
-hdul = fits.open(filepathLF)
-ff2 = fitsio.read(filepathBGS)
-hdul = fits.open(filepathBGS)
+#ff = fitsio.read(filepathLF)
+#hdul = fits.open(filepathLF)
+#ff2 = fitsio.read(filepathBGS)
+#hdul = fits.open(filepathBGS)
+
+if survey != 'SV3':
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_spec_zdone.fits'
+    dz = Table(fitsio.read(zf))
+    desitarg = 'DESI_TARGET'
+    bit = 1 #for selecting LRG
+    wtype = ((dz[desitarg] & bit) > 0)
+    print(len(dz[wtype]))
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]
+
+    ff = common.cut_specdat(dz)
+
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_spec_zdone.fits'
+    dz = Table(fitsio.read(zf))
+    desitarg = 'BGS_TARGET'
+    wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
+    print(len(dz[wtype]))
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]
+
+    ff2 = common.cut_specdat(dz)
+
+else:
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
+    dz = Table(fitsio.read(zf))
+    desitarg = 'SV3_DESI_TARGET'
+    bit = 1 #for selecting LRG
+    wtype = ((dz[desitarg] & bit) > 0)
+    print(len(dz[wtype]))
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]
+    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    wz &= dz['COADD_FIBERSTATUS'] == 0
+    fs = dz[wz]
+
+    zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
+    dz = Table(fitsio.read(zf))
+    desitarg = 'SV3_BGS_TARGET'
+    wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
+    print(len(dz[wtype]))
+    #dz = dz[wtype&wg]
+    dz = dz[wtype]
+
+    ff2 = common.cut_specdat(dz)
+
 
 z_suc= ff['ZWARN']==0
 z_suc &= ff['DELTACHI2']>15
-z_suc &= ff['Z_not4clus']<1.5
+z_suc &= ff['Z']<1.5
 z_tot = ff['ZWARN'] != 999999
+z_tot &= ff['ZWARN']*0 == 0
 
 #print(len(ff[z_suc]),len(ff[z_tot]))
 print("zsuccess rate for LRG=",len(ff[z_suc])/len(ff[z_tot]))
@@ -63,6 +113,7 @@ fiberstats1 = join(fiberstats1,full, keys='FIBER',join_type='outer').filled(0)
 
 
 z_tot = ff2['ZWARN'] != 999999
+z_tot &= ff2['ZWARN']*0 == 0
 z_suc =ff2['ZWARN']==0
 z_suc&=ff2['DELTACHI2']>40
 #print(len(ff2[z_suc]),len(ff2[z_tot]))
@@ -116,5 +167,7 @@ fstats_comb.sort('frac_suc')
 n = 3
 maskcheck = fstats_comb['check']>n
 fstats_comb
-np.savetxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt",fstats_comb[maskcheck]['Fiber'],fmt='%i')
-print('saved results to '+basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt")
+#np.savetxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+version+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt",fstats_comb[maskcheck]['Fiber'],fmt='%i')
+fn = basedir+'/'+survey+'/LSS/'+specver+"/lrg+bgs_"+str(n)+"sig_bad_fibers.txt"
+np.savetxt(fn,fstats_comb[maskcheck]['Fiber'],fmt='%i')
+print('saved results to '+fn)
