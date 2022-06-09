@@ -17,13 +17,14 @@ logger = logging.getLogger('xirunpc')
 
 
 if os.environ['NERSC_HOST'] == 'cori':
-    scratch = 'CSCRATCH'
+    scratch = os.environ['CSCRATCH']
 elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = 'PSCRATCH'
+    scratch = os.environ['PSCRATCH']
 else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
+print('scratch dir is '+scratch)
 
 def get_zlims(tracer, tracer2=None, option=None):
 
