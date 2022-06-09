@@ -129,7 +129,8 @@ ebits = SV3p.ebits #extra mask bits we think should be applied
 
 tsnrcut = SV3p.tsnrcut
 dchi2 = SV3p.dchi2
-tnsrcol = SV3p.tsnrcol        
+tnsrcol = SV3p.tsnrcol   
+badfib = SV3p.badfib     
 
 
 # mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'+pdir+'/' #location of ledgers
@@ -278,6 +279,11 @@ if mkfullr:
     dz = Table.read(zf) 
 
     wg = np.isin(dz['TILELOCID'],gtl)
+    if badfib is not None:
+        bad = np.isin(dz['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wg &= ~bad
+    
     dz = dz[wg]
     if type == 'BGS_BRIGHT':
         bit = sv3_targetmask.bgs_mask[type]
@@ -403,7 +409,7 @@ def doran(ii):
             maxp = 102100
 
         #ct.mkfullran(specf,ldirspec,ii,imbits,outf,type,pdir,bit,desitarg=desitarg,fbcol=fbcol,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.apply_veto == 'y':
