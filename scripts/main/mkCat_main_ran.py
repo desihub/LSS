@@ -167,6 +167,7 @@ dchi2 = mainp.dchi2
 tnsrcol = mainp.tsnrcol        
 zmin = mainp.zmin
 zmax = mainp.zmax
+badfib = mainp.badfic
 
 
 wd = mt['SURVEY'] == 'main'
@@ -179,11 +180,12 @@ if specrel != 'daily':
         #if args.combr == 'n':
         del specf
         if mkfullr:
-            specdat = ct.get_specdat(ldirspec,pdir,specrel)
+            specdat = ct.get_specdat(ldirspec,pdir,specrel,badfib)
             gtl = np.unique(specdat['TILELOCID'])
             zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
             wg = np.isin(dz['TILELOCID'],gtl)
+
             dz = dz[wg]
             if type == 'BGS_BRIGHT':
                 bit = targetmask.bgs_mask[type]
@@ -390,7 +392,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')

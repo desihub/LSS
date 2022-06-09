@@ -765,7 +765,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
 
-def get_specdat(indir,pd,ver='daily'):
+def get_specdat(indir,pd,ver='daily',badifb=None):
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
     if ver == 'everest' or ver == 'guadalupe':
         zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
@@ -786,6 +786,11 @@ def get_specdat(indir,pd,ver='daily'):
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata | badqa
     wfqa = ~nomtl
+    if badfib is not None:
+        bad = np.isin(fs['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wfqa &= ~bad
+
     return fs[wfqa]
 
 def cut_specdat(dz):
