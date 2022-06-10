@@ -1,9 +1,9 @@
 #!/bin/bash
 
 VERSPEC='fuji'
-VER='3.1'
+VER='EDA'
 WT='default_angular_bitwise_FKP'
-OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/3.1/xi/'
+OUTDIR='/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/LSScats/EDA/xi/'
 
 
 srun -N 1  python xirunpc.py --tracer ELG --outdir $OUTDIR --verspec $VERSPEC --version $VER --weight_type $WT --nran 18 &
