@@ -73,10 +73,11 @@ redotarspec = False
 if args.redotarspec == 'y':
     redotarspec = True
 
-mainp = main(prog)
+mainp = main(prog,specver=specrel)
 
 mt = mainp.mtld
 tiles = mainp.tiles
+badfib = mainp.badfib
 
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
