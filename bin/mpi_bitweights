@@ -4,7 +4,7 @@ Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
      
-srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
+srun -N 8 -c 64 --cpu_bind=cores -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
      --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/dark_targets.fits
      --tiles /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits 
      --format fits --outdir output --realizations 64
@@ -17,7 +17,7 @@ Notes:
 - bit weights are stored as 64 bit integers, so the number of realizations must
   be a multiple of 64 (i.e. 64, 128, 192, etc. realizations correspond to output
   arrays BITWEIGHT0, BITWEIGHT1, BITWEIGHT2, etc.)
-- n nodes (-N) x n cpus (-c) must be a factor of the number of realizations
+- Total number (-n) of tasks (--nodes x --ntasks-per-node) is suggested to be a factor of the number of realizations
 
 Required Arguments:
   mtl     (str) : target fits file containing TARGETID, RA, DEC, Z
