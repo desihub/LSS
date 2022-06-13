@@ -1916,7 +1916,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
 
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
