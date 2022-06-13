@@ -340,7 +340,8 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
 
 def add_ke(dat):
     #dat should be table with flux_g_dered and flux_r_dered
-    #from kcorr package, needs to be added to path
+    #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
+    #
     ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
     sys.path.append(ke_code_root)
     os.environ['CODE_ROOT'] = ke_code_root
