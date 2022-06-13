@@ -31,7 +31,7 @@ dis_dc = cosmo.comoving_radial_distance
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = os.environ['CSCRATCH']
 elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = os.environ['PSCRATCH']]\
+    scratch = os.environ['PSCRATCH']
 else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
