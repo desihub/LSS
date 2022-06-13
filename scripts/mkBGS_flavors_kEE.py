@@ -78,7 +78,7 @@ abl = [-21.5,-20.5,-19.5]
 P0 = 7000
 dz = 0.01
 zmin = 0.01
-if survey == 'DA02':
+if args.survey == 'DA02':
     zmin = 0.1
 zmax = 0.5
 
