@@ -48,7 +48,7 @@ def get_zlims(tracer, tracer2=None, option=None):
                 zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
 
     if tracer.startswith('QSO'):
-        zlims = [0.8, 1.1, 1.6, 2.1,3.5]
+        zlims = [0.8, 1.1, 1.6, 2.1, 3.5]
         if option == 'highz':
             zlims = [2.1, 3.5]
         if option == 'lowz':
@@ -389,13 +389,14 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, out_dir='.',option=None):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if option:
         zmax = str(zmax) + option
-    root = '{}_{}_{}_{}_{}_njack{:d}'.format(tracer, zmin, zmax, weight_type, bin_type, njack)
+    split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
+    root = '{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
@@ -417,8 +418,7 @@ if __name__ == '__main__':
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
-                                                   see https://arxiv.org/pdf/1905.01133.pdf',
-                        type=float, default=np.inf)
+                                                   see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=np.inf)
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
@@ -474,7 +474,7 @@ if __name__ == '__main__':
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, option=option)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option)
         for region in regions:
             wang = None
             for corr_type in args.corr_type:
@@ -499,7 +499,7 @@ if __name__ == '__main__':
                 result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
                 for factor in rebinning_factors:
                     #result = TwoPointEstimator.load(fn)
-                    rebinned = result[:(result.shape[0]//factor)*factor:factor]
+                    rebinned = result[:(result.shape[0] // factor) * factor:factor]
                     txt_kwargs.update(bin_type=args.bin_type+str(factor))
                     if corr_type == 'smu':
                         fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
