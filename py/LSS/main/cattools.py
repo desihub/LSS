@@ -1722,6 +1722,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     print(np.unique(dz['NTILE']))
 
     dz.write(outf,format='fits', overwrite=True)
+    print('wrote to '+outf)
     del dz
 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
@@ -2124,8 +2125,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
 
     print(np.unique(dz['NTILE']))
-    dz.write(outf,format='fits', overwrite=True)
-    print('wrote '+outf)
+    common.write_LSS(dz,outf)
+    #dz.write(outf,format='fits', overwrite=True)
+    #print('wrote '+outf)
 
 
 def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
