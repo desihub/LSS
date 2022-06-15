@@ -167,7 +167,7 @@ dchi2 = mainp.dchi2
 tnsrcol = mainp.tsnrcol        
 zmin = mainp.zmin
 zmax = mainp.zmax
-badfib = mainp.badfic
+badfib = mainp.badfib
 
 
 wd = mt['SURVEY'] == 'main'
