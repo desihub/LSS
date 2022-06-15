@@ -390,7 +390,7 @@ def doran(ii):
 #             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
 #             fbcol = 'FIBERSTATUS'
 
-        outf = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         
         ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
         
@@ -403,8 +403,8 @@ def doran(ii):
             maxp = 3200
         if type[:3] == 'BGS':
             maxp = 2100
-        fin = dirout+type+notqso+'zdone_'+str(ii)+'_full_noveto.ran.fits'
-        fout = dirout+type+notqso+'zdone_'+str(ii)+'_full.ran.fits'
+        fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        fout = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         #print('random veto '+str(ii)+' done')
 
@@ -424,7 +424,7 @@ def doran(ii):
 #             dchi2 = 40
 #             tsnrcut = 1000
 
-        ct.mkclusran(dirout+type+notqso+'zdone_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
     print('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
