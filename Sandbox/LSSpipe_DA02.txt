@@ -33,7 +33,7 @@ for tp,notqso in zip(tps,notqsos):
 #if data model is stable since the last updates, add to the arguments
     --refullr n
 
-#apply veto mask column for LRGs
+#add veto mask column for LRGs; add --maxr 0 if you only want to do data
 python mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec guadalupe --survey DA02
 #old
 #python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02 --verspec guadalupe --maxr 18 
@@ -43,14 +43,20 @@ for tp,notqso in zip(tps,notqsos):
     python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec guadalupe --survey DA02 --notqso notqso
     
 #to do randoms in parallel:
-    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec guadalupe --survey DA02 --notqso notqso
+    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --add_veto y --apply_veto y --verspec guadalupe --survey DA02 --notqso notqso
     
 #get all of the clustering catalogs
 for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
 
+#add k+e corrections
+python mkCat_main.py --type BGS_BRIGHT --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --clusran y  --survey DA02
+
 #BGS subcats
 python mkBGS_flavors.py --survey DA02 --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version 2.1 --clus y --clusran y
+#with k+e
+python mkBGS_flavors_kEE.py --survey DA02 --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version 2.1 
+
 
 #do blinding
 python main/apply_blinding_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey DA02
