@@ -376,7 +376,7 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
-    sgf = '/global/cfs/cdirs/desi/survey/catalogs/sagittarius_stream_'+str(nside)+'.npy' 
+    sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl,regl=regl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
