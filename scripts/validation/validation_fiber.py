@@ -100,6 +100,9 @@ for tp in tps:
     fib_obs,n_obs = np.unique(fibrel[selo],return_counts=True)                
     fibrel_gz = fibrel[selgz]
     dat_gz = df[selgz]
+    nw_goodz = []
+    n_goodz = []
+
     for fib in fib_obs:
         sel_fn = fibrel_gz == fib
         nw_goodz.append(sum(dat_gz[sel_fn]['WEIGHT_ZFAIL']))
