@@ -218,7 +218,7 @@ if mkfulld:
         #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
             azf = mainp.elgzf
-            azfm = 'hp'
+            #azfm = 'hp'
         if type[:3] == 'QSO':
             azf = mainp.qsozf
             azfm = 'hp'
