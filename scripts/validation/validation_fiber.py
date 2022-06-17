@@ -60,7 +60,7 @@ for tp in tps:
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('sum of weight_zfail, number with good z, number with good obs')
-    print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo])
+    print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
     for pt in range(0,10):
         fmin = pt*500
         fmax = fmin+500
