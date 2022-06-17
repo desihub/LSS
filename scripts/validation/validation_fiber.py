@@ -77,18 +77,43 @@ for tp in tps:
         nw_goodz = np.array(nw_goodz)
         n_goodz = np.array(n_goodz)
         n_fail = n_obs-n_goodz
+        err = np.sqrt(nw_goodz*n_fail/n_obs)/n_obs
+        plt.errorbar(fib_obs,nw_goodz/n_obs,err,fmt='ko')
+        plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
+        plt.xlabel('FIBER')
+        plt.ylabel('fraction with good z in clus cat')
+        plt.title(tp+' on petal '+str(pt))
+        plt.grid()
+        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber.png')
+        plt.clf()
+
         plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fmt='ko')
         plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'k--')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
-        plt.show()
-        plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fmt='ko')
-        plt.xlabel('FIBER')
-        plt.ylabel('fraction with good z in clus cat')
-        plt.title(tp+' on petal '+str(pt))
         plt.ylim(mean_gz-0.1,mean_gz+0.1)
-        plt.show()
-                    
+        plt.grid()
+        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber_zoom.png')
+        plt.clf()
+    fibrel = df['FIBER'] -500*(df['FIBER']//500)
+    fib_obs,n_obs = np.unique(fibrel[selo],return_counts=True)                
+	fibrel_gz = fibrel[selgz]
+	dat_gz = df[selgz]
+	for fib in fib_obs:
+		sel_fn = fibrel_gz == fib
+		nw_goodz.append(sum(dat_gz[sel_fn]['WEIGHT_ZFAIL']))
+		n_goodz.append(len(dat_gz[sel_fn]))
+	nw_goodz = np.array(nw_goodz)
+	n_goodz = np.array(n_goodz)
+	n_fail = n_obs-n_goodz
+	err = np.sqrt(nw_goodz*n_fail/n_obs)/n_obs
+	plt.errorbar(fib_obs,nw_goodz/n_obs,err,fmt='ko')
+	plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'k--')
+	plt.xlabel('FIBER -500*FIBER//500')
+	plt.ylabel('fraction with good z in clus cat')
+    plt.grid()
+    plt.savefig(outdir+tp+'_stacked_zfailweighted_relsuccess_fiber_zoom.png')
+    plt.clf()
 
 
