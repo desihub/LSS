@@ -375,7 +375,8 @@ if args.regressis == 'y':
     if not os.path.exists(dirreg):
         os.mkdir(dirreg)
         print('made '+dirreg)   
-    pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'    
+    pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
+    sgf = '/global/cfs/cdirs/desi/survey/catalogs/sagittarius_stream_'+str(nside)+'.npy' 
     rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl,regl=regl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
@@ -393,7 +394,7 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
 
-    rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf)
+    rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
