@@ -59,7 +59,7 @@ for tp in tps:
     selgz = df['Z'].mask == False
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
-    print('sum of weight_zfail, number with good z, number with good obs')
+    print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
     for pt in range(0,10):
         fmin = pt*500
@@ -77,13 +77,13 @@ for tp in tps:
         nw_goodz = np.array(nw_goodz)
         n_goodz = np.array(n_goodz)
         n_fail = n_obs-n_goodz
-        plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fm='ko')
+        plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fmt='ko')
         plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'k--')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
         plt.show()
-        plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fm='ko')
+        plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fmt='ko')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
