@@ -81,6 +81,9 @@ for tp in tps:
         sel_4p = n_obs > 10
         plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
         plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
+        sel_3l = (mean_gz - (nw_goodz/n_obs))/err > 3
+        for ii in range(0,len(fib_obs[sel_3l&sel_4p])):
+            plt.text(fib_obs[sel_3l&sel_4p][ii],nw_goodz[sel_3l&sel_4p][ii]/n_obs[sel_3l&sel_4p][ii],str(fib_obs[sel_3l&sel_4p][ii]),color='red')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
