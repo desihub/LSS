@@ -16,8 +16,6 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
-parser.add_argument("--ps",help="point size for density map",default=1,type=float)
-parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
 
 
@@ -52,12 +50,12 @@ for tp in tps:
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
 
 
-	dcl = []
-	for reg in regl:
-		dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-		dcl.append(dtc)
-	dc = np.concatenate(dcl)
-	df = join(dtf,dc,keys=['TARGETID'],join_type='left')
+    dcl = []
+    for reg in regl:
+        dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+        dcl.append(dtc)
+    dc = np.concatenate(dcl)
+    df = join(dtf,dc,keys=['TARGETID'],join_type='left')
     selgz = df['Z'].mask == False
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
@@ -84,13 +82,13 @@ for tp in tps:
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
-		plt.show()
+        plt.show()
         plt.errorbar(fib_obs,nw_goodz/n_obs,np.sqrt(n_fail)/n_obs,fm='ko')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
         plt.title(tp+' on petal '+str(pt))
         plt.ylim(mean_gz-0.1,mean_gz+0.1)
-		plt.show()
-		            
+        plt.show()
+                    
 
 
