@@ -66,8 +66,8 @@ print(tp,tpr,tprl)
 bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/'+tpr+'/v'+args.mver
 
 
-if args.survey == 'main' or args.survey == 'DA02':
-    tp += 'zdone'
+#if args.survey == 'main' or args.survey == 'DA02':
+#    tp += 'zdone'
 
 
 
