@@ -194,6 +194,7 @@ def plot_all_petal(petal):
     plt.title(args.verspec+' petal '+str(petal))
     plt.ylim(-0.05,1.05)
     plt.savefig(basedir+'/'+survey+'/LSS/'+specver+'/plots/petal'+str(petal)+'_zsuccess.png')
+    plt.clf()
     #plt.show()
 
 for i in range(0,10):
