@@ -124,7 +124,7 @@ for tp in tracers:
         #dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         #dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
-        z_suc = dz['Z_QF'].masked == False
+        z_suc = dz['Z_QF'].mask == False
 
 
     if tp == 'BGS_ANY':    
