@@ -30,7 +30,7 @@ args = parser.parse_args()
 basedir = args.basedir
 survey  = args.survey
 specver = args.verspec
-tp = args.tracer
+#tp = args.tracer
 
 
 
