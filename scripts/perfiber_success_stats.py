@@ -192,7 +192,9 @@ def plot_all_petal(petal):
     plt.xlabel('FIBER')
     plt.ylabel('redshift success rate')
     plt.title(args.verspec+' petal '+str(petal))
-    plt.show()
+    plt.ylim(-0.05,1.05)
+    plt.savefig(basedir+'/'+survey+'/LSS/'+specver+'/plots/petal'+str(petal)+'_zsuccess.png')
+    #plt.show()
 
 for i in range(0,10):
     plot_all_petal(i)
