@@ -152,8 +152,8 @@ if args.mkfiles == 'y':
             fo.write(str(fibl[ii])+' '+str(n_g[ii]/n_tot[ii])+' '+str(n_g[ii])+' '+str(n_tot[ii])+'\n')
         fo.close()
  
- if args.survey != 'SV3':
-     pars = main(tp,args.verspec)   
+if args.survey != 'SV3':
+    pars = main(tp,args.verspec)   
 
 def plot_all_petal(petal):
     for tp in tracers:
