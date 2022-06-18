@@ -124,7 +124,7 @@ if tp == 'BGS_ANY':
     z_suc &= dz['DELTACHI2']>40
 
 #print(len(ff[z_suc]),len(ff[z_tot]))
-print("zsuccess rate for "+tp,len(ff[z_suc])/len(ff[z_tot]))
+print("zsuccess rate for "+tp,len(dz[z_suc])/len(dz[z_tot]))
 sys.exit()
 cat1 = Table(ff[z_tot])
 
