@@ -130,7 +130,9 @@ if tp == 'BGS_ANY':
 print("zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
 fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
 fiblg,n_g = np.unique(dz[z_suc&z_tot]['FIBER'],return_counts=True)
-
+fib_test = np.isin(fibl,fiblg)
+z_tot &= np.isin(dz['FIBER'],fibl[fib_test])
+fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
 if np.array_equal(fibl,fiblg):
     gfrac = n_g/n_tot
 else:
