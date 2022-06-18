@@ -153,6 +153,7 @@ if args.mkfiles == 'y':
         fo.close()
  
 if args.survey != 'SV3':
+    from LSS.globals import main
     pars = main(tp,args.verspec)   
 
 def plot_all_petal(petal):
