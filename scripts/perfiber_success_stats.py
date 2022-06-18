@@ -62,7 +62,7 @@ if survey != 'SV3':
 
     dz = common.cut_specdat(dz)
     from LSS.globals import main
-    pars = main(args.type,args.verspec)
+    pars = main(tp,args.verspec)
 
 
 else:
