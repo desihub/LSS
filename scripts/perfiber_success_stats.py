@@ -115,7 +115,7 @@ for tp in tracers:
         z_suc = o2c > 0.9
 
     if tp == 'QSO':
-        if specver == 'guadalupe:'
+        if specver == 'guadalupe':
             qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
         arz = fitsio.read(qsozf,columns=['TARGETID','LOCATION','TILEID','Z','Z_QN'])
 
