@@ -69,9 +69,9 @@ for tp in tps:
         sel_fib &= df['FIBER'] < fmax
         
         
-        rbins,n_obs = np.histogram(fp_rad[sel_fib&selo],bins=100)
-        _,n_goodw = np.histogram(fp_rad[sel_fib&selgz],bins=rbins,weights=df[sel_fib&selgz]['WEIGHT_ZFAIL'])
-        _,n_good = np.histogram(fp_rad[sel_fib&selgz],bins=rbins,weights=df[sel_fib&selgz]['WEIGHT_ZFAIL'])
+        n_obs,rbins = np.histogram(fp_rad[sel_fib&selo],bins=100)
+        n_goodw,_ = np.histogram(fp_rad[sel_fib&selgz],bins=rbins,weights=df[sel_fib&selgz]['WEIGHT_ZFAIL'])
+        n_good,_ = np.histogram(fp_rad[sel_fib&selgz],bins=rbins,weights=df[sel_fib&selgz]['WEIGHT_ZFAIL'])
         bs = rbins[1]-rbins[0]
         rl = rbins[:-1]+bs/2.
         err = np.sqrt(n_goodw*(1.-n_good/n_obs))/n_obs
