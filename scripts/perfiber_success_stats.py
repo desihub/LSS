@@ -57,6 +57,8 @@ if survey != 'SV3':
         dz = Table(fitsio.read(zf))
         desitarg = 'DESI_TARGET'
         wtype = ((dz[desitarg] & bit) > 0)
+        if tp == 'ELG':
+            wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
     print(len(dz[wtype]))
     #dz = dz[wtype&wg]
     dz = dz[wtype]
@@ -126,7 +128,13 @@ if tp == 'BGS_ANY':
 
 #print(len(ff[z_suc]),len(ff[z_tot]))
 print("zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
-#fibl,n_tot = np.unique
+fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
+fiblg,n_g = np.unique(dz[z_suc&z_tot]['FIBER'],return_counts=True)
+
+if np.array_equal(fibl,fiblg):
+    gfrac = n_g/n_tot
+else:
+    sys.exit('need to put something in for mismatch fiber lists')
 
 sys.exit()
 cat1 = Table(ff[z_tot])
