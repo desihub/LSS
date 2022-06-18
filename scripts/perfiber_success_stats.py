@@ -166,14 +166,14 @@ def plot_all_petal(petal):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-		if tp == 'LRG':
-			plt.errorbar(fibl[sel],f_succ[sel],err[se],fmt='.r',label='LRG')
-		if tp == 'ELG':
-			plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
-		if tp == 'QSO':
-			plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
-		if tp == 'BGS_ANY':
-			plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
+        if tp == 'LRG':
+            plt.errorbar(fibl[sel],f_succ[sel],err[se],fmt='.r',label='LRG')
+        if tp == 'ELG':
+            plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
+        if tp == 'QSO':
+            plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
+        if tp == 'BGS_ANY':
+            plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
     plt.grid()
     plt.legend()
     plt.xlabel('FIBER')
