@@ -142,6 +142,6 @@ else:
 fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
 fo = open(fn,'w')
 for ii in range(len(fibl)):
-    fo.write(fibl[ii]+' '+str(n_g[i]/n_tot[i])+' '+str(n_g[i])+' '+str(n_tot[i])+'\n')
+    fo.write(str(fibl[ii])+' '+str(n_g[i]/n_tot[i])+' '+str(n_g[i])+' '+str(n_tot[i])+'\n')
 fo.close()
 
