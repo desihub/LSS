@@ -177,16 +177,16 @@ def plot_all_petal(petal):
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked')
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
         if tp == 'ELG':
             plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx')
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
         if tp == 'QSO':
             plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx')
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
         if tp == 'BGS_ANY':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx')
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
     plt.grid()
     plt.legend()
     plt.xlabel('FIBER')
