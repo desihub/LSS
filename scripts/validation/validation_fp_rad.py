@@ -82,19 +82,19 @@ for tp in tps:
         plt.grid()
         plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fprad.png')
         plt.clf()
-	n_obs,rbins = np.histogram(fp_rad[selo],bins=100)
-	n_goodw,_ = np.histogram(fp_rad[selgz],bins=rbins,weights=df[selgz]['WEIGHT_ZFAIL'])
-	n_good,_ = np.histogram(fp_rad[selgz],bins=rbins])
-	bs = rbins[1]-rbins[0]
-	rl = rbins[:-1]+bs/2.
-	err = np.sqrt(n_goodw*(1.-n_good/n_obs))/n_obs
-	plt.errorbar(rl,n_goodw/n_obs,err,fmt='ok')
-	plt.xlabel('focal plane radius')
-	plt.ylabel('fraction with good z in clus cat')
-	plt.title(tp+' on all petals ')
-	plt.grid()
-	plt.savefig(outdir+tp+'_allpetals_zfailweighted_relsuccess_fprad.png')
-	plt.clf()
+    n_obs,rbins = np.histogram(fp_rad[selo],bins=100)
+    n_goodw,_ = np.histogram(fp_rad[selgz],bins=rbins,weights=df[selgz]['WEIGHT_ZFAIL'])
+    n_good,_ = np.histogram(fp_rad[selgz],bins=rbins])
+    bs = rbins[1]-rbins[0]
+    rl = rbins[:-1]+bs/2.
+    err = np.sqrt(n_goodw*(1.-n_good/n_obs))/n_obs
+    plt.errorbar(rl,n_goodw/n_obs,err,fmt='ok')
+    plt.xlabel('focal plane radius')
+    plt.ylabel('fraction with good z in clus cat')
+    plt.title(tp+' on all petals ')
+    plt.grid()
+    plt.savefig(outdir+tp+'_allpetals_zfailweighted_relsuccess_fprad.png')
+    plt.clf()
 
 
 
