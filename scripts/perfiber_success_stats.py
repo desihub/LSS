@@ -27,7 +27,6 @@ parser.add_argument("--tracer",help="tracer type (e.g., LRG)",default='LRG')
 
 args = parser.parse_args()
 basedir = args.basedir
-version = args.version
 survey  = args.survey
 specver = args.verspec
 tp = args.tracer
