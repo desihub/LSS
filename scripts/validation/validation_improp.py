@@ -21,7 +21,7 @@ parser.add_argument("--dpi",help="resolution in saved density map in dots per in
 args = parser.parse_args()
 
 pixfn      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'#'/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
-hdr        = fits.getheader(pixfn,1)
+hdr        = fitsio.read_header(pixfn,ext=1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 
 
