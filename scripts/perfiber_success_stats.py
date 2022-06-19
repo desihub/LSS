@@ -44,7 +44,7 @@ tracers = ['QSO','LRG','ELG','BGS_ANY']
 
 if args.mkfiles == 'y':
     for tp in tracers:
-        if survey != 'SV3':
+        if survey == 'DA02':
             if tp == 'LRG':
                 bit = 1 #for selecting LRG
             if tp == 'ELG':
@@ -71,9 +71,19 @@ if args.mkfiles == 'y':
             dz = common.cut_specdat(dz)
             from LSS.globals import main
             pars = main(tp,args.verspec)
+        
+        elif survey == 'main':
+            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_'+tp+'_tarspecwdup_zdone.fits'
+            dz = Table(fitsio.read(zf))
+            if tp == 'ELG':
+                wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
+                dz = dz[wtype]
+            dz = common.cut_specdat(dz)
+            from LSS.globals import main
+            pars = main(tp,args.verspec)
+            
 
-
-        else:
+        elif survey == 'SV3':
             sys.exit('not written for SV3 yet')
             zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
             dz = Table(fitsio.read(zf))
