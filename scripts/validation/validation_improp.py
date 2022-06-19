@@ -92,8 +92,9 @@ for tp in tps:
             bc = []
             for i in range(0,len(bn)-1):
                 bc.append((bn[i]+bn[i+1])/2.)
-            print(reg)    
-            plt.plot(bc,sv,'--',label=reg+',before weights',color=cl)
+            lab = reg+',before weights'
+            print(lab)    
+            plt.plot(bc,sv,'--',label=lab,color=cl)
             print(bc,svw,ep)
             plt.errorbar(bc,svw,ep,fmt='o',label=reg+', with weights',color=cl)
         plt.legend()
