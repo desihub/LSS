@@ -130,9 +130,13 @@ if args.mkfiles == 'y':
             qsozf = pars.qsozf
             if specver == 'guadalupe':
                 qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
-            arz = fitsio.read(qsozf,columns=['TARGETID','LOCATION','TILEID','Z','Z_QN'])
-
+            arz = Table(fitsio.read(qsozf))
+            arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
             arz['TILEID'] = arz['TILEID'].astype(int)
+
+            #arz = fitsio.read(qsozf,columns=['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+
+            #arz['TILEID'] = arz['TILEID'].astype(int)
             dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
             #dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
             #dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
