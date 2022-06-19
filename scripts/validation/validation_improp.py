@@ -91,8 +91,8 @@ for tp in tps:
             for i in range(0,len(bn)-1):
                 bc.append((bn[i]+bn[i+1])/2.)
                 
-            plt.errorbar(bc,sv,'--',label=reg+',before weights',color=cl)
-            plt.errorbar(bc,svw,ep,fmt='o',reg+', with weights',color=cl)
+            plt.plot(bc,sv,'--',label=reg+',before weights',color=cl)
+            plt.errorbar(bc,svw,ep,fmt='o',label=reg+', with weights',color=cl)
         plt.xlabel(parv)
         plt.ylabel('Ngal/<Ngal> ')
     
