@@ -96,7 +96,8 @@ for tp in tps:
             plt.plot(bc,sv,'--',label=reg+',before weights',color=cl)
             print(bc,svw,ep)
             plt.errorbar(bc,svw,ep,fmt='o',label=reg+', with weights',color=cl)
-        plt.xlabel(parv)
+        plt.legend()
+        plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
     
         plt.title(args.survey+' '+tp)
