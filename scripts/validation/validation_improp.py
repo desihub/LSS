@@ -23,6 +23,7 @@ args = parser.parse_args()
 pixfn      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'#'/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
 hdr        = fitsio.read_header(pixfn,ext=1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
+all_maps = fitsio.read(pixfn)
 
 
 indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
@@ -61,7 +62,8 @@ def get_pix(ra, dec):
 
 for tp in tps:
     
-    for parv in maps:
+    for map in maps:
+        parv = all_maps[map]
         for reg,cl in zip(regl,clrs):
             dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
             dpix = get_pix(dtf['RA'],dtf['DEC'])
@@ -76,7 +78,7 @@ for tp in tps:
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
-        
+            
             rh,bn = np.histogram(parv,bins=nbin,weights=pixlr)
             dh,_ = np.histogram(parv,bins=bn,weights=pixlg)
             dhw,_ = np.histogram(parv,bins=bn,weights=pixlgw)
@@ -98,5 +100,5 @@ for tp in tps:
     
         plt.title(args.survey+' '+tp)
         plt.grid()
-        plt.savefig(outdir+tp+'_densvs'+parv+'.png')
+        plt.savefig(outdir+tp+'_densvs'+map+'.png')
         plt.clf()
