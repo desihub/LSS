@@ -78,10 +78,10 @@ for tp in tps:
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
-            
-            rh,bn = np.histogram(parv,bins=nbin,weights=pixlr)
-            dh,_ = np.histogram(parv,bins=bn,weights=pixlg)
-            dhw,_ = np.histogram(parv,bins=bn,weights=pixlgw)
+            wp = pixlr > 0
+            rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp])
+            dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+            dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
             
             norm = sum(rh)/sum(dh)
             sv = dh/rh*norm
