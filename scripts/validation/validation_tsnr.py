@@ -96,6 +96,7 @@ for tp in tps:
     plt.ylabel('fraction with good z in clus cat')
     plt.title(tp+' on all petals ')
     plt.grid()
+    plt.legend()
     plt.savefig(outdir+tp+'_allpetals_relsuccess_tnsr.png')
     plt.clf()
 
