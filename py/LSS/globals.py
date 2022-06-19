@@ -106,4 +106,7 @@ class main:
             #originally self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/QSO_cat_guadalupe_healpix.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
-        
+        if specver == 'daily':
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emlin_catalog.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
