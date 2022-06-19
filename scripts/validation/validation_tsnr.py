@@ -69,7 +69,7 @@ for tp in tps:
         sel_fib &= df['FIBER'] < fmax
         
         
-        n_obs,rbins = np.histogram(tsnr[sel_fib&selo],bins=10,range=(np.percentile(tsnr,1),np.percentile(tsnr,99)))
+        n_obs,rbins = np.histogram(tsnr[sel_fib&selo],bins=10,range=(np.percentile(tsnr[selo],1),np.percentile(tsnr[selo],99)))
         n_goodw,_ = np.histogram(tsnr[sel_fib&selgz],bins=rbins,weights=df[sel_fib&selgz]['WEIGHT_ZFAIL'])
         n_good,_ = np.histogram(tsnr[sel_fib&selgz],bins=rbins)
         bs = rbins[1]-rbins[0]
@@ -84,7 +84,7 @@ for tp in tps:
         plt.legend()
         plt.savefig(outdir+tp+'_'+str(pt)+'_relsuccess_tnsr.png')
         plt.clf()
-    n_obs,rbins = np.histogram(tsnr[selo],bins=20,range=(np.percentile(tsnr,1),np.percentile(tsnr,99)))
+    n_obs,rbins = np.histogram(tsnr[selo],bins=20,range=(np.percentile(tsnr[selo],1),np.percentile(tsnr[selo],99)))
     n_goodw,_ = np.histogram(tsnr[selgz],bins=rbins,weights=df[selgz]['WEIGHT_ZFAIL'])
     n_good,_ = np.histogram(tsnr[selgz],bins=rbins)
     bs = rbins[1]-rbins[0]
