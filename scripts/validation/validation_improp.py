@@ -92,11 +92,11 @@ for tp in tps:
             bc = []
             for i in range(0,len(bn)-1):
                 bc.append((bn[i]+bn[i+1])/2.)
-            lab = reg+',before weights'
+            lab = reg.strip('_')+',before weights'
             print(lab)    
             plt.plot(bc,sv,'--',label=lab,color=cl)
             print(bc,svw,ep)
-            plt.errorbar(bc,svw,ep,fmt='o',label=reg+', with weights',color=cl)
+            plt.errorbar(bc,svw,ep,fmt='o',label=reg.strip('_')+', with weights',color=cl)
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
