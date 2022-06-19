@@ -94,6 +94,7 @@ for tp in tps:
                 bc.append((bn[i]+bn[i+1])/2.)
             print(reg)    
             plt.plot(bc,sv,'--',label=reg+',before weights',color=cl)
+            print(bs,svw,ep)
             plt.errorbar(bc,svw,ep,fmt='o',label=reg+', with weights',color=cl)
         plt.xlabel(parv)
         plt.ylabel('Ngal/<Ngal> ')
