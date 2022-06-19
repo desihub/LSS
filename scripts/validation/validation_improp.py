@@ -62,39 +62,39 @@ def get_pix(ra, dec):
 for tp in tps:
     
     for parv in maps:
-		for reg,cl in zip(regl,clrs):
-			dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-			dpix = get_pix(dtf['RA'],dtf['DEC'])
-			rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
-			rt = fitsio.read(rf)
-			rpix = get_pix(rt['RA'],rt['DEC'])
-			pixlg = np.zeros(nside*nside*12)
-			pixlgw = np.zeros(nside*nside*12)
-			for ii in range(0,len(dpix)):
-				pixlg[dpix[ii]] += dtf[ii]['WEIGHT_COMP']*dtf[ii]['WEIGHT_FKP']
-				pixlgw[dpix[ii]] += dtf[ii]['WEIGHT']*dtf[ii]['WEIGHT_FKP']
-			pixlr = np.zeros(nside*nside*12)
-			for ii in range(0,len(rpix)):
-				pixlr[rpix[ii]] += 1.
+        for reg,cl in zip(regl,clrs):
+            dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+            dpix = get_pix(dtf['RA'],dtf['DEC'])
+            rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
+            rt = fitsio.read(rf)
+            rpix = get_pix(rt['RA'],rt['DEC'])
+            pixlg = np.zeros(nside*nside*12)
+            pixlgw = np.zeros(nside*nside*12)
+            for ii in range(0,len(dpix)):
+                pixlg[dpix[ii]] += dtf[ii]['WEIGHT_COMP']*dtf[ii]['WEIGHT_FKP']
+                pixlgw[dpix[ii]] += dtf[ii]['WEIGHT']*dtf[ii]['WEIGHT_FKP']
+            pixlr = np.zeros(nside*nside*12)
+            for ii in range(0,len(rpix)):
+                pixlr[rpix[ii]] += 1.
         
-    		rh,bn = np.histogram(parv,bins=nbin,weights=pixlr)
-    		dh,_ = np.histogram(parv,bins=bn,weights=pixlg)
-    		dhw,_ = np.histogram(parv,bins=bn,weights=pixlgw)
-    		
-    		norm = sum(rh)/sum(dh)
-    		sv = dh/rh*norm
-    		normw = sum(rh)/sum(dhw)
-    		svw = dhw/rh*normw
+            rh,bn = np.histogram(parv,bins=nbin,weights=pixlr)
+            dh,_ = np.histogram(parv,bins=bn,weights=pixlg)
+            dhw,_ = np.histogram(parv,bins=bn,weights=pixlgw)
+            
+            norm = sum(rh)/sum(dh)
+            sv = dh/rh*norm
+            normw = sum(rh)/sum(dhw)
+            svw = dhw/rh*normw
 
-    		ep = np.sqrt(dh)/rh*norm
-    		bc = []
-    		for i in range(0,len(bn)-1):
-        		bc.append((bn[i]+bn[i+1])/2.)
-	            
-    		plt.errorbar(bc,sv,'--',label=reg+',before weights',color=cl)
-    		plt.errorbar(bc,svw,ep,fmt='o',reg+', with weights',color=cl)
-	    plt.xlabel(parv)
-	    plt.ylabel('Ngal/<Ngal> ')
+            ep = np.sqrt(dh)/rh*norm
+            bc = []
+            for i in range(0,len(bn)-1):
+                bc.append((bn[i]+bn[i+1])/2.)
+                
+            plt.errorbar(bc,sv,'--',label=reg+',before weights',color=cl)
+            plt.errorbar(bc,svw,ep,fmt='o',reg+', with weights',color=cl)
+        plt.xlabel(parv)
+        plt.ylabel('Ngal/<Ngal> ')
     
         plt.title(args.survey+' '+tp)
         plt.grid()
