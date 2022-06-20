@@ -38,7 +38,7 @@ for tp in tps:
     
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
-        print(tp+' area is '+str(rffh['NAXIS2']*2500)+' deg2, using random '+str(nr))
+        print(tp+' area is '+str(rffh['NAXIS2']/2500)+' deg2, using random '+str(nr))
 
     tot_tp = 0
     for reg in regl:
