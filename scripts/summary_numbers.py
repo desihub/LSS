@@ -18,7 +18,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 args = parser.parse_args()
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
 zcol = 'Z'
 nran = 18
 
