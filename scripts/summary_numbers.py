@@ -40,12 +40,12 @@ for tp in tps:
         rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
         print(tp+' area is '+str(rffh['NAXIS2']*2500)+' deg2, using random '+str(nr))
 
-	tot_tp = 0
-	for reg in regl:
-		dtf = fitsio.read_header(indir+tp+zdw+reg+'_clustering.dat.fits',ext=1)
-		ncat = dtf['NAXIS2']
-		print('number for '+tp+' in '+reg +' is '+str(ncat))
-		tot_tp += ncat
-	print('number for '+tp+' is '+str(ncat))
-	tot += tot_tp
+    tot_tp = 0
+    for reg in regl:
+        dtf = fitsio.read_header(indir+tp+zdw+reg+'_clustering.dat.fits',ext=1)
+        ncat = dtf['NAXIS2']
+        print('number for '+tp+' in '+reg +' is '+str(ncat))
+        tot_tp += ncat
+    print('number for '+tp+' is '+str(ncat))
+    tot += tot_tp
 print('total number for '+args.survey +' is '+str(tot))
