@@ -46,6 +46,6 @@ for tp in tps:
         ncat = dtf['NAXIS2']
         print('number for '+tp+' in '+reg +' is '+str(ncat))
         tot_tp += ncat
-    print('number for '+tp+' is '+str(ncat))
+    print('number for '+tp+' is '+str(tot_tp))
     tot += tot_tp
 print('total number for '+args.survey +' is '+str(tot))
