@@ -35,7 +35,7 @@ logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
 
 
 
-def combtile_qso(tiles,outf='',restart=True,release='guadalupe'):
+def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
     n = 0
     nfail = 0
