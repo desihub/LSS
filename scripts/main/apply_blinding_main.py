@@ -79,7 +79,7 @@ ldirspec = maindir+specrel+'/'
 
 dirin = ldirspec+'LSScats/'+version+'/'
 
-dirout = args.basedir_out+'LSScats/'+version+'/blinded/'
+dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 if not os.path.exists(args.basedir_out+'LSScats/'):
     os.mkdir(args.basedir_out+'LSScats/')
