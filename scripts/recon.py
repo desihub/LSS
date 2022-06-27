@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer to be selected', type=str, default='ELG')
-    parser.add_argument('--indir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
+    parser.add_argument('--indir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='everest')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
     Reconstruction = {'MG': MultiGridReconstruction, 'IFT': IterativeFFTReconstruction, 'IFTP': IterativeFFTParticleReconstruction}[args.algorithm]
 
-    if args.indir == '/global/cfs/cdirs/desi/survey/catalogs'
+    if args.indir == '/global/cfs/cdirs/desi/survey/catalogs/':
         cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
     else:
         cat_dir = args.indir
