@@ -39,6 +39,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ[scratch])
+parser.add_argument("--basedir_blind", help="base directory for output for blinded catalogs, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
@@ -183,8 +184,8 @@ if not os.path.exists(ldirspec+'LSScats'):
 dirout = ldirspec+'LSScats/'+version+'/'
 dirin = dirout
 if args.blinded == 'y':
-    
-    dirout += 'blinded/'
+    dirout = args.basedir_blind+'/LSScats/'+version+'/blinded/'
+    #dirout += 'blinded/'
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
