@@ -53,7 +53,7 @@ args = parser.parse_args()
 print(args)
 
 type = args.type
-basedir = args.basedir
+#basedir = args.basedir
 version = args.version
 specrel = args.verspec
 
@@ -73,7 +73,7 @@ else:
 progl = prog.lower()
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir_in +'/'+args.survey+'/LSS/'
+maindir = args.basedir_in +'/'+args.survey+'/LSS/'
 
 ldirspec = maindir+specrel+'/'
 
