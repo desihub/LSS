@@ -28,10 +28,20 @@ import LSS.blinding_tools as blind
 #    print('import of LSS.mkCat_singletile.cattools failed')
 #    print('are you in LSS/bin?, if not, that is probably why the import failed')   
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir_out", help="base directory for output, default is C(P)SCRATCH",default=os.environ[scratch])
+parser.add_argument("--version", help="catalog version",default='EDAbeta')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -63,13 +73,23 @@ else:
 progl = prog.lower()
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = basedir +'/'+args.survey+'/LSS/'
+maindir = basedir_in +'/'+args.survey+'/LSS/'
 
 ldirspec = maindir+specrel+'/'
 
 dirin = ldirspec+'LSScats/'+version+'/'
 
-dirout = ldirspec+'LSScats/'+version+'/blinded/'
+dirout = args.basedir_out+'LSScats/'+version+'/blinded/'
+
+if not os.path.exists(args.basedir_out+'LSScats/'):
+    os.mkdir(args.basedir_out+'LSScats/')
+    print('made '+args.basedir_out+'LSScats/')    
+
+if not os.path.exists(args.basedir_out+'LSScats/'+version):
+    os.mkdir(args.basedir_out+'LSScats/'+version)
+    print('made '+args.basedir_out+'LSScats/'+version)    
+
+
 if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)    
