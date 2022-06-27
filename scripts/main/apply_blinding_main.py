@@ -6,6 +6,8 @@ import unittest
 from datetime import datetime
 import json
 import numpy as np
+from numpy.random import MT19937
+from numpy.random import RandomState, SeedSequence
 import fitsio
 import glob
 import argparse
@@ -37,6 +39,23 @@ parser.add_argument("--verspec",help="version for redshifts",default='guadalupe'
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--baoblind",help="if y, do the bao blinding shift",default='n')
 parser.add_argument("--rsdblind",help="if y, do the bao blinding shift",default='n')
+parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
+parser.add_argument("--fiducial_w0", help="Value for w0 in the DESI fiducial cosmology", default=-1)
+parser.add_argument("--fiducial_wa", help="Value for wa in the DESI fiducial cosmology", default=0)
+parser.add_argument("--fiducial_f", help="Value for the RSD parameter in the DESI fiducial cosmology", default=0.8)
+parser.add_argument("--expected_w0_uncertainty", help="Expected uncertainty for w0", default=0.05)
+parser.add_argument("--expected_wa_uncertainty", help="Expected uncertainty for wa", default=0.2)
+parser.add_argument("--expected_f_uncertainty", help="Expected uncertainty for RSD f", default=0.05)
+
+def make_parameter_blind(expected_value,
+						 expected_error,
+						 random_state):
+	blind_offset = random_state.uniform(-5*expected_error, 5*expected_error)
+	return expected_value + blind_offset
+
+def translate_hashcode_to_seed(hashcode):
+	decoded_seed = int(hashcode, 36)
+	return decoded_seed
 
 
 args = parser.parse_args()
@@ -52,7 +71,7 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 print('blinding catalogs for tracer type '+type+notqso)
-    
+
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
@@ -72,24 +91,30 @@ dirin = ldirspec+'LSScats/'+version+'/'
 dirout = ldirspec+'LSScats/'+version+'/blinded/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
-    print('made '+dirout)    
+    print('made '+dirout)
 
-w0 = -0.95
-wa = 0.3
+rs = RandomState(MT19937(SeedSequence(translate_hashcode_to_seed(args.hashcode))))
+w0_blind = make_parameter_blind(args.fiducial_w0,
+								args.expected_w0_uncertainty, rs)
+wa_blind = make_parameter_blind(args.fiducial_wa,
+								args.expected_wa_uncertainty, rs)
+fgrowth_blind = make_parameter_blind(args.fiducial_f,
+									 args.expected_wa_uncertainty, rs)
+
 
 regl = ['_S','_N']
 if args.baoblind == 'y':
 	data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
 	outf = dirout + type+notqso+'_full.dat.fits'
-	blind.apply_zshift_DE(data,outf,w0=w0,wa=wa,zcol='Z_not4clus')
+	blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
-if args.rsdblind == 'y':	
+if args.rsdblind == 'y':
 	for reg in regl:
 		fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
 		fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
 		data = Table(fitsio.read(fnd))
 		data_real = Table(fitsio.read(fndr))
-		
+
 		out_file = fnd
-		blind.apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9)
-		
+		blind.apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=args.fiducial_f,fgrowth_blind=fgrowth_blind)
+
