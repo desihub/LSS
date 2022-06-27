@@ -13,6 +13,14 @@ from LSS.tabulated_cosmo import TabulatedDESI
 
 from xirunpc import get_clustering_positions_weights, catalog_dir, catalog_fn, get_regions, get_zlims
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
 
 logger = logging.getLogger('recon')
 
@@ -142,7 +150,7 @@ if __name__ == '__main__':
         cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
     else:
         cat_dir = args.indir
-    out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
+    out_dir = os.path.join(os.environ[scratch], args.survey)
     if args.outdir is not None: out_dir = args.outdir
 
     distance = TabulatedDESI().comoving_radial_distance
