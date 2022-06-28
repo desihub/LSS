@@ -46,6 +46,16 @@ parser.add_argument("--fiducial_f", help="Value for the RSD parameter in the DES
 parser.add_argument("--expected_w0_uncertainty", help="Expected uncertainty for w0", default=0.05)
 parser.add_argument("--expected_wa_uncertainty", help="Expected uncertainty for wa", default=0.2)
 parser.add_argument("--expected_f_uncertainty", help="Expected uncertainty for RSD f", default=0.05)
+parser.add_argument("--specified_w0",
+					help="Specify a blind w0 value to overwrite the random blinding procedure",
+					default=None)
+parser.add_argument("--specified_wa",
+					help="Specify a blind wa value to overwrite the random blinding procedure",
+					default=None)
+parser.add_argument("--specified_f",
+					help="Specify a blind f value to overwrite the random blinding procedure",
+					default=None)
+
 
 def make_parameter_blind(expected_value,
 						 expected_error,
@@ -93,6 +103,8 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
+
+# Generate the blinded parameters
 rs = RandomState(MT19937(SeedSequence(translate_hashcode_to_seed(args.hashcode))))
 w0_blind = make_parameter_blind(args.fiducial_w0,
 								args.expected_w0_uncertainty, rs)
@@ -100,6 +112,24 @@ wa_blind = make_parameter_blind(args.fiducial_wa,
 								args.expected_wa_uncertainty, rs)
 fgrowth_blind = make_parameter_blind(args.fiducial_f,
 									 args.expected_wa_uncertainty, rs)
+
+# Write out the blind parameter values
+to_write = [['w0', 'wa', 'f'],
+			[f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
+np.savetxt(dirout + "blinded_parameters.csv",
+		   to_write,
+		   delimiter=", ",
+		   fmt="%s")
+
+# If blinded values have been specified, overwrite the random procedure here:
+if args.specified_w0 is not None:
+	w0_blind = args.specified_w0
+
+if args.specified_wa is not None:
+	wa_blind = args.specified_wa
+
+if args.specified_f is not None:
+	fgrowth_blind = args.specified_f
 
 
 regl = ['_S','_N']
@@ -116,5 +146,8 @@ if args.rsdblind == 'y':
 		data_real = Table(fitsio.read(fndr))
 
 		out_file = fnd
-		blind.apply_zshift_RSD(data,data_real,out_file,fgrowth_fid=args.fiducial_f,fgrowth_blind=fgrowth_blind)
+		blind.apply_zshift_RSD(data,data_real,out_file,
+							   fgrowth_fid=args.fiducial_f,
+							   fgrowth_blind=fgrowth_blind,
+							   comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
 
