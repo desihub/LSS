@@ -38,7 +38,7 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     write_LSS(data,out_file,comments=None)
 
     
-def apply_zshift_RSD(data,data_realspace,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9,zcol='Z'):
+def apply_zshift_RSD(data,data_realspace,out_file,fgrowth_fid=0.8,fgrowth_blind=0.9,zcol='Z',comments=''):
     #data is table of LSS catalog info
     #data_realspace is table of reconstructed-realspace catalog, which must be created via 'run_realspace_reconstruction' in '../scripts/recon.py' prior to calling this function.
     #out_file is the full path for where to write the output
@@ -71,7 +71,7 @@ def apply_zshift_RSD(data,data_realspace,out_file,fgrowth_fid=0.8,fgrowth_blind=
     data['Z'] = z_shift
     
     #writeout
-    write_LSS(data,out_file,comments=None)
+    write_LSS(data,out_file,comments=comments)
 
 def swap_z(data,out_file,frac=0.01,zcols=['Z']):
     #swap some fraction of the redshifts
