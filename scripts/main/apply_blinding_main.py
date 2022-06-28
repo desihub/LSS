@@ -1,4 +1,48 @@
 #standard python
+'''
+Documentation by Sasha Safonova, 28 June 2022.
+EXAMPLE USE
+===========
+
+To start the blind parameter generation procedure, specify a hashcode. This should be a hexadecimal code that translates
+into an integer with ```int(hashcode, 36)```.
+For example, the following line will apply BAO blinding using the hashcode '4x1e', which gets decoded as a random seed 229442:
+
+```python main/apply_blinding_main.py --type LRG --survey DA02 --baoblind y --hashcode 4x1e```
+
+The following does the same, but for RSD:
+
+```python main/apply_blinding_main.py --type LRG --survey DA02 --rsdblind y --hashcode 4x1e```
+
+
+GENERAL NOTES
+=============
+
+- If a hashcode is not specified, the random generator uses 1 as its seed.
+- The latest values of expected unertainties on w0, wa, and f should be specified with the flags:
+--expected_w0_uncertainty
+--expected_wa_uncertainty
+--expected_f_uncertainty
+- By default these uncertainties, are set to be 0.05 for w0, 0.2 for wa, and 0.05 for f.
+- The fiducial values are set as 1 for w0, 0 for wa, and 0.8 for f.
+- To specify different fiducial values, use the following flags:
+--fiducial_w0
+--fiducial_wa
+--fiducial_f
+
+NOTES FOR TESTING AND VALIDATION
+================================
+
+To override the random blind parameter generation, use any combination of the following flags:
+--specified_w0
+--specified_wa
+--specified_f
+
+For example, to set blind w0 and wa values, but leave f as a randomly generated blind variable, run the following:
+
+```python main/apply_blinding_main.py --type LRG --survey DA02 --rsdblind y --hashcode 4x1e --specified_w0 1.0 --specified_wa 0.0```
+'''
+
 import sys
 import os
 import shutil
