@@ -439,12 +439,14 @@ if __name__ == '__main__':
 
     if args.basedir != '/global/cfs/cdirs/desi/survey/catalogs':
         cat_dir = args.basedir
+    else:
+        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
     
     if args.basedir == '/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/':
         cat_dir = args.basedir
         args.region = ['']
-    else:
-        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    
+    print('catalog directory is '+cat_dir)
     out_dir = os.path.join(scratch, args.survey)
     if args.outdir is not None: out_dir = args.outdir
     tracer, tracer2 = args.tracer[0], None
