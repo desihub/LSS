@@ -437,6 +437,9 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
+    if args.basedir != '/global/cfs/cdirs/desi/survey/catalogs':
+        cat_dir = args.basedir
+    
     if args.basedir == '/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/':
         cat_dir = args.basedir
         args.region = ['']
