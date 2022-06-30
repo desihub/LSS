@@ -79,7 +79,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     np.save(filename_fracarea, fracarea)
 
 
-def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, feature_names=None):
+def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, sgr_stream_path=None,feature_names=None):
     """
 
     Compute weight for a given tracer with a given parametrization
@@ -111,7 +111,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
         If not None use this list of feature during the regression otherwise use the default one.
     """
     dataframe = PhotometricDataFrame(survey, tracer, footprint, suffix_tracer, **dataframe_params)
-    dataframe.set_features(pixmap=pixweight_path)
+    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path)
     dataframe.set_targets()
     dataframe.build(cut_fracarea=cut_fracarea)
     regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)

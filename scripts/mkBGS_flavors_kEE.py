@@ -13,12 +13,12 @@ import argparse
 from astropy.table import Table,join,unique,vstack
 
 #from kcorr package, needs to be added to path
-ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
-sys.path.append(ke_code_root)
-os.environ['CODE_ROOT'] = ke_code_root
-from   smith_kcorr     import GAMA_KCorrection
-from   rest_gmr        import smith_rest_gmr
-from   tmr_ecorr       import tmr_ecorr, tmr_q
+# ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+# sys.path.append(ke_code_root)
+# os.environ['CODE_ROOT'] = ke_code_root
+# from   smith_kcorr     import GAMA_KCorrection
+# from   rest_gmr        import smith_rest_gmr
+# from   tmr_ecorr       import tmr_ecorr, tmr_q
 
 #from this package
 import LSS.SV3.cattools as ct
@@ -29,9 +29,9 @@ cosmo = TabulatedDESI()
 dis_dc = cosmo.comoving_radial_distance
 
 if os.environ['NERSC_HOST'] == 'cori':
-    scratch = 'CSCRATCH'
+    scratch = os.environ['CSCRATCH']
 elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = 'PSCRATCH'
+    scratch = os.environ['PSCRATCH']
 else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
@@ -78,6 +78,8 @@ abl = [-21.5,-20.5,-19.5]
 P0 = 7000
 dz = 0.01
 zmin = 0.01
+if args.survey == 'DA02':
+    zmin = 0.1
 zmax = 0.5
 
 regl = ['_N','_S']

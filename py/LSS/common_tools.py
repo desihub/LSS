@@ -20,7 +20,7 @@ def dm(z):
 
 #functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz):
+def cut_specdat(dz,badfib=None):
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
     fs = dz[selz]
@@ -34,6 +34,11 @@ def cut_specdat(dz):
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata | badqa
     wfqa = ~nomtl
+    #veto fibers later determined to have poor success rates
+    if badfib is not None:
+        bad = np.isin(fs['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wfqa &= ~bad
     return fs[wfqa]
 
 
@@ -335,7 +340,8 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
 
 def add_ke(dat):
     #dat should be table with flux_g_dered and flux_r_dered
-    #from kcorr package, needs to be added to path
+    #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
+    #
     ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
     sys.path.append(ke_code_root)
     os.environ['CODE_ROOT'] = ke_code_root

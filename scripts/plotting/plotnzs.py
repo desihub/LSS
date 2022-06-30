@@ -119,7 +119,7 @@ for tp in tps:
         plt.ylim(0,0.0015)
     plt.plot(zm,nz,label='main survey daily')
     plt.xlabel('Z')
-    plt.ylabel(r'$n(z)~((h/$Mpc)$^3)$')
+    plt.ylabel(r'$n(z)~((h/$Mpc)$^3)$',labelpad=0)
     plt.legend()
     plt.title(tp)
     plt.grid(True)

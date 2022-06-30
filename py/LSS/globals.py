@@ -1,4 +1,5 @@
 from astropy.table import Table
+import numpy as np
 
 class SV3:
     def __init__(self,tp,weightmode='probobs',specver='fuji'):
@@ -46,7 +47,7 @@ class SV3:
             self.elgzfhp = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/emline_darkallhealpix.fits'
             self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/QSO_cat_fuji_cumulative.fits'
             self.qsozfhp = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/fuji/healpix/QSO_cat_fuji_sv3_dark_healpix_only_qso_targets.fits'
-        
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/lrg+bgs_3sig_bad_fibers.txt')
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
         self.weightmode = weightmode
@@ -59,12 +60,12 @@ class main:
         self.mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
         self.ebits = None
-        
+        self.badfib = None
         self.tsnrcol = 'TSNR2_ELG'
         self.tsnrcut = 0
         self.dchi2 = 0
         self.zmin = 0
-        self.max = 4.5
+        self.zmax = 4.5
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
@@ -98,7 +99,14 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/ELG/main-elg-everest-tiles.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/QSO/QSO_catalog_MAIN.fits'
         if specver == 'guadalupe':
-            self.elgzf = '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe/main-elg-guadalupe-tiles.fits'
+            #originally '/global/cfs/cdirs/desi/users/raichoor/spectro/guadalupe/main-elg-guadalupe-tiles.fits'
+            #self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/main-elg-guadalupe-tiles.fits'
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/dark_emlin_catalog.fits'
             #self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
-            self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
-        
+            #originally self.qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_healpix.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/QSO_cat_guadalupe_healpix.fits'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
+        if specver == 'daily':
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emlin_catalog.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')

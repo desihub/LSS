@@ -165,6 +165,9 @@ mtld = SV3p.mtld
 tiles = SV3p.tiles
 imbits = SV3p.imbits #mask bits applied to targeting
 ebits = SV3p.ebits #extra mask bits we think should be applied
+zmin = SV3p.zmin
+zmax = SV3p.zmax
+badfib = SV3p.badfib
 
 #mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/sv3/'
 #tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'+pdir+'/' #location of targets
@@ -533,7 +536,7 @@ if mkfulld:
 
 
     #ct.mkfulldat(specf,dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile)
-    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut)
+    ct.mkfulldat(dz,imbits,tdir,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',ldirspec+'Alltiles_'+pdir+'_tilelocs.dat.fits',azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,bitweightfile=bitweightfile,min_tsnr2=tsnrcut,badfib=badfib)
     #get_tilelocweight()
     #logf.write('ran get_tilelocweight\n')
     #print('ran get_tilelocweight\n')
@@ -595,7 +598,7 @@ if ccut is not None:
 if mkclusdat:
     #dchi2 = 9
     for reg in regl:
-        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits,hp=args.usehp)
+        ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,rcut=rcut,ntilecut=ntile,ccut=ccut,weightmd=SV3p.weightmode,ebits=ebits,hp=args.usehp,zmin=zmin,zmax=zmax)
     #logf.write('ran mkclusdat\n')
     #print('ran mkclusdat\n')
 

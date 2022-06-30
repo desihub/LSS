@@ -39,8 +39,8 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     s = 0
     n = 0
     nfail = 0
-    kl = ['TARGETID', 'Z', 'LOCATION',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS', 'TILEID']
-    
+    kl = ['TARGET_RA','TARGET_DEC','DESI_TARGET','TARGETID', 'Z', 'LOCATION',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS', 'TILEID']
+    #
     if os.path.isfile(outf) and restart == False:
         #specd = Table.read(outf)
         specd = fitsio.read(outf)
@@ -765,7 +765,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
     return tt
 
 
-def get_specdat(indir,pd,ver='daily'):
+def get_specdat(indir,pd,ver='daily',badfib=None):
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
     if ver == 'everest' or ver == 'guadalupe':
         zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
@@ -786,6 +786,11 @@ def get_specdat(indir,pd,ver='daily'):
     print('number with bad qa '+str(num_badqa))
     nomtl = nodata | badqa
     wfqa = ~nomtl
+    if badfib is not None:
+        bad = np.isin(fs['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wfqa &= ~bad
+
     return fs[wfqa]
 
 def cut_specdat(dz):
@@ -1602,7 +1607,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None,badfib=None):
 
     if pd == 'bright':
         tscol = 'TSNR2_BGS'
@@ -1663,6 +1668,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['ZPOSSLOC'][wk] = 1
 
     wg = np.isin(dz['TILELOCID'],gtl)
+    if badfib is not None:
+        bad = np.isin(dz['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wg &= ~bad
+
+
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
@@ -1711,6 +1722,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     print(np.unique(dz['NTILE']))
 
     dz.write(outf,format='fits', overwrite=True)
+    print('wrote to '+outf)
     del dz
 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
@@ -1814,7 +1826,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None):
     from scipy.special import erf
     #from desitarget.mtl import inflate_ledger
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
@@ -1865,7 +1877,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    fs = common.cut_specdat(dz)
+    fs = common.cut_specdat(dz,badfib)
     #fs['sort'] = fs['TSNR2_LRG']
     #fs.sort('sort')
     #fsu = unique(fs,keys=['TARGETID'],keep='last')
@@ -1905,7 +1917,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
 
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
@@ -2113,8 +2125,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
 
     print(np.unique(dz['NTILE']))
-    dz.write(outf,format='fits', overwrite=True)
-    print('wrote '+outf)
+    common.write_LSS(dz,outf)
+    #dz.write(outf,format='fits', overwrite=True)
+    #print('wrote '+outf)
 
 
 def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):

@@ -367,6 +367,7 @@ class BGS_ssr:
         self.cat = get_BGS_data_full('BGS_BRIGHT')
         mask = self.cat['EFFTIME_BGS']>efftime_min
         mask &= self.cat['EFFTIME_BGS']<efftime_max
+        print('using '+str(len(self.cat)/len(self.cat[mask])))
         self.cat = self.cat[mask]
         self.selgz = self.cat['q'] == 1
         ha,bine = np.histogram(self.cat['EFFTIME_BGS'])

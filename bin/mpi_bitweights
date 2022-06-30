@@ -4,7 +4,7 @@ Compute bit weights in parallel to be used for PIP or IIP weights
 
 Example run at NERSC:
      
-srun -N 8 -c 8 -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
+srun -N 8 -c 64 --cpu_bind=cores -C haswell -A desi --qos=interactive -t 00:30:00 mpi_bitweights
      --mtl /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/dark_targets.fits
      --tiles /global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-DARK.fits 
      --format fits --outdir output --realizations 64
@@ -17,7 +17,7 @@ Notes:
 - bit weights are stored as 64 bit integers, so the number of realizations must
   be a multiple of 64 (i.e. 64, 128, 192, etc. realizations correspond to output
   arrays BITWEIGHT0, BITWEIGHT1, BITWEIGHT2, etc.)
-- n nodes (-N) x n cpus (-c) must be a factor of the number of realizations
+- Total number (-n) of tasks (--nodes x --ntasks-per-node) is suggested to be a factor of the number of realizations
 
 Required Arguments:
   mtl     (str) : target fits file containing TARGETID, RA, DEC, Z
@@ -46,6 +46,8 @@ def parse():
     parser.add_argument("--format", type=str, required=False, default="fits",
                         help="File format for outputs (either fits or hdf5)")
     parser.add_argument("--outdir", type=str, required=False, default=".", help="Output directory")
+    parser.add_argument("--outfilename", type=str, required=False, default="targeted.fits", help="Output filename")
+    parser.add_argument("--overwrite", type=bool, required=False, default=True, help="Overwrite the output or not")
     parser.add_argument("--realizations", type=int, required=False, default=128, help="Number of realizations")
     parser.add_argument("--survey", type=str, required=False, default="sky", help="e.g., sv3 or main")
     parser.add_argument("--rundate", type=str, required=False, default="2021-04-06T00:39:37", help="default is right before start of SV3")
@@ -199,7 +201,7 @@ def main(args):
 
         # Write output files
         #write_output(args.outdir, args.format, targets[idas], bitvectors[idas], desi_target_key=desi_target_key)
-        write_output(args.outdir, args.format, targets, bitvectors, desi_target_key=desi_target_key)
+        write_output(args.outdir, args.outfilename, args.overwrite, args.format, targets, bitvectors, desi_target_key=desi_target_key)
 
 if __name__ == "__main__":
     args = parse()

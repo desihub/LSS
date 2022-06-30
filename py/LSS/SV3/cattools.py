@@ -1037,7 +1037,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_tsnr2=0,tlid_full=None):
+def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_tsnr2=0,tlid_full=None,badfib=None):
 
     '''
     indir is directory with inputs
@@ -1091,6 +1091,11 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     dz = Table(fitsio.read(zf))
     print('loaded wdup file')
     wg = np.isin(dz['TILELOCID'],gtl)
+    if badfib is not None:
+        bad = np.isin(dz['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wg &= ~bad
+
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
@@ -1223,7 +1228,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=103400,min_ts
     
 
 
-def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV3_DESI_TARGET',specver='fuji',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0):
+def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV3_DESI_TARGET',specver='fuji',notqso='',qsobit=4,bitweightfile=None,min_tsnr2=0,badfib=None):
     '''
     zf is the name of the file containing all of the combined spec and target info compiled already
     imbits is the list of imaging mask bits to mask out
@@ -1277,7 +1282,13 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     wz &= dz['COADD_FIBERSTATUS'] == 0
+    
+    if badfib is not None:
+        bad = np.isin(dz['FIBER'],badfib)
+        print('number at bad fibers '+str(sum(bad)))
+        wz &= ~bad
     fs = dz[wz]
+
     print('number of good obs '+str(len(fs)))
     #fs = common.cut_specdat(dz)
     gtl = np.unique(fs['TILELOCID'])

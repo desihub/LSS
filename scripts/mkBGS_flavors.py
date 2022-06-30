@@ -19,11 +19,20 @@ from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
 dis_dc = cosmo.comoving_radial_distance
 
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected; BGS_ANY or BGS_BRIGHT",default='BGS_BRIGHT')
 parser.add_argument("--survey", help="e.g., SV3, DA02, main",default='SV3')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
-parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
+parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--clus", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
@@ -39,8 +48,8 @@ dirin = args.basedir+'/'+args.survey+ '/LSS/'+args.verspec+'/LSScats/'+args.vers
 dirout = dirin +'BGSsubcats/'
 
 zw = ''
-if args.survey == 'DA02':
-    zw = 'zdone'
+#if args.survey == 'DA02':
+#    zw = 'zdone'
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
@@ -65,7 +74,7 @@ def cut_abr_ct(data,maxr=0,minr=-100,minct=-100,maxct=100,zmin=0.01,zmax=0.5):
 
     abr = r_dered -dm(data['Z'])
     abg = g_dered -dm(data['Z'])
-    ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05
+    ct = g_dered-r_dered-0.14*(data['Z']-0.1)/0.05 #rough change based on peak of red g-r
     sel = abr > minr
     sel &= abr < maxr
     sel &= ct > minct
