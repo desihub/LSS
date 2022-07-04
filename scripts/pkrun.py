@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from pypower import CatalogFFTPower, PowerSpectrumStatistics, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
-from xirunpc import read_clustering_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims
+from xirunpc import read_clustering_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
 
 
 os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
@@ -88,18 +88,18 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
-    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='everest')
+    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
-    parser.add_argument('--boxsize', help='box size', type=float, default=5000.)
+    parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
-    parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
-    parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
+    parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
+    parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -111,9 +111,23 @@ if __name__ == '__main__':
     mpicomm = mpi.COMM_WORLD
     mpiroot = 0
 
-    cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    out_dir = os.path.join(os.environ['CSCRATCH'], args.survey)
-    if args.outdir is not None: out_dir = args.outdir
+    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+        cat_dir = args.basedir
+        args.region = ['']
+    else:
+        cat_dir = args.basedir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Catalog directory is {}.'.format(cat_dir))
+
+    if args.outdir is None:
+        out_dir = os.path.join(get_scratch_dir(), args.survey)
+    else:
+        out_dir = args.outdir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Output directory is {}.'.format(out_dir))
+
     tracer, tracer2 = args.tracer[0], None
     if len(args.tracer) > 1:
         tracer2 = args.tracer[1]
@@ -131,10 +145,11 @@ if __name__ == '__main__':
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
-        zlims = get_zlims(tracer, tracer2=tracer2, option=args.zlim[0])
+        option = args.zlim[0]
+        zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
-    zlims = list(zip(zlims[:-1], zlims[1:])) + [(zlims[0], zlims[-1])]
+    zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
 
     bin_type = 'lin'
     rebinning_factors = [1, 5, 10]
@@ -142,16 +157,25 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'))
         for region in regions:
             if mpicomm is None or mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
             result, wang = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
-            file_kwargs = dict(region=region, tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'))
-            fn = power_fn(file_type='npy', **file_kwargs)
+            fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
-            txt_kwargs = file_kwargs.copy()
+
+        all_regions = regions.copy()
+        if 'N' in regions and 'S' in regions:  # let's combine
+            result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
+            result.save(power_fn(file_type='npy', region='NScomb', **base_file_kwargs))
+            all_regions.append('NScomb')
+        for region in all_regions:
+            txt_kwargs = base_file_kwargs.copy()
+            txt_kwargs.update(region=region)
+            result = PowerSpectrumStatistics.load(power_fn(file_type='npy', **txt_kwargs))
             for factor in rebinning_factors:
                 #result = PowerSpectrumStatistics.load(fn)
                 rebinned = result[:(result.shape[0]//factor)*factor:factor]
