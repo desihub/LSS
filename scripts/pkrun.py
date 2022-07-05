@@ -153,13 +153,13 @@ if __name__ == '__main__':
 
     bin_type = 'lin'
     rebinning_factors = [1, 5, 10]
-    if mpicomm is None or mpicomm.rank == mpiroot:
+    if mpicomm.rank == mpiroot:
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'))
         for region in regions:
-            if mpicomm is None or mpicomm.rank == mpiroot:
+            if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
@@ -168,25 +168,26 @@ if __name__ == '__main__':
             result.save(fn)
 
         all_regions = regions.copy()
-        if 'N' in regions and 'S' in regions:  # let's combine
-            result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
-            result.save(power_fn(file_type='npy', region='NScomb', **base_file_kwargs))
-            all_regions.append('NScomb')
-        for region in all_regions:
-            txt_kwargs = base_file_kwargs.copy()
-            txt_kwargs.update(region=region)
-            result = PowerSpectrumStatistics.load(power_fn(file_type='npy', **txt_kwargs))
-            for factor in rebinning_factors:
-                #result = PowerSpectrumStatistics.load(fn)
-                rebinned = result[:(result.shape[0]//factor)*factor:factor]
-                txt_kwargs.update(bin_type=bin_type+str(factor))
-                fn_txt = power_fn(file_type='pkpoles', **txt_kwargs)
-                rebinned.save_txt(fn_txt)
+        if mpicomm.rank == mpiroot:
+            if 'N' in regions and 'S' in regions:  # let's combine
+                result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
+                result.save(power_fn(file_type='npy', region='NScomb', **base_file_kwargs))
+                all_regions.append('NScomb')
+            for region in all_regions:
+                txt_kwargs = base_file_kwargs.copy()
+                txt_kwargs.update(region=region)
+                result = PowerSpectrumStatistics.load(power_fn(file_type='npy', **txt_kwargs))
+                for factor in rebinning_factors:
+                    #result = PowerSpectrumStatistics.load(fn)
+                    rebinned = result[:(result.shape[0]//factor)*factor:factor]
+                    txt_kwargs.update(bin_type=bin_type+str(factor))
+                    fn_txt = power_fn(file_type='pkpoles', **txt_kwargs)
+                    rebinned.save_txt(fn_txt)
 
-                if args.vis and (mpicomm is None or mpicomm.rank == mpiroot):
-                    k, poles = rebinned(return_k=True, complex=False)
-                    for pole in poles: plt.plot(k, k*pole)
-                    tracers = tracer
-                    if tracer2 is not None: tracers += ' x ' + tracer2
-                    plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
-                    plt.show()
+                    if args.vis:
+                        k, poles = rebinned(return_k=True, complex=False)
+                        for pole in poles: plt.plot(k, k*pole)
+                        tracers = tracer
+                        if tracer2 is not None: tracers += ' x ' + tracer2
+                        plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+                        plt.show()
