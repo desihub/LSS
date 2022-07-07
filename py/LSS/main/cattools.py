@@ -2163,15 +2163,16 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''
-    wzm = ''
+    wzm = '_'
+    if ccut is not None:
+        wzm = ccut+'_' #you could change this to however you want the file names to turn out
+
     if zmask:
-        wzm = 'zmask_'
+        wzm += 'zmask_'
     if rcut is not None:
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
-    if ccut is not None:
-        wzm += ccut+'_' #you could change this to however you want the file names to turn out
     outf = fl+wzm+'clustering.dat.fits'
     ff = Table.read(fl+wzm+'full.dat.fits')
     cols = list(ff.dtype.names)
@@ -2335,7 +2336,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     selz &= ff['Z'] < zmax
     ff = ff[selz]
 
-    wn = ff['PHOTSYS'] == 'N'
 
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
     if tp[:3] == 'BGS':
@@ -2347,6 +2347,18 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         for col in fcols:
             kl.append('flux_'+col.lower()+'_dered')
         print(kl)
+        if ccut == '-21.5':
+            from LSS.tabulated_cosmo import TabulatedDESI
+            cosmo = TabulatedDESI()
+            dis_dc = cosmo.comoving_radial_distance
+            dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
+            abr = ff['flux_r_dered'] -dm
+            sel = abr < float(ccut)
+            print('comparison before/after abs mag cut')
+            print(len(ff),len(ff[sel]))
+            ff = ff[sel]
+        
+    wn = ff['PHOTSYS'] == 'N'
 
     ff.keep_columns(kl)
     print('minimum,maximum weight')

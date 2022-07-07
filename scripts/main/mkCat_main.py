@@ -299,7 +299,7 @@ tracer_clus = type+notqso+ccut
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
+    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
