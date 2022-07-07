@@ -16,15 +16,17 @@ from LSS.tabulated_cosmo import TabulatedDESI
 logger = logging.getLogger('xirunpc')
 
 
-if os.environ['NERSC_HOST'] == 'cori':
-    scratch = os.environ['CSCRATCH']
-elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = os.environ['PSCRATCH']
-else:
-    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
-    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+def get_scratch_dir():
+    if os.environ['NERSC_HOST'] == 'cori':
+        scratch_dir = os.environ['CSCRATCH']
+    elif os.environ['NERSC_HOST'] == 'perlmutter':
+        scratch_dir = os.environ['PSCRATCH']
+    else:
+        msg = 'NERSC_HOST is not cori or permutter but is {};\n'.format(os.environ['NERSC_HOST'])
+        msg += 'NERSC_HOST not known (code only works on NERSC), not proceeding'
+        raise ValueError(msg)
+    return scratch_dir
 
-print('scratch dir is '+scratch)
 
 def get_zlims(tracer, tracer2=None, option=None):
 
@@ -42,7 +44,7 @@ def get_zlims(tracer, tracer2=None, option=None):
             if option == 'safez':
                 zlims = [0.9, 1.48]
             if 'extended' in option:
-                print('extended is no longer a meaningful option')
+                logger.warning('extended is no longer a meaningful option')
                 #zlims = [0.8, 1.1, 1.6]
             if 'smallshells' in option:
                 zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
@@ -406,8 +408,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
-    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
+    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S'], default=None)
@@ -421,7 +423,7 @@ if __name__ == '__main__':
                                                    see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
-    parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
+    parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
 
@@ -437,18 +439,23 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-    if args.basedir != '/global/cfs/cdirs/desi/survey/catalogs':
-        cat_dir = args.basedir
-    else:
+    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
         cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    
-    if args.basedir == '/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/':
+    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
         cat_dir = args.basedir
         args.region = ['']
-    
-    print('catalog directory is '+cat_dir)
-    out_dir = os.path.join(scratch, args.survey)
-    if args.outdir is not None: out_dir = args.outdir
+    else:
+        cat_dir = args.basedir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Catalog directory is {}.'.format(cat_dir))
+
+    if args.outdir is None:
+        out_dir = os.path.join(get_scratch_dir(), args.survey)
+    else:
+        out_dir = args.outdir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Output directory is {}.'.format(out_dir))
+
     tracer, tracer2 = args.tracer[0], None
     if len(args.tracer) > 1:
         tracer2 = args.tracer[1]
@@ -467,8 +474,8 @@ if __name__ == '__main__':
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
-        option=args.zlim[0]
-        zlims = get_zlims(tracer, tracer2=tracer2,option=option )
+        option = args.zlim[0]
+        zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
     zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
@@ -487,56 +494,58 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
-                #save pair counts
-                result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+                # Save pair counts
+                if mpicomm is None or mpicomm.rank == mpiroot:
+                    result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
 
         # Save combination and .txt files
         for corr_type in args.corr_type:
             all_regions = regions.copy()
-            if 'N' in regions and 'S' in regions:  # let's combine
-                corr = sum([TwoPointCorrelationFunction.load(
-                            corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in 'NS'])
-                corr.save(corr_fn(file_type='npy', region='NScomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
-                all_regions.append('NScomb')
-            for region in all_regions:
-                txt_kwargs = base_file_kwargs.copy()
-                txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
-                result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
-                for factor in rebinning_factors:
-                    #result = TwoPointEstimator.load(fn)
-                    rebinned = result[:(result.shape[0] // factor) * factor:factor]
-                    txt_kwargs.update(bin_type=args.bin_type+str(factor))
-                    if corr_type == 'smu':
-                        fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
-                        rebinned.save_txt(fn_txt)
-                        fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
-                        rebinned.save_txt(fn_txt, ells=(0, 2, 4))
-                        fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
-                        rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
-                    elif corr_type == 'rppi':
-                        fn_txt = corr_fn(file_type='wp', **txt_kwargs)
-                        rebinned.save_txt(fn_txt, pimax=40.)
-                        for pifac in pi_rebinning_factors:
-                            rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
-                            txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
-                            fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
-                            rebinned.save_txt(fn_txt)
-                    elif corr_type == 'theta':
-                        fn_txt = corr_fn(file_type='theta', **txt_kwargs)
-                        rebinned.save_txt(fn_txt)
-
-                    if args.vis and (mpicomm is None or mpicomm.rank == mpiroot):
+            if mpicomm is None or mpicomm.rank == mpiroot:
+                if 'N' in regions and 'S' in regions:  # let's combine
+                    result = sum([TwoPointCorrelationFunction.load(
+                                  corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in ['N', 'S']])
+                    result.save(corr_fn(file_type='npy', region='NScomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+                    all_regions.append('NScomb')
+                for region in all_regions:
+                    txt_kwargs = base_file_kwargs.copy()
+                    txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
+                    result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
+                    for factor in rebinning_factors:
+                        #result = TwoPointEstimator.load(fn)
+                        rebinned = result[:(result.shape[0] // factor) * factor:factor]
+                        txt_kwargs.update(bin_type=args.bin_type+str(factor))
                         if corr_type == 'smu':
-                            sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
+                            fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
+                            rebinned.save_txt(fn_txt)
+                            fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
+                            rebinned.save_txt(fn_txt, ells=(0, 2, 4))
+                            fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
+                            rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                         elif corr_type == 'rppi':
-                            sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
-                        else:
-                            sep, xis = rebinned(return_sep=True, return_std=False)
-                        if args.bin_type == 'log':
-                            for xi in xis: plt.loglog(sep, xi)
-                        if args.bin_type == 'lin':
-                            for xi in xis: plt.plot(sep, sep**2 * xi)
-                        tracers = tracer
-                        if tracer2 is not None: tracers += ' x ' + tracer2
-                        plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
-                        plt.show()
+                            fn_txt = corr_fn(file_type='wp', **txt_kwargs)
+                            rebinned.save_txt(fn_txt, pimax=40.)
+                            for pifac in pi_rebinning_factors:
+                                rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
+                                txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
+                                fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
+                                rebinned.save_txt(fn_txt)
+                        elif corr_type == 'theta':
+                            fn_txt = corr_fn(file_type='theta', **txt_kwargs)
+                            rebinned.save_txt(fn_txt)
+
+                        if args.vis:
+                            if corr_type == 'smu':
+                                sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
+                            elif corr_type == 'rppi':
+                                sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
+                            else:
+                                sep, xis = rebinned(return_sep=True, return_std=False)
+                            if args.bin_type == 'log':
+                                for xi in xis: plt.loglog(sep, xi)
+                            if args.bin_type == 'lin':
+                                for xi in xis: plt.plot(sep, sep**2 * xi)
+                            tracers = tracer
+                            if tracer2 is not None: tracers += ' x ' + tracer2
+                            plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+                            plt.show()

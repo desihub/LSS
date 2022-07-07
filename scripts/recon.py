@@ -11,15 +11,7 @@ from astropy.table import Table, vstack
 from pyrecon import MultiGridReconstruction, IterativeFFTReconstruction, IterativeFFTParticleReconstruction, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
-from xirunpc import get_clustering_positions_weights, catalog_dir, catalog_fn, get_regions, get_zlims
-
-if os.environ['NERSC_HOST'] == 'cori':
-    scratch = 'CSCRATCH'
-elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = 'PSCRATCH'
-else:
-    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
-    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+from xirunpc import get_clustering_positions_weights, catalog_dir, catalog_fn, get_regions, get_zlims, get_scratch_dir
 
 
 logger = logging.getLogger('recon')
@@ -122,15 +114,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer to be selected', type=str, default='ELG')
     parser.add_argument('--indir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='everest')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=5)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
-    parser.add_argument('--outdir',  help='base directory for output', type=str, default=None)
+    parser.add_argument('--outdir',  help='base directory for output (default: SCRATCH)', type=str, default=None)
     parser.add_argument('--algorithm', help='reconstruction algorithm', type=str, choices=['MG', 'IFT', 'IFTP'], default='MG')
     parser.add_argument('--convention', help='reconstruction convention', type=str, choices=['reciso', 'recsym'], default='reciso')
     parser.add_argument('--f', help='growth rate', type=float, default=None)
@@ -146,12 +138,20 @@ if __name__ == '__main__':
 
     Reconstruction = {'MG': MultiGridReconstruction, 'IFT': IterativeFFTReconstruction, 'IFTP': IterativeFFTParticleReconstruction}[args.algorithm]
 
-    if args.indir == '/global/cfs/cdirs/desi/survey/catalogs/':
-        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    if os.path.normpath(args.indir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+        cat_dir = catalog_dir(base_dir=args.indir, survey=args.survey, verspec=args.verspec, version=args.version)
+    elif os.path.normpath(args.indir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+        cat_dir = args.indir
+        args.region = ['']
     else:
         cat_dir = args.indir
-    out_dir = os.path.join(os.environ[scratch], args.survey)
-    if args.outdir is not None: out_dir = args.outdir
+    logger.info('Input directory is {}.'.format(cat_dir))
+
+    if args.outdir is None:
+        out_dir = os.path.join(get_scratch_dir(), args.survey)
+    else:
+        out_dir = args.outdir
+    logger.info('Output directory is {}.'.format(out_dir))
 
     distance = TabulatedDESI().comoving_radial_distance
 
