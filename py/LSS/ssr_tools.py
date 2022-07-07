@@ -147,9 +147,9 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         data = Table(fitsio.read(fn))
         print(len(data))
         sel = data['ZWARN'] != 999999
-        sel &= data['SPECTYPE'] != 'STAR'
+        sel &= data['SPECTYPE'] != 'STAR' #probably want to keep real quasars that are spectype star
         data = data[sel]
-        wz = data['Z_not4clus']*0 == 0
+        wz = data['Z_not4clus']*0 == 0 
         wz &= data['Z_not4clus'] != 999999
         wz &= data['Z_not4clus'] != 1.e20
 
