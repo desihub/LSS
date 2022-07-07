@@ -2352,7 +2352,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             cosmo = TabulatedDESI()
             dis_dc = cosmo.comoving_radial_distance
             dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
-            abr = ff['flux_r_dered'] -dm
+            r_dered = 22.5 - 2.5*np.log10(ff['flux_r_dered'])
+            abr = r_dered -dm
             sel = abr < float(ccut)
             print('comparison before/after abs mag cut')
             print(len(ff),len(ff[sel]))
