@@ -270,6 +270,10 @@ if args.apply_veto == 'y':
 
 
 wzm = ''
+if ccut is not None:
+    wzm += ccut #you could change this to however you want the file names to turn out
+
+tracer_clus = type+notqso+ccut
 # dchi2 = 9
 # tsnrcut = 0
 # if type[:3] == 'ELG':
@@ -295,7 +299,7 @@ wzm = ''
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso+'_',tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 if args.fillran == 'y':
     print('filling randoms with imaging properties')
@@ -326,13 +330,13 @@ if mkclusran and mkclusdat:
             rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.imsys == 'y':
     from LSS.imaging import densvar
     #regl = ['_DN','_DS','','_N','_S']
-    wzm = ''
+    #wzm = ''
     fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
     use_maps = fit_maps
     if type[:3] == 'ELG':
@@ -350,7 +354,7 @@ if args.imsys == 'y':
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
-            fb = dirout+type+notqso+wzm+reg
+            fb = dirout+tracer_clus+reg
             fcr = fb+'_0_clustering.ran.fits'
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
@@ -382,7 +386,7 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
-    rt.save_desi_data(dirout, 'main', type+notqso, nside, dirreg, zl,regl=regl) 
+    rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -399,16 +403,16 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
 
-    rt._compute_weight('main', type+notqso, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf)
+    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
-    fnreg = dirout+'/regressis_data/main_'+type+notqso+'_256/RF/main_'+type+notqso+'_imaging_weight_256.npy'
+    fnreg = dirout+'/regressis_data/main_'+tracer_clus+'_256/RF/main_'+tracer_clus+'_imaging_weight_256.npy'
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
     for reg in regl:
-        fb = dirout+type+notqso+reg
+        fb = dirout+tracer_clus+reg
         fcd = fb+'_clustering.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
@@ -432,7 +436,7 @@ if type[:3] == 'BGS':
 
 if args.add_ke == 'y':
     for reg in regl:
-        fn = dirout+type+notqso+wzm+reg+'_clustering.dat.fits'
+        fn = dirout+tracer_clus+reg+'_clustering.dat.fits'
         dat = Table(fitsio.read(fn))
         #if args.test == 'y':
         #    dat = dat[:10]
@@ -468,7 +472,7 @@ if mkclusran:
 #         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+type+notqso+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
     
 
@@ -480,8 +484,6 @@ if args.nz == 'y':
 #         wzm += '_rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
 #     if ntile > 0:
 #         wzm += '_ntileg'+str(ntilecut)+'_'    
-#     if ccut is not None:
-#         wzm += '_'+ccut #you could change this to however you want the file names to turn out
 
 #    regl = ['_DN','_DS','','_N','_S']
     
@@ -504,7 +506,7 @@ if args.nz == 'y':
         P0 = 7000
     
     for reg in regl:
-        fb = dirout+type+notqso+wzm+reg
+        fb = dirout+tracer_clus+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
@@ -514,6 +516,6 @@ if args.nz == 'y':
 if args.swapz == 'y':
     import LSS.blinding_tools as blind
     for reg in regl:
-        fb = dirout+type+notqso+reg+'_clustering.dat.fits'
+        fb = dirout+tracer_clus+reg+'_clustering.dat.fits'
         data = Table(fitsio.read(fb))
         blind.swap_z(data,fb,frac=0.01)        

@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from astropy.table import Table, vstack, hstack, join
 import fitsio
 from scipy.optimize import curve_fit, minimize
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 
 import LSS.common_tools as common
 
@@ -135,7 +137,7 @@ def get_BGS_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
     return cat
 
 
-def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe'],cut=None,cut_condition=None):
     
     cats = []
     for sur,ver,sr in zip(surveys,versions,specrels):
@@ -147,8 +149,17 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         data = Table(fitsio.read(fn))
         print(len(data))
         sel = data['ZWARN'] != 999999
-        sel &= data['SPECTYPE'] != 'STAR'
+        sel &= ((data['SPECTYPE'] == 'STAR') & (data['Z_not4clus'] != 999999)) | (data['SPECTYPE'] != 'STAR')
         data = data[sel]
+        
+        if cut == 'galactic':
+            coords = SkyCoord(ra=data['RA']*u.deg,dec=data['DEC']*u.deg)
+            if cut_condition[0] == '>':
+                cond = np.where(np.abs(coords.galactic.b.value) > float(cut_condition[1:]))
+            elif cut_condition[0] == '<':
+                cond = np.where(np.abs(coords.galactic.b.value) < float(cut_condition[1:]))
+            data = data[cond]
+
         wz = data['Z_not4clus']*0 == 0
         wz &= data['Z_not4clus'] != 999999
         wz &= data['Z_not4clus'] != 1.e20
@@ -465,7 +476,7 @@ class BGS_ssr:
         plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
         plt.legend()
         plt.savefig(fn_root+'overall_failratefit.png')
-        plt.show()
+        #plt.show()
 
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
@@ -499,7 +510,7 @@ class BGS_ssr:
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
-        self.vis_5hist = True
+        #self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
         wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
         sel = wtf < 1
@@ -677,8 +688,8 @@ class ELG_ssr:
 #             hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
 
 class QSO_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
-        self.cat = get_QSO_data_full('QSO')#get_ELG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,cut=None,cut_condition=None):
+        self.cat = get_QSO_data_full('QSO',cut=cut,cut_condition=cut_condition)#get_ELG_data(specrel)
         mask = self.cat['EFFTIME_QSO']>efftime_min
         mask &= self.cat['EFFTIME_QSO']<efftime_max
         self.cat = self.cat[mask]
@@ -695,6 +706,8 @@ class QSO_ssr:
         self.bc = np.array(bc)
         self.bine = bine
         self.vis_5hist = False
+        self.cut = cut
+        self.cut_condition = cut_condition
         
         
         
@@ -762,64 +775,73 @@ class QSO_ssr:
         return costt    
         
     
-    def add_modpre(self,data,fn_root=''):
+    def add_modpre(self,data,fn_root='',plot_color='k',plot_only=False,savefig=True):
         res = minimize(self.wrapper_hist, [-0.001, 1, 0.4], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
         print(pars,chi2)
-        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
+        if self.cut == 'galactic':
+            if self.cut_condition[0] == '<':
+                label = 'b < %.2f deg' % float(self.cut_condition[1:])
+            elif self.cut_condition[0] == '>':
+                label = 'b > %.2f deg' % float(self.cut_condition[1:])
+            plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label=label,color=plot_color)
+        else:
+            plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data',color=plot_color)
         mod = self.failure_rate_eff(self.bc, *pars)
-        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
+        plt.plot(self.bc,mod,'--',label='model; chi2='+str(round(chi2,3)),color=plot_color)
         plt.ylabel('QSO Z failure rate')
         plt.xlabel('QSO EFFECTIVE exp time')
         plt.legend()
-        plt.savefig(fn_root+'overall_failratefit.png')
-        plt.show()
-        gextc = 3.214
-        rextc = 2.165
-        dflux = data['FIBERFLUX_R']*10**(0.4*rextc*data['EBV']) #data['FIBERFLUX_G_EC']
+        if savefig:
+            plt.savefig(fn_root+'overall_failratefit.png')
+            plt.show()
+        if not plot_only:
+            gextc = 3.214
+            rextc = 2.165
+            dflux = data['FIBERFLUX_R']*10**(0.4*rextc*data['EBV']) #data['FIBERFLUX_G_EC']
 
-        deff = 8.60/0.255 * data['TSNR2_QSO']#data['EFFTIME_ELG']
-        #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
-        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
-        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_QSO'],*pars)   
-        relssr = assr/np.max(assr) 
-        drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
-        seld = deff > 450
-        seld &= deff < 1500
-        print(len(relssr),len(drelssr[seld]),np.max(assr),np.max(data[seld]['mod_success_rate']))
-        self.wts_fid = 1/relssr
-        nzfper = []
-        nzfpere = []
-        fper = []
-        self.mft = np.median(self.cat['FIBERFLUX_G_EC'])
-        nb = 5
-        pstep = 100//5
-        for i in range(0,nb):
-            sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
-            sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
-            mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
-            fper.append(mf)
-            ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],bins=self.bine)
-            hfw,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
-            nzfper.append(hf/ha)
-            nzfpere.append(np.sqrt(ha-hf)/ha)
-            #plt.plot(self.bc,hfw/ha)
-        #plt.title('inputs')
-        #plt.show()
-        self.nzfpere = nzfpere    
-        rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
-               #method='Powell', tol=1e-6)
-        fcoeff = rest.x
-        self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
-        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
-        sel = wtf < 1
-        wtf[sel] = 1
-        data['WEIGHT_ZFAIL'] =  wtf
-        return data
+            deff = 8.60/0.255 * data['TSNR2_QSO']#data['EFFTIME_ELG']
+            #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
+            data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
+            assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_QSO'],*pars)   
+            relssr = assr/np.max(assr) 
+            drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
+            seld = deff > 450
+            seld &= deff < 1500
+            print(len(relssr),len(drelssr[seld]),np.max(assr),np.max(data[seld]['mod_success_rate']))
+            self.wts_fid = 1/relssr
+            nzfper = []
+            nzfpere = []
+            fper = []
+            self.mft = np.median(self.cat['FIBERFLUX_G_EC'])
+            nb = 5
+            pstep = 100//5
+            for i in range(0,nb):
+                sel = self.cat['FIBERFLUX_G_EC'] > np.percentile(self.cat['FIBERFLUX_G_EC'],i*pstep)
+                sel &= self.cat['FIBERFLUX_G_EC'] < np.percentile(self.cat['FIBERFLUX_G_EC'],(i+1)*pstep)
+                mf = np.median(self.cat['FIBERFLUX_G_EC'][sel])
+                fper.append(mf)
+                ha,_ = np.histogram(self.cat['EFFTIME_QSO'][sel],bins=self.bine)
+                hf,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],bins=self.bine)
+                hfw,_ = np.histogram(self.cat['EFFTIME_QSO'][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
+                nzfper.append(hf/ha)
+                nzfpere.append(np.sqrt(ha-hf)/ha)
+                #plt.plot(self.bc,hfw/ha)
+            #plt.title('inputs')
+            #plt.show()
+            self.nzfpere = nzfpere    
+            rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
+                   #method='Powell', tol=1e-6)
+            fcoeff = rest.x
+            self.vis_5hist = True
+            print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
+            wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+            sel = wtf < 1
+            wtf[sel] = 1
+            data['WEIGHT_ZFAIL'] =  wtf
+            return data
 
 #             print(mf)
 #             print(np.sum(ha))
