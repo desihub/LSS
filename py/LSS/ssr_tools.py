@@ -510,7 +510,7 @@ class BGS_ssr:
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
-        self.vis_5hist = True
+        #self.vis_5hist = True
         print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
         wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
         sel = wtf < 1
