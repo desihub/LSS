@@ -2174,7 +2174,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = fl+wzm+'clustering.dat.fits'
-    ff = Table.read(fl+'full.dat.fits')
+    ff = Table.read(fl+'_full.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:
         print('Z column already in full file')
