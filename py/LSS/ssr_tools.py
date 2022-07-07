@@ -476,7 +476,7 @@ class BGS_ssr:
         plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
         plt.legend()
         plt.savefig(fn_root+'overall_failratefit.png')
-        plt.show()
+        #plt.show()
 
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
