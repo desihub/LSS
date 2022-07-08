@@ -186,8 +186,8 @@ for tp in tracers:
 
 
 	if tp == 'BGS_ANY':    
-		z_suc = dz['ZWARN']==0
-		z_suc &= dz['DELTACHI2']>40
+		z_suc = dz['ZWARN_fid']==0
+		z_suc &= dz['DELTACHI2_fid']>40
 		z_sucnew = dz['ZWARN_new']==0
 		z_sucnew &= dz['DELTACHI2_new']>40
 		zmin = 0.01
@@ -199,16 +199,17 @@ for tp in tracers:
 	print("fraction with zsuccess in both "+tp,len(dz[z_sucnew&z_new&z_suc])/len(dz[z_new]))
 	
 	if tp != 'QSO':
-	    plt.hist(dz['Z_fid'],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
-	    plt.hist(dz['Z_new'],histtype='step',label='new',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z_fid'][z_suc&z_tot],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z_new'][z_sucnew&z_new],histtype='step',label='new',range=(zmin,zmax),bins=50)
 	    plt.legend()
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
 	    plt.show()
+	    plt.plot()
 	else:
-	    plt.hist(dz['Z'],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
-	    plt.hist(dz['Z_QF_new'],histtype='step',label='new',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z'][z_suc&z_tot],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z_QF_new'][z_sucnew&z_new],histtype='step',label='new',range=(zmin,zmax),bins=50)
 	    plt.legend()
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
