@@ -139,6 +139,8 @@ for tp in tracers:
 		z_sucnew= dz['ZWARN_new']==0
 		z_sucnew &= dz['DELTACHI2_new']>15
 		z_sucnew &= dz['Z_new']<1.5
+		zmin = 0.4
+		zmax = 1.1
 
 	if tp == 'ELG':
 		o2f = fitsio.read(pars.elgzf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR'])
@@ -149,6 +151,8 @@ for tp in tracers:
 		dz = join(dz,o2f_new,keys=['TARGETID','TILEID','LOCATION'],table_names=['fid','new'])
 		o2c_new = np.log10(dz['OII_FLUX_new'] * np.sqrt(dz['OII_FLUX_IVAR_new']))+0.2*np.log10(dz['DELTACHI2_new'])
 		z_sucnew = o2c_new > 0.9
+		zmin = 0.6
+		zmax = 1.6
 
 	if tp == 'QSO':
 		qsozf = pars.qsozf
@@ -170,9 +174,11 @@ for tp in tracers:
 		arz = Table(fitsio.read(qsozf_new))
 		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
 		arz['TILEID'] = arz['TILEID'].astype(int)
-		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','QF_new'])
-		print(dz.dtype.names)
+		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF_new'])
+		#print(dz.dtype.names)
 		z_sucnew = dz['Z_QF_new'].mask == False
+		zmin = 0.8
+		zmax = 3.5
 
 
 	if tp == 'BGS_ANY':    
@@ -180,10 +186,28 @@ for tp in tracers:
 		z_suc &= dz['DELTACHI2']>40
 		z_sucnew = dz['ZWARN_new']==0
 		z_sucnew &= dz['DELTACHI2_new']>40
+		zmin = 0.01
+		zmax = 0.6
 
 	#print(len(ff[z_suc]),len(ff[z_tot]))
 	print("fiducial zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
 	print("new zsuccess rate for "+tp,len(dz[z_sucnew&z_new])/len(dz[z_new]))
 	print("fraction with zsuccess in both "+tp,len(dz[z_sucnew&z_new&z_suc])/len(dz[z_new]))
+	
+	if tp != 'QSO':
+	    plt.hist(dz['Z_fid'],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z_new'],histtype='step',label='new',range=(zmin,zmax),bins=50)
+	    plt.legend()
+	    plt.xlabel('redshift')
+	    plt.ylabel('# of good z in bin')
+	    plt.show()
+	else:
+	    plt.hist(dz['Z'],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
+	    plt.hist(dz['Z_QF_new'],histtype='step',label='new',range=(zmin,zmax),bins=50)
+	    plt.legend()
+	    plt.xlabel('redshift')
+	    plt.ylabel('# of good z in bin')
+	    plt.show()
+	
 	
 
