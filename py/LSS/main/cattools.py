@@ -136,7 +136,7 @@ def combtile_qso_alt(tiles,outf='',coaddir=''):
             specd = specd[kp]
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            print(tile,n,len(tiles),len(specd))
         else:
             print(str(tile)+' failed')
             nfail += 1
