@@ -165,12 +165,12 @@ for tp in tracers:
 		#dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
 		#dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
-		z_suc = dz['Z_QF'].mask == False
+		z_suc = dz['Z'].mask == False #previous Z column should have become Z_fid
 		qsozf_new = basedir+'/'+survey+'/LSS/'+args.verspec_new+'/QSO_catalog.fits'
 		arz = Table(fitsio.read(qsozf_new))
 		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
 		arz['TILEID'] = arz['TILEID'].astype(int)
-		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF_new'])
+		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','QF_new'])
 		
 		z_sucnew = dz['Z_QF_new'].mask == False
 
@@ -184,3 +184,4 @@ for tp in tracers:
 	#print(len(ff[z_suc]),len(ff[z_tot]))
 	print("fiducial zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
 	print("new zsuccess rate for "+tp,len(dz[z_sucnew&z_new])/len(dz[z_new]))
+
