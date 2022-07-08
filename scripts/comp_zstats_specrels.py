@@ -166,77 +166,21 @@ for tp in tracers:
 		#dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
 		z_suc = dz['Z_QF'].mask == False
+		qsozf_new = basedir+'/'+survey+'/LSS/'+args.verspec_new+'/QSO_catalog.fits'
+		arz = Table(fitsio.read(qsozf_new))
+		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+		arz['TILEID'] = arz['TILEID'].astype(int)
+		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF_new'])
+		
+		z_sucnew = dz['Z_QF_new'].mask == False
 
 
 	if tp == 'BGS_ANY':    
 		z_suc = dz['ZWARN']==0
 		z_suc &= dz['DELTACHI2']>40
+		z_sucnew = dz['ZWARN_new']==0
+		z_sucnew &= dz['DELTACHI2_new']>40
 
 	#print(len(ff[z_suc]),len(ff[z_tot]))
 	print("fiducial zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
 	print("new zsuccess rate for "+tp,len(dz[z_sucnew&z_new])/len(dz[z_new]))
-	sys.exit('ending here')
-	fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
-	fiblg,n_g = np.unique(dz[z_suc&z_tot]['FIBER'],return_counts=True)
-	fib_test = np.isin(fibl,fiblg)
-	z_tot &= np.isin(dz['FIBER'],fibl[fib_test])
-	fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
-
-	if np.array_equal(fibl,fiblg):
-		gfrac = n_g/n_tot
-	else:
-		sys.exit('need to put something in for mismatch fiber lists')
-
-	fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
-	fo = open(fn,'w')
-	for ii in range(len(fibl)):
-		fo.write(str(fibl[ii])+' '+str(n_g[ii]/n_tot[ii])+' '+str(n_g[ii])+' '+str(n_tot[ii])+'\n')
-	fo.close()
- 
-
-def plot_all_petal(petal):
-    for tp in tracers:
-        if args.survey != 'SV3':
-            from LSS.globals import main
-            pars = main(tp,args.verspec)   
-
-        fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
-        d = np.loadtxt(fn).transpose()
-        fibl = d[0]
-        f_succ = d[1]
-        n_g= d[2]
-        n_tot = d[3]
-        
-        err = np.sqrt(n_g*(1-f_succ))/n_tot
-
-        fmin = petal*500
-        fmax = (petal+1)*500
-        sel = fibl >= fmin
-        sel &= fibl < fmax
-        bfib = pars.badfib
-        sel_bfib = np.isin(fibl[sel],bfib)
-
-        if tp == 'LRG':
-            plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
-        if tp == 'ELG':
-            plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-        if tp == 'QSO':
-            plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-        if tp == 'BGS_ANY':
-            plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-    plt.grid()
-    plt.legend()
-    plt.xlabel('FIBER')
-    plt.ylabel('redshift success rate')
-    plt.title(args.verspec+' petal '+str(petal))
-    plt.ylim(-0.05,1.05)
-    plt.savefig(basedir+'/'+survey+'/LSS/'+specver+'/plots/petal'+str(petal)+'_zsuccess.png')
-    plt.clf()
-    #plt.show()
-
-for i in range(0,10):
-    plot_all_petal(i)
