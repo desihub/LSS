@@ -26,6 +26,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--verspec_new",help="version for redshifts",default='newQSOtemp')
 parser.add_argument("--tracer",help="tracer type(s) (e.g., LRG)",default='all')
+parser.add_argument("--mbit5",help="whether to screen against mask bit 5",default='n')
 
 args = parser.parse_args()
 basedir = args.basedir
@@ -174,7 +175,8 @@ for tp in tracers:
 		#dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
 		z_suc = dz['Z'].mask == False #previous Z column should have become Z_fid
-		z_suc &= dz['ZWARN_fid'] & 2**5 == 0
+		if args.mbit5 == 'y':
+		    z_suc &= dz['ZWARN_fid'] & 2**5 == 0
 		qsozf_new = basedir+'/'+survey+'/LSS/'+args.verspec_new+'/QSO_catalog.fits'
 		arz = Table(fitsio.read(qsozf_new))
 		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
@@ -182,7 +184,8 @@ for tp in tracers:
 		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF_new'])
 		#print(dz.dtype.names)
 		z_sucnew = dz['Z_QF_new'].mask == False
-		z_sucnew &= dz['ZWARN_new'] & 2**5 == 0
+		if args.mbit5 == 'y':
+		    z_sucnew &= dz['ZWARN_new'] & 2**5 == 0
 		zmin = 0.8
 		zmax = 3.5
 
@@ -207,14 +210,14 @@ for tp in tracers:
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad_maskbit5.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad.png')
 	    
 	    plt.show()
 	    plt.plot(dz['Z_fid'][z_suc&z_tot&z_sucnew],dz['Z_new'][z_suc&z_tot&z_sucnew],'k,')
 	    plt.xlabel('Guadalupe redshift')
 	    plt.ylabel('new redshift')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad_maskbit5.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
 	    plt.show()
 	    
 	else:
@@ -224,13 +227,16 @@ for tp in tracers:
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad.png')
+	    fn_app = ''
+	    if args.mbit5 == 'y':
+	        fn_app = '_maskbit5'
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad'+fn_app+'.png')
 	    plt.show()
 	    plt.plot(dz['Z'][z_suc&z_tot&z_sucnew],dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
 	    plt.xlabel('Guadalupe redshift')
 	    plt.ylabel('new redshift')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad'+fn_app+'.png')
 	    plt.show()
 	    plt.plot(dz['Z'][z_suc&z_tot&z_sucnew],dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
 	    plt.xlabel('Guadalupe redshift')
@@ -238,7 +244,7 @@ for tp in tracers:
 	    plt.title(tp+notqso)
 	    plt.xlim(1.3,1.6)
 	    plt.ylim(1.3,1.6)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuadzoom.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuadzoom'+fn_app+'.png')
 	    plt.show()
 	
 	
