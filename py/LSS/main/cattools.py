@@ -258,6 +258,9 @@ def combtile_spec_alt(tiles,outf='',md='',redo='n',prog='dark',coaddir=''):
             tspec['TILEID'] = tile
             tspec = np.array(tspec)
             new = np.empty(len(tspec),dtype=specd.dtype)
+            if s == 0:
+                specd = tspec
+                s = 1
             cols = specd.dtype.names
             for colname in cols:
                 new[colname][...] = tspec[colname][...]
