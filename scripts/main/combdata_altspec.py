@@ -129,7 +129,7 @@ print('specrel is '+specrel)
 
 if args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    ct.combtile_qso(tiles4comb,outf,coaddir=specdir)
+    ct.combtile_qso_alt(tiles4comb,outf,coaddir=specdir)
 
 if args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
