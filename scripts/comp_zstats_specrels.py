@@ -45,12 +45,16 @@ if args.tracer == 'all':
 else:
     tracers = [args.tracer]
 
+
+
 for tp in tracers:
+	notqso = ''
 	if survey == 'DA02':
 		if tp == 'LRG':
 			bit = 1 #for selecting LRG
 		if tp == 'ELG':
 			bit = 2
+			notqso = 'notqso'
 		if tp == 'QSO':
 			bit = 4
 		if tp == 'BGS_ANY':
@@ -200,6 +204,7 @@ for tp in tracers:
 	    plt.legend()
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
 	    plt.show()
 	else:
 	    plt.hist(dz['Z'],histtype='step',label='fiducial',range=(zmin,zmax),bins=50)
@@ -207,6 +212,7 @@ for tp in tracers:
 	    plt.legend()
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
 	    plt.show()
 	
 	
