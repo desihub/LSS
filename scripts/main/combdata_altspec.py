@@ -106,7 +106,16 @@ print('check that length of tiles4comb matches '+str(len(tiles4comb)))
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
-if not os.path.exists(maindir+'/logs'):
+if not os.path.exists(basedir +'/'+args.survey):
+    os.mkdir(basedir +'/'+args.survey)
+    print('made '+basedir +'/'+args.survey)
+
+if not os.path.exists(maindir):
+    os.mkdir(maindir)
+    print('made '+maindir+'/logs')
+
+
+if not os.path.exists(maindir):
     os.mkdir(maindir+'/logs')
     print('made '+maindir+'/logs')
 
