@@ -174,6 +174,7 @@ for tp in tracers:
 		#dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
 		z_suc = dz['Z'].mask == False #previous Z column should have become Z_fid
+		z_suc &= dz['ZWARN_fid'] & 2**5 == 0
 		qsozf_new = basedir+'/'+survey+'/LSS/'+args.verspec_new+'/QSO_catalog.fits'
 		arz = Table(fitsio.read(qsozf_new))
 		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
@@ -181,6 +182,7 @@ for tp in tracers:
 		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF_new'])
 		#print(dz.dtype.names)
 		z_sucnew = dz['Z_QF_new'].mask == False
+		z_sucnew &= dz['ZWARN_new'] & 2**5 == 0
 		zmin = 0.8
 		zmax = 3.5
 
@@ -205,14 +207,14 @@ for tp in tracers:
 	    plt.xlabel('redshift')
 	    plt.ylabel('# of good z in bin')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad_maskbit5.png')
 	    
 	    plt.show()
 	    plt.plot(dz['Z_fid'][z_suc&z_tot&z_sucnew],dz['Z_new'][z_suc&z_tot&z_sucnew],'k,')
 	    plt.xlabel('Guadalupe redshift')
 	    plt.ylabel('new redshift')
 	    plt.title(tp+notqso)
-	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad_maskbit5.png')
 	    plt.show()
 	    
 	else:
