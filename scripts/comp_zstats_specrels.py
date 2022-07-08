@@ -208,7 +208,7 @@ for tp in tracers:
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad.png')
 	    
 	    plt.show()
-	    plt.plot(dz['Z_fid'][z_suc&z_tot&z_new],dz['Z_new'][z_suc&z_tot&z_new]'k,')
+	    plt.plot(dz['Z_fid'][z_suc&z_tot&z_new],dz['Z_new'][z_suc&z_tot&z_new],'k,')
 	    plt.xlabel('Guadalupe redshift')
 	    plt.ylabel('new redshift')
 	    plt.title(tp+notqso)
@@ -224,7 +224,7 @@ for tp in tracers:
 	    plt.title(tp+notqso)
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad.png')
 	    plt.show()
-	    plt.plot(dz['Z'][z_suc&z_tot&z_new],dz['Z_QF_new'][z_suc&z_tot&z_new]'k,')
+	    plt.plot(dz['Z'][z_suc&z_tot&z_new],dz['Z_QF_new'][z_suc&z_tot&z_new],'k,')
 	    plt.xlabel('Guadalupe redshift')
 	    plt.ylabel('new redshift')
 	    plt.title(tp+notqso)
