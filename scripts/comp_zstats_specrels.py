@@ -78,7 +78,7 @@ for tp in tracers:
 		dz_new.keep_columns(['Z','ZWARN','DELTACHI2','TARGETID','TILEID','LOCATION'])
 		print(len(dz))
 		dz = join(dz,dz_new,keys=['TARGETID','TILEID','LOCATION'],table_names=['fid','new'])
-		print(len(dz)+' should agree with above')
+		print(str(len(dz))+' should agree with above')
 		
 		 
 		from LSS.globals import main
