@@ -67,9 +67,6 @@ prog = args.prog
 progu = prog.upper()
 
 
-redotarspec = False
-if args.redotarspec == 'y':
-    redotarspec = True
 
 mainp = main(prog,specver=args.verspec_comp)
 
