@@ -38,7 +38,7 @@ else:
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
