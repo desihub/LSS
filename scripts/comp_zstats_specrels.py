@@ -43,7 +43,7 @@ specver = args.verspec
 if args.tracer == 'all':
     tracers = ['QSO','LRG','ELG','BGS_ANY']
 else:
-    tracers = [tracer]
+    tracers = [args.tracer]
 
 for tp in tracers:
 	if survey == 'DA02':
