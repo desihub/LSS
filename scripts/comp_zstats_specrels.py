@@ -171,7 +171,7 @@ for tp in tracers:
 		arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
 		arz['TILEID'] = arz['TILEID'].astype(int)
 		dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','QF_new'])
-		
+		print(dz.dtype.names)
 		z_sucnew = dz['Z_QF_new'].mask == False
 
 
@@ -184,4 +184,6 @@ for tp in tracers:
 	#print(len(ff[z_suc]),len(ff[z_tot]))
 	print("fiducial zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
 	print("new zsuccess rate for "+tp,len(dz[z_sucnew&z_new])/len(dz[z_new]))
+	print("fraction with zsuccess in both "+tp,len(dz[z_sucnew&z_new&z_suc])/len(dz[z_new]))
+	
 
