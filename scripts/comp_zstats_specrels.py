@@ -230,6 +230,14 @@ for tp in tracers:
 	    plt.title(tp+notqso)
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad.png')
 	    plt.show()
+	    plt.plot(dz['Z'][z_suc&z_tot&z_sucnew],dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
+	    plt.xlabel('Guadalupe redshift')
+	    plt.ylabel('new redshift')
+	    plt.title(tp+notqso)
+	    plt.xlim(1.3,1.6)
+	    plt.ylim(1.3,1.6)
+	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuadzoom.png')
+	    plt.show()
 	
 	
 
