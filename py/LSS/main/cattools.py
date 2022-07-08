@@ -114,7 +114,7 @@ def combtile_qso_alt(tiles,outf='',coaddir=''):
     print('will add QSO info for '+str(len(tiles))+' tiles')
     #kl = list(specd.dtype.names)
     for tile,zdate in zip(tiles['TILEID'],tiles['THRUDATE']):
-        tdate = str(tdate)
+        zdate = str(zdate)
         tspec = combQSOdata_alt(tile,zdate,cols=kl,coaddir=coaddir)
         if tspec:
             #better would be to concatenate all at once than one at a time
