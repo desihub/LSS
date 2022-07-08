@@ -370,7 +370,7 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
 
 def combspecdata_alt(tile,tdate,coaddir='',md='' ):
     #put data from different spectrographs together, one table for fibermap, other for z
-    zdate = str(zdate)
+    tdate = str(tdate)
     specs = []
     #find out which spectrograph have data
     #zfn = 'zbest'
