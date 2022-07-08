@@ -85,7 +85,7 @@ print('and with archivedate > 0 '+str(len(mt[wd])))
 wd &= mt['FAPRGRM'] == prog
 print('and in '+prog+' '+str(len(mt[wd])))
 
-specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+args.specrel_comp+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+args.verspec_comp+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
 wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtd = mt[wd]
 print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+args.specrel_comp+' version of reduced spectra')
