@@ -66,9 +66,6 @@ specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
 
-combpix = True
-if args.combpix == 'n':
-    combpix = False
 
 redotarspec = False
 if args.redotarspec == 'y':
