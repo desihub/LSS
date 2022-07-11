@@ -1,5 +1,5 @@
-import astropy.io.fits as pf
 from astropy.table import Table,join,unique,vstack
+import astropy.io.fits as pf
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
@@ -22,6 +22,11 @@ import os
 import subprocess
 import sys
 from time import sleep
+import cProfile, pstats
+import io as ProfileIO
+from pstats import SortKey
+import glob
+pr = cProfile.Profile()
 
 log = get_logger()
 
@@ -32,12 +37,19 @@ zcatdatamodel = np.array([], dtype=[
     ('NUMOBS', '>i4'), ('Z', '>f8'), ('ZWARN', '>i8'), ('ZTILEID', '>i4')
     ])
 
-mtltilefiledm = np.array([], dtype=[
-    ('TILEID', '>i4'), ('TIMESTAMP', 'U25'),
-    ('VERSION', 'U14'), ('PROGRAM', 'U6'), ('ZDATE', 'U8')
-    ])
+#mtltilefiledm = np.array([], dtype=[
+#    ('TILEID', '>i4'), ('TIMESTAMP', 'U25'),
+#    ('VERSION', 'U14'), ('PROGRAM', 'U6'), ('ZDATE', 'U8')
+#    ])
+
+mtltilefiledm = np.array([], dtype = [
+    ('TILEID', '>i4'), ('TIMESTAMP', '<U25'),
+    ('VERSION', '<U14'), ('PROGRAM', '<U6'), 
+    ('ZDATE', '>i8'), ('ARCHIVEDATE', '>i8')])
 
 def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
+    log.critical('this function isn\'t ready yet. Goodbye')
+    raise NotImplementedError('Fiber Twin method not implemented yet.')
     if survey == 'sv3':
         if obscon == 'dark':
             altTargBits = altFiber['SV3_DESI_TARGET']
@@ -255,59 +267,155 @@ def trimToMTL(notMTL, MTL, debug = False):
 
 
 
-def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2):
+def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
+    obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, 
+    ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
+    hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleSubpriorities = True, 
+    reproducing = False, usetmp = False, finalDir = None, profile = False):
+    if profile:
+        pr.enable()
+
+    log.info('starting initializeAltMTLs')
+
+    if (shuffleSubpriorities ^ reproducing):
+        pass
+    else:
+        log.critical('If you are not shuffling subpriorities, you MUST be in debug/reproduction mode.')
+        raise ValueError('If you are not shuffling subpriorities, you MUST be in debug/reproduction mode.')
 
     if ('trunk' in outputMTL.lower()) or  ('ops' in outputMTL.lower()):
         raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
 
+    if (not usetmp) or (usetmp and (outputMTL.startswith('/dev/shm/') or outputMTL.startswith('/tmp/'))):
+        pass
+    else:
+        log.critical('You are trying to write to local tmp directories but \
+            your write directory is not in local tmp (/dev/shm/ or /tmp/).')
+        log.critical('directory name: {0}'.format(outputMTLDir))
+        raise ValueError('usetmp set to True but output directory not in tmp. Output directory is {0}'.format(outputMTLDir))
+
+        
+
     ztilefn = ztilefile.split('/')[-1]
     fn = initMTL.split('/')[-1]
-
+    log.info('reading initial MTL(s)')
     allentries = Table.read(initMTL) 
     
     meta = allentries.meta
-    print('---')
-    print(meta)
-    print(initMTL)
-    print(outputMTL)
-    print('---')
+    log.info('MTL metadata')
+    log.info(meta)
+    log.info('initial MTL')
+    log.info(initMTL)
+    log.info('output MTL')
+    log.info(outputMTL)
+    #JL THIS NEEDS TO BE FIXED FOR PEOPLE WHO DONT USE 'Univ' 
+    #JL AS THEIR REALIZATION LABEL
+    if not ('Univ' in outputMTL):
+        log.warning('Code currently relies on using Univ as realization delimiter. \
+            Code may function improperly. Fix is coming.')
+    altmtldir = os.path.dirname(outputMTL).split('Univ')[0]
+    origmtldir = os.path.dirname(initMTL).split(survey)[0]
+    #zcatdir = os.path.dirname(ztilefile)
 
-    firstTS = allentries[0]["TIMESTAMP"] 
-    initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
-    subpriorsInit = initialentries["SUBPRIORITY"]
+    if startDate is None:
+
+        firstTS = allentries[0]["TIMESTAMP"] 
+        initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
+        subpriorsInit = initialentries["SUBPRIORITY"]
+    else:
+        raise NotImplementedError('not currently debugging this feature, bye.')
+        log.warning('Initializing MTLs from a non-zero start date feature is in Beta mode')
+        initialentries = allentries[allentries["TIMESTAMP"] < startDate]
+        subpriorsInit = initialentries["SUBPRIORITY"]
+        #JL TRIPLE CHECK THIS IS THE RIGHT FILE
+        origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
+        altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
+        startDateShort = int(startDate.split('T')[0].replace('-', ''))
+        log.info('startDateShort')
+        log.info(startDateShort)
+        log.info('altmtltilefn')
+        log.info(altmtltilefn)
+        log.info('ztilefile')
+        log.info(ztilefile)
+        ztiles = Table.read(origmtltilefn)
+        log.info('ztiles dtype')
+        log.info(ztiles.dtype)
+        tilesTemp = ztiles[ztiles['ARCHIVEDATE'].astype(int) < startDateShort]
+        sortedDatesTemp = np.sort(ztiles['ARCHIVEDATE'])
+        log.info('first and last archivedates')
+        log.info(sortedDatesTemp[0])
+        log.info(sortedDatesTemp[-1])
+        log.info('tilesTemp[0:2]')
+        log.info(tilesTemp[0:2])
+        log.info('tilesTemp.as_array[0:2]')
+        log.info(tilesTemp.as_array()[0:2])
+        log.info('mtltimefiledm.dtype')
+        log.info(mtltilefiledm.dtype)
+        log.info('tilesTemp.as_array().dtype')
+        log.info(tilesTemp.as_array().dtype)
+        io.write_mtl_tile_file(altmtltilefn,tilesTemp.as_array().astype(mtltilefiledm.dtype))
+
+        log.info('initialentries timestamp 0: {0}'.format(np.sort(initialentries['TIMESTAMP'])[0]))
+
+        log.info('initialentries timestamp -1: {0}'.format(np.sort(initialentries['TIMESTAMP'])[-1]))
+        #log.critical('this feature does not yet exist. Goodbye.')
+        #assert(0)
+
+    log.info('generate subset? {0}'.format(genSubset))
     if not genSubset is None:
         if type(genSubset) == int:
+            log.info('genSubset Int')
             iterloop = [genSubset]
         elif (type(genSubset) == list) or (type(genSubset) == np.ndarray):
+            log.info('genSubset Arraylike')
             iterloop = genSubset
     else:
+        log.info('genSubset None')
         iterloop = range(nAlt)
-
+    log.info('starting iterloop')
     for n in iterloop:
+        log.info('Realization {0:d}'.format(n))
         outputMTLDir = outputMTL.format(n)
+        log.info('outputMTLDir')
+        log.info(outputMTLDir)
         outfile = outputMTLDir +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn)
+        log.info('outfile')
+        log.info(outfile)
         if os.path.exists(outfile):
             if overwrite: 
+                print('overwrite')
+                log.info('overwrite')
                 os.remove(outfile)
             else:
+                print('continuing')
+                log.info('continuint')
                 continue
 
-
+        print('past the overwrite check')
+        log.info('past the overwrite check')
         if type(hpnum) == int:
             rand.seed(seed + hpnum + n)
         else:
             rand.seed(seed + n)
-        
+        print('pre creating output dir')
+        log.info('pre creating output dir')
         if not os.path.exists(outputMTLDir):
+            print('making outputMTLDir')
             os.makedirs(outputMTLDir)
+        else:
+            print('not making outputMTLDir')
         if not os.path.isfile(outputMTLDir + ztilefn):
             os.symlink(ztilefile, outputMTLDir + ztilefn)
         subpriors = initialentries['SUBPRIORITY']
         #shuffler = rand.permutation(len(subpriors))
-        newSubpriors = rand.uniform(size = len(subpriors))
+        if (not reproducing) and shuffleSubpriorities:
+            newSubpriors = rand.uniform(size = len(subpriors))
+        else:
+            newSubpriors = np.copy(subpriors)
         #newSubpriors = subpriors[shuffler]
         try:
-            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2))
+            
+            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2) | ((not shuffleSubpriorities) and reproducing) )
         except:
             print('first shuffle failed')
             print('size of initial subprior array')
@@ -358,7 +466,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         print('--')
         io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
     
-        if saveBackup:
+        if saveBackup and (not usetmp):
             if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
                 os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
             
@@ -367,6 +475,60 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             from shutil import copyfile
 
             copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
+
+        elif usetmp:
+            from shutil import copyfile
+
+            if not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() ):
+                os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() )
+
+            if saveBackup and (not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')):
+                os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
+
+            log.info('tempdir contents before copying')
+            log.info(glob.glob(outputMTLDir + '/*' ))
+            copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/' + str(fn))
+            log.info('tempdir contents after copying')
+            log.info(glob.glob(outputMTLDir + '/*' ))
+
+            if saveBackup:
+                #JL Potentially move the saveBackup copying to an afterburner
+                #JL to speed up afterburner process. Copy all at once
+                copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
+                
+            os.remove(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn))
+            log.info('tempdir contents after removing')
+            log.info(glob.glob(outputMTLDir + '/*' ))
+    if usetmp:
+        
+
+        log.info('cleaning up tmpdir')
+        log.info(glob.glob(outputMTLDir + '*' ))
+        f2c = glob.glob(outputMTLDir + '*' )
+        log.info('finaldir')
+        log.info(finalDir.format(n))
+        for tempfn in f2c:
+            if '.' in str(os.path.split(tempfn)[1]):
+
+                log.info('copying tempfn: {0}'.format(tempfn))
+                copyfile(tempfn , str(finalDir.format(n)) +'/' + os.path.basename(tempfn) )
+
+
+        log.info('tempdir contents after copying')
+        log.info(glob.glob(outputMTLDir + '*' ))
+
+    if profile:
+        pr.disable()
+        s = ProfileIO.StringIO()
+        sortby = SortKey.CUMULATIVE
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        if usetmp:
+
+            ps.dump_stats(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn) + '.prof')
+        else:
+            ps.dump_stats(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn) + '.prof')
+        print(s.getvalue())
         
         
 
@@ -459,6 +621,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
+    log.info('getosubp value: {0}'.format(getosubp))
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
         raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
     assert((singleDate is None) or (type(singleDate) == bool))
@@ -521,19 +684,43 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     return althpdirname, mtltilefn, ztilefn, tiles
         if not (singletile is None):
             tiles = tiles[tiles['TILEID'] == singletile]
-
-        sorttiles = np.sort(tiles, order = 'ZDATE')
+        try:
+            sorttiles = np.sort(tiles, order = ['ARCHIVEDATE', 'ZDATE'])
+        except:
+            log.warn('sorting tiles on ARCHIVEDATE failed.')
+            log.warn('currently we are aborting, but this may')
+            log.warn('change in the future to switching to order by ZDATE')
+            log.critical('goodbye')
+            assert(0)
+            #sorttiles = np.sort(tiles, order = 'ZDATE')
         if testDoubleDate:
-            print('Testing Rosette with Doubled Date only')
+            log.info('Testing Rosette with Doubled Date only')
             cond1 = ((tiles['TILEID'] >= 298) & (tiles['TILEID'] <= 324))
             cond2 = ((tiles['TILEID'] >= 475) & (tiles['TILEID'] <= 477))
-            print(tiles[tiles['TILEID' ] == 314])
-            print(tiles[tiles['TILEID' ] == 315])
+            log.info(tiles[tiles['TILEID' ] == 314])
+            log.info(tiles[tiles['TILEID' ] == 315])
             tiles = tiles[cond1 | cond2 ]
         
-        dates = np.sort(np.unique(tiles['ZDATE']))
+        dates = np.sort(np.unique(sorttiles['ARCHIVEDATE']))
+        log.info('first and last 10 hopefully archivedates hopefully in order')
+        log.info(dates[0:10])
+        log.info(dates[-10:-1])
+        log.info('first and last 10 hopefully zdates hopefully not in order')
+        log.info(sorttiles['ZDATE'][0:10])
+        log.info(sorttiles['ZDATE'][-10:-1])
+
+        print('first and last 10 hopefully archivedates hopefully in order')
+        print(dates[0:10])
+        print(dates[-10:-1])
+        print('first and last 10 hopefully zdates hopefully not in order')
+        print(sorttiles['ZDATE'][0:10])
+        print(sorttiles['ZDATE'][-10:-1])
         for date in dates:
-            dateTiles = tiles[tiles['ZDATE'] == date]
+            dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == date]
+            zdates = np.sort(np.unique(dateTiles['ZDATE']))
+            dateTiles = dateTiles[dateTiles['ZDATE'] == zdates[0]]
+            assert(len(np.unique(dateTiles['ARCHIVEDATE'])) == 1)
+            assert(len(np.unique(dateTiles['ZDATE'])) == 1)
             OrigFAs = []
             AltFAs = []
             AltFAs2 = []
@@ -541,27 +728,43 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             fadates = []
 
             for t in dateTiles:
+                #JL This loop takes each of the original fiberassignments for each of the tiles on $date
+                #JL and opens them to obtain information for the alternative fiber assignments.
+                #JL Then it runs the alternative fiber assignments, stores the results in an array (AltFAs)
+                #JL while also storing the original fiber assignment files in a different array (OrigFA)
+
                 ts = str(t['TILEID']).zfill(6)
+                #JL Full path to the original fiber assignment from the real survey
                 FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
                 fhtOrig = fitsio.read_header(FAOrigName)
                 fadate = fhtOrig['RUNDATE']
+                #JL stripping out the time of fiber assignment to leave only the date
+                #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
                 fadate = ''.join(fadate.split('T')[0].split('-'))
 
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
                 if getosubp:
-                    FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
-                    fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
+                    #JL When we are trying to reproduce a prior survey and/or debug, create a separate
+                    #JL directory in fbadirbase + /orig/ to store the reproduced FA files. 
+                    FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
+                    fbadir = fbadirbase + '/orig/'
                 else:
+                    #JL For normal "alternate" operations, store the fiber assignmens
+                    #JL in the fbadirbase directory. 
 
-                    FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
+                    FAAltName = fbadirbase + '/fba-' + ts+ '.fits'
                     fbadir = fbadirbase
 
+                #JL Sometimes fiberassign leaves around temp files if a run is aborted. 
+                #JL This command removes those temp files to prevent endless crashes. 
                 if os.path.exists(FAAltName + '.tmp'):
                     os.remove(FAAltName + '.tmp')
 
+                #JL If the alternate fiberassignment was already performed, don't repeat it
+                #JL Unless the 'redoFA' flag is set to true
                 if  redoFA or (not os.path.exists(FAAltName)):
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA)
-                    command_run = (['bash', fbadir + 'fa-' + ts + '.sh'])
+                    command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
                     result = subprocess.run(command_run, capture_output = True)
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
@@ -594,6 +797,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 if changeFiberOpt is None:
                     A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
                 else:
+                    raise NotImplementedError('changeFiberOpt has not yet been implemented')
 
                     FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
 
@@ -615,10 +819,14 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             # ADM update the appropriate ledger.
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
+            log.info('if main, should sleep 1 second')
             if survey == "main":
                 sleep(1)
+                log.info('has slept one second')
                 tiles["TIMESTAMP"] = get_utc_date(survey=survey)
+            log.info('now writing to mtl_tile_file')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
+            log.info('has written to mtl_tile_file')
             
             if singleDate:
                 return 1

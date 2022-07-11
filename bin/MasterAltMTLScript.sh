@@ -1,14 +1,18 @@
 #!/bin/bash
+start=`date +%s.%N`
 #All Boolean True/False parameters are 0 for False or 1 for True
 #So python interprets them correctly
+
+#Location where you have cloned the LSS Repo
+path2LSS=~/.local/desicode/LSS/bin/
 
 #Options for InitializeAltMTLs
 
 #Random seed. Change to any integer you want (or leave the same)
-seed=12345
+seed=31415
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=64
+ndir=8
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
 #Observing conditions to generate MTLs for (should be all caps "DARK" or "BRIGHT")
@@ -16,7 +20,8 @@ obscon='DARK'
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
 #Where to generate MTLs. Automatically formats number of MTLs into directory name but you can change this
-printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_masterScriptTest_%03ddirs/" $ndir
+date='070822'
+printf -v outputMTLDirBase "$CSCRATCH/alt_mtls_OrigTimingTest%s_%03ddirs_%sRepro/" $date $ndir $survey
 hpListFile='SV3HPList.txt'
 #These two options only are considered if the obscon is bright
 #First option indicates whether to shuffle the top level priorities
@@ -39,13 +44,17 @@ NObsDates=40
 #Defaults to 1 for 64 directories
 NNodes=1
 
+#getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
+#This should only be turned on for testing/debugging purposes
+
+getosubp=1
 
 #Include secondary targets?
 secondary=0
 
 numobs_from_ledger=1
 #Force redo fiber assignment if it has already been done. 
-redoFA=1
+redoFA=0
 
 
 #Options for MakeBitweightsParallel
@@ -60,18 +69,72 @@ splitByChunk=100
 overwrite2=1
 #Actual running of scripts
 
-srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& InitializeAltMTLsParallelOutput.out
+#Copy this script to output directory for reproducbility
+thisFileName=$outputMTLDirBase/$0
+
+echo $thisFileName
+
+if [ -f "$thisFileName" ]
+then
+    echo "File is found. Checking to see it is identical to the original."
+    cmp  $0 $thisFileName
+    comp=$?
+    if  [[ $comp -eq 1 ]]
+    then 
+        echo "Files are not identical."
+        echo "If this is intended, please delete the original copied script at $thisFileName"
+        echo "If this is unintended, you can reuse the original copied script at that same location"
+        echo "goodbye"
+        exit 3141
+    elif [[ $comp -eq 0 ]] 
+    then
+        echo "files are same, continuing"
+    else 
+        echo "Something has gone very wrong. Exit code for cmp was $a"
+        exit $a
+    fi
+else
+   echo "Copied script is not found. Copying now, making directories as needed."
+   mkdir -p $outputMTLDirBase
+   cp $0 $outputMTLDirBase
+fi
+
+echo 'moving on to python scripts (REMOVE BEFORE PUSHING)'
+printf -v OFIM "%s/InitializeAltMTLsParallelOutput_%sRepro%s.out" $outputMTLDirBase $survey $date
+
+srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes >& $OFIM
+
+echo "after first python script (REMOVE BEFORE PUSHING)"
+
 if [ $? -ne 0 ]; then
     exit 1234
 fi
-
-bash dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA >& dateLoopAltMTLOutput.out
-
+printf -v OFDL "%s/dateLoopAltMTLOutput_%sRepro%s.out" $outputMTLDirBase $survey $date
+runtimeInit=$( echo "$endInit - $start" | bc -l )
+bash dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLDirBase $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp  >& $OFDL
+endDL=`date +%s.%N`
 if [ $? -ne 0 ]; then
     exit 12345
 fi
 if [ $splitByReal -ne 0 ]; then
-    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+    printf -v OFBW "%s/MakeBitweightsOutputCase1%sRepro%s.out" $outputMTLDirBase $survey $date
+    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& $OFBW
 else
-    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& MakeBitweightsOutput.out
+    printf -v OFBW "%s/MakeBitweightsOutputCase2%sRepro%s.out" $outputMTLDirBase $survey $date
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& $OFBW
 fi
+
+endBW=`date +%s.%N`
+
+
+
+runtimeInit=$( echo "$endInit - $start" | bc -l )
+runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
+runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
+
+echo "runtime for initialization"
+echo $runtimeInit
+echo "runtime for Dateloop of $NObsDates days"
+echo $runtimeDateLoop
+echo "runtime for making bitweights"
+echo $runtimeBitweights
