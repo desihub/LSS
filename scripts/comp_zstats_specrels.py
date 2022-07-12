@@ -238,7 +238,7 @@ for tp in tracers:
 	    fn_app = ''
 	    if args.mbit5 == 'y':
 	        fn_app = '_maskbit5'
-	    if args.mbit5 == 'y':
+	    if args.mbit510 == 'y':
 	        fn_app = '_maskbits510'
 	    if args.zwarn0 == 'y':
 	        fn_app = '_zwarn0'
