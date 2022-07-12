@@ -15,6 +15,7 @@ from astropy.wcs import WCS
 
 from desitarget.randoms import dr_extension
 from desitarget.internal import sharedmem
+from desitarget.geomask import match_to
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -84,7 +85,7 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     # ADM loop through the filters and store the number of observations
     # ADM at the RA and Dec positions of the passed points.
     for filt in ['g', 'r', 'z']:
-        col = 'PIXEL_NOBS_' + filt.upper() 
+        col = 'PIXEL_NOBS_' + filt.upper()
         fn = fileform.format(brickname, filt)
         if os.path.exists(fn):
             img = fits.open(fn)[extn_nb]
@@ -158,8 +159,18 @@ def make_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
             raise ValueError(msg)            
 
         # ADM call the actual code.
-        return nexp_at_positions_in_a_brick(brick["RA"], brick["DEC"], brickname,
-                                            nors, drdir)
+        nexp =  nexp_at_positions_in_a_brick(brick["RA"], brick["DEC"], brickname,
+                                             nors, drdir)
+
+        # ADM make a table of all of the required information...
+        dt = brick.dtype.descr + nexp.dtype.descr
+        done = np.zeros(len(brick), dtype=dt)
+        for col in brick.dtype.names:
+            done[col] = brick[col]
+        for col in nexp.dtype.names:
+            done[col] = nexp[col]
+
+        return done
 
     # ADM this is just to count bricks files in _update_status.
     nbrick = np.zeros((), dtype='i8')
@@ -189,4 +200,7 @@ def make_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
     if len(nexp) > 0:
         nexp = np.concatenate(nexp)
 
-    return nexp
+    # ADM match back on TARGETID to maintain original order of targets.
+    ii = match_to(nexp["TARGETID"], targs["TARGETID"])
+
+    return nexp[ii]
