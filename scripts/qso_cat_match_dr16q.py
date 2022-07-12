@@ -17,6 +17,7 @@ parser.add_argument("-o", "--out-dir", type=str, required=True, help="Directory 
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("-f", "--fuji", action="store_true", help="Match against Fuji catalog.")
 group.add_argument("-g", "--guadalupe", action="store_true", help="Match against Guadalupe catalog.")
+group.add_argument("-d", "--daily", action="store_true", help="Match against daily catalog.")
 group.add_argument("-a", "--all", action="store_true", help="Match against combined catalogs.")
 
 args = parser.parse_args()
@@ -31,11 +32,18 @@ if args.guadalupe or args.all:
     releases.append("guadalupe")
 if args.fuji or args.all:
     releases.append("fuji")
+if args.daily or args.all:
+    releases.append("daily")
+
 desi_tables = {}
 
 for r in releases:
-    ROOT = f"/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/{r}/"
-    fname = f"QSO_cat_{r}_healpix.fits"
+    if r == 'daily':
+        ROOT = "/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/"
+        fname = "QSO_catalog.fits"
+    else:
+        ROOT = f"/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/{r}/"
+        fname = f"QSO_cat_{r}_healpix.fits"
 
     with fitsio.FITS(ROOT + fname) as h:
         desi_tables[r] = h[1].read()
@@ -98,6 +106,8 @@ if args.fuji:
     out_name = "QSO_cat_fuji_healpix_DR16Q_match.fits"
 elif args.guadalupe:
     out_name = "QSO_cat_guadalupe_healpix_DR16Q_match.fits"
+elif args.daily:
+    out_name = "QSO_cat_daily_tile_DR16Q_match.fits"
 
 joined.write(out_loc / out_name, format="fits", overwrite=True)
     
