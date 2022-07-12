@@ -188,6 +188,12 @@ for tp in tracers:
 		z_sucnew = dz['Z_QF_new'].mask == False
 		if args.mbit5 == 'y':
 		    z_sucnew &= dz['ZWARN_new'] & 2**5 == 0
+		if args.mbit510 == 'y':
+		    z_sucnew &= dz['ZWARN_new'] & 2**5 == 0
+		    z_sucnew &= dz['ZWARN_new'] & 2**10 == 0
+		if args.zwarn0 == 'y':
+		    z_sucnew &= dz['ZWARN_new'] == 0
+		    
 		zmin = 0.8
 		zmax = 3.5
 
@@ -232,6 +238,11 @@ for tp in tracers:
 	    fn_app = ''
 	    if args.mbit5 == 'y':
 	        fn_app = '_maskbit5'
+	    if args.mbit5 == 'y':
+	        fn_app = '_maskbits510'
+	    if args.zwarn0 == 'y':
+	        fn_app = '_zwarn0'
+
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zhistcompGuad'+fn_app+'.png')
 	    plt.show()
 	    plt.plot(dz['Z'][z_suc&z_tot&z_sucnew],dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
@@ -240,10 +251,10 @@ for tp in tracers:
 	    plt.title(tp+notqso)
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zcompGuad'+fn_app+'.png')
 	    plt.show()
-	    plt.plot(dz['Z_QF_new'][z_suc&z_tot&z_sucnew],dz['Z'][z_suc&z_tot&z_sucnew]-dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
+	    plt.plot(dz['Z_QF_new'][z_suc&z_tot&z_sucnew],(dz['Z_QF_new'][z_suc&z_tot&z_sucnew]-dz['Z'][z_suc&z_tot&z_sucnew])/(1+dz['Z_QF_new'][z_suc&z_tot&z_sucnew]),'k,')
 	    plt.xlabel('new redshift')
-	    plt.ylabel('Guadalupe - new redshift')
-	    plt.ylim(-0.01,0.01)
+	    plt.ylabel('(new z-Guadalupe z)/(1+new z)')
+	    plt.ylim(-0.02,0.02)
 	    plt.title(tp+notqso)
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zdiffGuad'+fn_app+'.png')
 	    plt.show()
