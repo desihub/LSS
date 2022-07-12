@@ -12,14 +12,20 @@ from sys import argv
 from desiutil.log import get_logger
 import cProfile, pstats, io
 from pstats import SortKey
-profile = True
-pr = cProfile.Profile()
+profile = False
+if profile:
+    pr = cProfile.Profile()
+    pr.enable()
 
 log = get_logger()
-
-print('in python script REMOVE BEFORE PUSHING')
-log.info('in python script REMOVE BEFORE PUSHING')
-log.info(argv)
+debug = False #These will eventually be CLAs
+verbose = False  #These will eventually be CLAs
+ProcPerNode = 32 #These will eventually be CLAs
+#startDate = '2021-11-19T20:43:24+00:00'
+startDate = None #These will eventually be CLAs
+if debug or verbose or profile:
+    log.info('CLAs for script')
+    log.info(argv)
 seed = int(argv[1])
 ndir = int(argv[2])
 try:
@@ -78,23 +84,23 @@ log.info('Number of healpixels: {0:d}'.format(int(len(HPList))))
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
 
-NProc = int(NNodes*64)
+NProc = int(NNodes*ProcPerNode)
 
 log.info('requested number of nodes: {0:d}'.format(NNodes))
-log.info('requested number of processes: {0:d}'.format(ndir))
+log.info('requested number of directories/realizations: {0:d}'.format(ndir))
+log.info('requested number of processes: {0:d}'.format(NProc))
 
-
-
-#outputMTLDirBase = "/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_mainTest_{0}dirs/".format(ndir)
 outputMTLDir = outputMTLDirBase + "Univ{0:03d}/"
 
-
 HPList = np.array(open(HPListFile,'r').readlines()[0].split(',')).astype(int)
-print(HPList)
 
+usetmp = argv[12] #outputMTLDir.startswith('/dev/shm/') | outputMTLDir.startswith('/tmp/')
+if usetmp:
+    finalDir = argv[13]
+else:
+    finalDir = None
 
 def procFunc(nproc):
-    log.info('starting fxn call')
     if 'sv' in survey.lower():
         log.info('sv survey')
         mtlprestr = survey.lower()
@@ -103,16 +109,18 @@ def procFunc(nproc):
         mtlprestr = ''
 
     if os.path.exists(outputMTLDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),HPList[-1], obscon.lower(), mtlprestr)):
-        log.info('pathname')
+        log.info('Alt MTL for last HP in list exists. Exiting script')
         log.info(outputMTLDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),HPList[-1], obscon.lower(), mtlprestr))
         return 42
-    log.info('still going')
     for hpnum in HPList:
         exampleledger = exampleledgerbase + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),hpnum, obscon.lower(), mtlprestr)
-        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, profile = profile)
-    print('ending function call')
-    return 42           
-
+        if usetmp and (debug or verbose or profile):
+            log.info('outputMTLDir, nproc {0}'.format(nproc))
+            log.info(outputMTLDir)
+            log.info('finalDir, nproc{0}'.format(nproc))
+            log.info(finalDir)
+        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, reproducing = True, shuffleSubpriorities = False, startDate = startDate, profile = profile, usetmp=usetmp, finalDir=finalDir)
+    return 0
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)
 end = int((NodeID + 1)*NProc/SlurmNProcs)
@@ -125,30 +133,26 @@ if ndir < start:
 for i in range(start, end):
     if i >= ndir: 
         break
-    print('i')
-    print(i)
+    if debug or verbose or profile:
+        log.info('i')
+        log.info(i)
     inds.append(i)
     
-
 NProc = len(inds)
 assert(len(inds))
-    
-print('b')
-print(inds)
-print('running on NProc = {0} processes'.format(NProc))
+
+log.info('running on NProc = {0} processes'.format(NProc))
 p = Pool(NProc)
 atexit.register(p.close)
 log.info('running procFunc now on inds:')
 log.info(inds)
-pr.enable()
+
 result = p.map(procFunc,inds)
-pr.disable()
-print('c')
-s = io.StringIO()
-sortby = SortKey.CUMULATIVE
-ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-ps.print_stats()
-ps.dump_stats(outputMTLDirBase + '/InitializeAltMTLParallel.prof')
-print(s.getvalue())
-
-
+if profile:
+    pr.disable()
+    s = io.StringIO()
+    sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    ps.dump_stats(outputMTLDirBase + '/InitializeAltMTLParallel.prof')
+    print(s.getvalue())
