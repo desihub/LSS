@@ -12,11 +12,13 @@ import numpy as np
 from time import time
 import astropy.io.fits as fits
 from astropy.wcs import WCS
+from glob import glob
 
 from desitarget.randoms import dr_extension
 from desitarget.internal import sharedmem
 from desitarget.geomask import match_to
 from desitarget.io import write_with_units
+from desitarget.geomask import is_in_hp
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -99,7 +101,7 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
                                  x.round().astype("int")]
         # ADM if the file doesn't exist, set quantities to zero.
         else:
-            nexp[col] = np.zeros(npts, dtype='i2')
+            nexp[col] = np.zeros(len(ras), dtype='i2')
 
     return nexp
 
@@ -175,7 +177,7 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
 
     def _update_status(result):
         """wrapper function for the main parallel process"""
-        if nbrick % 20 == 0 and nbrick > 0:
+        if nbrick % 250 == 0 and nbrick > 0:
             elapsed = (time()-t0)/60.
             rate = nbrick/elapsed/60.
             log.info('{}/{} bricks; {:.1f} bricks/sec...t = {:.1f} mins'
@@ -203,7 +205,8 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
     return nexp[ii]
 
 
-def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
+def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1,
+                               overwrite=True):
     """Write a file of pixel-level NOBS for one target file.
 
     Parameters
@@ -215,10 +218,16 @@ def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
         e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.
     outdir : :class:`str`
         The directory to which to write output files. This will be
-        created if it doesn't yet exist.
+        created if it doesn't yet exist. The actual file is written
+        to <outdir> + pixel-nobs-<targfile>.
     numproc : :class:`int`, optional, defaults to 1
         The number of processes to parallelize across. The default is
         to run the code in serial.
+    overwrite : :class:`bool`, optional, defaults to ``True``
+        If ``False`` then don't overwrite the output file if it exists.
+        The code will just proceed as if nothing happened. This is useful
+        for "mopping up" missing files by running all `targfile`s with
+        `overwrite`=``False`` and letting the code skip existing files.
 
     Returns
     -------
@@ -235,6 +244,11 @@ def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
     outfn = os.path.join(
         outdir, "pixel-nobs-{}".format(os.path.basename(targfile)))
 
+    # ADM only return if overwriting is turned off and the file exists.
+    if os.path.isfile(outfn) and not overwrite:
+        log.info("Refusing to overwrite {}".format(outfn))
+        return
+
     # ADM look up the nexp information.
     nexp = make_nexp_for_target_file(targfile, drdir, numproc=numproc)
 
@@ -245,6 +259,74 @@ def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
     os.makedirs(os.path.dirname(outfn), exist_ok=True)
 
     # ADM write the results.
+    log.info("Writing to {}".format(outfn))
     write_with_units(outfn, nexp, extname='PIXEL_NOBS', header=hdr)
+
+    return
+
+
+def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
+                          numproc=1, overwrite=True):
+    """Write files of pixel-level NOBS for each target file in a directory.
+
+    Parameters
+    ----------
+    targdir : :class:`str`
+        Full path to a directory that contains target files.
+    drdir : :class:`str`
+        Root directory for a Data Release from the Legacy Surveys
+        e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.
+    outdir : :class:`str`
+        The directory to which to write output files. This will be
+        created if it doesn't yet exist. Each file in `targdir` is
+        written to <outdir> + pixel-nobs-<targfile>.
+    nside : :class:`int`, optional, defaults to `None`
+        (NESTED) HEALPix `nside` to use with `pixlist`.
+    pixlist : :class:`list` or `int`, optional, defaults to `None`
+        Only process files for which the ZEROTH source in the file is
+        in a list of (NESTED) HEALpixels at the supplied `nside`.
+    numproc : :class:`int`, optional, defaults to 1
+        The number of processes to parallelize across. The default is
+        to run the code in serial.
+    overwrite : :class:`bool`, optional, defaults to ``True``
+        If ``False`` then don't overwrite any output files encountered
+        if they already exist. This is useful for quickly "mopping up"
+        missing files by letting the code skip existing work.
+
+    Returns
+    -------
+    :class:`int`
+        The number of files written to the outdir. The files contain
+        columns RA/DEC/BRICKNAME/TARGETID/PIXEL_NOBS_G/R/Z. The filenames
+        are the same as the input target filenames in `targdir`, but
+        prepended with pixel-nobs.
+
+    Notes
+    -----
+    - Useful as the NOBS listed in the target files differs from the
+      pixel-level NOBS assigned to the DESI random catalogs.
+    - Pass `pixlist`=``None`` to process ALL files in `targdir`.
+    """
+    # ADM make an array of all input files.
+    targfiles = np.array(sorted(glob(os.path.join(targdir, "targets*fits"))))
+    log.info("Processing {} files from {}...t={:.1f}s".format(
+        len(targfiles), targdir, time()-start))
+
+    # ADM and limit to passed HEALPixel list, if requested.
+    if pixlist is not None:
+        inhp = []
+        for targfile in targfiles:
+            zeroth = fitsio.read(targfile, rows=0)
+            inhp.append(is_in_hp(zeroth, nside, pixlist))
+        inhp = np.concatenate(inhp)
+        targfiles = targfiles[inhp]
+        log.info("Limiting to {} files in pixlist={}...t={:.1f}s".format(
+            len(targfiles), pixlist, time()-start))
+
+    # ADM find the nexp information and write it for each file.
+    for targfile in targfiles:
+        write_nexp_for_target_file(targfile, drdir, outdir, numproc=numproc,
+                                   overwrite=overwrite)
+    log.info("Done...t={:.1f}s".format(time()-start))
 
     return
