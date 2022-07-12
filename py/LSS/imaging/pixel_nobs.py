@@ -16,6 +16,7 @@ from astropy.wcs import WCS
 from desitarget.randoms import dr_extension
 from desitarget.internal import sharedmem
 from desitarget.geomask import match_to
+from desitarget.io import write_with_units
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -41,13 +42,13 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     nors : :class:`str`
         Pass "north" for northern bricks, "south" for southern bricks.
     drdir : :class:`str`
-       The root directory pointing to a Data Release from the Legacy Surveys
-       e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr8.
+        The root directory pointing to a Legacy Surveys Data Release,
+        e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr8.
 
     Returns
     -------
     :class:`dictionary`
-       The number of observations (`nobs_x`) at each position/brickname.
+        The number of observations (`nobs_x`) at each position/brickname.
 
     Notes
     -----
@@ -103,8 +104,8 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     return nexp
 
 
-def make_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
-    """Look up pixel-level NOBS (from coadds/stacks for one target file).
+def make_nexp_for_target_file(targfile, drdir, numproc=1):
+    """Look up pixel-level NOBS (from coadds/stacks) for one target file.
 
     Parameters
     ----------
@@ -113,28 +114,24 @@ def make_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
     drdir : :class:`str`
         Root directory for a Data Release from the Legacy Surveys
         e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.
-    outdir : :class:`str`
-        The directory to which to write output files.
     numproc : :class:`int`, optional, defaults to 1
         The number of processes to parallelize across. The default is
         to run the code in serial.
 
     Returns
     -------
-    Nothing, but a file of RA/DEC/BRICKNAME/TARGETID/PIXEL_NOBS_G/R/Z is
-    written to the `outdir`. The filename is the same as the input
-    `targfile` filename, but prepended with pixel-nobs.
+    :class:`~numpy.array`
+        The targets in the input `targfile` in the original order with
+        the standard quantities RA, DEC, BRICKNAME, TARGETID and PHOTSYS
+        and added quantities PIXEL_NOBS_G/R/Z, which are the pixel-level
+        number of observations in each band.
 
     Notes
     -----
     - Useful as the NOBS listed in the target files differs from the
       pixel-level NOBS assigned to the DESI random catalogs.
     """
-    # ADM create the name of the output file.
-    outfn = os.path.join(
-        outdir, "pixel-nobs-{}".format(os.path.basename(targfile)))
-
-    # ADM read in the needec target columns...
+    # ADM read in the needed target columns...
     targs = fitsio.read(targfile, columns=
                         ["RA", "DEC", "BRICKNAME", "TARGETID", "PHOTSYS"])
     # ADM ...and compile the list of brick names in the file.
@@ -204,3 +201,50 @@ def make_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
     ii = match_to(nexp["TARGETID"], targs["TARGETID"])
 
     return nexp[ii]
+
+
+def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1):
+    """Write a file of pixel-level NOBS for one target file.
+
+    Parameters
+    ----------
+    targfile : :class:`str`
+        Full path to a target file.
+    drdir : :class:`str`
+        Root directory for a Data Release from the Legacy Surveys
+        e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.
+    outdir : :class:`str`
+        The directory to which to write output files. This will be
+        created if it doesn't yet exist.
+    numproc : :class:`int`, optional, defaults to 1
+        The number of processes to parallelize across. The default is
+        to run the code in serial.
+
+    Returns
+    -------
+    Nothing, but a file of RA/DEC/BRICKNAME/TARGETID/PIXEL_NOBS_G/R/Z is
+    written to the `outdir`. The filename is the same as the input
+    `targfile` filename, but prepended with pixel-nobs.
+
+    Notes
+    -----
+    - Useful as the NOBS listed in the target files differs from the
+      pixel-level NOBS assigned to the DESI random catalogs.
+    """
+    # ADM create the name of the output file.
+    outfn = os.path.join(
+        outdir, "pixel-nobs-{}".format(os.path.basename(targfile)))
+
+    # ADM look up the nexp information.
+    nexp = make_nexp_for_target_file(targfile, drdir, numproc=numproc)
+
+    # ADM copy the header of the input file.
+    hdr = fitsio.read_header(targfile, "TARGETS")
+
+    # ADM make the output directory if it doesn't exist.
+    os.makedirs(os.path.dirname(outfn), exist_ok=True)
+
+    # ADM write the results.
+    write_with_units(outfn, nexp, extname='PIXEL_NOBS', header=hdr)
+
+    return
