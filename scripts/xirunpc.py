@@ -136,6 +136,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weigh
             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
         if 'completeness_only' in weight_type:
             weights = catalog['WEIGHT_COMP'][mask]
+        if 'EB' in weight_type:
+            weights *=  catalog['WEIGHT_SYSEB'][mask]*catalog['WEIGHT_COMP'][mask]   
         if 'FKP' in weight_type:
             weights *= catalog['WEIGHT_FKP'][mask]
         if 'bitwise' in weight_type:
@@ -151,6 +153,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weigh
             weights *= catalog['WEIGHT_ZFAIL'][mask]
         if 'completeness_only' in weight_type:
             weights = catalog['WEIGHT_COMP'][mask]
+        if 'EB' in weight_type:
+            weights *=  catalog['WEIGHT_SYSEB'][mask]*catalog['WEIGHT_COMP'][mask]   
         if 'FKP' in weight_type:
             weights *= catalog['WEIGHT_FKP'][mask]
 
