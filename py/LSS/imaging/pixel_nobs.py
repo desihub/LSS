@@ -134,8 +134,8 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
       pixel-level NOBS assigned to the DESI random catalogs.
     """
     # ADM read in the needed target columns...
-    targs = fitsio.read(targfile, columns=
-                        ["RA", "DEC", "BRICKNAME", "TARGETID", "PHOTSYS"])
+    targs = fitsio.read(targfile, columns=["RA", "DEC",
+                                           "BRICKNAME", "TARGETID", "PHOTSYS"])
     # ADM ...and compile the list of brick names in the file.
     bricknames = list(set(targs["BRICKNAME"]))
     nbricks = len(bricknames)
@@ -155,11 +155,11 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
         else:
             msg = 'PHOTSYS not all "N" or "S" for brick: {}'.format(brickname)
             log.critical(msg)
-            raise ValueError(msg)            
+            raise ValueError(msg)
 
         # ADM call the actual code.
-        nexp =  nexp_at_positions_in_a_brick(brick["RA"], brick["DEC"], brickname,
-                                             nors, drdir)
+        nexp = nexp_at_positions_in_a_brick(brick["RA"], brick["DEC"], brickname,
+                                            nors, drdir)
 
         # ADM make a table of all of the required information...
         dt = brick.dtype.descr + nexp.dtype.descr
