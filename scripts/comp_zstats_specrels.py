@@ -26,7 +26,9 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--verspec_new",help="version for redshifts",default='newQSOtemp')
 parser.add_argument("--tracer",help="tracer type(s) (e.g., LRG)",default='all')
-parser.add_argument("--mbit5",help="whether to screen against mask bit 5",default='n')
+parser.add_argument("--mbit5",help="whether to screen against zwarn mask bit 5",default='n')
+parser.add_argument("--mbit510",help="whether to screen against zwarn mask bits 5 and 10",default='n')
+parser.add_argument("--zwarn0",help="only count as success if zwarn == 0",default='n')
 
 args = parser.parse_args()
 basedir = args.basedir
@@ -241,6 +243,7 @@ for tp in tracers:
 	    plt.plot(dz['Z_QF_new'][z_suc&z_tot&z_sucnew],dz['Z'][z_suc&z_tot&z_sucnew]-dz['Z_QF_new'][z_suc&z_tot&z_sucnew],'k,')
 	    plt.xlabel('new redshift')
 	    plt.ylabel('Guadalupe - new redshift')
+	    plt.ylim(-0.01,0.01)
 	    plt.title(tp+notqso)
 	    plt.savefig(basedir+'/'+survey+'/LSS/'+args.verspec_new+'/'+tp+notqso+'_zdiffGuad'+fn_app+'.png')
 	    plt.show()
