@@ -50,6 +50,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
     dist, ra, dec = utils.cartesian_to_sky(data_positions_rec)
     catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
     logger.info('Saving {}.'.format(data_rec_fn))
+    utils.mkdir(os.path.dirname(data_rec_fn))
     catalog.write(data_rec_fn, format='fits', overwrite=True)
 
     field = 'disp+rsd' if convention == 'recsym' else 'disp'
@@ -61,6 +62,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         dist, ra, dec = utils.cartesian_to_sky(recon.read_shifted_positions(randoms_positions, field=field))
         catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
         logger.info('Saving {}.'.format(rec_fn))
+        utils.mkdir(os.path.dirname(rec_fn))
         catalog.write(rec_fn, format='fits', overwrite=True)
 
 
@@ -99,6 +101,7 @@ def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, 
     dist, ra, dec = utils.cartesian_to_sky(data_positions_rec)
     catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
     logger.info('Saving {}.'.format(data_rec_fn))
+    utils.mkdir(os.path.dirname(data_rec_fn))
     catalog.write(data_rec_fn, format='fits', overwrite=True)
         
         
