@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser
+from LSS.imaging.pixel_nobs import write_nexp_in_healpix
+
+# ADM the DESI default logger.
+from desiutil.log import get_logger
+
+# ADM initialize the DESI default logger.
+log = get_logger()
+
+# ADM the default inputs values for optional arguments.
+defaults = {"nside": None, "healpixels": None, "numproc": 1}
+
+ap = ArgumentParser(description='Create files with pixel-level NOBS for \
+targets. Useful because the pixel-level NOBS values calculated for the  \
+randoms differ by a few % from NOBS values in the target/sweeps files.')
+ap.add_argument('targdir',
+                help="Full path to a directory containing target files."
+)
+ap.add_argument('drdir',
+                help="Root directory for a Legacy Surveys Data Release          \
+                e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9."
+)
+ap.add_argument('outdir',
+                help="Directory to write output files. Will be created if it    \
+                doesn't exist. Each file in <targdir> is written to <outdir> +  \
+                pixel-nobs-<targfile>."
+)
+ap.add_argument('--nside', type=int,
+                help="(Nested) HEALPixel nside to use with <healpixels>.        \
+                Defaults to [{}].".format(defaults["nside"]),
+                default=defaults["nside"])
+ap.add_argument('--healpixels',
+                help="Only process files for which the source in the ZEROTH row \
+                is in this list of (nested) pixels at <nside>. Pass as a string \
+                of comma-separated integers (e.g. 2, 3, 12) Defaults to [{}]    \
+                (which means process ALL files).".format(defaults["healpixels"]),
+                default=defaults["healpixels"])
+ap.add_argument('--numproc', type=int,
+                help="The number of processes to parallelize across. Defaults   \
+                to [{}].".format(defaults["numproc"]),
+                default=defaults["numproc"])
+ap.add_argument('--mopup', action="store_true",
+                help="""Pass to NOT overwrite output files that already exist.  \
+                This is useful for "mopping up" failed or missing files"""
+)
+                
+ns = ap.parse_args()
+
+# ADM parse the list of HEALPixels in which to run.
+pixlist = ns.healpixels
+if pixlist is not None:
+    pixlist = [int(pix) for pix in pixlist.split(',')]
+
+# ADM if we're mopping up, don't overwrite files.
+overwrite = not(ns.mopup)
+
+nfiles = write_nexp_in_healpix(
+    ns.targdir, ns.drdir, ns.outdir, nside=ns.nside,
+    pixlist=pixlist, numproc=ns.numproc, overwrite=overwrite)
+
+log.info("Wrote {} files".format(nfiles))
+
+
+
+
+
