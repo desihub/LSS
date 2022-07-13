@@ -273,7 +273,7 @@ wzm = ''
 if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
-tracer_clus = type+notqso+ccut
+tracer_clus = type+notqso+wzm
 # dchi2 = 9
 # tsnrcut = 0
 # if type[:3] == 'ELG':
