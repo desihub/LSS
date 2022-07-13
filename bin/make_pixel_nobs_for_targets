@@ -45,7 +45,7 @@ ap.add_argument('--mopup', action="store_true",
                 help="""Pass to NOT overwrite output files that already exist.  \
                 This is useful for "mopping up" failed or missing files"""
 )
-                
+
 ns = ap.parse_args()
 
 # ADM parse the list of HEALPixels in which to run.
@@ -61,8 +61,3 @@ nfiles = write_nexp_in_healpix(
     pixlist=pixlist, numproc=ns.numproc, overwrite=overwrite)
 
 log.info("Wrote {} files".format(nfiles))
-
-
-
-
-
