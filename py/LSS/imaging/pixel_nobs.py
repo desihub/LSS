@@ -324,9 +324,16 @@ def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
             len(targfiles), pixlist, time()-start))
 
     # ADM find the nexp information and write it for each file.
-    for targfile in targfiles:
+    nfiles = len(targfiles)
+    for nfile, targfile in enumerate(targfiles):
         write_nexp_for_target_file(targfile, drdir, outdir, numproc=numproc,
                                    overwrite=overwrite)
+        if nfile % 10 == 0 and nfile > 0:
+            elapsed = (time()-start)/60.
+            rate = 60.*elapsed/nfile
+            log.info('PROCESSED {}/{} files; {:.1f} secs/file...t = {:.1f} mins'
+                     .format(nfile, nfiles, rate, elapsed))
+
     log.info("Done...t={:.1f}s".format(time()-start))
 
-    return
+    return nfiles
