@@ -196,10 +196,10 @@ echo $runtimeDateLoop
 
 if [ $splitByReal -ne 0 ]; then
     printf -v OFBW "%s/MakeBitweightsOutputCase1%sRepro%s.out" $outputMTLFinalDestination $survey $datestring
-    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& $OFBW
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
 else
     printf -v OFBW "%s/MakeBitweightsOutputCase2%sRepro%s.out" $outputMTLFinalDestination $survey $datestring
-    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLDirBase $overwrite2 >& $OFBW
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
 fi
 
 endBW=`date +%s.%N`

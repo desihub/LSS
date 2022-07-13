@@ -120,7 +120,7 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
 
 
 
-def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False):
+def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False, verbose = False):
     # Options for 'changeFiberOpt':
     # None: do nothing different to version 1
     # AllTwins: Find a twin fiber with a target of the 
@@ -159,14 +159,13 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
             assert(len(trMatch) == 1)
         except:
             if ta < 0:
-                #print('no match for negative ta {0}'.format(ta))
                 negMisMatch.append(ta)
                 continue
             else:
-                print(ta)
+                log.info(ta)
 
                 assert(0)
-        if debug:
+        if debug or verbose:
             try:
                 assert(ta == trMatch[0])
             except:
@@ -177,15 +176,16 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
             #if jTargs['SV3_']
             pass
 
-    print('no matches for negative tas {0}'.format(negMisMatch))
-    if debug:
-        print(inc1)
-        print(inc2)
+    
+    if debug or verbose:
+        log.info('no matches for negative tas {0}'.format(negMisMatch))
+        log.info(inc1)
+        log.info(inc2)
     return Alt2Real, Real2Alt
 
 
 
-def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False):
+def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = False):
     from collections import Counter
     zcatids = zcat['TARGETID']
     altZCat = Table(zcat)
@@ -247,7 +247,7 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
-def trimToMTL(notMTL, MTL, debug = False):
+def trimToMTL(notMTL, MTL, debug = False, verbose = False):
     # JL trims a target file, which possesses all of the information in an MTL, down
     # JL to the columns allowed in the MTL data model. 
     allNames = notMTL.dtype.names
@@ -271,11 +271,11 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, 
     ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
     hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleSubpriorities = True, 
-    reproducing = False, usetmp = False, finalDir = None, profile = False):
+    reproducing = False, usetmp = False, finalDir = None, profile = False, debug = False, verbose = False):
     if profile:
         pr.enable()
-
-    log.info('starting initializeAltMTLs')
+    if verbose or debug:
+        log.info('starting initializeAltMTLs')
 
     if (shuffleSubpriorities ^ reproducing):
         pass
@@ -302,12 +302,13 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     allentries = Table.read(initMTL) 
     
     meta = allentries.meta
-    log.info('MTL metadata')
-    log.info(meta)
-    log.info('initial MTL')
-    log.info(initMTL)
-    log.info('output MTL')
-    log.info(outputMTL)
+    if verbose or debug:
+        log.info('MTL metadata')
+        log.info(meta)
+        log.info('initial MTL')
+        log.info(initMTL)
+        log.info('output MTL')
+        log.info(outputMTL)
     #JL THIS NEEDS TO BE FIXED FOR PEOPLE WHO DONT USE 'Univ' 
     #JL AS THEIR REALIZATION LABEL
     if not ('Univ' in outputMTL):
@@ -331,101 +332,100 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
         startDateShort = int(startDate.split('T')[0].replace('-', ''))
-        log.info('startDateShort')
-        log.info(startDateShort)
-        log.info('altmtltilefn')
-        log.info(altmtltilefn)
-        log.info('ztilefile')
-        log.info(ztilefile)
+        if verbose or debug:
+            log.info('startDateShort')
+            log.info(startDateShort)
+            log.info('altmtltilefn')
+            log.info(altmtltilefn)
+            log.info('ztilefile')
+            log.info(ztilefile)
         ztiles = Table.read(origmtltilefn)
-        log.info('ztiles dtype')
-        log.info(ztiles.dtype)
+        if verbose or debug:
+            log.info('ztiles dtype')
+            log.info(ztiles.dtype)
         tilesTemp = ztiles[ztiles['ARCHIVEDATE'].astype(int) < startDateShort]
         sortedDatesTemp = np.sort(ztiles['ARCHIVEDATE'])
-        log.info('first and last archivedates')
-        log.info(sortedDatesTemp[0])
-        log.info(sortedDatesTemp[-1])
-        log.info('tilesTemp[0:2]')
-        log.info(tilesTemp[0:2])
-        log.info('tilesTemp.as_array[0:2]')
-        log.info(tilesTemp.as_array()[0:2])
-        log.info('mtltimefiledm.dtype')
-        log.info(mtltilefiledm.dtype)
-        log.info('tilesTemp.as_array().dtype')
-        log.info(tilesTemp.as_array().dtype)
-        io.write_mtl_tile_file(altmtltilefn,tilesTemp.as_array().astype(mtltilefiledm.dtype))
+        if verbose or debug:
+            log.info('first and last archivedates')
+            log.info(sortedDatesTemp[0])
+            log.info(sortedDatesTemp[-1])
+            log.info('tilesTemp[0:2]')
+            log.info(tilesTemp[0:2])
+            log.info('tilesTemp.as_array[0:2]')
+            log.info(tilesTemp.as_array()[0:2])
+            log.info('mtltimefiledm.dtype')
+            log.info(mtltilefiledm.dtype)
+            log.info('tilesTemp.as_array().dtype')
+            log.info(tilesTemp.as_array().dtype)
+            io.write_mtl_tile_file(altmtltilefn,tilesTemp.as_array().astype(mtltilefiledm.dtype))
 
-        log.info('initialentries timestamp 0: {0}'.format(np.sort(initialentries['TIMESTAMP'])[0]))
+            log.info('initialentries timestamp 0: {0}'.format(np.sort(initialentries['TIMESTAMP'])[0]))
 
-        log.info('initialentries timestamp -1: {0}'.format(np.sort(initialentries['TIMESTAMP'])[-1]))
-        #log.critical('this feature does not yet exist. Goodbye.')
-        #assert(0)
+            log.info('initialentries timestamp -1: {0}'.format(np.sort(initialentries['TIMESTAMP'])[-1]))
 
-    log.info('generate subset? {0}'.format(genSubset))
+    if verbose or debug:
+        log.info('generate subset? {0}'.format(genSubset))
     if not genSubset is None:
         if type(genSubset) == int:
-            log.info('genSubset Int')
+            if debug:
+                log.info('genSubset Int')
             iterloop = [genSubset]
         elif (type(genSubset) == list) or (type(genSubset) == np.ndarray):
-            log.info('genSubset Arraylike')
+            if debug:
+                log.info('genSubset Arraylike')
             iterloop = genSubset
     else:
-        log.info('genSubset None')
+        if debug:
+            log.info('genSubset None')
         iterloop = range(nAlt)
-    log.info('starting iterloop')
+    if verbose or debug:
+        log.info('starting iterloop')
     for n in iterloop:
-        log.info('Realization {0:d}'.format(n))
+        if verbose or debug:
+            log.info('Realization {0:d}'.format(n))
         outputMTLDir = outputMTL.format(n)
-        log.info('outputMTLDir')
-        log.info(outputMTLDir)
+        if verbose or debug:
+            log.info('outputMTLDir')
+            log.info(outputMTLDir)
         outfile = outputMTLDir +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn)
-        log.info('outfile')
-        log.info(outfile)
+        if verbose or debug:
+            log.info('outfile')
+            log.info(outfile)
         if os.path.exists(outfile):
             if overwrite: 
-                print('overwrite')
-                log.info('overwrite')
+                if verbose or debug:
+                    log.info('overwrite')
                 os.remove(outfile)
             else:
-                print('continuing')
-                log.info('continuint')
+                if verbose or debug:
+                    log.info('continuing')
                 continue
 
-        print('past the overwrite check')
-        log.info('past the overwrite check')
         if type(hpnum) == int:
             rand.seed(seed + hpnum + n)
         else:
             rand.seed(seed + n)
-        print('pre creating output dir')
-        log.info('pre creating output dir')
+        if verbose or debug:
+            log.info('pre creating output dir')
         if not os.path.exists(outputMTLDir):
-            print('making outputMTLDir')
             os.makedirs(outputMTLDir)
-        else:
-            print('not making outputMTLDir')
         if not os.path.isfile(outputMTLDir + ztilefn):
             os.symlink(ztilefile, outputMTLDir + ztilefn)
         subpriors = initialentries['SUBPRIORITY']
-        #shuffler = rand.permutation(len(subpriors))
+
         if (not reproducing) and shuffleSubpriorities:
             newSubpriors = rand.uniform(size = len(subpriors))
         else:
             newSubpriors = np.copy(subpriors)
-        #newSubpriors = subpriors[shuffler]
         try:
             
             assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2) | ((not shuffleSubpriorities) and reproducing) )
         except:
-            print('first shuffle failed')
-            print('size of initial subprior array')
-            print(len(subpriorsInit))
+            log.warning('first shuffle failed')
+            log.warning('size of initial subprior array')
+            log.warning(len(subpriorsInit))
 
-            #print('Is initial shuffler sorted')
-            #print(np.all(np.diff(shuffler) >= 0))
-            #shuffler = rand.permutation(len(subpriors))
             newSubpriors = rand.uniform(size = len(subpriors))
-            #newSubpriors = subpriors[shuffler]
             assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2))
 
         initialentries['SUBPRIORITY'] = newSubpriors
@@ -433,14 +433,6 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
         
         if (obscon.lower() == 'bright') and (shuffleBrightPriorities):
-        
-            #BGSBits = initialentries['SV3_BGS_TARGET']
-            #BGSFaintHIP = ((BGSBits & 8) == 8)
-            #BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
-            #BGSPriors = initialentries['PRIORITY']
-
-            #BGSBits[BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~8)
-            #BGSPriors[BGSFaintHIP] = 102000*np.ones(np.sum(BGSFaintHIP))
 
             BGSBits = initialentries['SV3_BGS_TARGET']
             BGSFaintHIP = ((BGSBits & 8) == 8)
@@ -455,22 +447,22 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             NewBGSFaintHIP = ((BGSBits & 8) == 8)
             NewBGSFaintAll = ((BGSBits & 1) == 1) | NewBGSFaintHIP
             NewBGSPriors = initialentries['PRIORITY']
-            #Select 20% of BGS_FAINT to promote using function from 
+
+            #Select 20% of BGS_FAINT to promote using function from desitarget
             BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
             #Promote them
 
             initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
             initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
-        print('meta passed to write_mtl')
-        print(meta)
-        print('--')
+        if verbose or debug:
+            log.info('meta passed to write_mtl')
+            log.info(meta)
+            log.info('--')
         io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
     
         if saveBackup and (not usetmp):
             if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
                 os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
-            
-            
             
             from shutil import copyfile
 
@@ -484,12 +476,13 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             if saveBackup and (not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')):
                 os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
-
-            log.info('tempdir contents before copying')
-            log.info(glob.glob(outputMTLDir + '/*' ))
+            if debug:
+                log.info('tempdir contents before copying')
+                log.info(glob.glob(outputMTLDir + '/*' ))
             copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/' + str(fn))
-            log.info('tempdir contents after copying')
-            log.info(glob.glob(outputMTLDir + '/*' ))
+            if debug:
+                log.info('tempdir contents after copying')
+                log.info(glob.glob(outputMTLDir + '/*' ))
 
             if saveBackup:
                 #JL Potentially move the saveBackup copying to an afterburner
@@ -497,25 +490,27 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
                 copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
                 
             os.remove(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn))
-            log.info('tempdir contents after removing')
-            log.info(glob.glob(outputMTLDir + '/*' ))
+            if debug:
+                log.info('tempdir contents after removing')
+                log.info(glob.glob(outputMTLDir + '/*' ))
     if usetmp:
         
-
-        log.info('cleaning up tmpdir')
-        log.info(glob.glob(outputMTLDir + '*' ))
+        if verbose or debug:
+            log.info('cleaning up tmpdir')
+            log.info(glob.glob(outputMTLDir + '*' ))
         f2c = glob.glob(outputMTLDir + '*' )
-        log.info('finaldir')
-        log.info(finalDir.format(n))
+        if verbose or debug:
+            log.info('finaldir')
+            log.info(finalDir.format(n))
         for tempfn in f2c:
             if '.' in str(os.path.split(tempfn)[1]):
-
-                log.info('copying tempfn: {0}'.format(tempfn))
+                if verbose or debug:
+                    log.info('copying tempfn: {0}'.format(tempfn))
                 copyfile(tempfn , str(finalDir.format(n)) +'/' + os.path.basename(tempfn) )
 
-
-        log.info('tempdir contents after copying')
-        log.info(glob.glob(outputMTLDir + '*' ))
+        if verbose or debug:
+            log.info('tempdir contents after copying')
+            log.info(glob.glob(outputMTLDir + '*' ))
 
     if profile:
         pr.disable()
@@ -532,8 +527,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         
         
 
-def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'dark', multiproc =False, nproc = None):
-    print('quick restart running')
+def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'dark', multiproc =False, nproc = None, verbose = False, debug = False):
+    if verbose or debug:
+        log.info('quick restart running')
     from shutil import copyfile, move
     from glob import glob as ls
     if multiproc:
@@ -541,22 +537,21 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
     else:
         iterloop = range(ndirs)
     for nRestart in iterloop:
-        print(nRestart)
+        if verbose or debug:
+            log.info(nRestart)
         altmtldirRestart = altmtlbasedir + '/Univ{0:03d}/'.format(nRestart)
         if os.path.exists(altmtldirRestart + 'mtl-done-tiles.ecsv'):
             move(altmtldirRestart + 'mtl-done-tiles.ecsv',altmtldirRestart + 'mtl-done-tiles.ecsv.old')
         restartMTLs = ls(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
-        #print(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
-        #print(restartMTLs)
         for fn in restartMTLs:
-            #print('r')
             copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
      
 def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
                 secondary=False, singletile = None, singleDate = None, debugOrig = False, 
                     getosubp = False, quickRestart = False, redoFA = False,
-                    multiproc = False, nproc = None, testDoubleDate = False, changeFiberOpt = None):
+                    multiproc = False, nproc = None, testDoubleDate = False, changeFiberOpt = None,
+                    debug = False, verbose = False):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -621,7 +616,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
-    log.info('getosubp value: {0}'.format(getosubp))
+    if debug:
+        log.info('getosubp value: {0}'.format(getosubp))
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
         raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
     assert((singleDate is None) or (type(singleDate) == bool))
@@ -654,7 +650,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
     
     if altmtlbasedir is None:
-        print('This will automatically find the alt mtl dir in the future but fails now. Bye.')
+        log.critical('This will automatically find the alt mtl dir in the future but fails now. Bye.')
         assert(0)
     if debugOrig:
         iterloop = range(1)
@@ -702,19 +698,15 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             tiles = tiles[cond1 | cond2 ]
         
         dates = np.sort(np.unique(sorttiles['ARCHIVEDATE']))
-        log.info('first and last 10 hopefully archivedates hopefully in order')
-        log.info(dates[0:10])
-        log.info(dates[-10:-1])
-        log.info('first and last 10 hopefully zdates hopefully not in order')
-        log.info(sorttiles['ZDATE'][0:10])
-        log.info(sorttiles['ZDATE'][-10:-1])
+        if debug:
+            log.info('first and last 10 hopefully archivedates hopefully in order')
+            log.info(dates[0:10])
+            log.info(dates[-10:-1])
+            log.info('first and last 10 hopefully zdates hopefully not in order')
+            log.info(sorttiles['ZDATE'][0:10])
+            log.info(sorttiles['ZDATE'][-10:-1])
 
-        print('first and last 10 hopefully archivedates hopefully in order')
-        print(dates[0:10])
-        print(dates[-10:-1])
-        print('first and last 10 hopefully zdates hopefully not in order')
-        print(sorttiles['ZDATE'][0:10])
-        print(sorttiles['ZDATE'][-10:-1])
+        
         for date in dates:
             dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == date]
             zdates = np.sort(np.unique(dateTiles['ZDATE']))
@@ -819,20 +811,24 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             # ADM update the appropriate ledger.
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
-            log.info('if main, should sleep 1 second')
+            if verbose or debug:
+                log.info('if main, should sleep 1 second')
             if survey == "main":
                 sleep(1)
-                log.info('has slept one second')
+                if verbose or debug:
+                    log.info('has slept one second')
                 tiles["TIMESTAMP"] = get_utc_date(survey=survey)
-            log.info('now writing to mtl_tile_file')
+            if verbose or debug:
+                log.info('now writing to mtl_tile_file')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
-            log.info('has written to mtl_tile_file')
+            if verbose or debug:
+                log.info('has written to mtl_tile_file')
             
             if singleDate:
                 return 1
     return althpdirname, altmtltilefn, ztilefn, tiles
 
-def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False):
+def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
     """Plots probability that targets were observed among {ndirs} alternate realizations
     of SV3. Uses default matplotlib colorbar to plot between 1-{ndirs} observations.
 
@@ -876,9 +872,10 @@ def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey =
         try:
             ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
         except:
-            print('e')
+            log.info('This message should appear once, only for the first realization.')
             ObsFlagList = MTL['NUMOBS'] > 0.5
-    print(ObsFlagList.shape)
+    if verbose or debug:
+        log.info(ObsFlagList.shape)
     ObsArr = np.sum(ObsFlagList, axis = 1)
 
 
@@ -913,7 +910,7 @@ def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey =
         plt.close()
 
 
-def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False):
+def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False, verbose = False):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations
 
@@ -959,15 +956,17 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
     if splitByReal:
 
         from mpi4py import MPI
-        print(mtlBaseDir)
-        print(mtlBaseDir.format(0))
+        if debug or verbose:
+            log.info('mtlbasedir')
+            log.info(mtlBaseDir)
+            log.info(mtlBaseDir.format(0))
         ntar = desitarget.io.read_mtl_in_hp(mtlBaseDir.format(0) + '/' + survey + '/' + obscon, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False).shape[0]
         
         comm = MPI.COMM_WORLD
         mpi_procs = comm.size
         mpi_rank = comm.rank
-        
-        print('running on {0:d} cores'.format(mpi_procs))
+        if debug or verbose:
+            log.info('running on {0:d} cores'.format(mpi_procs))
         n_realization = ndirs
         realizations = np.arange(ndirs, dtype=np.int32)
         my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
@@ -992,15 +991,18 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
             ObsFlagList = np.empty ((ndirs, ntar), dtype = bool)
         comm.Gather(MyObsFlagList, ObsFlagList, root=0)
         if mpi_rank == 0:    
-            print(ObsFlagList.shape)
+            if debug or verbose:
+                print(ObsFlagList.shape)
             ObsArr = np.sum(ObsFlagList, axis = 0)
             obsprobs = ObsArr/ndirs
-            print(np.min(ObsArr))
-            print(np.max(ObsArr))
-            print("ObsFlagList shape here: {0}".format(ObsFlagList.shape))
+            if debug or verbose:
+                print(np.min(ObsArr))
+                print(np.max(ObsArr))
+                print("ObsFlagList shape here: {0}".format(ObsFlagList.shape))
             bitweights = pack_bitweights(ObsFlagList.T)
-            print('bitweights shape here: {0}'.format(bitweights.shape))
-            print('TIDs shape here: {0}'.format(TIDs.shape))
+            if debug or verbose:
+                print('bitweights shape here: {0}'.format(bitweights.shape))
+                print('TIDs shape here: {0}'.format(TIDs.shape))
             assert(not (TIDs is None))
         if obsprob:
             return TIDs, bitweights, obsprobs
@@ -1019,12 +1021,15 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
             try:
                 ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
             except:
-                print('e')
+
+                log.info('This message should only appear once for the first realization.')
                 ObsFlagList = MTL['NUMOBS'] > 0.5
-        print(ObsFlagList.shape)
+        if debug or verbose:
+            log.info(ObsFlagList.shape)
         ObsArr = np.sum(ObsFlagList, axis = 1)
-        print(np.min(ObsArr))
-        print(np.max(ObsArr))
+        if debug or verbose:
+            log.info(np.min(ObsArr))
+            log.info(np.max(ObsArr))
         bitweights = pack_bitweights(ObsFlagList)
 
         assert(not (TIDs is None))
@@ -1040,7 +1045,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
 
 
 
-def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None):
+def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None, verbose = False):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations.
     Then writes them to (a) file(s)
@@ -1093,10 +1098,10 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         
     """
     if outdir is None:
-        print('No outdir provided')
+        log.info('No outdir provided')
         outdir = mtlBaseDir.split('/')[:-1]
-        print('autogen outdir')
-        print(outdir)
+        log.info('autogenerated outdir')
+        log.info(outdir)
     if splitByReal:
         from mpi4py import MPI        
         comm = MPI.COMM_WORLD
@@ -1122,51 +1127,58 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         return None
     
     if not (splitNChunks is None):
-        print('makeBitweights1')
-        print("splitting into {0} chunks".format(splitNChunks))
+        if debug or verbose:
+            log.info('makeBitweights1')
+            log.info("splitting into {0} chunks".format(splitNChunks))
         splits = np.array_split(hplist, int(splitNChunks))
 
 
         for i, split in enumerate(splits):
-            print('split {0}'.format(i))
-            print(split)
+            if debug or verbose:
+                log.info('split {0}'.format(i))
+                log.info(split)
             if i == 0:
                 TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
             else:
                 TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
                 
                 if mpi_rank == 0:
-                    print('----')
-                    print('mpi_rank: {0}'.format(mpi_rank))
-                    print("TIDs shape: {0}".format(TIDs.shape))
-                    print("bitweights shape: {0}".format(bitweights.shape))
-                    print("obsprobs shape: {0}".format(obsprobs.shape))
-                    print('----')
-                    print('mpi_rank: {0}'.format(mpi_rank))
-                    print("TIDsTemp shape: {0}".format(TIDsTemp.shape))
-                    print("bitweightsTemp shape: {0}".format(bitweightsTemp.shape))
-                    print("obsprobsTemp shape: {0}".format(obsprobsTemp.shape))
+                    if debug or verbose:
+                        log.info('----')
+                        log.info('mpi_rank: {0}'.format(mpi_rank))
+                        log.info("TIDs shape: {0}".format(TIDs.shape))
+                        log.info("bitweights shape: {0}".format(bitweights.shape))
+                        log.info("obsprobs shape: {0}".format(obsprobs.shape))
+                        log.info('----')
+                        log.info('mpi_rank: {0}'.format(mpi_rank))
+                        log.info("TIDsTemp shape: {0}".format(TIDsTemp.shape))
+                        log.info("bitweightsTemp shape: {0}".format(bitweightsTemp.shape))
+                        log.info("obsprobsTemp shape: {0}".format(obsprobsTemp.shape))
                     TIDs = np.hstack((TIDs, TIDsTemp))
                     bitweights = np.vstack((bitweights, bitweightsTemp))
                     obsprobs = np.hstack((obsprobs, obsprobsTemp))
     else:
-        print('makeBitweights2')
+        if debug or verbose:
+            log.info('makeBitweights2')
         TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
     if splitByReal:
-        print('----')
-        print('mpi_rank: {0}'.format(mpi_rank))
+        if debug or verbose:
+            log.info('----')
+            log.info('mpi_rank: {0}'.format(mpi_rank))
         if mpi_rank == 0:
-            print("TIDs shape: {0}".format(TIDs.shape))
-            print("bitweights shape: {0}".format(bitweights.shape))
-            print("obsprobs shape: {0}".format(obsprobs.shape))
+            if debug or verbose:
+                log.info("TIDs shape: {0}".format(TIDs.shape))
+                log.info("bitweights shape: {0}".format(bitweights.shape))
+                log.info("obsprobs shape: {0}".format(obsprobs.shape))
             data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
                       names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
             
             data.write(fn, overwrite = overwrite)
     else:
-        print("TIDs shape: {0}".format(TIDs.shape))
-        print("bitweights shape: {0}".format(bitweights.shape))
-        print("obsprobs shape: {0}".format(obsprobs.shape))
+        if debug or verbose:
+            log.info("TIDs shape: {0}".format(TIDs.shape))
+            log.info("bitweights shape: {0}".format(bitweights.shape))
+            log.info("obsprobs shape: {0}".format(obsprobs.shape))
         data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
               names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
     

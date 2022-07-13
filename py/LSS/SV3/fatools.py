@@ -172,20 +172,20 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     try:
         fitsio.read(skyf)
     except:
-        print('Error! sky file does not appear to exist')    
+        log.critical('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
     scnd = True 
     try:
         fitsio.read(scndf)
     except:
-        print(' secondary file does not appear to exist')
+        log.info(' secondary file does not appear to exist')
         scnd = False 
            
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
     except:
-        print('Error! gfa file does not appear to exist')    
+        log.info('Error! gfa file does not appear to exist')    
     toof = indir+ts+'-too.fits'
     too = os.path.isfile(toof)
     if too:
@@ -203,10 +203,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
-    log.info('faver1: {0}'.format(faver))
     if faver == None:
         faver = float(fht['FA_VER'][:3])
-        log.info('faver2: {0}'.format(faver))
         if 'main' in indir:
             assert(faver > 3.0)
         if faver == 2.4:
@@ -220,7 +218,6 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
         else:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
-        log.info('faver3: {0}'.format(faver))
         if 'main' in indir:
             assert(faver > 3.0)
 
@@ -252,77 +249,59 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
  
         
 def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False):
-    log.info('calling get_fba_fromnewmtl')
-    log.info('\n\n\n\n\n\n\n\n\n\n\n\n\n')
     ts = str(tileid).zfill(6)
-    log.info('ts {0}'.format(ts))
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
-    log.info('indir (from fht outdir) {0}'.format(indir))
     if (fht['DESIROOT'] == '/data/datasystems') and not ( ('holding' in indir.lower()) or ('main' in indir.lower())):
-        log.info('condition regarding DESIROOT/main triggered')
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
-            log.info('attempted to read target file {0}'.format(indir+ts+'-targ.fits'))
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
-            log.info('failed to read target file {0}'.format(indir+ts+'-targ.fits'))
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-            log.info('date {0}'.format(date))
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-            log.info('new target directory {0}'.format(indir))
-    log.info('indir (after processing) {0}'.format(indir))
 
     tilef = indir+ts+'-tiles.fits'
     try:
-        log.info('trying to read tile file {0}'.format(tilef))
         fitsio.read(tilef)
     except:
-        log.info('failed to read tile file {0}'.format(tilef))
         try:
             if 'sv3' in indir.lower():
-                log.info('the sv3 case')
                 date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-                log.info('date {0}'.format(date))
                 indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-                log.info('indir {0}'.format(indir))
             elif ('main' in indir.lower()) or ('holding' in indir.lower()):
-                log.info('the main survey case')
                 indir = '/global/cfs/cdirs/desi/survey/fiberassign/main/' + ts[0:3] +'/'
-                log.info('indir {0}'.format(indir))
             else:
                 raise ValueError('survey not sv3 or main, will have checks for SV2/1/CMX in future.')
             tilef = indir+ts+'-tiles.fits'
-            log.info('retrying to read target file {0}'.format(tilef))
             fitsio.read(tilef)
         except:
-            print('failed to read tile file')
-            print('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
-            print('indir')
-            print(indir)
+            log.critical('failed to read tile file')
+            log.critical('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+            log.critical('indir')
+            log.critical(indir)
             return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
     except:
-        print('Error! sky file does not appear to exist')    
+        log.critical('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
     scnd = True 
     try:
         fitsio.read(scndf)
     except:
-        print(' secondary file does not appear to exist')
+        log.info(' secondary file does not appear to exist')
         scnd = False 
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
     except:
-        print('Error! gfa file does not appear to exist')   
+        log.critical('Error! gfa file does not appear to exist')   
     toof = indir+ts+'-too.fits'
     too = os.path.isfile(toof)
     if too:
-        print('will be using too file '+toof)
+        log.info('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
     if getosubp == True or mtldir == None:
@@ -340,7 +319,6 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
 
     if mtldir is not None:
         if 'sv3' in indir.lower():
-            log.info('processing survey SV3')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -348,7 +326,6 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tarfn,
             tdir+prog)
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
-            log.info('processing main survey')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -357,7 +334,6 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tdirMain+prog,
             survey = 'main')
     if getosubp:
-        log.info('getosubp should be true: {0}'.format(getosubp))
         if tileid == 315:
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','PRIORITY','SUBPRIORITY'])
@@ -366,18 +342,12 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
         else:
-            log.info('indir: {0}'.format(indir))
-            log.info('ts: {0}'.format(ts))
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','SUBPRIORITY'])
-            log.info('tarfn: {0}'.format(tarfn))
             ntar = Table.read(tarfn)
-            log.info('ntarshape: {0}'.format(len(ntar)))
-            log.info('otarshape: {0}'.format(len(otar)))
             ntar.remove_columns(['SUBPRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
-    log.info('writing fiberassign bash script')
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/project/projectdirs/desi/software/desi_environment.sh master\n')
@@ -421,7 +391,6 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         fo.write(" --ha "+str(fht['FA_HA']))
         fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
     fo.close()    
-    log.info('\n\n\n\n\n\n\n\n\n\n\n\n\n')
 
 #     if float(fht['FA_VER'][:3]) < 2.4:
 #         fo.write("module swap fiberassign/2.3.0\n")
@@ -491,11 +460,8 @@ def altcreate_mtl(
         20210526 : implementation of using subpriority=False in write_targets
                     to avoid an over-writting of the SUBPRIORITY; AJR changed to True reproduce SV3
     """
-    log.info('altcreate_mtl started')
-    log.info('tilesfn: {0}'.format(tilesfn))
     tiles = fitsio.read(tilesfn)
     tileIDs = tiles['TILEID']
-    log.info('tileIDs: {0}'.format(tileIDs))
     # AR mtl: read mtl
     if (315 in tileIDs) and (len(tiles) == 1):
         log.info('special handling of tile 315 for SV3')
@@ -542,26 +508,21 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
         )
-        print('read_targets_in_tiles finished')
-        log.info('read_targets_in_tiles finished')
+        
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
     # AR mtl:   for sv3, there is no secondary-backup, so no ambiguity
-    log.info('size of initial ledger {0}'.format(len(d)))
     if (survey == "sv3") & ("backup" in mtldir):
         from desitarget.sv3.sv3_targetmask import mws_mask
 
         keep = (d["SV3_MWS_TARGET"] & mws_mask["BACKUP_BRIGHT"]) == 0
         d = d[keep]
-    log.info('size of ledger 2 {0}'.format(len(d)))
 
     #AJR added this in/Modified by JL
     if survey == "sv3":
-        log.info('sv3 columns used')
         columns = [key for key in minimal_target_columns if key not in d.dtype.names]
     elif survey == "main":
-        log.info('main survey columns used')
         columns = [key for key in minimal_target_columns_main if key not in d.dtype.names]
     else:
         raise ValueError('survey must be sv3 or main')
@@ -569,24 +530,19 @@ def altcreate_mtl(
     #tcol = ['SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
     #for col in tcol:
     #    columns.append(col) 
-    log.info('inflating ledger')
     d = inflate_ledger(
             d, targdir, columns=columns, header=False, strictcols=False, quick=True
         )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
-    log.info('ledger dtype {0}'.format(d.dtype))
-    log.info('size of ledger 3 {0}'.format(len(d)))
-
+    
     if add_plate_cols:
         d = Table(d)
         d["PLATE_RA"] = d["RA"]
         d["PLATE_DEC"] = d["DEC"]
         d["PLATE_REF_EPOCH"] = d["REF_EPOCH"]
         d = d.as_array()
-    log.info('size of ledger 4 {0}'.format(len(d)))
 
     # AR mtl: PMRA, PMDEC: convert NaN to zeros
     d = force_finite_pm(d)
-    log.info('size of ledger 5 {0}'.format(len(d)))
 
     # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
     if pmcorr == "y":
@@ -598,15 +554,10 @@ def altcreate_mtl(
             d, gaia_ref_epochs[gaiadr]
         )
     d = Table(d)
-    log.info('size of ledger 6 {0}'.format(len(d)))
 
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
         os.makedirs(outfndir, exist_ok=True)
-
-    log.info('outfn {0}'.format(outfn))
-    log.info('outfndir {0}'.format(outfndir))
-    log.info('size of ledger 7 {0}'.format(len(d)))
 
     d.write(outfn,format='fits', overwrite=True)
     del d
