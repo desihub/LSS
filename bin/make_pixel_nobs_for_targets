@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import argparse, textwrap
+import argparse
+import textwrap
 from LSS.imaging.pixel_nobs import write_nexp_in_healpix
 
 # ADM the DESI default logger.
@@ -13,10 +14,10 @@ log = get_logger()
 defaults = {"nside": None, "healpixels": None, "numproc": 1}
 
 ap = argparse.ArgumentParser(
-description="Create files with pixel-level NOBS for targets. Useful because the \
+    description="Create files with pixel-level NOBS for targets. Useful because the \
 pixel-level NOBS values calculated for the randoms differ by a few % from the \
 NOBS values in the target/sweeps files.",
-formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
     Examples:
 
        TARGDIR=$TARG_DIR/dr9/1.1.1/targets/main/resolve/dark
@@ -31,17 +32,14 @@ formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
 don't finish in 4 hours it's easy to run the remainder using --mopup."""))
 
 ap.add_argument('targdir',
-                help="Full path to a directory containing target files."
-)
+                help="Full path to a directory containing target files.")
 ap.add_argument('drdir',
                 help="Root directory for a Legacy Surveys Data Release          \
-                e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9."
-)
+                e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.")
 ap.add_argument('outdir',
                 help="Directory to write output files. Will be created if it    \
                 doesn't exist. Each file in <targdir> is written to <outdir> +  \
-                pixel-nobs-<targfile>."
-)
+                pixel-nobs-<targfile>.")
 ap.add_argument('--nside', type=int,
                 help="(Nested) HEALPixel nside to use with <healpixels>.        \
                 Defaults to [{}].".format(defaults["nside"]),
@@ -58,8 +56,7 @@ ap.add_argument('--numproc', type=int,
                 default=defaults["numproc"])
 ap.add_argument('--mopup', action="store_true",
                 help="""Pass to NOT overwrite output files that already exist.  \
-                This is useful for "mopping up" failed or missing files"""
-)
+                This is useful for "mopping up" failed or missing files""")
 
 ns = ap.parse_args()
 
