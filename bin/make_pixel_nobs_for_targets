@@ -28,7 +28,7 @@ NOBS values in the target/sweeps files.",
        make_pixel_nobs_for_targets --nside 2 --healpixels 22,23,24 --mopup $TARGDIR $DRDIR $OUTDIR
        make_pixel_nobs_for_targets --numproc 60 $TARGDIR $DRDIR $OUTDIR
 
-    The final example takes ~4 hours on one interactive node. If all the files \
+    The final example takes ~3h 45m on one interactive node. If all the files \
 don't finish in 4 hours it's easy to run the remainder using --mopup."""))
 
 ap.add_argument('targdir',
