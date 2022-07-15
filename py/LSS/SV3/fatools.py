@@ -15,10 +15,14 @@ import re
 from time import time
 from datetime import datetime, timedelta
 
-
+# desi
 import desitarget
 from desitarget import io 
 from desitarget.mtl import inflate_ledger
+from desiutil.log import get_logger
+
+log = get_logger()
+
 
 #hardcode target directories; these are fixed
 
@@ -168,20 +172,20 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     try:
         fitsio.read(skyf)
     except:
-        print('Error! sky file does not appear to exist')    
+        log.critical('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
     scnd = True 
     try:
         fitsio.read(scndf)
     except:
-        print(' secondary file does not appear to exist')
+        log.info(' secondary file does not appear to exist')
         scnd = False 
            
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
     except:
-        print('Error! gfa file does not appear to exist')    
+        log.info('Error! gfa file does not appear to exist')    
     toof = indir+ts+'-too.fits'
     too = os.path.isfile(toof)
     if too:
@@ -201,6 +205,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.write('source /global/common/software/desi/desi_environment.sh master\n')
     if faver == None:
         faver = float(fht['FA_VER'][:3])
+        if 'main' in indir:
+            assert(faver > 3.0)
         if faver == 2.4:
             fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
 
@@ -212,6 +218,9 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
         else:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
+        if 'main' in indir:
+            assert(faver > 3.0)
+
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
     fo.write("fba_run")
@@ -226,7 +235,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     if rundate == '2021-04-10T21:28:37':
         rundate = '2021-04-10T20:00:00'
     fo.write(" --rundate "+rundate)
-    fo.write(" --fieldrot "+str(fht['FIELDROT']))
+    fo.write(" --fieldrot "+np.format_float_positional(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     #if indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210416/' and indir != '/global/cfs/cdirs/desi/survey/fiberassign/SV3/20210418/':
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
@@ -251,6 +260,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         except:
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+
     tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
@@ -266,32 +276,32 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tilef = indir+ts+'-tiles.fits'
             fitsio.read(tilef)
         except:
-            print('failed to read tile file')
-            print('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
-            print('indir')
-            print(indir)
+            log.critical('failed to read tile file')
+            log.critical('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+            log.critical('indir')
+            log.critical(indir)
             return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
     except:
-        print('Error! sky file does not appear to exist')    
+        log.critical('Error! sky file does not appear to exist')    
     scndf = indir+ts+'-scnd.fits'
     scnd = True 
     try:
         fitsio.read(scndf)
     except:
-        print(' secondary file does not appear to exist')
+        log.info(' secondary file does not appear to exist')
         scnd = False 
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
     except:
-        print('Error! gfa file does not appear to exist')   
+        log.critical('Error! gfa file does not appear to exist')   
     toof = indir+ts+'-too.fits'
     too = os.path.isfile(toof)
     if too:
-        print('will be using too file '+toof)
+        log.info('will be using too file '+toof)
     if outdir is None:
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/'
     if getosubp == True or (mtldir == None and newdir == None):
@@ -455,9 +465,10 @@ def altcreate_mtl(
     """
     tiles = fitsio.read(tilesfn)
     tileIDs = tiles['TILEID']
-
     # AR mtl: read mtl
     if (315 in tileIDs) and (len(tiles) == 1):
+        log.info('special handling of tile 315 for SV3')
+        assert(survey.lower() == 'sv3')
         d0 = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -471,6 +482,9 @@ def altcreate_mtl(
         assert(mtltime.shape[0] == 1)
         
         mtltime = str(mtltime[0])
+        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
+        log.info('tiles {0}'.format(tiles))
+        log.info('mtltime {0}'.format(mtltime))
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -480,11 +494,15 @@ def altcreate_mtl(
             isodate=mtltime,
         )
     elif (315 in tileIDs) and (len(tiles) > 1):
-        print('315 in tiles but multiple tiles provided')
-        print(tileIDs)
-        print(tiles)
-        assert(0)
+        log.critical('315 in tiles but multiple tiles provided')
+        log.critical(tileIDs)
+        log.critical(tiles)
+        raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
+        log.info('normal altcreate_mtl function')
+        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
+        log.info('mtltime {0}'.format(mtltime))
+        log.info('tiles {0}'.format(tiles))
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -493,6 +511,7 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
         )
+        
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
@@ -524,8 +543,10 @@ def altcreate_mtl(
         d["PLATE_DEC"] = d["DEC"]
         d["PLATE_REF_EPOCH"] = d["REF_EPOCH"]
         d = d.as_array()
+
     # AR mtl: PMRA, PMDEC: convert NaN to zeros
     d = force_finite_pm(d)
+
     # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
     if pmcorr == "y":
         if pmtime_utc_str is None:
@@ -536,9 +557,11 @@ def altcreate_mtl(
             d, gaia_ref_epochs[gaiadr]
         )
     d = Table(d)
+
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
         os.makedirs(outfndir, exist_ok=True)
+
     d.write(outfn,format='fits', overwrite=True)
     del d
     return True
