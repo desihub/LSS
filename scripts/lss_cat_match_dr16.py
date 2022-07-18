@@ -60,7 +60,7 @@ with fitsio.FITS(DR16_ROOT + dr16_fname) as h:
     sel = eboss_table['IMATCH'] == 1
     sel |= eboss_table['IMATCH'] == 2
     eboss_table = eboss_table[sel]
-print("Loaded "+dr16_fname+"... matching "+str(len(eboss_table[sel]))+' rows')
+print("Loaded "+dr16_fname+"... matching "+str(len(eboss_table))+' rows')
     
 eboss_ra = np.asarray([i["RA"] for i in eboss_table])
 eboss_dec = np.asarray([i["DEC"] for i in eboss_table])
