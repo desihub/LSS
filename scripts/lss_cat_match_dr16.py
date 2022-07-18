@@ -33,7 +33,7 @@ if args.specrel == 'guadalupe':
     survey = 'DA02'
 if args.specrel  == 'fuji':
     survey = 'SV3'
-ROOT = "/global/cfs/cdirs/desi/survey/catalogs/"+survey+"/LSS/"+r+"/LSScats/"+args.version
+ROOT = "/global/cfs/cdirs/desi/survey/catalogs/"+survey+"/LSS/"+args.specrel+"/LSScats/"+args.version
 fname = args.tracer+'full.dat.fits'
 with fitsio.FITS(ROOT + fname) as h:
     tab = h[1].read()
