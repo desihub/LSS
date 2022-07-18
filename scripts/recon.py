@@ -50,6 +50,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
     dist, ra, dec = utils.cartesian_to_sky(data_positions_rec)
     catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
     logger.info('Saving {}.'.format(data_rec_fn))
+    utils.mkdir(os.path.dirname(data_rec_fn))
     catalog.write(data_rec_fn, format='fits', overwrite=True)
 
     field = 'disp+rsd' if convention == 'recsym' else 'disp'
@@ -61,11 +62,13 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         dist, ra, dec = utils.cartesian_to_sky(recon.read_shifted_positions(randoms_positions, field=field))
         catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
         logger.info('Saving {}.'.format(rec_fn))
+        utils.mkdir(os.path.dirname(rec_fn))
         catalog.write(rec_fn, format='fits', overwrite=True)
+
 
 def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, f=0.8, bias=1.2, boxsize=None, nmesh=None, cellsize=7, smoothing_radius=15, nthreads=8, dtype='f4', **kwargs):
 
-    convention='RSD'
+    convention = 'RSD'
     
     if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
     #if np.ndim(randoms_rec_fn) == 0: randoms_rec_fn = [randoms_rec_fn]
@@ -98,6 +101,7 @@ def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, 
     dist, ra, dec = utils.cartesian_to_sky(data_positions_rec)
     catalog['RA'], catalog['DEC'], catalog['Z'] = ra, dec, distance_to_redshift(dist)
     logger.info('Saving {}.'.format(data_rec_fn))
+    utils.mkdir(os.path.dirname(data_rec_fn))
     catalog.write(data_rec_fn, format='fits', overwrite=True)
         
         
@@ -174,12 +178,12 @@ if __name__ == '__main__':
     for zmin, zmax in zlims:
         for region in regions:
             logger.info('Running reconstruction in region {} in redshift range {} with f, bias = {}.'.format(region, (zmin, zmax), (f, bias)))
-            catalog_kwargs = dict(tracer=args.tracer, region=region, ctype='clustering', nrandoms=args.nran, cat_dir=cat_dir, survey=args.survey)
-            data_fn = catalog_fn(**catalog_kwargs, name='data')
-            randoms_fn = catalog_fn(**catalog_kwargs, name='randoms')
-            data_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='data')
-            randoms_rec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+args.convention, name='randoms')
-            data_realspacerec_fn = catalog_fn(**catalog_kwargs, rec_type=args.algorithm+'rsd', name='data')
+            catalog_kwargs = dict(tracer=args.tracer, region=region, ctype='clustering', nrandoms=args.nran, survey=args.survey)
+            data_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='data')
+            randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='randoms')
+            data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=out_dir, rec_type=args.algorithm+args.convention, name='data')
+            randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=out_dir, rec_type=args.algorithm+args.convention, name='randoms')
+            data_realspacerec_fn = catalog_fn(**catalog_kwargs, cat_dir=out_dir, rec_type=args.algorithm+'rsd', name='data')
             if args.prepare_blinding:
                 run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_realspacerec_fn, f=f, bias=bias, boxsize=args.boxsize, nmesh=args.nmesh, cellsize=args.cellsize, smoothing_radius=args.smoothing_radius, nthreads=args.nthreads, dtype='f4', zlim=(zmin, zmax), weight_type=args.weight_type)
             else:

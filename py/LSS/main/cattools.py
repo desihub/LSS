@@ -105,6 +105,50 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     else:
         return False
 
+def combtile_qso_alt(tiles,outf='',coaddir=''):
+    #to be used for rerun
+    s = 0
+    n = 0
+    nfail = 0
+    kl = ['TARGET_RA','TARGET_DEC','DESI_TARGET','TARGETID', 'Z', 'LOCATION',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS', 'TILEID']
+    print('will add QSO info for '+str(len(tiles))+' tiles')
+    #kl = list(specd.dtype.names)
+    for tile,zdate in zip(tiles['TILEID'],tiles['THRUDATE']):
+        zdate = str(zdate)
+        tspec = combQSOdata_alt(tile,zdate,cols=kl,coaddir=coaddir)
+        if tspec:
+            #better would be to concatenate all at once than one at a time
+            tspec = np.array(tspec)
+
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = tspec[colname][...]
+
+                
+                specd = np.hstack((specd,new))
+            
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+
+            n += 1
+            print(tile,n,len(tiles),len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
+
 
 def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',prog='dark'):
     s = 0
@@ -183,6 +227,62 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
         return True
     else:
         return False
+
+def combtile_spec_alt(tiles,outf='',md='',redo='n',prog='dark',coaddir=''):
+    s = 0
+    n = 0
+    nfail = 0
+    tl = []
+    if os.path.isfile(outf) and redo == 'n':
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
+        tl.append(specd)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        
+        tspec = combspecdata_alt(tile,tdate,coaddir=coaddir)
+        if tspec:
+            tspec['TILEID'] = tile
+            tspec = np.array(tspec)
+            
+            if s == 0:
+                specd = tspec
+                s = 1
+            new = np.empty(len(tspec),dtype=specd.dtype)
+            cols = specd.dtype.names
+            for colname in cols:
+                new[colname][...] = tspec[colname][...]
+            tl.append(new)
+
+            n += 1
+            print(tile,n,len(tiles[tmask]))#,len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    specd = np.hstack(tl)
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        #specd.write(outf,format='fits', overwrite=True)
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
 
 def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',md='' ):
     #put data from different spectrographs together, one table for fibermap, other for z
@@ -272,6 +372,72 @@ def combspecdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/
     #tspec['PRIORITY'] = tf['PRIORITY']
     return tspec
 
+def combspecdata_alt(tile,tdate,coaddir='',md='' ):
+    #put data from different spectrographs together, one table for fibermap, other for z
+    tdate = str(tdate)
+    specs = []
+    #find out which spectrograph have data
+    #zfn = 'zbest'
+    #zhdu = 'ZBEST'
+    shdu = 'SCORES'
+    #if int(tdate) >  20210730:
+    zfn = 'redrock'
+    zhdu = 'REDSHIFTS'
+    #shdu = 'TSNR2'
+
+
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff):
+            specs.append(si)
+        else:
+            print('did not find '+ff)
+    print('spectrographs with data on tile '+str(tile)+':')
+    print(specs)
+    if len(specs) == 0:
+        return None
+    #tsl = []
+    #tql = []
+    tspecl = []
+    tfl = []
+    for i in range(0,len(specs)):
+        tn = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu=zhdu)
+        tspecl.append(tn)
+        tnf = Table.read(coaddir+str(tile)+'/'+tdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits',hdu='FIBERMAP')
+        tfl.append(tnf)
+#         if i == 0:
+#            tspec = tn
+#            tq = tnq
+#            tf = tnf
+#            ts = tns
+#         else:
+#             ts = vstack([ts,tns],metadata_conflicts='silent')
+#             tq = vstack([tq,tnq],metadata_conflicts='silent')
+#             tspec = vstack([tspec,tn],metadata_conflicts='silent')
+#             tf = vstack([tf,tnf],metadata_conflicts='silent')
+
+    #ts = vstack(tsl,metadata_conflicts='silent')
+    #tq = vstack(tql,metadata_conflicts='silent')
+    tspec = vstack(tspecl,metadata_conflicts='silent')
+    tf = vstack(tfl,metadata_conflicts='silent')
+
+
+    tf = unique(tf,keys=['TARGETID'])
+    if md == '4combtar': #target files should contain the rest of the info
+        tf.keep_columns(['FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBERSTATUS','PRIORITY','DELTA_X','DELTA_Y','PSF_TO_FIBER_SPECFLUX','EXPTIME','OBJTYPE'])
+    #tq.keep_columns(['TARGETID','Z_QN','Z_QN_CONF','IS_QSO_QN','ZWARN'])
+    #tq['ZWARN'].name = 'ZWARN_MTL'
+    tspec = join(tspec,tf,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+    #tspec = join(tspec,ts,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+    #tspec = join(tspec,tq,keys=['TARGETID'],join_type='left',metadata_conflicts='silent')
+
+    print(len(tspec),len(tf))
+    #tspec['LOCATION'] = tf['LOCATION']
+    #tspec['FIBERSTATUS'] = tf['FIBERSTATUS']
+    #tspec['PRIORITY'] = tf['PRIORITY']
+    return tspec
+
+
 def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
     s = 0
     n = 0
@@ -344,6 +510,69 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
     else:
         return False
 
+def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
+    s = 0
+    n = 0
+    nfail = 0
+
+    if os.path.isfile(outf) and redo == 'n':
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        tspec = None
+        tspec = combEMdata_guad(tile,tdate,coaddir=coaddir)
+        if tspec is not None:
+            tspec = np.array(tspec)
+
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                #specd = vstack([specd,tspec],metadata_conflicts='silent')
+                #column order got mixed up
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = tspec[colname][...]
+
+                #specd = np.hstack((specd,tspec))
+                specd = np.hstack((specd,new))
+            #specd.sort('TARGETID')
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+
+            n += 1
+            print(tile,n,len(tiles[tmask]),len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        #specd.write(outf,format='fits', overwrite=True)
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
+
 
 def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
     remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
@@ -403,6 +632,78 @@ def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/re
     #'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
     
     #return dt
+
+def combQSOdata_alt(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
+    #combine for some rerun, won't be from archive so dates are the same
+    from LSS.qso_cat_utils import qso_catalog_maker
+    #put data from different spectrographs together, one table for fibermap, other for z
+    zdate = str(zdate)
+    tdate = zdate
+    specs = []
+    #find out which spectrograph have data
+    #zfn = 'zbest'
+    #zhdu = 'ZBEST'
+    #shdu = 'SCORES'
+    #if int(tdate) >  20210730:
+    zfn = 'redrock'
+    zhdu = 'REDSHIFTS'
+        #shdu = 'TSNR2'
+
+
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff):
+            fq = coaddir+str(tile)+'/'+zdate+'/qso_mgii-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+            fqn = coaddir+str(tile)+'/'+zdate+'/qso_qn-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+            if os.path.isfile(fq) and os.path.isfile(fqn):
+
+                specs.append(si)
+            else:
+                print('did not find '+fq+' or '+fqn)
+        elif zfn == 'zbest':
+            zfnt = 'redrock'
+            ff = coaddir+str(tile)+'/'+zdate+'/'+zfnt+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+            if os.path.isfile(ff):
+                fq = coaddir+str(tile)+'/'+zdate+'/qso_mgii-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+                fqn = coaddir+str(tile)+'/'+zdate+'/qso_qn-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+                zfn = zfnt
+                zhdu = 'REDSHIFTS'
+                if os.path.isfile(fq):
+
+                    specs.append(si)
+                else:
+                    print('did not find '+fq+' '+fqn)
+            else:
+                print('did not find '+ff)
+        else:
+            print('did not find '+ff)
+    print('spectrographs with data on tile '+str(tile)+':')
+    print(specs)
+    if len(specs) == 0:
+        return None
+    qsocats = []    
+    for i in range(0,len(specs)):
+        rr = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
+        mgii = coaddir+str(tile)+'/'+zdate+'/'+'qso_mgii'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
+        qn = coaddir+str(tile)+'/'+zdate+'/'+'qso_qn'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
+        old_extname_redrock = True if zhdu == 'ZBEST' else False
+        old_extname_for_qn = False #if int(tdate) >= 20220118 else True
+        qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+        #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+        qsocats.append(qso_cati)
+        #if i == 0:
+        #    qso_cat = qso_cati
+        #else:
+        #    qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
+
+    qso_cat = vstack(qsocats,metadata_conflicts='silent')
+    qso_cat['TILEID'] = tile
+    #print(qso_cat.dtype.names)
+    if cols is not None:
+        qso_cat = Table(qso_cat)
+        qso_cat.keep_columns(cols)
+
+    return qso_cat
 
 
 def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
@@ -2352,7 +2653,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             cosmo = TabulatedDESI()
             dis_dc = cosmo.comoving_radial_distance
             dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
-            abr = ff['flux_r_dered'] -dm
+            r_dered = 22.5 - 2.5*np.log10(ff['flux_r_dered'])
+            abr = r_dered -dm
             sel = abr < float(ccut)
             print('comparison before/after abs mag cut')
             print(len(ff),len(ff[sel]))

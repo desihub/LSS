@@ -273,7 +273,7 @@ wzm = ''
 if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
-tracer_clus = type+notqso+ccut
+tracer_clus = type+notqso+wzm
 # dchi2 = 9
 # tsnrcut = 0
 # if type[:3] == 'ELG':
@@ -308,6 +308,13 @@ if args.fillran == 'y':
         ct.addcol_ran(fn,ii)
         print('done with '+str(ii))
 
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+if type[:3] == 'BGS':
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
+
+
 if mkclusran and mkclusdat:
     print('doing clustering randoms')
 #     tsnrcol = 'TSNR2_ELG'
@@ -323,11 +330,11 @@ if mkclusran and mkclusdat:
 #         tsnrcol = 'TSNR2_BGS'
 #         dchi2 = 40
 #         tsnrcut = 1000
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
-    if type[:3] == 'BGS':
-        fcols = ['G','R','Z','W1','W2']
-        for col in fcols:
-            rcols.append('flux_'+col.lower()+'_dered')
+#     rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
+#     if type[:3] == 'BGS':
+#         fcols = ['G','R','Z','W1','W2']
+#         for col in fcols:
+#             rcols.append('flux_'+col.lower()+'_dered')
 
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
@@ -348,7 +355,7 @@ if args.imsys == 'y':
     if type[:3] == 'BGS':
         zrl = [(0.1,0.5)]    
        
-        
+    rcols.append('WEIGHT_SYSEB')   
     
     for reg in regl:
         for zr in zrl:
@@ -359,11 +366,12 @@ if args.imsys == 'y':
             rd = fitsio.read(fcr)
             fcd = fb+'_clustering.dat.fits'
             dd = Table.read(fcd)
+            dd['WEIGHT_SYSEB'] = np.ones(len(dd))
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
             wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=False)
             sel = wsysl != 1
-            dd['WEIGHT_SYS'][sel] = wsysl[sel]
-            dd['WEIGHT'][sel] *= wsysl[sel]
+            dd['WEIGHT_SYSEB'][sel] = wsysl[sel]
+            #dd['WEIGHT'][sel] *= wsysl[sel]
             dd.write(fcd,overwrite=True,format='fits')
 
 zl = (zmin,zmax)
@@ -402,8 +410,10 @@ if args.regressis == 'y':
 
     cut_fracarea = False
     seed = 42
-
-    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf)
+    fit_maps = None
+    if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
+        fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
@@ -428,11 +438,6 @@ if args.add_regressis == 'y':
 
     
     
-rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-if type[:3] == 'BGS':
-    fcols = ['G','R','Z','W1','W2']
-    for col in fcols:
-        rcols.append('flux_'+col.lower()+'_dered')
 
 if args.add_ke == 'y':
     for reg in regl:

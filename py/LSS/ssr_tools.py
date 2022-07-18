@@ -800,7 +800,7 @@ class QSO_ssr:
         if not plot_only:
             gextc = 3.214
             rextc = 2.165
-            dflux = data['FIBERFLUX_R']*10**(0.4*rextc*data['EBV']) #data['FIBERFLUX_G_EC']
+            dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
 
             deff = 8.60/0.255 * data['TSNR2_QSO']#data['EFFTIME_ELG']
             #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
