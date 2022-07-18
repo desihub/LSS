@@ -87,12 +87,13 @@ if np.any(keep_counts) > 1:
 desi_keep = Table(desi_table[match_keep])
 eboss_keep = Table(eboss_table[idx][match_keep])
 eboss_keep.rename_column("Z", "Z_SDSS")
+eboss_keep.remove_columns(['RA','DEC'])
 joined = hstack([desi_keep, eboss_keep])
 
 # Drops the SDSS RA/DEC from the joined table, since we already have these from
 # the DESI portion of the table. 
-del joined["RA"]
-del joined["DEC"]
+#del joined["RA"]
+#del joined["DEC"]
 
 # Setting the save name.
 out_name = args.tracer+"_cat_"+args.specrel+'_'+args.version+"_LSSfull_DR16_match.fits"
