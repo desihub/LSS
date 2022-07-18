@@ -53,7 +53,7 @@ desi_skycoords = SkyCoord(ra=desi_ra, dec=desi_dec, unit="deg")
 DR16_ROOT = "/global/cfs/cdirs/sdss/staging/dr16/eboss/lss/catalogs/DR16/"
 dr16_fname = "eBOSS_"+args.tracer+"_full_ALLdata-vDR16.fits"
 
-cols_eboss = ["RA", "DEC", "Z", "PLATE", "MJD", "FIBERID"]
+cols_eboss = ["RA", "DEC", "Z", "PLATE", "MJD", "FIBERID","IMATCH"]
 
 with fitsio.FITS(DR16_ROOT + dr16_fname) as h:
     eboss_table = h[1].read_columns(columns=cols_eboss)
