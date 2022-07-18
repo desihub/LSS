@@ -77,7 +77,7 @@ d2d = np.asarray(sep2d.to(u.arcsec))
 # Eseentially deciding everything that close is "correct"
 match_keep = d2d < 1
 _, keep_counts = np.unique(idx[match_keep], return_counts=True)
-print(f"Matched {np.sum(match_keep)} entries from input catalog to DR16 LSS catalog.")
+print("Matched "+str(np.sum(match_keep))+" entries from input catalog to DR16 LSS "+args.tracer+ " catalog.")
 
 # If there are any double matches we'll need to handle that
 if np.any(keep_counts) > 1:
