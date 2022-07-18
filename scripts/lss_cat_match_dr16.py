@@ -34,7 +34,7 @@ if args.specrel == 'guadalupe':
 if args.specrel  == 'fuji':
     survey = 'SV3'
 ROOT = "/global/cfs/cdirs/desi/survey/catalogs/"+survey+"/LSS/"+args.specrel+"/LSScats/"+args.version+"/"
-fname = args.tracer+'/full.dat.fits'
+fname = args.tracer+'_full.dat.fits'
 with fitsio.FITS(ROOT + fname) as h:
     tab = h[1].read()
     sel = tab['ZWARN'] != 999999 #reject the targets that were not observed
