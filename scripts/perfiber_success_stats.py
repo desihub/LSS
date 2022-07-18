@@ -84,32 +84,32 @@ if args.mkfiles == 'y':
             
 
         elif survey == 'SV3':
-            sys.exit('not written for SV3 yet')
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
-            dz = Table(fitsio.read(zf))
-            desitarg = 'SV3_DESI_TARGET'
-            bit = 1 #for selecting LRG
-            wtype = ((dz[desitarg] & bit) > 0)
+            #ys.exit('not written for SV3 yet')
+            if tp != 'BGS_ANY':
+				zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
+				dz = Table(fitsio.read(zf))
+				desitarg = 'SV3_DESI_TARGET'
+				if tp == 'LRG':
+					bit = 1 #for selecting LRG
+				if tp == 'ELG':
+					bit = 2
+				if tp == 'QSO':
+					bit = 4
+				wtype = ((dz[desitarg] & bit) > 0)
+				if tp == 'ELG':
+					wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
+            else:
+                zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
+                dz = Table(fitsio.read(zf))
+                desitarg = 'SV3_BGS_TARGET'
+                wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
+            
             print(len(dz[wtype]))
             #dz = dz[wtype&wg]
             dz = dz[wtype]
-            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-            wz &= dz['ZWARN']*0 == 0 #just in case of nans
-            wz &= dz['COADD_FIBERSTATUS'] == 0
-            ff = dz[wz]
+            wz = dz['COADD_FIBERSTATUS'] == 0
+            dz = dz[wz]
 
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
-            dz = Table(fitsio.read(zf))
-            desitarg = 'SV3_BGS_TARGET'
-            wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
-            print(len(dz[wtype]))
-            #dz = dz[wtype&wg]
-            dz = dz[wtype]
-            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-            wz &= dz['ZWARN']*0 == 0 #just in case of nans
-            wz &= dz['COADD_FIBERSTATUS'] == 0
-
-            ff2 = dz[wz]
 
         z_tot = dz['ZWARN'] != 999999
         z_tot &= dz['ZWARN']*0 == 0
