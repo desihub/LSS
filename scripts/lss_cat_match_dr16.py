@@ -33,8 +33,8 @@ if args.specrel == 'guadalupe':
     survey = 'DA02'
 if args.specrel  == 'fuji':
     survey = 'SV3'
-ROOT = "/global/cfs/cdirs/desi/survey/catalogs/"+survey+"/LSS/"+args.specrel+"/LSScats/"+args.version
-fname = args.tracer+'full.dat.fits'
+ROOT = "/global/cfs/cdirs/desi/survey/catalogs/"+survey+"/LSS/"+args.specrel+"/LSScats/"+args.version+"/"
+fname = args.tracer+'/full.dat.fits'
 with fitsio.FITS(ROOT + fname) as h:
     tab = h[1].read()
     sel = tab['ZWARN'] != 999999 #reject the targets that were not observed
@@ -50,7 +50,7 @@ desi_dec = desi_table["DEC"]
 desi_skycoords = SkyCoord(ra=desi_ra, dec=desi_dec, unit="deg")
 
 # Loads DR16
-DR16_ROOT = "/global/cfs/cdirs/sdss/staging/dr16/eboss/lss/catalogs/DR16"
+DR16_ROOT = "/global/cfs/cdirs/sdss/staging/dr16/eboss/lss/catalogs/DR16/"
 dr16_fname = "eBOSS_"+args.tracer+"_full_ALLdata-vDR16.fits"
 
 cols_eboss = ["RA", "DEC", "Z", "PLATE", "MJD", "FIBERID"]
