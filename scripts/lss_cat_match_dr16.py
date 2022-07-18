@@ -39,7 +39,7 @@ with fitsio.FITS(ROOT + fname) as h:
     tab = h[1].read()
     sel = tab['ZWARN'] != 999999 #reject the targets that were not observed
     desi_table = tab[sel]
-print("Loaded "+fname+"... matching "+str(len[tab[sel]])+' rows')
+print("Loaded "+fname+"... matching "+str(len(tab[sel]))+' rows')
     
 
 
