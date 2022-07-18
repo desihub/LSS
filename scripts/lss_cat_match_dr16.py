@@ -39,7 +39,7 @@ with fitsio.FITS(ROOT + fname) as h:
     tab = h[1].read()
     sel = tab['ZWARN'] != 999999 #reject the targets that were not observed
     desi_table = tab[sel]
-print(f"Loaded {fname}... matching "+str(len[tab[sel]])+' rows')
+print("Loaded "+fname+"... matching "+str(len[tab[sel]])+' rows')
     
 
 
@@ -60,7 +60,7 @@ with fitsio.FITS(DR16_ROOT + dr16_fname) as h:
     sel = eboss_table['IMATCH'] == 1
     sel |= eboss_table['IMATCH'] == 2
     eboss_table = eboss_table[sel]
-    print(f"Loaded {dr16_fname}... matching "+str(len[eboss_table[sel]])+' rows')
+print("Loaded "+dr16_fname+"... matching "+str(len[eboss_table[sel]])+' rows')
     
 eboss_ra = np.asarray([i["RA"] for i in eboss_table])
 eboss_dec = np.asarray([i["DEC"] for i in eboss_table])
@@ -77,7 +77,7 @@ d2d = np.asarray(sep2d.to(u.arcsec))
 # Eseentially deciding everything that close is "correct"
 match_keep = d2d < 1
 _, keep_counts = np.unique(idx[match_keep], return_counts=True)
-print(f"Matched {np.sum(match_keep)} entries from input catalog to DR16Q.")
+print(f"Matched {np.sum(match_keep)} entries from input catalog to DR16 LSS catalog.")
 
 # If there are any double matches we'll need to handle that
 if np.any(keep_counts) > 1:
