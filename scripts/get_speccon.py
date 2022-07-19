@@ -42,7 +42,7 @@ outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits
 
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = fitsio.read(datadir + '/exposures-'+args.verspec+'.fits')
-if args.test == y:
+if args.test == 'y':
     exposures = exposures[:10]
 exposures = Talbe(exposures)    
 nexp = len(exposures)
