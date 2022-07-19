@@ -44,7 +44,7 @@ datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = fitsio.read(datadir + '/exposures-'+args.verspec+'.fits')
 if args.test == 'y':
     exposures = exposures[:10]
-exposures = Talbe(exposures)    
+exposures = Table(exposures)    
 nexp = len(exposures)
 #if args.test == 'y':
 #    nexp = 10
