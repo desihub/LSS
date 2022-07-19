@@ -91,7 +91,7 @@ tcol = addcols + ocol
 exposures = exposures[tcol]
 
 if args.verspec == 'daily':
-    dcat = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/datcomb_'+arg.prog+'_spec_zdone.fits' 
+    dcat = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/datcomb_'+args.prog+'_spec_zdone.fits' 
 else:
     dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
 tids = np.unique(dcat['TILEID'])
