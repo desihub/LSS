@@ -99,8 +99,8 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         sel &= fibl < fmax
         bfib = pars.badfib
         sel_bfib = np.isin(fibl[sel],bfib)
-        sel_low = f_succ < ymin
-        f_succ[sel_low] = ymin+0.01
+        sel_low = f_succ[sel] < ymin
+        f_succ[sel][sel_low] = ymin+0.01
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
