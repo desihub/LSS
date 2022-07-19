@@ -31,6 +31,9 @@ survey  = args.survey
 specver = args.verspec
 
 
+tracers = ['QSO','LRG','ELG','BGS_ANY']
+
+
 def plot_all_petal(petal):
     for tp in tracers:
         if args.survey != 'SV3':
