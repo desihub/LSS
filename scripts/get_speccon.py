@@ -29,7 +29,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--survey", help="main or sv3",default='main')
 parser.add_argument("--prog", help="dark or bright",default='dark')
-parser.add_argument("--verspec",help="version for redshifts",default='everest')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--test",help="if yes, test a small fraction of the exposures",default='n')
 
 args = parser.parse_args()
 
@@ -40,12 +41,17 @@ if args.survey == 'sv3':
 outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits'
 
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
-exposures = Table.read(datadir + '/exposures-'+args.verspec+'.fits', hdu=1)
-
-exposures['MOON_ILLUM'] = np.zeros(len(exposures))
+exposures = fitsio.read(datadir + '/exposures-'+args.verspec+'.fits')
+if args.test == y:
+    exposures = exposures[:10]
+exposures = Talbe(exposures)    
+nexp = len(exposures)
+#if args.test == 'y':
+#    nexp = 10
+exposures['MOON_ILLUM'] = np.zeros(nexp)
 
 moon = ephem.Moon(mayall)
-for ii in range(0,len(exposures)):
+for ii in range(0,nexp):
 
     t = Time(exposures[ii]['MJD'], format='mjd')
     moon.compute(t.datetime)
@@ -60,10 +66,10 @@ print('added moon illumination, median is:'+str(np.median(exposures['MOON_ILLUM'
 addcols = ['ZD','ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
 
 for col in addcols:
-    exposures[col] = np.ones(len(exposures))*-99
+    exposures[col] = np.ones(nexp)*-99
 
-nexp = len(exposures)
-for ii in range(0,len(exposures)):
+
+for ii in range(0,nexp):
     es = str(exposures[ii]['EXPID']).zfill(8)
     efn = '/global/cfs/cdirs/desi/spectro/data/'+str(exposures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
     hh = fitsio.read_header(efn,ext=1)
@@ -84,7 +90,10 @@ ocol = ['MOON_ILLUM','EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA'
 tcol = addcols + ocol
 exposures = exposures[tcol]
 
-dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
+if args.verspec == 'daily':
+    dcat = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/datcomb_'+arg.prog+'_spec_zdone.fits' 
+else:
+    dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
 tids = np.unique(dcat['TILEID'])
 
 mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
