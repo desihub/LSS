@@ -68,7 +68,7 @@ for ii in range(0,len(exposures)):
     efn = '/global/cfs/cdirs/desi/spectro/data/'+str(exposures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
     hh = fitsio.read_header(efn,ext=1)
     if ii//100 == ii/100:
-        print('at exposure '+str(ii)+ 'out of '+str(nexp))
+        print('at exposure '+str(ii)+ ' out of '+str(nexp))
     for col in addcols:
         try:
             exposures[ii][col] = hh[col]
