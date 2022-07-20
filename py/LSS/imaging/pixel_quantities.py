@@ -1,10 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 # -*- coding: utf-8 -*-
 """
-LSS.pixel_nobs
-==============
+LSS.pixel_quantities
+====================
 
-Routines for adding pixel-level nobs values to target files.
+Routines for adding pixel-level quantities to target files.
 """
 import os
 import fitsio
@@ -30,8 +30,8 @@ log = get_logger()
 start = time()
 
 
-def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
-    """NEXP (per-band) at positions in a Legacy Surveys brick.
+def wrap_quantities_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
+    """Pixel-level quantities at locations in a Legacy Surveys brick.
 
     Parameters
     ----------
@@ -50,13 +50,16 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     Returns
     -------
     :class:`dictionary`
-        The number of observations (`nobs_x`) at each position/brickname.
+       The number of observations (`nobs_x`), PSF depth (`psfdepth_x`)
+       galaxy depth (`galdepth_x`), PSF size (`psfsize_x`), sky
+       background (`apflux_x`) and inverse variance (`apflux_ivar_x`)
+       at each passed position in each band x=g,r,z. Plus, the
+       `psfdepth_w1` and `_w2` depths and the `maskbits`, `wisemask_w1`
+       and `_w2` information at each passed position for the brick.
 
     Notes
     -----
-    - Adapted from :func:`desitarget.quantities_at_positions_in_a_brick()`
-    - h/t to Rongpu Zhou for noticing that the targets and randoms used
-      slightly different definitions of NOBS.
+    - Wraps :func:`desitarget.quantities_at_positions_in_a_brick()`
     """
     # ADM check nors is one of the allowed strings.
     if nors not in ["north", "south"]:
@@ -67,43 +70,8 @@ def nexp_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     # ADM expand the drdir to include "north"/"south".
     drdir = os.path.join(drdir, nors)
 
-    # ADM determine whether the coadd files have extension .gz or .fz
-    # based on the DR directory.
-    extn, extn_nb = dr_extension(drdir)
-
-    # ADM the output array.
-    dt = [('PIXEL_NOBS_G', 'i2'), ('PIXEL_NOBS_R', 'i2'), ('PIXEL_NOBS_Z', 'i2')]
-    nexp = np.zeros(len(ras), dtype=dt)
-
-    # as a speed up, assume images in different filters for the brick have
-    # the same WCS -> if read once (iswcs=True), use this info.
-    # ADM this approach isn't strictly faster, I just included it for
-    # ADM consistency with how the randoms are generated.
-    iswcs = False
-
-    # ADM {} are brick name and filter name (g/r/z).
-    rootdir = os.path.join(drdir, 'coadd', brickname[:3], brickname)
-    fileform = os.path.join(rootdir, 'legacysurvey-{}-nexp-{}.fits.') + str(extn)
-
-    # ADM loop through the filters and store the number of observations
-    # ADM at the RA and Dec positions of the passed points.
-    for filt in ['g', 'r', 'z']:
-        col = 'PIXEL_NOBS_' + filt.upper()
-        fn = fileform.format(brickname, filt)
-        if os.path.exists(fn):
-            img = fits.open(fn)[extn_nb]
-            # ADM if we've yet to succeed read the wcs information.
-            if not iswcs:
-                w = WCS(img.header)
-                x, y = w.all_world2pix(ras, decs, 0)
-                iswcs = True
-            nexp[col] = img.data[y.round().astype("int"),
-                                 x.round().astype("int")]
-        # ADM if the file doesn't exist, set quantities to zero.
-        else:
-            nexp[col] = np.zeros(len(ras), dtype='i2')
-
-    return nexp
+    # ADM output from desitarget.quantities_at_positions_in_a_brick()
+    return quantities_at_positions_in_a_brick(ras, decs, brickname, drdir)
 
 
 def make_nexp_for_target_file(targfile, drdir, numproc=1):
