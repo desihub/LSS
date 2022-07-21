@@ -15,6 +15,7 @@ from time import time
 import astropy.io.fits as fits
 from astropy.wcs import WCS
 from glob import glob
+import healpy as hp
 
 from desitarget.randoms import dr_extension, quantities_at_positions_in_a_brick
 from desitarget.internal import sharedmem
@@ -30,6 +31,53 @@ log = get_logger()
 
 # ADM start the clock.
 start = time()
+
+
+def make_slurm_script(targdir, drdir, outdir, nside=2, numproc=60, mopup=False):
+    """Write an example slurm script for parallelization
+
+    Parameters
+    ----------
+    targdir : :class:`str`
+        Full path to a directory that contains target files.
+    drdir : :class:`str`
+        Root directory for a Data Release from the Legacy Surveys
+        e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.
+    outdir : :class:`str`
+        The directory to which to write output files. This will be
+        created if it doesn't yet exist. Each file in `targdir` is
+        written to <outdir> + pixel-<targfile>.
+    nside : :class:`int`, optional, defaults to 2
+        (NESTED) HEALPix `nside` to use with `pixlist`.
+    numproc : :class:`int`, optional, defaults to 60
+        The number of processes to parallelize across.
+    mopup : :class:`bool`, optional, defaults to ``False``
+        If ``True`` then do NOT overwrite existing output files. This is
+        useful for "mopping up" failed or missing files.
+
+    Returns
+    -------
+    Nothing, but a bash script that can be used to parallelize
+    pixel-level lookups for targets is written to screen.
+    """
+    npix = hp.nside2npix(nside)
+
+    print('#!/bin/bash -l')
+    print('#SBATCH -q regular')
+    print('#SBATCH -N 16')
+    print('#SBATCH -t 04:00:00')
+    print('#SBATCH -L SCRATCH,project')
+    print('#SBATCH -C haswell')
+    print('')
+    for pixnum in range(npix):
+        former = 'get_pixel_quantities_for_targets'
+        former += '--nside {} --healpixels {} --numproc {} {} {} {}'
+        msg = former.format(nside, pixnum, numproc, targdir, drdir, outdir)
+        if mopup:
+            msg += ' --mopup'
+        print(msg)
+
+    return
 
 
 def at_locations_in_a_brick(ras, decs, brickname, nors, drdir):
