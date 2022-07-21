@@ -66,6 +66,56 @@ def get_pix(ra, dec):
 
 
 for tp in tps:
+
+    for map in maps_ex:
+        parv = ex_maps[map]
+        print(map)
+        for reg,cl in zip(regl,clrs):
+            if reg == '_S' or map[:5] != 'CALIB':
+                dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+                dpix = get_pix(dtf['RA'],dtf['DEC'])
+                rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
+                rt = fitsio.read(rf)
+                rpix = get_pix(rt['RA'],rt['DEC'])
+                pixlg = np.zeros(nside*nside*12)
+                pixlgw = np.zeros(nside*nside*12)
+                for ii in range(0,len(dpix)):
+                    pixlg[dpix[ii]] += dtf[ii]['WEIGHT_COMP']*dtf[ii]['WEIGHT_FKP']
+                    pixlgw[dpix[ii]] += dtf[ii]['WEIGHT']*dtf[ii]['WEIGHT_FKP']
+                pixlr = np.zeros(nside*nside*12)
+                for ii in range(0,len(rpix)):
+                    pixlr[rpix[ii]] += 1.
+                wp = pixlr > 0
+                print(len(parv[wp]))
+                rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+                dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+                dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
+                print(rh)
+                print(dh)
+                print(dhw)
+                norm = sum(rh)/sum(dh)
+                sv = dh/rh*norm
+                normw = sum(rh)/sum(dhw)
+                svw = dhw/rh*normw
+
+                ep = np.sqrt(dh)/rh*norm
+                bc = []
+                for i in range(0,len(bn)-1):
+                    bc.append((bn[i]+bn[i+1])/2.)
+                lab = reg.strip('_')+',before weights'
+                print(lab)    
+                plt.plot(bc,sv,'--',label=lab,color=cl)
+                print(bc,svw,ep)
+                plt.errorbar(bc,svw,ep,fmt='o',label=reg.strip('_')+', with weights',color=cl)
+        plt.legend()
+        plt.xlabel(map)
+        plt.ylabel('Ngal/<Ngal> ')
+    
+        plt.title(args.survey+' '+tp)
+        plt.grid()
+        plt.savefig(outdir+tp+'_densvs'+map+'.png')
+        plt.clf()
+
     
     for map in maps:
         parv = all_maps[map]
@@ -111,47 +161,3 @@ for tp in tps:
         plt.savefig(outdir+tp+'_densvs'+map+'.png')
         plt.clf()
 
-    for map in maps_ex:
-        parv = ex_maps[map]
-        for reg,cl in zip(regl,clrs):
-            if reg == '_S' or map[:5] != 'CALIB':
-                dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-                dpix = get_pix(dtf['RA'],dtf['DEC'])
-                rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
-                rt = fitsio.read(rf)
-                rpix = get_pix(rt['RA'],rt['DEC'])
-                pixlg = np.zeros(nside*nside*12)
-                pixlgw = np.zeros(nside*nside*12)
-                for ii in range(0,len(dpix)):
-                    pixlg[dpix[ii]] += dtf[ii]['WEIGHT_COMP']*dtf[ii]['WEIGHT_FKP']
-                    pixlgw[dpix[ii]] += dtf[ii]['WEIGHT']*dtf[ii]['WEIGHT_FKP']
-                pixlr = np.zeros(nside*nside*12)
-                for ii in range(0,len(rpix)):
-                    pixlr[rpix[ii]] += 1.
-                wp = pixlr > 0
-                rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
-                dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
-                dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
-            
-                norm = sum(rh)/sum(dh)
-                sv = dh/rh*norm
-                normw = sum(rh)/sum(dhw)
-                svw = dhw/rh*normw
-
-                ep = np.sqrt(dh)/rh*norm
-                bc = []
-                for i in range(0,len(bn)-1):
-                    bc.append((bn[i]+bn[i+1])/2.)
-                lab = reg.strip('_')+',before weights'
-                print(lab)    
-                plt.plot(bc,sv,'--',label=lab,color=cl)
-                print(bc,svw,ep)
-                plt.errorbar(bc,svw,ep,fmt='o',label=reg.strip('_')+', with weights',color=cl)
-        plt.legend()
-        plt.xlabel(map)
-        plt.ylabel('Ngal/<Ngal> ')
-    
-        plt.title(args.survey+' '+tp)
-        plt.grid()
-        plt.savefig(outdir+tp+'_densvs'+map+'.png')
-        plt.clf()
