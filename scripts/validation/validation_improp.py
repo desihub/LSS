@@ -69,7 +69,7 @@ def get_pix(ra, dec):
 
 for tp in tps:
 
-    if EBVdiff:
+    if EBVdiff is not None:
         parv = EBVdiff
         map = 'EBVnew-SFD'
         for reg,cl in zip(regl,clrs):
