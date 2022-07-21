@@ -117,7 +117,7 @@ for tp in tps:
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
             rt_reg = rt[sel_reg_r]
-            dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+            dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
             rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
             pixlg = np.zeros(nside*nside*12)
             pixlgw = np.zeros(nside*nside*12)
@@ -162,7 +162,7 @@ for tp in tps:
                 sel_reg_r = rt['PHOTSYS'] == reg
                 dt_reg = dtf[sel_reg_d]
                 rt_reg = rt[sel_reg_r]
-                dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+                dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
                 rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
                 pixlg = np.zeros(nside*nside*12)
                 pixlgw = np.zeros(nside*nside*12)
@@ -205,7 +205,7 @@ for tp in tps:
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
             rt_reg = rt[sel_reg_r]
-            dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+            dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
             rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
             pixlg = np.zeros(nside*nside*12)
             pixlgw = np.zeros(nside*nside*12)
