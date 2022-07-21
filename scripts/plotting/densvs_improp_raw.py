@@ -80,7 +80,7 @@ for tp in tps:
 
 
 
-
+    yl = (0.8,1.1)
     if tp == 'LRG':
         z_suc= dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>15
@@ -93,6 +93,7 @@ for tp in tps:
         z_suc &= dtf[zcol]<1.6
         z_suc &= dtf[zcol]>0.8
         zr = ' 0.8 < z < 1.6'
+        yl = (0.7,1.1)
 
     if tp == 'QSO':
         z_suc = dtf[zcol]*0 == 0
@@ -159,6 +160,7 @@ for tp in tps:
     
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
+        plt.ylim(yl[0],yl[1])
         plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         plt.clf()
 
@@ -208,6 +210,7 @@ for tp in tps:
     
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
+        plt.ylim(yl[0],yl[1])
         plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         plt.clf()
 
@@ -248,6 +251,7 @@ for tp in tps:
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
+        plt.ylim(yl[0],yl[1])
     
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
