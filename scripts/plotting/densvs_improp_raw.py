@@ -113,7 +113,7 @@ for tp in tps:
     seld &= z_suc
 
     dtf = dtf[seld]
-    rf = indir+tp+zdw+reg+'_0_full.ran.fits'
+    rf = indir+tp+zdw+'_0_full.ran.fits'
     rt = fitsio.read(rf)
 
     if EBVdiff is not None:
