@@ -91,7 +91,7 @@ for tp in tps:
     if tp[:3] == 'ELG':
         z_suc = dtf['o2c'] > 0.9
         z_suc &= dtf[zcol]<1.6
-        z_suc &= dtf['Z']>0.8
+        z_suc &= dtf[zcol]>0.8
         zr = ' 0.8 < z < 1.6'
 
     if tp == 'QSO':
