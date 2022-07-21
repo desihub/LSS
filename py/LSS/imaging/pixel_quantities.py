@@ -5,6 +5,8 @@ LSS.pixel_quantities
 ====================
 
 Routines for adding pixel-level quantities to target files.
+
+.. _`bitmasks page`: https://www.legacysurvey.org/dr9/bitmasks
 """
 import os
 import fitsio
@@ -14,7 +16,7 @@ import astropy.io.fits as fits
 from astropy.wcs import WCS
 from glob import glob
 
-from desitarget.randoms import dr_extension
+from desitarget.randoms import dr_extension, quantities_at_positions_in_a_brick
 from desitarget.internal import sharedmem
 from desitarget.geomask import match_to
 from desitarget.io import write_with_units
@@ -30,7 +32,7 @@ log = get_logger()
 start = time()
 
 
-def wrap_quantities_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
+def at_locations_in_a_brick(ras, decs, brickname, nors, drdir):
     """Pixel-level quantities at locations in a Legacy Surveys brick.
 
     Parameters
@@ -49,14 +51,30 @@ def wrap_quantities_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
 
     Returns
     -------
-    :class:`dictionary`
-       The number of observations (`nobs_x`), PSF depth (`psfdepth_x`)
-       galaxy depth (`galdepth_x`), PSF size (`psfsize_x`), sky
-       background (`apflux_x`) and inverse variance (`apflux_ivar_x`)
-       at each passed position in each band x=g,r,z. Plus, the
-       `psfdepth_w1` and `_w2` depths and the `maskbits`, `wisemask_w1`
-       and `_w2` information at each passed position for the brick.
+    :class:`~numpy.array`
+        With the following quantities at each location in the brick:
 
+        PIXEL_NOBS_G, R, Z:
+            Number of observations in g, r, z-band.
+        PIXEL_PSFDEPTH_G, R, Z:
+            PSF depth at this location in g, r, z.
+        PIXEL_GALDEPTH_G, R, Z:
+            Galaxy depth in g, r, z.
+        PIXEL_PSFDEPTH_W1, W2:
+            (PSF) depth in W1, W2 (AB mag system).
+        PIXEL_PSFSIZE_G, R, Z:
+            Weighted average PSF FWHM (arcsec).
+        PIXEL_APFLUX_G, R, Z:
+            Sky background in a 0.75-arcsec-radius DESI aperture.
+        PIXEL_APFLUX_IVAR_G, R, Z:
+            Inverse variance of sky background.
+        PIXEL_MASKBITS:
+            Mask information. See the Legacy Surveys `bitmasks page`_.
+        PIXEL_WISEMASK_W1:
+            Mask information. See the Legacy Surveys `bitmasks page`_.
+        PIXEL_WISEMASK_W2:
+            Mask information. See the Legacy Surveys `bitmasks page`_.
+x
     Notes
     -----
     - Wraps :func:`desitarget.quantities_at_positions_in_a_brick()`
@@ -71,11 +89,32 @@ def wrap_quantities_at_positions_in_a_brick(ras, decs, brickname, nors, drdir):
     drdir = os.path.join(drdir, nors)
 
     # ADM output from desitarget.quantities_at_positions_in_a_brick()
-    return quantities_at_positions_in_a_brick(ras, decs, brickname, drdir)
+    q = quantities_at_positions_in_a_brick(ras, decs, brickname, drdir)
+
+    # ADM restructure the output dictionary.
+    dt = [('NOBS_G', 'i2'), ('NOBS_R', 'i2'), ('NOBS_Z', 'i2'),
+          ('PSFDEPTH_G', 'f4'), ('PSFDEPTH_R', 'f4'), ('PSFDEPTH_Z', 'f4'),
+          ('GALDEPTH_G', 'f4'), ('GALDEPTH_R', 'f4'), ('GALDEPTH_Z', 'f4'),
+          ('PSFDEPTH_W1', 'f4'), ('PSFDEPTH_W2', 'f4'),
+          ('PSFSIZE_G', 'f4'), ('PSFSIZE_R', 'f4'), ('PSFSIZE_Z', 'f4'),
+          ('APFLUX_G', 'f4'), ('APFLUX_R', 'f4'), ('APFLUX_Z', 'f4'),
+          ('APFLUX_IVAR_G', 'f4'), ('APFLUX_IVAR_R', 'f4'), ('APFLUX_IVAR_Z', 'f4'),
+          ('MASKBITS', 'i2'), ('WISEMASK_W1', '|u1'), ('WISEMASK_W2', '|u1')]
+    dt = [("PIXEL_{}".format(col), form) for col, form in dt]
+
+    qout = np.zeros(len(ras), dtype=dt)
+    for col in qout.dtype.names:
+        key = col.split("PIXEL_")[-1].lower()
+        # ADM there's a slight syntactical discrepancy between the output
+        # ADM dictionary and the desired structure.
+        key = key.replace("psfdepth_w", "psfdepth_W")
+        qout[col] = q[key]
+
+    return qout
 
 
-def make_nexp_for_target_file(targfile, drdir, numproc=1):
-    """Look up pixel-level NOBS (from coadds/stacks) for one target file.
+def look_up_for_target_file(targfile, drdir, numproc=1):
+    """Look up pixel-level quantities (from coadds) for one target file.
 
     Parameters
     ----------
@@ -92,25 +131,20 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
     -------
     :class:`~numpy.array`
         The targets in the input `targfile` in the original order with
-        the standard quantities RA, DEC, BRICKNAME, TARGETID and PHOTSYS
-        and added quantities PIXEL_NOBS_G/R/Z, which are the pixel-level
-        number of observations in each band.
-
-    Notes
-    -----
-    - Useful as the NOBS listed in the target files differs from the
-      pixel-level NOBS assigned to the DESI random catalogs.
+        the standard quantities RA, DEC, BRICKNAME, TARGETID, DESI_TARGET
+        and PHOTSYS and the added quantities described in the docstring
+        of :func:`at_locations_in_a_brick()`.
     """
     # ADM read in the needed target columns...
-    targs = fitsio.read(targfile, columns=["RA", "DEC",
-                                           "BRICKNAME", "TARGETID", "PHOTSYS"])
+    targs = fitsio.read(targfile, columns=["RA", "DEC", "BRICKNAME",
+                                           "DESI_TARGET", "TARGETID", "PHOTSYS"])
     # ADM ...and compile the list of brick names in the file.
     bricknames = list(set(targs["BRICKNAME"]))
     nbricks = len(bricknames)
 
     # ADM wrapper to facilitate parallelization.
-    def _get_nexp(brickname):
-        """wrapper on nexp_at_positions_in_a_brick() for a brick name"""
+    def _get_quantities(brickname):
+        """wrapper on at_locations_in_a_brick() for a brick name"""
         # ADM extract the information for one brick.
         ii = targs["BRICKNAME"] == brickname
         brick = targs[ii]
@@ -126,16 +160,16 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
             raise ValueError(msg)
 
         # ADM call the actual code.
-        nexp = nexp_at_positions_in_a_brick(brick["RA"], brick["DEC"], brickname,
-                                            nors, drdir)
+        q = at_locations_in_a_brick(brick["RA"], brick["DEC"], brickname,
+                                    nors, drdir)
 
         # ADM make a table of all of the required information...
-        dt = brick.dtype.descr + nexp.dtype.descr
+        dt = brick.dtype.descr + q.dtype.descr
         done = np.zeros(len(brick), dtype=dt)
         for col in brick.dtype.names:
             done[col] = brick[col]
-        for col in nexp.dtype.names:
-            done[col] = nexp[col]
+        for col in q.dtype.names:
+            done[col] = q[col]
 
         return done
 
@@ -158,23 +192,23 @@ def make_nexp_for_target_file(targfile, drdir, numproc=1):
     if numproc > 1 and nbricks > 0:
         pool = sharedmem.MapReduce(np=numproc)
         with pool:
-            nexp = pool.map(_get_nexp, bricknames, reduce=_update_status)
+            q = pool.map(_get_quantities, bricknames, reduce=_update_status)
     else:
-        nexp = []
+        q = []
         for brickname in bricknames:
-            nexp.append(_update_status(_get_nexp(brickname)))
+            q.append(_update_status(_get_quantities(brickname)))
 
-    if len(nexp) > 0:
-        nexp = np.concatenate(nexp)
+    if len(q) > 0:
+        q = np.concatenate(q)
 
     # ADM match back on TARGETID to maintain original order of targets.
-    ii = match_to(nexp["TARGETID"], targs["TARGETID"])
+    ii = match_to(q["TARGETID"], targs["TARGETID"])
 
-    return nexp[ii]
+    return q[ii]
 
 
-def write_nexp_for_target_file(targfile, drdir, outdir, numproc=1,
-                               overwrite=True):
+def write_for_target_file(targfile, drdir, outdir, numproc=1,
+                          overwrite=True):
     """Write a file of pixel-level NOBS for one target file.
 
     Parameters
