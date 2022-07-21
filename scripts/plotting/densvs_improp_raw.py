@@ -73,34 +73,34 @@ for tp in tps:
     seld &= dtf['ZWARN']*0 == 0
 
 
-	if tp == 'LRG':
-		z_suc= dtf['ZWARN']==0
-		z_suc &= dtf['DELTACHI2']>15
-		z_suc &= dtf['Z']<1.1
-		z_suc &= dtf['Z'] > 0.4
-		zr = ' 0.4 < z < 1.1'
+    if tp == 'LRG':
+        z_suc= dtf['ZWARN']==0
+        z_suc &= dtf['DELTACHI2']>15
+        z_suc &= dtf['Z']<1.1
+        z_suc &= dtf['Z'] > 0.4
+        zr = ' 0.4 < z < 1.1'
 
-	if tp == 'ELG':
-		z_suc = dtf['o2c'] > 0.9
-		z_suc &= dtf['Z']<1.6
-		z_suc &= dtf['Z']>0.8
-		zr = ' 0.8 < z < 1.6'
+    if tp == 'ELG':
+        z_suc = dtf['o2c'] > 0.9
+        z_suc &= dtf['Z']<1.6
+        z_suc &= dtf['Z']>0.8
+        zr = ' 0.8 < z < 1.6'
 
-	if tp == 'QSO':
+    if tp == 'QSO':
         z_suc = dtf['Z']*0 == 0
         z_suc &= dtf['Z'] != 999999
         z_suc &= dtf['Z'] != 1.e20
-		z_suc &= dtf['Z']<2.1
-		z_suc &= dtf['Z']>0.8
-		zr = ' 0.8 < z < 2.1 '
+        z_suc &= dtf['Z']<2.1
+        z_suc &= dtf['Z']>0.8
+        zr = ' 0.8 < z < 2.1 '
 
 
-	if tp == 'BGS_ANY':    
-		z_suc = dtf['ZWARN']==0
-		z_suc &= dtf['DELTACHI2']>40
-		z_suc &= dtf['Z']<0.4
-		z_suc &= dtf['Z']>0.1
-		zr = ' 0.1 < z < 0.4 '
+    if tp == 'BGS_ANY':    
+        z_suc = dtf['ZWARN']==0
+        z_suc &= dtf['DELTACHI2']>40
+        z_suc &= dtf['Z']<0.4
+        z_suc &= dtf['Z']>0.1
+        zr = ' 0.1 < z < 0.4 '
 
     seld &= z_suc
 
@@ -113,36 +113,36 @@ for tp in tps:
         map = 'EBVnew-SFD'
         for reg,cl in zip(regl,clrs):
                 
-			sel_reg_d = dtf['PHOTSYS'] == reg
-			sel_reg_r = rt['PHOTSYS'] == reg
-			dt_reg = dtf[sel_reg_d]
-			rt_reg = rt[sel_reg_r]
-			dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
-			rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
-			pixlg = np.zeros(nside*nside*12)
-			pixlgw = np.zeros(nside*nside*12)
-			for ii in range(0,len(dpix)):
-				pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-				
-			pixlr = np.zeros(nside*nside*12)
-			for ii in range(0,len(rpix)):
-				pixlr[rpix[ii]] += 1.
-			wp = pixlr > 0
-			print(len(parv[wp]))
-			rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
-			dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
-			print(rh)
-			print(dh)
-			norm = sum(rh)/sum(dh)
-			sv = dh/rh*norm
+            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_r = rt['PHOTSYS'] == reg
+            dt_reg = dtf[sel_reg_d]
+            rt_reg = rt[sel_reg_r]
+            dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+            rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+            pixlg = np.zeros(nside*nside*12)
+            pixlgw = np.zeros(nside*nside*12)
+            for ii in range(0,len(dpix)):
+                pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
+                
+            pixlr = np.zeros(nside*nside*12)
+            for ii in range(0,len(rpix)):
+                pixlr[rpix[ii]] += 1.
+            wp = pixlr > 0
+            print(len(parv[wp]))
+            rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+            dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+            print(rh)
+            print(dh)
+            norm = sum(rh)/sum(dh)
+            sv = dh/rh*norm
 
-			ep = np.sqrt(dh)/rh*norm
-			bc = []
-			for i in range(0,len(bn)-1):
-				bc.append((bn[i]+bn[i+1])/2.)
-			lab = reg+', full, no imsys weights'
-			print(lab)    
-			plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+            ep = np.sqrt(dh)/rh*norm
+            bc = []
+            for i in range(0,len(bn)-1):
+                bc.append((bn[i]+bn[i+1])/2.)
+            lab = reg+', full, no imsys weights'
+            print(lab)    
+            plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
@@ -158,36 +158,36 @@ for tp in tps:
         print(map)
         for reg,cl in zip(regl,clrs):
             if reg == 'S' or map[:5] != 'CALIB':
-				sel_reg_d = dtf['PHOTSYS'] == reg
-				sel_reg_r = rt['PHOTSYS'] == reg
-				dt_reg = dtf[sel_reg_d]
-				rt_reg = rt[sel_reg_r]
-				dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
-				rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
-				pixlg = np.zeros(nside*nside*12)
-				pixlgw = np.zeros(nside*nside*12)
-				for ii in range(0,len(dpix)):
-					pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-				
-				pixlr = np.zeros(nside*nside*12)
-				for ii in range(0,len(rpix)):
-					pixlr[rpix[ii]] += 1.
-				wp = pixlr > 0
-				print(len(parv[wp]))
-				rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
-				dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
-				print(rh)
-				print(dh)
-				norm = sum(rh)/sum(dh)
-				sv = dh/rh*norm
+                sel_reg_d = dtf['PHOTSYS'] == reg
+                sel_reg_r = rt['PHOTSYS'] == reg
+                dt_reg = dtf[sel_reg_d]
+                rt_reg = rt[sel_reg_r]
+                dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+                rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+                pixlg = np.zeros(nside*nside*12)
+                pixlgw = np.zeros(nside*nside*12)
+                for ii in range(0,len(dpix)):
+                    pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
+                
+                pixlr = np.zeros(nside*nside*12)
+                for ii in range(0,len(rpix)):
+                    pixlr[rpix[ii]] += 1.
+                wp = pixlr > 0
+                print(len(parv[wp]))
+                rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+                dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+                print(rh)
+                print(dh)
+                norm = sum(rh)/sum(dh)
+                sv = dh/rh*norm
 
-				ep = np.sqrt(dh)/rh*norm
-				bc = []
-				for i in range(0,len(bn)-1):
-					bc.append((bn[i]+bn[i+1])/2.)
-				lab = reg+', full, no imsys weights'
-				print(lab)    
-				plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+                ep = np.sqrt(dh)/rh*norm
+                bc = []
+                for i in range(0,len(bn)-1):
+                    bc.append((bn[i]+bn[i+1])/2.)
+                lab = reg+', full, no imsys weights'
+                print(lab)    
+                plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
@@ -201,36 +201,36 @@ for tp in tps:
     for map in maps:
         parv = all_maps[map]
         for reg,cl in zip(regl,clrs):
-			sel_reg_d = dtf['PHOTSYS'] == reg
-			sel_reg_r = rt['PHOTSYS'] == reg
-			dt_reg = dtf[sel_reg_d]
-			rt_reg = rt[sel_reg_r]
-			dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
-			rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
-			pixlg = np.zeros(nside*nside*12)
-			pixlgw = np.zeros(nside*nside*12)
-			for ii in range(0,len(dpix)):
-				pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-				
-			pixlr = np.zeros(nside*nside*12)
-			for ii in range(0,len(rpix)):
-				pixlr[rpix[ii]] += 1.
-			wp = pixlr > 0
-			print(len(parv[wp]))
-			rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
-			dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
-			print(rh)
-			print(dh)
-			norm = sum(rh)/sum(dh)
-			sv = dh/rh*norm
+            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_r = rt['PHOTSYS'] == reg
+            dt_reg = dtf[sel_reg_d]
+            rt_reg = rt[sel_reg_r]
+            dpix = get_pix(dt_reg['RA'],dt_reg'DEC'])
+            rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+            pixlg = np.zeros(nside*nside*12)
+            pixlgw = np.zeros(nside*nside*12)
+            for ii in range(0,len(dpix)):
+                pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
+                
+            pixlr = np.zeros(nside*nside*12)
+            for ii in range(0,len(rpix)):
+                pixlr[rpix[ii]] += 1.
+            wp = pixlr > 0
+            print(len(parv[wp]))
+            rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+            dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+            print(rh)
+            print(dh)
+            norm = sum(rh)/sum(dh)
+            sv = dh/rh*norm
 
-			ep = np.sqrt(dh)/rh*norm
-			bc = []
-			for i in range(0,len(bn)-1):
-				bc.append((bn[i]+bn[i+1])/2.)
-			lab = reg+', full, no imsys weights'
-			print(lab)    
-			plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+            ep = np.sqrt(dh)/rh*norm
+            bc = []
+            for i in range(0,len(bn)-1):
+                bc.append((bn[i]+bn[i+1])/2.)
+            lab = reg+', full, no imsys weights'
+            print(lab)    
+            plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
