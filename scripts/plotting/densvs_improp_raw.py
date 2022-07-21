@@ -66,40 +66,48 @@ nbin = 10
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
 
-
 for tp in tps:
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     seld = dtf['ZWARN'] != 999999
     seld &= dtf['ZWARN']*0 == 0
 
+    cols = list(dtf.dtype.names)
+    if 'Z' in cols:
+        print(tp+' Z column already in full file')
+        zcol = 'Z'
+    else:
+        zcol = 'Z_not4clus'
+
+
+
 
     if tp == 'LRG':
         z_suc= dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>15
-        z_suc &= dtf['Z']<1.1
-        z_suc &= dtf['Z'] > 0.4
+        z_suc &= dtf[zcol]<1.1
+        z_suc &= dtf[zcol] > 0.4
         zr = ' 0.4 < z < 1.1'
 
     if tp == 'ELG':
         z_suc = dtf['o2c'] > 0.9
-        z_suc &= dtf['Z']<1.6
+        z_suc &= dtf[zcol]<1.6
         z_suc &= dtf['Z']>0.8
         zr = ' 0.8 < z < 1.6'
 
     if tp == 'QSO':
-        z_suc = dtf['Z']*0 == 0
-        z_suc &= dtf['Z'] != 999999
-        z_suc &= dtf['Z'] != 1.e20
-        z_suc &= dtf['Z']<2.1
-        z_suc &= dtf['Z']>0.8
+        z_suc = dtf[zcol]*0 == 0
+        z_suc &= dtf[zcol] != 999999
+        z_suc &= dtf[zcol] != 1.e20
+        z_suc &= dtf[zcol]<2.1
+        z_suc &= dtf[zcol]>0.8
         zr = ' 0.8 < z < 2.1 '
 
 
     if tp == 'BGS_ANY':    
         z_suc = dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>40
-        z_suc &= dtf['Z']<0.4
-        z_suc &= dtf['Z']>0.1
+        z_suc &= dtf[zcol]<0.4
+        z_suc &= dtf[zcol]>0.1
         zr = ' 0.1 < z < 0.4 '
 
     seld &= z_suc
