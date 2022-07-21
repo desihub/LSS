@@ -43,7 +43,7 @@ nran = 18
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
+    tps = ['ELG_LOPnotqso','BGS_BRIGHT','QSO','LRG']
 
 zdw = ''#'zdone'
 
@@ -88,7 +88,7 @@ for tp in tps:
         z_suc &= dtf[zcol] > 0.4
         zr = ' 0.4 < z < 1.1'
 
-    if tp == 'ELG':
+    if tp[:3] == 'ELG':
         z_suc = dtf['o2c'] > 0.9
         z_suc &= dtf[zcol]<1.6
         z_suc &= dtf['Z']>0.8
@@ -103,7 +103,7 @@ for tp in tps:
         zr = ' 0.8 < z < 2.1 '
 
 
-    if tp == 'BGS_ANY':    
+    if tp[:3] == 'BGS':    
         z_suc = dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>40
         z_suc &= dtf[zcol]<0.4
@@ -226,6 +226,9 @@ for tp in tps:
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
             wp = pixlr > 0
+            if map == 'EBVreconMEANF15':
+                wp &= parv > -0.3
+                wp &= parv < 1
             print(len(parv[wp]))
             rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
             dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
