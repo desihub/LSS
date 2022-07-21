@@ -209,7 +209,7 @@ def look_up_for_target_file(targfile, drdir, numproc=1):
 
 def write_for_target_file(targfile, drdir, outdir, numproc=1,
                           overwrite=True):
-    """Write a file of pixel-level NOBS for one target file.
+    """Write a FITS file of pixel-level quantities for one target file.
 
     Parameters
     ----------
@@ -233,26 +233,22 @@ def write_for_target_file(targfile, drdir, outdir, numproc=1,
 
     Returns
     -------
-    Nothing, but a file of RA/DEC/BRICKNAME/TARGETID/PIXEL_NOBS_G/R/Z is
-    written to the `outdir`. The filename is the same as the input
-    `targfile` filename, but prepended with pixel-nobs.
-
-    Notes
-    -----
-    - Useful as the NOBS listed in the target files differs from the
-      pixel-level NOBS assigned to the DESI random catalogs.
+    Nothing, but a file with the quantities documented in the docstring
+    of :func:`look_up_for_target_file()` is written to the `outdir`. The
+    filename is the same as the input `targfile` filename, but prepended
+    with "pixel-".
     """
     # ADM create the name of the output file.
     outfn = os.path.join(
-        outdir, "pixel-nobs-{}".format(os.path.basename(targfile)))
+        outdir, "pixel-{}".format(os.path.basename(targfile)))
 
     # ADM only return if overwriting is turned off and the file exists.
     if os.path.isfile(outfn) and not overwrite:
         log.info("Refusing to overwrite {}".format(outfn))
         return
 
-    # ADM look up the nexp information.
-    nexp = make_nexp_for_target_file(targfile, drdir, numproc=numproc)
+    # ADM look up the pixel-level information.
+    q = look_up_for_target_file(targfile, drdir, numproc=numproc)
 
     # ADM copy the header of the input file.
     hdr = fitsio.read_header(targfile, "TARGETS")
@@ -262,14 +258,14 @@ def write_for_target_file(targfile, drdir, outdir, numproc=1,
 
     # ADM write the results.
     log.info("Writing to {}".format(outfn))
-    write_with_units(outfn, nexp, extname='PIXEL_NOBS', header=hdr)
+    write_with_units(outfn, q, extname='PIXEL_TARGETS', header=hdr)
 
     return
 
 
-def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
-                          numproc=1, overwrite=True):
-    """Write files of pixel-level NOBS for each target file in a directory.
+def write_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
+                     numproc=1, overwrite=True):
+    """Write pixel-level quantities for each target file in a directory.
 
     Parameters
     ----------
@@ -281,7 +277,7 @@ def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
     outdir : :class:`str`
         The directory to which to write output files. This will be
         created if it doesn't yet exist. Each file in `targdir` is
-        written to <outdir> + pixel-nobs-<targfile>.
+        written to <outdir> + pixel-<targfile>.
     nside : :class:`int`, optional, defaults to `None`
         (NESTED) HEALPix `nside` to use with `pixlist`.
     pixlist : :class:`list` or `int`, optional, defaults to `None`
@@ -298,15 +294,13 @@ def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
     Returns
     -------
     :class:`int`
-        The number of files written to the outdir. The files contain
-        columns RA/DEC/BRICKNAME/TARGETID/PIXEL_NOBS_G/R/Z. The filenames
-        are the same as the input target filenames in `targdir`, but
-        prepended with pixel-nobs.
+        The number of files written to the `outdir`. Files contain the
+        quantities returned by :func:`look_up_for_target_file()`. Each
+        file is written to the `outdir`. The filename is the same as the
+        input `targfile` filename, but prepended with "pixel-".
 
     Notes
     -----
-    - Useful as the NOBS listed in the target files differs from the
-      pixel-level NOBS assigned to the DESI random catalogs.
     - Pass `pixlist`=``None`` to process ALL files in `targdir`.
     """
     # ADM make an array of all input files.
@@ -325,11 +319,11 @@ def write_nexp_in_healpix(targdir, drdir, outdir, nside=None, pixlist=None,
         log.info("Limiting to {} files in pixlist={}...t={:.1f}s".format(
             len(targfiles), pixlist, time()-start))
 
-    # ADM find the nexp information and write it for each file.
+    # ADM find the pixel-level quantities and write them for each file.
     nfiles = len(targfiles)
     for nfile, targfile in enumerate(targfiles):
-        write_nexp_for_target_file(targfile, drdir, outdir, numproc=numproc,
-                                   overwrite=overwrite)
+        write_for_target_file(targfile, drdir, outdir, numproc=numproc,
+                              overwrite=overwrite)
         if nfile % 10 == 0 and nfile > 0:
             elapsed = (time()-start)/60.
             rate = 60.*elapsed/nfile
