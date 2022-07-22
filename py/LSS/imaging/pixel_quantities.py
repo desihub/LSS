@@ -64,17 +64,18 @@ def make_slurm_script(targdir, drdir, outdir, nside=2, numproc=60, mopup=False):
 
     print('#!/bin/bash -l')
     print('#SBATCH -q regular')
-    print('#SBATCH -N 16')
+    print('#SBATCH -N 24')
     print('#SBATCH -t 04:00:00')
     print('#SBATCH -L SCRATCH,project')
     print('#SBATCH -C haswell')
     print('')
     for pixnum in range(npix):
-        former = 'get_pixel_quantities_for_targets'
+        former = 'srun -N 1 get_pixel_quantities_for_targets '
         former += '--nside {} --healpixels {} --numproc {} {} {} {}'
         msg = former.format(nside, pixnum, numproc, targdir, drdir, outdir)
         if mopup:
             msg += ' --mopup'
+        msg += " &"
         print(msg)
 
     return
