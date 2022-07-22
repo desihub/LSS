@@ -57,7 +57,7 @@ if args.survey == 'SV3' and args.tracers == 'all':
         tps = ['QSO','LRG','ELG']
 
 maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-maps_ex = ['EBVreconMEANF15','CALIBG', 'CALIBR','CALIBZ']
+maps_ex = ['HALPHA','EBVreconMEANF15','CALIBG', 'CALIBR','CALIBZ']
 #EBVdiff = False
 EBVdiff = ex_maps['EBVreconMEANF15'] - all_maps['EBV']
 
