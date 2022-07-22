@@ -27,7 +27,7 @@ python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --vers
 
 #to make the emission line files for each tile
 on interactive node
-python mkemlin.py
+srun -N 1 -C cpu -t 01:00:00 -q interactive python mkemlin.py
 
 to combine the emission line files:
 python combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --mkemlin y --dospec n --combpix n

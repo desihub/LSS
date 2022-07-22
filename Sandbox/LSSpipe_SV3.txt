@@ -62,3 +62,6 @@ for tp,notqso in zip(tps,notqsos):
 
 also do LRGs cut to main sample targeting cuts:
 python mkCat_SV3.py --type LRG --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clus y --clusran y  --nz y --maxr 18 --ccut main
+
+#add k+e corrections
+python mkCat_SV3.py --type BGS_<BRIGHT/ANY> --verspec fuji --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --clusran y  --nz y
