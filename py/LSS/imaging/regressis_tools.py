@@ -146,7 +146,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         print('length after dchi2 cut '+str(len(data[wz])))
 
     wz &= data[zcol] > z_lim[0]
-    wz &= data[zcole] < z_lim[1]
+    wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
     wts = 1./data['FRACZ_TILELOCID'].values#*data['WEIGHT_ZFAIL'].values
