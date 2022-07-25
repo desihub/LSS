@@ -103,7 +103,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
 
     zcol = 'Z_not4clus'
     
-    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID']
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2']
     if tracer[:3] == 'ELG':
         cols.append('o2c')
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
