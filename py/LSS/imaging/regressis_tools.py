@@ -106,7 +106,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
     cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2']
     if tracer[:3] == 'ELG':
         cols.append('o2c')
-        cols.append()'LOCATION_ASSIGNED')
+        cols.append('LOCATION_ASSIGNED')
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'),columns=cols)
     if tracer == 'QSO':
