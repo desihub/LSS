@@ -205,6 +205,7 @@ for tp in tps:
                 sv = dh/rh*norm
                 normw = sum(rh)/sum(dhw)
                 svw = dhw/rh*normw
+                print(reg,cl,svw)
 
                 ep = np.sqrt(dh)/rh*norm
                 bc = []
