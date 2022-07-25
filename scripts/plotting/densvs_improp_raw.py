@@ -201,6 +201,7 @@ for tp in tps:
                 
                 print(rh)
                 print(dh)
+                print(dhw)
                 norm = sum(rh)/sum(dh)
                 sv = dh/rh*norm
                 normw = sum(rh)/sum(dhw)
