@@ -132,7 +132,7 @@ for tp in tps:
             pixlgw = np.zeros(nside*nside*12)
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                
+                pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
@@ -142,10 +142,13 @@ for tp in tps:
             print(len(parv[wp]))
             rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
             dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+            dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
             print(rh)
             print(dh)
             norm = sum(rh)/sum(dh)
             sv = dh/rh*norm
+            normw = sum(rh)/sum(dhw)
+            svw = dhw/rh*normw
 
             ep = np.sqrt(dh)/rh*norm
             bc = []
@@ -154,6 +157,8 @@ for tp in tps:
             lab = reg+', full, no imsys weights'
             print(lab)    
             plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+            plt.plot(bc,svw,'-',color=cl,label='with imsys weights')
+
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
@@ -180,7 +185,7 @@ for tp in tps:
                 pixlgw = np.zeros(nside*nside*12)
                 for ii in range(0,len(dpix)):
                     pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                
+                    pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
                 pixlr = np.zeros(nside*nside*12)
                 for ii in range(0,len(rpix)):
                     pixlr[rpix[ii]] += 1.
@@ -192,10 +197,14 @@ for tp in tps:
                 print(len(parv[wp]))
                 rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
                 dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+                dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
+                
                 print(rh)
                 print(dh)
                 norm = sum(rh)/sum(dh)
                 sv = dh/rh*norm
+                normw = sum(rh)/sum(dhw)
+                svw = dhw/rh*normw
 
                 ep = np.sqrt(dh)/rh*norm
                 bc = []
@@ -204,6 +213,7 @@ for tp in tps:
                 lab = reg+', full, no imsys weights'
                 print(lab)    
                 plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+                plt.plot(bc,svw,'-',color=cl,label='with imsys weights')
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
@@ -228,18 +238,23 @@ for tp in tps:
             pixlgw = np.zeros(nside*nside*12)
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                
+                pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
             wp = pixlr > 0
+
             print(len(parv[wp]))
             rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
             dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+            dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
+            
             print(rh)
             print(dh)
             norm = sum(rh)/sum(dh)
             sv = dh/rh*norm
+            normw = sum(rh)/sum(dhw)
+            svw = dhw/rh*normw
 
             ep = np.sqrt(dh)/rh*norm
             bc = []
@@ -248,6 +263,7 @@ for tp in tps:
             lab = reg+', full, no imsys weights'
             print(lab)    
             plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+            plt.plot(bc,svw,'-',color=cl,label='with imsys weights')
         plt.legend()
         plt.xlabel(map)
         plt.ylabel('Ngal/<Ngal> ')
