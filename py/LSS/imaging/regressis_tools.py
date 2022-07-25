@@ -115,7 +115,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         wz &= data[zcol] != 1.e20
         wz &= data['ZWARN'] != 999999
 
-    if tp[:3] == 'ELG':
+    if tracer[:3] == 'ELG':
         wz = data['o2c'] > dchi2
         wz &= data['ZWARN']*0 == 0
         wz &= data['ZWARN'] != 999999
