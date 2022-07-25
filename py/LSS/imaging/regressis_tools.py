@@ -104,7 +104,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
     zcol = 'Z_not4clus'
     
     cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID']
-    if tp[:3] == 'ELG':
+    if tracer[:3] == 'ELG':
         cols.append('o2c')
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'),columns=cols)
@@ -123,7 +123,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         wz &= data['LOCATION_ASSIGNED'] == 1
         print('length after also making sure location assigned '+str(len(data[wz])))
 
-    if tp == 'LRG':
+    if tracer == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
         wz = data['ZWARN'] == 0
@@ -136,7 +136,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(data[wz])))
 
-    if tp[:3] == 'BGS':
+    if tracer[:3] == 'BGS':
         wz = data['ZWARN'] == 0
         wz &= data['ZWARN']*0 == 0
         wz &= data['ZWARN'] != 999999
