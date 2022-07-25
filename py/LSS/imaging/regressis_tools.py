@@ -116,7 +116,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         wz &= data['ZWARN'] != 999999
 
     if tracer[:3] == 'ELG':
-        wz = data['o2c'] > dchi2
+        wz = data['o2c'] > 0.9
         wz &= data['ZWARN']*0 == 0
         wz &= data['ZWARN'] != 999999
         print('length after oII cut '+str(len(data[wz])))
