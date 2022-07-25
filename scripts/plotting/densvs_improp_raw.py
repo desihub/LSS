@@ -132,7 +132,7 @@ for tp in tps:
             pixlgw = np.zeros(nside*nside*12)
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
@@ -185,7 +185,7 @@ for tp in tps:
                 pixlgw = np.zeros(nside*nside*12)
                 for ii in range(0,len(dpix)):
                     pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                    pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+                    pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
                 pixlr = np.zeros(nside*nside*12)
                 for ii in range(0,len(rpix)):
                     pixlr[rpix[ii]] += 1.
@@ -238,7 +238,7 @@ for tp in tps:
             pixlgw = np.zeros(nside*nside*12)
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-                pixlgw[dpix[ii]] += dtf[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
