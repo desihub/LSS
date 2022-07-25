@@ -102,7 +102,12 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
     zcol = 'Z_not4clus'
-    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
+    
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID']
+    if tp[:3] == 'ELG':
+        cols.append('o2c')
+    #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
+    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'),columns=cols)
     if tracer == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = data[zcol]*0 == 0
