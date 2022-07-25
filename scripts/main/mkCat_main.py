@@ -394,7 +394,7 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
-    if survey == 'DA02':
+    if args.survey == 'DA02':
         rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
         rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
@@ -424,11 +424,11 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
-    if survey == 'main':
+    if args.survey == 'main':
         regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
-        if survey == 'DA02':
+        if args.survey == 'DA02':
             fcd = fb+'_clustering.dat.fits'
         else:
             fcd = fb+'_full.dat.fits'
@@ -438,7 +438,7 @@ if args.add_regressis == 'y':
         drfw = rfpw[dpix]
         dd['WEIGHT_SYS'] = drfw
         comments = []
-        if survey == 'DA02':
+        if args.survey == 'DA02':
             dd['WEIGHT'] *= dd['WEIGHT_SYS']
             comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
         comments.append("Using regressis for WEIGHT_SYS")
