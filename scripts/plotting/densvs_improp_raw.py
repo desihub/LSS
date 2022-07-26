@@ -137,6 +137,7 @@ for tp in tps:
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
             wp = pixlr > 0
+            wp &= pixlgw*0 == 0
             wp &= EBVdiff > -0.1
             wp &= EBVdiff < .1
             print(len(parv[wp]))
@@ -190,6 +191,7 @@ for tp in tps:
                 for ii in range(0,len(rpix)):
                     pixlr[rpix[ii]] += 1.
                 wp = pixlr > 0
+                wp &= pixlgw*0 == 0
                 if map == 'EBVreconMEANF15':
                     wp &= parv > -0.3
                     wp &= parv < 1
@@ -245,6 +247,7 @@ for tp in tps:
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += 1.
             wp = pixlr > 0
+            wp &= pixlgw*0 == 0
 
             print(len(parv[wp]))
             rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
