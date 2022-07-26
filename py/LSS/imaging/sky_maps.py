@@ -23,34 +23,36 @@ log = get_logger()
 start = time()
 
 
-# ADM note to remove: It's convenient to have an environment variable
-# ADM from which to read external maps and write new maps. We can
-# ADM remove this note once we decide where that should be at NERSC.
-def get_lss_dir(lssdir=None):
-    """Convenience function to grab the $LSS_DIR environment variable.
+def get_lss_map_dir(lssmapdir=None):
+    """Convenience function to get the $LSS_MAP_DIR environment variable.
 
     Parameters
     ----------
-    lssdir : :class:`str`, optional, defaults to $LSS_DIR
-        If `lssdir` is passed, it is returned from this function. If it's
-        not passed, the $LSS_DIR environment variable is returned.
+    lssdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        If `lssmapdir` is passed, it's returned from this function. If it
+        is not passed, the $LSS_MAP_DIR environment variable is returned.
 
     Returns
     -------
     :class:`str`
-        If `lssdir` is passed, it is returned from this function. If it's
-        not passed, the directory stored in the $LSS_DIR environment
-        variable is returned.
+        If `lssmapdir` is passed, it is returned from this function. If
+        it is not passed, the directory stored in the $LSS_MAP_DIR
+        environment variable is returned.
+
+    Notes
+    -----
+    - At NERSC, $LSS_MAP_DIR is typically:
+      /global/cfs/cdirs/desi/survey/catalogs/external_input_maps
     """
-    if lssdir is None:
-        lssdir = os.environ.get('LSS_DIR')
-        # ADM check that the $LSS_DIR environment variable is set.
-        if lssdir is None:
-            msg = "Pass mtldir or set $LSS_DIR environment variable!"
+    if lssmapdir is None:
+        lssmapdir = os.environ.get('LSS_MAP_DIR')
+        # ADM check that the $LSS_MAP_DIR environment variable is set.
+        if lssmapdir is None:
+            msg = "Pass lssmapdir or set the $LSS_MAP_DIR environment variable!"
             log.critical(msg)
             raise ValueError(msg)
 
-    return lssdir
+    return lssmapdir
 
 
 def wrap_pixmap(randoms, targets, nside=512, gaialoc=None, test=False):
