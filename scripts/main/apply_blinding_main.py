@@ -24,7 +24,7 @@ GENERAL NOTES
 --expected_wa_uncertainty
 --expected_f_uncertainty
 - By default these uncertainties, are set to be 0.05 for w0, 0.2 for wa, and 0.05 for f.
-- The fiducial values are set as 1 for w0, 0 for wa, and 0.8 for f.
+- The fiducial values are set as -1 for w0, 0 for wa, and 0.8 for f.
 - To specify different fiducial values, use the following flags:
 --fiducial_w0
 --fiducial_wa
@@ -187,13 +187,13 @@ np.savetxt(dirout + "blinded_parameters.csv",
 
 # If blinded values have been specified, overwrite the random procedure here:
 if args.specified_w0 is not None:
-	w0_blind = args.specified_w0
+	w0_blind = float(args.specified_w0)
 
 if args.specified_wa is not None:
-	wa_blind = args.specified_wa
+	wa_blind = float(args.specified_wa)
 
 if args.specified_f is not None:
-	fgrowth_blind = args.specified_f
+	fgrowth_blind = float(args.specified_f)
 
 
 regl = ['_S','_N']
