@@ -74,10 +74,10 @@ def write_atomically(filename, data, extname=None, header=None):
 
     Notes
     -----
-        - Always OVERWRITES existing files!
-        - Always makes the `filename` directory if it doesn't exist.
-        - By "in an atomic fashion" it is meant that files that died
-          mid-write will be appended by ".tmp".
+    - Always OVERWRITES existing files!
+    - Always makes the `filename` directory if it doesn't exist.
+    - By "in an atomic fashion" it is meant that files that died
+      mid-write will be appended by ".tmp".
     """
     # ADM make the necessary directory if it doesn't exist.
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -89,14 +89,13 @@ def write_atomically(filename, data, extname=None, header=None):
     return
 
 
-def wrap_pixmap(randoms, targets, nside=512, gaialoc=None, test=False):
+def wrap_pixmap(randoms, targets, nside=512, gaialoc=None):
     """HEALPix map from randoms (wrapper on desitarget.randoms.pixmap)
 
     Parameters
     ----------
-    randoms : :class:`str` or :class:`list`
-        Random catalog.
-        Filename of random catalog or list of filenames. Files must have
+    randoms : :class:`~numpy.ndarray` or `str`
+        Filename of random catalog or catalog itself. Catalogs must have
         columns 'RA', 'DEC', 'EBV', 'PSFDEPTH_W1/W2/G/R/Z', 'NOBS_G/R/Z'
         'GALDEPTH_G/R/Z', 'PSFSIZE_G/R/Z', 'MASKBITS' and have been
         generated at the same density. If `randoms` is a list files will
@@ -111,9 +110,6 @@ def wrap_pixmap(randoms, targets, nside=512, gaialoc=None, test=False):
         Name of a FITS file that already contains a column "STARDENS",
         which is simply read in. If ``None``, the stellar density is
         constructed from files in $GAIA_DIR.
-    test : :class:`bool`, optional, defaults to ``False``
-        If ``True`` then only read the first 100,000 entries in each
-        random catalog. Useful for testing the code.
 
     Returns
     -------
@@ -151,49 +147,11 @@ def wrap_pixmap(randoms, targets, nside=512, gaialoc=None, test=False):
     """
     # ADM desitarget function to wrap.
     from desitarget.randoms import pixmap
-    # ADM if we're testing, only read in a subset of randoms.
-    rows = None
-    if test:
-        rows = np.arange(100000)
-
-    # ADM if a file name was passed for the random catalog, read it in...
-    if isinstance(randoms, str):
-        log.info("Reading in random catalog...t = {:.1f}s".format(time()-start))
-        # ADM also need to know the density of randoms in the catalog.
-        dens = fitsio.read_header(randoms, "RANDOMS")["DENSITY"]
-        randoms = fitsio.read(randoms, rows=rows)
-    # ADM ...otherwise if a list was passed, concatenate the randoms in
-    # ADM the list and check they were generated at the same density.
-    elif isinstance(randoms, list):
-        randomsall = []
-        densall = []
-        for fn in randoms:
-            log.info("Reading random catalog {}...t = {:.1f}s".format(
-                fn, time()-start))
-            randomsall.append(fitsio.read(fn, rows=rows))
-            # ADM also need to know the density of randoms in the catalog.
-            densall.append(fitsio.read_header(fn, "RANDOMS")["DENSITY"])
-            # ADM check all of the densities are the same.
-            if not len(set(densall)) == 1:
-                msg = "Densities in random catalogs do not match."
-                log.critical(msg)
-                for r, d in zip(randoms, densall):
-                    log.info("{}: {}".format(r, d))
-                raise ValueError(msg)
-        # ADM concatenate randoms and store density.
-        randoms = np.concatenate(randomsall)
-        dens = np.sum(densall)
-    else:
-        msg = "randoms must be passed as either a list or a string!"
-        log.critical(msg)
-        raise ValueError
-
-    log.info("Read {} total randoms at density {}".format(len(randoms), dens))
 
     return pixmap(randoms, targets, dens, nside=nside, gaialoc=gaialoc)
 
 
-def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None, test=False,
+def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None,
                  outdir=None):
     """Write pixmap made by :func:`wrap_pixmap()`
 
@@ -216,9 +174,6 @@ def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None, test=False
         Name of a FITS file that already contains a column "STARDENS",
         which is simply read in. If ``None``, the stellar density is
         constructed from files in $GAIA_DIR.
-    test : :class:`bool`, optional, defaults to ``False``
-        If ``True`` then only process the first 100,000 entries in
-        `randoms`. Useful for testing the code.
     outdir : :class:`str`, optional, defaults to ``None``
         Name of output directory to which to write pixel map. If ``None``
         then default to the $LSS_MAP_DIR environment variable.
@@ -259,5 +214,75 @@ def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None, test=False
     log.info('wrote map of HEALPixel weights to {}...t={:.1f}s'.format(
         outfile, time()-start))
 
-    
-    
+
+def read_randoms(infiles, test=False):
+    """Read a random catalog to use for constructing sky maps.
+
+    Parameters
+    ----------
+    infiles : :class:`str` or `list`
+        Filename of random catalog or list of filenames. Files must have
+        columns 'RA', 'DEC', 'EBV', 'PSFDEPTH_W1/W2/G/R/Z', 'NOBS_G/R/Z',
+        'GALDEPTH_G/R/Z', 'PSFSIZE_G/R/Z', 'MASKBITS' and have been
+        generated at the same density. If `randoms` is a list files will
+        be concatenated in list-order.
+    test : :class:`bool`, optional, defaults to ``False``
+        If ``True`` then only read the first 100,000 entries in each
+        random catalog. Useful for testing the code.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The random catalog read or concatenated from `infiles`.
+    :class:`FITSHDR`
+        The header of the FINAL file read from `infiles`. If `infiles`
+        is a list then the DENSITY keyword in the header is returned as
+        the SUM of the DENSITY in each file header.
+
+    Notes
+    -----
+    - The header of each filename in `infiles` must include the keyword
+      "DENSITY" to establish the density used to make the random catalog.
+    - If a list of filenames is passed, then the associated catalogs must
+      all have been generated at the same density.
+    """
+    # ADM if we're testing, only read in a subset of randoms.
+    rows = None
+    if test:
+        rows = np.arange(100000)
+
+    # ADM if a filename was passed for the random catalog, read it in...
+    if isinstance(infiles, str):
+        log.info("Reading in random catalog...t = {:.1f}s".format(time()-start))
+        # ADM also need to know the density of randoms in the catalog.
+        randoms, hdr = fitsio.read(infiles, rows=rows, header=True)
+    # ADM ...otherwise if a list was passed, concatenate the randoms in
+    # ADM the list and check they were generated at the same density.
+    elif isinstance(infiles, list):
+        randomsall = []
+        densall = []
+        for fn in infiles:
+            log.info("Reading random catalog {}...t = {:.1f}s".format(
+                fn, time()-start))
+            randoms, hdr = fitsio.read(fn, rows=rows, header=True)
+            randomsall.append(randoms)
+            densall.append(hdr["DENSITY"])
+            # ADM check all of the densities are the same.
+            if not len(set(densall)) == 1:
+                msg = "Densities in random catalogs do not match."
+                log.critical(msg)
+                for r, d in zip(randoms, densall):
+                    log.info("{}: {}".format(r, d))
+                raise ValueError(msg)
+        # ADM concatenate randoms and store density.
+        randoms = np.concatenate(randomsall)
+        hdr["DENSITY"] = np.sum(densall)
+    else:
+        msg = "randoms must be passed as either a list or a string!"
+        log.critical(msg)
+        raise ValueError
+
+    log.info("Read {} total randoms at density {}".format(
+        len(randoms), hdr["DENSITY"]))
+
+    return randoms, hdr
