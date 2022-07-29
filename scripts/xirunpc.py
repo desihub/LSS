@@ -257,7 +257,7 @@ def read_data_randoms_positions_weights(*args, type='clustering', region=None, *
         if concatenated:
             positions[name] = _concatenate(positions[name])
         else: 
-            positions[name] = [_concatenate(p) for p in positions[name]]
+            positions[name] = [_concatenate([p[i] for p in positions[name]]) for i in range(len(positions['randoms'][0]))]
     data_weights, randoms_weights = [], []
     if concatenated:
         wd, wr = normalize_data_randoms_weights(weights['data'], weights['randoms'], weight_attrs=kwargs.get('weight_attrs', None))
