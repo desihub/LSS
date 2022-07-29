@@ -175,7 +175,7 @@ w0_blind = make_parameter_blind(args.fiducial_w0,
 wa_blind = make_parameter_blind(args.fiducial_wa,
 								args.expected_wa_uncertainty, rs)
 fgrowth_blind = make_parameter_blind(args.fiducial_f,
-									 args.expected_wa_uncertainty, rs)
+									 args.expected_f_uncertainty, rs)
 
 # Write out the blind parameter values
 to_write = [['w0', 'wa', 'f'],
