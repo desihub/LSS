@@ -432,7 +432,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
 
     #only relevant for reconstruction
-    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
     setup_logging()
     args = parser.parse_args()
