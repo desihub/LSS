@@ -50,7 +50,7 @@ class SV3:
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/fuji/lrg+bgs_3sig_bad_fibers.txt')
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/DESI_EDA_SV3AltMTLs/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
-        self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/DESI_EDA_SV3AltMTLs/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits
+        self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/DESI_EDA_SV3AltMTLs/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
         #self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run128/BitweightFiles/sv3/bright/sv3bw-bright-AllTiles.fits'
         self.weightmode = weightmode
         #'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
