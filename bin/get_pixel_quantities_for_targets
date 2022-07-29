@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import argparse
+import textwrap
+from LSS.imaging.pixel_quantities import write_in_healpix, make_slurm_script
+
+# ADM the DESI default logger.
+from desiutil.log import get_logger
+
+# ADM initialize the DESI default logger.
+log = get_logger()
+
+# ADM the default inputs values for optional arguments.
+defaults = {"nside": None, "healpixels": None, "numproc": 1}
+
+ap = argparse.ArgumentParser(
+    description="Create files of pixel-level quantities at locations of targets",
+    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+    Examples:
+
+       TARGDIR=$TARG_DIR/dr9/1.1.1/targets/main/resolve/dark
+       DRDIR=/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/
+       OUTDIR=$CSCRATCH/pixel-dark
+
+       get_pixel_quantities_for_targets --nside 2 --healpixels 22,23 --numproc 32 $TARGDIR $DRDIR $OUTDIR
+       get_pixel_quantities_for_targets --nside 2 --healpixels 22,23,24 --mopup $TARGDIR $DRDIR $OUTDIR
+       get_pixel_quantities_for_targets --numproc 60 $TARGDIR $DRDIR $OUTDIR
+       get_pixel_quantities_for_targets --nside 4 --numproc 60 --slurm $TARGDIR $DRDIR $OUTDIR
+
+    Run with --slurm to write a useful parallelization script; the last example \
+takes about 40 minutes to run parallelized over 24 nodes. If any of the files \
+don't finish in 4 hours it's easy to run the remainder using --mopup."""))
+
+ap.add_argument('targdir',
+                help="Full path to a directory containing target files.")
+ap.add_argument('drdir',
+                help="Root directory for a Legacy Surveys Data Release          \
+                e.g. /global/project/projectdirs/cosmo/data/legacysurvey/dr9.")
+ap.add_argument('outdir',
+                help="Directory to write output files. Will be created if it    \
+                doesn't exist. Files in <targdir> are written to <outdir> +     \
+                pixel-<targfile>.")
+ap.add_argument('--nside', type=int,
+                help="(Nested) HEALPixel nside to use with <healpixels>.        \
+                Defaults to [{}].".format(defaults["nside"]),
+                default=defaults["nside"])
+ap.add_argument('--healpixels',
+                help="Only process files for which the source in the ZEROTH row \
+                is in this list of (nested) pixels at <nside>. Pass as a string \
+                of comma-separated integers (e.g. 2, 3, 12) Defaults to [{}]    \
+                (which means process ALL files).".format(defaults["healpixels"]),
+                default=defaults["healpixels"])
+ap.add_argument('--numproc', type=int,
+                help="The number of processes to parallelize across. Defaults   \
+                to [{}].".format(defaults["numproc"]),
+                default=defaults["numproc"])
+ap.add_argument('--mopup', action="store_true",
+                help="""Pass to NOT overwrite output files that already exist.  \
+                This is useful for "mopping up" failed or missing files""")
+ap.add_argument('--slurm', action="store_true",
+                help="Pass to write an example parallelization script to screen \
+                (and then exit). All of the command line arguments other than   \
+                --healpixels will be propagated.""")
+
+ns = ap.parse_args()
+
+# ADM if --slurm was passed, just write a script to screen.
+if ns.slurm:
+    make_slurm_script(ns.targdir, ns.drdir, ns.outdir,
+                      nside=ns.nside, numproc=ns.numproc, mopup=ns.mopup)
+else:
+    # ADM parse the list of HEALPixels in which to run.
+    pixlist = ns.healpixels
+    if pixlist is not None:
+        pixlist = [int(pix) for pix in pixlist.split(',')]
+
+    # ADM if we're mopping up, don't overwrite files.
+    overwrite = not(ns.mopup)
+
+    nfiles = write_in_healpix(
+        ns.targdir, ns.drdir, ns.outdir, nside=ns.nside,
+        pixlist=pixlist, numproc=ns.numproc, overwrite=overwrite)
+
+    log.info("Wrote {} files".format(nfiles))

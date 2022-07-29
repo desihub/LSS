@@ -466,7 +466,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
 
     #only relevant for reconstruction
-    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
     setup_logging()
     args = parser.parse_args()
