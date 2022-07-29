@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from pypower import CatalogFFTPower, PowerSpectrumStatistics, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
-from xirunpc import read_clustering_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
+from xirunpc import read_data_randoms_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
 
 
 os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
@@ -39,20 +39,16 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
+        (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = read_data_randoms_positions_weights(distance, type='clustering', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
         if with_shifted:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
-            shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
-        else:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
-        randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+            shifted_positions1, shifted_weights1 = randoms_positions1, randoms_weights1  # above returned shifted randoms
+            randoms_positions1, randoms_weights1 = read_data_randoms_positions_weights(distance, type='clustering', rec_type=False, tracer=tracer, **catalog_kwargs)[1]
 
         if not autocorr:
+            (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = read_data_randoms_positions_weights(distance, type='clustering', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
             if with_shifted:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
-                shifted_positions2, shifted_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
-            else:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
-            randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+                shifted_positions2, shifted_weights2 = randoms_positions2, randoms_weights2
+                randoms_positions2, randoms_weights2 = read_data_randoms_positions_weights(distance, type='clustering', rec_type=False, tracer=tracer2, **catalog_kwargs)[1]
 
     kwargs = {}
     kwargs.update(wang or {})
@@ -92,7 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
