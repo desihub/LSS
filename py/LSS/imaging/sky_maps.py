@@ -10,6 +10,10 @@ import os
 import fitsio
 import numpy as np
 from time import time
+import healpy as hp
+
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 
 from desitarget.io import read_targets_header
 
@@ -22,13 +26,26 @@ log = get_logger()
 # ADM start the clock.
 start = time()
 
+mapdt = [
+    ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'),
+    ('COLNAME', 'O'), ('NESTED', '?'), ('GALACTIC', '?')
+]
+
+# ADM update with new maps in this global array on a new line.
+# ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
+# ADM `GALACTIC' is True for a map in Galactic coords, False for RA/Dec.
+maparray = np.array([
+    ('halpha', 'Halpha', 'Halpha_fwhm06_0512.fits', 'TEMPERATURE', True, False),
+    ('blat', 'fooblat', 'fooblatfooblatfooblatfoo', 'fooblatfoo', True, True),
+    ], dtype=mapdt)
+
 
 def get_lss_map_dir(lssmapdir=None):
     """Convenience function to get the $LSS_MAP_DIR environment variable.
 
     Parameters
     ----------
-    lssdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         If `lssmapdir` is passed, it's returned from this function. If it
         is not passed, the $LSS_MAP_DIR environment variable is returned.
 
@@ -205,11 +222,12 @@ def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None,
     hdr['HPXNSIDE'] = nside
     hdr['HPXNEST'] = True
 
-    pixmap, survey = wrap_pixmap(randoms, targets, nside=nside, gaialoc=gaialoc, test=test)
+    pixmap, survey = wrap_pixmap(randoms, targets, nside=nside, gaialoc=gaialoc,
+                                 test=test)
 
     hdr["SURVEY"] = survey
 
-    #ADM write out the map.
+    # ADM write out the map.
     write_atomically(outfile, pixmap, extname='PIXWEIGHTS', header=hdr)
     log.info('wrote map of HEALPixel weights to {}...t={:.1f}s'.format(
         outfile, time()-start))
@@ -286,3 +304,81 @@ def read_randoms(infiles, test=False):
         len(randoms), hdr["DENSITY"]))
 
     return randoms, hdr
+
+
+def sample_map(mapname, randoms, lssmapdir=None, nside=512):
+    """Sample a systematics map.
+
+    Parameters
+    ----------
+    mapname : :class:`str`
+        Name of a map that appears in the `maparray` global array, above.
+    randoms : :class:`~numpy.ndarray`
+        Random catalog, as made by, e.g. :func:`read_randoms()`.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAxP_DIR is used.
+    nside : :class:`int`, optional, defaults to nside=512
+        Resolution (HEALPix nside) at which to build the (NESTED) map.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        Single-column array of the map values for the randoms in a NESTED
+        HEALPixel map at the given nside. The name of the column in the
+        output array is `mapname` in upper-case letters.
+    """
+    # ADM limit to just the map are we working with.
+    pixmap = maparray[maparray["MAPNAME"] == mapname]
+
+    if len(pixmap) != 1:
+        # ADM check somebody didn't include two maps with the same name.
+        if len(pixmap) > 1:
+            msg = "There are TWO maps in maparray that have MAPNAME={}!"
+        # ADM check there's an entry in maparray for the passed map name.
+        elif len(pixmap) < 1:
+            msg = "There are NO maps in maparray that have MAPNAME={}!"
+        log.critical(msg.format(mapname))
+        raise ValueError(msg.format(mapname))
+
+    # ADM now we know for sure we have a 1-D map, we can enforce that.
+    pixmap = pixmap[0]
+
+    # ADM construct the filename for, and read, the relevant map.
+    lssmapdir = get_lss_map_dir(lssmapdir)
+    fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
+    mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+
+    # ADM derive the nside of the map from its length.
+    nsidemap = hp.npix2nside(len(mapdata))
+
+    # ADM if needed, convert the randoms to Galactic coordinates.
+    c1, c2 = randoms["RA"], randoms["DEC"]
+    if pixmap["GALACTIC"]:
+        log.info("Using Galactic coordinates for {} map".format(mapname))
+        c = SkyCoord(c1*u.degree, c2*u.degree)
+        c1, c2 = c.galactic.l.value, c.galactic.b.value
+
+    # ADM determine the map values for each of the randoms in the
+    # ADM map scheme (i.e. nested or ring).
+    theta, phi = np.radians(90-c2), np.radians(c1)
+    pixnums = hp.ang2pix(nsidemap, theta, phi, nest=pixmap["NESTED"])
+    randmapvals = mapdata[pixnums]
+
+    # ADM find the nested HEALPixel in the passed nside for each random.
+    theta, phi = np.radians(90-randoms["DEC"]), np.radians(randoms["RA"])
+    randpixnums = hp.ang2pix(nside, theta, phi, nest=True)
+
+    # ADM determine the mean in each HEALPixel, weighted by the randoms.
+    uniq, ii, cnt = np.unique(randpixnums, return_inverse=1, return_counts=1)
+    randmeans = np.bincount(ii, randmapvals)/cnt
+
+    # ADM set up the output array.
+    dt = [(mapname.upper(), mapdata.dtype.type)]
+    npix = hp.nside2npix(nside)
+    done = np.zeros(npix, dtype=[(mapname.upper(), mapdata.dtype.type)])
+    # ADM The method to find the means will skip any missing pixels, so
+    # ADM populate on uniq indices to retain the missing pixels as zeros.
+    done[uniq] = randmeans
+
+    return done
