@@ -107,9 +107,12 @@ def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, 
         
 def get_f_bias(tracer='ELG'):
     if tracer.startswith('ELG') or tracer.startswith('QSO'):
-        return 0.8, 1.
+        return 0.9, 1.3
     if tracer.startswith('LRG'):
-        return 0.7, 1.8
+        return 0.8, 2.
+    if tracer.startswith('BGS'):
+        return 0.67, 1.5
+
     return 0.8, 1.2
 
 

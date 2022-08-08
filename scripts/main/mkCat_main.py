@@ -394,7 +394,10 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
-    rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    if args.survey == 'DA02':
+        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    else:
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -421,18 +424,24 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
+    if args.survey == 'main':
+        regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
-        fcd = fb+'_clustering.dat.fits'
+        if args.survey == 'DA02':
+            fcd = fb+'_clustering.dat.fits'
+        else:
+            fcd = fb+'_full.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
         dd['WEIGHT_SYS'] = drfw
-        dd['WEIGHT'] *= dd['WEIGHT_SYS']
-        #dd.write(fcd,format='fits',overwrite=True)
-        comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax)]
-        comments = ["Using regressis for WEIGHT_SYS"]
+        comments = []
+        if args.survey == 'DA02':
+            dd['WEIGHT'] *= dd['WEIGHT_SYS']
+            comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
+        comments.append("Using regressis for WEIGHT_SYS")
 
         common.write_LSS(dd,fcd,comments)
 

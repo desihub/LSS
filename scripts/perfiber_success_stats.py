@@ -84,32 +84,32 @@ if args.mkfiles == 'y':
             
 
         elif survey == 'SV3':
-            sys.exit('not written for SV3 yet')
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
-            dz = Table(fitsio.read(zf))
-            desitarg = 'SV3_DESI_TARGET'
-            bit = 1 #for selecting LRG
-            wtype = ((dz[desitarg] & bit) > 0)
+            #ys.exit('not written for SV3 yet')
+            if tp != 'BGS_ANY':
+				zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
+				dz = Table(fitsio.read(zf))
+				desitarg = 'SV3_DESI_TARGET'
+				if tp == 'LRG':
+					bit = 1 #for selecting LRG
+				if tp == 'ELG':
+					bit = 2
+				if tp == 'QSO':
+					bit = 4
+				wtype = ((dz[desitarg] & bit) > 0)
+				if tp == 'ELG':
+					wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
+            else:
+                zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
+                dz = Table(fitsio.read(zf))
+                desitarg = 'SV3_BGS_TARGET'
+                wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
+            
             print(len(dz[wtype]))
             #dz = dz[wtype&wg]
             dz = dz[wtype]
-            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-            wz &= dz['ZWARN']*0 == 0 #just in case of nans
-            wz &= dz['COADD_FIBERSTATUS'] == 0
-            ff = dz[wz]
+            wz = dz['COADD_FIBERSTATUS'] == 0
+            dz = dz[wz]
 
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
-            dz = Table(fitsio.read(zf))
-            desitarg = 'SV3_BGS_TARGET'
-            wtype = dz[desitarg] > 0#((dz[desitarg] & bit) > 0)
-            print(len(dz[wtype]))
-            #dz = dz[wtype&wg]
-            dz = dz[wtype]
-            wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-            wz &= dz['ZWARN']*0 == 0 #just in case of nans
-            wz &= dz['COADD_FIBERSTATUS'] == 0
-
-            ff2 = dz[wz]
 
         z_tot = dz['ZWARN'] != 999999
         z_tot &= dz['ZWARN']*0 == 0
@@ -168,49 +168,3 @@ if args.mkfiles == 'y':
         fo.close()
  
 
-def plot_all_petal(petal):
-    for tp in tracers:
-        if args.survey != 'SV3':
-            from LSS.globals import main
-            pars = main(tp,args.verspec)   
-
-        fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
-        d = np.loadtxt(fn).transpose()
-        fibl = d[0]
-        f_succ = d[1]
-        n_g= d[2]
-        n_tot = d[3]
-        
-        err = np.sqrt(n_g*(1-f_succ))/n_tot
-
-        fmin = petal*500
-        fmax = (petal+1)*500
-        sel = fibl >= fmin
-        sel &= fibl < fmax
-        bfib = pars.badfib
-        sel_bfib = np.isin(fibl[sel],bfib)
-
-        if tp == 'LRG':
-            plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
-        if tp == 'ELG':
-            plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-        if tp == 'QSO':
-            plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-        if tp == 'BGS_ANY':
-            plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-    plt.grid()
-    plt.legend()
-    plt.xlabel('FIBER')
-    plt.ylabel('redshift success rate')
-    plt.title(args.verspec+' petal '+str(petal))
-    plt.ylim(-0.05,1.05)
-    plt.savefig(basedir+'/'+survey+'/LSS/'+specver+'/plots/petal'+str(petal)+'_zsuccess.png')
-    plt.clf()
-    #plt.show()
-
-for i in range(0,10):
-    plot_all_petal(i)
