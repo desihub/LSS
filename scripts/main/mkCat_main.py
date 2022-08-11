@@ -202,9 +202,18 @@ if os.path.isfile(tarf) and redotar == False:
 #    mktar = False    
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
-    ss.gather_targets(type,tardir,maindir,tarver,'main',progl,keys=keys)
-        
-        
+    ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
+
+mketar = True
+etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/,
+etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
+if os.path.isfile(etarf) and redotar == False:
+    mketar = False
+
+if mketar: #concatenate target files for given type, with column selection hardcoded
+    ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
+
+       
 if mkfulld:
     azf=''
     azfm = 'cumul'        
