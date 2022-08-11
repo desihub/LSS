@@ -375,7 +375,7 @@ def join_etar(fn,tracer,tarver='1.1.1'):
         tr = 'BGS_ANY'
     etar_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targets_pixelDR9v'+tarver+'.fits'
     ef = Table(fitsio.read(etar_fn))
-    ef.remove_columns('BRICKNAME','RA','DEC','PHOTSYS','DESI_TARGET')
+    ef.remove_columns(['BRICKNAME','RA','DEC','PHOTSYS','DESI_TARGET'])
     df = fitsio.read(fn)
     print(len(df))
     df = join(df,ef,keys=['TARGETID'])
