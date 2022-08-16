@@ -11,7 +11,7 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-from pypower import CatalogFFTPower, PowerSpectrumStatistics, utils, setup_logging
+from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
 from xirunpc import read_data_randoms_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
