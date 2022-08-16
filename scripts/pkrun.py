@@ -63,7 +63,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
-                                   power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd').poles
+                                   power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
+                                  **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     return result, wang, window
 
 
