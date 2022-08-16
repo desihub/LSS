@@ -15,7 +15,6 @@ profile=0
 #There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
 #However, you should specify your own directory to a. not overwrite the survey alt MTLs 
 # and b. keep your alt MTLs somewhere that you have control/access
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/
 if [[ -z "${ALTMTLHOME}" ]]; then
   if [[ "${NERSC_HOST}" == "cori" ]]; then
     ALTMTLHOME=$CSCRATCH
@@ -30,8 +29,7 @@ else
 fi
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-#simName="$USER"_TestAltMTLs
-simName='DESI_EDA_SV3AltMTLs'
+simName="$USER"_TestAltMTLs
 
 #Options for InitializeAltMTLs
 
@@ -48,7 +46,7 @@ ndir=128
 overwrite=0
 
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
-obscon='BRIGHT'
+obscon='DARK'
 
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
@@ -67,8 +65,8 @@ usetmp=True
 
 if [ $usetmp ]
 then
-    #outputMTLDirBaseBase=`mktemp -d /dev/shm/"$USER"_tempdirXXXX`
-    outputMTLDirBaseBase=`mktemp -d /dev/shm/JL_tempdirXXXX`
+    outputMTLDirBaseBase=`mktemp -d /dev/shm/"$USER"_tempdirXXXX`
+    #outputMTLDirBaseBase=`mktemp -d /dev/shm/JL_tempdirXXXX`
 else 
     outputMTLDirBaseBase=$ALTMTLHOME
 fi
@@ -81,7 +79,7 @@ hpListFile="$path2LSS/SV3HPList.txt"
 #First option indicates whether to shuffle the top level priorities
 #of BGS_FAINT/BGS_FAINT_HIP. Second option indicates what fraction/percent
 #of BGS_FAINT to promote. Default is 20%
-shuffleBrightPriorities=0
+shuffleBrightPriorities=1
 PromoteFracBGSFaint=0.2
 
 # location of original MTLs to shuffle.
@@ -102,7 +100,7 @@ qR=0
 NObsDates=33
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
-#Defaults to 1 for 32 directories
+#Defaults to 4 for 128 directories
 NNodes=4
 
 #getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
