@@ -62,8 +62,9 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
                              position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
-
-    return result, wang
+    window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                                   power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd').poles
+    return result, wang, window
 
 
 def get_edges():
@@ -77,6 +78,15 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if file_type == 'npy':
         return os.path.join(out_dir, 'pkpoles_{}.npy'.format(root))
+    return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
+
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+    if tracer2: tracer += '_' + tracer2
+    if rec_type: tracer += '_' + rec_type
+    if region: tracer += '_' + region
+    root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    if file_type == 'npy':
+        return os.path.join(out_dir, 'window_smooth_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
@@ -159,9 +169,11 @@ if __name__ == '__main__':
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
+            fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
+            window.save(fn)
 
         all_regions = regions.copy()
         if mpicomm.rank == mpiroot:
