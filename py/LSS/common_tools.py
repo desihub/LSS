@@ -369,6 +369,21 @@ def add_ke(dat):
     #abg = g_dered -dm(data['Z'])
     
 
+def join_etar(fn,tracer,tarver='1.1.1'):
+    tr = tracer
+    if tr == 'BGS_BRIGHT':
+        tr = 'BGS_ANY'
+    etar_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targets_pixelDR9v'+tarver+'.fits'
+    ef = Table(fitsio.read(etar_fn))
+    ef.remove_columns(['BRICKNAME','RA','DEC','PHOTSYS','DESI_TARGET'])
+    df = fitsio.read(fn)
+    print(len(df))
+    df = join(df,ef,keys=['TARGETID'])
+    print(len(df),'should match above')
+    comments = ['Adding imaging mask column']
+    write_LSS(df,fn,comments)
+
+
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
