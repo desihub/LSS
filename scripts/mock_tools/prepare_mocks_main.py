@@ -86,7 +86,7 @@ targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
 targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
 targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
 targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
-targets['SV3_SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
+targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
 targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 targets['TARGETID'] = np.arange(1,n+1)
 

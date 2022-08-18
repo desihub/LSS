@@ -32,7 +32,7 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
     tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))
     tiles['OBSCONDITIONS'] = 1
     tiles['IN_DESI'] = 1
-    tiles['PROGRAM'] = prog
+    tiles['PROGRAM'] = 'MAIN'
     
     ts = str(tiles['TILEID'][0]).zfill(6)
     #get info from origin fiberassign file
