@@ -38,7 +38,7 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
 
     tars = read_targets_in_tiles(mock_fn,tiles)
     tarfn = outdir+'/targs.fits'
-    tars.write(tarfn,format='fits',overwrite=True)
+    Table(tars).write(tarfn,format='fits',overwrite=True)
 
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
