@@ -18,9 +18,9 @@ import desitarget
 from desitarget.io import read_targets_in_tiles 
 
 
-def get_fba_mock(mock_dir,mocknum,survey='DA02',prog='dark'):
+def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
     
-    mock_fn = mock_dir+'/forFA'+str(mocknum)+'.fits'
+    mock_fn = mockdir+'/forFA'+str(mocknum)+'.fits'
     if not os.path.exists(mockdir+'/'+survey):
         os.mkdir(mockdir+'/'+survey)
         print('made '+mockdir+'/'+survey)
