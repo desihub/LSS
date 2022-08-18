@@ -29,18 +29,23 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
         print('made '+mockdir+'/'+survey+'/fba'+str(mocknum))
 
     tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
-    tiles = fitsio.read(tile_fn)
+    tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))
+    tiles['OBSCONDITIONS'] = 1
+    tiles['IN_DESI'] = 1
+    tiles['PROGRAM'] = prog
+    
     ts = str(tiles['TILEID'][0]).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     skyf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+'-skies-'+prog.upper()+'.fits'
     outdir = mockdir+'/'+survey+'/fba'+str(mocknum)
-
+    tile_fn =  outdir+'/tiles.fits'
+    tiles.write(tile_fn)
     tars = read_targets_in_tiles(mock_fn,tiles)
     tarfn = outdir+'/targs.fits'
     Table(tars).write(tarfn,format='fits',overwrite=True)
 
-    fo = open(outdir+'fa-'+ts+'.sh','w')
+    fo = open(outdir+'/fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh master\n')
     fo.write("module swap fiberassign/5.0.0\n")
