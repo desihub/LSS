@@ -93,7 +93,7 @@ targets['TARGETID'] = np.arange(1,n+1)
 targets.write(out_file_name, overwrite = True)
 
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, 'OBSCON', value='DARK', ext=1)
+fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
 
 sys.exit()
 
