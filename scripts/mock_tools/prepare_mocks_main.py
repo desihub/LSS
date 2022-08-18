@@ -77,8 +77,6 @@ else:
     sys.exit(args.mockver+' not supported')
 
 n=len(targets)
-targets['RA']=data['RA']
-targets['DEC']=data['DEC']
 targets.rename_column('Z_COSMO', 'TRUEZ') 
 targets.rename_column('Z', 'RSDZ') 
 targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
