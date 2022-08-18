@@ -15,37 +15,17 @@ profile=0
 #There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
 #However, you should specify your own directory to a. not overwrite the survey alt MTLs 
 # and b. keep your alt MTLs somewhere that you have control/access
-
-#Uncomment the following line to set your own/nonscratch directory
-#ALTMTLHOME=/path/to/your/directory/
-
-
 if [[ "${NERSC_HOST}" == "cori" ]]; then
-    CVal='haswell'
-    QVal='interactive'
-    if [[ -z "${ALTMTLHOME}" ]]; then
-        ALTMTLHOME=$CSCRATCH
-    else
-        echo "ALTMTLHOME Already set. ALTMTLHOME=$ALTMTLHOME"
-    fi
+    ALTMTLHOME=$CSCRATCH
 elif [[ "${NERSC_HOST}" == "perlmutter" ]]; then
-    srunConfig='-C cpu -q regular'
-    CVal='cpu'
-    QVal='interactive'
-    if [[ -z "${ALTMTLHOME}" ]]; then
-        ALTMTLHOME=$PSCRATCH
-    else
-        echo "ALTMTLHOME Already set. ALTMTLHOME=$ALTMTLHOME"
-    fi
-
+    ALTMTLHOME=$PSCRATCH
 else
-    echo "This code is only supported on NERSC Cori and NERSC Perlmutter. Goodbye"
+    echo "Something went wrong. Goodbye"
     exit 1234
 fi
 
-
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName="$USER"_TestAltMTLs
+simName="alt_mtls_OrigTimingTest%s_%03ddirs_%sRepro" 
 
 #Options for InitializeAltMTLs
 
@@ -56,7 +36,7 @@ seed=31415
 
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=128
+ndir=2
 
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
@@ -64,37 +44,36 @@ overwrite=0
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
 obscon='DARK'
 
-#Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
+#Survey to generate MTLs for (should be lowercase "sv3" or "main". sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
 
 #For rundate formatting in simName, either manually modify the string below 
 #to be the desired date or comment that line out and uncomment the 
 #following line to autogenerate date strings.
-#To NOT use any date string specification, use the third line, an empty string
-#datestring='071322'
+#To NOT use any date string specification, use the third line,  an empty string
+datestring='071222'
 #datestring=`date +%y%m%d`
-datestring=''
+#datestring=''
 
 #Can save time in MTL generation by first writing files to local tmp directory and then copying over later
 #usetmp=True will use the local tmp directory and usetmp=False will directly write to your output directory
 usetmp=True
 
-if [ $usetmp ]
+if [ usetmp ]
 then
-    outputMTLDirBaseBase=`mktemp -d /dev/shm/"$USER"_tempdirXXXX`
+    outputMTLDirBaseBase=`mktemp -d /dev/shm/JLtempdirXXXX`
 else 
     outputMTLDirBaseBase=$ALTMTLHOME
 fi
 printf -v outputMTLDirBase "$outputMTLDirBaseBase/$simName/" $datestring $ndir $survey
 printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $survey
 
-#List of healpixels to create Alt MTLs for
-hpListFile="$path2LSS/SV3HPList.txt"
+hpListFile='SV3HPList.txt'
 
 #These two options only are considered if the obscon is bright
 #First option indicates whether to shuffle the top level priorities
 #of BGS_FAINT/BGS_FAINT_HIP. Second option indicates what fraction/percent
-#of BGS_FAINT to promote. Default is 20%, same as SV3
+#of BGS_FAINT to promote. Default is 20%
 shuffleBrightPriorities=0
 PromoteFracBGSFaint=0.2
 
@@ -103,39 +82,31 @@ PromoteFracBGSFaint=0.2
 # You can only access that directory from compute nodes. 
 # Do NOT use the commented out directory (the normal mount of CFS)
 # unless the read only mount is broken
-#exampleledgerbase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
-exampleledgerbase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
+exampleledgerbase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
+#exampleledgerbase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
 #Default = 0/False. Set equal to 1 if you want to restart from the first observations
 qR=0
-
 #Number of observation dates to loop through
 #Defaults to 33 dates for SV3
 NObsDates=33
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
-#Defaults to 4 for 128 directories
-NNodes=4
+#Defaults to 1 for 64 directories
+NNodes=1
 
 #getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
-#This should only be turned on for SV testing/debugging purposes
-#This should not be required for main survey debugging. 
-getosubp=0
+#This should only be turned on for testing/debugging purposes
 
-#shuffleSubpriorities(reproducing) must be set to 1(0) to ensure 
-#subpriorities are shuffled. debug mode for main survey
-#will only require these flags to be set to 0(1) and not the getosubp flag
-shuffleSubpriorities=1
-reproducing=0
+getosubp=1
 
 #Include secondary targets?
 secondary=0
 
 numobs_from_ledger=1
-
 #Force redo fiber assignment if it has already been done. 
 redoFA=0
 
@@ -144,14 +115,12 @@ redoFA=0
 #True/False(1/0) as to whether to split bitweight calculation
 #among nodes by MPI between realizations
 splitByReal=0
-
 #Split the calculation of bitweights into splitByChunk
 #chunks of healpixels. 
 splitByChunk=100
 
 #Set to true if you want to clobber already existing bitweight files
 overwrite2=1
-
 #Actual running of scripts
 
 #Copy this script to output directory for reproducbility
@@ -192,15 +161,11 @@ else
    cp $0 $outputMTLFinalDestination
 fi
 
-if [ $getosubp -gt 0 ]
-then
-    touch $outputMTLFinalDestination/GetOSubpTrue
-fi
-
 echo 'moving on to python scripts (REMOVE BEFORE PUSHING)'
-printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
+printf -v OFIM "%s/InitializeAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $survey $date
 
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes $usetmp "$outputMTLFinalDestination/Univ{0:03d}" $shuffleSubpriorities $reproducing >& $OFIM
+srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes $usetmp "$outputMTLFinalDestination/Univ{0:03d}" >& $OFIM
+
 if [ $? -ne 0 ]; then
     exit 1234
     endInit=`date +%s.%N`
@@ -214,12 +179,9 @@ runtimeInit=$( echo "$endInit - $start" | bc -l )
 echo "runtime for initialization"
 echo $runtimeInit
 
-printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-
+printf -v OFDL "%s/dateLoopAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestination $survey $datestring
 runtimeInit=$( echo "$endInit - $start" | bc -l )
-
-nohup bash $path2LSS/dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLFinalDestination $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp $path2LSS $CVal $QVal >& $OFDL
-
+nohup bash $path2LSS/dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLFinalDestination $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp  >& $OFDL
 endDL=`date +%s.%N`
 
 if [ $? -ne 0 ]; then
@@ -234,11 +196,11 @@ echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
 
 if [ $splitByReal -ne 0 ]; then
-    printf -v OFBW "%s/MakeBitweights%sOutputCase1%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-    srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
+    printf -v OFBW "%s/MakeBitweightsOutputCase1%sRepro%s.out" $outputMTLFinalDestination $survey $datestring
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
 else
-    printf -v OFBW "%s/MakeBitweights%sOutputCase2%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-    srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
+    printf -v OFBW "%s/MakeBitweightsOutputCase2%sRepro%s.out" $outputMTLFinalDestination $survey $datestring
+    srun --nodes=1 -C haswell -A desi --qos=interactive -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
 fi
 
 endBW=`date +%s.%N`
