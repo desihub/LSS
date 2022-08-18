@@ -1,5 +1,6 @@
 from astropy.io import fits # Access to FITS (Flexible Image Transport System) files.
 from astropy.table import Table, hstack, vstack, Column # A class to represent tables of heterogeneous data.
+import fitsio
 import numpy as np
 import glob
 import os
@@ -40,8 +41,8 @@ if args.mockver == 'ab_firstgen':
     datat = []
     for type_ in types:
         thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
-        f = fits.open(thepath)
-        data = f[1].data
+        #f = fits.open(thepath)
+        data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
         print(data.dtype.names)
         print(type_,len(data))
         status = data['STATUS'][()]
