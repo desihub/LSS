@@ -25,7 +25,7 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
         os.mkdir(mockdir+'/'+survey)
         print('made '+mockdir+'/'+survey)
     if not os.path.exists(mockdir+'/'+survey+'/fba'+str(mocknum)):
-        os.mkdir(mockdir+'/'+survey+'/'+fba)
+        os.mkdir(mockdir+'/'+survey+'/fba')
         print('made '+mockdir+'/'+survey+'/fba'+str(mocknum))
 
     tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
