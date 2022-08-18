@@ -39,7 +39,7 @@ if args.mockver == 'ab_firstgen':
         return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
     datat = []
     for type_ in types:
-        thepath = os.path.join(path, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
+        thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
         f = fits.open(thepath)
         data = f[1].data
         print(type_,len(data))
