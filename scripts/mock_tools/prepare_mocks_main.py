@@ -42,6 +42,7 @@ if args.mockver == 'ab_firstgen':
         thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
         f = fits.open(thepath)
         data = f[1].data
+        print(data.dtype.names)
         print(type_,len(data))
         status = data['STATUS'][()]
         idx = np.arange(len(status))
