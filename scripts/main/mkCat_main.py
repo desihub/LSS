@@ -208,8 +208,12 @@ if mktar: #concatenate target files for given type, with column selection hardco
 mketar = True
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
-if os.path.isfile(etarf) and redotar == False and args.survey == 'main':
+if os.path.isfile(etarf) and redotar == False: 
     mketar = False
+
+if args.survey != 'main':
+    mketar = False
+
 
 if mketar: #concatenate target files for given type, with column selection hardcoded
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
