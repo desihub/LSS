@@ -37,7 +37,7 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
     ts = str(tiles['TILEID'][0]).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    skyf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+'-skies-'+prog.upper()+'.fits'
+    skyf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/skies-'+prog.upper()+'.fits'
     outdir = mockdir+'/'+survey+'/fba'+str(mocknum)
     tile_fn =  outdir+'/tiles.fits'
     tiles.write(tile_fn,overwrite=True)
