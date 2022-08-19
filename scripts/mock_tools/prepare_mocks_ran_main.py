@@ -76,7 +76,7 @@ def prep(rannum):
 if __name__ == '__main__':
     rx = args.ranmax
     rm = args.ranmin
-    if par:
+    if args.par == 'y':
         from multiprocessing import Pool
         import sys
         N = rx-rm+1
