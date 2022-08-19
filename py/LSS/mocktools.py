@@ -108,6 +108,7 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
 
     
     from fiberassign.targets import TargetTagalong,create_tagalong
+    tgs = Targets()
     tagalong = create_tagalong()#TargetTagalong([])
     load_target_file(tgs,tagalong,tarfn)
     print('loaded target file '+tarfn)
