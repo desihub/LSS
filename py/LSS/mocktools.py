@@ -102,7 +102,8 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     tile_fn =  dirout+'/tiles.fits'
     tiles.write(tile_fn,overwrite=True)
     tars = read_targets_in_tiles(mock_fn,tiles)
-    tarfn = outdir+'/targs.fits'
+    print(len(tars))
+    tarfn = dirout+'/targs.fits'
     Table(tars).write(tarfn,format='fits',overwrite=True)
 
     
