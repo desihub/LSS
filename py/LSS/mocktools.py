@@ -99,7 +99,7 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     
-    tile_fn =  outdir+'/tiles.fits'
+    tile_fn =  dirout+'/tiles.fits'
     tiles.write(tile_fn,overwrite=True)
     tars = read_targets_in_tiles(mock_fn,tiles)
     tarfn = outdir+'/targs.fits'
