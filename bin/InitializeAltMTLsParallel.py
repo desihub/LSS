@@ -31,7 +31,7 @@ ndir = int(argv[2])
 try:
     overwrite = bool(int(argv[3]))
 except:
-    raise ValueError('Invalid non-integer value of overwrite: {0}'.format(overwrite))
+    raise ValueError('Invalid non-integer value of overwrite: {0}'.format(argv[3]))
 obscon = argv[4]
 survey = argv[5]
 outputMTLDirBase = argv[6]
@@ -100,6 +100,17 @@ if usetmp:
 else:
     finalDir = None
 
+try:
+    shuffleSubpriorities = bool(int(argv[14]))
+except:
+    raise ValueError('Invalid non-integer value of shuffleSubpriorities: {0}'.format(argv[14]))
+
+
+try:
+    reproducing = bool(int(argv[15]))
+except:
+    raise ValueError('Invalid non-integer value of reproducing: {0}'.format(argv[15]))
+
 def procFunc(nproc):
     if 'sv' in survey.lower():
         log.info('sv survey')
@@ -119,7 +130,7 @@ def procFunc(nproc):
             log.info(outputMTLDir)
             log.info('finalDir, nproc{0}'.format(nproc))
             log.info(finalDir)
-        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, reproducing = True, shuffleSubpriorities = False, startDate = startDate, profile = profile, usetmp=usetmp, finalDir=finalDir)
+        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, reproducing = reproducing, shuffleSubpriorities = shuffleSubpriorities, startDate = startDate, profile = profile, usetmp=usetmp, finalDir=finalDir, debug = debug, verbose = verbose)
     return 0
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)
