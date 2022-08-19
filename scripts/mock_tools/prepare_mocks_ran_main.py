@@ -78,7 +78,8 @@ if __name__ == '__main__':
     rm = args.ranmin
     if args.par == 'y':
         from multiprocessing import Pool
-        import sys
+        from desitarget.internal import sharedmem
+        
         N = rx-rm+1
         inds = []
         for i in range(rm,rx):
