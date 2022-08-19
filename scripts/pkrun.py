@@ -108,7 +108,7 @@ if __name__ == '__main__':
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
-    parser.add_argument('--calc_win', help='also calculate window?', action='store_true', default=False)
+    parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', action='store_true', default='n')
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
 
     #only relevant for reconstruction
@@ -116,6 +116,10 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
+    if args.calc_win == 'n':
+        args.calc_win = False
+    if arg.calc_win == 'y':
+        args.calc_win = True
 
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
