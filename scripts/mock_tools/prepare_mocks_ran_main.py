@@ -35,7 +35,7 @@ def prep(rannum):
 		mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
 	
 		snum = str(100*rannum)
-		file_name = mockpath+'ELG/z1.100/cutsky_ELG_random_S'+rannum+'_1X.fits'
+		file_name = mockpath+'ELG/z1.100/cutsky_ELG_random_S'+snum+'_1X.fits'
 		out_file_name = args.base_output+'/FirstGenMocks/AbacusSummit/ran_forFA'+str(rannum)+'.fits'
 		print('will write to '+out_file_name)
 		if not os.path.exists(args.base_output+'/FirstGenMocks'):
