@@ -19,8 +19,8 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
-parser.add_argument("--ranmin", help="number for the realization",default=0,type=int)
-parser.add_argument("--ranmax", help="number for the realization",default=10,type=int)
+parser.add_argument("--ranmin", help="number for the realization",default=1,type=int)
+parser.add_argument("--ranmax", help="number for the realization",default=11,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
