@@ -84,9 +84,10 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     if not os.path.exists(mockdir+'/'+survey):
         os.mkdir(mockdir+'/'+survey)
         print('made '+mockdir+'/'+survey)
-    if not os.path.exists(mockdir+'/'+survey+'/fba'+str(mocknum)):
-        os.mkdir(mockdir+'/'+survey+'/fba'+str(mocknum))
-        print('made '+mockdir+'/'+survey+'/fba'+str(mocknum))
+    dirout = mockdir+'/'+survey+'/random_fba'+str(rannum)
+    if not os.path.exists(dirout):
+        os.mkdir(dirout)
+        print('made '+dirout)
 
     tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
     tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))
@@ -97,7 +98,7 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     ts = str(tiles['TILEID'][0]).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    dirout = mockdir+'/'+survey+'/random_fba'+str(rannum)
+    
     tile_fn =  outdir+'/tiles.fits'
     tiles.write(tile_fn,overwrite=True)
     tars = read_targets_in_tiles(mock_fn,tiles)
