@@ -98,13 +98,15 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     ts = str(tiles['TILEID'][0]).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    
+    rundate= fht['RUNDATE']
     tile_fn =  dirout+'/tiles.fits'
     tiles.write(tile_fn,overwrite=True)
-    tars = read_targets_in_tiles(mock_fn,tiles)
-    print(len(tars))
     tarfn = dirout+'/targs.fits'
-    Table(tars).write(tarfn,format='fits',overwrite=True)
+    if os.path.isfile(tarfn) == False:
+        tars = read_targets_in_tiles(mock_fn,tiles)
+        print(len(tars)) 
+        Table(tars).write(tarfn,format='fits',overwrite=True)
+        print('wrote '+tarfn)
 
     
     from fiberassign.targets import TargetTagalong,create_tagalong
