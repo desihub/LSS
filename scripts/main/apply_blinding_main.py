@@ -176,14 +176,6 @@ wa_blind = make_parameter_blind(args.fiducial_wa,
 fgrowth_blind = make_parameter_blind(args.fiducial_f,
 									 args.expected_f_uncertainty, rs)
 
-# Write out the blind parameter values
-to_write = [['w0', 'wa', 'f'],
-			[f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
-np.savetxt(dirout + "blinded_parameters.csv",
-		   to_write,
-		   delimiter=", ",
-		   fmt="%s")
-
 # If blinded values have been specified, overwrite the random procedure here:
 if args.specified_w0 is not None:
 	w0_blind = float(args.specified_w0)
@@ -193,6 +185,14 @@ if args.specified_wa is not None:
 
 if args.specified_f is not None:
 	fgrowth_blind = float(args.specified_f)
+
+# Write out the blind parameter values
+to_write = [['w0', 'wa', 'f'],
+			[f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
+np.savetxt(dirout + "blinded_parameters.csv",
+		   to_write,
+		   delimiter=", ",
+		   fmt="%s")
 
 
 regl = ['_S','_N']
