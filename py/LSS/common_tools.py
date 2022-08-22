@@ -563,5 +563,6 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
     print(len(dat_comb))
     
     datcomb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
 
 
