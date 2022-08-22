@@ -33,53 +33,53 @@ args = parser.parse_args()
 
 def prep(rannum):
 
-	if args.mockver == 'ab_firstgen':
-		mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
-	
-		snum = str(100*rannum)
-		file_name = mockpath+'ELG/z1.100/cutsky_ELG_random_S'+snum+'_1X.fits'
-		out_file_name = args.base_output+'/FirstGenMocks/AbacusSummit/ran_forFA'+str(rannum)+'.fits'
-		print('will write to '+out_file_name)
-		if not os.path.exists(args.base_output+'/FirstGenMocks'):
-			os.mkdir(args.base_output+'/FirstGenMocks')
-			print('made '+args.base_output+'/FirstGenMocks')
-		if not os.path.exists(args.base_output+'/FirstGenMocks/AbacusSummit'):
-			os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
-			print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
+    if args.mockver == 'ab_firstgen':
+        mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
+    
+        snum = str(100*rannum)
+        file_name = mockpath+'ELG/z1.100/cutsky_ELG_random_S'+snum+'_1X.fits'
+        out_file_name = args.base_output+'/FirstGenMocks/AbacusSummit/ran_forFA'+str(rannum)+'.fits'
+        print('will write to '+out_file_name)
+        if not os.path.exists(args.base_output+'/FirstGenMocks'):
+            os.mkdir(args.base_output+'/FirstGenMocks')
+            print('made '+args.base_output+'/FirstGenMocks')
+        if not os.path.exists(args.base_output+'/FirstGenMocks/AbacusSummit'):
+            os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
+            print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
         mockdir = args.base_output+'/FirstGenMocks/AbacusSummit'
  
 
-		#def mask(main=0, nz=0, Y5=0, sv3=0):
-		#	return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
-		
-		if args.prep == 'y':
-		    targets = fitsio.read(file_name,columns=['RA','DEC','STATUS'])
-		    sel = targets['STATUS'] & 2 > 0 #cut to Y5 footprint
-		    data = targets[sel]
-		    targets = Table(targets)
-		    targets.remove_columns(['STATUS'])
+        #def mask(main=0, nz=0, Y5=0, sv3=0):
+        #   return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
+        
+        if args.prep == 'y':
+            targets = fitsio.read(file_name,columns=['RA','DEC','STATUS'])
+            sel = targets['STATUS'] & 2 > 0 #cut to Y5 footprint
+            data = targets[sel]
+            targets = Table(targets)
+            targets.remove_columns(['STATUS'])
 
-	else:
-		sys.exit(args.mockver+' not supported')
+    else:
+        sys.exit(args.mockver+' not supported')
 
-	if args.prep == 'y':
-	    n=len(targets)
-	    targets['DESI_TARGET'] = np.ones(n, dtype='i8')
-	    targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
-	    targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
-	    targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
-	    targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
-	    targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
-	    targets['TARGETID'] = np.arange(1,n+1)+10*n*rannum #each random file has approximately the same number, so this should keep the targetid distinct
+    if args.prep == 'y':
+        n=len(targets)
+        targets['DESI_TARGET'] = np.ones(n, dtype='i8')
+        targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
+        targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
+        targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
+        targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
+        targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
+        targets['TARGETID'] = np.arange(1,n+1)+10*n*rannum #each random file has approximately the same number, so this should keep the targetid distinct
 
-	    targets.write(out_file_name, overwrite = True)
+        targets.write(out_file_name, overwrite = True)
 
-	    fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-	    fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
-	    
-	if args.runfa == 'y':
-	    from LSS.mocktools import get_fba_mock_ran
-	    get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark')
+        fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
+        fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
+        
+    if args.runfa == 'y':
+        from LSS.mocktools import get_fba_mock_ran
+        get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark')
 
 if __name__ == '__main__':
     rx = args.ranmax
