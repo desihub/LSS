@@ -98,7 +98,7 @@ def docat(mocknum,rannum):
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
 
     if args.combd == 'y' and rannum == 1:
-        fbadir = maindr+'fba'+str(mocknum)
+        fbadir = maindir+'fba'+str(mocknum)
         outdir = fbadir
         tarf = fbadir+'/targs.fits'
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
