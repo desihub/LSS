@@ -101,7 +101,9 @@ def docat(mocknum,rannum):
         fbadir = maindir+'fba'+str(mocknum)
         outdir = fbadir
         tarf = fbadir+'/targs.fits'
+        common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        
 
 
     return True

@@ -535,7 +535,9 @@ def write_LSS(ff,outf,comments=None):
     print('moved output to '+outf)
 
 def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
-
+    #if ran == 'dat':
+    #    addcols.append('PRIORITY')
+    #    addcols.append('DESI_TARGET')
     s = 0
     td = 0
     #tiles.sort('ZDATE')
@@ -565,5 +567,38 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
     
     dat_comb.write(outf,format='fits', overwrite=True)
     print('wrote '+outf)
+    return dat_comb
 
+def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY','DESI_TARGET'],fba=True,tp='dark'):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/datcomb_'+tp+'assignwdup.fits'
+    if fba:
+        pa_hdu = 'FASSIGN'
+    tl = []
+    for tile in tiles['TILEID']:
+        if fba:
+            ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
+        if os.path.isfile(ffa):
+            fa = Table(fitsio.read(ffa,ext=pa_hdu),columns=['TARGETID','LOCATION'])
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
+            td += 1
+            fa['TILEID'] = int(tile)
+            tl.append(fa)
+            print(td,len(tiles))
+        else:
+            print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    
+    dat_comb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
+    return dat_comb
 
