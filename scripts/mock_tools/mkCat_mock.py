@@ -50,8 +50,8 @@ parser.add_argument("--add_veto", help="add veto column to the full files",defau
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=1)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2) 
+parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2,type=int) 
 parser.add_argument("--par", help="run different random number in parallel?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
