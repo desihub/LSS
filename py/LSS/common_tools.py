@@ -533,3 +533,34 @@ def write_LSS(ff,outf,comments=None):
     print('closed fits file')
     os.system('mv '+tmpfn+' '+outf)
     print('moved output to '+outf)
+
+def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark'):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/rancomb_'+tp+'wdup.fits'
+    if fba:
+        pa_hdu = 'FAVAIL'
+    tl = []
+    for tile in tiles['TILEID']:
+        if fba:
+            ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
+        if os.path.isfile(ffa):
+            fa = Table.read(ffa,hdu=pa_hdu)
+
+            td += 1
+            fa['TILEID'] = int(tile)
+            tl.append(fa)
+        else:
+            print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    
+    datcomb.write(outf,format='fits', overwrite=True)
+
+
