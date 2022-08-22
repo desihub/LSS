@@ -1,6 +1,6 @@
-#!/global/common/software/desi/cori/desiconda/20200801-1.4.0-spec/conda/bin/python -u 
-from desiutil.log import get_logger
+#!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
 from LSS.SV3.altmtltools import writeBitweights
+from desiutil.log import get_logger
 from LSS.bitweights import pack_bitweights
 from sys import argv
 import numpy as np

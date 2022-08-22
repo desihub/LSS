@@ -1,4 +1,4 @@
-from astropy.table import Table,join,unique,vstack
+from astropy.table import Table,join
 import astropy.io.fits as pf
 import desitarget
 from desitarget import io, mtl

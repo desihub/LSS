@@ -21,7 +21,7 @@ os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
 logger = logging.getLogger('pkrun')
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, mpicomm=None, mpiroot=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -62,7 +62,9 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
                              position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
-    window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+    window = None
+    if dowin:
+        window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
                                    power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                   **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     return result, wang, window
@@ -106,6 +108,7 @@ if __name__ == '__main__':
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
+    parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', action='store_true', default='n')
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
 
     #only relevant for reconstruction
@@ -113,6 +116,10 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
+    if args.calc_win == 'n':
+        args.calc_win = False
+    if arg.calc_win == 'y':
+        args.calc_win = True
 
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
@@ -170,11 +177,12 @@ if __name__ == '__main__':
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win,mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
-            fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
-            window.save(fn)
+            if window is not None:
+                fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
+                window.save(fn)
 
         all_regions = regions.copy()
         if mpicomm.rank == mpiroot:

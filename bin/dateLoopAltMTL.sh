@@ -31,6 +31,17 @@ numobs_from_ledger=$8
 #Force redo fiber assignment if it has already been done. 
 redoFA=$9
 
+#getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
+#This should only be turned on for testing/debugging purposes
+
+getosubp=${10}
+
+path2LSS=${11}
+
+CVal=${12}
+
+QVal=${13}
+
 for i in $(seq 0 1 $NObsDates)
 do
     echo " NextDate"
@@ -42,7 +53,7 @@ do
     echo ""
     echo ""
     #srun  runAltMTLParallel.py $i
-    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 02:00:00 runAltMTLParallel.py $NNodes $qR $altmtlbasedir $secondary $obscon $survey $numobs_from_ledger $redoFA 
+    srun --cpu-bind=none --nodes=$NNodes -C $CVal -q $QVal -A desi -t 02:00:00 $path2LSS/runAltMTLParallel.py $NNodes $qR $altmtlbasedir $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp
     qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.
     if [ $? -ne 0 ]; then
         exit 1234
