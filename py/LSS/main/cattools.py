@@ -2181,8 +2181,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    if specver == 'mock_noMTL':
-        dz['ZWARN_MTL'] = np.copy(dz['ZWARN'])
+    #if specver == 'mock_noMTL':
+    #    dz['ZWARN_MTL'] = np.copy(dz['ZWARN'])
     fs = common.cut_specdat(dz,badfib)
     gtl = np.unique(fs['TILELOCID'])
 

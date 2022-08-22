@@ -108,6 +108,8 @@ def docat(mocknum,rannum):
         outdir = fbadir
         tarf = fbadir+'/targs.fits'
         asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
+        #if using alt MTL that should have ZWARN_MTL, put that in here
+        asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
         pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
 
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
