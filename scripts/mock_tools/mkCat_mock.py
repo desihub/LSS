@@ -71,6 +71,7 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 tracer = args.tracer
+survey = args.survey
 
 if tracer[:3] == 'BGS' or tracer == 'bright' or tracer == 'MWS_ANY':
     pr = 'BRIGHT'
