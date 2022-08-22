@@ -534,13 +534,13 @@ def write_LSS(ff,outf,comments=None):
     os.system('mv '+tmpfn+' '+outf)
     print('moved output to '+outf)
 
-def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark'):
+def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
 
     s = 0
     td = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
-    outf = outdir+'/rancomb_'+tp+'wdup.fits'
+    outf = outdir+'/'+ran+'comb_'+tp+'wdup.fits'
     if fba:
         pa_hdu = 'FAVAIL'
     tl = []
@@ -549,7 +549,8 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
             ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
         if os.path.isfile(ffa):
             fa = Table(fitsio.read(ffa,ext=pa_hdu))
-
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
             td += 1
             fa['TILEID'] = int(tile)
             tl.append(fa)
