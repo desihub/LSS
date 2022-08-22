@@ -86,7 +86,7 @@ if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
 
 maindir = args.base_output +mockdir+args.survey+'/'
-lssdir = maindir+'mock'+str(mocknum)+'/'
+lssdir = maindir+'mock'+str(args.mocknum)+'/'
 if not os.path.exists(lssdir):
     os.mkdir(lssdir)
     print('made '+lssdir)
