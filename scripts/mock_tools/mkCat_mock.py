@@ -70,6 +70,7 @@ notqso = ''
 if args.notqso == 'y':
     notqso = 'notqso'
 
+tracer = args.tracer
 
 if tracer[:3] == 'BGS' or tracer == 'bright' or tracer == 'MWS_ANY':
     pr = 'BRIGHT'
