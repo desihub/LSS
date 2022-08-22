@@ -86,14 +86,16 @@ if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
 
 maindir = args.base_output +mockdir+args.survey+'/'
-lssdir = maindir+'mock'+str(args.mocknum)+'/'
-if not os.path.exists(lssdir):
-    os.mkdir(lssdir)
-    print('made '+lssdir)
 
 tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits')
 
 def docat(mocknum,rannum):
+
+    lssdir = maindir+'mock'+str(args.mocknum)+'/'
+    if not os.path.exists(lssdir):
+        os.mkdir(lssdir)
+        print('made '+lssdir)
+
 
     if args.combr == 'y' and mocknum == 1:
         fbadir = maindir+'random_fba'+str(rannum)
