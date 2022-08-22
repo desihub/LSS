@@ -1,6 +1,6 @@
 import numpy as np
 import fitsio
-from astropy.table import Table,join
+from astropy.table import Table,join,vstack
 import datetime
 import os
 import sys
@@ -553,6 +553,7 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
             td += 1
             fa['TILEID'] = int(tile)
             tl.append(fa)
+            print(td,len(tiles))
         else:
             print('did not find '+ffa)
     dat_comb = vstack(tl)
