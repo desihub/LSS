@@ -1068,14 +1068,16 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
 def get_specdat(indir,pd,ver='daily',badfib=None):
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
-    if ver == 'everest' or ver == 'guadalupe':
-        zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    #zf = indir+'/datcomb_'+pd+'_tarspecwdup.fits'
+    #if ver == 'everest' or ver == 'guadalupe':
+    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     if ver == 'daily':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
     print(zf)
     dz = Table.read(zf)
     #dz = fitsio.read(zf)
     selz = dz['ZWARN'] != 999999
+    selz &= dz['ZWARN']*0 == 0 #just in case of nans
     fs = dz[selz]
 
     #first, need to find locations to veto based data
@@ -1112,7 +1114,7 @@ def cut_specdat(dz):
 #     return fs[wfqa]
 
 
-def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main'):
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -1132,25 +1134,26 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     #nomtl = nodata & badqa
     #wfqa = ~nomtl
 
-    indir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel
+    if indir is None:
+        indir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel
     ps = pd
     if pd[:3] == 'LRG' or pd[:3] == 'ELG' or pd[:3] =='QSO':
         ps = 'dark'
     if pd[:3] == 'BGS' or pd[:3] == 'MWS_ANY':
         ps = 'bright'
-    fs = get_specdat(indir,ps)
+    fs = get_specdat(indir,ps,specrel)
 
     stlid = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(stlid)
 
     if dr == 'dat':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
+        fj = fitsio.read(indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits'
     if dr == 'ran':
         if px:
-            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
+            fj = fitsio.read(indir+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
         else:
-            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
+            fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
 
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)
@@ -2128,39 +2131,41 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None):
-    from scipy.special import erf
-    #from desitarget.mtl import inflate_ledger
+    """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
+    ----------
+    zf : :class:`str` path to the file containing merged potential targets and redshift 
+        info
+    imbits : :class:`list`, the list of imaging bits to mask against; ignored in None
+        is passed
+    ftar : :class:`~numpy.array` or`~astropy.table.Table`, contains extra target info
+        to merge to. Ignored if None is passed.
+    tp : :class:`str`, the target class
+    bit : :class:`int`, the targeting bit corresponding to the targeting class and desitarg
+        argument.
+    outf : :class:`str`, path to write output to
+    ftiles : :class:`str`, path to file containing information on how and where each target
+    azf : :class:`str`, path to where to find extra redshift info for ELG/QSO catalogs
+    azfm : :class:`str`, whether to use per tile ('cumul') or healpix redshifts ('hp')
+    desitarg : :class:`str`, column to use when selecting on targeting bit
+    specver : :class:`str`, version of spectroscopic reductions
+    notqso : :class:`str`, if 'notqso', quasar targets are rejected
+    qsobit : :class:`int`, targeting bit to select quasar targets
+    min_tsnr2 : :class: `float`, minimum TSNR2_ value to cut on
+    badfib : :class: `str`, path to list of bad fibers to cut agains
+    Returns
+    -------
+    nothing
+    Notes
+    -----
+    """
+
+
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
     else:
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-    #fs = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver+'/datcomb_'+pd+'_spec_zdone.fits')
-#     dz = Table.read(zf)
-#     selz = dz['ZWARN_MTL'] != 999999
-#     fs = dz[selz]
-#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-#     num_nod = np.sum(nodata)
-#     print('number with no data '+str(num_nod))
-#     badqa = fs["ZWARN"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-#     num_badqa = np.sum(badqa)
-#     print('number with bad qa '+str(num_badqa))
-#     nomtl = nodata & badqa
-#     wfqa = ~nomtl
-#     #wf = fs['FIBERSTATUS'] == 0
-#     if specver == 'daily':
-#         fbcol = 'FIBERSTATUS'
-#     if specver == 'everest':
-#         fbcol = 'COADD_FIBERSTATUS'
-#     wf = fs[fbcol] == 0
-#     print(len(fs[wf]),len(fs[wfqa]))
-
-
-    #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specver
-    #fs = get_specdat(indir,pd)
-    #stlid = 10000*fs['TILEID'] +fs['LOCATION']
-    #gtl = np.unique(stlid)
 
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
@@ -2168,9 +2173,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    #wg = np.isin(dz['TILELOCID'],gtl)
     print(len(dz[wtype]))
-    #dz = dz[wtype&wg]
     dz = dz[wtype]
 
     #instead of full spec data, we are going to get type specific data and cut to unique entries
@@ -2178,11 +2181,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
+    if specver == 'mock_noMTL':
+        dz['ZWARN_MTL'] = np.copy(dz['ZWARN'])
     fs = common.cut_specdat(dz,badfib)
-    #fs['sort'] = fs['TSNR2_LRG']
-    #fs.sort('sort')
-    #fsu = unique(fs,keys=['TARGETID'],keep='last')
-    #gtl = np.unique(fsu['TILELOCID'])
     gtl = np.unique(fs['TILELOCID'])
 
     wg = np.isin(dz['TILELOCID'],gtl)
@@ -2190,12 +2191,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
     print('length after selecting type '+str(len(dz)))
-    #print('length after selecting to locations where target type was observed '+str(len(dz)))
-    #These steps are not needed if we cut already to only locations where the target type was observed
-    #lznp = find_znotposs(dz)
-    #wk = ~np.isin(dz['TILELOCID'],lznp)#dz['ZPOSS'] == 1
-    #dz = dz[wk]
-    #print('length after priority veto '+str(len(dz)))
+
     dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID')

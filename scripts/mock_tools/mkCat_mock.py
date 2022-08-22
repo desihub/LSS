@@ -86,6 +86,10 @@ if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
 
 maindir = args.base_output +mockdir+args.survey+'/'
+lssdir = maindir+'mock'+str(mocknum)+'/'
+if not os.path.exists(lssdir):
+    os.mkdir(lssdir)
+    print('made '+lssdir)
 
 tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits')
 
@@ -101,8 +105,17 @@ def docat(mocknum,rannum):
         fbadir = maindir+'fba'+str(mocknum)
         outdir = fbadir
         tarf = fbadir+'/targs.fits'
-        common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
-        common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
+        pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+
+        pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
+        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+        tj.write(outfs,format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir) 
+        outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
+        tc.write(outtc,format='fits', overwrite=True)
+        
         
 
 
