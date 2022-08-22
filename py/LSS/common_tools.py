@@ -583,7 +583,7 @@ def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','T
         if fba:
             ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
         if os.path.isfile(ffa):
-            fa = Table(fitsio.read(ffa,ext=pa_hdu),columns=['TARGETID','LOCATION'])
+            fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
             sel = fa['TARGETID'] >= 0
             fa = fa[sel]
             td += 1
