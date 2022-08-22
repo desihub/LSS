@@ -111,7 +111,7 @@ def docat(mocknum,rannum):
         pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
 
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
-        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tj.write(outfs,format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir) 
