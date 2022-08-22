@@ -92,7 +92,7 @@ tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tile
 def docat(mocknum,rannum):
 
     if args.combr == 'y' and mocknum == 1:
-        fbadir = maindr+'random_fba'+str(rannum)
+        fbadir = maindir+'random_fba'+str(rannum)
         outdir = fbadir
         tarf = fbadir+'/targs.fits'
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
