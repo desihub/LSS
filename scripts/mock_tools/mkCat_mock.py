@@ -193,5 +193,5 @@ if __name__ == '__main__':
     else:
         for mn in range(mockmin,mockmax):
             for i in range(rm,rx):
-                print('processing mock '+str(m)+' and random '+str(i))
+                print('processing mock '+str(mn)+' and random '+str(i))
                 docat(mn,i)
