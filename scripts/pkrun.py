@@ -14,14 +14,14 @@ from matplotlib import pyplot as plt
 from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
-from xirunpc import read_data_randoms_positions_weights, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
+from xirunpc import read_clustering_positions_weights, concatenate_data_randoms, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
 
 
 os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
 logger = logging.getLogger('pkrun')
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -39,16 +39,22 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = read_data_randoms_positions_weights(distance, type='clustering', rec_type=rec_type, tracer=tracer, **catalog_kwargs)
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
         if with_shifted:
-            shifted_positions1, shifted_weights1 = randoms_positions1, randoms_weights1  # above returned shifted randoms
-            randoms_positions1, randoms_weights1 = read_data_randoms_positions_weights(distance, type='clustering', rec_type=False, tracer=tracer, **catalog_kwargs)[1]
+            shifted = randoms  # above returned shifted randoms
+            randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
+        (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
+        if with_shifted:
+            shifted_positions1, shifted_weights1 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
 
         if not autocorr:
-            (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = read_data_randoms_positions_weights(distance, type='clustering', rec_type=rec_type, tracer=tracer2, **catalog_kwargs)
+            data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
             if with_shifted:
-                shifted_positions2, shifted_weights2 = randoms_positions2, randoms_weights2
-                randoms_positions2, randoms_weights2 = read_data_randoms_positions_weights(distance, type='clustering', rec_type=False, tracer=tracer2, **catalog_kwargs)[1]
+                shifted = randoms
+                randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option, **catalog_kwargs)
+            (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
+            if with_shifted:
+                shifted_positions2, shifted_weights2 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
 
     kwargs = {}
     kwargs.update(wang or {})
@@ -65,8 +71,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     window = None
     if dowin:
         window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
-                                   power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
-                                  **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
+                                     power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
+                                     **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     return result, wang, window
 
 
@@ -83,6 +89,7 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
         return os.path.join(out_dir, 'pkpoles_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
+
 def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
@@ -98,7 +105,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
@@ -118,7 +125,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.calc_win == 'n':
         args.calc_win = False
-    if arg.calc_win == 'y':
+    if args.calc_win == 'y':
         args.calc_win = True
 
     from pypower import mpi
