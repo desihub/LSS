@@ -548,7 +548,7 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
         if fba:
             ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
         if os.path.isfile(ffa):
-            fa = Table.read(ffa,hdu=pa_hdu)
+            fa = Table(fitsio.read(ffa,ext=pa_hdu))
 
             td += 1
             fa['TILEID'] = int(tile)
