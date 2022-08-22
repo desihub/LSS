@@ -91,7 +91,7 @@ tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tile
 
 def docat(mocknum,rannum):
 
-    lssdir = maindir+'mock'+str(args.mocknum)+'/'
+    lssdir = maindir+'mock'+str(mocknum)+'/'
     if not os.path.exists(lssdir):
         os.mkdir(lssdir)
         print('made '+lssdir)
