@@ -126,8 +126,10 @@ def docat(mocknum,rannum):
         fbadir_ran = maindir+'random_fba'+str(rannum)
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-        fgu = fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits')
+        fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
+        print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        print(len(fgu))
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
