@@ -136,7 +136,7 @@ def docat(mocknum,rannum):
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
         fgu.write(outf,format='fits', overwrite=True)
-        tc = ct.count_tiles_better('ran',pdir,rannum,specrel=specrel,survey=args.survey,indir=lssdir)
+        tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir)
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
