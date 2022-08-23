@@ -221,7 +221,7 @@ def docat(mocknum,rannum):
 #             tsnrcut = 1000
 
         ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
-    print('done with random '+str(ii))
+    #print('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
