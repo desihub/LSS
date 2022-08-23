@@ -2251,7 +2251,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     
     if specver == 'mock':
-        dz['ZRSD'].name = 'Z' 
+        dz['RSDZ'].name = 'Z' 
         
     if tp == 'QSO':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
