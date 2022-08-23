@@ -65,11 +65,11 @@ sky_g = np.zeros(256*256*12)
 f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
 for i in range(0,len(f)):
 	pix = f['HPXPIXEL'][i]
-	sky_g[pix] = f['sky_median_g']
+	sky_g[pix] = f['sky_median_g'][i]
 f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
 for i in range(0,len(f)):
 	pix = f['HPXPIXEL'][i]
-	sky_g[pix] = f['sky_median_g']
+	sky_g[pix] = f['sky_median_g'][i]
 
 
 nbin = 10
