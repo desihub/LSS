@@ -2176,6 +2176,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print('number of unique targets at assigned tilelocid:')
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
+    cols = list(dz.dtype.names)
+    if tscol not in cols:
+        dz[tscol] = np.ones(len(dz))
+        print('added '+tscol+' and set all to 1') 
+
+
     wnts = dz[tscol]*0 != 0
     wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
@@ -2185,10 +2191,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         sel = dz[tscol] > min_tsnr2
         dz['GOODTSNR'][sel] = 0
     
-    cols = list(dz.dtype.names)
-    if tscol not in cols:
-        dz[tscol] = np.ones(len(dz))
-        print('added '+tscol+' and set all to 1') 
     
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
