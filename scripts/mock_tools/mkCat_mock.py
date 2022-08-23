@@ -152,7 +152,7 @@ def docat(mocknum,rannum):
 
     specver = 'mock'    
     imbits = []    
-    if args.fulld:
+    if args.fulld == 'y':
         
         ftar = None
         dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
@@ -173,9 +173,9 @@ def docat(mocknum,rannum):
         
     if args.fullr == 'y':
         zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-        specdat = common.cut_specdat(zf)
-        gtl = np.unique(specdat['TILELOCID'])
         dz = Table.read(zf) 
+        specdat = common.cut_specdat(dz)
+        gtl = np.unique(specdat['TILELOCID'])       
         wg = np.isin(dz['TILELOCID'],gtl)
         dz = dz[wg]
         wtype = ((dz[desitarg] & bit) > 0)
@@ -183,6 +183,8 @@ def docat(mocknum,rannum):
             wtype &= ((dz[desitarg] & 4) == 0)
         dz = dz[wtype]
         lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
+        del dz
+        del specdat
 
         outf = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         
