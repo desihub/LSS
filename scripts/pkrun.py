@@ -11,7 +11,7 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, PowerSpectrumSmoothWindow, utils, setup_logging
+from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, PowerSpectrumSmoothWindow, PowerSpectrumOddWideAngleMatrix, PowerSpectrumSmoothWindowMatrix, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
 from xirunpc import read_clustering_positions_weights, concatenate_data_randoms, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
@@ -51,15 +51,17 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
-        wang = compute_angular_weights(nthreads=1, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
+        #wang = compute_angular_weights(nthreads=1, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
         # Does not run faster, why?
-        #nthreads = 64
-        #color = mpicomm.rank % nthreads == 0
-        #subcomm = mpicomm.Split(color, 0)
-        #if color:
-        #    wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=subcomm, mpiroot=0, **kwargs)
-        #barrier_idle(mpicomm)
-        #wang = mpicomm.bcast(wang, root=0)
+        # Because the number of cores is ncores // mpicomm.size
+        nthreads = 64
+        color = mpicomm.rank % nthreads == 0
+        subcomm = mpicomm.Split(color, 0)
+        if color:
+            wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=subcomm, mpiroot=0, **kwargs)
+        barrier_idle(mpicomm)
+        wang = mpicomm.bcast(wang, root=0)
+        exit()
 
     data_positions1, data_weights1, data_positions2, data_weights2 = None, None, None, None
     randoms_positions1, randoms_weights1, randoms_positions2, randoms_weights2 = None, None, None, None
@@ -96,7 +98,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
                              position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
-    window = None
+    wawm = None
     if dowin:
         windows = []
         boxsizes = [scale * boxsize for scale in [20., 5., 1.]]
@@ -106,7 +108,25 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                mpicomm=mpicomm, mpiroot=mpiroot).poles)
         window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
-    return result, wang, window
+        if mpicomm.rank == mpiroot:
+            # Let us compute the wide-angle and window function matrix
+            kout = result.k # output k-bins
+            ellsout = [0, 2, 4] # output multipoles
+            ellsin = [0, 2, 4] # input (theory) multipoles
+            wa_orders = 1 # wide-angle order
+            sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
+            kin_rebin = 4 # rebin input theory to save memory
+            kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
+            # Input projections for window function matrix:
+            # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
+            projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
+            # Window matrix
+            wm = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
+            # We resum over theory odd-wide angle
+            wawm = wm.copy()
+            wawm.resum_input_odd_wide_angle()
+
+    return result, wang, wawm
 
 
 def get_edges():
