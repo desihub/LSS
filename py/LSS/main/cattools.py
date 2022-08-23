@@ -1073,7 +1073,7 @@ def get_specdat(indir,pd,ver='daily',badfib=None):
     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
     if ver == 'daily':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
-    print(zf)
+    print('getting spec data from '+zf)
     dz = Table.read(zf)
     #dz = fitsio.read(zf)
     selz = dz['ZWARN'] != 999999
@@ -1918,55 +1918,24 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     else:
         tscol = 'TSNR2_ELG'
 
-#     selz = dz['ZWARN'] != 999999
-#     fs = dz[selz]
-#
-#     #first, need to find locations to veto based data
-#     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
-#     num_nod = np.sum(nodata)
-#     print('number with no data '+str(num_nod))
-#     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
-#     num_badqa = np.sum(badqa)
-#     print('number with bad qa '+str(num_badqa))
-#     nomtl = nodata & badqa
-#     wfqa = ~nomtl
-#     #wf = fs['FIBERSTATUS'] == 0
-#     if specver == 'daily':
-#         fbcol = 'FIBERSTATUS'
-#     if specver == 'everest':
-#         fbcol = 'COADD_FIBERSTATUS'
-#     wf = fs[fbcol] == 0
-#     print(len(fs[wf]),len(fs[wfqa]))
-    #zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-    #dz = Table.read(zf)
 
-    #fs = get_specdat(indir,pd,verspec)
-#     stlid = 10000*fs['TILEID'] +fs['LOCATION']
-#     gtl = np.unique(stlid)
-#
-#     wtype = ((dz[desitarg] & bit) > 0)
-#     if notqso == 'notqso':
-#         wtype &= ((dz[desitarg] & qsobit) == 0)
-#
-#     wg = np.isin(dz['TILELOCID'],gtl)
-#     dz = dz[wtype&wg]
-#     print('length after selecting type and good hardware '+str(len(dz)))
-#     lznp = find_znotposs(dz)
 
 
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     dz = Table.read(zf)
-    #dz.remove_columns(['TILES','NTILE'])
+    
 
     zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
-    #dzpd.keep_columns(['TARGETID','TILES','NTILE'])
+    
     dz = join(dz,dzpd,keys=['TARGETID'])
-    #if maskzfail:
-    #    wk = dz['ZPOSSNOTBAD'] == 1
-    #else:
-    #    wk = dz['ZPOSS'] == 1
     print('length including duplicates '+str(len(dz)))
+
+    cols = list(dz.dtype.names)
+    if tscol not in cols:
+        dz[tscol] = np.ones(len(dz))
+
+
     wk = ~np.isin(dz['TILELOCID'],lznp)
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     dz['ZPOSSLOC'][wk] = 1
@@ -1986,23 +1955,17 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         wf = np.isin(dz['TILELOCID'],tlid_full)
         dz['LOCFULL'][wf] = 1
 
-    #dz = dz[wk]
-    #print('length after cutting to good positions '+str(len(dz)))
-    print('joining with original randoms to get mask properties')
-    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-    tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
-    #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
-    #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-    tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
-    dz = join(dz,tarf,keys=['TARGETID'])
-    del tarf
-    dz = common.cutphotmask(dz,imbits)
-    print('length after cutting to based on imaging veto mask '+str(len(dz)))
-#     pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
-#     sp = pl <= 0
-#     pl[sp] = .1
-# 
-#     dz['sort'] = dz[tsnr]*dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']+dz['GOODHARDLOC']*dz['ZPOSSLOC']/pl
+    if len(imbits) > 0:
+        print('joining with original randoms to get mask properties')
+        dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+        #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+        #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        dz = join(dz,tarf,keys=['TARGETID'])
+        del tarf
+        dz = common.cutphotmask(dz,imbits)
+        print('length after cutting to based on imaging veto mask '+str(len(dz)))
 
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
@@ -2024,6 +1987,15 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
     print(np.unique(dz['NTILE']))
+
+    if 'PHOTSYS' not in cols:
+        dz['PHOTSYS'] = 'N'
+        sel = dz['DEC'] < 32.375
+        wra = (dz['RA'] > 100-dz['DEC'])
+        wra &= (dz['RA'] < 280 +dz['DEC'])
+        sel |= ~wra
+        dz['PHOTSYS'][sel] = 'S'
+
 
     dz.write(outf,format='fits', overwrite=True)
     print('wrote to '+outf)
@@ -2181,8 +2153,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
 
-    #if specver == 'mock_noMTL':
-    #    dz['ZWARN_MTL'] = np.copy(dz['ZWARN'])
     fs = common.cut_specdat(dz,badfib)
     gtl = np.unique(fs['TILELOCID'])
 
@@ -2210,47 +2180,45 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
     print(np.max(dz[tscol]))
-    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tscol] > min_tsnr2
-    dz['GOODTSNR'][sel] = 1
-
+    dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
+    if min_tsnr2 > 0:
+        sel = dz[tscol] > min_tsnr2
+        dz['GOODTSNR'][sel] = 0
+    
+    cols = list(dz.dtype.names)
+    if tscol not in cols:
+        dz[tscol] = np.ones(len(dz))
+        print('added '+tscol+' and set all to 1') 
+    
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
     dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     print('length after cutting to unique targets '+str(len(dz)))
-    print('joining to full imaging')
-    dz.remove_columns(['RA','DEC','DESI_TARGET','BGS_TARGET']) #these come back in with merge to full target file
-    dz = join(dz,ftar,keys=['TARGETID'])
-    #print('length after join to full targets (should be same) '+str(len(dz)))
-    dz = common.cutphotmask(dz,imbits)
-    print('length after imaging mask; should not have changed '+str(len(dz)))
+    
+    if ftar is not None:
+        print('joining to full imaging')
+        remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
+    
+        for col in remcol:
+            if col in cols:
+                dz.remove_columns([col]) #these come back in with merge to full target file
+        dz = join(dz,ftar,keys=['TARGETID'])
+    
+    if len(imbits) > 0:
+        dz = common.cutphotmask(dz,imbits)
+        print('length after imaging mask; should not have changed '+str(len(dz)))
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
-        #arz = fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','SUBSET','DELTACHI2'])
         arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
-        #st = []
-        #for i in range(0,len(arz)):
-        #    st.append(arz['SUBSET'][i][:4])
-        #st = np.array(st)
-        #wg = arz[fbcol] == 0
-        #wg = st == "thru"
-        #arz = arz[wg]
-        #o2c = np.log10(arz['OII_FLUX'] * np.sqrt(arz['OII_FLUX_IVAR']))+0.2*np.log10(arz['DELTACHI2'])
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
         w |= dz['OII_FLUX'] < 0
         o2c[w] = -20
-        #arz.keep_columns(['TARGETID','LOCATION','TILEID','o2c','OII_FLUX','OII_SIGMA'])#,'Z','ZWARN','TSNR2_ELG'])
-        #arz = Table(arz)
-        #arz['o2c'] = o2c
         dz['o2c'] = o2c
-        #dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
-
-        #dz.remove_columns(['SUBSET','DELTACHI2_OII'])#,fbcol+'_OII'])
         print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
@@ -2258,7 +2226,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
         print(arz.dtype.names)
-        #arz['TILE'].name = 'TILEID'
         dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
@@ -2280,11 +2247,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
+    
+    if specver == 'mock':
+        dz['ZRSD'].name = 'Z' 
+        
     if tp == 'QSO':
-        #if azfm == 'hp':
-        #    print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z_HP'].mask)))
-        #    dz['Z_HP'] = dz['Z_HP'].filled(999999)
-        #else:
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
     try:
         dz['Z'] = dz['Z'].filled(999999)
@@ -2302,12 +2269,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     print('TILELOCID_ASSIGNED numbers')
     print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
-    #print('length after join to file with tiles info is '+str(len(dz)))
-    #NT = np.zeros(len(dz))
-    #ti = np.zeros(len(dz))
 
     probl = np.zeros(len(dz))
-    #dr = fitsio.read(e2eout+ program+'/'+type+'_oneper_full.ran.fits')
 
     #get completeness based on unique sets of tiles
     compa = []
@@ -2320,7 +2283,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     tlslu = np.unique(tlsl)
     laa = dz['LOCATION_ASSIGNED']
 
-    #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
     i = 0
     while i < len(dz):
         tls  = []
@@ -2338,11 +2300,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         if ti%1000 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
 
-        #w = dz['TILES'] == tls
-        #no = sum(dz[w]['LOCATION_ASSIGNED'])
-        #nt = len(dz[w])
         cp = nai/nli#no/nt
-        #print(tls,cp,no,nt)
+        
         compa.append(cp)
         tll.append(tlslu[ti])
         ti += 1
@@ -2355,48 +2314,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print('number of targets in 0 completeness regions '+str(len(dz[wc0])))
 
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    #wa = dzz['LOCATION_ASSIGNED'] == 1
-    #if len(dzz[wa]) != len(dzz):
-     #   print('!found some zwarn = 0 without location_assigned = 1!')
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
 
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
     print(np.max(nloclz),np.min(loclz))
-    #print(np.histogram(nloclz))
+    
     print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
     print('number of unique targets around unassigned locations is '+str(np.sum(natloc)))
-
-    #should not be necessary any more
-#     locs = np.copy(dz['TILELOCID'])
-#     print('reassigning TILELOCID for duplicates ')
-#     nch = 0
-#     nbl = 0
-#     tlids = dz['TILELOCIDS']
-#     for ii in range(0,len(dz['TILEID'])): #not sure why, but this only works when using loop for Table.read but array option works for fitsio.read
-#         ti = dz[ii]['TILEID']
-#
-#         if natloc[ii]:# == False:
-#             nbl += 1
-#             s = 0
-#             tids = tlids[ii].split('-')
-#             if s == 0:
-#                 for tl in tids:
-#                     ttlocid  = int(tl)
-#                     if np.isin(ttlocid,loclz):
-#                         locs[ii] = ttlocid #use below instead and assign at end, maybe faster
-#                         nch += 1
-#                         s = 1
-#                         break
-#         if ii%100000 == 0:
-#             print(ii,len(dz['TILEID']),ti,nch,nbl)
-#
-#     dz['TILELOCID'] = locs
-#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-
-    #print(np.unique(dz['NTILE']))
 
     print('getting fraction assigned for each tilelocid')
     nm = 0
@@ -2422,9 +2348,17 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
 
     print(np.unique(dz['NTILE']))
+    
+    if specver == 'mock':
+        dz['PHOTSYS'] = 'N'
+        sel = dz['DEC'] < 32.375
+        wra = (dz['RA'] > 100-dz['DEC'])
+        wra &= (dz['RA'] < 280 +dz['DEC'])
+        sel |= ~wra
+        dz['PHOTSYS'][sel] = 'S'
+               
+    
     common.write_LSS(dz,outf)
-    #dz.write(outf,format='fits', overwrite=True)
-    #print('wrote '+outf)
 
 
 def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
