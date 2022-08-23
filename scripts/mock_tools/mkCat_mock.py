@@ -16,15 +16,12 @@ from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
 from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
+from desitarget import targetmask
 
-#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
-
-#from this package
-#try:
 import LSS.main.cattools as ct
 import LSS.common_tools as common
-import LSS.mkCat_singletile.fa4lsscat as fa
-from LSS.globals import main
+#import LSS.mkCat_singletile.fa4lsscat as fa
+#from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = 'CSCRATCH'
@@ -46,6 +43,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
+parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
@@ -97,6 +95,19 @@ def docat(mocknum,rannum):
         os.mkdir(lssdir)
         print('made '+lssdir)
 
+    dirout = lssdir+'LSScats'
+    if not os.path.exists(dirout):
+        os.mkdir(dirout)
+        print('made '+dirout)
+
+
+    if args.tracer == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[args.tracer]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[args.tracer]
+        desitarg='DESI_TARGET'
+
 
     if args.combr == 'y' and mocknum == 1:
         fbadir = maindir+'random_fba'+str(rannum)
@@ -139,9 +150,14 @@ def docat(mocknum,rannum):
         tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir)
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
+    specver = 'mock'    
         
-        
-
+    if args.fulld:
+        imbits = []
+        ftar = None
+        dz = Table(fitsio.read(lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'))
+        tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
+        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso)
 
     return True
         
