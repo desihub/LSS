@@ -193,13 +193,13 @@ def docat(mocknum,rannum):
 
 
     if args.apply_veto == 'y':
-        print('applying vetos to random '+str(rannum))
-        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
-        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
         print('applying vetos to mock '+str(mocknum))
         fin = dirout+args.tracer+notqso+'_full_noveto.dat.fits'
         fout = dirout+args.tracer+notqso+'_full.dat.fits'
+        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+        print('applying vetos to random '+str(rannum))
+        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
+        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
 
         #print('random veto '+str(ii)+' done')
