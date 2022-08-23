@@ -11,7 +11,7 @@ import numpy as np
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
-from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, utils, setup_logging
+from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, PowerSpectrumSmoothWindow, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
 from xirunpc import read_clustering_positions_weights, concatenate_data_randoms, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
@@ -21,7 +21,28 @@ os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
 logger = logging.getLogger('pkrun')
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=None, **kwargs):
+def barrier_idle(mpicomm, tag=0, sleep=0.01):
+    """
+    MPI barrier fonction that solves the problem that idle processes occupy 100% CPU.
+    See: https://goo.gl/NofOO9.
+    """
+    import time
+    size = mpicomm.size
+    if size == 1: return
+    rank = mpicomm.rank
+    mask = 1
+    while mask < size:
+        dst = (rank + mask) % size
+        src = (rank - mask + size) % size
+        req = mpicomm.isend(None, dst, tag)
+        while not mpicomm.Iprobe(src, tag):
+            time.sleep(sleep)
+        mpicomm.recv(None, src, tag)
+        req.Wait()
+        mask <<= 1
+
+
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -30,8 +51,15 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
-
         wang = compute_angular_weights(nthreads=1, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
+        # Does not run faster, why?
+        #nthreads = 64
+        #color = mpicomm.rank % nthreads == 0
+        #subcomm = mpicomm.Split(color, 0)
+        #if color:
+        #    wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=subcomm, mpiroot=0, **kwargs)
+        #barrier_idle(mpicomm)
+        #wang = mpicomm.bcast(wang, root=0)
 
     data_positions1, data_weights1, data_positions2, data_weights2 = None, None, None, None
     randoms_positions1, randoms_weights1, randoms_positions2, randoms_weights2 = None, None, None, None
@@ -65,14 +93,19 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
-                             edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=2,
+                             edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
                              position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = None
     if dowin:
-        window = CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
-                                     power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
-                                     **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
+        windows = []
+        boxsizes = [scale * boxsize for scale in [20., 5., 1.]]
+        edges = {'step': 2. * np.pi / boxsizes[0]}
+        for boxsize in boxsizes:
+            windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                                               power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
+                                               mpicomm=mpicomm, mpiroot=mpiroot).poles)
+        window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
     return result, wang, window
 
 
@@ -184,7 +217,7 @@ if __name__ == '__main__':
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win,mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
             if window is not None:
