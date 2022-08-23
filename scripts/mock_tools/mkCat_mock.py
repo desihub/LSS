@@ -131,7 +131,7 @@ def docat(mocknum,rannum):
         print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
         print(len(fgu))
-        print(fgu.dype.names)
+        print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
