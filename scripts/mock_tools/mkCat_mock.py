@@ -171,7 +171,7 @@ def docat(mocknum,rannum):
 
 
         
-    if mkfullr:
+    if args.fullr == 'y':
         zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         specdat = common.cut_specdat(zf)
         gtl = np.unique(specdat['TILELOCID'])
