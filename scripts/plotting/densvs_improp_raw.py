@@ -62,11 +62,11 @@ maps_ex = ['HALPHA','EBVreconMEANF15','CALIBG', 'CALIBR','CALIBZ']
 EBVdiff = ex_maps['EBVreconMEANF15'] - all_maps['EBV']
 
 sky_g = np.zeros(256*256*12)
-f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits'))
+f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
 for i in range(0,len(f)):
 	pix = f['HPXPIXEL'][i]
 	sky_g[pix] = f['sky_median_g']
-f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits'))
+f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
 for i in range(0,len(f)):
 	pix = f['HPXPIXEL'][i]
 	sky_g[pix] = f['sky_median_g']
