@@ -537,6 +537,7 @@ def write_LSS(ff,outf,comments=None):
 def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
     if ran == 'dat':
         addcols.append('PRIORITY')
+        addcols.append('PRIORITY_INIT')
         addcols.append('DESI_TARGET')
     s = 0
     td = 0
