@@ -124,7 +124,7 @@ def docat(mocknum,rannum):
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
         fbadir_ran = maindir+'random_fba'+str(rannum)
-        specf = Table(fitsio.read(fbadir+'/datcomb_'+pdir+'assignwdup.fits'))
+        specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         fgu = fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits')
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
