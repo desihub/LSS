@@ -95,7 +95,7 @@ def docat(mocknum,rannum):
         os.mkdir(lssdir)
         print('made '+lssdir)
 
-    dirout = lssdir+'LSScats'
+    dirout = lssdir+'LSScats/'
     if not os.path.exists(dirout):
         os.mkdir(dirout)
         print('made '+dirout)
@@ -155,7 +155,7 @@ def docat(mocknum,rannum):
     if args.fulld:
         imbits = []
         ftar = None
-        dz = Table(fitsio.read(lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'))
+        dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso)
 
