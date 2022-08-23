@@ -151,35 +151,42 @@ def docat(mocknum,rannum):
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     specver = 'mock'    
-        
+    imbits = []    
     if args.fulld:
-        imbits = []
+        
         ftar = None
         dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso)
 
-    return True
+    maxp = 3400
+    pthresh = 3000
+    if type[:3] == 'LRG':# or notqso == 'notqso':
+        maxp = 3200
+    if type == 'ELG':
+        maxp = 3000
+    if type[:3] == 'BGS':
+        maxp = 2100
+        pthresh = 2000
+
+
         
     if mkfullr:
-        maxp = 3400
-        if type[:3] == 'LRG' or notqso == 'notqso':
-            maxp = 3200
-        if type[:3] == 'BGS':
-            maxp = 2100
+        zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+        specdat = common.cut_specdat(zf)
+        gtl = np.unique(specdat['TILELOCID'])
+        dz = Table.read(zf) 
+        wg = np.isin(dz['TILELOCID'],gtl)
+        dz = dz[wg]
+        wtype = ((dz[desitarg] & bit) > 0)
+        if notqso == 'notqso':
+            wtype &= ((dz[desitarg] & 4) == 0)
+        dz = dz[wtype]
+        lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
 
-#         if specrel == 'everest':
-#             #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-#             #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-#             #specf = specf[wt]
-#             fbcol = 'COADD_FIBERSTATUS'
-#         if specrel == 'daily':
-#             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-#             fbcol = 'FIBERSTATUS'
-
-        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        outf = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
+        ct.mkfullran(gtl,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
