@@ -535,9 +535,9 @@ def write_LSS(ff,outf,comments=None):
     print('moved output to '+outf)
 
 def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
-    #if ran == 'dat':
-    #    addcols.append('PRIORITY')
-    #    addcols.append('DESI_TARGET')
+    if ran == 'dat':
+        addcols.append('PRIORITY')
+        addcols.append('DESI_TARGET')
     s = 0
     td = 0
     #tiles.sort('ZDATE')
@@ -569,7 +569,7 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
     print('wrote '+outf)
     return dat_comb
 
-def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY','DESI_TARGET'],fba=True,tp='dark'):
+def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark'):
 
     s = 0
     td = 0
