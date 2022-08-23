@@ -45,6 +45,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
@@ -119,6 +120,21 @@ def docat(mocknum,rannum):
         tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir) 
         outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
+    
+    if args.combdr == 'y':
+        fbadir_data = maindir+'fba'+str(mocknum)
+        fbadir_ran = maindir+'random_fba'+str(rannum)
+        specf = Table(fitsio.read(fbadir+'/datcomb_'+pdir+'assignwdup.fits'))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        fgu = fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits')
+        fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        fgu.sort('TARGETID')
+        outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
+        print(outf)
+        fgu.write(outf,format='fits', overwrite=True)
+        tc = ct.count_tiles_better('ran',pdir,rannum,specrel=specrel,survey=args.survey,indir=lssdir)
+        tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+
         
         
 
