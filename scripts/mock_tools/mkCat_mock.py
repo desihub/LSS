@@ -117,12 +117,13 @@ def docat(mocknum,rannum):
         print('made '+dirout)
 
 
-    if args.tracer == 'BGS_BRIGHT':
-        bit = targetmask.bgs_mask[args.tracer]
-        desitarg='BGS_TARGET'
-    else:
-        bit = targetmask.desi_mask[args.tracer]
-        desitarg='DESI_TARGET'
+    if args.tracer != 'dark' and args.tracer != 'bright':
+        if args.tracer == 'BGS_BRIGHT':
+            bit = targetmask.bgs_mask[args.tracer]
+            desitarg='BGS_TARGET'
+        else:
+            bit = targetmask.desi_mask[args.tracer]
+            desitarg='DESI_TARGET'
 
 
     if args.combr == 'y' and mocknum == 1:
