@@ -202,7 +202,8 @@ def docat(mocknum,rannum):
 
         if gtl is None:
             specdat = common.cut_specdat(dz)
-            gtlf = np.unique(specdat['TILELOCID'])       
+            gtlf = np.unique(specdat['TILELOCID'])  
+            del specdat     
         else:
             gtlf = gtl
         wg = np.isin(dz['TILELOCID'],gtlf)
@@ -213,7 +214,7 @@ def docat(mocknum,rannum):
         dz = dz[wtype]
         lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
         del dz
-        del specdat
+        
 
         outf = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         
