@@ -2422,7 +2422,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['TSNR2_ELG'] > tsnrcut
 
     if tp[:3] == 'ELG':
-        ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
+        #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
         wz = ff['ZWARN']*0 == 0
         
         wz &= ff['ZWARN'] != 999999
