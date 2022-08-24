@@ -232,18 +232,18 @@ def docat(mocknum,rannum):
 
     if args.nz == 'y':
     
-        if type == 'QSO':
+        if args.tracer == 'QSO':
             dz = 0.05
             P0 = 6000
         
         else:    
             dz = 0.02
     
-        if type[:3] == 'LRG':
+        if args.tracer[:3] == 'LRG':
             P0 = 10000
-        if type[:3] == 'ELG':
+        if args.tracer[:3] == 'ELG':
             P0 = 4000
-        if type[:3] == 'BGS':
+        if args.tracer[:3] == 'BGS':
             P0 = 7000
     
         for reg in regl:
