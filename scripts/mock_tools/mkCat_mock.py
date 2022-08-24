@@ -220,7 +220,7 @@ def docat(mocknum,rannum):
     #needs to happen before randoms so randoms can get z and weights
     
     if args.mkclusdat == 'y':
-        ct.mkclusdat(dirout+type+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+        ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
 
     if args.mkclusran == 'y':
