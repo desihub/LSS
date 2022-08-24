@@ -218,7 +218,7 @@ def docat(mocknum,rannum):
 
         outf = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
+        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
         
 
 
