@@ -2419,7 +2419,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
-        wz &= ff['TSNR2_ELT'] > tsnrcut
+        wz &= ff['TSNR2_ELG'] > tsnrcut
 
     if tp[:3] == 'ELG':
         ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
