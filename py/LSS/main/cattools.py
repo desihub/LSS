@@ -2423,10 +2423,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
     if tp[:3] == 'ELG':
         ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
-        wz = ff['o2c'] > dchi2
-        wz &= ff['ZWARN']*0 == 0
+        wz = ff['ZWARN']*0 == 0
+        
         wz &= ff['ZWARN'] != 999999
-        print('length after oII cut '+str(len(ff[wz])))
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+            print('length after oII cut '+str(len(ff[wz])))
         wz &= ff['LOCATION_ASSIGNED'] == 1
         print('length after also making sure location assigned '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
@@ -2439,14 +2441,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
 
-        selg = ssr_tools.LRG_goodz(ff)
-        #drz = (10**(3 - 3.5*ff['Z']))
-        #mask_bad = (drz>30) & (ff['DELTACHI2']<30)
-        #mask_bad |= (drz<30) & (ff['DELTACHI2']<drz)
-        #mask_bad |= (ff['DELTACHI2']<10)
-        #wz &= ff['Z']<1.4
-        #wz &= (~mask_bad)
-        wz &= selg
+        if dchi2 is not None:
+            selg = ssr_tools.LRG_goodz(ff)
+            wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
@@ -2458,9 +2455,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
 
-        print('applying extra cut for BGS')
-        wz &= ff['DELTACHI2'] > dchi2
-        print('length after dchi2 cut '+str(len(ff[wz])))
+        if dchi2 is not None:
+            print('applying extra cut for BGS')
+            wz &= ff['DELTACHI2'] > dchi2
+            print('length after dchi2 cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
 
@@ -2469,48 +2467,49 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    if tp[:3] == 'LRG':
-        lrg = ssr_tools.LRG_ssr()
-        ff = lrg.add_modpre(ff)
-        ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+    if dchi2 is not None:
+        if tp[:3] == 'LRG':
+            lrg = ssr_tools.LRG_ssr()
+            ff = lrg.add_modpre(ff)
+            ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
 
-        print('checking sum of zfail weights compared to length of good z')
-        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
-    if tp == 'BGS_BRIGHT':
-        bgs = ssr_tools.BGS_ssr()
-        ff = bgs.add_modpre(ff,fl)
-        ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-        print('checking sum of zfail weights compared to length of good z')
-        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+        if tp == 'BGS_BRIGHT':
+            bgs = ssr_tools.BGS_ssr()
+            ff = bgs.add_modpre(ff,fl)
+            ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
 
-    if tp == 'ELG_LOP':
-        elg = ssr_tools.ELG_ssr()
-        ff = elg.add_modpre(ff)
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+        if tp == 'ELG_LOP':
+            elg = ssr_tools.ELG_ssr()
+            ff = elg.add_modpre(ff)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
 
-        print('checking sum of zfail weights compared to length of good z')
-        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
-    if tp == 'QSO':
-        qso = ssr_tools.QSO_ssr()
-        ff = qso.add_modpre(ff,fl)
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-        ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-        print('checking sum of zfail weights compared to length of good z')
-        print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-        ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+        if tp == 'QSO':
+            qso = ssr_tools.QSO_ssr()
+            ff = qso.add_modpre(ff,fl)
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
         
     #if tp[:3] == 'ELG':
