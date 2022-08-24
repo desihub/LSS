@@ -248,7 +248,7 @@ def docat(mocknum,rannum):
     
         for reg in regl:
             fb = dirout+args.tracer+notqso+reg
-            fcr = fb+'_0_clustering.ran.fits'
+            fcr = fb+'_1_clustering.ran.fits'
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
