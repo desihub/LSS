@@ -197,9 +197,10 @@ def docat(mocknum,rannum):
 
         
     if args.fullr == 'y':
+        zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+        dz = Table.read(zf) 
+
         if gtl is None:
-            zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-            dz = Table.read(zf) 
             specdat = common.cut_specdat(dz)
             gtlf = np.unique(specdat['TILELOCID'])       
         else:
