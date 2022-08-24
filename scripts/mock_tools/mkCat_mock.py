@@ -201,8 +201,10 @@ def docat(mocknum,rannum):
             zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
             dz = Table.read(zf) 
             specdat = common.cut_specdat(dz)
-            gtl = np.unique(specdat['TILELOCID'])       
-        wg = np.isin(dz['TILELOCID'],gtl)
+            gtlf = np.unique(specdat['TILELOCID'])       
+        else:
+            gtlf = gtl
+        wg = np.isin(dz['TILELOCID'],gtlf)
         dz = dz[wg]
         wtype = ((dz[desitarg] & bit) > 0)
         if notqso == 'notqso':
