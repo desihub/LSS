@@ -229,7 +229,7 @@ def comp_tileloc(dz):
     return loco,fzo
 
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -240,7 +240,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     '''
     #cd = distance(om,1-om)
     ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
-    area = ranf['NAXIS2']/2500.
+    area = ranf['NAXIS2']/randens
     print('area is '+str(area))
     
     df = fitsio.read(fcd)
