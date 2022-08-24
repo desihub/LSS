@@ -24,8 +24,8 @@ parser.add_argument("--ranmax", help="number for the realization",default=11,typ
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--par", help="run different random number in parallel?",default='n')
-parser.add_argument("--prep", help="run different random number in parallel?",default='y')
-parser.add_argument("--runfa", help="run different random number in parallel?",default='y')
+parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
+parser.add_argument("--runfa", help="run fiberassign",default='y')
 
 
 args = parser.parse_args()

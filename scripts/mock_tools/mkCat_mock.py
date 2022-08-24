@@ -229,7 +229,11 @@ def docat(mocknum,rannum):
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
         ct.mkclusran(dirout+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
-
+        #for clustering, make rannum start from 0
+        for reg in regl:
+            ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+            ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+            os.system('mv '+ranf+' '+ranfm)
     if args.nz == 'y':
     
         if args.tracer == 'QSO':
@@ -248,7 +252,7 @@ def docat(mocknum,rannum):
     
         for reg in regl:
             fb = dirout+args.tracer+notqso+reg
-            fcr = fb+'_1_clustering.ran.fits'
+            fcr = fb+'_0_clustering.ran.fits'
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
