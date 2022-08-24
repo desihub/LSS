@@ -52,7 +52,8 @@ def cutphotmask(aa,bits):
     return aa
 
 def find_znotposs_tloc(dz,priority_thresh=10000):
-
+    #dz should contain the potential targets of a given type, after cutting bad fibers
+    #priority_thresh cuts repeat observations (so, e.g., 3000 work for dark time main survey)
     tileids = np.unique(dz['TILEID'])
     ual = []
     ufl = []
@@ -61,13 +62,14 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         dzs = dz[sel]
         sela = dzs['ZWARN'] != 999999
         sela &= dzs['ZWARN']*0 == 0
-        tlida = np.unique(dzs[sela]['TILELOCID'])
+        tlida = np.unique(dzs[sela]['TILELOCID']) #tilelocids with good assignments
         #print(tile,len(sela),len(dzs),np.sum(sela)) 
-        tida = np.unique(dzs[sela]['TARGETID'])
-        ua = ~np.isin(dzs['TARGETID'],tida)
+        tida = np.unique(dzs[sela]['TARGETID']) #targetids with good assignments
+        ua = ~np.isin(dzs['TARGETID'],tida) #columns that were not assigned
         #ua &= dzs['NUMOBS'] == 0
-        ua &= dzs['PRIORITY'] > priority_thresh
-        ua &= ~np.isin(dzs['TILELOCID'],tlida)
+        ua &= dzs['PRIORITY'] > priority_thresh #columns corresponding to targets with priority indicating observations unfinished
+        ua &= ~np.isin(dzs['TILELOCID'],tlida) #columns corresponding to tilelocid that were not assigned
+        #combination then gives the tilelocid of unassigned targets that have not finished observation; these must have been blocked by something
         uatlids = np.unique(dzs[ua]['TILELOCID'])
         ual.append(uatlids)
         selp = dzs['PRIORITY'] > priority_thresh
@@ -536,7 +538,7 @@ def write_LSS(ff,outf,comments=None):
 
 def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
     if ran == 'dat':
-        addcols.append('PRIORITY')
+        #addcols.append('PRIORITY')
         addcols.append('PRIORITY_INIT')
         addcols.append('DESI_TARGET')
     s = 0
@@ -570,7 +572,7 @@ def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],f
     print('wrote '+outf)
     return dat_comb
 
-def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark'):
+def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
 
     s = 0
     td = 0
