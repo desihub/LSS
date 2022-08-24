@@ -166,15 +166,15 @@ def docat(mocknum,rannum):
     pthresh = 3000
     zmin = 0.8
     zmax = 3.5
-    if type[:3] == 'LRG':# or notqso == 'notqso':
+    if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
         maxp = 3200
         zmin = 0.4
         zmax = 1.1
-    if type == 'ELG':
+    if args.tracer[:3] == 'ELG':
         maxp = 3000
         zmin = 0.8
         zmax = 1.6
-    if type[:3] == 'BGS':
+    if args.tracer[:3] == 'BGS':
         maxp = 2100
         pthresh = 2000
         zmin = 0.1
@@ -256,8 +256,9 @@ def docat(mocknum,rannum):
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            nran = rannum + 1
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=rannum,nran=nran)
+            nran = rannum
+            ranmin = rannum-1
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=ranmin,nran=nran)
 
 
     #print('done with random '+str(ii))
