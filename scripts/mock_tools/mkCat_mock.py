@@ -39,7 +39,7 @@ parser.add_argument("--mockmin", help="number for the realization",default=1,typ
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+#parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')

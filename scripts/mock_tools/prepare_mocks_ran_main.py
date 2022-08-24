@@ -22,6 +22,7 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 parser.add_argument("--ranmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--ranmax", help="number for the realization",default=11,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
+parser.add_argument("--survey", help="e.g., DA02 or SV3",default='DA02')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--par", help="run different random number in parallel?",default='n')
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
@@ -79,7 +80,7 @@ def prep(rannum):
         
     if args.runfa == 'y':
         from LSS.mocktools import get_fba_mock_ran
-        get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark')
+        get_fba_mock_ran(mockdir,rannum,survey=args.survey,prog=args.prog)
 
 if __name__ == '__main__':
     rx = args.ranmax

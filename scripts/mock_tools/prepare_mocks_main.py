@@ -22,6 +22,8 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 parser.add_argument("--realization", help="number for the realization",default=1,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
+parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
+parser.add_argument("--runfa", help="run fiberassign",default='y')
 
 
 args = parser.parse_args()
@@ -49,51 +51,59 @@ if args.mockver == 'ab_firstgen':
 
     def mask(main=0, nz=0, Y5=0, sv3=0):
         return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
-    datat = []
-    for type_ in types:
-        thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
-        #f = fits.open(thepath)
-        data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
-        print(data.dtype.names)
-        print(type_,len(data))
-        status = data['STATUS'][()]
-        idx = np.arange(len(status))
-        mask_main = mask(main=0, nz=1, Y5=1, sv3=0)
-        if type_ == 'LRG':
-            mask_main = mask(main=1, nz=1, Y5=1, sv3=0)
-        idx_main = idx[(status & (mask_main))==mask_main]
-        data = data[idx_main]
-        print(len(data))
-        data = Table(data)
-        data['DESI_TARGET'] = desitar[type_]
-        data['PRIORITY_INIT'] = priority[type_]
-        data['PRIORITY'] = priority[type_]
-        datat.append(data)
-    targets = vstack(datat)
-    print(len(targets))
-    del datat
+    if args.prep == 'y':
+        datat = []
+        for type_ in types:
+            thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
+            #f = fits.open(thepath)
+            data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
+            print(data.dtype.names)
+            print(type_,len(data))
+            status = data['STATUS'][()]
+            idx = np.arange(len(status))
+            mask_main = mask(main=0, nz=1, Y5=1, sv3=0)
+            if type_ == 'LRG':
+                mask_main = mask(main=1, nz=1, Y5=1, sv3=0)
+            idx_main = idx[(status & (mask_main))==mask_main]
+            data = data[idx_main]
+            print(len(data))
+            data = Table(data)
+            data['DESI_TARGET'] = desitar[type_]
+            data['PRIORITY_INIT'] = priority[type_]
+            data['PRIORITY'] = priority[type_]
+            datat.append(data)
+        targets = vstack(datat)
+        print(len(targets))
+        del datat
 
 else:
     sys.exit(args.mockver+' not supported')
 
-n=len(targets)
-targets.rename_column('Z_COSMO', 'TRUEZ') 
-targets.rename_column('Z', 'RSDZ') 
-targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
-targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
-targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
-targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
-targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
-targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
-targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
-targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
-targets['TARGETID'] = np.arange(1,n+1)
+if args.prep == 'y':
+    n=len(targets)
+    targets.rename_column('Z_COSMO', 'TRUEZ') 
+    targets.rename_column('Z', 'RSDZ') 
+    targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
+    targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
+    targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
+    targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
+    targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
+    targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
+    targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
+    targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
+    targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
+    targets['TARGETID'] = np.arange(1,n+1)
 
-targets.write(out_file_name, overwrite = True)
+    targets.write(out_file_name, overwrite = True)
 
-fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
+    fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
+    fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
+
+if args.runfa == 'y':
+    from LSS.mocktools import get_fba_mock
+    get_fba_mock(mockdir,args.realization,survey=args.survey,prog=args.prog)
+
+
 
 sys.exit()
 
