@@ -100,7 +100,7 @@ if args.add_gtl == 'y':
     
     if args.survey == 'DA02':
         datarel = 'guadalupe'
-    datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datadir+'/'    
+    datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'    
     specdat = ct.get_specdat(datadir,pdir,datarel)
     gtl = np.unique(specdat['TILELOCID'])
 
