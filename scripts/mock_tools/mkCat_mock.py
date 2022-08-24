@@ -45,6 +45,8 @@ parser.add_argument("--combr", help="combine the random tiles together",default=
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='n')
+
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
@@ -90,6 +92,16 @@ if args.mockver == 'ab_firstgen':
 maindir = args.base_output +mockdir+args.survey+'/'
 
 tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits')
+
+
+
+if args.add_gtl == 'y':
+    
+    if args.survey == 'DA02':
+        datarel = 'guadalupe'
+    datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datadir+'/'    
+    specdat = ct.get_specdat(datadir,pdir,datarel)
+    gtl = np.unique(specdat['TILELOCID'])
 
 def docat(mocknum,rannum):
 
