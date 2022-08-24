@@ -252,7 +252,8 @@ def docat(mocknum,rannum):
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+            nran = rannum + 1
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=rannum,nran=nran)
 
 
     #print('done with random '+str(ii))
