@@ -45,7 +45,7 @@ parser.add_argument("--combr", help="combine the random tiles together",default=
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
-parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='n')
+parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='y')
 
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
@@ -95,6 +95,7 @@ tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tile
 
 
 
+gtl = None
 if args.add_gtl == 'y':
     
     if args.survey == 'DA02':
@@ -143,7 +144,7 @@ def docat(mocknum,rannum):
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tj.write(outfs,format='fits', overwrite=True)
-        tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir) 
+        tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir,gtl=gtl) 
         outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
     
@@ -162,7 +163,7 @@ def docat(mocknum,rannum):
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
         fgu.write(outf,format='fits', overwrite=True)
-        tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir)
+        tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     specver = 'mock'    
@@ -172,7 +173,7 @@ def docat(mocknum,rannum):
         ftar = None
         dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
-        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso)
+        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl)
 
     maxp = 3400
     pthresh = 3000
@@ -195,10 +196,11 @@ def docat(mocknum,rannum):
 
         
     if args.fullr == 'y':
-        zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-        dz = Table.read(zf) 
-        specdat = common.cut_specdat(dz)
-        gtl = np.unique(specdat['TILELOCID'])       
+        if gtl is None:
+            zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+            dz = Table.read(zf) 
+            specdat = common.cut_specdat(dz)
+            gtl = np.unique(specdat['TILELOCID'])       
         wg = np.isin(dz['TILELOCID'],gtl)
         dz = dz[wg]
         wtype = ((dz[desitarg] & bit) > 0)
