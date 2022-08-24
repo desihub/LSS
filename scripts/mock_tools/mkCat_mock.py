@@ -83,6 +83,7 @@ pd = pdir
 
 if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
+    randens = 10460.
 
 maindir = args.base_output +mockdir+args.survey+'/'
 
@@ -161,13 +162,21 @@ def docat(mocknum,rannum):
 
     maxp = 3400
     pthresh = 3000
+    zmin = 0.8
+    zmax = 3.5
     if type[:3] == 'LRG':# or notqso == 'notqso':
         maxp = 3200
+        zmin = 0.4
+        zmax = 1.1
     if type == 'ELG':
         maxp = 3000
+        zmin = 0.8
+        zmax = 1.6
     if type[:3] == 'BGS':
         maxp = 2100
         pthresh = 2000
+        zmin = 0.1
+        zmax = 0.5
 
 
         
@@ -204,23 +213,46 @@ def docat(mocknum,rannum):
 
         #print('random veto '+str(ii)+' done')
 
+    regl = ['_N','_S']    
+    
+    #needs to happen before randoms so randoms can get z and weights
+    
+    if args.mkclusdat == 'y':
+        ct.mkclusdat(dirout+type+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
 
     if args.mkclusran == 'y':
-#         tsnrcol = 'TSNR2_ELG'
-#         tsnrcut = 0
-#         if type[:3] == 'ELG':
-#             #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-#             tsnrcut = 80
-#         if type == 'LRG':
-#             #dchi2 = 16  
-#             tsnrcut = 80          
-#         if type[:3] == 'BGS':
-#             tsnrcol = 'TSNR2_BGS'
-#             dchi2 = 40
-#             tsnrcut = 1000
+        rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+        tsnrcol = 'TSNR2_ELG'
+        if args.tracer[:3] == 'BGS':
+            tsnrcol = 'TSNR2_BGS'
+        ct.mkclusran(dirin+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
 
-        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+    if args.nz == 'y':
+    
+        if type == 'QSO':
+            dz = 0.05
+            P0 = 6000
+        
+        else:    
+            dz = 0.02
+    
+        if type[:3] == 'LRG':
+            P0 = 10000
+        if type[:3] == 'ELG':
+            P0 = 4000
+        if type[:3] == 'BGS':
+            P0 = 7000
+    
+        for reg in regl:
+            fb = dirout+args.tracer+notqso+reg
+            fcr = fb+'_0_clustering.ran.fits'
+            fcd = fb+'_clustering.dat.fits'
+            fout = fb+'_nz.txt'
+            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+
     #print('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
