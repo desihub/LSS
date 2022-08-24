@@ -259,7 +259,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True,ranmin=0):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to 
@@ -301,7 +301,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     #ff.close()
     #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
-    for rann in range(0,nran):
+    for rann in range(ranmin,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
