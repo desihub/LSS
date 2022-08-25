@@ -47,7 +47,7 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
 
     fo = open(outdir+'/fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/common/software/desi/desi_environment.sh master\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh main\n')
     fo.write("module swap fiberassign/5.0.0\n")
 
     fo.write("fba_run")
