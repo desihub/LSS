@@ -192,9 +192,9 @@ def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
 
     sel = ztable['DESI_TARGET'] & bit > 0
     ff = ztable[sel]
-    ztable['PHOTSYS'] = 'N'
-    sel = ztable['DEC'] < 32.375
-    ztable['PHOTSYS'][sel] = 'S'    
+    ff['PHOTSYS'] = 'N'
+    sel = ff['DEC'] < 32.375
+    ff['PHOTSYS'][sel] = 'S'    
     
     ff['WEIGHT'] = np.ones(len(ff))
     
