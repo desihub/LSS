@@ -47,7 +47,7 @@ def get_zlims(tracer, tracer2=None, option=None):
                 logger.warning('extended is no longer a meaningful option')
                 #zlims = [0.8, 1.1, 1.6]
             if 'smallshells' in option:
-                zlims = [0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6]    
+                zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]    
 
     if tracer.startswith('QSO'):
         zlims = [0.8, 1.1, 1.6, 2.1, 3.5]
@@ -163,26 +163,39 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weigh
     return positions, weights
 
 
-def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', concatenate=False, option=None, **kwargs):
+def _concatenate(arrays):
+    if isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights for first catalog
+        array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
+    else:
+        array = np.concatenate(arrays, axis=0)  # e.g. individual weights for first catalog
+    return array
 
-    cat_fns = catalog_fn(ctype='clustering', name=name, **kwargs)
-    logger.info('Loading {}.'.format(cat_fns))
-    isscalar = not isinstance(cat_fns, (tuple, list))
-    if isscalar:
-        cat_fns = [cat_fns]
 
-    toret = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
-    if isscalar:
-        return toret[0]
-    positions_weights = [[tmp[0] for tmp in toret], [tmp[1] for tmp in toret]]
-    if concatenate:
-        for iarray, arrays in enumerate(positions_weights):
-            if isinstance(arrays[0], (tuple, list)):  # e.g., list of bitwise weights
-                array = [np.concatenate([arr[iarr] for arr in arrays], axis=0) for iarr in range(len(arrays[0]))]
+def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
+
+    def read_positions_weights(name):
+        positions, weights = [], []
+        for reg in region:
+            cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
+            logger.info('Loading {}.'.format(cat_fns))
+            isscalar = not isinstance(cat_fns, (tuple, list))
+            if isscalar:
+                cat_fns = [cat_fns]
+            positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+            if isscalar:
+                positions.append(positions_weights[0][0])
+                weights.append(positions_weights[0][1])
             else:
-                array = np.concatenate(arrays, axis=0)
-            positions_weights[iarray] = array
-    return positions_weights
+                p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
+                if concatenate:
+                    p, w = _concatenate(p), _concatenate(w)
+                positions.append(p)
+                weights.append(w)
+        return positions, weights
+
+    if isinstance(name, (tuple, list)):
+        return [read_positions_weights(n) for n in name]
+    return read_positions_weights(name)
 
 
 def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False):
@@ -195,7 +208,7 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
     positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
-    if fibered and 'bitwise' in weight_type:
+    if name == 'data' and fibered and 'bitwise' in weight_type:
         if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T)
         else: weights = [catalog['BITWEIGHTS'][mask]]
     else: weights = np.ones_like(positions[0])
@@ -206,13 +219,78 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
 
 def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
 
-    cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
-    logger.info('Loading {}.'.format(cat_fn))
-    if isinstance(cat_fn, (tuple, list)):
-        catalog = vstack([Table.read(fn) for fn in cat_fn])
+    def read_positions_weights(name):
+        positions, weights = [], []
+        for reg in region:
+            cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
+            logger.info('Loading {}.'.format(cat_fn))
+            if isinstance(cat_fn, (tuple, list)):
+                catalog = vstack([Table.read(fn) for fn in cat_fn])
+            else:
+                catalog = Table.read(cat_fn)
+            p, w = get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=reg)
+            positions.append(p)
+            weights.append(w)
+        return positions, weights
+
+    if isinstance(name, (tuple, list)):
+        return [read_positions_weights(n) for n in name]
+    return read_positions_weights(name)
+
+
+def normalize_data_randoms_weights(data_weights, randoms_weights, weight_attrs=None):
+    # Renormalize randoms / data for each input catalogs
+    # data_weights should be a list (for each N/S catalogs) of weights
+    import inspect
+    from pycorr.twopoint_counter import _format_weights, get_inverse_probability_weight
+    if weight_attrs is None: weight_attrs = {}
+    weight_attrs = {k: v for k, v in weight_attrs.items() if k in inspect.getargspec(get_inverse_probability_weight).args}
+    wsums, weights = {}, {}
+    for name, catalog_weights in zip(['data', 'randoms'], [data_weights, randoms_weights]):
+        wsums[name], weights[name] = [], []
+        for w in catalog_weights:
+            w, nbits = _format_weights(w, copy=True)  # this will sort bitwise weights first, then single individual weight
+            iip = get_inverse_probability_weight(w[:nbits], **weight_attrs) if nbits else 1.
+            iip = iip * w[nbits]
+            wsums[name].append(iip.sum())
+            weights[name].append(w)
+    wsum_data, wsum_randoms = sum(wsums['data']), sum(wsums['randoms'])
+    for icat, w in enumerate(weights['randoms']):
+        factor = wsums['data'][icat] / wsums['randoms'][icat] * wsum_randoms / wsum_data
+        w[-1] *= factor
+        logger.info('Rescaling randoms weights of catalog {:d} by {:.4f}.'.format(icat, factor))
+    return weights['data'], weights['randoms']
+
+
+def concatenate_data_randoms(data, randoms=None, **kwargs):
+
+    if randoms is None:
+        positions, weights = data
+        return _concatenate(positions), _concatenate(weights)
+
+    positions, weights = {}, {}
+    for name in ['data', 'randoms']:
+        positions[name], weights[name] = locals()[name]
+    for name in positions:
+        concatenated = not isinstance(positions[name][0][0], (tuple, list))  # first catalog, unconcatenated [RA, DEC, distance] (False) or concatenated RA (True)?
+        if concatenated:
+            positions[name] = _concatenate(positions[name])
+        else: 
+            positions[name] = [_concatenate([p[i] for p in positions[name]]) for i in range(len(positions['randoms'][0]))]
+    data_weights, randoms_weights = [], []
+    if concatenated:
+        wd, wr = normalize_data_randoms_weights(weights['data'], weights['randoms'], weight_attrs=kwargs.get('weight_attrs', None))
+        weights['data'], weights['randoms'] = _concatenate(wd), _concatenate(wr)
     else:
-        catalog = Table.read(cat_fn)
-    return get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=region)
+        for i in range(len(weights['randoms'][0])):
+            wd, wr = normalize_data_randoms_weights(weights['data'], [w[i] for w in weights['randoms']], weight_attrs=kwargs.get('weight_attrs', None))
+            data_weights.append(_concatenate(wd))
+            randoms_weights.append(_concatenate(wr))
+        weights['data'] = data_weights[0]
+        for wd in data_weights[1:]:
+            for w0, w in zip(weights['data'], wd): assert np.all(w == w0)
+        weights['randoms'] = randoms_weights
+    return [(positions[name], weights[name]) for name in ['data', 'randoms']] 
 
 
 def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None, **kwargs):
@@ -226,13 +304,15 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        fibered_data_positions1, fibered_data_weights1 = read_full_positions_weights(name='data', fibered=True, tracer=tracer, **catalog_kwargs)
-        parent_data_positions1, parent_data_weights1 = read_full_positions_weights(name='data', fibered=False, tracer=tracer, **catalog_kwargs)
-        parent_randoms_positions1, parent_randoms_weights1 = read_full_positions_weights(name='randoms', tracer=tracer, **catalog_kwargs)
+        fibered_data = read_full_positions_weights(name='data', fibered=True, tracer=tracer, **catalog_kwargs)
+        parent_data, parent_randoms = read_full_positions_weights(name=['data', 'randoms'], fibered=False, tracer=tracer, **catalog_kwargs)
+        fibered_data_positions1, fibered_data_weights1 = concatenate_data_randoms(fibered_data)
+        (parent_data_positions1, parent_data_weights1), (parent_randoms_positions1, parent_randoms_weights1) = concatenate_data_randoms(parent_data, parent_randoms, **catalog_kwargs)
         if not autocorr:
-            fibered_data_positions2, fibered_data_weights2 = read_full_positions_weights(name='data', fibered=True, tracer=tracer2, **catalog_kwargs)
-            parent_data_positions2, parent_data_weights2 = read_full_positions_weights(name='data', fibered=False, tracer=tracer2, **catalog_kwargs)
-            parent_randoms_positions2, parent_randoms_weights2 = read_full_positions_weights(name='randoms', tracer=tracer2, **catalog_kwargs)
+            fibered_data = read_full_positions_weights(name='data', fibered=True, tracer=tracer2, **catalog_kwargs)
+            parent_data, parent_randoms = read_full_positions_weights(name=['data', 'randoms'], fibered=False, tracer=tracer2, **catalog_kwargs)
+            fibered_data_positions2, fibered_data_weights2 = concatenate_data_randoms(fibered_data)
+            (parent_data_positions2, parent_data_weights2), (parent_randoms_positions2, parent_randoms_weights2) = concatenate_data_randoms(parent_data, parent_randoms, **catalog_kwargs)
 
     tedges = np.logspace(-4., 0.5, 41)
     # First D1D2_parent/D1D2_PIP angular weight
@@ -270,7 +350,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120,option=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -288,21 +368,23 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
         if with_shifted:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
-            shifted_positions1, shifted_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
-        else:
-            data_positions1, data_weights1 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
-        randoms_positions1, randoms_weights1 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer,option=option, **catalog_kwargs)
+            shifted = randoms  # above returned shifted randoms
+            randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
+        (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
+        if with_shifted:
+            shifted_positions1, shifted_weights1 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
         jack_positions = data_positions1
 
         if not autocorr:
+            data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
             if with_shifted:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
-                shifted_positions2, shifted_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
-            else:
-                data_positions2, data_weights2 = read_clustering_positions_weights(distance, name='data', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
-            randoms_positions2, randoms_weights2 = read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer2,option=option, **catalog_kwargs)
+                shifted = randoms
+                randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option, **catalog_kwargs)
+            (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
+            if with_shifted:
+                shifted_positions2, shifted_weights2 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
             jack_positions = [np.concatenate([p1, p2], axis=0) for p1, p2 in zip(jack_positions, data_positions2)]
 
     if njack >= 2:
@@ -413,10 +495,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
@@ -432,7 +514,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
 
     #only relevant for reconstruction
-    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
     setup_logging()
     args = parser.parse_args()
@@ -497,7 +579,7 @@ if __name__ == '__main__':
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot,option=option, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))

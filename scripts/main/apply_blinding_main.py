@@ -24,7 +24,7 @@ GENERAL NOTES
 --expected_wa_uncertainty
 --expected_f_uncertainty
 - By default these uncertainties, are set to be 0.05 for w0, 0.2 for wa, and 0.05 for f.
-- The fiducial values are set as 1 for w0, 0 for wa, and 0.8 for f.
+- The fiducial values are set as -1 for w0, 0 for wa, and 0.8 for f.
 - To specify different fiducial values, use the following flags:
 --fiducial_w0
 --fiducial_wa
@@ -155,16 +155,15 @@ dirin = ldirspec+'LSScats/'+version+'/'
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 if not os.path.exists(args.basedir_out+'/LSScats/'):
-    os.mkdir(args.basedir_out+'/LSScats/')
-    print('made '+args.basedir_out+'/LSScats/')    
+    os.makedirs(args.basedir_out+'/LSScats/')
+    print('made '+args.basedir_out+'/LSScats/')
 
 if not os.path.exists(args.basedir_out+'/LSScats/'+version):
-    os.mkdir(args.basedir_out+'/LSScats/'+version)
-    print('made '+args.basedir_out+'/LSScats/'+version)    
-
+    os.makedirs(args.basedir_out+'/LSScats/'+version)
+    print('made '+args.basedir_out+'/LSScats/'+version)
 
 if not os.path.exists(dirout):
-    os.mkdir(dirout)
+    os.makedirs(dirout)
     print('made '+dirout)
 
 
@@ -175,7 +174,17 @@ w0_blind = make_parameter_blind(args.fiducial_w0,
 wa_blind = make_parameter_blind(args.fiducial_wa,
 								args.expected_wa_uncertainty, rs)
 fgrowth_blind = make_parameter_blind(args.fiducial_f,
-									 args.expected_wa_uncertainty, rs)
+									 args.expected_f_uncertainty, rs)
+
+# If blinded values have been specified, overwrite the random procedure here:
+if args.specified_w0 is not None:
+	w0_blind = float(args.specified_w0)
+
+if args.specified_wa is not None:
+	wa_blind = float(args.specified_wa)
+
+if args.specified_f is not None:
+	fgrowth_blind = float(args.specified_f)
 
 # Write out the blind parameter values
 to_write = [['w0', 'wa', 'f'],
@@ -184,16 +193,6 @@ np.savetxt(dirout + "blinded_parameters.csv",
 		   to_write,
 		   delimiter=", ",
 		   fmt="%s")
-
-# If blinded values have been specified, overwrite the random procedure here:
-if args.specified_w0 is not None:
-	w0_blind = args.specified_w0
-
-if args.specified_wa is not None:
-	wa_blind = args.specified_wa
-
-if args.specified_f is not None:
-	fgrowth_blind = args.specified_f
 
 
 regl = ['_S','_N']

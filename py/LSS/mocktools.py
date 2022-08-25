@@ -1,0 +1,265 @@
+import fitsio
+import numpy as np
+from astropy.table import Table,join
+# system
+import os
+import subprocess
+import sys
+import tempfile
+import shutil
+import re
+
+# time
+from time import time
+from datetime import datetime, timedelta
+
+# desi
+import desitarget
+from desitarget.io import read_targets_in_tiles 
+
+import LSS.common_tools as common
+
+
+def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
+    #produces script to run to get mock fiberassign files
+    mock_fn = mockdir+'/forFA'+str(mocknum)+'.fits'
+    if not os.path.exists(mockdir+'/'+survey):
+        os.mkdir(mockdir+'/'+survey)
+        print('made '+mockdir+'/'+survey)
+    if not os.path.exists(mockdir+'/'+survey+'/fba'+str(mocknum)):
+        os.mkdir(mockdir+'/'+survey+'/fba'+str(mocknum))
+        print('made '+mockdir+'/'+survey+'/fba'+str(mocknum))
+
+    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
+    tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))
+    tiles['OBSCONDITIONS'] = 1
+    tiles['IN_DESI'] = 1
+    tiles['PROGRAM'] = 'MAIN'
+    
+    ts = str(tiles['TILEID'][0]).zfill(6)
+    #get info from origin fiberassign file
+    fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    skyf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/skies-'+prog.upper()+'.fits'
+    outdir = mockdir+'/'+survey+'/fba'+str(mocknum)
+    tile_fn =  outdir+'/tiles.fits'
+    tiles.write(tile_fn,overwrite=True)
+    tars = read_targets_in_tiles(mock_fn,tiles)
+    tarfn = outdir+'/targs.fits'
+    Table(tars).write(tarfn,format='fits',overwrite=True)
+
+    fo = open(outdir+'/fa-'+ts+'.sh','w')
+    fo.write('#!/bin/bash\n\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh main\n')
+    fo.write("module swap fiberassign/5.0.0\n")
+
+    fo.write("fba_run")
+    fo.write(" --targets "+tarfn)
+    fo.write(" --sky "+skyf)
+    fo.write(" --footprint "+tile_fn)
+    rundate= fht['RUNDATE']
+    fo.write(" --rundate "+rundate)
+    fo.write(" --fieldrot "+str(fht['FIELDROT']))
+    fo.write(" --dir "+outdir)
+    fo.write(" --sky_per_petal 40 --standards_per_petal 10")
+    fo.write(" --sky_per_slitblock 1")
+    fo.write(" --ha "+str(fht['FA_HA']))
+    fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
+    fo.close()
+    print('wrote scripts for fiberassign '+outdir+'/fa-'+ts+'.sh')    
+
+def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
+    #produces script to run to get mock fiberassign files
+    from fiberassign.targets import (TargetsAvailable)
+    from fiberassign.utils import option_list, GlobalTimers
+    from fiberassign.hardware import load_hardware
+    from fiberassign.tiles import load_tiles, Tiles
+    from fiberassign.targets import (TARGET_TYPE_SCIENCE, TARGET_TYPE_SKY,
+                                 TARGET_TYPE_SUPPSKY,
+                                 TARGET_TYPE_STANDARD, TARGET_TYPE_SAFE,
+                                 Targets, TargetsAvailable,
+                                 LocationsAvailable, load_target_file)
+    from fiberassign.assign import (Assignment, write_assignment_fits,
+                                write_assignment_ascii, merge_results,
+                                read_assignment_fits_tile)                                 
+ 
+ 
+    mock_fn = mockdir+'/ran_forFA'+str(rannum)+'.fits'
+    if not os.path.exists(mockdir+'/'+survey):
+        os.mkdir(mockdir+'/'+survey)
+        print('made '+mockdir+'/'+survey)
+    dirout = mockdir+'/'+survey+'/random_fba'+str(rannum)
+    if not os.path.exists(dirout):
+        os.mkdir(dirout)
+        print('made '+dirout)
+
+    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
+    tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))
+    tiles['OBSCONDITIONS'] = 1
+    tiles['IN_DESI'] = 1
+    tiles['PROGRAM'] = 'MAIN'
+    
+    ts = str(tiles['TILEID'][0]).zfill(6)
+    #get info from origin fiberassign file
+    fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    rundate= fht['RUNDATE']
+    tile_fn =  dirout+'/tiles.fits'
+    tiles.write(tile_fn,overwrite=True)
+    tarfn = dirout+'/targs.fits'
+    if os.path.isfile(tarfn) == False:
+        tars = read_targets_in_tiles(mock_fn,tiles)
+        print(len(tars)) 
+        Table(tars).write(tarfn,format='fits',overwrite=True)
+        print('wrote '+tarfn)
+
+    
+    from fiberassign.targets import TargetTagalong,create_tagalong
+    tgs = Targets()
+    tagalong = create_tagalong()#TargetTagalong([])
+    load_target_file(tgs,tagalong,tarfn)
+    print('loaded target file '+tarfn)
+    
+    hw = load_hardware(rundate=rundate)
+    tiles = load_tiles(tiles_file=tile_fn)
+    from fiberassign.targets import targets_in_tiles
+    tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles,tagalong)
+    tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+    favail = LocationsAvailable(tgsavail)
+    asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+
+    asgn.assign_unused(TARGET_TYPE_SCIENCE)
+    write_assignment_fits(tiles,tagalong, asgn, out_dir=dirout, all_targets=True)
+    print('wrote assignment files to '+dirout)	
+
+
+def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
+    '''
+    make data clustering for mock with everything in the full catalog
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    wzm = '_complete_'
+    if ccut is not None:
+        wzm = ccut+'_' #you could change this to however you want the file names to turn out
+
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'
+    outf = fl+wzm+'clustering.dat.fits'
+    ff = Table.read(fl+'_full.dat.fits')
+    cols = list(ff.dtype.names)
+    print(len(ff))
+    ff = join(ff,ztable,keys=['TARGETID'])
+    print('after join to z',str(len(ff)))
+    ff['WEIGHT'] = np.ones(len(ff))
+    
+    kl = ['RA','DEC','Z','WEIGHT']
+    wn = ff['PHOTSYS'] == 'N'
+
+    ff.keep_columns(kl)
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
+    outfn = fl+wzm+'N_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+    ffs = ff[~wn]
+    common.write_LSS(ffs,outfn,comments)
+    
+def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
+    '''
+    make data clustering for mock with everything in the full catalog
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    wzm = '_tiles_'
+
+    sel = ztable['DESI_TARGET'] & bit > 0
+    ff = ztable[sel]
+    ff['PHOTSYS'] = 'N'
+    sel = ff['DEC'] < 32.375
+    ff['PHOTSYS'][sel] = 'S'    
+    
+    ff['WEIGHT'] = np.ones(len(ff))
+    
+    kl = ['RA','DEC','Z','WEIGHT']
+    wn = ff['PHOTSYS'] == 'N'
+
+    ff.keep_columns(kl)
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
+    outfn = fl+wzm+'N_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+    ffs = ff[~wn]
+    common.write_LSS(ffs,outfn,comments)
+    
+def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
+    #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    wzm = ''
+    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+    kc = ['RA','DEC','Z','WEIGHT']
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(fcdn.dtype.names))
+    rcols = rcols[wc]
+    print('columns sampled from data are:')
+    print(rcols)
+
+    ffc['PHOTSYS'] = 'N'
+    sel = ffc['DEC'] < 32.375
+    ffc['PHOTSYS'][sel] = 'S'
+    wn = ffc['PHOTSYS'] == 'N'
+
+    #ffc.keep_columns(kc)
+    #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
+    #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ffc,outf,comments)
+
+    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
+    
+    ffcn = ffc[wn]
+    inds = np.random.choice(len(fcdn),len(ffcn))
+    dshuf = fcdn[inds]
+    for col in rcols:
+        ffcn[col] = dshuf[col]
+        kc.append(col)
+    ffcn.keep_columns(kc)
+    
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcn,outfn,comments)
+
+    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits'
+    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+    ffcs = ffc[~wn]
+    inds = np.random.choice(len(fcds),len(ffcs))
+    dshuf = fcds[inds]
+    for col in rcols:
+        ffcs[col] = dshuf[col]
+    ffcs.keep_columns(kc)
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcs,outfs,comments)
+
+    

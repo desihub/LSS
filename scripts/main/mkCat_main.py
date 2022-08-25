@@ -46,6 +46,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='guadalupe'
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
+parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
@@ -202,9 +203,22 @@ if os.path.isfile(tarf) and redotar == False:
 #    mktar = False    
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
-    ss.gather_targets(type,tardir,maindir,tarver,'main',progl,keys=keys)
-        
-        
+    ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
+
+mketar = True
+etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
+etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
+if os.path.isfile(etarf) and redotar == False: 
+    mketar = False
+
+if args.survey != 'main':
+    mketar = False
+
+
+if mketar: #concatenate target files for given type, with column selection hardcoded
+    ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
+
+       
 if mkfulld:
     azf=''
     azfm = 'cumul'        
@@ -251,6 +265,18 @@ if args.add_veto == 'y':
         fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
+if args.join_etar == 'y':
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    common.join_etar(fin,type)
+
+if args.fillran == 'y':
+    print('filling randoms with imaging properties')
+    for ii in range(rm,rx):
+        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        ct.addcol_ran(fn,ii)
+        print('done with '+str(ii))
+
+
 if args.apply_veto == 'y':
     print('applying vetos')
     maxp = 3400
@@ -301,12 +327,6 @@ regl = ['_N','_S']
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
-if args.fillran == 'y':
-    print('filling randoms with imaging properties')
-    for ii in range(rm,rx):
-        fn = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
-        ct.addcol_ran(fn,ii)
-        print('done with '+str(ii))
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
@@ -394,7 +414,10 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
-    rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    if args.survey == 'DA02':
+        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    else:
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -421,18 +444,24 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
+    if args.survey == 'main':
+        regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
-        fcd = fb+'_clustering.dat.fits'
+        if args.survey == 'DA02':
+            fcd = fb+'_clustering.dat.fits'
+        else:
+            fcd = fb+'_full.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
         dd['WEIGHT_SYS'] = drfw
-        dd['WEIGHT'] *= dd['WEIGHT_SYS']
-        #dd.write(fcd,format='fits',overwrite=True)
-        comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax)]
-        comments = ["Using regressis for WEIGHT_SYS"]
+        comments = []
+        if args.survey == 'DA02':
+            dd['WEIGHT'] *= dd['WEIGHT_SYS']
+            comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
+        comments.append("Using regressis for WEIGHT_SYS")
 
         common.write_LSS(dd,fcd,comments)
 

@@ -1,6 +1,6 @@
 import numpy as np
 import fitsio
-from astropy.table import Table,join
+from astropy.table import Table,join,vstack
 import datetime
 import os
 import sys
@@ -52,7 +52,8 @@ def cutphotmask(aa,bits):
     return aa
 
 def find_znotposs_tloc(dz,priority_thresh=10000):
-
+    #dz should contain the potential targets of a given type, after cutting bad fibers
+    #priority_thresh cuts repeat observations (so, e.g., 3000 work for dark time main survey)
     tileids = np.unique(dz['TILEID'])
     ual = []
     ufl = []
@@ -61,13 +62,14 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         dzs = dz[sel]
         sela = dzs['ZWARN'] != 999999
         sela &= dzs['ZWARN']*0 == 0
-        tlida = np.unique(dzs[sela]['TILELOCID'])
+        tlida = np.unique(dzs[sela]['TILELOCID']) #tilelocids with good assignments
         #print(tile,len(sela),len(dzs),np.sum(sela)) 
-        tida = np.unique(dzs[sela]['TARGETID'])
-        ua = ~np.isin(dzs['TARGETID'],tida)
+        tida = np.unique(dzs[sela]['TARGETID']) #targetids with good assignments
+        ua = ~np.isin(dzs['TARGETID'],tida) #columns that were not assigned
         #ua &= dzs['NUMOBS'] == 0
-        ua &= dzs['PRIORITY'] > priority_thresh
-        ua &= ~np.isin(dzs['TILELOCID'],tlida)
+        ua &= dzs['PRIORITY'] > priority_thresh #columns corresponding to targets with priority indicating observations unfinished
+        ua &= ~np.isin(dzs['TILELOCID'],tlida) #columns corresponding to tilelocid that were not assigned
+        #combination then gives the tilelocid of unassigned targets that have not finished observation; these must have been blocked by something
         uatlids = np.unique(dzs[ua]['TILELOCID'])
         ual.append(uatlids)
         selp = dzs['PRIORITY'] > priority_thresh
@@ -229,7 +231,7 @@ def comp_tileloc(dz):
     return loco,fzo
 
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -240,7 +242,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
     '''
     #cd = distance(om,1-om)
     ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
-    area = ranf['NAXIS2']/2500.
+    area = ranf['NAXIS2']/randens
     print('area is '+str(area))
     
     df = fitsio.read(fcd)
@@ -259,7 +261,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True,ranmin=0):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to 
@@ -301,7 +303,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True):
     #ff.close()
     #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
-    for rann in range(0,nran):
+    for rann in range(ranmin,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
@@ -368,6 +370,21 @@ def add_ke(dat):
     return dat
     #abg = g_dered -dm(data['Z'])
     
+
+def join_etar(fn,tracer,tarver='1.1.1'):
+    tr = tracer
+    if tr == 'BGS_BRIGHT':
+        tr = 'BGS_ANY'
+    etar_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targets_pixelDR9v'+tarver+'.fits'
+    ef = Table(fitsio.read(etar_fn))
+    ef.remove_columns(['BRICKNAME','RA','DEC','PHOTSYS','DESI_TARGET'])
+    df = fitsio.read(fn)
+    print(len(df))
+    df = join(df,ef,keys=['TARGETID'])
+    print(len(df),'should match above')
+    comments = ['Adding imaging mask column']
+    write_LSS(df,fn,comments)
+
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
@@ -518,3 +535,73 @@ def write_LSS(ff,outf,comments=None):
     print('closed fits file')
     os.system('mv '+tmpfn+' '+outf)
     print('moved output to '+outf)
+
+def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
+    if ran == 'dat':
+        #addcols.append('PRIORITY')
+        addcols.append('PRIORITY_INIT')
+        addcols.append('DESI_TARGET')
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/'+ran+'comb_'+tp+'wdup.fits'
+    if fba:
+        pa_hdu = 'FAVAIL'
+    tl = []
+    for tile in tiles['TILEID']:
+        if fba:
+            ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
+        if os.path.isfile(ffa):
+            fa = Table(fitsio.read(ffa,ext=pa_hdu))
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
+            td += 1
+            fa['TILEID'] = int(tile)
+            tl.append(fa)
+            print(td,len(tiles))
+        else:
+            print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    
+    dat_comb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
+    return dat_comb
+
+def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/datcomb_'+tp+'assignwdup.fits'
+    if fba:
+        pa_hdu = 'FASSIGN'
+    tl = []
+    for tile in tiles['TILEID']:
+        if fba:
+            ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
+        if os.path.isfile(ffa):
+            fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
+            td += 1
+            fa['TILEID'] = int(tile)
+            tl.append(fa)
+            print(td,len(tiles))
+        else:
+            print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    
+    dat_comb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
+    return dat_comb
+
