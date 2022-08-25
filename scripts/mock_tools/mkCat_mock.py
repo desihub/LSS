@@ -296,7 +296,7 @@ def docat(mocknum,rannum):
         nztl.append('_tiles')
         fbadir = maindir+'random_fba'+str(rannum)
         tarf = fbadir+'/targs.fits'
-        ffc = Table(fitsio.read(tarf),columns=['RA','DEC'])
+        ffc = Table(fitsio.read(tarf,columns=['RA','DEC']))
         rcols=['Z','WEIGHT']
         ct.mkclusran(ffc,dirout+args.tracer+notqso+'_tiles'+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
