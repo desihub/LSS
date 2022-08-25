@@ -219,6 +219,7 @@ def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
     
 def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    wzm = ''
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     kc = ['RA','DEC','Z','WEIGHT']
     rcols = np.array(rcols)
