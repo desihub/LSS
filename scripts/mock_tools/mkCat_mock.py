@@ -298,7 +298,7 @@ def docat(mocknum,rannum):
         tarf = fbadir+'/targs.fits'
         ffc = Table(fitsio.read(tarf,columns=['RA','DEC']))
         rcols=['Z','WEIGHT']
-        ct.mkclusran(ffc,dirout+args.tracer+notqso+'_tiles'+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        mocktools.mkclusran_tiles(ffc,dirout+args.tracer+notqso+'_tiles'+'_',rannum,rcols=rcols)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
         for reg in regl:
             ranf = dirout+args.tracer+notqso+'_tiles'+reg+'_'+str(rannum)+'_clustering.ran.fits'
