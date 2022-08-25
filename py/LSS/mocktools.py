@@ -17,6 +17,8 @@ from datetime import datetime, timedelta
 import desitarget
 from desitarget.io import read_targets_in_tiles 
 
+import LSS.common_tools as common
+
 
 def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
     #produces script to run to get mock fiberassign files
