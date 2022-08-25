@@ -20,6 +20,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 parser.add_argument("--realization", help="number for the realization",default=1,type=int)
+parser.add_argument("--survey", help="points to set of tiles",default='DA02')
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')

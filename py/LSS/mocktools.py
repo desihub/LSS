@@ -126,3 +126,54 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles,tagalong, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)	
+
+
+def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
+    '''
+    make data clustering for mock with everything in the full catalog
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    wzm = '_complete_'
+    if ccut is not None:
+        wzm = ccut+'_' #you could change this to however you want the file names to turn out
+
+    if zmask:
+        wzm += 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'
+    outf = fl+wzm+'clustering.dat.fits'
+    ff = Table.read(fl+'_full.dat.fits')
+    cols = list(ff.dtype.names)
+    print(len(ff))
+    ff = join(ff,ztable,keys=['TARGETID'])
+    print('after join to z',str(len(ff)))
+    ff['WEIGHT'] = np.ones(len(ff))
+    
+    kl = ['RA','DEC','Z','WEIGHT']
+    wn = ff['PHOTSYS'] == 'N'
+
+    ff.keep_columns(kl)
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
+    outfn = fl+wzm+'N_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+    ffs = ff[~wn]
+    common.write_LSS(ffs,outfn,comments)
+    
+    

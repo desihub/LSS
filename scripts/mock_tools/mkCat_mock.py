@@ -20,6 +20,7 @@ from desitarget import targetmask
 
 import LSS.main.cattools as ct
 import LSS.common_tools as common
+import LSS.mocktools as mocktools
 #import LSS.mkCat_singletile.fa4lsscat as fa
 #from LSS.globals import main
 
@@ -253,6 +254,11 @@ def docat(mocknum,rannum):
             ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
             ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
             os.system('mv '+ranf+' '+ranfm)
+
+    if args.mkclusdat_allpot == 'y':
+        mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+
+
     if args.nz == 'y':
     
         if args.tracer == 'QSO':
