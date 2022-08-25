@@ -268,7 +268,7 @@ def docat(mocknum,rannum):
         tarf = fbadir+'/targs.fits'
 
         ztab = Table(fitsio.read(tarf,columns=['TARGETID','RSDZ']))
-        targets.rename_column('RSDZ', 'Z')
+        ztab.rename_column('RSDZ', 'Z')
         mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,ztab,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
     if args.mkclusran_allpot == 'y':
@@ -289,7 +289,7 @@ def docat(mocknum,rannum):
         tarf = fbadir+'/targs.fits'
 
         ztab = Table(fitsio.read(tarf,columns=['RA','DEC','RSDZ','DESI_TARGET']))
-        targets.rename_column('RSDZ', 'Z')
+        ztab.rename_column('RSDZ', 'Z')
         mocktools.mkclusdat_tiles(dirout+args.tracer+notqso,ztab,bit,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
     if args.mkclusran_tiles == 'y':
