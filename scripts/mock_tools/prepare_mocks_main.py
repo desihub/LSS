@@ -46,7 +46,7 @@ if args.mockver == 'ab_firstgen':
     if not os.path.exists(args.base_output+'/FirstGenMocks/AbacusSummit'):
         os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
         print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
-
+    mockdir = args.base_output+'/FirstGenMocks/AbacusSummit/'
     zs = {'ELG':'z1.100','LRG':'z0.800','QSO':'z1.400'}
 
 
