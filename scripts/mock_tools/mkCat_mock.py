@@ -53,6 +53,13 @@ parser.add_argument("--apply_veto", help="apply vetos to the full files",default
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
+parser.add_argument("--mkclusran_allpot", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; these are cut to a small subset of columns",default='n')
+
+parser.add_argument("--mkclusran_tiles", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--mkclusdat_tiles", help="make the data clustering files; these are cut to a small subset of columns",default='n')
+
+
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2,type=int) 
@@ -255,8 +262,48 @@ def docat(mocknum,rannum):
             ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
             os.system('mv '+ranf+' '+ranfm)
 
+    nztl = ['']
     if args.mkclusdat_allpot == 'y':
-        mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+        fbadir = maindir+'fba'+str(mocknum)
+        tarf = fbadir+'/targs.fits'
+
+        ztab = Table(fitsio.read(tarf,columns=['TARGETID','RSDZ']))
+        targets.rename_column('RSDZ', 'Z')
+        mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,ztab,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+
+    if args.mkclusran_allpot == 'y':
+        nztl.append('_complete')
+        rcols=['Z','WEIGHT']
+        tsnrcol = 'TSNR2_ELG'
+        if args.tracer[:3] == 'BGS':
+            tsnrcol = 'TSNR2_BGS'
+        ct.mkclusran(dirout+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_complete'+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        #for clustering, make rannum start from 0
+        for reg in regl:
+            ranf = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum)+'_clustering.ran.fits'
+            ranfm = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+            os.system('mv '+ranf+' '+ranfm)
+
+    if args.mkclusdat_tiles == 'y':
+        fbadir = maindir+'fba'+str(mocknum)
+        tarf = fbadir+'/targs.fits'
+
+        ztab = Table(fitsio.read(tarf,columns=['RA','DEC','RSDZ','DESI_TARGET']))
+        targets.rename_column('RSDZ', 'Z')
+        mocktools.mkclusdat_tiles(dirout+args.tracer+notqso,ztab,bit,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+
+    if args.mkclusran_tiles == 'y':
+        nztl.append('_tiles')
+        fbadir = maindir+'random_fba'+str(rannum)
+        tarf = fbadir+'/targs.fits'
+        ffc = Table(fitsio.read(tarf),columns=['RA','DEC'])
+        rcols=['Z','WEIGHT']
+        ct.mkclusran(ffc,dirout+args.tracer+notqso+'_tiles'+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        #for clustering, make rannum start from 0
+        for reg in regl:
+            ranf = dirout+args.tracer+notqso+'_tiles'+reg+'_'+str(rannum)+'_clustering.ran.fits'
+            ranfm = dirout+args.tracer+notqso+'_tiles'+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+            os.system('mv '+ranf+' '+ranfm)
 
 
     if args.nz == 'y':
@@ -275,15 +322,16 @@ def docat(mocknum,rannum):
         if args.tracer[:3] == 'BGS':
             P0 = 7000
     
-        for reg in regl:
-            fb = dirout+args.tracer+notqso+reg
-            fcr = fb+'_0_clustering.ran.fits'
-            fcd = fb+'_clustering.dat.fits'
-            fout = fb+'_nz.txt'
-            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            nran = rannum
-            ranmin = rannum-1
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=ranmin,nran=nran)
+        for zt in nztl:
+            for reg in regl:
+                fb = dirout+args.tracer+notqso+zt+reg
+                fcr = fb+'_0_clustering.ran.fits'
+                fcd = fb+'_clustering.dat.fits'
+                fout = fb+'_nz.txt'
+                common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
+                nran = rannum
+                ranmin = rannum-1
+                common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=ranmin,nran=nran)
 
 
     #print('done with random '+str(ii))

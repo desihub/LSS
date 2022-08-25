@@ -177,4 +177,88 @@ def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccu
     ffs = ff[~wn]
     common.write_LSS(ffs,outfn,comments)
     
+def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
+    '''
+    make data clustering for mock with everything in the full catalog
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    wzm = '_tiles_'
+
+    sel = ztable['DESI_TARGET'] & bit > 0
+    ff = ztable[sel]
+    ztable['PHOTSYS'] = 'N'
+    sel = ztable['DEC'] < 32.375
+    ztable['PHOTSYS'][sel] = 'S'    
+    
+    ff['WEIGHT'] = np.ones(len(ff))
+    
+    kl = ['RA','DEC','Z','WEIGHT']
+    wn = ff['PHOTSYS'] == 'N'
+
+    ff.keep_columns(kl)
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
+    outfn = fl+wzm+'N_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = fl+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+    ffs = ff[~wn]
+    common.write_LSS(ffs,outfn,comments)
+    
+def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
+    #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+    kc = ['RA','DEC','Z','WEIGHT']
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(fcdn.dtype.names))
+    rcols = rcols[wc]
+    print('columns sampled from data are:')
+    print(rcols)
+
+    ffc['PHOTSYS'] = 'N'
+    sel = ffc['DEC'] < 32.375
+    ffc['PHOTSYS'][sel] = 'S'
+    wn = ffc['PHOTSYS'] == 'N'
+
+    #ffc.keep_columns(kc)
+    #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
+    #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ffc,outf,comments)
+
+    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
+    
+    ffcn = ffc[wn]
+    inds = np.random.choice(len(fcdn),len(ffcn))
+    dshuf = fcdn[inds]
+    for col in rcols:
+        ffcn[col] = dshuf[col]
+        kc.append(col)
+    ffcn.keep_columns(kc)
+    
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcn,outfn,comments)
+
+    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits'
+    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+    ffcs = ffc[~wn]
+    inds = np.random.choice(len(fcds),len(ffcs))
+    dshuf = fcds[inds]
+    for col in rcols:
+        ffcs[col] = dshuf[col]
+    ffcs.keep_columns(kc)
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+    common.write_LSS(ffcs,outfs,comments)
+
     
