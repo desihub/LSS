@@ -144,8 +144,6 @@ def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccu
     if ccut is not None:
         wzm = ccut+'_' #you could change this to however you want the file names to turn out
 
-    if zmask:
-        wzm += 'zmask_'
     if rcut is not None:
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
