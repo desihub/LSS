@@ -7,6 +7,7 @@ LSS.sky_maps
 Routines for building weight maps from randoms, etc., for systematics
 """
 import os
+import re
 import fitsio
 import numpy as np
 from time import time
@@ -233,6 +234,38 @@ def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None,
         outfile, time()-start))
 
 
+def ident_for_randoms(nrandoms, filename):
+    """Get the unique identifier string for each row in a random catalog.
+
+    Parameters
+    ----------
+    nrandoms : :class:`int`
+        Number of rows in a random catalog.
+    filename : :class:`str`
+        The filename of a random catalog.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        Structured array with one column "IDENT" that is `nrandoms` long.
+
+    Notes
+    -----
+    - Randoms are typically demarcated by the phrase randoms-ISEED-ISPLIT
+      in the `filename`. The ISEED-ISPLIT populates the column "IDENT".
+    """
+    # ADM set up the output array.
+    dt = [('IDENT', '<U4')]
+    done = np.zeros(nrandoms, dtype=dt)
+
+    # ADM extract the part of the filename after "randoms-".
+    ender = os.path.basename(filename).split("randoms-")[-1]
+    # ADM extract the regex that looks like ISEED-ISPLIT.
+    done['IDENT'] = re.findall("[0-9]{1,2}-[0-9]{1,2}", ender)[0]
+
+    return done
+
+
 def read_randoms(infiles, test=False):
     """Read a random catalog to use for constructing sky maps.
 
@@ -256,6 +289,9 @@ def read_randoms(infiles, test=False):
         The header of the FINAL file read from `infiles`. If `infiles`
         is a list then the DENSITY keyword in the header is returned as
         the SUM of the DENSITY in each file header.
+    :class:`~numpy.ndarray`
+        Structured array with one column "IDENT" that has the same number
+        of rows as the output random catalog.
 
     Notes
     -----
@@ -263,6 +299,9 @@ def read_randoms(infiles, test=False):
       "DENSITY" to establish the density used to make the random catalog.
     - If a list of filenames is passed, then the associated catalogs must
       all have been generated at the same density.
+    - Randoms are typically demarcated by the phrase randoms-ISEED-ISPLIT
+      in the filename. The ISEED-ISPLIT is what is returned as the array
+      with column IDENT (to help track provenance).
     """
     # ADM if we're testing, only read in a subset of randoms.
     rows = None
@@ -274,16 +313,23 @@ def read_randoms(infiles, test=False):
         log.info("Reading in random catalog...t = {:.1f}s".format(time()-start))
         # ADM also need to know the density of randoms in the catalog.
         randoms, hdr = fitsio.read(infiles, rows=rows, header=True)
+        # ADM add the IDENTity of this random catalog.
+        ident = ident_for_randoms(len(randoms), infiles)
     # ADM ...otherwise if a list was passed, concatenate the randoms in
     # ADM the list and check they were generated at the same density.
     elif isinstance(infiles, list):
         randomsall = []
         densall = []
+        identall = []
         for fn in infiles:
             log.info("Reading random catalog {}...t = {:.1f}s".format(
                 fn, time()-start))
             randoms, hdr = fitsio.read(fn, rows=rows, header=True)
+            # ADM add the IDENTity of this random catalog.
+            ident = ident_for_randoms(len(randoms), fn)
+            # ADM concatenate the random catalogs.
             randomsall.append(randoms)
+            identall.append(ident)
             densall.append(hdr["DENSITY"])
             # ADM check all of the densities are the same.
             if not len(set(densall)) == 1:
@@ -294,16 +340,17 @@ def read_randoms(infiles, test=False):
                 raise ValueError(msg)
         # ADM concatenate randoms and store density.
         randoms = np.concatenate(randomsall)
+        ident = np.concatenate(identall)
         hdr["DENSITY"] = np.sum(densall)
     else:
         msg = "randoms must be passed as either a list or a string!"
         log.critical(msg)
         raise ValueError
 
-    log.info("Read {} total randoms at density {}".format(
-        len(randoms), hdr["DENSITY"]))
+    log.info("Read {} total randoms at density {}... t = {:.1f}s".format(
+        len(randoms), hdr["DENSITY"], time()-start))
 
-    return randoms, hdr
+    return randoms, hdr, ident
 
 
 def sample_map(mapname, randoms, lssmapdir=None, nside=512):
