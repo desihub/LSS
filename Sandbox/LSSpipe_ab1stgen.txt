@@ -8,6 +8,7 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 # <realnum> can be 1-25, rannum can be up to 20, but a few are probably enough
 module swap fiberassign/5.0.0
 python prepare_mocks_main.py --realization <realnum> --survey DA02
+#then, run the script name that above prints to the terminal and that will produce all of the fiberassign files
 #for randoms, 5 randoms have been prepped already and have had fiberassign run for DA02
 #probably, nothing more to do for DA02
 python prepare_mocks_ran_main.py --ranmin <minran> --ranmax <minran> --survey DA02
