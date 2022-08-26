@@ -605,3 +605,15 @@ def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','T
     print('wrote '+outf)
     return dat_comb
 
+def addNS(tab):
+    '''
+    given a table that already includes RA,DEC, add PHOTSYS column denoting whether 
+    the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
+    '''
+    wra = (tab['RA'] > 100-tab['DEC'])
+    wra &= (tab['RA'] < 280 +tab['DEC'])
+    tab['PHOTSYS'] = 'S'
+    seln = dec > 32.375
+    seln &= wra
+    tab['PHOTSYS'][seln] = 'N'
+    return tab        

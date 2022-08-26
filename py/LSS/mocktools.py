@@ -177,24 +177,25 @@ def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccu
     ffs = ff[~wn]
     common.write_LSS(ffs,outfn,comments)
     
-def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
+def mkclusdat_tiles(fl,ztable,bit=None,zmin=0,zmax=6):
     '''
-    make data clustering for mock with everything in the full catalog
-    fl is the root of the input/output file
-    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
-    zmask determines whether to apply a mask at some given redshift
-    tp is the target type
-    dchi2 is the threshold for keeping as a good redshift
-    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
-
+    make data clustering given some input with RA,DEC,Z,DESI_TARGET assuming it is complete (all targets in region have a redshift)
+    `fl` (string) is the root of the output file name 
+    `ztable` is an input astropy table with at least RA,DEC,Z columns
+    `bit` is used if the input includes all tracer types and you want to select a particular one given DESI_TARGET
+    `zmin` and `zmax` are floats that apply any redshift bounds to the output catalog
     '''
     wzm = '_tiles_'
 
-    sel = ztable['DESI_TARGET'] & bit > 0
-    ff = ztable[sel]
-    ff['PHOTSYS'] = 'N'
-    sel = ff['DEC'] < 32.375
-    ff['PHOTSYS'][sel] = 'S'    
+    if bit is not None:
+        sel = ztable['DESI_TARGET'] & bit > 0
+        ff = ztable[sel]
+    else:
+        ff = ztable
+    common.addNS(ff)
+    #ff['PHOTSYS'] = 'N'
+    #sel = ff['DEC'] < 32.375 #this is imperfect for the SGC (some of it is > 32.375 but still DECaLS), fix in the future
+    #ff['PHOTSYS'][sel] = 'S'    
     
     ff['WEIGHT'] = np.ones(len(ff))
     
@@ -209,6 +210,7 @@ def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
     #common.write_LSS(ff,outf,comments)
 
     outfn = fl+wzm+'N_clustering.dat.fits'
+    #edit these comments at some point
     comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
     common.write_LSS(ff[wn],outfn,comments)
 
@@ -218,7 +220,14 @@ def mkclusdat_tiles(fl,ztable,bit,zmin=0,zmax=6):
     common.write_LSS(ffs,outfn,comments)
     
 def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
-    #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    '''
+    `ffc` is an input astropy table with at least columns RA,DEC, with RA,DEC assumed to be randomly sampling the area
+    associated with the data file
+    `fl` is a string that points to the data catalog file format and is used for the random catalog format
+    `rann` is the number associated with the random file
+    `rcols` is the list of columns to sample from the data catalog
+    '''
+    
     wzm = ''
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     kc = ['RA','DEC','Z','WEIGHT']
@@ -228,10 +237,11 @@ def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
     print('columns sampled from data are:')
     print(rcols)
 
-    ffc['PHOTSYS'] = 'N'
-    sel = ffc['DEC'] < 32.375
-    ffc['PHOTSYS'][sel] = 'S'
-    wn = ffc['PHOTSYS'] == 'N'
+    common.addNS(ffc)
+    #ffc['PHOTSYS'] = 'N'
+    #sel = ffc['DEC'] < 32.375 #this is imperfect for the SGC (some of it is > 32.375 but still DECaLS), fix in the future
+    #ffc['PHOTSYS'][sel] = 'S'
+    #wn = ffc['PHOTSYS'] == 'N'
 
     #ffc.keep_columns(kc)
     #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
@@ -259,6 +269,7 @@ def mkclusran_tiles(ffc,fl,rann,rcols=['Z','WEIGHT']):
     for col in rcols:
         ffcs[col] = dshuf[col]
     ffcs.keep_columns(kc)
+    #edit these comments at some point
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcs,outfs,comments)
 
