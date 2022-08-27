@@ -59,7 +59,7 @@ for real in range(args.realmin,args.realmax):
         if args.prep == 'y':
             datat = []
             for type_ in types:
-                thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % args.realization))
+                thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
                 #f = fits.open(thepath)
                 data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
                 print(data.dtype.names)
