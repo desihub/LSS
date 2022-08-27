@@ -36,7 +36,7 @@ if args.prog == 'dark':
     desitar = {'ELG':34,'LRG':1,'QSO':4}
     priority = {'ELG':3000,'LRG':3200,'QSO':3400}
 
-for real in range(args.realmin,arg.realmax):
+for real in range(args.realmin,args.realmax):
 
     if args.mockver == 'ab_firstgen':
         mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
