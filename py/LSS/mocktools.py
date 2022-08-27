@@ -65,7 +65,8 @@ def get_fba_mock(mockdir,mocknum,survey='DA02',prog='dark'):
     fo.write(" --ha "+str(fht['FA_HA']))
     fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
     fo.close()
-    print('wrote scripts for fiberassign '+outdir+'/fa-'+ts+'.sh')    
+    print('wrote scripts for fiberassign '+outdir+'/fa-'+ts+'.sh') 
+    return(outdir+'/fa-'+ts+'.sh')   
 
 def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     #produces script to run to get mock fiberassign files
