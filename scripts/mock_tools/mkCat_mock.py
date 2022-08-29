@@ -161,7 +161,7 @@ def docat(mocknum,rannum):
             indir = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/'
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat',dtar='SV3_')
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
