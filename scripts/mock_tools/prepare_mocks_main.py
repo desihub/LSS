@@ -27,7 +27,7 @@ parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 parser.add_argument("--runfa", help="run fiberassign",default='y')
-
+parser.add_argument("--par", help="running in parallel?",default='n')
 
 args = parser.parse_args()
 
@@ -108,7 +108,13 @@ for real in range(args.realmin,args.realmax):
         from LSS.mocktools import get_fba_mock
         script_fn = get_fba_mock(mockdir,real,survey=args.survey,prog=args.prog)
         os.system('chmod +x '+script_fn)
-        os.system(script_fn)
+        if args.par == 'y':
+            nds = 64
+            if scratch == 'PSCRATCH':
+                nds = 128
+            os.system('srun -n '+str(nds)+' '+script_fn)
+        else:
+            os.system(script_fn)
 
 
 
