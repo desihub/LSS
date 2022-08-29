@@ -178,7 +178,7 @@ def combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fb
     s = 0
     td = 0
     #tiles.sort('ZDATE')
-    print(len(tiles))
+    #print(len(tiles))
     outf = outdir+'/'+ran+'comb_'+tp+'wdup.fits'
     if fba:
         pa_hdu = 'FAVAIL'
