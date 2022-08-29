@@ -20,7 +20,7 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 parser.add_argument("--ranmin", help="number for the realization",default=1,type=int)
-parser.add_argument("--ranmax", help="number for the realization",default=11,type=int)
+parser.add_argument("--ranmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--survey", help="e.g., DA02 or SV3",default='DA02')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
@@ -60,6 +60,8 @@ def prep(rannum):
             targets = Table(targets)
             targets.remove_columns(['STATUS'])
 
+    elif args.mockver == 'EZ_3gpc1year':
+        mockdir = args.base_output+'/FA_EZ_1year/fiberassign_EZ_3gpc'
     else:
         sys.exit(args.mockver+' not supported')
 
