@@ -158,7 +158,7 @@ def docat(mocknum,rannum):
 
         if args.survey == 'MVMY1':
             tarf = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/inputs/targ.fits'
-            indir = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/''
+            indir = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/'
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
         else:
             tarf = fbadir+'/targs.fits'
