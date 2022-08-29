@@ -139,7 +139,7 @@ def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','TRUEZ','Z
     s = 0
     td = 0
     #tiles.sort('ZDATE')
-    print(len(tiles))
+    
     outf = outdir+'/datcomb_'+tp+'assignwdup.fits'
     if fba:
         pa_hdu = 'FASSIGN'
