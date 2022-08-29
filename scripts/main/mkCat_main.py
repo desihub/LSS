@@ -269,6 +269,14 @@ if args.join_etar == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.join_etar(fin,type)
 
+if args.fillran == 'y':
+    print('filling randoms with imaging properties')
+    for ii in range(rm,rx):
+        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        ct.addcol_ran(fn,ii)
+        print('done with '+str(ii))
+
+
 if args.apply_veto == 'y':
     print('applying vetos')
     maxp = 3400
@@ -319,12 +327,6 @@ regl = ['_N','_S']
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
-if args.fillran == 'y':
-    print('filling randoms with imaging properties')
-    for ii in range(rm,rx):
-        fn = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
-        ct.addcol_ran(fn,ii)
-        print('done with '+str(ii))
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
