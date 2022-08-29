@@ -145,8 +145,8 @@ def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','TRUEZ','Z
         pa_hdu = 'FASSIGN'
     tl = []
     for pass_num in range(0,7):
-        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/''
-        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num).fits')
+        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/'
+        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num)+'.fits')
         for tile in tiles['TILEID']:
             if fba:
                 ffa = passdir+'/fba-'+str(tile).zfill(6)+'.fits'
@@ -184,8 +184,8 @@ def combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fb
         pa_hdu = 'FAVAIL'
     tl = []
     for pass_num in range(0,7):
-        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/''
-        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num).fits')
+        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/'
+        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num)+'.fits')
         for tile in tiles['TILEID']:
             if fba:
                 ffa = passdir+'/fba-'+str(tile).zfill(6)+'.fits'
