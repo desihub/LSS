@@ -1,6 +1,6 @@
 import fitsio
 import numpy as np
-from astropy.table import Table,join
+from astropy.table import Table,join,vstack
 # system
 import os
 import subprocess
