@@ -162,10 +162,11 @@ def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','TRUEZ','Z
                 print('did not find '+ffa)
     dat_comb = vstack(tl)
     print(len(dat_comb))
-    tar_in = Table(fitsio.read(tarf,columns=addcols))
+    tar_in = Table(fitsio.read(tarf))#,columns=addcols))
     cols = list(tar_in.dtype.names)
     if 'ZWARN' not in cols:
         tar_in['ZWARN'] = np.zeros(len(tar_in))
+    tar_in.keep_columns(addcols)
     dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
     print(len(dat_comb))
     
