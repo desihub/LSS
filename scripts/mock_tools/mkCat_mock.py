@@ -93,13 +93,22 @@ else:
 
 pd = pdir
 
+randens = 10460. #the number density of randoms in the 1st gen file getting used
 if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
-    randens = 10460.
+
+if args.mockver == 'EZ_3gpc1year':
+    mockdir = args.base_output+'/FA_EZ_1year/fiberassign_EZ_3gpc/'    
 
 maindir = args.base_output +mockdir+args.survey+'/'
 
-tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits')
+if args.survey == 'MVMY1':
+    tile_fn = '/project/projectdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
+else:
+    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
+
+
+tiles = fitsio.read(tile_fn)
 
 
 
@@ -143,11 +152,20 @@ def docat(mocknum,rannum):
     if args.combd == 'y' and rannum == 1:
         fbadir = maindir+'fba'+str(mocknum)
         outdir = fbadir
-        tarf = fbadir+'/targs.fits'
-        asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
-        #if using alt MTL that should have ZWARN_MTL, put that in here
-        asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-        pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+            print('made '+outdir)
+
+        if args.survey == 'MVMY1':
+            tarf = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/inputs/targ.fits'
+            indir = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/''
+            asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
+        else:
+            tarf = fbadir+'/targs.fits'
+            asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
+            #if using alt MTL that should have ZWARN_MTL, put that in here
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
 
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')

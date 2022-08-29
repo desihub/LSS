@@ -132,7 +132,84 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
 
     asgn.assign_unused(TARGET_TYPE_SCIENCE)
     write_assignment_fits(tiles,tagalong, asgn, out_dir=dirout, all_targets=True)
-    print('wrote assignment files to '+dirout)	
+    print('wrote assignment files to '+dirout)  
+
+def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
+
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/datcomb_'+tp+'assignwdup.fits'
+    if fba:
+        pa_hdu = 'FASSIGN'
+    tl = []
+    for pass_num in range(0,7):
+        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/''
+        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num).fits')
+        for tile in tiles['TILEID']:
+            if fba:
+                ffa = passdir+'/fba-'+str(tile).zfill(6)+'.fits'
+            if os.path.isfile(ffa):
+                fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+                sel = fa['TARGETID'] >= 0
+                fa = fa[sel]
+                td += 1
+                fa['TILEID'] = int(tile)
+                tl.append(fa)
+                print(td,len(tiles))
+            else:
+                print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    
+    dat_comb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
+    return dat_comb
+
+def combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='dat',dtar=''):
+    if ran == 'dat':
+        #addcols.append('PRIORITY')
+        addcols.append('PRIORITY')
+        addcols.append(dtar+'DESI_TARGET')
+    s = 0
+    td = 0
+    #tiles.sort('ZDATE')
+    print(len(tiles))
+    outf = outdir+'/'+ran+'comb_'+tp+'wdup.fits'
+    if fba:
+        pa_hdu = 'FAVAIL'
+    tl = []
+    for pass_num in range(0,7):
+        passdir = indir+'faruns/farun-pass'+str(pass_num)+'/''
+        tiles = fitsio.read(passdir+'tiles-pass'+str(pass_num).fits')
+        for tile in tiles['TILEID']:
+            if fba:
+                ffa = passdir+'/fba-'+str(tile).zfill(6)+'.fits'
+            if os.path.isfile(ffa):
+                fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+                sel = fa['TARGETID'] >= 0
+                fa = fa[sel]
+                td += 1
+                fa['TILEID'] = int(tile)
+                tl.append(fa)
+                print(td,len(tiles))
+            else:
+                print('did not find '+ffa)
+    dat_comb = vstack(tl)
+    print(len(dat_comb))
+    tar_in = fitsio.read(tarf,columns=addcols)
+    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    print(len(dat_comb))
+    dat_comb.rename_column('PRIORITY', 'PRIORITY_INIT') 
+    if dtar != '':
+        dat_comb.rename_column(dtar+'DESI_TARGET', 'DESI_TARGET') 
+    dat_comb.write(outf,format='fits', overwrite=True)
+    print('wrote '+outf)
+    return dat_comb
 
 
 def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
