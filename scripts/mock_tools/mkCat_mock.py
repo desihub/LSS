@@ -98,7 +98,7 @@ if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
 
 if args.mockver == 'EZ_3gpc1year':
-    mockdir = args.base_output+'/FA_EZ_1year/fiberassign_EZ_3gpc/'    
+    mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
 
 maindir = args.base_output +mockdir+args.survey+'/'
 
