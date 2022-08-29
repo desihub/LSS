@@ -94,7 +94,7 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
         print('made '+dirout)
 
     if survey == 'MVMY1':
-        tile_fn = '/project/projectdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
+        tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
     else:
         tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog.upper()+'.fits'
     tiles = Table(fitsio.read(tile_fn,columns=['TILEID','RA','DEC']))

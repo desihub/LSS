@@ -103,7 +103,7 @@ if args.mockver == 'EZ_3gpc1year':
 maindir = args.base_output +mockdir+args.survey+'/'
 
 if args.survey == 'MVMY1':
-    tile_fn = '/project/projectdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
+    tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
 else:
     tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
 
