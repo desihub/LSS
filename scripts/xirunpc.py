@@ -19,8 +19,10 @@ logger = logging.getLogger('xirunpc')
 def get_scratch_dir():
     if os.environ['NERSC_HOST'] == 'cori':
         scratch_dir = os.environ['CSCRATCH']
+        os.system('export OMP_NUM_THREADS=64')
     elif os.environ['NERSC_HOST'] == 'perlmutter':
         scratch_dir = os.environ['PSCRATCH']
+        os.system('export OMP_NUM_THREADS=128')
     else:
         msg = 'NERSC_HOST is not cori or permutter but is {};\n'.format(os.environ['NERSC_HOST'])
         msg += 'NERSC_HOST not known (code only works on NERSC), not proceeding'
