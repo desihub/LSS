@@ -152,8 +152,8 @@ def docat(mocknum,rannum):
         
         tarf = fbadir+'/targs.fits'
         if args.famd == 'passes':
-            fbadir = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
-            tarf = maindir+'/ran'+str(rann)+'_'+pdir+'/inputs/targ.fits'
+            fbadir = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
+            tarf = maindir+'/ran'+str(rannum)+'_'+pdir+'/inputs/targ.fits'
 
         outdir = fbadir
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
