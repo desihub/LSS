@@ -28,16 +28,32 @@ log = get_logger()
 start = time()
 
 mapdt = [
-    ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'),
-    ('COLNAME', 'O'), ('NESTED', '?'), ('GALACTIC', '?')
+    ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'),('NSIDE','i'),
+    ('COLNAME', 'O'), ('MAPTYPE','0'), ('MASKVALUE', 'f'), ('NESTED', '?'), ('GALACTIC', '?')
 ]
 
 # ADM update with new maps in this global array on a new line.
 # ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
 # ADM `GALACTIC' is True for a map in Galactic coords, False for RA/Dec.
+# MMM 'NSIDE' is the HEALPix nside of the map
+# MMM 'MAPTYPE': PIXMAP (pixelmap), PARTPIXMAP (partial sky pixel map), ALMMAP (alms), PIXMASK (pixel mask) 
+# MMM 'MaskValue' is the value of the masked bits;  
+# MMM if Maskvalue is nonzero degraded pixel values may have contributions from masked areas. 
+# MMM if Maskvalue does not exist (no formally masked pixels), it defaults to zero for PIXMAP 
 maparray = np.array([
-    ('halpha', 'Halpha', 'Halpha_fwhm06_0512.fits', 'TEMPERATURE', True, False),
-    ('blat', 'fooblat', 'fooblatfooblatfooblatfoo', 'fooblatfoo', True, True),
+    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',      'PIXMAP', 512, 'TEMPERATURE', 0, False, True),
+    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits','PIXMAP', 512, 'TEMPERATURE', 0, False, True),
+    ('HALPHA_MASK','Halpha', 'Halpha_mask_fwhm06_0512.fits', 'PIXMASK', 512, 'TEMPERATURE',0,  False, True), 
+    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False),
+    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False),
+    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False), 
+    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMASK','TEMPERATURE', 0, False, False),   
+    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMASK','TEMPERATURE', 0, False, False),   
+    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMASK', 'TEMPERATURE', 0, False, False),  
+    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMAP', 'EBVcolumn', 0, False,True),   
+    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMASK','EBVcolumn', 0, False,True),        
+    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',  2048, 'ALMMAP',  0,  True , True),
+    ('KAPPA_PLANCK_MASK','kappa', 'mask.fits.gz',  2048, 'PIXMASK', 0,  False , True), 
     ], dtype=mapdt)
 
 
