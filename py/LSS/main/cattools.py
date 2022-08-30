@@ -2104,7 +2104,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
     zf : :class:`str` path to the file containing merged potential targets and redshift 
@@ -2256,7 +2256,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     
     if specver == 'mock':
-        dz['RSDZ'].name = 'Z' 
+        dz[mockz].name = 'Z' 
         
     if tp == 'QSO' and azf != '':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
