@@ -96,9 +96,11 @@ pd = pdir
 randens = 10460. #the number density of randoms in the 1st gen file getting used
 if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
+    mockz = 'RSDZ'
 
 if args.mockver == 'EZ_3gpc1year':
     mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
+    mockz = 'TRUEZ'
 
 maindir = args.base_output +mockdir+args.survey+'/'
 
@@ -202,7 +204,7 @@ def docat(mocknum,rannum):
         ftar = None
         dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
-        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl)
+        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
 
     maxp = 3400
     pthresh = 3000
