@@ -46,6 +46,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
+parser.add_argument("--countran", help="count instances of focal plane locations for randoms",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='y')
@@ -209,12 +210,16 @@ def docat(mocknum,rannum):
         fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
         print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        del specf
         print(len(fgu))
         print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
         fgu.write(outf,format='fits', overwrite=True)
+        del fgu
+     
+     if args.countran == 'y':
         tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
