@@ -259,58 +259,58 @@ def main():
         if len(fns) > 0:
             for fn in fns:
                 os.remove(fn)
-		# AR run fiber assignment
-		if args.numproc == 1:
-			opts = [
-				"--rundate",
-				args.rundate,
-				"--overwrite",
-				"--write_all_targets",
-				"--footprint",
-				get_fn(args.outdir, "tiles", passid=passid),
-				"--dir",
-				fadir,
-				"--sky",
-				get_fn(args.outdir, "sky"),
-				"--targets",
-				input_targ,
-				"--sky_per_petal",
-				args.sky_per_petal,
-				"--standards_per_petal",
-				args.standards_per_petal,
-			]
-			log.info(
-				"{:.1f}s\tfa\trun_assign_full with 1 processor".format(
-					time() - start
-				)
-			)
-			ag = parse_assign(opts)
-			run_assign_full(ag)
-		else:
-			# AR tileids for that passid
-			tileids = tiles["TILEID"]
-			# AR tiles file for that passid
-			foot_pass = get_fn(args.outdir, "tiles")
-			# AR preparing files per tileid
-			intargfn_fadir_footfn_skyfn_targfn = []
-			for tileid in tileids:
-				# AR tileid filenames
-				footfn = foot_pass.replace(
-					".fits", "-{:06d}.fits".format(int(tileid))
-				)
-				targfn = footfn.replace("tiles-", "targ-")
-				d = fitsio.read(foot_pass)
-				d = d[d["TILEID"] == tileid]
-				fitsio.write(footfn, d, clobber=True)
-				# AR
-				intargfn_fadir_footfn_skyfn_targfn += [
-					",".join([input_targ, fadir, footfn, targfn])
-				]
-			pool = sharedmem.MapReduce(np=args.numproc)
-			with pool:
-				_ = pool.map(
-					_do_run_assign_full, intargfn_fadir_footfn_skyfn_targfn
-				)
+        # AR run fiber assignment
+        if args.numproc == 1:
+            opts = [
+                "--rundate",
+                args.rundate,
+                "--overwrite",
+                "--write_all_targets",
+                "--footprint",
+                get_fn(args.outdir, "tiles", passid=passid),
+                "--dir",
+                fadir,
+                "--sky",
+                get_fn(args.outdir, "sky"),
+                "--targets",
+                input_targ,
+                "--sky_per_petal",
+                args.sky_per_petal,
+                "--standards_per_petal",
+                args.standards_per_petal,
+            ]
+            log.info(
+                "{:.1f}s\tfa\trun_assign_full with 1 processor".format(
+                    time() - start
+                )
+            )
+            ag = parse_assign(opts)
+            run_assign_full(ag)
+        else:
+            # AR tileids for that passid
+            tileids = tiles["TILEID"]
+            # AR tiles file for that passid
+            foot_pass = get_fn(args.outdir, "tiles")
+            # AR preparing files per tileid
+            intargfn_fadir_footfn_skyfn_targfn = []
+            for tileid in tileids:
+                # AR tileid filenames
+                footfn = foot_pass.replace(
+                    ".fits", "-{:06d}.fits".format(int(tileid))
+                )
+                targfn = footfn.replace("tiles-", "targ-")
+                d = fitsio.read(foot_pass)
+                d = d[d["TILEID"] == tileid]
+                fitsio.write(footfn, d, clobber=True)
+                # AR
+                intargfn_fadir_footfn_skyfn_targfn += [
+                    ",".join([input_targ, fadir, footfn, targfn])
+                ]
+            pool = sharedmem.MapReduce(np=args.numproc)
+            with pool:
+                _ = pool.map(
+                    _do_run_assign_full, intargfn_fadir_footfn_skyfn_targfn
+                )
 
     # AR print end time
     log.info(
