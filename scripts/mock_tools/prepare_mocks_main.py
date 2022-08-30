@@ -108,13 +108,8 @@ for real in range(args.realmin,args.realmax):
         from LSS.mocktools import get_fba_mock
         script_fn = get_fba_mock(mockdir,real,survey=args.survey,prog=args.prog)
         os.system('chmod +x '+script_fn)
-        if args.par == 'y':
-            nds = 64
-            if scratch == 'PSCRATCH':
-                nds = 128
-            os.system('srun -n '+str(nds)+' '+script_fn)
-        else:
-            os.system(script_fn)
+        
+        os.system(script_fn)
 
 
 
