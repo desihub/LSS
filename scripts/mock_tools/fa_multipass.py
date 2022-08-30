@@ -369,7 +369,6 @@ def main():
         for key in ["NFIBER_AVAIL", "NTILE_AVAIL", "NUMOBS_DONE"]:
             myd[key] = np.zeros((len(d), args.npass), dtype=int)
         log.info("{:.1f}s\ttarg\tdone creating empty cols".format(time() - start))
-        log.info("{:.1f}s\ttarg\tdone isradec_safe".format(time() - start))
         # AR no make_mtl()
         myd["NUMOBS"] = np.zeros(len(myd), dtype=int)
         myd.meta["EXTNAME"] = "MTL"
