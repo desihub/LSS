@@ -199,7 +199,7 @@ def docat(mocknum,rannum):
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
         fbadir_ran = maindir+'random_fba'+str(rannum)
-        if args.famd = 'passes':
+        if args.famd == 'passes':
             fbadir_data = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/faruns/'
             fbadir_ran = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
 
