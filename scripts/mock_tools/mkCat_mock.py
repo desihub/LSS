@@ -200,7 +200,7 @@ def docat(mocknum,rannum):
         fbadir_data = maindir+'fba'+str(mocknum)
         fbadir_ran = maindir+'random_fba'+str(rannum)
         if args.famd == 'passes':
-            fbadir_data = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/faruns/'
+            fbadir_data = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/faruns/'
             fbadir_ran = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
 
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
