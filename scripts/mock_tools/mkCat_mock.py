@@ -36,6 +36,8 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
+parser.add_argument("--famd", help="whether to use the fiberassign split into passes",default='passes')
+
 parser.add_argument("--mockmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
@@ -147,8 +149,13 @@ def docat(mocknum,rannum):
 
     if args.combr == 'y' and mocknum == 1:
         fbadir = maindir+'random_fba'+str(rannum)
-        outdir = fbadir
+        
         tarf = fbadir+'/targs.fits'
+        if args.famd = 'passes':
+            fbadir = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
+            tarf = maindir+'/ran'+str(rann)+'_'+pdir+'/inputs/targ.fits'
+
+        outdir = fbadir
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
 
     if args.combd == 'y' and rannum == 1:
@@ -164,6 +171,16 @@ def docat(mocknum,rannum):
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat',dtar='SV3_')
+        elif args.famd = 'passes':
+            fbadir = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/faruns/'
+            outdir = fbadir
+            tarf = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/inputs/targ.fits'
+
+            indir = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/'
+            asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat',dtar='SV3_')
+           
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
@@ -182,6 +199,10 @@ def docat(mocknum,rannum):
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
         fbadir_ran = maindir+'random_fba'+str(rannum)
+        if args.famd = 'passes':
+            fbadir_data = maindir+'/multipass_mock'+str(mockum)+'_'+pdir+'/faruns/'
+            fbadir_ran = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
+
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         specf.remove_columns(['TARGETID'])
