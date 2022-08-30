@@ -60,7 +60,7 @@ def get_fn(outdir, flavor, steps=None):
 # AR creates one tiles file for with all passes
 # AR and one tiles file per pass
 # AR formatting assumed to be that of tiles-main.ecsv
-def create_tiles(obsfn, program, npass, outdir,infn='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv'):
+def create_tiles(obsfn, program, outdir,infn='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv'):
     d_orig = Table.read(infn)
     # AR cut on program
     sel = np.array([program.lower() for program in d_orig["PROGRAM"]]) == program
