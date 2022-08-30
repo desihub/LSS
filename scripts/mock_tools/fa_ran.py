@@ -144,7 +144,7 @@ def _do_run_assign_full(intargfn_fadir_footfn_skyfn_targfn):
     ag = parse_assign(opts)
     run_assign_full(ag)
     # AR clean input files
-    for fn in [footfn, skyfn, targfn]:
+    for fn in [footfn, targfn]:
         os.remove(fn)
     return True
 
