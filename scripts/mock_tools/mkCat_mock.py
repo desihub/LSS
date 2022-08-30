@@ -179,7 +179,7 @@ def docat(mocknum,rannum):
             indir = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/'
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat',dtar='SV3_')
+            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
            
         else:
             tarf = fbadir+'/targs.fits'
