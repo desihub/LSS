@@ -548,8 +548,7 @@ if __name__ == "__main__":
         "--tilesfn",
         help="file full path containing TILEID of data to use for footprint",
         type=str,
-        default=None
-        ),
+        default=None,
     )
     parser.add_argument(
         "--npass",
