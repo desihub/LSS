@@ -102,8 +102,6 @@ def _do_run_assign_full(intargfn_fadir_footfn_skyfn_targfn):
     intargfn, fadir, footfn, targfn = intargfn_fadir_footfn_skyfn_targfn.split(
         ","
     )
-    # AR sky
-    _ = create_sky(footfn, skyfn)
     # AR targ
     tiles = fits.open(footfn)[1].data
     nside, nest = pixarea2nside(7.), True # AR be careful those are the same as below

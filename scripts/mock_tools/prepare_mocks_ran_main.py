@@ -27,6 +27,7 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 parser.add_argument("--nproc", help="run different random number in parallel?",default=1)
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 parser.add_argument("--runfa", help="run fiberassign",default='y')
+parser.add_argument("--stepfa", help="only run fiberassign in runfa",default='n')
 
 
 args = parser.parse_args()
@@ -94,7 +95,10 @@ def prep(rannum):
         if not os.path.exists(rootdir):
             os.mkdir(rootdir)
             print('made '+rootdir)
-        os.system('python fa_ran.py --infn '+targfn+' --outdir '+rootdir+' --program '+args.prog+' --rundate '+rundate +' --tilesfn '+tile_fn +' --numproc '+str(args.nproc))
+        runstr = 'python fa_ran.py --infn '+targfn+' --outdir '+rootdir+' --program '+args.prog+' --rundate '+rundate +' --tilesfn '+tile_fn +' --numproc '+str(args.nproc)
+        if args.stepfa == 'y':
+            runstr += ' --steps fa'
+        os.system(runstr)
 
 
 
