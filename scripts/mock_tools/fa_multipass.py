@@ -347,7 +347,7 @@ def main():
     # AR create the tiles files
     if "tiles" in args.steps.split(","):
         # AR then create tiles file
-        _ = create_tiles(args.tilesfn, args.program, args.npass, args.radec, args.outdir)
+        _ = create_tiles(args.tilesfn, args.program, args.npass, args.outdir)
 
     # AR safe "box" area
     tiles = fits.open(get_fn(args.outdir, "tiles"))[1].data
