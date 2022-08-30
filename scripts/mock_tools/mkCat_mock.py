@@ -151,7 +151,7 @@ def docat(mocknum,rannum):
         fbadir = maindir+'random_fba'+str(rannum)
         
         tarf = fbadir+'/targs.fits'
-        if args.famd = 'passes':
+        if args.famd == 'passes':
             fbadir = maindir+'/ran'+str(rann)+'_'+pdir+'/faruns/'
             tarf = maindir+'/ran'+str(rann)+'_'+pdir+'/inputs/targ.fits'
 
