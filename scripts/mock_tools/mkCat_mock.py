@@ -223,7 +223,7 @@ def docat(mocknum,rannum):
         tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
         print('got counts')
         print(len(tc))
-        print(dc.dtype.names)
+        print(tc.dtype.names)
         print(np.max(tc['NTILE']))
         
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
