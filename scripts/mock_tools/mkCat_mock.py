@@ -225,8 +225,9 @@ def docat(mocknum,rannum):
         print(len(tc))
         print(tc.dtype.names)
         print(np.max(tc['NTILE']))
-        common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
-        #tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+        tc.keep_columns(['TARGETID','NTILE','TILES'])
+        #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
+        tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     specver = 'mock'    
     imbits = []    
