@@ -134,7 +134,7 @@ def get_fba_mock_ran(mockdir,rannum,survey='DA02',prog='dark'):
     write_assignment_fits(tiles,tagalong, asgn, out_dir=dirout, all_targets=True)
     print('wrote assignment files to '+dirout)  
 
-def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
+def combtiles_assign_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RSDZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
 
     s = 0
     td = 0
