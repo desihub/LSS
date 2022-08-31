@@ -300,7 +300,9 @@ def docat(mocknum,rannum):
     
     #needs to happen before randoms so randoms can get z and weights
     
+    nztl = []
     if args.mkclusdat == 'y':
+        nztl.append('')
         ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
 
@@ -316,7 +318,7 @@ def docat(mocknum,rannum):
             ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
             os.system('mv '+ranf+' '+ranfm)
 
-    nztl = ['']
+    
     if args.mkclusdat_allpot == 'y':
         fbadir = maindir+'fba'+str(mocknum)
         tarf = fbadir+'/targs.fits'
