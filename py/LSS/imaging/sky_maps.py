@@ -31,29 +31,37 @@ mapdt = [
     ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'),('NSIDE','i'),
     ('COLNAME', 'O'), ('MAPTYPE','0'), ('MASKVALUE', 'f'), ('NESTED', '?'), ('GALACTIC', '?')
 ]
-
 # ADM update with new maps in this global array on a new line.
 # ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
 # ADM `GALACTIC' is True for a map in Galactic coords, False for RA/Dec.
-# MMM 'NSIDE' is the HEALPix nside of the map
-# MMM 'MAPTYPE': PIXMAP (pixelmap), PARTPIXMAP (partial sky pixel map), ALMMAP (alms), PIXMASK (pixel mask) 
+# -------
 # MMM 'MaskValue' is the value of the masked bits;  
 # MMM if Maskvalue is nonzero degraded pixel values may have contributions from masked areas. 
-# MMM if Maskvalue does not exist (no formally masked pixels), it defaults to zero for PIXMAP 
+# MMM if Maskvalue does not exist (no formally masked pixels), it defaults to zero for PIXMAP
+# MMM WARNING: not all columns have the same dtype and range
+# MMM WARNING: Need to decide on colum with MaskValue
+# MMM Provitional notes: 
+#     Halpha -   Tempearture and error: any value f4, mask: u1 1 (ok) or above (masked) 
+#     Calibration - no column names as it is not a table but an image fits file; mask data == 0 same file. 
+#     EBVdustGaia - colum names Recon_Mean, Recon_Variance, Recon_VarianceCorr f8 ; no masks 
+#     EBV_SFG     - colum names: ebv f4, mask: status i4 (masked area if status > 0)
+#     kappa       - values: index, real, imag;  mask : 
 maparray = np.array([
     ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',      'PIXMAP', 512, 'TEMPERATURE', 0, False, True),
-    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits','PIXMAP', 512, 'TEMPERATURE', 0, False, True),
-    ('HALPHA_MASK','Halpha', 'Halpha_mask_fwhm06_0512.fits', 'PIXMASK', 512, 'TEMPERATURE',0,  False, True), 
-    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False),
-    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False),
-    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMAP', 'TEMPERATURE', 0, False, False), 
-    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMASK','TEMPERATURE', 0, False, False),   
-    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMASK','TEMPERATURE', 0, False, False),   
-    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMASK', 'TEMPERATURE', 0, False, False),  
-    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMAP', 'EBVcolumn', 0, False,True),   
-    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMASK','EBVcolumn', 0, False,True),        
-    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',  2048, 'ALMMAP',  0,  True , True),
-    ('KAPPA_PLANCK_MASK','kappa', 'mask.fits.gz',  2048, 'PIXMASK', 0,  False , True), 
+    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits','PIXMAP', 512, 'ERROR', 0, False, True),
+    ('HALPHA_MASK','Halpha', 'Halpha_mask_fwhm06_0512.fits', 'PIXMASK', 512, 'MASK', 1,  False, True), 
+    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
+    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
+    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False), 
+    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMASK','NONE-IMAGE', 0, False, False),   
+    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMASK','NONE-IMAGE', 0, False, False),   
+    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMASK','NONE-IMAGE', 0, False, False),  
+    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',      2048, 'PIXMASK','Recon_mean', 0, False, True),
+    ('EBV_GAIA_FW6p1',     'EBV', 'recon_fw6-1.fits',     2048, 'PIXMASK','Recon_mean', 0, False, True), 
+    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMAP', 'ebv',        0, False, True),   
+    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMASK','EBVcolumn',  0, False, True),        
+    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',         2048, 'ALMMAP', 'NONE-3col',  0, False, True),
+    ('KAPPA_PLANCK_MASK','kappa', 'mask.fits.gz',         2048, 'PIXMASK','I',          0, False, True), 
     ], dtype=mapdt)
 
 
