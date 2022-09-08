@@ -241,6 +241,9 @@ if mkfulld:
         if type[:3] == 'QSO':
             azf = mainp.qsozf
             azfm = 'hp'
+            if specrel == 'newQSOtemp_tagged':
+                azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
+                azfm = 'cumul'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
