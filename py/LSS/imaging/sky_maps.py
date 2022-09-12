@@ -107,6 +107,36 @@ def write_atomically(filename, data, extname=None, header=None):
     return
 
 
+def bitmask_one_brick(brickname, ra, dec, photsys, mxdir=None):
+    """Slow look up of LSS bitmask information for one brick.
+    """
+    brickname = str(bricks['BRICKNAME'][brick_index])
+    if bricks['PHOTSYS'][brick_index]=='N':
+        field = 'north'
+    elif bricks['PHOTSYS'][brick_index]=='S':
+        field = 'south'
+    else:
+        # raise ValueError
+        # Outside DR9 footprint; assign mask bit 7
+        bitmask = np.full(len(ra), 2**7, dtype=np.uint8)
+        return bitmask
+
+    # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname, tracer))
+
+    bitmask_img = fitsio.read(bitmask_fn)
+
+    header = fits.open(bitmask_fn)[1].header
+    w = wcs.WCS(header)
+
+    coadd_x, coadd_y = w.wcs_world2pix(ra, dec, 0)
+    coadd_x, coadd_y = np.round(coadd_x).astype(int), np.round(coadd_y).astype(int)
+
+    bitmask = bitmask_img[coadd_y, coadd_x]
+
+    return bitmask
+
+
 def wrap_pixmap(randoms, targets, nside=512, gaialoc=None):
     """HEALPix map from randoms (wrapper on desitarget.randoms.pixmap)
 
