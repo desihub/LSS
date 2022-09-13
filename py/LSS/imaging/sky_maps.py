@@ -15,6 +15,7 @@ import healpy as hp
 
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header
 
@@ -116,7 +117,7 @@ def get_lss_dir(lssmapdir=None, survey="main"):
 
     Notes
     -----
-    - At NERSC, $LSS_MAP_DIR is typically:
+    - At NERSC, the LSS directory is typically:
       /global/cfs/cdirs/desi/survey/catalogs/$survey/LSS
     """
     lssmapdir = get_lss_map_dir(lssmapdir)
@@ -128,13 +129,52 @@ def get_lss_dir(lssmapdir=None, survey="main"):
         surv = survey.lower()
 
     if surv not in ["SV1", "SV2", "SV3", "main"]:
-        msg = "Survey: {} not recognized".format(surv)
+        msg = "Survey: {} not recognized".format(survey)
         log.critical(msg)
         raise ValueError(msg)
 
-    lssdir = 
-    
-    return 
+    return os.path.join(os.path.dirname(get_lss_map_dir(lssmapdir)), surv, "LSS")
+
+
+def get_brickmask_dir(tracer, lssmapdir=None):
+    """Derive the brickmasks directory from $LSS_MAP_DIR.
+
+    Parameters
+    ----------
+    tracer : :class:`str`
+        The name of a tracer that has masks in the brickmasks directory.
+        Options are "ELG" and "LRG".
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        The location of the directory that host the LSS maps. If `None`
+        is passed then the $LSS_MAP_DIR environment variable is used.
+
+    Returns
+    -------
+    :class:`str`
+        The base directory for the brickmask products for the `tracer`.
+
+    Notes
+    -----
+    - At NERSC, the brickmask directory is typically:
+      /global/cfs/cdirs/desi/survey/catalogs/brickmasks
+    """
+    lssmapdir = get_lss_map_dir(lssmapdir)
+
+    # ADM make sure the tracer names are upper-case
+    tracer = tracer.upper()
+
+    if tracer not in ["LRG", "ELG"]:
+        msg = "Tracer: {} not recognized".format(tracer)
+        log.critical(msg)
+        raise ValueError(msg)
+
+    version = "v1"
+    if tracer == "LRG":
+        version = "v1.1"
+
+    basedir = (os.path.dirname(get_lss_map_dir(lssmapdir)))
+
+    return os.path.join(basedir, "brickmasks", tracer, version)
 
 
 def write_atomically(filename, data, extname=None, header=None):
@@ -171,36 +211,60 @@ def write_atomically(filename, data, extname=None, header=None):
     return
 
 
-def bitmask_one_brick(brickname, ra, dec, photsys, mxdir=None):
+def bitmask_one_brick(brickname, ra, dec, photsys, tracer, mxdir=None):
     """Slow look up of LSS bitmask information for one brick.
+
+    Parameters
+    ----------
+    brickname : :class:`str`
+        The name of a Legacy Surveys brick, e.g. '0001m015'
+    ra : :class:`float`
+        The Right Ascension of a location (degrees).
+    dec : :class:`float
+        The Declination of a matching location (degrees).
+    photsys : :class:`float`
+        Pass "N" for locations in a northern Legacy Surveys brick, or
+        "S" for locations in a southern brick.
+    tracer : :class:`str`
+        The name of a tracer that has masks in the brickmasks directory.
+        Options are "ELG" and "LRG".
+    mxdir : :class:`str`
+        The full path to the brickmasks directory. Pass ``None`` to guess
+        this from the $LSS_MAP_DIR environment variable.
+
+    Returns
+    -------
+    randoms : :class:`~numpy.ndarray`
+        The lrg_mask or elg_mask bitmasks at these locations for this
+        tracer type. The meanings of the bitmasks can be looked up via
+        from LSS.masks import lrg_mask, elg_mask
+
+    Notes
+    -----
+    - Adapted from:
+      https://github.com/desihub/LSS/blob/main/scripts/readwrite_pixel_bitmask.py
     """
-    # ADM assume a default location
+    # ADM assume a default location if mxdir was not passed.
+    if mxdir is None:
+        mxdir = get_brickmask_dir(tracer)
     
-    brickname = str(bricks['BRICKNAME'][brick_index])
-    if bricks['PHOTSYS'][brick_index] == 'N':
-        field = 'north'
-    elif bricks['PHOTSYS'][brick_index] == 'S':
-        field = 'south'
-    else:
-        # raise ValueError
-        # Outside DR9 footprint; assign mask bit 7
-        bitmask = np.full(len(ra), 2**7, dtype=np.uint8)
-        return bitmask
+    # ADM convert "N" to "north" and "S" to "south".
+    field = "{}orth".format(photsys.lower())
 
-    # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname, tracer))
+    fn = os.path.join(mxdir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(
+        field, brickname[:3], brickname, brickname, tracer.lower()))
 
-    bitmask_img = fitsio.read(bitmask_fn)
+    img = fitsio.read(fn)
 
-    header = fits.open(bitmask_fn)[1].header
-    w = wcs.WCS(header)
+    img, hdr = fitsio.read(fn, header=True)
+    w = WCS(hdr)
 
     coadd_x, coadd_y = w.wcs_world2pix(ra, dec, 0)
     coadd_x, coadd_y = np.round(coadd_x).astype(int), np.round(coadd_y).astype(int)
 
-    bitmask = bitmask_img[coadd_y, coadd_x]
+    mx = img[coadd_y, coadd_x]
 
-    return bitmask
+    return mx
 
 
 def wrap_pixmap(randoms, targets, nside=512, gaialoc=None):
