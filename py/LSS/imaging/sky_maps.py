@@ -29,7 +29,8 @@ start = time()
 
 mapdt = [
     ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'), ('NSIDE', 'i'),
-    ('COLNAME', 'O'), ('MAPTYPE', '0'), ('MASKVALUE', 'f'), ('NESTED', '?'), ('GALACTIC', '?')
+    ('COLNAME', 'O'), ('MAPTYPE', 'O'), ('MASKVALUE', 'i'), ('NESTED', '?'),
+    ('GALACTIC', '?')
 ]
 # ADM update with new maps in this global array on a new line.
 # ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
@@ -41,27 +42,27 @@ mapdt = [
 # MMM WARNING: not all columns have the same dtype and range
 # MMM WARNING: Need to decide on colum with MaskValue
 # MMM Provisional notes:
-#     Halpha -   Tempearture and error: any value f4, mask: u1 1 (ok) or above (masked)
+#     Halpha -   Temperature and error: any value f4, mask: u1 1 (ok) or above (masked)
 #     Calibration - no column names as it is not a table but an image fits file; mask data == 0 same file.
 #     EBVdustGaia - colum names Recon_Mean, Recon_Variance, Recon_VarianceCorr f8 ; no masks
 #     EBV_SFG     - colum names: ebv f4, mask: status i4 (masked area if status > 0)
 #     kappa       - values: index, real, imag;  mask :
 maparray = np.array([
-    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',      'PIXMAP', 512, 'TEMPERATURE', 0, False, True),
-    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 'PIXMAP', 512, 'ERROR', 0, False, True),
-    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits', 'PIXMASK', 512, 'MASK', 1,  False, True),
-    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits', 512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits', 512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits', 512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',      2048, 'PIXMASK', 'Recon_mean', 0, False, True),
-    ('EBV_GAIA_FW6p1',     'EBV', 'recon_fw6-1.fits',     2048, 'PIXMASK', 'Recon_mean', 0, False, True),
-    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMAP', 'ebv',        0, False, True),
-    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',   512, 'PIXMASK', 'EBVcolumn', 0, False, True),
-    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',         2048, 'ALMMAP', 'NONE-3col',  0, False, True),
-    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',         2048, 'PIXMASK', 'I',        0, False, True),
+    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',       512, 'PIXMAP', 'TEMPERATURE', 0, False, True),
+    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP', 'ERROR', 0, False, True),
+    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK', 1,  False, True),
+    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
+    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
+    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
+    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
+    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
+    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
+    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',         2048, 'PIXMASK', 'Recon_mean', 0, False, True),
+    ('EBV_GAIA_FW6p1',     'EBV', 'recon_fw6-1.fits',        2048, 'PIXMASK', 'Recon_mean', 0, False, True),
+    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMAP', 'ebv',        0, False, True),
+    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'EBVcolumn', 0, False, True),
+    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',            2048, 'ALMMAP', 'NONE-3col',  0, False, True),
+    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',           2048, 'PIXMASK', 'I',        0, False, True),
     ], dtype=mapdt)
 
 
@@ -95,6 +96,45 @@ def get_lss_map_dir(lssmapdir=None):
             raise ValueError(msg)
 
     return lssmapdir
+
+
+def get_lss_dir(lssmapdir=None, survey="main"):
+    """Grab the LSS directory from the $LSS_MAP_DIR environment variable.
+
+    Parameters
+    ----------
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        The location of the directory that host the LSS maps. If `None`
+        is passed then the $LSS_MAP_DIR environment variable is used.
+    survey : :class:`str`, optional, defaults to "main"
+        A survey phase. Either upper-case or lower-case can be passed.
+
+    Returns
+    -------
+    :class:`str`
+        The base directory for LSS products.
+
+    Notes
+    -----
+    - At NERSC, $LSS_MAP_DIR is typically:
+      /global/cfs/cdirs/desi/survey/catalogs/$survey/LSS
+    """
+    lssmapdir = get_lss_map_dir(lssmapdir)
+
+    # ADM convert between upper/lower case as needed.
+    if "s" in survey:
+        surv = survey.upper()
+    else:
+        surv = survey.lower()
+
+    if surv not in ["SV1", "SV2", "SV3", "main"]:
+        msg = "Survey: {} not recognized".format(surv)
+        log.critical(msg)
+        raise ValueError(msg)
+
+    lssdir = 
+    
+    return 
 
 
 def write_atomically(filename, data, extname=None, header=None):
@@ -134,6 +174,8 @@ def write_atomically(filename, data, extname=None, header=None):
 def bitmask_one_brick(brickname, ra, dec, photsys, mxdir=None):
     """Slow look up of LSS bitmask information for one brick.
     """
+    # ADM assume a default location
+    
     brickname = str(bricks['BRICKNAME'][brick_index])
     if bricks['PHOTSYS'][brick_index] == 'N':
         field = 'north'
