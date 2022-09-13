@@ -247,9 +247,16 @@ def bitmask_one_brick(brickname, ra, dec, photsys, tracer, mxdir=None):
     # ADM assume a default location if mxdir was not passed.
     if mxdir is None:
         mxdir = get_brickmask_dir(tracer)
-    
+
     # ADM convert "N" to "north" and "S" to "south".
-    field = "{}orth".format(photsys.lower())
+    if photsys == "N":
+        field = "north"
+    elif photsys == "S":
+        field = "south"
+    else:
+        msg = "photsys should be 'N' or 'S', not {}".format(photsys)
+        log.critical(msg)
+        raise ValueError(msg)
 
     fn = os.path.join(mxdir, '{}/coadd/{}/{}/{}-{}mask.fits.gz'.format(
         field, brickname[:3], brickname, brickname, tracer.lower()))
