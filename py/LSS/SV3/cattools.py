@@ -1358,7 +1358,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
 
     print('sort min/max',np.min(dz['sort']),np.max(dz['sort']))
-    dz.sort('sort')
+    
 
     #get OII flux info for ELGs
     if tp[:3] == 'ELG' and azfm == 'cumul':
@@ -1400,7 +1400,7 @@ def mkfulldat(zf,imbits,tdir,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='SV
             wz = dz['ZWARN'] != 999999 #this is what the null column becomes
             wz &= dz['ZWARN']*0 == 0 #just in case of nans
 
-
+    dz.sort('sort')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     if azfm == 'hp':
