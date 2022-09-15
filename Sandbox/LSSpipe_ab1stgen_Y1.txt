@@ -22,7 +22,7 @@ python prepare_mocks_ran_main.py --ranmin <min_random_file> --ranmax <max_ran_fi
 #then, run the catalog pipeline script
 #this combines across tiles for dark time info
 #default just does dark time
-python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --combd y --combr y --combdr y --tracer dark --add_gtl n
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --combd y --combr y --combdr y --countran y --tracer dark --add_gtl n
 
 #setting --add_gtl n means that we are not using the good fiber list from the actual observed data
 #we should change that when we are ready (maybe after himalayas data)
