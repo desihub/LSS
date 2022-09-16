@@ -479,14 +479,15 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if option:
         zmax = str(zmax) + option
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
-    root = '{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
+    wang = '{}_'.format(wang) if wang is not None else ''
+    root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
@@ -584,6 +585,11 @@ if __name__ == '__main__':
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+            if mpicomm is None or mpicomm.rank == mpiroot:
+                 if wang is not None:
+                        for name in wang:
+                            if wang[name] is not None:
+                                wang[name].save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, 'wang'), **base_file_kwargs, wang=name))
 
         # Save combination and .txt files
         for corr_type in args.corr_type:
