@@ -18,9 +18,13 @@ from astropy import units as u
 from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header
+from desitarget.geomask import match
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
+
+# ADM general bitmasks for LSS
+from LSS.masks import lrg_mask, elg_mask, skymap_mask
 
 # ADM initialize the DESI default logger.
 log = get_logger()
@@ -277,7 +281,7 @@ def ls_bitmask_one_brick(brickname, ra, dec, photsys, tracer, mxdir=None):
 
 
 def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
-    """Assign Legacy Surveys bitmask information to randoms.
+    """Assign Legacy-Surveys-based tracer bitmask information to randoms.
 
     Parameters
     ----------
@@ -306,11 +310,8 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
     -----
     - Performs a cross-match on TARGETID to existing, pre-constructed
       per-random catalogs of bitmasks in the LSS directory. If these
-      catalogs don't exist they'll need made (and an error is triggered).
+      catalogs don't exist they'll need made (triggering an OSerror).
     """
-    # ADM import the relevant masks.
-    from LSS.masks import lrg_mask, elg_mask, skymap_mask
-
     # ADM find the location of the pre-constructed bitmask catalogs.
     lss_dir = get_lss_dir(lssmapdir=lssmapdir, survey=survey)
 
@@ -318,8 +319,9 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
     done = np.zeros(len(randoms), dtype="u8")
 
     # ADM need to process once per different ident/random catalog.
-    sidents = set(ident["IDENT"])
+    sidents = sorted(list(set(ident["IDENT"])))
     for sident in sidents:
+        log.info("Working on random catalog {}".format(sident))
         # ADM loop through each tracer and populate a bitmask transposed
         # ADM from the LS representation to the skymap representation.
         for i, tracer in enumerate(["elg", "lrg"]):
@@ -331,6 +333,15 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
             # ADM transposed from the LS to skymap representation.
             if i == 0:
                 trans = np.zeros(len(lsmx), dtype="u8")
+                targetids = lsmx["TARGETID"]
+            else:
+                # ADM a check that all of the files of tracers are
+                # ADM ordered consistently on TARGETID.
+                if np.any(lsmx["TARGETID"] != targetids):
+                    msg = ("Files of tracers (e.g. {}) not ordered"
+                    " consistently on TARGETID".format(fn))
+                    log.critical(msg)
+                    raise ValueError(msg)
             # ADM the name of the relevant column/bitmask.
             mxname = "{}_mask".format(tracer)
             log.info("Transposing bits from {} to skymap_mask".format(mxname))
@@ -351,16 +362,18 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
                     msg = "Can't transpose {} in {} to {} or {} in {}".format(
                         nom, mxname, nom, altnom, "skymap_mask")
                     log.critical(msg)
-                    raise ValueError
+                    raise ValueError(msg)
                 log.info("Transposing {} to {}".format(nom, snom))
                 # ADM find instances of bit in the Legacy Surveys mask.
                 is_bit_set = lsmx[mxname] & mx[nom] != 0
                 # ADM set instances of this bit using the skymap mask.
                 # ADM be careful, here, to cast as an unsigned integer.
                 trans |= np.array(is_bit_set * skymap_mask[snom], dtype='u8')
-            # ADM now match
+        # ADM now match on TARGETID and assign mask bits.
+        rii, tii = match(randoms["TARGETID"], targetids)
+        done[rii] = trans[tii]
 
-    return mx
+    return done
 
 
 def wrap_pixmap(randoms, targets, nside=512, gaialoc=None):
@@ -601,7 +614,7 @@ def read_randoms(infiles, test=False):
     else:
         msg = "randoms must be passed as either a list or a string!"
         log.critical(msg)
-        raise ValueError
+        raise ValueError(msg)
 
     log.info("Read {} total randoms at density {}... t = {:.1f}s".format(
         len(randoms), hdr["DENSITY"], time()-start))
