@@ -34,40 +34,41 @@ start = time()
 
 mapdt = [
     ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'), ('NSIDE', 'i'),
-    ('COLNAME', 'O'), ('MAPTYPE', 'O'), ('MASKVALUE', 'i'), ('NESTED', '?'),
+    ('MAPTYPE', 'O'), ('COLNAME', 'O'), ('MASKCHECK', 'O'), ('NESTED', '?'),
     ('GALACTIC', '?')
 ]
 # ADM update with new maps in this global array on a new line.
 # ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
 # ADM `GALACTIC' is True for a map in Galactic coords, False for RA/Dec.
 # -------
-# MMM 'MaskValue' is the value of the masked bits;
-# MMM if Maskvalue is nonzero degraded pixel values may have contributions from masked areas.
-# MMM if Maskvalue does not exist (no formally masked pixels), it defaults to zero for PIXMAP
+# ADM 'MASKCHECK' is a string containing the logical comparison used to define a value that IS masked;
+# ADM for example if MASKCHECK is ">1" then all values in the file that are greater than 1 ARE masked.
+# MMM if Maskvalue is anything other than '' degraded pixel values may have contributions from masked areas.
+# MMM if Maskvalue does not exist (no formally masked pixels), it defaults to '' for PIXMAP
 # MMM WARNING: not all columns have the same dtype and range
-# MMM WARNING: Need to decide on colum with MaskValue
+# MMM WARNING: Need to decide on column with MaskValue
 # MMM Provisional notes:
 #     Halpha -   Temperature and error: any value f4, mask: u1 1 (ok) or above (masked)
 #     Calibration - no column names as it is not a table but an image fits file; mask data == 0 same file.
-#     EBVdustGaia - colum names Recon_Mean, Recon_Variance, Recon_VarianceCorr f8 ; no masks
-#     EBV_SFG     - colum names: ebv f4, mask: status i4 (masked area if status > 0)
+#     EBVdustGaia - column names Recon_Mean, Recon_Variance, Recon_VarianceCorr f8 ; no masks
+#     EBV_SGF     - column names: ebv f4, mask: status i4 (masked area if status > 0)
 #     kappa       - values: index, real, imag;  mask :
 maparray = np.array([
-    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',       512, 'PIXMAP', 'TEMPERATURE', 0, False, True),
-    ('HALPHAErr',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP', 'ERROR', 0, False, True),
-    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK', 1,  False, True),
-    ('CALIBG',     'calibration', 'decam-ps1-0128-g.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBR',     'calibration', 'decam-ps1-0128-r.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBZ',     'calibration', 'decam-ps1-0128-z.fits',    512, 'PIXMAP', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKG', 'calibration', 'decam-ps1-0128-g.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKR', 'calibration', 'decam-ps1-0128-r.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('CALIBMASKZ', 'calibration', 'decam-ps1-0128-z.fits',    512, 'PIXMASK', 'NONE-IMAGE', 0, False, False),
-    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',         2048, 'PIXMASK', 'Recon_mean', 0, False, True),
-    ('EBV_GAIA_FW6p1',     'EBV', 'recon_fw6-1.fits',        2048, 'PIXMASK', 'Recon_mean', 0, False, True),
-    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMAP', 'ebv',        0, False, True),
-    ('EBV_SGF14_mask',     'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'EBVcolumn', 0, False, True),
-    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',            2048, 'ALMMAP', 'NONE-3col',  0, False, True),
-    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',           2048, 'PIXMASK', 'I',        0, False, True),
+    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',          512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
+    ('HALPHA_ERROR',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
+    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits',    512, 'PIXMASK', 'MASK',        '>1', False, True),
+    ('CALIB_G',     'calibration', 'decam-ps1-0128-g.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_R',     'calibration', 'decam-ps1-0128-r.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_Z',     'calibration', 'decam-ps1-0128-z.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_mean',    '', False, True), # ADM I changed this to PIXMAP not PIXMASK. Not sure I understand the 49152*1024 format.
+    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_mean',    '', False, True), # ADM I changed this to PIXMAP not PIXMASK. Not sure I understand the 49152*1024 format.
+    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
+    ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',      '<0', False, True), # ADM what is the actual masking condition, here? It's not clear to me.
+    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
+#    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True), # ADM Not sure I understand the 49152*1024 format.
     ], dtype=mapdt)
 
 
@@ -124,7 +125,7 @@ def get_lss_dir(lssmapdir=None, survey="main"):
     - At NERSC, the LSS directory is typically:
       /global/cfs/cdirs/desi/survey/catalogs/$survey/LSS
     """
-    lssmapdir = get_lss_map_dir(lssmapdir)
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
     # ADM convert between upper/lower case as needed.
     if "s" in survey:
@@ -137,7 +138,7 @@ def get_lss_dir(lssmapdir=None, survey="main"):
         log.critical(msg)
         raise ValueError(msg)
 
-    return os.path.join(os.path.dirname(get_lss_map_dir(lssmapdir)), surv, "LSS")
+    return os.path.join(os.path.dirname(lssmapdir), surv, "LSS")
 
 
 def get_ls_brickmask_dir(tracer, lssmapdir=None):
@@ -162,7 +163,7 @@ def get_ls_brickmask_dir(tracer, lssmapdir=None):
     - At NERSC, the brickmask directory is typically:
       /global/cfs/cdirs/desi/survey/catalogs/brickmasks
     """
-    lssmapdir = get_lss_map_dir(lssmapdir)
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
     # ADM make sure the tracer names are upper-case
     tracer = tracer.upper()
@@ -176,7 +177,7 @@ def get_ls_brickmask_dir(tracer, lssmapdir=None):
     if tracer == "LRG":
         version = "v1.1"
 
-    basedir = (os.path.dirname(get_lss_map_dir(lssmapdir)))
+    basedir = os.path.dirname(lssmapdir)
 
     return os.path.join(basedir, "brickmasks", tracer, version)
 
@@ -492,8 +493,7 @@ def write_pixmap(randoms, targets, hdr=None, nside=512, gaialoc=None,
     hdr['HPXNSIDE'] = nside
     hdr['HPXNEST'] = True
 
-    pixmap, survey = wrap_pixmap(randoms, targets, nside=nside, gaialoc=gaialoc,
-                                 test=test)
+    pixmap, survey = wrap_pixmap(randoms, targets, nside=nside, gaialoc=gaialoc)
 
     hdr["SURVEY"] = survey
 
@@ -622,6 +622,119 @@ def read_randoms(infiles, test=False):
     return randoms, hdr, ident
 
 
+def rancat_name_to_mask_name(rancatname, lssmapdir=None):
+    """Convert a random catalog name to the corresponding mask file name.
+
+    Parameters
+    ----------
+    rancatname : :class:`str`
+        Full path to a random catalog.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    :class:`str`
+        The full path to the corresponding mask file name in the
+        lssmapdir directory.
+    """
+    outfn = os.path.basename(rancatname).replace(".fits", "-skymapmask.fits")
+
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    return os.path.join(lssmapdir, "masks", outfn)
+
+
+def generate_mask(rancatname, lssmapdir=None):
+    """Generate a file of mask values and TARGETID for a random catalog.
+
+    Parameters
+    ----------
+    rancatname : :class:`str`
+        Full path to a random catalog.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    Nothing, but an array that contains TARGETID and SKYMAP_MASK columns
+    is written to lssmapdir/masks/rancatname-skymapmask.fits.
+    """
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    # ADM read the random catalog.
+    randoms, hdr, ident = read_randoms(rancatname)
+
+    # ADM store the Galactic coordinates for the randoms.
+    c = SkyCoord(randoms["RA"]*u.degree, randoms["DEC"]*u.degree)
+    lgal, bgal = c.galactic.l.value, c.galactic.b.value
+
+    # ADM set up the output array.
+    dt = [('SKYMAP_MASK', 'u1'), ('TARGETID', '>i8')]
+    done = np.zeros(len(randoms), dtype=dt)
+    done["TARGETID"] = randoms["TARGETID"]
+
+    # ADM grab the output filename.
+    outfn = rancat_name_to_mask_name(rancatname, lssmapdir=lssmapdir)
+
+    # ADM first generate the bits from the LS masks.
+    outmx = ls_bitmask_for_randoms(randoms, ident, lssmapdir=lssmapdir)
+
+    # ADM limit to just the maps that correspond to masks...
+    mxarray = maparray[maparray["MAPTYPE"] == "PIXMASK"]
+    # ADM ... and loop through them.
+    for mx in mxarray:
+        # ADM construct the filename for the mask and read it.
+        fn = os.path.join(lssmapdir, mx["SUBDIR"], mx["FILENAME"])
+        # ADM some mask-maps are 1-D and have no column names.
+        if mx["COLNAME"] == "NONE-IMAGE":
+            mxdata = fitsio.read(fn)
+        else:
+            mxdata = fitsio.read(fn, columns=mx["COLNAME"])
+
+        # ADM construct a True/False version of this mask
+        # ADM and store it in the array "ismasked".
+        exec('ismasked = mxdata' + mx["MASKCHECK"])
+
+        # ADM look up the nside of the mask-map.
+        nsidemx = mx["NSIDE"]
+
+        # ADM the coordinates to use for this mask-map.
+        c1, c2 = randoms["RA"], randoms["DEC"]
+        # ADM if needed, use Galactic coordinates.
+        if mx["GALACTIC"]:
+            log.info("Using Galactic coordinates for {} map".format(mx["MAPNAME"]))
+            c1, c2 = lgal, bgal
+
+        # ADM determine whether each of the randoms is masked for the
+        # ADM mask-map scheme (i.e. nested or ring).
+        theta, phi = np.radians(90-c2), np.radians(c1)
+        pixnums = hp.ang2pix(nsidemx, theta, phi, nest=mx["NESTED"])
+        randmx = ismasked[pixnums]
+
+        # ADM check the name for the skymap mask makes sense.
+        if not mx["MAPNAME"][-5:] == "_MASK":
+            msg = "Mask-maps should have MAPNAMEs ending in _MASK; {} does not!"
+            log.critical(msg.format(mx["MAPNAME"]))
+            raise ValueError(msg.format(mx["MAPNAME"]))
+
+        # ADM now we know the mask name is sensible, add the bit-mask for
+        # ADM randoms that need masked (randoms with ismasked==True).
+        mxnom = mx["MAPNAME"][:-5].upper()
+        outmx |= randmx*skymap_mask[mxnom]
+
+    # ADM now we've looped over all masks, construct the final array...
+    done["SKYMAP_MASK"] = outmx
+    # ADM ...and write it to file.
+    write_atomically(outfn, done, extname='PIXMASK', header=hdr)
+
+    return
+
+
 def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     """Sample a systematics map.
 
@@ -633,7 +746,7 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
         Random catalog, as made by, e.g. :func:`read_randoms()`.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
-       `lssmapdir` is ``None`` (or not passed), $LSS_MAxP_DIR is used.
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
     nside : :class:`int`, optional, defaults to nside=512
         Resolution (HEALPix nside) at which to build the (NESTED) map.
 
@@ -661,7 +774,7 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     pixmap = pixmap[0]
 
     # ADM construct the filename for, and read, the relevant map.
-    lssmapdir = get_lss_map_dir(lssmapdir)
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
     fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
     mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
 
