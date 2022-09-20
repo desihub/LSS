@@ -34,15 +34,15 @@ start = time()
 
 mapdt = [
     ('MAPNAME', 'O'), ('SUBDIR', 'O'), ('FILENAME', 'O'), ('NSIDE', 'i'),
-    ('MAPTYPE', 'O'), ('COLNAME', 'O'), ('MASKCHECK', 'O'), ('NESTED', '?'),
+    ('MAPTYPE', 'O'), ('COLNAME', 'O'), ('MASKCHECK', 'U3'), ('NESTED', '?'),
     ('GALACTIC', '?')
 ]
 # ADM update with new maps in this global array on a new line.
 # ADM 'NESTED' is True for nested HEALPix and False for the ring scheme.
 # ADM `GALACTIC' is True for a map in Galactic coords, False for RA/Dec.
 # -------
-# ADM 'MASKCHECK' is a string containing the logical comparison used to define a value that IS masked;
-# ADM for example if MASKCHECK is ">1" then all values in the file that are greater than 1 ARE masked.
+# ADM 'MASKCHECK' is a 3-character string containing the logical comparison used to define a value that IS masked;
+# ADM for example if MASKCHECK is "> 1" then all values in the file that are greater than 1 ARE masked.
 # MMM if Maskvalue is anything other than '' degraded pixel values may have contributions from masked areas.
 # MMM if Maskvalue does not exist (no formally masked pixels), it defaults to '' for PIXMAP
 # MMM WARNING: not all columns have the same dtype and range
@@ -56,19 +56,19 @@ mapdt = [
 maparray = np.array([
     ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',          512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
     ('HALPHA_ERROR',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
-    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits',    512, 'PIXMASK', 'MASK',        '>1', False, True),
-    ('CALIB_G',     'calibration', 'decam-ps1-0128-g.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_R',     'calibration', 'decam-ps1-0128-r.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_Z',     'calibration', 'decam-ps1-0128-z.fits',      512, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',     512, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_mean',    '', False, True), # ADM I changed this to PIXMAP not PIXMASK. Not sure I understand the 49152*1024 format.
-    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_mean',    '', False, True), # ADM I changed this to PIXMAP not PIXMASK. Not sure I understand the 49152*1024 format.
+    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits',    512, 'PIXMASK', 'MASK',       '> 1', False, True),
+    ('CALIB_G',     'calibration', 'decam-ps1-0128-g.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_R',     'calibration', 'decam-ps1-0128-r.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_Z',     'calibration', 'decam-ps1-0128-z.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_mean',    '', False, True),
+    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_mean',    '', False, True),
     ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
-    ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',      '<0', False, True), # ADM what is the actual masking condition, here? It's not clear to me.
+    ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',     '< 0', False, True),
     ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
-#    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True), # ADM Not sure I understand the 49152*1024 format.
+    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True),
     ], dtype=mapdt)
 
 
@@ -647,6 +647,67 @@ def rancat_name_to_mask_name(rancatname, lssmapdir=None):
     return os.path.join(lssmapdir, "masks", outfn)
 
 
+def parse_mask_check(mxdata, maskcheck, check=False):
+    """Turn a MASKCHECK string into a conditional and apply it.
+
+    Parameters
+    ----------
+    mxdata : :class:`~numpy.ndarray`
+        Array containing values to be masked.
+    maskcheck : :class:`str`
+        Conditional to apply to array. Must be a 3-character string where
+        the first 2 characters are a logical comparison and the final
+        character is an integer, such as "> 1" or "<=1".
+    check : :class:`bool`
+        If ``True`` then just check is `maskcheck` is an allowed string
+        and return (Nothing is returned).
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        Boolean array which is ``True`` for values where the `maskcheck`
+        conditional IS met.
+
+    Notes
+    -----
+    - This is a tad unwieldy but is likely much safer than allowing an
+      eval() or exec() function.
+    """
+    allowed = [">=", "> ", "<=", "< ", "!=", "=="]
+    # ADM check maskcheck is constructed properly.
+    if maskcheck[:2] not in allowed:
+        msg = "First two characters of MASKCHECK must be one of {} (|{}| passed)"
+        log.critical(msg.format(allowed, maskcheck))
+        raise ValueError(msg.format(allowed, maskcheck))
+
+    if len(maskcheck) != 3:
+        msg = "MASKCHECK must be a 3-character string (|{}| passed)"
+        log.critical(msg.format(maskcheck))
+        raise ValueError(msg.format(maskcheck))
+
+    if check:
+        return
+
+    checknum = int(maskcheck[2])
+    if maskcheck[:2] == ">=":
+        return mxdata >= checknum
+    elif maskcheck[:2] == "> ":
+        return mxdata > checknum
+    elif maskcheck[:2] == "<=":
+        return mxdata <= checknum
+    elif maskcheck[:2] == "< ":
+        return mxdata < checknum
+    elif maskcheck[:2] == "!=":
+        return mxdata != checknum
+    elif maskcheck[:2] == "==":
+        return mxdata == checknum
+    # ADM redundant, but worth keeping for future code development.
+    else:
+        msg = "Conditional in allowed list not included in elif statements!"
+        log.critical(msg)
+        raise ValueError(msg)
+
+
 def generate_mask(rancatname, lssmapdir=None):
     """Generate a file of mask values and TARGETID for a random catalog.
 
@@ -688,17 +749,23 @@ def generate_mask(rancatname, lssmapdir=None):
     mxarray = maparray[maparray["MAPTYPE"] == "PIXMASK"]
     # ADM ... and loop through them.
     for mx in mxarray:
+        log.info("Working on mask {}".format(mx["MAPNAME"]))
+
         # ADM construct the filename for the mask and read it.
         fn = os.path.join(lssmapdir, mx["SUBDIR"], mx["FILENAME"])
-        # ADM some mask-maps are 1-D and have no column names.
-        if mx["COLNAME"] == "NONE-IMAGE":
-            mxdata = fitsio.read(fn)
-        else:
-            mxdata = fitsio.read(fn, columns=mx["COLNAME"])
+        # ADM try generic ways to read all types of mask-maps.
+        try:
+            mxdata = hp.read_map(fn, field=mx["COLNAME"])
+        except AttributeError:
+            # ADM some mask-maps are 1-D and have no column names.
+            if mx["COLNAME"] == "NONE-IMAGE":
+                mxdata = fitsio.read(fn)
+            else:
+                mxdata = fitsio.read(fn, columns=mx["COLNAME"])
 
         # ADM construct a True/False version of this mask
         # ADM and store it in the array "ismasked".
-        exec('ismasked = mxdata' + mx["MASKCHECK"])
+        ismasked = eval('mxdata' + mx["MASKCHECK"])
 
         # ADM look up the nside of the mask-map.
         nsidemx = mx["NSIDE"]
@@ -725,7 +792,7 @@ def generate_mask(rancatname, lssmapdir=None):
         # ADM now we know the mask name is sensible, add the bit-mask for
         # ADM randoms that need masked (randoms with ismasked==True).
         mxnom = mx["MAPNAME"][:-5].upper()
-        outmx |= randmx*skymap_mask[mxnom]
+        outmx |= np.array(randmx * skymap_mask[mxnom], dtype='u8')
 
     # ADM now we've looped over all masks, construct the final array...
     done["SKYMAP_MASK"] = outmx
