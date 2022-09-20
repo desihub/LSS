@@ -208,10 +208,15 @@ def write_atomically(filename, data, extname=None, header=None):
     """
     # ADM make the necessary directory if it doesn't exist.
     os.makedirs(os.path.dirname(filename), exist_ok=True)
+
     # ADM write the file atomically by making a .tmp file and moving it.
     fitsio.write(filename+'.tmp', data, extname=extname, header=header,
                  clobber=True)
     os.rename(filename+'.tmp', filename)
+
+    # ADM note we successfully completed.
+    log.info("Wrote {} objects to {}...t={:.1f}s".format(
+        len(data), filename, time()-start))
 
     return
 
@@ -322,7 +327,8 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
     # ADM need to process once per different ident/random catalog.
     sidents = sorted(list(set(ident["IDENT"])))
     for sident in sidents:
-        log.info("Working on random catalog {}".format(sident))
+        log.info("Working on random catalog {}...t={:.1f}s".format(
+            sident, time()-start))
         # ADM loop through each tracer and populate a bitmask transposed
         # ADM from the LS representation to the skymap representation.
         for i, tracer in enumerate(["elg", "lrg"]):
@@ -340,12 +346,13 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
                 # ADM ordered consistently on TARGETID.
                 if np.any(lsmx["TARGETID"] != targetids):
                     msg = ("Files of tracers (e.g. {}) not ordered"
-                    " consistently on TARGETID".format(fn))
+                           " consistently on TARGETID".format(fn))
                     log.critical(msg)
                     raise ValueError(msg)
             # ADM the name of the relevant column/bitmask.
             mxname = "{}_mask".format(tracer)
-            log.info("Transposing bits from {} to skymap_mask".format(mxname))
+            log.info("Transposing bits from {} to skymap_mask..t={:.1f}s".format(
+                mxname, time()-start))
             # ADM the bitmask itself.
             mx = globals()[mxname]
             # ADM loop through the relevant bitmask names and transpose
@@ -735,7 +742,7 @@ def generate_mask(rancatname, lssmapdir=None):
     lgal, bgal = c.galactic.l.value, c.galactic.b.value
 
     # ADM set up the output array.
-    dt = [('SKYMAP_MASK', 'u1'), ('TARGETID', '>i8')]
+    dt = [('SKYMAP_MASK', 'u8'), ('TARGETID', '>i8')]
     done = np.zeros(len(randoms), dtype=dt)
     done["TARGETID"] = randoms["TARGETID"]
 
@@ -749,14 +756,15 @@ def generate_mask(rancatname, lssmapdir=None):
     mxarray = maparray[maparray["MAPTYPE"] == "PIXMASK"]
     # ADM ... and loop through them.
     for mx in mxarray:
-        log.info("Working on mask {}".format(mx["MAPNAME"]))
+        log.info("Working on mask {}...t={:.1f}s".format(
+            mx["MAPNAME"], time()-start))
 
         # ADM construct the filename for the mask and read it.
         fn = os.path.join(lssmapdir, mx["SUBDIR"], mx["FILENAME"])
         # ADM try generic ways to read all types of mask-maps.
         try:
             mxdata = hp.read_map(fn, field=mx["COLNAME"])
-        except AttributeError:
+        except (AttributeError, KeyError):
             # ADM some mask-maps are 1-D and have no column names.
             if mx["COLNAME"] == "NONE-IMAGE":
                 mxdata = fitsio.read(fn)
@@ -765,7 +773,7 @@ def generate_mask(rancatname, lssmapdir=None):
 
         # ADM construct a True/False version of this mask
         # ADM and store it in the array "ismasked".
-        ismasked = eval('mxdata' + mx["MASKCHECK"])
+        ismasked = parse_mask_check(mxdata, mx["MASKCHECK"])
 
         # ADM look up the nside of the mask-map.
         nsidemx = mx["NSIDE"]
