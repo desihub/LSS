@@ -72,8 +72,22 @@ maparray = np.array([
     ], dtype=mapdt)
 
 
+def sanity_check_map_array():
+    """Convenience function to check the format of the map_array global.
+    """
+    log.info("Running sanity checks on maparray...")
+    for skymap in maparray:
+        # ADM check the conditionals in the MASKCHECK column.
+        if skymap["MAPTYPE"] == "PIXMASK":
+            parse_mask_check(np.empty(2), skymap["MASKCHECK"], check=True)
+
+    log.info("...maparray seems to be correctly formatted")
+
+    return
+
+
 def get_lss_map_dir(lssmapdir=None):
-    """Convenience function to get the $LSS_MAP_DIR environment variable.
+    """Function to grab the $LSS_MAP_DIR environment variable.
 
     Parameters
     ----------
@@ -105,7 +119,7 @@ def get_lss_map_dir(lssmapdir=None):
 
 
 def get_lss_dir(lssmapdir=None, survey="main"):
-    """Grab the LSS directory from the $LSS_MAP_DIR environment variable.
+    """Derive the LSS directory from the $LSS_MAP_DIR environment variable.
 
     Parameters
     ----------
@@ -321,8 +335,9 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
     # ADM find the location of the pre-constructed bitmask catalogs.
     lss_dir = get_lss_dir(lssmapdir=lssmapdir, survey=survey)
 
-    # ADM set up an output array.
-    done = np.zeros(len(randoms), dtype="u8")
+    # ADM set up an output array. I use "i8" here because (as of the time
+    # ADM of writing) fitsio does not support I/O for "u8" (uint64).
+    done = np.zeros(len(randoms), dtype="i8")
 
     # ADM need to process once per different ident/random catalog.
     sidents = sorted(list(set(ident["IDENT"])))
@@ -339,7 +354,7 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
             # ADM first-time-through, set up an array to hold the bitmask
             # ADM transposed from the LS to skymap representation.
             if i == 0:
-                trans = np.zeros(len(lsmx), dtype="u8")
+                trans = np.zeros(len(lsmx), dtype="i8")
                 targetids = lsmx["TARGETID"]
             else:
                 # ADM a check that all of the files of tracers are
@@ -375,8 +390,9 @@ def ls_bitmask_for_randoms(randoms, ident, lssmapdir=None, survey="main"):
                 # ADM find instances of bit in the Legacy Surveys mask.
                 is_bit_set = lsmx[mxname] & mx[nom] != 0
                 # ADM set instances of this bit using the skymap mask.
-                # ADM be careful, here, to cast as an unsigned integer.
-                trans |= np.array(is_bit_set * skymap_mask[snom], dtype='u8')
+                # ADM I cast as 'i8', here, because (as of the time of
+                # ADM writing) fitsio does not support I/O for "u8".
+                trans |= np.array(is_bit_set * skymap_mask[snom], dtype='i8')
         # ADM now match on TARGETID and assign mask bits.
         rii, tii = match(randoms["TARGETID"], targetids)
         done[rii] = trans[tii]
@@ -692,10 +708,16 @@ def parse_mask_check(mxdata, maskcheck, check=False):
         log.critical(msg.format(maskcheck))
         raise ValueError(msg.format(maskcheck))
 
+    try:
+        checknum = int(maskcheck[2])
+    except ValueError:
+        msg = "MASKCHECK must end in an integer (|{}| passed)"
+        log.critical(msg.format(maskcheck))
+        raise ValueError(msg.format(maskcheck))
+
     if check:
         return
 
-    checknum = int(maskcheck[2])
     if maskcheck[:2] == ">=":
         return mxdata >= checknum
     elif maskcheck[:2] == "> ":
@@ -741,8 +763,9 @@ def generate_mask(rancatname, lssmapdir=None):
     c = SkyCoord(randoms["RA"]*u.degree, randoms["DEC"]*u.degree)
     lgal, bgal = c.galactic.l.value, c.galactic.b.value
 
-    # ADM set up the output array.
-    dt = [('SKYMAP_MASK', 'u8'), ('TARGETID', '>i8')]
+    # ADM set up an output array. I use "i8" here because (as of the time
+    # ADM of writing) fitsio does not support I/O for "u8" (uint64).
+    dt = [('SKYMAP_MASK', 'i8'), ('TARGETID', '>i8')]
     done = np.zeros(len(randoms), dtype=dt)
     done["TARGETID"] = randoms["TARGETID"]
 
@@ -800,7 +823,9 @@ def generate_mask(rancatname, lssmapdir=None):
         # ADM now we know the mask name is sensible, add the bit-mask for
         # ADM randoms that need masked (randoms with ismasked==True).
         mxnom = mx["MAPNAME"][:-5].upper()
-        outmx |= np.array(randmx * skymap_mask[mxnom], dtype='u8')
+        # ADM I cast as 'i8', here, because (as of the time of
+        # ADM writing) fitsio does not support I/O for "u8" (uint64).
+        outmx |= np.array(randmx * skymap_mask[mxnom], dtype='i8')
 
     # ADM now we've looped over all masks, construct the final array...
     done["SKYMAP_MASK"] = outmx
@@ -886,3 +911,7 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     done[uniq] = randmeans
 
     return done
+
+
+# ADM always start by running sanity checks on maparray.
+sanity_check_map_array()
