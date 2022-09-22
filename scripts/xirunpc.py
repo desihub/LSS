@@ -97,7 +97,7 @@ def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/g
     return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
 
 
-def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
+def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
     #if survey in ['main', 'DA02']:
@@ -112,7 +112,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
         return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
-    return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False, option=None):
