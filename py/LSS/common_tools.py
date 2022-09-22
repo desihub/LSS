@@ -271,7 +271,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     '''
     
     nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
-    fn = fb+'_clustering.dat.fits'
+    fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
     #fd = Table(ff['LSS'].read())
     #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
@@ -305,7 +305,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft.write(fn,format='fits',overwrite=True)        
     print('done with data')
     for rann in range(ranmin,nran):
-        fn = fb+ran_sw+'_'+str(rann)+'_clustering.ran.fits'
+        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
         fd = Table(fitsio.read(fn))

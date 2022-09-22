@@ -577,7 +577,7 @@ if args.addnbar_ran == 'y':
         P0 = 7000
     
     for reg in regl:
-        fb = dirout+tracer_clus+reg
+        fb = dirout+tracer_clus+utlid_sw+reg
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
 
 
