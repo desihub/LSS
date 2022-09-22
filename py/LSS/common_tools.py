@@ -270,7 +270,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
     
-    nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
+    nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
     #fd = Table(ff['LSS'].read())
