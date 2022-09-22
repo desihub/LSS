@@ -2626,7 +2626,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     if zmask:
         wzm += 'zmask_'
     if utlid:
-        ws = '_utlid_'
+        ws = 'utlid_'
     #ffd = Table.read(fl+'full.dat.fits')
     #fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(flin+str(rann)+'_full.ran.fits')
