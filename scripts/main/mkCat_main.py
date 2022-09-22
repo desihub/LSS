@@ -578,7 +578,7 @@ if args.addnbar_ran == 'y':
     
     for reg in regl:
         fb = dirout+tracer_clus+reg
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,utlid_sw=ran_sw)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
 
 
 if args.swapz == 'y':
