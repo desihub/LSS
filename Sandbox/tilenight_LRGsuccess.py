@@ -24,7 +24,8 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
 nzla = []
-tid = int(args.tileid)
+if args.tileid is not None:
+    tid = int(args.tileid)
 
 for pt in range(0,10):	
 	zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
