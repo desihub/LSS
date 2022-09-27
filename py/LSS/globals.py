@@ -78,6 +78,7 @@ class main:
             self.dchi2 = 40
             self.zmin = 0.1
             self.zmax = 0.5
+            self.ebits = [11,12] 
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
@@ -98,7 +99,7 @@ class main:
             self.dchi2 = 0.9
             self.zmin = 0.8
             self.zmax = 1.6
-        if tp[:3] == 'ELG' or tp[:3] == 'BGS':
+        if tp[:3] == 'ELG':# or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/ELG/main-elg-everest-tiles.fits'
