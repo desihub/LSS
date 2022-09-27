@@ -81,7 +81,8 @@ def sanity_check_map_array():
     for skymap in maparray:
 
         # MMM perform a sanity check on options or maptype
-        if pixmap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
+        if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
+            mapname = skymap['MAPNAME']
             msg = "There is NO acceptable value for MAPTYPE"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
