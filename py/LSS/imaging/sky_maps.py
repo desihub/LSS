@@ -924,8 +924,19 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
     mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
 
-    # ADM derive the nside of the map from its length.
-    nsidemap = hp.npix2nside(len(mapdata))
+    # MMM obtain nside directly (as opposed of using hp.npix2nside(len(mapdata))
+    nsidemap = pixmap['NSIDE']
+
+    # MMM obtain map through which to pass the randoms
+    # MMM WARNING - Hardwired values of ellmin, ellmax 
+    if (pixmap['MAPTYPE'] == 'ALMMAP'):
+        ellmin = 3
+        ellmax = 2048
+        lssmapdir = get_lss_map_dir(lssmapdir)
+        fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
+        alms = hp.read_alm(fn)
+        mapdata = get_map_from_alms(alms,
+                nside_out = nsidemap, nside_in = nsidemap,ellmin,ellmax)
 
     # ADM if needed, convert the randoms to Galactic coordinates.
     c1, c2 = randoms["RA"], randoms["DEC"]
