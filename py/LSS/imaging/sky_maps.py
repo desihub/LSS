@@ -77,18 +77,17 @@ def sanity_check_map_array():
     """
     log.info("Running sanity checks on maparray...")
 
-
     for skymap in maparray:
 
         mapname = skymap['MAPNAME']
 
-        # MMM check nside is an integer
-        if type(skymap['NSIDE']) is not int:
-            msg = "NSIDE is not an integer"
+        # MMM check nside is an integer.
+        if not isinstance(skymap["NSIDE"].tolist(), int):
+            msg = "NSIDE from is not an integer in {}"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
 
-        # MMM perform a sanity check on options or maptype
+        # MMM perform a sanity check on options or maptype.
         if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
             msg = "There is NO acceptable value for MAPTYPE"
             log.critical(msg.format(mapname))
@@ -97,7 +96,11 @@ def sanity_check_map_array():
         # ADM check the conditionals in the MASKCHECK column.
         if skymap["MAPTYPE"] == "PIXMASK":
             parse_mask_check(np.empty(2), skymap["MASKCHECK"], check=True)
-
+            # ADM check the name for the skymap mask makes sense.
+            if not skymap["MAPNAME"][-5:] == "_MASK":
+                msg = "Mask-maps need MAPNAMEs ending in _MASK; {} does not!"
+                log.critical(msg.format(skymap["MAPNAME"]))
+                raise ValueError(msg.format(skymap["MAPNAME"]))
 
     log.info("...maparray seems to be correctly formatted")
 
@@ -832,12 +835,6 @@ def generate_mask(rancatname, lssmapdir=None):
         pixnums = hp.ang2pix(nsidemx, theta, phi, nest=mx["NESTED"])
         randmx = ismasked[pixnums]
 
-        # ADM check the name for the skymap mask makes sense.
-        if not mx["MAPNAME"][-5:] == "_MASK":
-            msg = "Mask-maps should have MAPNAMEs ending in _MASK; {} does not!"
-            log.critical(msg.format(mx["MAPNAME"]))
-            raise ValueError(msg.format(mx["MAPNAME"]))
-
         # ADM now we know the mask name is sensible, add the bit-mask for
         # ADM randoms that need masked (randoms with ismasked==True).
         mxnom = mx["MAPNAME"][:-5].upper()
@@ -852,20 +849,21 @@ def generate_mask(rancatname, lssmapdir=None):
 
     return
 
-# MMM map from alms 
-def get_map_from_alms(alms,nside_out=512,nside_in=512,ellmin,ellmax):
+
+# MMM map from alms.
+def get_map_from_alms(alms, ellmin, ellmax, nside_out=512, nside_in=512):
     '''
-    Create Healpix map fom healpix alms 
+    Create Healpix map fom healpix alms
     1) transform alm to map, with nside_res, only with ell <= ellmax
-    2) if nside_out < nside_in, warns and degrades de map to nside_map 
+    2) if nside_out < nside_in, warns and degrades de map to nside_map
     Inputs:
        alms : array alm
        nside_map  : nside output map
        nside_out nside_in : nside of input and output map
        ellmin, ellmax : min and max ell-values of alm
     '''
-    # MMM fill with zeros outside the ell range
-    # MMM might be optimized/pythonized
+    # MMM fill with zeros outside the ell range.
+    # MMM might be optimized/pythonized.
     r = []
     for i in range(len(alms)):
         if i < ellmin:
@@ -874,10 +872,10 @@ def get_map_from_alms(alms,nside_out=512,nside_in=512,ellmin,ellmax):
             r.append(0.0)
         else:
             r.append(1.0)
-    alm2=hp.almxfl(alms, r) #multiply kap_al by r 
-    ptest = hp.alm2map(alm2,nside_in)
+    alm2 = hp.almxfl(alms, r)  # multiply kap_al by r.
+    ptest = hp.alm2map(alm2, nside_in)
     if(nside_map < nside_hires):
-        ptest = hp.ud_grade(ptest,nside_out)
+        ptest = hp.ud_grade(ptest, nside_out)
     return ptest
 
 
@@ -928,15 +926,15 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     nsidemap = pixmap['NSIDE']
 
     # MMM obtain map through which to pass the randoms
-    # MMM WARNING - Hardwired values of ellmin, ellmax 
+    # MMM WARNING - Hardwired values of ellmin, ellmax
     if (pixmap['MAPTYPE'] == 'ALMMAP'):
         ellmin = 3
         ellmax = 2048
         lssmapdir = get_lss_map_dir(lssmapdir)
         fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
         alms = hp.read_alm(fn)
-        mapdata = get_map_from_alms(alms,
-                nside_out = nsidemap, nside_in = nsidemap,ellmin,ellmax)
+        mapdata = get_map_from_alms(alms, ellmin, ellmax,
+                                    nside_out=nsidemap, nside_in=nsidemap)
 
     # ADM if needed, convert the randoms to Galactic coordinates.
     c1, c2 = randoms["RA"], randoms["DEC"]
