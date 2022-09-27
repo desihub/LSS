@@ -36,6 +36,8 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
+parser.add_argument("--famd", help="whether to use the fiberassign split into passes",default='passes')
+
 parser.add_argument("--mockmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
@@ -44,6 +46,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
+parser.add_argument("--countran", help="count instances of focal plane locations for randoms",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='y')
@@ -93,13 +96,24 @@ else:
 
 pd = pdir
 
+randens = 10460. #the number density of randoms in the 1st gen file getting used
 if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
-    randens = 10460.
+    mockz = 'RSDZ'
+
+if args.mockver == 'EZ_3gpc1year':
+    mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
+    mockz = 'TRUEZ'
 
 maindir = args.base_output +mockdir+args.survey+'/'
 
-tiles = fitsio.read( '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits')
+if args.survey == 'MVMY1':
+    tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
+else:
+    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
+
+
+tiles = fitsio.read(tile_fn)
 
 
 
@@ -136,18 +150,44 @@ def docat(mocknum,rannum):
 
     if args.combr == 'y' and mocknum == 1:
         fbadir = maindir+'random_fba'+str(rannum)
-        outdir = fbadir
+        
         tarf = fbadir+'/targs.fits'
+        if args.famd == 'passes':
+            fbadir = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
+            tarf = maindir+'/ran'+str(rannum)+'_'+pdir+'/inputs/targ.fits'
+
+        outdir = fbadir
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
 
     if args.combd == 'y' and rannum == 1:
         fbadir = maindir+'fba'+str(mocknum)
         outdir = fbadir
-        tarf = fbadir+'/targs.fits'
-        asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
-        #if using alt MTL that should have ZWARN_MTL, put that in here
-        asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-        pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        if not os.path.exists(outdir):
+            os.mkdir(outdir)
+            print('made '+outdir)
+
+        if args.survey == 'MVMY1':
+            tarf = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/inputs/targ.fits'
+            indir = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba'+str(mocknum).zfill(3)+'/'
+            asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat',dtar='SV3_')
+        elif args.famd == 'passes':
+            fbadir = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/faruns/'
+            outdir = fbadir
+            tarf = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/inputs/targ.fits'
+
+            indir = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/'
+            asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+           
+        else:
+            tarf = fbadir+'/targs.fits'
+            asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
+            #if using alt MTL that should have ZWARN_MTL, put that in here
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
 
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
@@ -160,19 +200,33 @@ def docat(mocknum,rannum):
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
         fbadir_ran = maindir+'random_fba'+str(rannum)
+        if args.famd == 'passes':
+            fbadir_data = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/faruns/'
+            fbadir_ran = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
+
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         specf.remove_columns(['TARGETID'])
         fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
         print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        del specf
         print(len(fgu))
         print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
         print(outf)
         fgu.write(outf,format='fits', overwrite=True)
+        del fgu
+     
+    if args.countran == 'y':
         tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
+        print('got counts')
+        print(len(tc))
+        print(tc.dtype.names)
+        print(np.max(tc['NTILE']))
+        tc.keep_columns(['TARGETID','NTILE','TILES'])
+        #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     specver = 'mock'    
@@ -182,7 +236,7 @@ def docat(mocknum,rannum):
         ftar = None
         dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
-        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl)
+        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
 
     maxp = 3400
     pthresh = 3000
@@ -246,7 +300,9 @@ def docat(mocknum,rannum):
     
     #needs to happen before randoms so randoms can get z and weights
     
+    nztl = []
     if args.mkclusdat == 'y':
+        nztl.append('')
         ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
 
@@ -262,7 +318,7 @@ def docat(mocknum,rannum):
             ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
             os.system('mv '+ranf+' '+ranfm)
 
-    nztl = ['']
+    
     if args.mkclusdat_allpot == 'y':
         fbadir = maindir+'fba'+str(mocknum)
         tarf = fbadir+'/targs.fits'

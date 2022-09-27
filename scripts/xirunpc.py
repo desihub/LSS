@@ -19,8 +19,10 @@ logger = logging.getLogger('xirunpc')
 def get_scratch_dir():
     if os.environ['NERSC_HOST'] == 'cori':
         scratch_dir = os.environ['CSCRATCH']
+        os.system('export OMP_NUM_THREADS=64')
     elif os.environ['NERSC_HOST'] == 'perlmutter':
         scratch_dir = os.environ['PSCRATCH']
+        os.system('export OMP_NUM_THREADS=128')
     else:
         msg = 'NERSC_HOST is not cori or permutter but is {};\n'.format(os.environ['NERSC_HOST'])
         msg += 'NERSC_HOST not known (code only works on NERSC), not proceeding'
@@ -95,7 +97,7 @@ def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/g
     return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
 
 
-def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
+def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
     #if survey in ['main', 'DA02']:
@@ -110,7 +112,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', rec_typ
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
         return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
-    return [os.path.join(cat_dir, '{}{}_{:d}_{}.{}.fits'.format(tracer, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False, option=None):
@@ -467,7 +469,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
         edges = (sedges, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between -1 and 1
     elif corr_type == 'rppi':
         if bin_type == 'lin':
-            edges = (sedges, sedges) #transverse and radial separations are coded to be the same here
+            edges = (sedges, np.linspace(-200., 200, 401)) #transverse and radial separations are coded to be the same here
         else:
             edges = (sedges, np.linspace(0., 40., 41))
     elif corr_type == 'theta':
@@ -477,14 +479,15 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if option:
         zmax = str(zmax) + option
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
-    root = '{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
+    wang = '{}_'.format(wang) if wang is not None else ''
+    root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
@@ -495,7 +498,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
+    parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
@@ -565,8 +568,7 @@ if __name__ == '__main__':
     else:
         zlims = [float(zlim) for zlim in args.zlim]
     zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
-
-    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1,2,4]
+    rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1, 2, 4]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
@@ -583,6 +585,11 @@ if __name__ == '__main__':
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+            if mpicomm is None or mpicomm.rank == mpiroot:
+                 if wang is not None:
+                        for name in wang:
+                            if wang[name] is not None:
+                                wang[name].save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, 'wang'), **base_file_kwargs, wang=name))
 
         # Save combination and .txt files
         for corr_type in args.corr_type:

@@ -22,12 +22,12 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 #parser.add_argument("--realization", help="number for the realization",default=1,type=int)
 parser.add_argument("--realmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--realmax", help="number for the realization",default=2,type=int)
-parser.add_argument("--survey", help="points to set of tiles",default='DA02')
+parser.add_argument("--footprint", help="points to set of tiles",default='DA02')
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
-parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
+parser.add_argument("--prep", help="prepare file for fiberassign?",default='n')
 parser.add_argument("--runfa", help="run fiberassign",default='y')
-parser.add_argument("--par", help="running in parallel?",default='n')
+parser.add_argument("--nproc", help="running in parallel?",default=1)
 
 args = parser.parse_args()
 
@@ -105,11 +105,18 @@ for real in range(args.realmin,args.realmax):
         fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
 
     if args.runfa == 'y':
-        from LSS.mocktools import get_fba_mock
-        script_fn = get_fba_mock(mockdir,real,survey=args.survey,prog=args.prog)
-        os.system('chmod +x '+script_fn)
-        
-        os.system(script_fn)
+        targfn = out_file_name
+        tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+args.footprint+'/LSS/tiles-'+args.prog.upper()+'.fits'
+        tiles = fitsio.read(tile_fn)
+        ts = str(tiles['TILEID'][0]).zfill(6)
+        #get info from origin fiberassign file
+        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+        rundate= fht['RUNDATE']
+        rootdir = mockdir+'/'+args.footprint+'/multipass_mock'+str(real)+'_'+args.prog+'/'
+        if not os.path.exists(rootdir):
+            os.mkdir(rootdir)
+            print('made '+rootdir)
+        os.system('python fa_multipass.py --infn '+targfn+' --outdir '+rootdir+' --program '+args.prog+' --rundate '+rundate +' --tilesfn '+tile_fn +' --numproc '+str(args.nproc))
 
 
 

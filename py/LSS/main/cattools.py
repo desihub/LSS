@@ -2104,7 +2104,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
     zf : :class:`str` path to the file containing merged potential targets and redshift 
@@ -2256,7 +2256,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     
     if specver == 'mock':
-        dz['RSDZ'].name = 'Z' 
+        dz[mockz].name = 'Z' 
         
     if tp == 'QSO' and azf != '':
         print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
@@ -2620,12 +2620,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',ebits=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None):
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
-        wzm = 'zmask_'
-
+        wzm += 'zmask_'
+    ws = ''
+    if utlid:
+        ws = 'utlid_'
     #ffd = Table.read(fl+'full.dat.fits')
     #fcd = Table.read(fl+wzm+'clustering.dat.fits')
     ffr = Table.read(flin+str(rann)+'_full.ran.fits')
@@ -2639,6 +2641,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ffc = ffr[wz]
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
+    if utlid:
+        ffc = unique(ffc,keys=['TILELOCID'])
+        print('length after cutting to unique tilelocid '+str(len(ffc)))
     #inds = np.random.choice(len(fcd),len(ffc))
     #dshuf = fcd[inds]
     fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
@@ -2659,7 +2664,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
     #common.write_LSS(ffc,outf,comments)
 
-    outfn =  fl+wzm+'N_'+str(rann)+'_clustering.ran.fits'
+    outfn =  fl+ws+wzm+'N_'+str(rann)+'_clustering.ran.fits'
     
     ffcn = ffc[wn]
     inds = np.random.choice(len(fcdn),len(ffcn))
@@ -2672,7 +2677,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
     common.write_LSS(ffcn,outfn,comments)
 
-    outfs =  fl+wzm+'S_'+str(rann)+'_clustering.ran.fits'
+    outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))

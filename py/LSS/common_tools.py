@@ -261,7 +261,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True,ranmin=0):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to 
@@ -270,8 +270,8 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True,ranmin=0)
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
     
-    nzd = np.loadtxt(fb+'_nz.txt').transpose()[3] #column with nbar values
-    fn = fb+'_clustering.dat.fits'
+    nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
+    fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
     #fd = Table(ff['LSS'].read())
     #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
@@ -294,8 +294,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,addFKP=True,ranmin=0)
     
     fkpl = 1./(1+nl*P0*mean_comp)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-    fd['WEIGHT_FKP'] = fkpl
-    write_LSS(fd,fn)
+    if add_data:
+        fd['WEIGHT_FKP'] = fkpl
+        write_LSS(fd,fn)
     #fd = np.array(fd)
     #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
     #ff['LSS'].write(fd)
@@ -536,6 +537,35 @@ def write_LSS(ff,outf,comments=None):
     os.system('mv '+tmpfn+' '+outf)
     print('moved output to '+outf)
 
+def create_sky(footfn, skyfn):
+    # AR sky folders
+    mydirs = get_desitarget_paths(args.dtver, args.survey, args.program, dr=args.dr, log=log)
+    skydirs = [mydirs["sky"]]
+    if os.path.isdir(mydirs["skysupp"]):
+        skydirs.append(mydirs["skysupp"])
+    # AR we only store some columns
+    columns = [
+        "RA",
+        "DEC",
+        "TARGETID",
+        "DESI_TARGET",
+        "BGS_TARGET",
+        "MWS_TARGET",
+        "SUBPRIORITY",
+        "OBSCONDITIONS",
+        "PRIORITY_INIT",
+        "NUMOBS_INIT",
+    ]
+    # AR we read
+    tiles = fits.open(footfn)[1].data
+    ds = [read_targets_in_tiles(skydir, tiles=tiles, columns=columns, quick=True) for skydir in skydirs]
+    for skydir, d in zip(skydirs, ds):
+        log.info("{:.1f}s\tcreate_sky\t{}: reading {} targets from {}".format(time() - start, os.path.basename(footfn), len(d), skydir))
+    d = np.concatenate(ds)
+    fitsio.write(skyfn, d, clobber=True)
+    return True
+
+
 def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
     if ran == 'dat':
         #addcols.append('PRIORITY')
@@ -605,3 +635,15 @@ def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','T
     print('wrote '+outf)
     return dat_comb
 
+def addNS(tab):
+    '''
+    given a table that already includes RA,DEC, add PHOTSYS column denoting whether 
+    the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
+    '''
+    wra = (tab['RA'] > 100-tab['DEC'])
+    wra &= (tab['RA'] < 280 +tab['DEC'])
+    tab['PHOTSYS'] = 'S'
+    seln = dec > 32.375
+    seln &= wra
+    tab['PHOTSYS'][seln] = 'N'
+    return tab        

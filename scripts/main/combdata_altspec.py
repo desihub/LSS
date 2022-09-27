@@ -73,6 +73,10 @@ mainp = main(prog,specver=args.verspec_comp)
 if args.verspec == 'newQSOtemp':
     specdir = '/global/cfs/cdirs/desi/users/rongpu/redux/guadalupe/cumulative_new_qso_templates/'
 
+if args.verspec == 'newQSOtemp_tagged':
+    specdir = '/global/cfs/cdirs/desi/users/rongpu/redux/guadalupe/cumulative_new_qso_templates_tagged/'
+
+
 mt = mainp.mtld
 tiles = mainp.tiles
 badfib = mainp.badfib

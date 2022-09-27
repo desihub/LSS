@@ -161,6 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
+    parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
@@ -209,7 +210,7 @@ if __name__ == '__main__':
             raise ValueError('Provide <= 2 tracers!')
     if tracer2 == tracer:
         tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type,ran_sw=args.ran_sw) # survey required for zdone
     distance = TabulatedDESI().comoving_radial_distance
 
     regions = args.region
