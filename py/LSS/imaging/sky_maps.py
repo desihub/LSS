@@ -834,6 +834,34 @@ def generate_mask(rancatname, lssmapdir=None):
 
     return
 
+# MMM map from alms 
+def get_map_from_alms(alms,nside_out=512,nside_in=512,ellmin,ellmax):
+    '''
+    Create Healpix map fom healpix alms 
+    1) transform alm to map, with nside_res, only with ell <= ellmax
+    2) if nside_out < nside_in, warns and degrades de map to nside_map 
+    Inputs:
+       alms : array alm
+       nside_map  : nside output map
+       nside_out nside_in : nside of input and output map
+       ellmin, ellmax : min and max ell-values of alm
+    '''
+    # MMM fill with zeros outside the ell range
+    # MMM might be optimized/pythonized
+    r = []
+    for i in range(len(alms)):
+        if i < ellmin:
+            r.append(0.0)
+        elif i > ellmax:
+            r.append(0.0)
+        else:
+            r.append(1.0)
+    alm2=hp.almxfl(alms, r) #multiply kap_al by r 
+    ptest = hp.alm2map(alm2,nside_in)
+    if(nside_map < nside_hires):
+        ptest = hp.ud_grade(ptest,nside_out)
+    return ptest
+
 
 def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     """Sample a systematics map.
