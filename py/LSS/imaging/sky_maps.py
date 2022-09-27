@@ -80,9 +80,16 @@ def sanity_check_map_array():
 
     for skymap in maparray:
 
+        mapname = skymap['MAPNAME']
+
+        # MMM check nside is an integer
+        if type(skymap['NSIDE']) is not int:
+            msg = "NSIDE is not an integer"
+            log.critical(msg.format(mapname))
+            raise ValueError(msg.format(mapname))
+
         # MMM perform a sanity check on options or maptype
         if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
-            mapname = skymap['MAPNAME']
             msg = "There is NO acceptable value for MAPTYPE"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
@@ -90,6 +97,7 @@ def sanity_check_map_array():
         # ADM check the conditionals in the MASKCHECK column.
         if skymap["MAPTYPE"] == "PIXMASK":
             parse_mask_check(np.empty(2), skymap["MASKCHECK"], check=True)
+
 
     log.info("...maparray seems to be correctly formatted")
 
