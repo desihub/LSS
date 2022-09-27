@@ -76,7 +76,16 @@ def sanity_check_map_array():
     """Convenience function to check the format of the map_array global.
     """
     log.info("Running sanity checks on maparray...")
+
+
     for skymap in maparray:
+
+        # MMM perform a sanity check on options or maptype
+        if pixmap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
+            msg = "There is NO acceptable value for MAPTYPE"
+            log.critical(msg.format(mapname))
+            raise ValueError(msg.format(mapname))
+
         # ADM check the conditionals in the MASKCHECK column.
         if skymap["MAPTYPE"] == "PIXMASK":
             parse_mask_check(np.empty(2), skymap["MASKCHECK"], check=True)
