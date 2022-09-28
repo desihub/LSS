@@ -1,4 +1,4 @@
-#pseudo pipeline for creating LSS catalogs from abacus 1st gen mocks
+#pseudo pipeline for creating LSS catalogs from abacus 1st gen mocks, using DA02 footprint
 #from the LSS/scripts/mock_tools directory
 
 source /global/common/software/desi/desi_environment.sh main
@@ -16,7 +16,7 @@ python prepare_mocks_ran_main.py --ranmin <minran> --ranmax <minran> --survey DA
 #then, run the catalog pipeline script
 #this combines across tiles for dark time info
 #default just does dark time
-python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --combd y --combr y --combdr y
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --combd y --combr y --combdr y --tracer dark
 
 #then, for each <tracer> of QSO, LRG, ELG
 python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --fulld y --fullr y --apply_veto y --mkclusran y --mkclusdat y --nz y

@@ -51,10 +51,12 @@ parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, a
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
@@ -241,6 +243,9 @@ if mkfulld:
         if type[:3] == 'QSO':
             azf = mainp.qsozf
             azfm = 'hp'
+            if specrel == 'newQSOtemp_tagged':
+                azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
+                azfm = 'cumul'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
@@ -488,7 +493,9 @@ if args.add_ke == 'y':
     #if args.test == 'y':
     #    print('k+e test passed')    
 
-
+utlid = False
+if args.ran_utlid == 'y':
+    utlid = True
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -506,7 +513,7 @@ if mkclusran:
 #         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid)#,ntilecut=ntile,ccut=ccut)
 
     
 
@@ -546,6 +553,33 @@ if args.nz == 'y':
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+if args.addnbar_ran == 'y':
+    utlid_sw = ''
+    if utlid:
+        utlid_sw = '_utlid'
+    if type == 'QSO':
+        #zmin = 0.6
+        #zmax = 4.5
+        dz = 0.05
+        P0 = 6000
+        
+    else:    
+        dz = 0.02
+        #zmin = 0.01
+        #zmax = 1.61
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
+    
+    for reg in regl:
+        fb = dirout+tracer_clus+utlid_sw+reg
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
+
 
 if args.swapz == 'y':
     import LSS.blinding_tools as blind

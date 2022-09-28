@@ -20,13 +20,14 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 parser.add_argument("--ranmin", help="number for the realization",default=1,type=int)
-parser.add_argument("--ranmax", help="number for the realization",default=11,type=int)
+parser.add_argument("--ranmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
-parser.add_argument("--survey", help="e.g., DA02 or SV3",default='DA02')
+parser.add_argument("--footprint", help="e.g., DA02 or SV3",default='DA02')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
-parser.add_argument("--par", help="run different random number in parallel?",default='n')
+parser.add_argument("--nproc", help="run different random number in parallel?",default=1)
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 parser.add_argument("--runfa", help="run fiberassign",default='y')
+parser.add_argument("--stepfa", help="only run fiberassign in runfa",default='n')
 
 
 args = parser.parse_args()
@@ -60,6 +61,8 @@ def prep(rannum):
             targets = Table(targets)
             targets.remove_columns(['STATUS'])
 
+    elif args.mockver == 'EZ_3gpc1year':
+        mockdir = args.base_output+'/FA_EZ_1year/fiberassign_EZ_3gpc'
     else:
         sys.exit(args.mockver+' not supported')
 
@@ -79,30 +82,47 @@ def prep(rannum):
         fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
         
     if args.runfa == 'y':
-        from LSS.mocktools import get_fba_mock_ran
-        get_fba_mock_ran(mockdir,rannum,survey=args.survey,prog=args.prog)
+        #from LSS.mocktools import get_fba_mock_ran
+        #get_fba_mock_ran(mockdir,rannum,survey=args.survey,prog=args.prog)
+        targfn = out_file_name
+        tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+args.footprint+'/LSS/tiles-'+args.prog.upper()+'.fits'
+        tiles = fitsio.read(tile_fn)
+        ts = str(tiles['TILEID'][0]).zfill(6)
+        #get info from origin fiberassign file
+        fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+        rundate= fht['RUNDATE']
+        rootdir = mockdir+'/'+args.footprint+'/ran'+str(rannum)+'_'+args.prog+'/'
+        if not os.path.exists(rootdir):
+            os.mkdir(rootdir)
+            print('made '+rootdir)
+        runstr = 'python fa_ran.py --infn '+targfn+' --outdir '+rootdir+' --program '+args.prog+' --rundate '+rundate +' --tilesfn '+tile_fn +' --numproc '+str(args.nproc)
+        if args.stepfa == 'y':
+            runstr += ' --steps fa'
+        os.system(runstr)
+
+
 
 if __name__ == '__main__':
     rx = args.ranmax
     rm = args.ranmin
-    if args.par == 'y':
-        from multiprocessing import Pool
-        from desitarget.internal import sharedmem
-        
-        N = rx-rm+1
-        inds = []
-        for i in range(rm,rx):
-            inds.append(i)
-        pool = sharedmem.MapReduce(np=N)
-        with pool:
-        
-            def reduce( r):
-                print('chunk done')
-                return r
-            pool.map(prep,inds,reduce=reduce)
-
-        #p.map(doran,inds)
-    else:
-        for i in range(rm,rx):
-            prep(i)
+#     if args.par == 'y':
+#         from multiprocessing import Pool
+#         from desitarget.internal import sharedmem
+#         
+#         N = rx-rm+1
+#         inds = []
+#         for i in range(rm,rx):
+#             inds.append(i)
+#         pool = sharedmem.MapReduce(np=N)
+#         with pool:
+#         
+#             def reduce( r):
+#                 print('chunk done')
+#                 return r
+#             pool.map(prep,inds,reduce=reduce)
+# 
+#         #p.map(doran,inds)
+#     else:
+    for i in range(rm,rx):
+        prep(i)
 

@@ -24,7 +24,7 @@ basedir='/global/cfs/cdirs/desi/survey/catalogs'
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
-parser.add_argument("--verspec_new",help="version for redshifts",default='newQSOtemp')
+parser.add_argument("--verspec_new",help="version for redshifts",default='newQSOtemp_tagged')
 parser.add_argument("--tracer",help="tracer type(s) (e.g., LRG)",default='all')
 parser.add_argument("--mbit5",help="whether to screen against zwarn mask bit 5",default='n')
 parser.add_argument("--mbit510",help="whether to screen against zwarn mask bits 5 and 10",default='n')
