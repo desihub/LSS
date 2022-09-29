@@ -390,6 +390,11 @@ def mock_equal_data_density(mockdir, datadir, outdir, tracer, region, zmin, zmax
     num_ran = num_ran / nran
     
     mock_ran_tab = Table.read(mock_randoms_fn)
+<<<<<<< HEAD
+=======
+    sel_z_ran = mock_ran_tab["TRUEZ"] > zmin
+    sel_z_ran &= mock_ran_tab["TRUEZ"] < zmax
+>>>>>>> ebef94e08bce682cb47714866ab93d326b09ad1f
     sel_z_ran = mock_ran_tab["PHOTSYS"] == region
     mock_ran_tab = mock_ran_tab[sel_z_ran]
     num_mock_ran = len(mock_ran_tab)
