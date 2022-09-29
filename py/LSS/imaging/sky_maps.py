@@ -67,7 +67,7 @@ maparray = np.array([
     ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_mean',    '', False, True),
     ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
     ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',     '< 0', False, True),
-    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
+#    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True),
     ], dtype=mapdt)
 
@@ -83,7 +83,7 @@ def sanity_check_map_array():
 
         # MMM check nside is an integer.
         if not isinstance(skymap["NSIDE"].tolist(), int):
-            msg = "NSIDE from is not an integer in {}"
+            msg = "NSIDE is not an integer in {}"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
 
@@ -101,6 +101,24 @@ def sanity_check_map_array():
                 msg = "Mask-maps need MAPNAMEs ending in _MASK; {} does not!"
                 log.critical(msg.format(skymap["MAPNAME"]))
                 raise ValueError(msg.format(skymap["MAPNAME"]))
+
+        # ADM check somebody didn't include two maps with the same name.
+        pixmap = maparray[maparray["MAPNAME"] == mapname]
+        if len(pixmap) != 1:
+            if len(pixmap) > 1:
+                msg = "There are TWO maps in maparray that have MAPNAME={}!"
+            # ADM check there's an entry in maparray for the passed map name.
+            elif len(pixmap) < 1:
+                msg = "There are NO maps in maparray that have MAPNAME={}!"
+            log.critical(msg.format(mapname))
+            raise ValueError(msg.format(mapname))
+
+        # ADM an ALMMAP should never have COLNAME NONE_IMAGE, or we won't
+        # ADM know how to read the map.
+        if (skymap["MAPTYPE"] == "ALMMAP") & (skymap["COLNAME"] == "NONE-IMAGE"):
+            msg = "COLNAME can't be 'NONE-IMAGE' if MAPTYPE is 'ALMMAP' (see {})"
+            log.critical(msg.format(skymap["MAPNAME"]))
+            raise ValueError(msg.format(skymap["MAPNAME"]))
 
     log.info("...maparray seems to be correctly formatted")
 
@@ -667,7 +685,7 @@ def read_randoms(infiles, test=False):
 
 
 def rancat_name_to_mask_name(rancatname, lssmapdir=None):
-    """Convert a random catalog name to the corresponding mask file name.
+    """Convert a random catalog name to the corresponding mask filename.
 
     Parameters
     ----------
@@ -680,7 +698,7 @@ def rancat_name_to_mask_name(rancatname, lssmapdir=None):
     Returns
     -------
     :class:`str`
-        The full path to the corresponding mask file name in the
+        The full path to the corresponding mask filename in the
         lssmapdir directory.
     """
     outfn = os.path.basename(rancatname).replace(".fits", "-skymapmask.fits")
@@ -688,7 +706,32 @@ def rancat_name_to_mask_name(rancatname, lssmapdir=None):
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
-    return os.path.join(lssmapdir, "masks", outfn)
+    return os.path.join(lssmapdir, "maskvalues", outfn)
+
+
+def rancat_name_to_map_name(rancatname, lssmapdir=None):
+    """Convert random catalog name to corresponding map values filename.
+
+    Parameters
+    ----------
+    rancatname : :class:`str`
+        Full path to a random catalog.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    :class:`str`
+        The full path to the corresponding map values filename in the
+        lssmapdir directory.
+    """
+    outfn = os.path.basename(rancatname).replace(".fits", "-skymapvalues.fits")
+
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    return os.path.join(lssmapdir, "mapvalues", outfn)
 
 
 def parse_mask_check(mxdata, maskcheck, check=False):
@@ -758,6 +801,60 @@ def parse_mask_check(mxdata, maskcheck, check=False):
         raise ValueError(msg)
 
 
+def read_sky_map(mapname, lssmapdir=None):
+    """A generic function to read a sky map, regardless of map format.
+
+    Parameters
+    ----------
+    mapname : :class:`str`
+        Name of a map that appears in the `maparray` global array, above.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The data read from the map.
+    """
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    # ADM extract the relevant map from the name.
+    try:
+        pixmap = maparray[maparray["MAPNAME"] == mapname][0]
+    except IndexError:
+        msg = "{} is not a named map in the maparray".format(mapname)
+        log.critical(msg)
+        raise ValueError(msg)
+
+    # ADM construct the filename for, and read, the relevant map.
+    fn = os.path.join(lssmapdir, pixmap["SUBDIR"], pixmap["FILENAME"])
+
+    # MMM obtain nside for the relevant map.
+    nsidemap = pixmap['NSIDE']
+
+    # ADM try a few generic ways to read all types of maps.
+    try:
+        mapdata = hp.read_map(fn, field=pixmap["COLNAME"])
+    except (AttributeError, KeyError, ValueError):
+        # ADM some maps are 1-D and have no column names.
+        if pixmap["COLNAME"] == "NONE-IMAGE":
+            mapdata = fitsio.read(fn)
+        # ADM some maps are ALM maps.
+        # MMM WARNING - Hardwired values of ellmin, ellmax
+        elif pixmap["MAPTYPE"] == "ALMMAP":
+            ellmin = 3
+            ellmax = 2048
+            alms = hp.read_alm(fn)
+            mapdata = get_map_from_alms(alms, ellmin, ellmax,
+                                        nside_out=nsidemap, nside_in=nsidemap)
+        else:
+            mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+
+    return mapdata
+
+
 def generate_mask(rancatname, lssmapdir=None):
     """Generate a file of mask values and TARGETID for a random catalog.
 
@@ -772,7 +869,7 @@ def generate_mask(rancatname, lssmapdir=None):
     Returns
     -------
     Nothing, but an array that contains TARGETID and SKYMAP_MASK columns
-    is written to lssmapdir/masks/rancatname-skymapmask.fits.
+    is written to lssmapdir/maskvalues/rancatname-skymapmask.fits.
     """
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
@@ -803,17 +900,7 @@ def generate_mask(rancatname, lssmapdir=None):
         log.info("Working on mask {}...t={:.1f}s".format(
             mx["MAPNAME"], time()-start))
 
-        # ADM construct the filename for the mask and read it.
-        fn = os.path.join(lssmapdir, mx["SUBDIR"], mx["FILENAME"])
-        # ADM try generic ways to read all types of mask-maps.
-        try:
-            mxdata = hp.read_map(fn, field=mx["COLNAME"])
-        except (AttributeError, KeyError):
-            # ADM some mask-maps are 1-D and have no column names.
-            if mx["COLNAME"] == "NONE-IMAGE":
-                mxdata = fitsio.read(fn)
-            else:
-                mxdata = fitsio.read(fn, columns=mx["COLNAME"])
+        mxdata = read_sky_map(mx["MAPNAME"], lssmapdir=lssmapdir)
 
         # ADM construct a True/False version of this mask
         # ADM and store it in the array "ismasked".
@@ -848,6 +935,79 @@ def generate_mask(rancatname, lssmapdir=None):
     write_atomically(outfn, done, extname='PIXMASK', header=hdr)
 
     return
+
+
+def generate_map_values(rancatname, lssmapdir=None):
+    """Generate a file of map values and TARGETID for a random catalog.
+
+    Parameters
+    ----------
+    rancatname : :class:`str`
+        Full path to a random catalog.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    Nothing, but an array that contains TARGETID and map-value columns
+    is written to lssmapdir/mapvalues/rancatname-skymapvalues.fits.
+    """
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    # ADM read the random catalog.
+    randoms, hdr, ident = read_randoms(rancatname)
+
+    # ADM store the Galactic coordinates for the randoms.
+    c = SkyCoord(randoms["RA"]*u.degree, randoms["DEC"]*u.degree)
+    lgal, bgal = c.galactic.l.value, c.galactic.b.value
+
+    # ADM grab the output filename.
+    outfn = rancat_name_to_map_name(rancatname, lssmapdir=lssmapdir)
+
+    # ADM limit to just the maps that correspond to pixel-maps.
+    maps = maparray[maparray["MAPTYPE"] == "PIXMAP"]
+
+    # ADM set up an initial output array. We'll modify the dtypes later.
+    dt = [('TARGETID', '>i8')]
+    dt += [(mapname, '>f4') for mapname in maps["MAPNAME"]]
+    done = np.zeros(len(randoms), dtype=dt)
+    done["TARGETID"] = randoms["TARGETID"]
+
+    # ADM loop through the maps to find the values.
+    for pixmap in maps:
+        mapname = pixmap["MAPNAME"]
+        log.info("Working on map {}...t={:.1f}s".format(mapname, time()-start))
+
+        mapdata = read_sky_map(mapname, lssmapdir=lssmapdir)
+
+        # ADM the coordinates to use for this map.
+        c1, c2 = randoms["RA"], randoms["DEC"]
+        if pixmap["GALACTIC"]:
+            log.info("Using Galactic coordinates for {} map".format(mapname))
+            c1, c2 = lgal, bgal
+
+        # MMM obtain nside for the relevant map.
+        nsidemap = pixmap['NSIDE']
+
+        # ADM determine the map values for each of the randoms in the
+        # ADM map scheme (i.e. nested or ring).
+        theta, phi = np.radians(90-c2), np.radians(c1)
+        pixnums = hp.ang2pix(nsidemap, theta, phi, nest=pixmap["NESTED"])
+
+        # ADM alter the dtype of the output for this map, if needed.
+        if done[mapname].dtype != mapdata.dtype:
+            dtmod = [(nom, dtyp) if nom != mapname else (nom, mapdata.dtype.str)
+                     for nom, dtyp in dt]
+            done = done.astype(dtmod)
+        # ADM add the map values for the randoms.
+        done[mapname] = mapdata[pixnums]
+
+    # ADM now we've looped over all maps, write the final array to file.
+#    write_atomically(outfn, done, extname='PIXMAP', header=hdr)
+
+    return done
 
 
 # MMM map from alms.
