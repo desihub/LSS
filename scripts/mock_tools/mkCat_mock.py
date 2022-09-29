@@ -70,6 +70,8 @@ parser.add_argument("--par", help="run different random number in parallel?",def
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
+parser.add_argument("--equal_data_dens", help="if y, make mock n(z) equal data n(z)", default = 'n')
+parser.add_argument("--nran_clus_data", help="number of random catalogues to use for clustering data", default = 4)
 
 args = parser.parse_args()
 print(args)
@@ -305,6 +307,18 @@ def docat(mocknum,rannum):
         nztl.append('')
         ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
+    
+    if args.equal_data_dens == 'y':
+<<<<<<< HEAD
+        data_dir = "/global/project/projectdirs/desi/survey/catalogs/edav1/da02/LSScats/clustering"
+=======
+        data_dir = "/global/project/projectdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/EDAbeta"
+>>>>>>> ebef94e08bce682cb47714866ab93d326b09ad1f
+        
+        for i in ['N','S']:
+            mocktools.mock_equal_data_density(dirout, data_dir, dirout, args.tracer, i, zmin, zmax, args.nran_clus_data, randens)
+        
+        
 
     if args.mkclusran == 'y':
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
