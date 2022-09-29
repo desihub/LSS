@@ -309,11 +309,7 @@ def docat(mocknum,rannum):
 
     
     if args.equal_data_dens == 'y':
-<<<<<<< HEAD
         data_dir = "/global/project/projectdirs/desi/survey/catalogs/edav1/da02/LSScats/clustering"
-=======
-        data_dir = "/global/project/projectdirs/desi/survey/catalogs/DA02/LSS/guadalupe/LSScats/EDAbeta"
->>>>>>> ebef94e08bce682cb47714866ab93d326b09ad1f
         
         for i in ['N','S']:
             mocktools.mock_equal_data_density(dirout, data_dir, dirout, args.tracer, i, zmin, zmax, args.nran_clus_data, randens)

@@ -366,53 +366,62 @@ def mock_equal_data_density(mockdir, datadir, outdir, tracer, region, zmin, zmax
     # Read data clustering catalog
     # Read random catalog(s) 
     
-    mock_fn = mockdir + "/" + tracer + "_" + region + "_clustering.dat.fits"
-    data_fn = datadir + "/" + tracer + "_" + region + "_clustering.dat.fits" 
-    randoms_fn = {}
-    for i in range(nran):
-        randoms_fn[i] = datadir + "/" + tracer + "_" + region + "_" + str(i) +"_clustering.ran.fits"
-   
-    mock_randoms_fn = mockdir + "/" + tracer + "_1_full.ran.fits"
+    if tracer == "LRG":
+        print("Don't change density for LRG")
     
-    # Load mocks and select z range
-    mock_tab = Table.read(mock_fn)
-    sel_z = mock_tab["Z"] > zmin
-    sel_z &= mock_tab["Z"] < zmax
-    mock_tab = mock_tab[sel_z]
-    num_mock_z_range = len(mock_tab)
-    
-    # Get length of data clustering catalog
-    # Get length of randoms (divide by nran)
-    num_data = fitsio.read_header(data_fn, ext =1)['NAXIS2']
-    num_ran = 0
-    for i in randoms_fn:
-        num_ran += fitsio.read_header(randoms_fn[i], ext =1)['NAXIS2']    
-    num_ran = num_ran / nran
-    
-    mock_ran_tab = Table.read(mock_randoms_fn)
-<<<<<<< HEAD
-=======
-    sel_z_ran = mock_ran_tab["TRUEZ"] > zmin
-    sel_z_ran &= mock_ran_tab["TRUEZ"] < zmax
->>>>>>> ebef94e08bce682cb47714866ab93d326b09ad1f
-    sel_z_ran = mock_ran_tab["PHOTSYS"] == region
-    mock_ran_tab = mock_ran_tab[sel_z_ran]
-    num_mock_ran = len(mock_ran_tab)
- 
-    
-    fraction = (2500 * num_data * num_mock_ran / num_ran) / (ran_dens * num_mock_z_range)
-    
-    print("Mock fraction to be used to equal data n(z):", fraction)
-    
-    fraction_len = round(fraction * num_mock_z_range)
-    
-    sel_fraction = np.random.randint(low = 0, high = num_mock_z_range, size = fraction_len)
-    
-    out_fn = outdir + "/" + tracer + "_" + region + "_clustering.dat.fits"  
-    
-    print("Writing region", region, "to", out_fn)
-    mock_tab[sel_fraction].write(out_fn, overwrite = True)
-    print("Mock fraction catalogue writing complete.")
+    else:
+        tracer_dat = tracer
+        if tracer == "ELG":
+            tracer_dat = "ELG_LOPnotqso"
+
+        mock_fn = mockdir + "/" + tracer + "_" + region + "_clustering.dat.fits"
+        data_fn = datadir + "/" + tracer_dat + "_" + region + "_clustering.dat.fits" 
+        randoms_fn = {}
+        for i in range(nran):
+            randoms_fn[i] = datadir + "/" + tracer_dat + "_" + region + "_" + str(i) +"_clustering.ran.fits"
+
+        mock_randoms_fn = mockdir + "/" + tracer + "_1_full.ran.fits"
+
+        # Load mocks and select z range
+        mock_tab = Table.read(mock_fn)
+        sel_z = mock_tab["Z"] > zmin
+        sel_z &= mock_tab["Z"] < zmax
+        mock_tab = mock_tab[sel_z]
+        num_mock_z_range = len(mock_tab)
+
+        # Get length of data clustering catalog
+        # Get length of randoms (divide by nran)
+        num_data = fitsio.read_header(data_fn, ext =1)['NAXIS2']
+        num_ran = 0
+        for i in randoms_fn:
+            num_ran += fitsio.read_header(randoms_fn[i], ext =1)['NAXIS2']    
+        num_ran = num_ran / nran
+
+        mock_ran_tab = Table.read(mock_randoms_fn)
+        sel_z_ran = mock_ran_tab["PHOTSYS"] == region
+        mock_ran_tab = mock_ran_tab[sel_z_ran]
+        num_mock_ran = len(mock_ran_tab)
+
+
+        fraction = (2500 * num_data * num_mock_ran / num_ran) / (ran_dens * num_mock_z_range)
+
+        print("Mock fraction to be used to equal data n(z):", fraction)
+
+        fraction_len = round(fraction * num_mock_z_range)
+
+        rep_state = False
+
+        sel_fraction = np.random.choice(num_mock_z_range, size = fraction_len, replace = rep_state) 
+
+        out_fn = outdir + "/" + tracer + "_" + region + "_clustering.dat.fits"  
+
+        print("Writing region", region, "to", out_fn)
+
+
+        mock_tab[sel_fraction].write(out_fn, overwrite = True)
+        print("Mock fraction catalogue writing complete.")
+
+
 
 
     
