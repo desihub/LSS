@@ -691,7 +691,7 @@ def rancat_name_to_mask_name(rancatname, lssmapdir=None):
     Parameters
     ----------
     rancatname : :class:`str`
-        Full path to a random catalog.
+        Name of, or full path to, a random catalog.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
@@ -716,7 +716,7 @@ def rancat_name_to_map_name(rancatname, lssmapdir=None):
     Parameters
     ----------
     rancatname : :class:`str`
-        Full path to a random catalog.
+        Name of, or full path to, a random catalog.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
