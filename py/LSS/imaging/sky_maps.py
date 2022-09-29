@@ -63,11 +63,12 @@ maparray = np.array([
     ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_mean',    '', False, True),
-    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_mean',    '', False, True),
+    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
+    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
     ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
     ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',     '< 0', False, True),
-#    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
+    # ADM I temporarily commented out the ALMMAP as reading it is failing.
+    #    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True),
     ], dtype=mapdt)
 
@@ -835,27 +836,35 @@ def read_sky_map(mapname, lssmapdir=None):
     nsidemap = pixmap['NSIDE']
 
     # ADM try a few generic ways to read all types of maps.
-    try:
-        mapdata = hp.read_map(fn, field=pixmap["COLNAME"])
-    except (AttributeError, KeyError, ValueError):
-        # ADM some maps are 1-D and have no column names.
-        if pixmap["COLNAME"] == "NONE-IMAGE":
-            mapdata = fitsio.read(fn)
-        # ADM some maps are ALM maps.
+    # ADM some maps are 1-D and have no column names.
+    if pixmap["COLNAME"] == "NONE-IMAGE":
+        mapdata = fitsio.read(fn)
+    # ADM some maps are ALM maps.
+    elif pixmap["MAPTYPE"] == "ALMMAP":
         # MMM WARNING - Hardwired values of ellmin, ellmax
-        elif pixmap["MAPTYPE"] == "ALMMAP":
-            ellmin = 3
-            ellmax = 2048
-            alms = hp.read_alm(fn)
-            mapdata = get_map_from_alms(alms, ellmin, ellmax,
-                                        nside_out=nsidemap, nside_in=nsidemap)
-        else:
-            mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+        ellmin = 3
+        ellmax = 2048
+        alms = hp.read_alm(fn)
+        mapdata = get_map_from_alms(alms, ellmin, ellmax,
+                                    nside_out=nsidemap, nside_in=nsidemap)
+    else:
+        mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+        # ADM if we're dealing with a 2-D map, use hp.read_map.
+        if len(mapdata.shape) > 1:
+            colnames = fitsio.read(fn, rows=0).dtype.names
+            w = np.where([pixmap["COLNAME"] in i for i in colnames])
+            # ADM guard against a common incorrect-column-name error.
+            if len(w) == 0:
+                msg = "is the specified column name ({}) wrong for (2-D) map {}?"
+                log.critical(msg.format(pixmap["COLNAME"]), mapname)
+                raise ValueError(msg.format(pixmap["COLNAME"]), mapname)
+            else:
+                mapdata = hp.read_map(fn, field=w[0][0])
 
     return mapdata
 
 
-def generate_mask(rancatname, lssmapdir=None):
+def generate_mask(rancatname, lssmapdir=None, write=True):
     """Generate a file of mask values and TARGETID for a random catalog.
 
     Parameters
@@ -865,11 +874,15 @@ def generate_mask(rancatname, lssmapdir=None):
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+    write : :class:`bool`, optional, defaults to ``True``
+        If ``True`` then also write the output to file.
 
     Returns
     -------
-    Nothing, but an array that contains TARGETID and SKYMAP_MASK columns
-    is written to lssmapdir/maskvalues/rancatname-skymapmask.fits.
+    :class:`~numpy.ndarray`
+        An array that contains TARGETID and SKYMAP_MASK columns. This is
+        also written to lssmapdir/maskvalues/rancatname-skymapmask.fits
+        if `write` is passed as ``True``.
     """
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
@@ -932,12 +945,13 @@ def generate_mask(rancatname, lssmapdir=None):
     # ADM now we've looped over all masks, construct the final array...
     done["SKYMAP_MASK"] = outmx
     # ADM ...and write it to file.
-    write_atomically(outfn, done, extname='PIXMASK', header=hdr)
+    if write:
+        write_atomically(outfn, done, extname='PIXMASK', header=hdr)
 
-    return
+    return done
 
 
-def generate_map_values(rancatname, lssmapdir=None):
+def generate_map_values(rancatname, lssmapdir=None, write=True):
     """Generate a file of map values and TARGETID for a random catalog.
 
     Parameters
@@ -947,11 +961,15 @@ def generate_map_values(rancatname, lssmapdir=None):
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+    write : :class:`bool`, optional, defaults to ``True``
+        If ``True`` then also write the output to file.
 
     Returns
     -------
-    Nothing, but an array that contains TARGETID and map-value columns
-    is written to lssmapdir/mapvalues/rancatname-skymapvalues.fits.
+    :class:`~numpy.ndarray`
+        An array that contains TARGETID and map-value columns. This is
+        also written to lssmapdir/mapvalues/rancatname-skymapvalues.fits
+        if `write` is passed as ``True``.
     """
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
@@ -1005,7 +1023,8 @@ def generate_map_values(rancatname, lssmapdir=None):
         done[mapname] = mapdata[pixnums]
 
     # ADM now we've looped over all maps, write the final array to file.
-#    write_atomically(outfn, done, extname='PIXMAP', header=hdr)
+    if write:
+        write_atomically(outfn, done, extname='PIXMAP', header=hdr)
 
     return done
 
