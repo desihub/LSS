@@ -183,7 +183,7 @@ if combhp or mkfullr:
     if specrel == 'daily':
         specfo = dailydir+'datcomb_'+pdir+'_spec_zdone.fits'
         specf = Table.read(specfo)
-        sel = np.isin(specf['TILEID'],mtld['TILEID']
+        sel = np.isin(specf['TILEID'],mtld['TILEID'])
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         
     print('loaded specf file '+specfo)
