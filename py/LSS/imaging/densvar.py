@@ -256,6 +256,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
         rand_syst[syst_name] = pixm[syst_name][rand_pix]
 
     sel = pixmext['EBVreconMEANF15'] < -1
+    print(np.mean(pixmext[~sel]['EBVreconMEANF15']))
     pixmext[sel]['EBVreconMEANF15'] = np.mean(pixmext[~sel]['EBVreconMEANF15'])
     print(np.min(pixmext['EBVreconMEANF15']))
     for syst_name in syst_names_ext:
