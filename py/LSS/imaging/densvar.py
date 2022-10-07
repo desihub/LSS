@@ -259,7 +259,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
         data_syst[syst_name] = pixmext[syst_name][data_pix]
         rand_syst[syst_name] = pixmext[syst_name][rand_pix]
 
-    ebvd = pixm['EBV'] - pixm['EBVreconMEANF15']
+    ebvd = pixm['EBV'] - pixmext['EBVreconMEANF15']
     data_syst['DELTA_EBV'] = ebvd[data_pix]
     rand_syst['DELTA_EBV'] = ebvd[rand_pix]
 
