@@ -1,0 +1,352 @@
+#standard python
+import sys
+import os
+import shutil
+import unittest
+from datetime import datetime
+import json
+import numpy as np
+import fitsio
+import glob
+import argparse
+import gc
+#gc.enable()
+from astropy.table import Table,join,unique,vstack
+from matplotlib import pyplot as plt
+import healpy as hp
+
+#import tracemalloc
+
+#tracemalloc.start()
+
+from desitarget.io import read_targets_in_tiles
+from desitarget.mtl import inflate_ledger
+from desitarget import targetmask
+from desitarget.internal import sharedmem
+from desimodel.footprint import is_point_in_desi
+import desimodel.footprint as foot
+
+#sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
+
+#from this package
+#try:
+import LSS.main.cattools as ct
+import LSS.common_tools as common
+import LSS.mkCat_singletile.fa4lsscat as fa
+from LSS.globals import main
+
+if os.environ['NERSC_HOST'] == 'cori':
+    scratch = 'CSCRATCH'
+elif os.environ['NERSC_HOST'] == 'perlmutter':
+    scratch = 'PSCRATCH'
+else:
+    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--type", help="tracer type to be selected")
+parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
+parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
+parser.add_argument("--combr", help="combine the random healpix files together",default='n')
+parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
+parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='n')
+parser.add_argument("--combfull", help="combine the full files in healpix into one file",default='n')
+parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
+parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for main should be 5.0.0 or greater",default='5.0.0')
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18,type=int) 
+parser.add_argument("--redos",help="whether or not to redo match to spec data (e.g., to add in a new column)",default='n')
+parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+
+args = parser.parse_args()
+print(args)
+
+type = args.type
+basedir = args.basedir
+version = args.version
+faver = args.faver
+specrel = args.verspec
+rm = int(args.minr)
+rx = int(args.maxr)
+par = True
+if args.par == 'n':
+    par = False
+
+
+
+combhp = True
+if args.combhp == 'n':
+    combhp = False    
+
+redos = False
+if args.redos == 'y':
+    redos = True
+
+mkfullr = True #make the random files associated with the full data files
+if args.fullr == 'n':
+    mkfullr = False
+mkclus = True #make the data/random clustering files; these are cut to a small subset of columns
+mkclusran = True
+if args.clus == 'n':
+    mkclus = False
+    mkclusran = False
+
+if type == 'bright' or type == 'dark':
+    #don't do any of the actual catalogs in this case
+    mkclus = False
+    mkclusran = False
+    mkfullr = False
+
+notqso = ''
+if args.notqso == 'y':
+    notqso = 'notqso'
+
+
+if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+    pr = 'BRIGHT'
+    pdir = 'bright'
+else:
+    pr = 'DARK'
+    pdir = 'dark'
+
+pd = pdir
+
+mainp = main(type)
+
+mt = mainp.mtld
+tiles = mainp.tiles
+imbits = mainp.imbits #mask bits applied to targeting
+ebits = mainp.ebits #extra mask bits we think should be applied
+
+datemax = 20220620
+wd = mt['SURVEY'] == 'main'
+wd &= mt['ZDONE'] == 'true'
+wd &= mt['FAPRGRM'] == pdir
+wd &= mt['LASTNIGHT'] <= datemax
+if specrel != 'daily':
+    sys.exit('need to support spec other than daily')
+    
+mtld = mt[wd]
+#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+
+selt = np.isin(tiles['TILEID'],mtld['TILEID'])
+ta = Table()
+ta['TILEID'] = tiles[selt]['TILEID']
+ta['RA'] = tiles[selt]['RA']
+ta['DEC'] =tiles[selt]['DEC']
+
+#tiles4comb = Table()
+#tiles4comb['TILEID'] = mtld['TILEID']
+#tiles4comb['ZDATE'] = mtld['LASTNIGHT']
+
+#share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
+dailydir = basedir +'/main/LSS/daily/'
+y1dir = basedir +'/Y1/LSS/'
+maindir = basedir +'/main/LSS/'
+randir = maindir+'random'
+
+
+
+if not os.path.exists(y1dir+'/logs'):
+    os.mkdir(y1dir+'/logs')
+    print('made '+y1dir+'/logs')
+
+
+ldirspec = y1dir+specrel+'/'
+if not os.path.exists(ldirspec):
+    os.mkdir(ldirspec)
+    print('made '+ldirspec)
+
+
+dirout = ldirspec+'LSScats/'+version+'/'
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+
+
+
+print(len(ta))
+
+print(specrel)
+
+hpxs = foot.tiles2pix(8, tiles=ta)
+
+if combhp or mkfullr:
+    
+    if specrel == 'daily':
+        specfo = dailydir+'datcomb_'+pdir+'_spec_zdone.fits'
+        specf = Table.read(specfo)
+        sel = np.isin(specf['TILEID'],mtld['TILEID']
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        
+    print('loaded specf file '+specfo)
+    specfc = ct.cut_specdat(specf)
+    if combhp:
+        ntls = len(np.unique(specf['TILEID']))
+        if ntls != len(ta):
+            print(ntls,len(ta))
+            sys.exit('mismatch in number of tileids NOT PROCEEDING')
+    gtl = np.unique(specfc['TILELOCID'])
+    del specfc
+
+if type != 'dark' and type != 'bright' and mkfullr:
+    if type == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[type]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[type]    
+        desitarg='DESI_TARGET'
+    del specf
+    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    
+    wg = np.isin(specf['TILELOCID'],gtl)
+    specf = Table(specf[wg])
+    print('length after selecting type and good hardware '+str(len(specf)))
+    lznp = common.find_znotposs(specf)
+    del specf
+    print('finished finding znotposs')
+
+
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tsnrcol = mainp.tsnrcol        
+
+
+
+def doran(ii):
+    dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
+
+    if combhp:
+        if type == 'dark' or type == 'bright':
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+            
+            npx = 0
+            for px in hpxs:
+                ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc,redos=redos)
+                tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
+                tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
+                npx += 1
+                print(npx,len(hpxs))
+           
+        
+    if mkfullr:
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
+
+        npx = 0
+        if args.refullr == 'y':
+            uhpxs = hpxs
+        else:
+            cf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+            dosel = False
+            try:
+                tls = fitsio.read(cf,columns=['TILEID'])
+                dosel = True
+            except:
+                print('problem reading '+cf+' redoing all')
+                uhpxs = hpxs
+                
+            if dosel:
+                otls = np.unique(tls['TILEID'])
+                print('got tileids currently in '+dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
+                selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
+                uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+        for px in uhpxs:
+            outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
+            print(outf,npx,len(uhpxs))
+            ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
+            npx += 1  
+        npx = 0
+        s = 0
+        #del lznp
+        #del gtl
+        
+
+    if args.combfull == 'y':
+        s = 0
+        npx =0 
+        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        print('now combining to make '+outf)
+        cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
+        pl = []
+        for px in hpxs:
+            po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
+            if os.path.isfile(po):
+                #pf = Table.read(po)
+                pf = fitsio.read(po,columns=cols)
+                pl.append(pf)
+                print(npx,len(hpxs))
+                #ptls = Table.read(po)
+                #ptls.keep_columns(['TARGETID','TILES'])
+                #if s == 0:
+                #    pn = pf
+                #    #ptlsn = ptls
+                #    s = 1
+                #else:
+                    #pn = vstack([pn,pf],metadata_conflicts='silent')
+                #    pn = np.hstack((pn,pf))
+                    #ptlsn = vstack([ptlsn,ptls],metadata_conflicts='silent')
+                #    print(len(pn),npx,len(hpxs))
+            else:
+                print('file '+po+' not found')
+            npx += 1
+        #pn = join(pn,ptlsn,keys=['TARGETID'],join_type='left')
+        #pn.write(outf,overwrite=True,format='fits')
+        print('stacking pixel arrays')
+        #pn = vstack(pl,metadata_conflicts='silent')
+        pn = np.hstack(pl)
+        print('writing out')
+        fitsio.write(outf,pn,clobber=True)
+        del pn
+    #logf.write('ran mkfullran\n')
+    #print('ran mkfullran\n')
+
+
+    if mkclusran:
+
+        ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
+    print('done with random '+str(ii))
+    return True
+        #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
+    #logf.write('ran mkclusran\n')
+    #print('ran mkclusran\n')
+    
+if __name__ == '__main__':
+    if par:
+        from multiprocessing import Pool
+        import sys
+        #N = int(sys.argv[2])
+        #N = 32
+        N = rx-rm+1
+        #p = Pool(N)
+        inds = []
+        for i in range(rm,rx):
+            inds.append(i)
+        #with sharedmem.MapReduce() as pool:
+        pool = sharedmem.MapReduce(np=N)
+        with pool:
+        
+            def reduce( r):
+                print('chunk done')
+                return r
+            pool.map(doran,inds,reduce=reduce)
+
+        #p.map(doran,inds)
+    else:
+        for i in range(rm,rx):
+            doran(i)
