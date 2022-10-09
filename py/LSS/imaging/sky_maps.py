@@ -1030,15 +1030,15 @@ def generate_map_values(rancatname, lssmapdir=None, write=True):
 
 
 # MMM map from alms.
-def get_map_from_alms(alms, ellmin, ellmax, nside_out=512, nside_in=512):
+def get_map_from_alms(alms, ellmin, ellmax, nside_in=512, nside_out=512):
     '''
     Create Healpix map fom healpix alms
     1) transform alm to map, with nside_res, only with ell <= ellmax
     2) if nside_out < nside_in, warns and degrades de map to nside_map
     Inputs:
        alms : array alm
-       nside_map  : nside output map
-       nside_out nside_in : nside of input and output map
+       nside_out  : nside output map
+       nside_in : nside of input and output map
        ellmin, ellmax : min and max ell-values of alm
     '''
     # MMM fill with zeros outside the ell range.
@@ -1053,7 +1053,7 @@ def get_map_from_alms(alms, ellmin, ellmax, nside_out=512, nside_in=512):
             r.append(1.0)
     alm2 = hp.almxfl(alms, r)  # multiply kap_al by r.
     ptest = hp.alm2map(alm2, nside_in)
-    if(nside_map < nside_hires):
+    if(nside_out < nside_in):
         ptest = hp.ud_grade(ptest, nside_out)
     return ptest
 
