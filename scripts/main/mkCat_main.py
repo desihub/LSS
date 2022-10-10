@@ -216,6 +216,8 @@ if os.path.isfile(etarf) and redotar == False:
 if args.survey != 'main':
     mketar = False
 
+if type == 'BGS_BRIGHT':
+    mketar = False
 
 if mketar: #concatenate target files for given type, with column selection hardcoded
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
