@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 #from desihub
 from desitarget import targetmask
 #from regressis, must be installed
-from regressis import DR9Footprint
+#from regressis import DR9Footprint
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
