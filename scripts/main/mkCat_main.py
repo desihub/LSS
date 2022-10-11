@@ -403,6 +403,9 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 if args.regressis == 'y':
+    #from regressis, must be installed
+    from regressis import DR9Footprint
+
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
     nside = 256
