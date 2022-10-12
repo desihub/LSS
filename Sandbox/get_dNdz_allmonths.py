@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 import LSS.common_tools as common
 from LSS.globals import main
-mainp = main(args.type,args.verspec)
+
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
@@ -19,7 +19,7 @@ print(yms)
 
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
 
-    
+    mainp = main(tp,'daily')
     if tp == 'QSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+type+'_tarspecwdup_zdone.fits')
         dt = common.cut_specdat(dt,mainp.badfib)
