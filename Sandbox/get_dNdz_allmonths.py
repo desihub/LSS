@@ -32,7 +32,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
 
-        dt = join(dt,arz,keys=['TARGETID','TILEID','LOCATION'],uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        dt = join(dt,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
         zcol = 'Z_QF'
         
     elif tp != 'ELGnotqso' and tp != 'ELGandQSO':
