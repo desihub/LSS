@@ -19,14 +19,6 @@ print(yms)
 
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
 
-        dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
-        tlf = ldirspec+type+'_tilelocs.dat.fits'
-        if type[:3] == 'ELG':
-            #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
-            azf = ldirspec+'emlin_catalog.fits'
-        if type[:3] == 'QSO':
-            azf =ldirspec+'QSO_catalog.fits'
-
     
     if tp == 'QSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+type+'_tarspecwdup_zdone.fits')
