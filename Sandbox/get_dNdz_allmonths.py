@@ -23,7 +23,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     mainp = main(tp,'daily')
     if tp == 'QSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_QSO_tarspecwdup_zdone.fits')
-        print(dt.dtype.names)
+        #print(dt.dtype.names)
         dt = common.cut_specdat(dt,mainp.badfib)
         sel = dt['PRIORITY'] == 3400 #select QSO on 1st obs
         dt = dt[sel]
@@ -32,7 +32,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
 
-        dt = join(dt,arz,keys=['TARGETID,TILEID,LOCATION'],uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        dt = join(dt,arz,keys=['TARGETID','TILEID','LOCATION'],uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
         zcol = 'Z_QF'
         
     elif tp != 'ELGnotqso' and tp != 'ELGandQSO':
