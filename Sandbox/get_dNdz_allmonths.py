@@ -4,6 +4,7 @@ from astropy.table import Table, join, unique,vstack
 import os
 import sys
 from matplotlib import pyplot as plt
+import argparse
 
 import LSS.common_tools as common
 from LSS.globals import main
