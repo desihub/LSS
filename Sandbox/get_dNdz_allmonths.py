@@ -22,7 +22,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
 
     mainp = main(tp,'daily')
     if tp == 'QSO':
-        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+type+'_tarspecwdup_zdone.fits')
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_QSO_tarspecwdup_zdone.fits')
         dt = common.cut_specdat(dt,mainp.badfib)
         sel = dt['PRIORITY'] == 3400 #select QSO on 1st obs
         dt = dt[sel]
