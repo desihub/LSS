@@ -94,6 +94,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         #wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
         if len(dt[wg&sd]) > 0:
             fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
+            print(tp,yearmonth,'success rate '+str(fracm))
             #plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
             #plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
             plt.hist(zl,bins=50,density=True,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
