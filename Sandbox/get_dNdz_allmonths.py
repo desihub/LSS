@@ -118,7 +118,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
                 plt.ylim(0,0.7)
             plt.savefig(outdir+tp+str(yearmonth)+'.png')
             del zlm
-            del wlm
+            #del wlm
             plt.clf()
     del dt
 
