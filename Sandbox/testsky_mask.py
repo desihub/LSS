@@ -9,7 +9,8 @@ mpicomm = MPI.COMM_WORLD
 specrel = 'guadalupe'
 prog = 'dark'
 specf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
-
+if mpicomm.rank == 0:
+    print(len(specf))
 columns = {}
 columns['maskbits'] = {'fn': '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-maskbits.fits.fz', 'dtype': 'i2', 'default': 1}
 
