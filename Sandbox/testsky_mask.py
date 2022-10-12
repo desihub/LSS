@@ -2,6 +2,10 @@ from desitarget import randoms
 from mockfactory.desi import get_brick_pixel_quantities
 import fitsio
 
+from mpi4py import MPI
+
+mpicomm = MPI.COMM_WORLD
+
 specrel = 'guadalupe'
 prog = 'dark'
 specf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
