@@ -9,6 +9,8 @@ mpicomm = MPI.COMM_WORLD
 specrel = 'guadalupe'
 prog = 'dark'
 specf = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+sel_sky = specf['OBJTYPE'] == 'SKY'
+specf = specf[sel_sky]
 if mpicomm.rank == 0:
     print(len(specf))
 columns = {}
