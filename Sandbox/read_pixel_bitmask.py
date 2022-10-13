@@ -117,7 +117,7 @@ for col in cat.colnames:
     cat.rename_column(col, col.upper())
 
 if 'TARGET_RA' in cat.colnames:
-    print('renaming TARGET_ columns)
+    print('renaming TARGET_ columns')
     cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
     print(cat.dtype.names)
 
