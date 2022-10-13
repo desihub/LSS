@@ -126,8 +126,10 @@ if 'BRICKID' not in cat.colnames:
 
 cat.keep_columns(['RA','DEC','BRICKID','TARGETID'])
 sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
+print(np.max(cat['BRICKID']))
 print(len(cat[~sel]))
 cat = cat[sel]
+print(len(cat))
 
 # Just some tricks to speed up things up
 bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
