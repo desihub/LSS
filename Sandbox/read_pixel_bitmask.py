@@ -122,7 +122,7 @@ if 'TARGET_RA' in cat.colnames:
 if 'BRICKID' not in cat.colnames:
     from desiutil import brick
     tmp = brick.Bricks(bricksize=0.25)
-    cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
+    cat['BRICKID'] = tmp.brickid(np.array(cat['RA']), np.array(cat['DEC']))
 
 sel0 = cat['BRICKID'] == 0
 print(len(cat[sel0]))
