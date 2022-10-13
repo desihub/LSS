@@ -96,8 +96,8 @@ def wrapper(bid_index):
     return data
 
 
-bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
-#bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
+#bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
+bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
 #try:
 #    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
@@ -120,6 +120,9 @@ if 'BRICKID' not in cat.colnames:
     cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
 
 cat.keep_columns(['RA','DEC','BRICKID','TARGETID'])
+sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
+print(len(cat[~sel]))
+cat = cat[sel]
 
 # Just some tricks to speed up things up
 bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
