@@ -121,6 +121,8 @@ if 'TARGET_RA' in cat.colnames:
     cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
     print(cat.dtype.names)
 
+cat.keep_columns(['RA','DEC','TARGETID'])
+
 if 'BRICKID' not in cat.colnames:
     from desiutil import brick
     tmp = brick.Bricks(bricksize=0.25)
@@ -133,7 +135,7 @@ print(len(cat[sel0]))
 print(np.min(cat[sel0]['RA']),np.min(cat[sel0]['DEC']))
 print(np.max(cat[sel0]['RA']),np.max(cat[sel0]['DEC']))
 
-cat.keep_columns(['RA','DEC','BRICKID','TARGETID'])
+
 sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
 print(np.max(cat['BRICKID']),np.min(cat['BRICKID']))
 print(len(cat[~sel]))
