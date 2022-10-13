@@ -130,10 +130,10 @@ if 'BRICKID' not in cat.colnames:
     print(min(ids),max(ids))
     cat['BRICKID'] = ids
 
-sel0 = cat['BRICKID'] == 0
-print(len(cat[sel0]))
-print(np.min(cat[sel0]['RA']),np.min(cat[sel0]['DEC']))
-print(np.max(cat[sel0]['RA']),np.max(cat[sel0]['DEC']))
+#sel0 = cat['BRICKID'] == 0
+#print(len(cat[sel0]))
+#print(np.min(cat[sel0]['RA']),np.min(cat[sel0]['DEC']))
+#print(np.max(cat[sel0]['RA']),np.max(cat[sel0]['DEC']))
 
 
 sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
