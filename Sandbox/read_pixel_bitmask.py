@@ -75,7 +75,7 @@ def bitmask_radec(brickid, ra, dec):
     coadd_x, coadd_y = w.wcs_world2pix(ra, dec, 0)
     coadd_x, coadd_y = np.round(coadd_x).astype(int), np.round(coadd_y).astype(int)
     sel = (coadd_x < 0) | (coadd_x >= 3600)
-        print(coadd_x[sel],brick_id[sel],ra[sel],dec[sel])
+    print(coadd_x[sel],brick_id[sel],ra[sel],dec[sel])
     #if coadd_y < 0 or coadd_y >= 3600:
     #    print(coadd_y,brick_id,ra,dec)
 
