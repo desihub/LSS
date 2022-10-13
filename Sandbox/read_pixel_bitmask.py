@@ -117,12 +117,16 @@ for col in cat.colnames:
     cat.rename_column(col, col.upper())
 
 if 'TARGET_RA' in cat.colnames:
+    print('renaming TARGET_ columns)
     cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
+    print(cat.dtype.names)
 
 if 'BRICKID' not in cat.colnames:
     from desiutil import brick
     tmp = brick.Bricks(bricksize=0.25)
-    cat['BRICKID'] = tmp.brickid(np.array(cat['RA']), np.array(cat['DEC']))
+    ids = tmp.brickid(cat['RA'], cat['DEC'])
+    print(min(ids),max(ids))
+    cat['BRICKID'] = ids
 
 sel0 = cat['BRICKID'] == 0
 print(len(cat[sel0]))
