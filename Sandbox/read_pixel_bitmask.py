@@ -136,8 +136,9 @@ if 'BRICKID' not in cat.colnames:
 #print(np.max(cat[sel0]['RA']),np.max(cat[sel0]['DEC']))
 
 
-sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
-print(np.max(cat['BRICKID']),np.min(cat['BRICKID']))
+#sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
+sel = cat['TARGETID'] < 0 # explicitly getting stuck sky here
+#print(np.max(cat['BRICKID']),np.min(cat['BRICKID']))
 print(len(cat[~sel]))
 cat = cat[sel]
 print(len(cat))
