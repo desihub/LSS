@@ -126,7 +126,7 @@ if 'BRICKID' not in cat.colnames:
 
 cat.keep_columns(['RA','DEC','BRICKID','TARGETID'])
 sel = np.isin(cat['BRICKID'],bricks['BRICKID'])
-print(np.max(cat['BRICKID']))
+print(np.max(cat['BRICKID']),np.min(cat['BRICKID']))
 print(len(cat[~sel]))
 cat = cat[sel]
 print(len(cat))
