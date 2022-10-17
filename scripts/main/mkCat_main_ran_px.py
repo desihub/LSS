@@ -36,9 +36,9 @@ import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
-    scratch = 'CSCRATCH'
+    scratch = '$CSCRATCH'
 elif os.environ['NERSC_HOST'] == 'perlmutter':
-    scratch = 'PSCRATCH'
+    scratch = '$PSCRATCH'
 else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 

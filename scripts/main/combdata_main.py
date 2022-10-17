@@ -100,7 +100,7 @@ print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true f
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
-tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
+tiles4comb['THRUDATE'] = mtd['QANIGHT']#mtd['LASTNIGHT']
 
 tiles.keep_columns(['TILEID','RA','DEC'])
 #print(tiles.dtype.names)
