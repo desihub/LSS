@@ -4,6 +4,11 @@ from astropy.table import Table, join, unique,vstack
 import os
 import sys
 from matplotlib import pyplot as plt
+import argparse
+
+import LSS.common_tools as common
+from LSS.globals import main
+
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/dNdzmonth/'
 mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
@@ -14,16 +19,36 @@ print('months to go through are:')
 print(yms)
 
 def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
-    
-    if tp != 'ELGnotqso' and tp != 'ELGandQSO':
+
+    mainp = main(tp,'daily')
+    if tp == 'QSO':
+        dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_QSO_tarspecwdup_zdone.fits')
+        #print(dt.dtype.names)
+        dt = common.cut_specdat(dt,mainp.badfib)
+        sel = dt['PRIORITY'] == 3400 #select QSO on 1st obs
+        dt = dt[sel]
+        azf ='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits'
+        arz = Table(fitsio.read(azf))
+        arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+        arz['TILEID'] = arz['TILEID'].astype(int)
+
+        dt = join(dt,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        zcol = 'Z_QF'
+        
+    elif tp != 'ELGnotqso' and tp != 'ELGandQSO':
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
+        #
     else:
         dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/ELG_full.dat.fits')
+        #dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+type+'_tarspecwdup_zdone.fits')
 
-    wg = dt['ZWARN'] != 999999
-    wg &= dt['ZWARN'] != 1e20
-    wg &= dt['ZWARN']*0 == 0
-    wg &= dt['GOODHARDLOC'] == 1
+    wg = np.ones(len(dt),dtype='bool')
+    if tp != 'QSO':
+        wg &= dt['ZWARN'] != 999999
+        wg &= dt['ZWARN'] != 1e20
+        wg &= dt['ZWARN']*0 == 0
+        wg &= dt['GOODHARDLOC'] == 1
+    
     zmin = 0
     zmax = 2
 
@@ -57,7 +82,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         zmin = 0
         zmax = 1
     zl = dt[wg&wz][zcol]
-    wl = 1./dt[wg&wz]['FRACZ_TILELOCID']
+    #wl = 1./dt[wg&wz]['FRACZ_TILELOCID']
     fractot = len(dt[wg&wz])/len(dt[wg])
     for yearmonth in yearmonths:
         sel = mtld['LASTNIGHT']//100 == yearmonth
@@ -66,11 +91,14 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
         sd = np.isin(dt['TILEID'],tids)
         ntls = len(np.unique(dt[sd]['TILEID']))
         zlm = dt[wg&wz&sd][zcol]
-        wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
+        #wlm = 1./dt[wg&wz&sd]['FRACZ_TILELOCID']
         if len(dt[wg&sd]) > 0:
             fracm = len(dt[wg&wz&sd])/len(dt[wg&sd])
-            plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
-            plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+            print(tp,yearmonth,'success rate '+str(fracm))
+            #plt.hist(zl,bins=50,density=True,weights=wl,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
+            #plt.hist(zlm,bins=50,density=True,weights=wlm,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
+            plt.hist(zl,bins=50,density=True,histtype='step',label='all; ssr '+str(round(fractot,3)),range=(zmin,zmax))
+            plt.hist(zlm,bins=50,density=True,histtype='step',label=str(yearmonth)+', '+str(ntls)+' tiles; ssr '+str(round(fracm,3)),range=(zmin,zmax))
             plt.title(tp)
             plt.xlabel('Z')
             plt.ylabel('dN/dz')
@@ -91,10 +119,18 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
                 plt.ylim(0,0.7)
             plt.savefig(outdir+tp+str(yearmonth)+'.png')
             del zlm
-            del wlm
+            #del wlm
             plt.clf()
     del dt
 
-tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
+parser = argparse.ArgumentParser()
+parser.add_argument("--tracer",help="tracer type to make plots for ",default='all')
+args = parser.parse_args()
+
+
+if args.tracer == 'all':
+    tps = ['LRG','QSO','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT']
+else:
+    tps = [args.tracer]
 for tp in tps:
 	dndz_monthall(yms,tp)

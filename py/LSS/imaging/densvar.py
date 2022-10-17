@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from LSS import imsys_fitter as sf
 
 pixfn      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'#'/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
+pixfn_ext      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight_external.fits'
 hdr        = fits.getheader(pixfn,1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 print(nside,nest)
@@ -241,15 +242,33 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
     rand_syst = {}
 
     pixm = fitsio.read(pixfn)
+    pixmext = fitsio.read(pixfn_ext)
     data_pix = get_pix(nside, data_ra, data_dec,nest) 
     rand_pix = get_pix(nside, rand_ra, rand_dec,nest)
     syst_names = ['STARDENS','EBV', 'PSFDEPTH_G', 'PSFDEPTH_R',\
     'PSFDEPTH_Z','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z',\
     'PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    syst_names_ext = ['HALPHA','EBVreconMEANF15', 'CALIBG', 'CALIBR',\
+    'CALIBZ']
 
     for syst_name in syst_names:
         data_syst[syst_name] = pixm[syst_name][data_pix]
         rand_syst[syst_name] = pixm[syst_name][rand_pix]
+
+    sel = pixmext['EBVreconMEANF15'] < -1
+    mno = np.mean(pixmext[~sel]['EBVreconMEANF15'])
+    #pixmext[sel]['EBVreconMEANF15'] = mno #why did this not work !?
+    for i in range(0,len(pixmext['EBVreconMEANF15'])):
+        if pixmext['EBVreconMEANF15'][i] < -1:
+            pixmext['EBVreconMEANF15'][i] = mno
+    print(np.min(pixmext['EBVreconMEANF15']),np.min(pixmext['EBVreconMEANF15'][sel]),np.min(pixmext['EBVreconMEANF15'][~sel]))
+    for syst_name in syst_names_ext:
+        data_syst[syst_name] = pixmext[syst_name][data_pix]
+        rand_syst[syst_name] = pixmext[syst_name][rand_pix]
+
+    ebvd = pixm['EBV'] - pixmext['EBVreconMEANF15']
+    data_syst['DELTA_EBV'] = ebvd[data_pix]
+    rand_syst['DELTA_EBV'] = ebvd[rand_pix]
 
     return data_syst, rand_syst
 
@@ -260,6 +279,7 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True):
     dds = dd[sel]
     #-- Dictionaries containing all different systematic values
     data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'])
+    print(data_syst.dtype.names)
     data_we = dds['WEIGHT']
     rand_we = np.ones(len(rd))
     #-- Create fitter object

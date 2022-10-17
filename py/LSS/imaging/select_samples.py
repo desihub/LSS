@@ -89,7 +89,7 @@ def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
 	else:
 	    keys = list(f.dtype.names)
 	if survey == 'main':
-	    if type[:3] == 'BGS':
+	    if type[:3] == 'BGS' and 'extra' in targroot == 'False':
 	        bs = targetmask.bgs_mask[type]
 	        tp = 'BGS_TARGET'
 	    else:
