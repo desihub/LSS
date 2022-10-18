@@ -67,20 +67,34 @@ mtlb = mt[wb]
 
 tps_dark = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso']
 
+dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_dark_spec_zdone.fits')
+sel = np.isin(dd['TILEID'],mtld['TILEID'])
+fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_dark_spec_zdone.fits'
+common.write_LSS(dd[sel],fno)
+
+dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_bright_spec_zdone.fits')
+sel = np.isin(dd['TILEID'],mtlb['TILEID'])
+fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_bright_spec_zdone.fits'
+common.write_LSS(dd[sel],fno)
+
+fls = ['tarspecwdup','tarwdup']
+
 for tp in tps_dark:
-    dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+tp+'_tarspecwdup_zdone.fits')
-    sel = np.isin(dd['TILEID'],mtld['TILEID'])
-    print(tp,len(dd),len(dd[sel]))
-    fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_'+tp+'_tarspecwdup_zdone.fits'
-    common.write_LSS(dd[sel],fno)
+    for fl in fls:
+        dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+tp+'_'+fl+'_zdone.fits')
+        sel = np.isin(dd['TILEID'],mtld['TILEID'])
+        print(tp,len(dd),len(dd[sel]))
+        fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_'+tp+'_'+fl+'_zdone.fits'
+        common.write_LSS(dd[sel],fno)
     
 tps_bright = ['BGS_ANY','BGS_BRIGHT']
     
 for tp in tps_bright:
-    dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+tp+'_tarspecwdup_zdone.fits')
-    sel = np.isin(dd['TILEID'],mtlb['TILEID'])
-    print(tp,len(dd),len(dd[sel]))
-    fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_'+tp+'_tarspecwdup_zdone.fits'
-    common.write_LSS(dd[sel],fno)
+    for fl in fls:
+        dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+tp+'_'+fl+'_zdone.fits')
+        sel = np.isin(dd['TILEID'],mtlb['TILEID'])
+        print(tp,len(dd),len(dd[sel]))
+        fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/datcomb_'+tp+'_'+fl+'_zdone.fits'
+        common.write_LSS(dd[sel],fno)
 
 #print('found 
