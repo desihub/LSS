@@ -259,10 +259,22 @@ if specrel == 'daily' and args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
     ct.combtile_em(tiles4comb,outf)
     
-    
+
+if args.survey == 'Y1' and args.counts_only == 'y':    
+    if prog == 'dark':
+        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+        notqsos = ['','','','','notqso']
+    if prog == 'bright':
+        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+        notqsos = ['',''] 
+    for tp,notqso in zip(tps,notqsos):
+
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
+        tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel == 'daily' and args.dospec == 'y':
+if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo) and args.redospec == 'n':
         specf = Table.read(specfo)
