@@ -59,7 +59,7 @@ class SV3:
         #'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         
 class main:
-    def __init__(self,tp,specver='guadalupe'):
+    def __init__(self,tp,specver='guadalupe',survey='main'):
         self.mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/' #location of ledgers
         self.tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'#location of targets
         self.mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
@@ -122,6 +122,6 @@ class main:
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
 
         if specver == 'daily':
-            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emlin_catalog.fits'
-            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits'
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/daily/emlin_catalog.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/daily/QSO_catalog.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')

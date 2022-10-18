@@ -43,6 +43,10 @@ else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--zfiles_only",help="only do the em and qso",default='y')
+
+args = parser.parse_args()
 
 
 mainp = main(type)
@@ -57,6 +61,19 @@ wd &= mt['FAPRGRM'] == 'dark'
 wd &= mt['LASTNIGHT'] <= datemax
     
 mtld = mt[wd]
+
+dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emlin_catalog.fits')
+sel = np.isin(dd['TILEID'],mtld['TILEID'])
+fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/emlin_catalog.fits'
+common.write_LSS(dd[sel],fno)
+
+dd = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits')
+sel = np.isin(dd['TILEID'],mtld['TILEID'])
+fno = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/daily/QSO_catalog.fits'
+common.write_LSS(dd[sel],fno)
+
+if args.zfiles_only == 'y':
+    sys.exit()
 
 wb = mt['SURVEY'] == 'main'
 wb &= mt['ZDONE'] == 'true'
