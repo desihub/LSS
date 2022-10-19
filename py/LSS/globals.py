@@ -1,4 +1,4 @@
-from astropy.table import Table
+from astropy.table import Table,join
 import numpy as np
 
 class SV3:
@@ -62,7 +62,9 @@ class main:
     def __init__(self,tp,specver='guadalupe',survey='main'):
         self.mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/' #location of ledgers
         self.tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'#location of targets
-        self.mtld = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+        ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+        md = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv')
+        self.mtld = join(ss,md,keys=['TILEID','ARCHIVEDATE'])
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
         self.ebits = None
         self.badfib = None
