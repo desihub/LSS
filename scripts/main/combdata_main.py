@@ -43,6 +43,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
@@ -101,6 +102,11 @@ tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
+
+print('The last night of data that will be processed is '+str(np.max(tiles4comb['THRUDATE'] )))
+print('Is that what was expected based on MTL updates?')
+if args.check_date_only == 'y':
+    sys.exit()
 
 tiles.keep_columns(['TILEID','RA','DEC'])
 #print(tiles.dtype.names)
