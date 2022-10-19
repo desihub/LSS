@@ -103,7 +103,7 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
 
-print('The last night of data that will be processed is '+str(np.max(tiles4comb['THRUDATE'] )))
+print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
 print('Is that what was expected based on MTL updates?')
 if args.check_date_only == 'y':
     sys.exit()
