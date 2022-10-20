@@ -196,7 +196,7 @@ if not os.path.exists(dirout):
 
 tarver = '1.1.1'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
-tarf = maindir+type +'targetsDR9v'+tarver.strip('.')+'.fits'
+tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False:

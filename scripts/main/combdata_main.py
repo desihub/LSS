@@ -43,6 +43,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
@@ -100,7 +101,12 @@ print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true f
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
-tiles4comb['THRUDATE'] = mtd['LASTNIGHT']
+tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
+
+print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
+print('Is that what was expected based on MTL updates?')
+if args.check_date_only == 'y':
+    sys.exit()
 
 tiles.keep_columns(['TILEID','RA','DEC'])
 #print(tiles.dtype.names)
@@ -259,10 +265,22 @@ if specrel == 'daily' and args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
     ct.combtile_em(tiles4comb,outf)
     
-    
+
+if args.survey == 'Y1' and args.counts_only == 'y':    
+    if prog == 'dark':
+        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+        notqsos = ['','','','','notqso']
+    if prog == 'bright':
+        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+        notqsos = ['',''] 
+    for tp,notqso in zip(tps,notqsos):
+
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
+        tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel == 'daily' and args.dospec == 'y':
+if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo) and args.redospec == 'n':
         specf = Table.read(specfo)
