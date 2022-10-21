@@ -454,7 +454,7 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
-    if args.survey == 'main':
+    if args.survey != 'DA02':
         regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
@@ -479,8 +479,15 @@ if args.add_regressis == 'y':
     
 
 if args.add_ke == 'y':
+    if args.survey != 'DA02':
+        regl = ['']
+
     for reg in regl:
-        fn = dirout+tracer_clus+reg+'_clustering.dat.fits'
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+        else:
+            fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
         #if args.test == 'y':
         #    dat = dat[:10]
@@ -488,15 +495,9 @@ if args.add_ke == 'y':
         if 'REST_GMR_0P1' in cols:
             print('appears columns are already in '+fn)
         else:
-            dat = common.add_ke(dat)
+            dat = common.add_ke(dat,zcol='Z_not4clus')
             #if args.test == 'n':
             common.write_LSS(dat,fn,comments=['added k+e corrections'])
-    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
-    for col in kecols:
-        rcols.append(col)
-    #if args.test == 'y':
-    #    print('k+e test passed')    
 
 utlid = False
 if args.ran_utlid == 'y':
