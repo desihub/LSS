@@ -352,7 +352,7 @@ def add_ke(dat,zcol='Z',n_processes=100):
     os.environ['CODE_ROOT'] = ke_code_root
     print(os.environ['CODE_ROOT'])
     from   smith_kcorr     import GAMA_KCorrection
-    from   rest_gmr        import smith_rest_gmr
+    from   rest_gmr        import smith_rest_gmr,rest_gmr
     from   tmr_ecorr       import tmr_ecorr, tmr_q
     
     kcorr_r   = GAMA_KCorrection(band='R')
@@ -374,7 +374,7 @@ def add_ke(dat,zcol='Z',n_processes=100):
         idx = np.arange(mini,maxi)
         data = Table()
         data['idx'] = idx
-        data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr)
+        data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr[mini:maxi])
         list[N] = data
         #return data
 
