@@ -361,15 +361,16 @@ def add_ke(dat,zcol='Z'):
     g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
     gmr = g_dered-r_dered
 
-    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat['Z'], gmr)
+    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol], gmr)
     dat['KCORR_R0P1'] = kcorr_r.k(dat[zcol], dat['REST_GMR_0P1'])
     dat['KCORR_G0P1'] = kcorr_g.k(dat[zcol], dat['REST_GMR_0P1'])
-    dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat[zcol], dat['REST_GMR_0P1'])
+    dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat[zcol], dat['REST_GMR_0P1'])
     dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
     dat['EQ_ALL_0P0']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P0'], aall=True)
     dat['EQ_ALL_0P1']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P1'], aall=True)
-    dat['ABSMAG_R'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    dat['ABSMAG_RP1'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    dat['ABSMAG_RP0'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P0']-dat['EQ_ALL_0P0'] 
     return dat
     #abg = g_dered -dm(data['Z'])
     
