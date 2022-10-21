@@ -341,11 +341,12 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
         data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
     return data
 
-def add_ke(dat):
+def add_ke(dat,zcol='Z'):
     #dat should be table with flux_g_dered and flux_r_dered
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
     #
-    ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+    #ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+    ke_code_root = os.environ['LSSDIR']+'LSS/py/LSS/DESI_ke'
     sys.path.append(ke_code_root)
     os.environ['CODE_ROOT'] = ke_code_root
     from   smith_kcorr     import GAMA_KCorrection
@@ -360,14 +361,14 @@ def add_ke(dat):
     gmr = g_dered-r_dered
 
     dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat['Z'], gmr)
-    dat['KCORR_R0P1'] = kcorr_r.k(dat['Z'], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], dat['REST_GMR_0P1'])
+    dat['KCORR_R0P1'] = kcorr_r.k(dat[zcol], dat['REST_GMR_0P1'])
+    dat['KCORR_G0P1'] = kcorr_g.k(dat[zcol], dat['REST_GMR_0P1'])
     dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
     dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
     dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
-    dat['EQ_ALL_0P0']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P0'], aall=True)
-    dat['EQ_ALL_0P1']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P1'], aall=True)
-    dat['ABSMAG_R'] = r_dered -dm(dat['Z'])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    dat['EQ_ALL_0P0']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P0'], aall=True)
+    dat['EQ_ALL_0P1']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P1'], aall=True)
+    dat['ABSMAG_R'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
     return dat
     #abg = g_dered -dm(data['Z'])
     
