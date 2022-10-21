@@ -1,0 +1,3 @@
+[submodule "py/LSS/DESI_ke"]
+	path = py/LSS/DESI_ke
+	url = https://github.com/SgmAstro/DESI
