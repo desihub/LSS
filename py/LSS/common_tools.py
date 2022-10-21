@@ -366,7 +366,7 @@ def add_ke(dat,zcol='Z',n_processes=100):
     list = []
     for i in range(0,n_processes):
         list.append(0)
-    def wrapper(N):
+    def _wrapper(N):
         mini = N*chunk_size
         maxi = mini+chunk_size
         if maxi > len(dat):
@@ -379,7 +379,8 @@ def add_ke(dat,zcol='Z',n_processes=100):
         #return data
 
     with Pool(processes=n_processes) as pool:
-        res = pool.map(wrapper, np.arange(n_processes))
+        #res = pool.map(_wrapper, np.arange(n_processes))
+        pool.map(_wrapper, np.arange(n_processes))
 
     res = vstack(list)#vstack(res)
     res.sort('idx')
