@@ -346,9 +346,10 @@ def add_ke(dat,zcol='Z'):
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
     #
     #ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
-    ke_code_root = os.environ['LSSDIR']+'LSS/py/LSS/DESI_ke'
+    ke_code_root = os.environ['LSSCODE']+'LSS/py/LSS/DESI_ke'
     sys.path.append(ke_code_root)
     os.environ['CODE_ROOT'] = ke_code_root
+    print(os.environ['CODE_ROOT'])
     from   smith_kcorr     import GAMA_KCorrection
     from   rest_gmr        import smith_rest_gmr
     from   tmr_ecorr       import tmr_ecorr, tmr_q
