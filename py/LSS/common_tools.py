@@ -375,7 +375,7 @@ def add_ke(dat,zcol='Z',n_processes=100):
         return data
 
     with Pool(processes=n_processes) as pool:
-        res = pool.map(wrapper, n_processes)
+        res = pool.map(wrapper, np.arange(n_processes))
 
     res = vstack(res)
     res.sort('idx')
