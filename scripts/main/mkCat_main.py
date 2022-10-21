@@ -489,6 +489,8 @@ if args.add_ke == 'y':
         else:
             fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+
         #if args.test == 'y':
         #    dat = dat[:10]
         cols = list(dat.dtype.names)
