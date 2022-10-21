@@ -363,6 +363,9 @@ def add_ke(dat,zcol='Z',n_processes=100):
     gmr = g_dered-r_dered
     
     chunk_size = len(dat)//n_processes
+    list = []
+    for i in range(0,n_processes):
+        list.append(0)
     def wrapper(N):
         mini = N*chunk_size
         maxi = mini+chunk_size
@@ -372,12 +375,13 @@ def add_ke(dat,zcol='Z',n_processes=100):
         data = Table()
         data['idx'] = idx
         data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr)
-        return data
+        list[N] = data
+        #return data
 
     with Pool(processes=n_processes) as pool:
         res = pool.map(wrapper, np.arange(n_processes))
 
-    res = vstack(res)
+    res = vstack(list)#vstack(res)
     res.sort('idx')
     res.remove_column('idx')
     print(len(res),len(dat))
