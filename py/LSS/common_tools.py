@@ -378,7 +378,7 @@ def add_ke(dat,zcol='Z',n_processes=100):
         list[N] = data
         #return data
 
-    with Pool(processes=n_processes) as pool:
+    with Pool(processes=n_processes+1) as pool:
         #res = pool.map(_wrapper, np.arange(n_processes))
         pool.map(_wrapper, np.arange(n_processes))
 
