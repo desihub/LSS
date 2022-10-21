@@ -341,7 +341,7 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
         data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
     return data
 
-def add_ke(dat,zcol='Z'):
+def add_ke(dat,zcol='Z',n_processes=10):
     #dat should be table with flux_g_dered and flux_r_dered
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
     #
@@ -360,8 +360,27 @@ def add_ke(dat,zcol='Z'):
     r_dered = 22.5 - 2.5*np.log10(dat['flux_r_dered'])
     g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
     gmr = g_dered-r_dered
+    
+    chunk_size = len(dat)//n_processes
+    def wrapper(N):
+        mini = N*chunk_size
+        maxi = mini+chunk_size
+        if maxi > len(dat):
+            maxi = len(dat)
+        idx = np.arange(mini,maxi)
+        data = Table()
+        data['idx'] = idx
+        data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr)
+        return data
 
-    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol], gmr)
+    with Pool(processes=n_processes) as pool:
+        res = pool.map(wrapper, n_processes)
+
+    res = vstack(res)
+    res.sort('idx')
+    res.remove_column('idx')
+    print(len(res),len(dat))
+    dat['REST_GMR_0P1'] = data['REST_GMR_0P1']#, rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol], gmr)
     dat['KCORR_R0P1'] = kcorr_r.k(dat[zcol], dat['REST_GMR_0P1'])
     dat['KCORR_G0P1'] = kcorr_g.k(dat[zcol], dat['REST_GMR_0P1'])
     dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat[zcol], dat['REST_GMR_0P1'])
