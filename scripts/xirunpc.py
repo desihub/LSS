@@ -94,8 +94,7 @@ def select_region(ra, dec, region):
 
 
 def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/global/cfs/cdirs/desi/survey/catalogs'):
-    # return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
-    return os.path.join(base_dir, survey, verspec, 'LSScats', version)
+    return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
 
 
 
