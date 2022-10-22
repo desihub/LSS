@@ -490,7 +490,7 @@ if args.add_ke == 'y':
             fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
         dat = common.add_dered_flux(dat,fcols)
-        n_processes = 100
+        n_processes = 10
         chunk_size = len(dat)//n_processes
         list = []
         for i in range(0,n_processes):
