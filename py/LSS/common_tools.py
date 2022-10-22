@@ -341,7 +341,7 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
         data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
     return data
 
-def add_ke(dat,zcol='Z')#,n_processes=100):
+def add_ke(dat,zcol='Z'):#,n_processes=100):
     from multiprocessing import Pool
     #dat should be table with flux_g_dered and flux_r_dered
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
