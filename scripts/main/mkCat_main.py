@@ -494,7 +494,7 @@ if args.add_ke == 'y':
         chunk_size = len(dat)//n_processes
         list = []
         for i in range(0,n_processes):
-            mini = N*chunk_size
+            mini = i*chunk_size
             maxi = mini+chunk_size
             if maxi > len(dat):
                 maxi = len(dat)
@@ -505,7 +505,7 @@ if args.add_ke == 'y':
             if maxi > len(dat):
                 maxi = len(dat)
             idx = np.arange(mini,maxi)
-            data = Table()
+            data = list[N]#Table()
             data['idx'] = idx
             list[N] = common.add_ke(data,zcol='Z_not4clus')
             #return data
