@@ -490,16 +490,44 @@ if args.add_ke == 'y':
             fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
         dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+		def _wrapper(N):
+			mini = N*chunk_size
+			maxi = mini+chunk_size
+			if maxi > len(dat):
+				maxi = len(dat)
+			idx = np.arange(mini,maxi)
+			data = Table()
+			data['idx'] = idx
+			list[N] = common.add_ke(data,zcol='Z_not4clus')
+			#return data
+
+        with Pool(processes=n_processes+1) as pool:
+            #res = pool.map(_wrapper, np.arange(n_processes))
+            pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(list)#vstack(res)
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
 
         #if args.test == 'y':
         #    dat = dat[:10]
-        cols = list(dat.dtype.names)
-        if 'REST_GMR_0P1' in cols:
-            print('appears columns are already in '+fn)
-        else:
-            dat = common.add_ke(dat,zcol='Z_not4clus')
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
             #if args.test == 'n':
-            common.write_LSS(dat,fn,comments=['added k+e corrections'])
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
 
 utlid = False
 if args.ran_utlid == 'y':
