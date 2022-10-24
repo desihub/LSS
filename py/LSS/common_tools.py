@@ -386,15 +386,20 @@ def add_ke(dat,zcol='Z'):#,n_processes=100):
 #     res.sort('idx')
 #     res.remove_column('idx')
 #     print(len(res),len(dat))
-    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol], gmr)
-    dat['KCORR_R0P1'] = kcorr_r.k(dat[zcol], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P1'] = kcorr_g.k(dat[zcol], dat['REST_GMR_0P1'])
-    dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat[zcol], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat[zcol], dat['REST_GMR_0P1'])
-    dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
-    dat['EQ_ALL_0P0']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P0'], aall=True)
-    dat['EQ_ALL_0P1']   = tmr_ecorr(dat[zcol], dat['REST_GMR_0P1'], aall=True)
-    dat['ABSMAG_RP1'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    selz = dat[zcol] > 0
+    selz &= dat[zcol] < 4.5
+    cols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0','EQ_ALL_0P1','ABSMAG_RP1','ABSMAG_RP0']
+    for col in cols:
+        cat[col] = np.zeros(len(dat))
+    dat['REST_GMR_0P1'][selz], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][selz], gmr[selz])
+    dat['KCORR_R0P1'][selz] = kcorr_r.k(dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_G0P1'][selz] = kcorr_g.k(dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_R0P0'][selz] = kcorr_r.k_nonnative_zref(0.0, dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_G0P0'][selz] = kcorr_g.k_nonnative_zref(0.0, dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['REST_GMR_0P0'][selz] = gmr[selz] - (dat['KCORR_G0P0'][selz] - dat['KCORR_R0P0'][selz])
+    dat['EQ_ALL_0P0'][selz]   = tmr_ecorr(dat[zcol][selz], dat['REST_GMR_0P0'][selz], aall=True)
+    dat['EQ_ALL_0P1'][selz]   = tmr_ecorr(dat[zcol][selz], dat['REST_GMR_0P1'][selz], aall=True)
+    dat['ABSMAG_RP1'][selz] = r_dered[selz] -dm(dat[zcol][selz])-dat['KCORR_R0P1'][selz]-dat['EQ_ALL_0P1'] [selz]
     dat['ABSMAG_RP0'] = r_dered -dm(dat[zcol])-dat['KCORR_R0P0']-dat['EQ_ALL_0P0'] 
     return dat
     #abg = g_dered -dm(data['Z'])
