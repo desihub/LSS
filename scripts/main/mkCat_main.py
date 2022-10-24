@@ -500,6 +500,7 @@ if args.add_ke == 'y':
             if maxi > len(dat):
                 maxi = len(dat)
             list.append(dat[mini:maxi])
+        
         def _wrapper(N):
             mini = N*chunk_size
             maxi = mini+chunk_size
@@ -508,16 +509,17 @@ if args.add_ke == 'y':
             idx = np.arange(mini,maxi)
             data = list[N]#Table()
             data['idx'] = idx
-            list[N] = common.add_ke(data,zcol='Z_not4clus')
-            #return data
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol='Z_not4clus')
+            return data
 
         with Pool(processes=n_processes+1) as pool:
-            #res = pool.map(_wrapper, np.arange(n_processes))
-            pool.map(_wrapper, np.arange(n_processes))
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
 
-        res = vstack(list)#vstack(res)
-        #res.sort('idx')
-        #res.remove_column('idx')
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
         print(len(res),len(dat))
 
         #if args.test == 'y':
