@@ -516,8 +516,8 @@ if args.add_ke == 'y':
             pool.map(_wrapper, np.arange(n_processes))
 
         res = vstack(list)#vstack(res)
-        res.sort('idx')
-        res.remove_column('idx')
+        #res.sort('idx')
+        #res.remove_column('idx')
         print(len(res),len(dat))
 
         #if args.test == 'y':
