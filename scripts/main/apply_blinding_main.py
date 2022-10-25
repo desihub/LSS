@@ -236,8 +236,8 @@ if args.mkclusran == 'y':
         #for clustering, make rannum start from 0
         if 'Y1/mock' in args.verspec:
             for reg in regl:
-                ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
-                ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+                ranf = dirout+args.type+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+                ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
                 os.system('mv '+ranf+' '+ranfm)
 
 
