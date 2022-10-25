@@ -146,7 +146,7 @@ else:
 progl = prog.lower()
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-if mock not in args.verspec:
+if 'mock' not in args.verspec:
 	maindir = args.basedir_in +'/'+args.survey+'/LSS/'
 
 	ldirspec = maindir+specrel+'/'
