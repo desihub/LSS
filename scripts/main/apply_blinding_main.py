@@ -146,25 +146,34 @@ else:
 progl = prog.lower()
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
-maindir = args.basedir_in +'/'+args.survey+'/LSS/'
+if mock not in args.verspec:
+	maindir = args.basedir_in +'/'+args.survey+'/LSS/'
 
-ldirspec = maindir+specrel+'/'
+	ldirspec = maindir+specrel+'/'
 
-dirin = ldirspec+'LSScats/'+version+'/'
+	dirin = ldirspec+'LSScats/'+version+'/'
+
+
+elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
+	dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+
+else:
+	sys.exit('verspec '+args.verspec+' not supported')
+	
 
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 if not os.path.exists(args.basedir_out+'/LSScats/'):
-    os.makedirs(args.basedir_out+'/LSScats/')
-    print('made '+args.basedir_out+'/LSScats/')
+	os.makedirs(args.basedir_out+'/LSScats/')
+	print('made '+args.basedir_out+'/LSScats/')
 
 if not os.path.exists(args.basedir_out+'/LSScats/'+version):
-    os.makedirs(args.basedir_out+'/LSScats/'+version)
-    print('made '+args.basedir_out+'/LSScats/'+version)
+	os.makedirs(args.basedir_out+'/LSScats/'+version)
+	print('made '+args.basedir_out+'/LSScats/'+version)
 
 if not os.path.exists(dirout):
-    os.makedirs(dirout)
-    print('made '+dirout)
+	os.makedirs(dirout)
+	print('made '+dirout)
 
 
 # Generate the blinded parameters
