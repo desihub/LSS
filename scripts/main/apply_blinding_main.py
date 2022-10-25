@@ -68,7 +68,7 @@ from matplotlib import pyplot as plt
 import LSS.main.cattools as ct
 #import LSS.common_tools as common
 #import LSS.imaging.select_samples as ss
-#from LSS.globals import main
+from LSS.globals import main
 import LSS.blinding_tools as blind
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
@@ -92,6 +92,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--baoblind",help="if y, do the bao blinding shift",default='n')
+parser.add_argument("--mkclusdat",help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)",default='n')
 parser.add_argument("--mkclusran",help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)#use 1 for abacus mocks
 parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
@@ -212,6 +213,18 @@ if args.baoblind == 'y':
 	data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
 	outf = dirout + type+notqso+'_full.dat.fits'
 	blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
+
+mainp = main(args.type)
+zmin = mainp.zmin
+zmax = mainp.zmax
+
+
+if args.mkclusdat:
+	if 'Y1/mock' in args.verspec:
+		dchi2=None
+		tsnrcut=0
+    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
+
 
 if args.mkclusran == 'y':
 	rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
