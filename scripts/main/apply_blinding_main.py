@@ -218,7 +218,7 @@ if args.mkclusran == 'y':
 	tsnrcol = 'TSNR2_ELG'
 	if args.tracer[:3] == 'BGS':
 		tsnrcol = 'TSNR2_BGS'
-	for rannum in range(args.minr,args.maxr)
+	for rannum in range(args.minr,args.maxr):
 		ct.mkclusran(dirin+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
 		#for clustering, make rannum start from 0
 		if 'Y1/mock' in args.verspec:
