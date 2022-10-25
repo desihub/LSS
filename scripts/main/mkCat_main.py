@@ -454,7 +454,7 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
-    if args.survey == 'main':
+    if args.survey != 'DA02':
         regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
@@ -479,24 +479,58 @@ if args.add_regressis == 'y':
     
 
 if args.add_ke == 'y':
+    if args.survey != 'DA02':
+        regl = ['']
+
     for reg in regl:
-        fn = dirout+tracer_clus+reg+'_clustering.dat.fits'
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+        else:
+            fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        from multiprocessing import Pool
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = i*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+        
+        def _wrapper(N):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            idx = np.arange(mini,maxi)
+            data = list[N]#Table()
+            data['idx'] = idx
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol='Z_not4clus')
+            return data
+
+        with Pool(processes=n_processes+1) as pool:
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
+
         #if args.test == 'y':
         #    dat = dat[:10]
-        cols = list(dat.dtype.names)
-        if 'REST_GMR_0P1' in cols:
-            print('appears columns are already in '+fn)
-        else:
-            dat = common.add_ke(dat)
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
             #if args.test == 'n':
-            common.write_LSS(dat,fn,comments=['added k+e corrections'])
-    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
-    for col in kecols:
-        rcols.append(col)
-    #if args.test == 'y':
-    #    print('k+e test passed')    
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
 
 utlid = False
 if args.ran_utlid == 'y':

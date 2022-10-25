@@ -341,15 +341,18 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
         data['flux_'+col.lower()+'_dered'] = data['FLUX_'+col]/data['MW_TRANSMISSION_'+col]
     return data
 
-def add_ke(dat):
+def add_ke(dat,zcol='Z'):#,n_processes=100):
+    from multiprocessing import Pool
     #dat should be table with flux_g_dered and flux_r_dered
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
     #
-    ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+    #ke_code_root = '/global/homes/a/ajross/desicode/DESI_ke'
+    ke_code_root = os.environ['LSSCODE']+'/LSS/py/LSS/DESI_ke'
     sys.path.append(ke_code_root)
     os.environ['CODE_ROOT'] = ke_code_root
+    print(os.environ['CODE_ROOT'])
     from   smith_kcorr     import GAMA_KCorrection
-    from   rest_gmr        import smith_rest_gmr
+    from   rest_gmr        import smith_rest_gmr,rest_gmr
     from   tmr_ecorr       import tmr_ecorr, tmr_q
     
     kcorr_r   = GAMA_KCorrection(band='R')
@@ -358,16 +361,46 @@ def add_ke(dat):
     r_dered = 22.5 - 2.5*np.log10(dat['flux_r_dered'])
     g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
     gmr = g_dered-r_dered
-
-    dat['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat['Z'], gmr)
-    dat['KCORR_R0P1'] = kcorr_r.k(dat['Z'], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P1'] = kcorr_g.k(dat['Z'], dat['REST_GMR_0P1'])
-    dat['KCORR_R0P0'] = kcorr_r.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
-    dat['KCORR_G0P0'] = kcorr_g.k_nonnative_zref(0.0, dat['Z'], dat['REST_GMR_0P1'])
-    dat['REST_GMR_0P0'] = gmr - (dat['KCORR_G0P0'] - dat['KCORR_R0P0'])
-    dat['EQ_ALL_0P0']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P0'], aall=True)
-    dat['EQ_ALL_0P1']   = tmr_ecorr(dat['Z'], dat['REST_GMR_0P1'], aall=True)
-    dat['ABSMAG_R'] = r_dered -dm(dat['Z'])-dat['KCORR_R0P1']-dat['EQ_ALL_0P1'] 
+    
+#     chunk_size = len(dat)//n_processes
+#     list = []
+#     for i in range(0,n_processes):
+#         list.append(0)
+#     def _wrapper(N):
+#         mini = N*chunk_size
+#         maxi = mini+chunk_size
+#         if maxi > len(dat):
+#             maxi = len(dat)
+#         idx = np.arange(mini,maxi)
+#         data = Table()
+#         data['idx'] = idx
+#         data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr[mini:maxi])
+#         list[N] = data
+#         #return data
+# 
+#     with Pool(processes=n_processes+1) as pool:
+#         #res = pool.map(_wrapper, np.arange(n_processes))
+#         pool.map(_wrapper, np.arange(n_processes))
+# 
+#     res = vstack(list)#vstack(res)
+#     res.sort('idx')
+#     res.remove_column('idx')
+#     print(len(res),len(dat))
+    selz = dat[zcol] > 0
+    selz &= dat[zcol] < 4.5
+    cols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0','EQ_ALL_0P1','ABSMAG_RP1','ABSMAG_RP0']
+    for col in cols:
+        dat[col] = np.zeros(len(dat))
+    dat['REST_GMR_0P1'][selz], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][selz], gmr[selz])
+    dat['KCORR_R0P1'][selz] = kcorr_r.k(dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_G0P1'][selz] = kcorr_g.k(dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_R0P0'][selz] = kcorr_r.k_nonnative_zref(0.0, dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['KCORR_G0P0'][selz] = kcorr_g.k_nonnative_zref(0.0, dat[zcol][selz], dat['REST_GMR_0P1'][selz])
+    dat['REST_GMR_0P0'][selz] = gmr[selz] - (dat['KCORR_G0P0'][selz] - dat['KCORR_R0P0'][selz])
+    dat['EQ_ALL_0P0'][selz]   = tmr_ecorr(dat[zcol][selz], dat['REST_GMR_0P0'][selz], aall=True)
+    dat['EQ_ALL_0P1'][selz]   = tmr_ecorr(dat[zcol][selz], dat['REST_GMR_0P1'][selz], aall=True)
+    dat['ABSMAG_RP1'][selz] = r_dered[selz] -dm(dat[zcol][selz])-dat['KCORR_R0P1'][selz]-dat['EQ_ALL_0P1'][selz]
+    dat['ABSMAG_RP0'][selz] = r_dered[selz] -dm(dat[zcol][selz])-dat['KCORR_R0P0'][selz]-dat['EQ_ALL_0P0'][selz]
     return dat
     #abg = g_dered -dm(data['Z'])
     
