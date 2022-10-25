@@ -96,6 +96,7 @@ parser.add_argument("--mkclusdat",help="if y, make the clustering data files aft
 parser.add_argument("--mkclusran",help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)#use 1 for abacus mocks
 parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
+parser.add_argument("--dorecon",help="if y, run the recon needed for RSD blinding",default='n')
 parser.add_argument("--rsdblind",help="if y, do the bao blinding shift",default='n')
 parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
 parser.add_argument("--fiducial_w0", help="Value for w0 in the DESI fiducial cosmology", default=-1)
@@ -219,7 +220,7 @@ zmin = mainp.zmin
 zmax = mainp.zmax
 
 
-if args.mkclusdat:
+if args.mkclusdat == 'y':
     if 'Y1/mock' in args.verspec:
         dchi2=None
         tsnrcut=0
@@ -240,6 +241,9 @@ if args.mkclusran == 'y':
                 ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
                 os.system('mv '+ranf+' '+ranfm)
 
+if args.dorecon == 'y':
+    nran = args.maxr-args.minr
+    os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran))
 
 if args.rsdblind == 'y':
     for reg in regl:
