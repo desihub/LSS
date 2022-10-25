@@ -105,25 +105,25 @@ parser.add_argument("--expected_w0_uncertainty", help="Expected uncertainty for 
 parser.add_argument("--expected_wa_uncertainty", help="Expected uncertainty for wa", default=0.2)
 parser.add_argument("--expected_f_uncertainty", help="Expected uncertainty for RSD f", default=0.05)
 parser.add_argument("--specified_w0",
-					help="Specify a blind w0 value to overwrite the random blinding procedure",
-					default=None)
+                    help="Specify a blind w0 value to overwrite the random blinding procedure",
+                    default=None)
 parser.add_argument("--specified_wa",
-					help="Specify a blind wa value to overwrite the random blinding procedure",
-					default=None)
+                    help="Specify a blind wa value to overwrite the random blinding procedure",
+                    default=None)
 parser.add_argument("--specified_f",
-					help="Specify a blind f value to overwrite the random blinding procedure",
-					default=None)
+                    help="Specify a blind f value to overwrite the random blinding procedure",
+                    default=None)
 
 
 def make_parameter_blind(expected_value,
-						 expected_error,
-						 random_state):
-	blind_offset = random_state.uniform(-5*expected_error, 5*expected_error)
-	return expected_value + blind_offset
+                         expected_error,
+                         random_state):
+    blind_offset = random_state.uniform(-5*expected_error, 5*expected_error)
+    return expected_value + blind_offset
 
 def translate_hashcode_to_seed(hashcode):
-	decoded_seed = int(hashcode, 36)
-	return decoded_seed
+    decoded_seed = int(hashcode, 36)
+    return decoded_seed
 
 
 args = parser.parse_args()
@@ -151,68 +151,68 @@ progl = prog.lower()
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 if 'mock' not in args.verspec:
-	maindir = args.basedir_in +'/'+args.survey+'/LSS/'
+    maindir = args.basedir_in +'/'+args.survey+'/LSS/'
 
-	ldirspec = maindir+specrel+'/'
+    ldirspec = maindir+specrel+'/'
 
-	dirin = ldirspec+'LSScats/'+version+'/'
+    dirin = ldirspec+'LSScats/'+version+'/'
 
 
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
-	dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+    dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
 
 else:
-	sys.exit('verspec '+args.verspec+' not supported')
-	
+    sys.exit('verspec '+args.verspec+' not supported')
+    
 
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 if not os.path.exists(args.basedir_out+'/LSScats/'):
-	os.makedirs(args.basedir_out+'/LSScats/')
-	print('made '+args.basedir_out+'/LSScats/')
+    os.makedirs(args.basedir_out+'/LSScats/')
+    print('made '+args.basedir_out+'/LSScats/')
 
 if not os.path.exists(args.basedir_out+'/LSScats/'+version):
-	os.makedirs(args.basedir_out+'/LSScats/'+version)
-	print('made '+args.basedir_out+'/LSScats/'+version)
+    os.makedirs(args.basedir_out+'/LSScats/'+version)
+    print('made '+args.basedir_out+'/LSScats/'+version)
 
 if not os.path.exists(dirout):
-	os.makedirs(dirout)
-	print('made '+dirout)
+    os.makedirs(dirout)
+    print('made '+dirout)
 
 
 # Generate the blinded parameters
 rs = RandomState(MT19937(SeedSequence(translate_hashcode_to_seed(args.hashcode))))
 w0_blind = make_parameter_blind(args.fiducial_w0,
-								args.expected_w0_uncertainty, rs)
+                                args.expected_w0_uncertainty, rs)
 wa_blind = make_parameter_blind(args.fiducial_wa,
-								args.expected_wa_uncertainty, rs)
+                                args.expected_wa_uncertainty, rs)
 fgrowth_blind = make_parameter_blind(args.fiducial_f,
-									 args.expected_f_uncertainty, rs)
+                                     args.expected_f_uncertainty, rs)
 
 # If blinded values have been specified, overwrite the random procedure here:
 if args.specified_w0 is not None:
-	w0_blind = float(args.specified_w0)
+    w0_blind = float(args.specified_w0)
 
 if args.specified_wa is not None:
-	wa_blind = float(args.specified_wa)
+    wa_blind = float(args.specified_wa)
 
 if args.specified_f is not None:
-	fgrowth_blind = float(args.specified_f)
+    fgrowth_blind = float(args.specified_f)
 
 # Write out the blind parameter values
 to_write = [['w0', 'wa', 'f'],
-			[f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
+            [f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
 np.savetxt(dirout + "blinded_parameters.csv",
-		   to_write,
-		   delimiter=", ",
-		   fmt="%s")
+           to_write,
+           delimiter=", ",
+           fmt="%s")
 
 
 regl = ['_S','_N']
 if args.baoblind == 'y':
-	data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
-	outf = dirout + type+notqso+'_full.dat.fits'
-	blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
+    data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
+    outf = dirout + type+notqso+'_full.dat.fits'
+    blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
 mainp = main(args.type)
 zmin = mainp.zmin
@@ -220,37 +220,37 @@ zmax = mainp.zmax
 
 
 if args.mkclusdat:
-	if 'Y1/mock' in args.verspec:
-		dchi2=None
-		tsnrcut=0
+    if 'Y1/mock' in args.verspec:
+        dchi2=None
+        tsnrcut=0
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
 
 
 if args.mkclusran == 'y':
-	rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
-	tsnrcol = 'TSNR2_ELG'
-	if args.type[:3] == 'BGS':
-		tsnrcol = 'TSNR2_BGS'
-	for rannum in range(args.minr,args.maxr):
-		ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
-		#for clustering, make rannum start from 0
-		if 'Y1/mock' in args.verspec:
-			for reg in regl:
-				ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
-				ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
-				os.system('mv '+ranf+' '+ranfm)
+    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+    tsnrcol = 'TSNR2_ELG'
+    if args.type[:3] == 'BGS':
+        tsnrcol = 'TSNR2_BGS'
+    for rannum in range(args.minr,args.maxr):
+        ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        #for clustering, make rannum start from 0
+        if 'Y1/mock' in args.verspec:
+            for reg in regl:
+                ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+                ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+                os.system('mv '+ranf+' '+ranfm)
 
 
 if args.rsdblind == 'y':
-	for reg in regl:
-		fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
-		fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
-		data = Table(fitsio.read(fnd))
-		data_real = Table(fitsio.read(fndr))
+    for reg in regl:
+        fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
+        fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
+        data = Table(fitsio.read(fnd))
+        data_real = Table(fitsio.read(fndr))
 
-		out_file = fnd
-		blind.apply_zshift_RSD(data,data_real,out_file,
-							   fgrowth_fid=args.fiducial_f,
-							   fgrowth_blind=fgrowth_blind,
-							   comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
+        out_file = fnd
+        blind.apply_zshift_RSD(data,data_real,out_file,
+                               fgrowth_fid=args.fiducial_f,
+                               fgrowth_blind=fgrowth_blind,
+                               comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
 
