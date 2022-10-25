@@ -65,7 +65,7 @@ from matplotlib import pyplot as plt
 
 #from this package
 #try:
-#import LSS.main.cattools as ct
+import LSS.main.cattools as ct
 #import LSS.common_tools as common
 #import LSS.imaging.select_samples as ss
 #from LSS.globals import main
@@ -92,6 +92,9 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--baoblind",help="if y, do the bao blinding shift",default='n')
+parser.add_argument("--mkclusran",help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)",default='n')
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)#use 1 for abacus mocks
+parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
 parser.add_argument("--rsdblind",help="if y, do the bao blinding shift",default='n')
 parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
 parser.add_argument("--fiducial_w0", help="Value for w0 in the DESI fiducial cosmology", default=-1)
@@ -209,6 +212,21 @@ if args.baoblind == 'y':
 	data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
 	outf = dirout + type+notqso+'_full.dat.fits'
 	blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
+
+if args.mkclusran == 'y':
+	rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+	tsnrcol = 'TSNR2_ELG'
+	if args.tracer[:3] == 'BGS':
+		tsnrcol = 'TSNR2_BGS'
+	for rannum in range(args.minr,args.maxr)
+		ct.mkclusran(dirin+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+		#for clustering, make rannum start from 0
+		if 'Y1/mock' in args.verspec:
+			for reg in regl:
+				ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+				ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+				os.system('mv '+ranf+' '+ranfm)
+
 
 if args.rsdblind == 'y':
 	for reg in regl:
