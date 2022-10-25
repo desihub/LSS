@@ -216,7 +216,7 @@ if args.baoblind == 'y':
 if args.mkclusran == 'y':
 	rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
 	tsnrcol = 'TSNR2_ELG'
-	if args.tracer[:3] == 'BGS':
+	if args.type[:3] == 'BGS':
 		tsnrcol = 'TSNR2_BGS'
 	for rannum in range(args.minr,args.maxr):
 		ct.mkclusran(dirin+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
