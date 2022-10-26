@@ -97,7 +97,7 @@ parser.add_argument("--mkclusran",help="if y, make the clustering random files a
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)#use 1 for abacus mocks
 parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
 parser.add_argument("--dorecon",help="if y, run the recon needed for RSD blinding",default='n')
-parser.add_argument("--rsdblind",help="if y, do the bao blinding shift",default='n')
+parser.add_argument("--rsdblind",help="if y, do the RSD blinding shift",default='n')
 parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
 parser.add_argument("--fiducial_w0", help="Value for w0 in the DESI fiducial cosmology", default=-1)
 parser.add_argument("--fiducial_wa", help="Value for wa in the DESI fiducial cosmology", default=0)
@@ -150,6 +150,12 @@ else:
 
 progl = prog.lower()
 
+mainp = main(args.type)
+zmin = mainp.zmin
+zmax = mainp.zmax
+tsnrcol = mainp.tsnrcol  
+
+
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 if 'mock' not in args.verspec:
     maindir = args.basedir_in +'/'+args.survey+'/LSS/'
@@ -157,10 +163,15 @@ if 'mock' not in args.verspec:
     ldirspec = maindir+specrel+'/'
 
     dirin = ldirspec+'LSScats/'+version+'/'
+    tsnrcut = mainp.tsnrcut
+    dchi2 = mainp.dchi2
+          
 
 
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
     dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+	dchi2=None
+	tsnrcut=0
 
 else:
     sys.exit('verspec '+args.verspec+' not supported')
@@ -215,15 +226,9 @@ if args.baoblind == 'y':
     outf = dirout + type+notqso+'_full.dat.fits'
     blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
-mainp = main(args.type)
-zmin = mainp.zmin
-zmax = mainp.zmax
 
 
 if args.mkclusdat == 'y':
-    if 'Y1/mock' in args.verspec:
-        dchi2=None
-        tsnrcut=0
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
 
 
@@ -233,7 +238,7 @@ if args.mkclusran == 'y':
     if args.type[:3] == 'BGS':
         tsnrcol = 'TSNR2_BGS'
     for rannum in range(args.minr,args.maxr):
-        ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
         if 'Y1/mock' in args.verspec:
             for reg in regl:
