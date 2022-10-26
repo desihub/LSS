@@ -179,13 +179,13 @@ else:
 
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
-if not os.path.exists(args.basedir_out+'/LSScats/'):
-    os.makedirs(args.basedir_out+'/LSScats/')
-    print('made '+args.basedir_out+'/LSScats/')
-
-if not os.path.exists(args.basedir_out+'/LSScats/'+version):
-    os.makedirs(args.basedir_out+'/LSScats/'+version)
-    print('made '+args.basedir_out+'/LSScats/'+version)
+# if not os.path.exists(args.basedir_out+'/LSScats/'):
+#     os.makedirs(args.basedir_out+'/LSScats/')
+#     print('made '+args.basedir_out+'/LSScats/')
+# 
+# if not os.path.exists(args.basedir_out+'/LSScats/'+version):
+#     os.makedirs(args.basedir_out+'/LSScats/'+version)
+#     print('made '+args.basedir_out+'/LSScats/'+version)
 
 if not os.path.exists(dirout):
     os.makedirs(dirout)
