@@ -170,8 +170,8 @@ if 'mock' not in args.verspec:
 
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
     dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
-	dchi2=None
-	tsnrcut=0
+    dchi2=None
+    tsnrcut=0
 
 else:
     sys.exit('verspec '+args.verspec+' not supported')
