@@ -437,7 +437,7 @@ if __name__ == '__main__':
             docat(mn,i)
         if args.split_GC == 'y':
             nztl = ['','_complete']
-            lssdir = maindir+'mock'+str(mocknum)+'/'
+            lssdir = maindir+'mock'+str(mn)+'/'
 
             dirout = lssdir+'LSScats/'
             
