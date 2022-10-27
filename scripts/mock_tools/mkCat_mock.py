@@ -438,6 +438,6 @@ if __name__ == '__main__':
         if args.split_GC == 'y':
             nztl = ['','_complete']
             
-            zt in nztl:
+            for zt in nztl:
                 fb = dirout+args.tracer+notqso+zt                
                 ct.clusNStoGC(fb,rx-rm)
