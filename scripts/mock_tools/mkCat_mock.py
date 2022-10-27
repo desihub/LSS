@@ -399,6 +399,7 @@ def docat(mocknum,rannum):
                 ranmin = rannum-1
                 common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=ranmin,nran=nran)
 
+    
 
     #print('done with random '+str(ii))
     return True
@@ -411,25 +412,31 @@ if __name__ == '__main__':
     rm = args.minr
     mockmin = args.mockmin
     mockmax = args.mockmax
-    if args.par == 'y':
-        from multiprocessing import Pool
-        from desitarget.internal import sharedmem
-        
-        N = rx-rm+1
-        inds = []
-        for i in range(rm,rx):
-            inds.append(i)
-        pool = sharedmem.MapReduce(np=N)
-        with pool:
-        
-            def reduce( r):
-                print('chunk done')
-                return r
-            pool.map(prep,inds,reduce=reduce)
-
-        #p.map(doran,inds)
-    else:
-        for mn in range(mockmin,mockmax):
-            for i in range(rm,rx):
-                print('processing mock '+str(mn)+' and random '+str(i))
-                docat(mn,i)
+#     if args.par == 'y':
+#         from multiprocessing import Pool
+#         from desitarget.internal import sharedmem
+#         
+#         N = rx-rm+1
+#         inds = []
+#         for i in range(rm,rx):
+#             inds.append(i)
+#         pool = sharedmem.MapReduce(np=N)
+#         with pool:
+#         
+#             def reduce( r):
+#                 print('chunk done')
+#                 return r
+#             pool.map(prep,inds,reduce=reduce)
+# 
+#         #p.map(doran,inds)
+#     else:
+	for mn in range(mockmin,mockmax):
+		for i in range(rm,rx):
+			print('processing mock '+str(mn)+' and random '+str(i))
+			docat(mn,i)
+        if split_GC == 'y':
+            nztl = ['','_complete']
+            
+            zt in nztl:
+                fb = dirout+args.tracer+notqso+zt                
+                ct.clusNStoGC(fb,rx-rm)
