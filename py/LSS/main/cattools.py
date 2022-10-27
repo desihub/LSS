@@ -2744,13 +2744,13 @@ def clusNStoGC(flroot,nran=1):
         print('checking that random ratios are now the same size',rn,rs)
             
         fc = vstack((fn,fs))
-        print(len(fc),nn,ns)
+        print(len(fc),nnr,nsr)
         c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
         gc = c.transform_to('galactic')
         sel_ngc = gc.b > 0
-        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+        outf_ngc = flroot+'NGC_'+str(rn)+'_clustering.ran.fits'
         common.write_LSS(fc[sel_ngc],outf_ngc)
-        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+        outf_sgc = flroot+'SGC_'+str(rn)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
 
