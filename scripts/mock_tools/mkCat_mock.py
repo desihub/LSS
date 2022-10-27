@@ -62,6 +62,7 @@ parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; 
 parser.add_argument("--mkclusran_tiles", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_tiles", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
+parser.add_argument("--split_GC",help='whether to combine N/S and then split NGC/SGC',default='n')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
@@ -434,7 +435,7 @@ if __name__ == '__main__':
 		for i in range(rm,rx):
 			print('processing mock '+str(mn)+' and random '+str(i))
 			docat(mn,i)
-        if split_GC == 'y':
+        if args.split_GC == 'y':
             nztl = ['','_complete']
             
             zt in nztl:
