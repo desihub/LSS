@@ -437,6 +437,9 @@ if __name__ == '__main__':
             docat(mn,i)
         if args.split_GC == 'y':
             nztl = ['','_complete']
+            lssdir = maindir+'mock'+str(mocknum)+'/'
+
+            dirout = lssdir+'LSScats/'
             
             for zt in nztl:
                 fb = dirout+args.tracer+notqso+zt                
