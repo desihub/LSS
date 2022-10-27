@@ -442,5 +442,5 @@ if __name__ == '__main__':
             dirout = lssdir+'LSScats/'
             
             for zt in nztl:
-                fb = dirout+args.tracer+notqso+zt                
+                fb = dirout+args.tracer+notqso+zt+'_'                
                 ct.clusNStoGC(fb,rx-rm)
