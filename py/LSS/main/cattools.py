@@ -2731,7 +2731,7 @@ def clusNStoGC(flroot,nran=1):
     for rn in range(0,nran):
         fn = Table(fitsio.read(flroot+'N_'+str(rn)+'_clustering.ran.fits'))
         nnr = np.sum(fn['WEIGHT'])
-        fs = Table(fitsio.read(flroot+'S_'+str(rn)+'clustering.ran.fits'))
+        fs = Table(fitsio.read(flroot+'S_'+str(rn)+'_clustering.ran.fits'))
         nsr = np.sum(fs['WEIGHT'])
         rn = nn/nnr
         rs = ns/nsr
@@ -2748,9 +2748,9 @@ def clusNStoGC(flroot,nran=1):
         c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
         gc = c.transform_to('galactic')
         sel_ngc = gc.b > 0
-        outf_ngc = flroot+'NGC_'+str(rann)+'clustering.ran.fits'
+        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[sel_ngc],outf_ngc)
-        outf_sgc = flroot+'SGC_'+str(rann)+'clustering.ran.fits'
+        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
 
