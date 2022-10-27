@@ -431,10 +431,10 @@ if __name__ == '__main__':
 # 
 #         #p.map(doran,inds)
 #     else:
-	for mn in range(mockmin,mockmax):
-		for i in range(rm,rx):
-			print('processing mock '+str(mn)+' and random '+str(i))
-			docat(mn,i)
+    for mn in range(mockmin,mockmax):
+        for i in range(rm,rx):
+            print('processing mock '+str(mn)+' and random '+str(i))
+            docat(mn,i)
         if args.split_GC == 'y':
             nztl = ['','_complete']
             
