@@ -91,6 +91,8 @@ parser.add_argument("--version", help="catalog version",default='EDAbeta')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+parser.add_argument("--reg_md",help="whether split N/S or NGC/SGC",default='GC')
+
 parser.add_argument("--baoblind",help="if y, do the bao blinding shift",default='n')
 parser.add_argument("--mkclusdat",help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)",default='n')
 parser.add_argument("--mkclusran",help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)",default='n')
@@ -219,8 +221,10 @@ np.savetxt(dirout + "blinded_parameters.csv",
            delimiter=", ",
            fmt="%s")
 
-
-regl = ['_S','_N']
+if args.reg_md == 'NS':
+    regl = ['_S','_N']
+if args.reg_md == 'GC':
+    regl = ['_SGC','_NGC']
 if args.baoblind == 'y':
     data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
     outf = dirout + type+notqso+'_full.dat.fits'
