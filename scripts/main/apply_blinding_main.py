@@ -257,6 +257,8 @@ if reg_md == 'GC':
     fb = dirout+args.type+notqso+'_'                
     ct.clusNStoGC(fb,args.maxr-args.minr)
 
+sys.stdout.flush()
+
 if args.dorecon == 'y':
     nran = args.maxr-args.minr
     if reg_md == 'NS':
