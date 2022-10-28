@@ -221,10 +221,11 @@ np.savetxt(dirout + "blinded_parameters.csv",
            delimiter=", ",
            fmt="%s")
 
-if args.reg_md == 'NS':
-    regl = ['_S','_N']
-if args.reg_md == 'GC':
-    regl = ['_SGC','_NGC']
+#if args.reg_md == 'NS':
+regl = ['_S','_N']
+#if args.reg_md == 'GC':
+gcl = ['_SGC','_NGC']
+
 if args.baoblind == 'y':
     data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
     outf = dirout + type+notqso+'_full.dat.fits'
@@ -250,12 +251,24 @@ if args.mkclusran == 'y':
                 ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
                 os.system('mv '+ranf+' '+ranfm)
 
+if reg_md == 'GC':
+    fb = dirout+args.type+notqso+'_'                
+    ct.clusNStoGC(fb,args.minx,args.minr)
+
 if args.dorecon == 'y':
     nran = args.maxr-args.minr
-    os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran))
+    if reg_md == 'NS':
+        os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran))
+    else:
+        for gc in gcl:
+            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --regions '+gc)
 
 if args.rsdblind == 'y':
-    for reg in regl:
+    if reg_md == 'NS':
+        cl = regl
+    if reg_md == 'GC':
+        cl = gcl
+    for reg in cl:
         fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
         fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
         data = Table(fitsio.read(fnd))
