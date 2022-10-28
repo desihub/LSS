@@ -255,7 +255,7 @@ reg_md = args.reg_md
 
 if reg_md == 'GC':
     fb = dirout+args.type+notqso+'_'                
-    ct.clusNStoGC(fb,args.minx,args.minr)
+    ct.clusNStoGC(fb,args.maxr-args.minr)
 
 if args.dorecon == 'y':
     nran = args.maxr-args.minr
