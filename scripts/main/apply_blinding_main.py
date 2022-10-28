@@ -251,6 +251,8 @@ if args.mkclusran == 'y':
                 ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
                 os.system('mv '+ranf+' '+ranfm)
 
+reg_md = args.reg_md
+
 if reg_md == 'GC':
     fb = dirout+args.type+notqso+'_'                
     ct.clusNStoGC(fb,args.minx,args.minr)
