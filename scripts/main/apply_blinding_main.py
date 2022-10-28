@@ -263,7 +263,7 @@ if args.dorecon == 'y':
         os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran))
     else:
         for gc in gcl:
-            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --regions '+gc)
+            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --region '+gc.strip('_'))
 
 if args.rsdblind == 'y':
     if reg_md == 'NS':
