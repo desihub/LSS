@@ -951,6 +951,10 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
     return done
 
 
+def raise_myerror(msg):
+    log.critical(msg)
+    raise ValueError(msg)
+
 # MMM test create pixweight files
 def aux_test_mask():
 
