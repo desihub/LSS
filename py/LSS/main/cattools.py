@@ -2705,8 +2705,54 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 #         common.write_LSS(ffss,outfn,comments)
 
 
-
-
+def clusNStoGC(flroot,nran=1):
+    '''
+    combine N and S then split NGC/SGC
+    randoms get re-normalized so that Ndata/Nrandom is the same N and S; they will no longer be able to be used to get areas
+    flroot is the common root of the file
+    nran is the number of random files to process
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    fn = Table(fitsio.read(flroot+'N_clustering.dat.fits'))
+    nn = np.sum(fn['WEIGHT'])
+    fs = Table(fitsio.read(flroot+'S_clustering.dat.fits'))
+    ns = np.sum(fs['WEIGHT'])
+    fc = vstack((fn,fs))
+    print(np.sum(fc['WEIGHT']),nn,ns)
+    c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    outf_ngc = flroot+'NGC_clustering.dat.fits'
+    common.write_LSS(fc[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_clustering.dat.fits'
+    common.write_LSS(fc[~sel_ngc],outf_sgc)
+    
+    for rann in range(0,nran):
+        fn = Table(fitsio.read(flroot+'N_'+str(rann)+'_clustering.ran.fits'))
+        nnr = np.sum(fn['WEIGHT'])
+        fs = Table(fitsio.read(flroot+'S_'+str(rann)+'_clustering.ran.fits'))
+        nsr = np.sum(fs['WEIGHT'])
+        rn = nn/nnr
+        rs = ns/nsr
+        #we want rn and rs to be the same, this can be effectively accomplished by 
+        fac = rs/rn
+        fs['WEIGHT'] *= fac
+        #double check
+        nsr = np.sum(fs['WEIGHT'])
+        rs = ns/nsr
+        print('checking that random ratios are now the same size',rn,rs)
+            
+        fc = vstack((fn,fs))
+        print(np.sum(fc['WEIGHT']),nnr,nsr)
+        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+        gc = c.transform_to('galactic')
+        sel_ngc = gc.b > 0
+        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[sel_ngc],outf_ngc)
+        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[~sel_ngc],outf_sgc)
+   
 
 
 def random_mtl(rd,outf ):
