@@ -959,15 +959,14 @@ def raise_myerror(msg):
 def aux_test_mask():
 
     randomcat = ['/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits','/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits']
-    fieldslist = ['GALDEPTH_G', 'APFLUX_IVAR_R', 'WISEMASK_W2','CALIB_Z', 'HALPHA_ERROR']
-    bitmasklist = [131072, 131072, 131072, 131072, 4063232]
+    fieldslist = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R', 'WISEMASK_W2','CALIB_Z']
+    bitmasklist = [131072, ['MASKBITS', 'ARTIFACTS','ELG_GAIA', 'LRG_UNWISE', 'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
     outfn = '/global/u1/m/manera/pixweight.fits'
     nside_pixweight = 512
-    lssmapdir='/global/cfs/cdirs/desi/survey/catalogs/external_input_maps'
-    create_pixweight_file(randomcat, skymapvaluescat, skymapmaskcat,
-        bitmasklist, nside_pixweight, outfn = outfn )
+    #lssmapdir='/global/cfs/cdirs/desi/survey/catalogs/external_input_maps'
+    create_pixweight_file(randomcat, fieldslist, bitmasklist, nside_pixweight, lssmapdir = None, outfn = outfn, write=True)
 
-def create_pixweight_file(randomcat, fieldslist, bitmasklist, nside_pixweight, lssmapdir = None, outfn = None, write=True):
+def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight, lssmapdir = None, outfn = None, write=True):
     """ 
     Creates a pixweight files from randoms filtered by bitmasks 
     **** Provisional version *** FIRST DRAFT ******
