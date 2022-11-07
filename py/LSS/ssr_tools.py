@@ -859,7 +859,7 @@ class QSO_ssr:
         
     
     def add_modpre(self,data,fn_root='',plot_color='k',plot_only=False,savefig=True):
-        res = minimize(self.wrapper_hist, [-220, 130, 0.4], bounds=((-1000, 0), (0, 1000), (.3, .5)),
+        res = minimize(self.wrapper_hist, [-220, 130, 0.4], bounds=((-1000, 0), (0, 1000), (.25, .5)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
