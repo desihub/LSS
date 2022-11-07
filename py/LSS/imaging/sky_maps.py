@@ -985,17 +985,17 @@ def raise_myerror(msg):
 # MMM test create pixweight files.
 def aux_test_mask():
     """Convenience function for testing create_pixweight_file()"""
-    testdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve'
+    testd = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve'
     testfn = 'randoms-1-0.fits'
-    randomcat = [os.path.join(testdir, testfn), os.path.join(testdir, testfn)]
+    randomcatlist = [os.path.join(testd, testfn), os.path.join(testd, testfn)]
     fieldslist = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R',
                   'WISEMASK_W2', 'CALIB_Z']
-    bitmasklist = [131072, ['MASKBITS', 'ARTIFACTS', 'ELG_GAIA', 'LRG_UNWISE',
-                            'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
+    masklist = [131072, ['MASKBITS', 'ARTIFACTS', 'ELG_GAIA', 'LRG_UNWISE',
+                         'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
     outfn = '/global/u1/m/manera/pixweight.fits'
     nside_pixweight = 512
     # lssmapdir='/global/cfs/cdirs/desi/survey/catalogs/external_input_maps'
-    create_pixweight_file(randomcat, fieldslist, bitmasklist, nside_pixweight,
+    create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
                           lssmapdir=None, outfn=outfn, write=True)
 
 
@@ -1012,7 +1012,9 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     fieldslist : :class:`list`
         List of fields/columns to process.
     masklist : :class:`list`
-        List of masks associated with the fields/columns.
+        Masks associated with `fieldslist` fields/columns. Entries must
+        be either an integer or a list of mask names (strings), e.g.:
+        [131072, ['MASKBITS', 'ELG_GAIA'], ['KAPPA_PLANCK'], 4063232]
     nside_out : :class:`int`, optional, defaults to 512
         Resolution (HEALPix nside) at which to build the output (NESTED)
         pixweight map.
@@ -1056,21 +1058,14 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     # ------------------
     # MMM create bitmasklist from (and check) masklist.
-    bitmasklist = []
-    for mymask in masklist:
-        if isinstance(mymask, int):
-            bitmasklist.append(mymask)
-        elif isinstance(mymask, list):
-            bits = 0
-            for mx in mymask:
-                if not isinstance(mx, str):
-                    raise_myerror("expecting string for mask name")
-                if mx not in skymap_mask.names():
-                    raise_myerror("wrong name of mask")  # ** add print value **.
-                bits |= skymap_mask[mx]
-            bitmasklist.append(bits)
-        else:
-            raise_myerror("input error format in maskbits list")
+    try:
+        bitmasklist = [skymap_mask.mask("|".join(i)) if isinstance(i, list)
+                       else int(i) for i in masklist]
+    except (ValueError, TypeError, KeyError):
+        msg = "input maskbits list should comprise integers or lists of strings "
+        msg += "(and mask names must be strings), e.g.:\n"
+        msg += "[131072, ['MASKBITS', 'ELG_GAIA'], ['CALIB_R'], 4063232]"
+        raise_myerror(msg)
 
     ########
     # MMM get columns/dtype from first file + associated skymap/skymask.
