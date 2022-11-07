@@ -2461,7 +2461,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
 
 
     #ffz = ff[wz]
-    print('length after cutting to good z '+str(len(ff)))
+    print('length after cutting to good z '+str(len(ff[wz])))
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     ff['mod_success_rate'] = np.ones(len(ff))
     if dchi2 is not None:
