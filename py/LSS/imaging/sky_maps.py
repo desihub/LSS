@@ -735,6 +735,31 @@ def rancat_name_to_map_name(rancatname, lssmapdir=None):
     return os.path.join(lssmapdir, "mapvalues", outfn)
 
 
+def rancat_name_to_pixweight_name(rancatname, lssmapdir=None):
+    """Convert random catalog name to corresponding pixweight filename.
+
+    Parameters
+    ----------
+    rancatname : :class:`str`
+        Name of, or full path to, a random catalog.
+    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory that hosts all of the sky maps. If
+       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+
+    Returns
+    -------
+    :class:`str`
+        The full path to the corresponding pixweight filename in the
+        lssmapdir directory.
+    """
+    outfn = os.path.basename(rancatname).replace(".fits", "-pixweight.fits")
+
+    # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
+    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    return os.path.join(lssmapdir, "pixweight", outfn)
+
+
 def parse_mask_check(mxdata, maskcheck, check=False):
     """Turn a MASKCHECK string into a conditional and apply it.
 
@@ -978,7 +1003,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                           lssmapdir=None, outfn=None, write=True):
     """
     Creates a pixweight file from randoms filtered by bitmasks.
-    **** Provisional version *** FIRST DRAFT ******
+    **** Provisional version *** SECOND DRAFT ******
 
     Parameters
     ----------
@@ -1013,8 +1038,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM check inputs are lists.
     for listy, word in zip([randomcatlist, fieldslist, masklist],
                            ["file(s)", "fields", "mask(s)"]):
-    if not isinstance(listy, list):
-        raise_myerror("the input {} is not a list".format(word))
+        if not isinstance(listy, list):
+            raise_myerror("the input {} is not a list".format(word))
     if len(fieldslist) != len(masklist):
         raise_myerror("number of masks and input fields do not match")
 
