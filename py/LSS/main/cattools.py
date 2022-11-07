@@ -2503,7 +2503,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
             print('checking sum of zfail weights compared to length of good z')
             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-    plt.plot(ff[wz]['TSNR2_LRG'],ff[wz]['WEIGHT_ZFAIL'])
+    plt.plot(ff[wz]['TSNR2_LRG'],ff[wz]['WEIGHT_ZFAIL'],'k,')
+    plt.show()
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
