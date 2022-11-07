@@ -692,7 +692,7 @@ class ELG_ssr:
         
     
     def add_modpre(self,data):
-        res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-20, 225., 0.28], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
