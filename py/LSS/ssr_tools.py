@@ -544,7 +544,7 @@ class BGS_ssr:
         plt.ylabel('BGS_BRIGHT Z failure rate')
         plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
         plt.legend()
-        plt.savefig(fn_root+'overall_failratefit.png')        
+        #plt.savefig(fn_root+'overall_failratefit.png')        
         plt.show()
         plt.clf()
 
