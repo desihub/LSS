@@ -955,26 +955,34 @@ def raise_myerror(msg):
     log.critical(msg)
     raise ValueError(msg)
 
-# MMM test create pixweight files
+
+# MMM test create pixweight files.
 def aux_test_mask():
 
-    randomcat = ['/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits','/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits']
-    fieldslist = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R', 'WISEMASK_W2','CALIB_Z']
-    bitmasklist = [131072, ['MASKBITS', 'ARTIFACTS','ELG_GAIA', 'LRG_UNWISE', 'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
+    testdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve'
+    testfn = 'randrandoms-1-0.fits'
+    randomcat = [os.path.join(testdir, testfn), os.path.join(testdir, testfn)]
+    fieldslist = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R',
+                  'WISEMASK_W2', 'CALIB_Z']
+    bitmasklist = [131072, ['MASKBITS', 'ARTIFACTS', 'ELG_GAIA', 'LRG_UNWISE',
+                            'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
     outfn = '/global/u1/m/manera/pixweight.fits'
     nside_pixweight = 512
-    #lssmapdir='/global/cfs/cdirs/desi/survey/catalogs/external_input_maps'
-    create_pixweight_file(randomcat, fieldslist, bitmasklist, nside_pixweight, lssmapdir = None, outfn = outfn, write=True)
+    # lssmapdir='/global/cfs/cdirs/desi/survey/catalogs/external_input_maps'
+    create_pixweight_file(randomcat, fieldslist, bitmasklist, nside_pixweight,
+                          lssmapdir=None, outfn=outfn, write=True)
 
-def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight, lssmapdir = None, outfn = None, write=True):
-    """ 
-    Creates a pixweight files from randoms filtered by bitmasks 
+
+def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
+                          lssmapdir=None, outfn=None, write=True):
+    """
+    Creates a pixweight files from randoms filtered by bitmasks
     **** Provisional version *** FIRST DRAFT ******
 
     Parameters
     ----------
     rancatname : :class:`str`
-        Full path to a random catalog or list to random catalogues. 
+        Full path to a random catalog or list to random catalogues.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
@@ -986,81 +994,82 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight, 
     # MMM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
-    #  ---- format checks ----- 
-    
+    #  ---- format checks -----
+
     # MMM check inputs are lists
-    if not isinstance(randomcatlist,list): 
+    if not isinstance(randomcatlist, list):
         raise_myerror("the input file(s) is not a list")
-    if not isinstance(fieldslist,list): 
+    if not isinstance(fieldslist, list):
         raise_myerror("the input fields is not a list")
-    if not isinstance(masklist,list): 
+    if not isinstance(masklist, list):
         raise_myerror("the input mask(s) is not a list")
-    if len(fieldslist)!= len(masklist):                   
-        raise_myerror("number of masks and input fields do not match")              
-    
-    # MMM check names are strings 
+    if len(fieldslist) != len(masklist):
+        raise_myerror("number of masks and input fields do not match")
+
+    # MMM check names are strings.
     for filename in randomcatlist:
-        if not isinstance(filename,str):
+        if not isinstance(filename, str):
             raise_myerror("random catalogue file name should be a string")
 
-    # MMM check field are string          
+    # MMM check field are string.
     for field in fieldslist:
-        if not isinstance(field,str):
+        if not isinstance(field, str):
             raise_myerror("field name should be a string")
-            #I check that field names match fields from files after reading them
- 
-    # MMM Determine output filename 
-    if write and not outfn: 
-        outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir) 
+            # Check field names match fields from files after reading.
+
+    # MMM Determine output filename.
+    if write and not outfn:
+        outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir)
         log.info("WARNING: no name for output pixweight file, default will be used")
         # *** add info of default name we are going to use ***
-            
-    # ------------------
-    
-    # MMM create bitmasklist from (and check) masklist 
-    bitmasklist=[]
-    for mymask in masklist:
-        if isinstance(mymask,int):
-            bitmasklist.append(mymask)
-        elif isinstance(mymask,list):
-            bits = 0 
-            for mx in mymask:
-                if not isinstance(mx,str): 
-                    raise_myerror("expecting string for mask name")
-                if mx not in skymap_mask.names(): 
-                    raise_myerror("wrong name of mask") #*** add print value ****
-                bits |= skymap_mask[mx]  
-            bitmasklist.append(bits) 
-        else:
-            raise_myerror("input error format in maskbits list") 
 
-                 
+    # ------------------
+
+    # MMM create bitmasklist from (and check) masklist.
+    bitmasklist = []
+    for mymask in masklist:
+        if isinstance(mymask, int):
+            bitmasklist.append(mymask)
+        elif isinstance(mymask, list):
+            bits = 0
+            for mx in mymask:
+                if not isinstance(mx, str):
+                    raise_myerror("expecting string for mask name")
+                if mx not in skymap_mask.names():
+                    raise_myerror("wrong name of mask")  # ** add print value **.
+                bits |= skymap_mask[mx]
+            bitmasklist.append(bits)
+        else:
+            raise_myerror("input error format in maskbits list")
+
     ########
-                 
-    # MMM get columns and dtype from first file, and associated skymap and skymask 
-    # MMM Reading just one line to get names of columns and header                  
+
+    # MMM get columns/dtype from first file + associated skymap/skymask.
+    # MMM Reading just one line to get names of columns and header.
     randomcat = randomcatlist[0]
     skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
     skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
-    
+
     stdfield, auxhdr = fitsio.read(randomcat, rows=[0], header=True)
-    skyfield, auxhdr = fitsio.read(skymapvaluescat, rows=[0], header=True)    
-       
-    # MMM select unique columns by matching to field list 
-    # MMM (standard field, sky_image, and mask)
-    stdfcol = list(set(fieldslist).intersection(stdfield.dtype.names)) 
+    skyfield, auxhdr = fitsio.read(skymapvaluescat, rows=[0], header=True)
+
+    # MMM select unique columns by matching to field list
+    # MMM (standard field, sky_image, and mask).
+    stdfcol = list(set(fieldslist).intersection(stdfield.dtype.names))
     skyfcol = list(set(fieldslist).intersection(skyfield.dtype.names))
-    maskcol = ['SKYMAP_MASK']  
-    
-    # MMM sanity check on ra dec
-    if 'RA' not in stdfield.dtype.names: raise_myerror("RA field not found in randoms")
-    if 'DEC' not in stdfield.dtype.names: raise_myerror("DEC field not found in randoms")
-                 
+    maskcol = ['SKYMAP_MASK']
+
+    # MMM sanity check on ra dec.
+    if 'RA' not in stdfield.dtype.names:
+        raise_myerror("RA field not found in randoms")
+    if 'DEC' not in stdfield.dtype.names:
+        raise_myerror("DEC field not found in randoms")
+
     # MMM create dt from original data types of each field
     # MMM fields may not be ordered and could be repeated with different masks
     # MMM thus we can't do this: dt = stdfield2.dtype.descr + skyfield2.dtype.descr
-    # MMM not needed any more, except sanity check that field names exist
-    dt=[]
+    # MMM not needed any more, except sanity check that field names exist.
+    dt = []
     for field in fieldslist:
         if field in stdfield.dtype.names:
             indx = stdfield.dtype.names.index(field)
@@ -1070,134 +1079,129 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight, 
             dt += [skyfield.dtype.descr[indx]]
         else:
             raise_myerror("name of field doesn't exist, it is probably misspelled")
- 
-    # MMM data type for counts table
-    dt2=[]
-    for field in fieldslist:
-        dt2 += [(field,'>i4')] 
-        
-    # MMM data type for weighted pixels 
-    dt3=[]
-    for field in fieldslist:
-        dt3 += [(field,'>f4')] 
 
+    # MMM data type for counts table.
+    dt2 = []
+    for field in fieldslist:
+        dt2 += [(field, '>i4')]
 
-    # MMM create header for later 
+    # MMM data type for weighted pixels.
+    dt3 = []
+    for field in fieldslist:
+        dt3 += [(field, '>f4')]
+
+    # MMM create header for later.
     hdr = {}
-    for field,bitmask in zip(fieldslist,bitmasklist): 
-        hdr[field] = bitmask                   
-                 
-                 
-    # MMM read only columns that I am interested 
-    # MMM not needed as we now loop we can serach (long) stdfield instad of (short) stdfield2             
-    #stdfield2, auxhdr = fitsio.read(randomcat1, columns = stdfcol, rows=[0], header=True)
-    #skyfield2, auxhdr = fitsio.read(skymapvaluescat1,columns=skyfcol, rows=[0], header=True)
-    #maskfield2, auxhdr = fitsio.read(skymapmaskcat1, columns=maskcol, rows=[0], header=True)
-                   
-                          
-    #################        
- 
-    # MNM create healpix dict arrays for pixweight table
+    for field, bitmask in zip(fieldslist, bitmasklist):
+        hdr[field] = bitmask
+
+    # MMM read only columns that I am interested.
+    # MMM not needed as we now loop we can serach (long) stdfield instad of (short) stdfield2.
+    # stdfield2, auxhdr = fitsio.read(randomcat1, columns=stdfcol, rows=[0], header=True)
+    # skyfield2, auxhdr = fitsio.read(skymapvaluescat1, columns=skyfcol, rows=[0], header=True)
+    # maskfield2, auxhdr = fitsio.read(skymapmaskcat1, columns=maskcol, rows=[0], header=True)
+
+    #################
+
+    # MNM create healpix dict arrays for pixweight table.
     npix = hp.nside2npix(nside_pixweight)
     counts = np.zeros(npix, dtype=dt2)
-    wcounts = np.zeros(npix, dtype=dt3) 
- 
-    # MMM not needed?                 
+    wcounts = np.zeros(npix, dtype=dt3)
+
+    # MMM not needed?
     nfields = np.size(fieldslist)
-          
-    # MMM loop over sets of files
+
+    # MMM loop over sets of files.
     for randomcat in randomcatlist:
-            
         # MMM log file we are reading
-        log.info("Reading in list of random catalog and associated files...t = {:.1f}s".format(time()-start))         
-        # **** need to add file name to the log ****         
-                 
-        # MMM names of the sky-map field and mask values
+        log.info("Reading in random catalogs and associated files...t = {:.1f}s"
+                 .format(time()-start))
+        # *** need to add file name to the log ***
+
+        # MMM names of the sky-map field and mask values.
         skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
-        skymapmaskcat  = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
-              
-        # MMM read RA DEC and SKYMAP_MASK for each random        
-        coord  = fitsio.read(randomcat, columns = ['RA','DEC'],header=False)         
-        skymapmask  = fitsio.read(skymapmaskcat, columns = maskcol, header=False)         
+        skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
+
+        # MMM read RA DEC and SKYMAP_MASK for each random.
+        coord = fitsio.read(randomcat, columns=['RA', 'DEC'], header=False)
+        skymapmask = fitsio.read(skymapmaskcat, columns=maskcol, header=False)
 
         # MMM Should we check that all randoms have the same density?
-        # MMM We don't check that targetid match (in principle they match construction)
-    
-        # MMM find the nested HEALPixel in the passed nside for each random.
+        # MMM Don't check targetids match (they should be construction).
+        # MMM find nested HEALPixel in the passed nside for each random.
         theta, phi = np.radians(90-coord['DEC']), np.radians(coord['RA'])
         randpixnums = hp.ang2pix(nside_pixweight, theta, phi, nest=True)
-         
-        
-        # MMM if all bitmask are the same we don't need to set mask every time
-        # MMM mask-in (i.e, list selected) randoms        
+
+        # MMM if all bitmasks are same, no need to set mask every time.
+        # MMM mask-in (i.e, list selected) randoms.
         if bitmasklist.count(bitmasklist[0]) == len(bitmasklist):
-            need2setmask = False 
-            maskin = (skymapmask['SKYMAP_MASK'] & bitmask ) == 0  
-            uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True, return_counts=1)
-        else : need2setmask = True 
-             
-        
+            need2setmask = False
+            maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
+            uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
+                                      return_counts=True)
+        else:
+            need2setmask = True
+
         ############################
         # MMM ----- option1 read all fields at once ----
         if True:
-            if stdfcol: 
-                randomvalues = fitsio.read(randomcat, columns = stdfcol, header=False ) 
-                 
-                for field,bitmask in zip(fieldslist,bitmasklist):
-                    if field not in stdfcol: continue 
-                    if need2setmask: 
-                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask ) == 0   
-                        uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True, return_counts=1)
+            if stdfcol:
+                randomvalues = fitsio.read(randomcat, columns=stdfcol, header=False)
+                for field, bitmask in zip(fieldslist, bitmasklist):
+                    if field not in stdfcol:
+                        continue
+                    if need2setmask:
+                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
+                        uniq, ii, cnt = np.unique(
+                            randpixnums[maskin], return_inverse=True,
+                            return_counts=True)
                     wcnt = np.bincount(ii, randomvalues[field][maskin])
                     counts[field][uniq] += cnt
-                    wcounts[field][uniq] += wcnt 
-                 
-            if skyfcol: 
-                skymapvalues = fitsio.read(skymapvaluescat, columns = skyfcol, header=False ) 
-                 
-                for field,bitmask in zip(fieldslist,bitmasklist):
-                    if field not in skyfcol: continue 
-                    if need2setmask: 
-                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask ) == 0   
-                        uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True, return_counts=1)
+                    wcounts[field][uniq] += wcnt
+            if skyfcol:
+                skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol, header=False)
+                for field, bitmask in zip(fieldslist, bitmasklist):
+                    if field not in skyfcol:
+                        continue
+                    if need2setmask:
+                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
+                        uniq, ii, cnt = np.unique(
+                            randpixnums[maskin], return_inverse=True,
+                            return_counts=True)
                     wcnt = np.bincount(ii, skymapvalues[field][maskin])
                     counts[field][uniq] += cnt
-                    wcounts[field][uniq] += wcnt     
+                    wcounts[field][uniq] += wcnt
 
-        
         # MMM ------ option2 read fitsio field by field ------
-        if False: 
-            for field,bitmask in zip(fieldslist,bitmasklist):
-            
-                if field in stdfcol: 
-                    values = fitsio.read(randomcat, columns = field)     
-                 
-                if field in skyfcol: 
-                    values = fitsio.read(skymapvaluescat, columns = field)     
-                 
-                if need2setmask: 
-                    maskin = (skymapmask['SKYMAP_MASK'] & bitmask ) == 0   
-                    uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True, return_counts=1)
-            
+        if False:
+            for field, bitmask in zip(fieldslist, bitmasklist):
+                if field in stdfcol:
+                    values = fitsio.read(randomcat, columns=field)
+                if field in skyfcol:
+                    values = fitsio.read(skymapvaluescat, columns=field)
+                if need2setmask:
+                    maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
+                    uniq, ii, cnt = np.unique(
+                        randpixnums[maskin], return_inverse=True,
+                        return_counts=True)
                 wcnt = np.bincount(ii, values[field][maskin])
                 counts[field][uniq] += cnt
-                wcounts[field][uniq] += wcnt          
-                      
-        ##########################     
-        
-    # MMM compute weighted means
-    # MMM cound be done in the previous loops 
-    # MMM healpix unseen pixel value is -1.6375e+30
-    for field in fieldslist:
-        wcounts[counts[field] > 0][field]  = wcounts[counts[field]>0][field] * counts[counts[field]>0][field]
-        wcounts[counts[field] == 0][field] = hp.UNSEEN        
+                wcounts[field][uniq] += wcnt
 
-    # MMM  Write atomincally (sanity check done before) 
+    ##########################
+    # MMM compute weighted means.
+    # MMM cound be done in the previous loops.
+    # MMM healpix unseen pixel value is -1.6375e+30.
+    for field in fieldslist:
+        ii = counts[field] > 0
+        wcounts[ii][field] = wcounts[ii][field] * counts[ii][field]
+        wcounts[counts[field] == 0][field] = hp.UNSEEN
+
+    # MMM  Write atomically (sanity check done before).
     if write:
         write_atomically(outfn, wcounts, extname='PIXWEIGHT', header=hdr)
 
-    return 
-                                          
+    return
 
 
 def generate_map_values(rancatname, lssmapdir=None, write=True):
