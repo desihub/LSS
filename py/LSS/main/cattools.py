@@ -2394,7 +2394,7 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
     return ff
 
 
-def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
+def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',specver='daily',version='test'):
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -2476,7 +2476,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
 
         if tp == 'BGS_BRIGHT':
-            bgs = ssr_tools.BGS_ssr()
+            bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = bgs.add_modpre(ff[wz],fl)
             ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
             print('min/max of zfail weights:')
