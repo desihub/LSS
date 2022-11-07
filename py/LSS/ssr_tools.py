@@ -107,12 +107,13 @@ def get_BGS_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         tfn = tracer
         #if sur == 'DA02':
         #    tfn+='zdone'
-        fn = dir+tfn+'_full.dat.fits'    
+        fn = dir+tfn+'_full.dat.fits'  
+        print('loading info from '+fn)  
         data = Table(fitsio.read(fn))
-        print(len(data))
+        #print(len(data))
         sel = data['ZWARN'] != 999999
         data = data[sel]
-        print(len(data))
+        #print(len(data))
         gz = data['ZWARN'] == 0
         gz &= data['DELTACHI2'] > 40
         data['q'] = gz
@@ -185,6 +186,66 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
     cat['qf'] = np.array(cat['q'], dtype=float)
     
     return cat
+
+def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe'],cut=None,cut_condition=None):
+    
+    cats = []
+    for sur,ver,sr in zip(surveys,versions,specrels):
+        dir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
+        tfn = tracer
+        #if sur == 'DA02':
+        #    tfn+='zdone'
+        fn = dir+tfn+'_full.dat.fits'  
+        print('loading info from '+fn)  
+        data = Table(fitsio.read(fn))
+        #print(len(data))
+        sel = data['ZWARN'] != 999999
+        if tracer[:3] == 'QSO':
+            sel &= ((data['SPECTYPE'] == 'STAR') & (data['Z_not4clus'] != 999999)) | (data['SPECTYPE'] != 'STAR')
+        data = data[sel]
+
+        if cut == 'galactic':
+            coords = SkyCoord(ra=data['RA']*u.deg,dec=data['DEC']*u.deg)
+            if cut_condition[0] == '>':
+                cond = np.where(np.abs(coords.galactic.b.value) > float(cut_condition[1:]))
+            elif cut_condition[0] == '<':
+                cond = np.where(np.abs(coords.galactic.b.value) < float(cut_condition[1:]))
+            data = data[cond]
+
+        #print(len(data))
+        if tracer[:3] == 'BGS':
+            gz = data['ZWARN'] == 0
+            gz &= data['DELTACHI2'] > 40
+
+        if tracer[:3] == 'QSO':
+            gz = data['Z_not4clus']*0 == 0
+            gz &= data['Z_not4clus'] != 999999
+            gz &= data['Z_not4clus'] != 1.e20
+        
+        if tracer[:3] == 'ELG':
+            gz = data['o2c'] > 0.9
+
+        data['q'] = gz
+        cats.append(data)
+
+    if len(cats) == 1:
+        cat = cats[0]
+
+    cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['EFFTIME_BGS'] = 12.15/89.8 * cat['TSNR2_BGS']
+    cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
+    cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
+    gextc = 3.214
+    cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
+    cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+    rextc = 2.165
+    cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
+    cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
+    cat['qf'] = np.array(cat['q'], dtype=float)
+    
+    return cat
+
 
 
 def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
@@ -375,7 +436,7 @@ class LRG_ssr:
 class BGS_ssr:
     def __init__(self,specrel='fuji',efftime_min=120,efftime_max=300,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
         
-        self.cat = get_BGS_data_full('BGS_BRIGHT',surveys=surveys,versions=versions,specrels=specrels)
+        self.cat = get_data_full('BGS_BRIGHT',surveys=surveys,versions=versions,specrels=specrels)
         mask = self.cat['EFFTIME_BGS']>efftime_min
         mask &= self.cat['EFFTIME_BGS']<efftime_max
         print('using '+str(len(self.cat)/len(self.cat[mask])))
@@ -535,8 +596,8 @@ class BGS_ssr:
 
 
 class ELG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
-        self.cat = get_ELG_data_full('ELG_LOPnotqso')#get_ELG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        self.cat = get_data_full('ELG_LOPnotqso',surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
@@ -689,8 +750,8 @@ class ELG_ssr:
 #             hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
 
 class QSO_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,cut=None,cut_condition=None):
-        self.cat = get_QSO_data_full('QSO',cut=cut,cut_condition=cut_condition)#get_ELG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,cut=None,cut_condition=None,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        self.cat = get_data_full('QSO',cut=cut,cut_condition=cut_condition,surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
         mask = self.cat['EFFTIME_QSO']>efftime_min
         mask &= self.cat['EFFTIME_QSO']<efftime_max
         self.cat = self.cat[mask]
