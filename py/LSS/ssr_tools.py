@@ -75,12 +75,14 @@ def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         #    tfn+='zdone'
         fn = dir+tfn+'_full.dat.fits'    
         data = Table(fitsio.read(fn))
-        print(len(data))
+        #print(len(data))
         sel = data['ZWARN'] != 999999
         data = data[sel]
-        print(len(data))
+        #print(len(data))
         data['q'] = data['o2c'] > 0.9
         cats.append(data)
+        print('# of spectra for fits:'+str(len(data)))
+        print('# of good z for fits:'+str(np.sum(data['q'])))
 
     if len(cats) == 1:
         cat = cats[0]
@@ -226,6 +228,9 @@ def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe
             gz = data['o2c'] > 0.9
 
         data['q'] = gz
+        print('# of spectra for fits:'+str(len(data)))
+        print('# of good z for fits:'+str(np.sum(data['q'])))
+        
         cats.append(data)
 
     if len(cats) == 1:
@@ -240,6 +245,8 @@ def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe
     gextc = 3.214
     cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
     cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+
+
     rextc = 2.165
     cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
     cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
