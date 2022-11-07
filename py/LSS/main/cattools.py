@@ -2503,7 +2503,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
             print('checking sum of zfail weights compared to length of good z')
             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-    plt.plot(ff[wz]['TSNR2_LRG'],ff[wz]['WEIGHT_ZFAIL'],'k,')
+    plt.plot(ff[wz]['TSNR2_'+tp[:3]]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
     plt.show()
 
