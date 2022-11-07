@@ -180,13 +180,15 @@ def _concatenate(arrays):
 
 def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
 
+    if 'GC' in region:
+        regions = [region]
+    else:
+        regions = region
+
+
     def read_positions_weights(name):
         positions, weights = [], []
         
-        if 'GC' in region:
-            regions = [region]
-        else:
-            regions = region
         for reg in regions:
             cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
             logger.info('Loading {}.'.format(cat_fns))
