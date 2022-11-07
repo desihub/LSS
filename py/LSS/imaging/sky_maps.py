@@ -952,6 +952,7 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
 
 
 def raise_myerror(msg):
+    """Convenience function to raise a ValueError with a message"""
     log.critical(msg)
     raise ValueError(msg)
 
@@ -973,36 +974,47 @@ def aux_test_mask():
                           lssmapdir=None, outfn=outfn, write=True)
 
 
-def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
+def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                           lssmapdir=None, outfn=None, write=True):
     """
-    Creates a pixweight files from randoms filtered by bitmasks
+    Creates a pixweight file from randoms filtered by bitmasks.
     **** Provisional version *** FIRST DRAFT ******
 
     Parameters
     ----------
-    rancatname : :class:`str`
-        Full path to a random catalog or list to random catalogues.
+    randomcatlist : :class:`list`
+        List of (full paths to) random catalogs.
+    fieldslist : :class:`list`
+        List of fields/columns to process.
+    masklist : :class:`list`
+        List of masks associated with the fields/columns.
+    nside_out : :class:`int`, optional, defaults to 512
+        Resolution (HEALPix nside) at which to build the output (NESTED)
+        pixweight map.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
-       `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+    outfn : :class:`str`, optional, defaults to ``None``
+        Name of output filename. If not passed, the output from
+        :func:`rancat_name_to_pixweight_name()` is used.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
 
-
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        Pixweight array of the requested masked fields. This is also
+        written to file if `write`=``True``.
     """
     # MMM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
     #  ---- format checks -----
-
-    # MMM check inputs are lists
-    if not isinstance(randomcatlist, list):
-        raise_myerror("the input file(s) is not a list")
-    if not isinstance(fieldslist, list):
-        raise_myerror("the input fields is not a list")
-    if not isinstance(masklist, list):
-        raise_myerror("the input mask(s) is not a list")
+    # MMM check inputs are lists.
+    for listy, word in zip([randomcatlist, fieldslist, masklist],
+                           ["file(s)", "fields", "mask(s)"]):
+    if not isinstance(listy, list):
+        raise_myerror("the input {} is not a list".format(word))
     if len(fieldslist) != len(masklist):
         raise_myerror("number of masks and input fields do not match")
 
@@ -1020,11 +1032,10 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
     # MMM Determine output filename.
     if write and not outfn:
         outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir)
-        log.info("WARNING: no name for output pixweight file, default will be used")
+        log.info("WARNING: no name for output pixweight file, using default")
         # *** add info of default name we are going to use ***
 
     # ------------------
-
     # MMM create bitmasklist from (and check) masklist.
     bitmasklist = []
     for mymask in masklist:
@@ -1043,7 +1054,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
             raise_myerror("input error format in maskbits list")
 
     ########
-
     # MMM get columns/dtype from first file + associated skymap/skymask.
     # MMM Reading just one line to get names of columns and header.
     randomcat = randomcatlist[0]
@@ -1104,7 +1114,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
     #################
 
     # MNM create healpix dict arrays for pixweight table.
-    npix = hp.nside2npix(nside_pixweight)
+    npix = hp.nside2npix(nside_out)
     counts = np.zeros(npix, dtype=dt2)
     wcounts = np.zeros(npix, dtype=dt3)
 
@@ -1130,7 +1140,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
         # MMM Don't check targetids match (they should be construction).
         # MMM find nested HEALPixel in the passed nside for each random.
         theta, phi = np.radians(90-coord['DEC']), np.radians(coord['RA'])
-        randpixnums = hp.ang2pix(nside_pixweight, theta, phi, nest=True)
+        randpixnums = hp.ang2pix(nside_out, theta, phi, nest=True)
 
         # MMM if all bitmasks are same, no need to set mask every time.
         # MMM mask-in (i.e, list selected) randoms.
@@ -1197,11 +1207,11 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
         wcounts[ii][field] = wcounts[ii][field] * counts[ii][field]
         wcounts[counts[field] == 0][field] = hp.UNSEEN
 
-    # MMM  Write atomically (sanity check done before).
+    # MMM Write atomically (sanity check done before).
     if write:
         write_atomically(outfn, wcounts, extname='PIXWEIGHT', header=hdr)
 
-    return
+    return wcounts
 
 
 def generate_map_values(rancatname, lssmapdir=None, write=True):
