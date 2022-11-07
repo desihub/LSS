@@ -984,9 +984,9 @@ def raise_myerror(msg):
 
 # MMM test create pixweight files.
 def aux_test_mask():
-
+    """Convenience function for testing create_pixweight_file()"""
     testdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve'
-    testfn = 'randrandoms-1-0.fits'
+    testfn = 'randoms-1-0.fits'
     randomcat = [os.path.join(testdir, testfn), os.path.join(testdir, testfn)]
     fieldslist = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R',
                   'WISEMASK_W2', 'CALIB_Z']
@@ -1008,7 +1008,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     Parameters
     ----------
     randomcatlist : :class:`list`
-        List of (full paths to) random catalogs.
+        List of strings representing (full paths to) random catalogs.
     fieldslist : :class:`list`
         List of fields/columns to process.
     masklist : :class:`list`
@@ -1085,8 +1085,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
     skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
-    stdfield, auxhdr = fitsio.read(randomcat, rows=[0], header=True)
-    skyfield, auxhdr = fitsio.read(skymapvaluescat, rows=[0], header=True)
+    stdfield, _ = fitsio.read(randomcat, rows=[0], header=True)
+    skyfield, _ = fitsio.read(skymapvaluescat, rows=[0], header=True)
 
     # MMM select unique columns by matching to field list
     # MMM (standard field, sky_image, and mask).
@@ -1095,10 +1095,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     maskcol = ['SKYMAP_MASK']
 
     # MMM sanity check on ra dec.
-    if 'RA' not in stdfield.dtype.names:
-        raise_myerror("RA field not found in randoms")
-    if 'DEC' not in stdfield.dtype.names:
-        raise_myerror("DEC field not found in randoms")
+    if not {"RA", "DEC"}.issubset(set(stdfield.dtype.names))
+        raise_myerror("RA or DEC field not found in randoms")
 
     # MMM create dt from original data types of each field
     # MMM fields may not be ordered and could be repeated with different masks
@@ -1113,45 +1111,23 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
             indx = skyfield.dtype.names.index(field)
             dt += [skyfield.dtype.descr[indx]]
         else:
-            raise_myerror("name of field doesn't exist, it is probably misspelled")
-
-    # MMM data type for counts table.
-    dt2 = []
-    for field in fieldslist:
-        dt2 += [(field, '>i4')]
-
-    # MMM data type for weighted pixels.
-    dt3 = []
-    for field in fieldslist:
-        dt3 += [(field, '>f4')]
-
-    # MMM create header for later.
-    hdr = {}
-    for field, bitmask in zip(fieldslist, bitmasklist):
-        hdr[field] = bitmask
-
-    # MMM read only columns that I am interested.
-    # MMM not needed as we now loop we can serach (long) stdfield instad of (short) stdfield2.
-    # stdfield2, auxhdr = fitsio.read(randomcat1, columns=stdfcol, rows=[0], header=True)
-    # skyfield2, auxhdr = fitsio.read(skymapvaluescat1, columns=skyfcol, rows=[0], header=True)
-    # maskfield2, auxhdr = fitsio.read(skymapmaskcat1, columns=maskcol, rows=[0], header=True)
+            raise_myerror("name of field doesn't exist, is it misspelled?")
 
     #################
 
-    # MNM create healpix dict arrays for pixweight table.
-    npix = hp.nside2npix(nside_out)
-    counts = np.zeros(npix, dtype=dt2)
-    wcounts = np.zeros(npix, dtype=dt3)
+    # MMM create header for later.
+    hdr = {field: bitmask for field, bitmask in  zip(fieldslist, bitmasklist)}
 
-    # MMM not needed?
-    nfields = np.size(fieldslist)
+    # MMM create healpix rec arrays for output pixweight table.
+    npix = hp.nside2npix(nside_out)
+    counts = np.zeros(npix, dtype=[(field, '>i4') for field in fieldslist])
+    wcounts = np.zeros(npix, dtype=[(field, '>f4') for field in fieldslist])
 
     # MMM loop over sets of files.
     for randomcat in randomcatlist:
         # MMM log file we are reading
-        log.info("Reading in random catalogs and associated files...t = {:.1f}s"
-                 .format(time()-start))
-        # *** need to add file name to the log ***
+        log.info("Reading in random catalog {} and associated files...t = {:.1f}s"
+                 .format(randomcat, time()-start))
 
         # MMM names of the sky-map field and mask values.
         skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
@@ -1208,24 +1184,26 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                     wcounts[field][uniq] += wcnt
 
         # MMM ------ option2 read fitsio field by field ------
-        if False:
-            for field, bitmask in zip(fieldslist, bitmasklist):
-                if field in stdfcol:
-                    values = fitsio.read(randomcat, columns=field)
-                if field in skyfcol:
-                    values = fitsio.read(skymapvaluescat, columns=field)
-                if need2setmask:
-                    maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-                    uniq, ii, cnt = np.unique(
-                        randpixnums[maskin], return_inverse=True,
-                        return_counts=True)
-                wcnt = np.bincount(ii, values[field][maskin])
-                counts[field][uniq] += cnt
-                wcounts[field][uniq] += wcnt
+        # ADM This will be much slower! I vote for removing it.
+        # ADM I've just commented it out for now.
+#        if False:
+#            for field, bitmask in zip(fieldslist, bitmasklist):
+#                if field in stdfcol:
+#                    values = fitsio.read(randomcat, columns=field)
+#                if field in skyfcol:
+#                    values = fitsio.read(skymapvaluescat, columns=field)
+#                if need2setmask:
+#                    maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
+#                    uniq, ii, cnt = np.unique(
+#                        randpixnums[maskin], return_inverse=True,
+#                        return_counts=True)
+#                wcnt = np.bincount(ii, values[field][maskin])
+#                counts[field][uniq] += cnt
+#                wcounts[field][uniq] += wcnt
 
     ##########################
     # MMM compute weighted means.
-    # MMM cound be done in the previous loops.
+    # MMM could be done in the previous loops.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
         ii = counts[field] > 0
