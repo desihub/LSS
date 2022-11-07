@@ -2394,6 +2394,116 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
     return ff
 
 
+def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
+    '''
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    ff = Table.read(fl+'_full.dat.fits')
+    cols = list(ff.dtype.names)
+    if 'Z' in cols:
+        print('Z column already in full file')
+    else:
+        ff['Z_not4clus'].name = 'Z'
+    if tp == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+
+    if tp[:3] == 'ELG':
+        #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
+        wz = ff['ZWARN']*0 == 0
+        
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+            print('length after oII cut '+str(len(ff[wz])))
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        print('length after also making sure location assigned '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp == 'LRG':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            selg = ssr_tools.LRG_goodz(ff)
+            wz &= selg
+
+        #wz &= ff['DELTACHI2'] > dchi2
+        print('length after Rongpu cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            print('applying extra cut for BGS')
+            wz &= ff['DELTACHI2'] > dchi2
+            print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+
+    #ffz = ff[wz]
+    print('length after cutting to good z '+str(len(ff)))
+    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if dchi2 is not None:
+        if tp[:3] == 'LRG':
+            lrg = ssr_tools.LRG_ssr()
+            ff[wz] = lrg.add_modpre(ff[wz])
+            ff[wz]['WEIGHT_ZFAIL'] = 1./ff[wz]['mod_success_rate']
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+        if tp == 'BGS_BRIGHT':
+            bgs = ssr_tools.BGS_ssr()
+            ff[wz] = bgs.add_modpre(ff[wz],fl)
+            ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+
+        if tp == 'ELG_LOP':
+            elg = ssr_tools.ELG_ssr()
+            ff[wz] = elg.add_modpre(ff[wz])
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+        if tp == 'QSO':
+            qso = ssr_tools.QSO_ssr()
+            ff[wz] = qso.add_modpre(ff[wz],fl)
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
     '''
     fl is the root of the input/output file
