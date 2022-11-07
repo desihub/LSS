@@ -233,6 +233,7 @@ def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe
 
     cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
     cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['EFFTIME_QSO'] = 8.60/0.255 * cat['TSNR2_QSO']
     cat['EFFTIME_BGS'] = 12.15/89.8 * cat['TSNR2_BGS']
     cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
     cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
