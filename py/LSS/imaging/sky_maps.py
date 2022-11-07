@@ -1123,8 +1123,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
         skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
         # MMM read RA DEC and SKYMAP_MASK for each random.
-        coord = fitsio.read(randomcat, columns=['RA', 'DEC'], header=False)
-        skymapmask = fitsio.read(skymapmaskcat, columns=maskcol, header=False)
+        coord = fitsio.read(randomcat, columns=['RA', 'DEC'])
+        skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
 
         # MMM Should we check that all randoms have the same density?
         # MMM Don't check targetids match (they should be construction).
@@ -1146,7 +1146,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
         # MMM ----- option1 read all fields at once ----
         if True:
             if stdfcol:
-                randomvalues = fitsio.read(randomcat, columns=stdfcol, header=False)
+                randomvalues = fitsio.read(randomcat, columns=stdfcol)
                 for field, bitmask in zip(fieldslist, bitmasklist):
                     if field not in stdfcol:
                         continue
@@ -1159,7 +1159,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_pixweight,
                     counts[field][uniq] += cnt
                     wcounts[field][uniq] += wcnt
             if skyfcol:
-                skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol, header=False)
+                skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
                 for field, bitmask in zip(fieldslist, bitmasklist):
                     if field not in skyfcol:
                         continue
