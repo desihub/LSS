@@ -2486,7 +2486,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
 
 
         if tp == 'ELG_LOP':
-            elg = ssr_tools.ELG_ssr()
+            elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = elg.add_modpre(ff[wz])
             print('min/max of zfail weights:')
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
@@ -2495,7 +2495,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
 
         if tp == 'QSO':
-            qso = ssr_tools.QSO_ssr()
+            qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = qso.add_modpre(ff[wz],fl)
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
