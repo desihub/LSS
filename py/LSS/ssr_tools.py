@@ -695,7 +695,18 @@ class ELG_ssr:
         res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars,self.wrapper_hist(pars))
+        chi2 = self.wrapper_hist(pars)
+        print(pars,chi2)
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
+        mod = self.failure_rate_eff(self.bc, *pars)
+        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
+        plt.ylabel('ELG_LOPnotqso Z failure rate')
+        plt.xlabel('ELG EFFECTIVE exp time')
+        plt.legend()
+        plt.savefig(fn_root+'overall_failratefit.png')        
+        plt.show()
+        plt.clf()
+
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
