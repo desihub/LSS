@@ -2463,6 +2463,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
     #ffz = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    ff['mod_success_rate'] = np.ones(len(ff))
     if dchi2 is not None:
         if tp[:3] == 'LRG':
             lrg = ssr_tools.LRG_ssr()
@@ -2502,6 +2503,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6):
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
             print('checking sum of zfail weights compared to length of good z')
             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+    plt.plot(ff[wz]['TSNR2_LRG'],ff[wz]['WEIGHT_ZFAIL'])
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
