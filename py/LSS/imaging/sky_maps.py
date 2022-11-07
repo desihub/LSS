@@ -1043,22 +1043,16 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     if len(fieldslist) != len(masklist):
         raise_myerror("number of masks and input fields do not match")
 
-    # MMM check names are strings.
-    for filename in randomcatlist:
-        if not isinstance(filename, str):
-            raise_myerror("random catalogue file name should be a string")
-
-    # MMM check field are string.
-    for field in fieldslist:
-        if not isinstance(field, str):
-            raise_myerror("field name should be a string")
-            # Check field names match fields from files after reading.
+    # MMM check passed catalog names and fields are strings.
+    for nom in randomcatlist + fieldslist:
+        if not isinstance(nom, str):
+            msg = "file and field names must be strings ({} is not)".format(nom)
+            raise_myerror(msg)
 
     # MMM Determine output filename.
     if write and not outfn:
         outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir)
-        log.info("WARNING: no name for output pixweight file, using default")
-        # *** add info of default name we are going to use ***
+        log.warning("output filename not passed, defaulting to {}".format(outfn))
 
     # ------------------
     # MMM create bitmasklist from (and check) masklist.
@@ -1095,7 +1089,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     maskcol = ['SKYMAP_MASK']
 
     # MMM sanity check on ra dec.
-    if not {"RA", "DEC"}.issubset(set(stdfield.dtype.names))
+    if not {"RA", "DEC"}.issubset(set(stdfield.dtype.names)):
         raise_myerror("RA or DEC field not found in randoms")
 
     # MMM create dt from original data types of each field
