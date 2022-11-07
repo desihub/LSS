@@ -373,9 +373,9 @@ class LRG_ssr:
         return data
 
 class BGS_ssr:
-    def __init__(self,specrel='fuji',efftime_min=120,efftime_max=300):
+    def __init__(self,specrel='fuji',efftime_min=120,efftime_max=300,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
         
-        self.cat = get_BGS_data_full('BGS_BRIGHT')
+        self.cat = get_BGS_data_full('BGS_BRIGHT',surveys=surveys,versions=versions,specrels=specrels=specrels)
         mask = self.cat['EFFTIME_BGS']>efftime_min
         mask &= self.cat['EFFTIME_BGS']<efftime_max
         print('using '+str(len(self.cat)/len(self.cat[mask])))
