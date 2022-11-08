@@ -2480,7 +2480,14 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
     #print(min(zf),max(zf))
     wz = ff['GOODZ']
-    print(len(ff[wz]),len(ff))
+    #print(len(ff[wz]),len(ff))
+
+    print('min/max of zfail weights:')
+    print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+ 
+    print('checking sum of zfail weights compared to length of good spec')
+    print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+
 
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
@@ -2516,11 +2523,6 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
 #             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
 #             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
 #         
-#         print('min/max of zfail weights:')
-#         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-# 
-#         print('checking sum of zfail weights compared to length of good spec')
-#         print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
 
 
 
