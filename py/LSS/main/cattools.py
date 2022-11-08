@@ -2410,57 +2410,58 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print('Z column already in full file')
     else:
         ff['Z_not4clus'].name = 'Z'
+
+    selobs = ff['ZWARN'] == 0
+    selobs &= ff['ZWARN']*0 == 0
+    selobs &= ff['ZWARN'] != 999999
+
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
         wz = ff['Z']*0 == 0
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
-        wz &= ff['ZWARN'] != 999999
-        wz &= ff['TSNR2_ELG'] > tsnrcut
+        wz &= selobs
         func = ssr_tools.QSO_ssr
 
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
-        wz = ff['ZWARN']*0 == 0
-        
-        wz &= ff['ZWARN'] != 999999
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
         if dchi2 is not None:
-            wz &= ff['o2c'] > dchi2
+            wz = ff['o2c'] > dchi2
             print('length after oII cut '+str(len(ff[wz])))
-        wz &= ff['LOCATION_ASSIGNED'] == 1
-        print('length after also making sure location assigned '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
+        wz &= selobs
+        #wz &= ff['LOCATION_ASSIGNED'] == 1
+        #print('length after also making sure location assigned '+str(len(ff[wz])))
+        
         print('length after tsnrcut '+str(len(ff[wz])))
         func = ssr_tools.ELG_ssr
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
-        wz = ff['ZWARN'] == 0
-        wz &= ff['ZWARN']*0 == 0
-        wz &= ff['ZWARN'] != 999999
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[selobs])))
 
         if dchi2 is not None:
             selg = ssr_tools.LRG_goodz(ff)
-            wz &= selg
+            wz = selg
+            wz &= selobs
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
         func = ssr_tools.LRG_ssr
 
     if tp[:3] == 'BGS':
-        wz = ff['ZWARN'] == 0
-        wz &= ff['ZWARN']*0 == 0
-        wz &= ff['ZWARN'] != 999999
-
+        selobs &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[selobs])))
         if dchi2 is not None:
             print('applying extra cut for BGS')
-            wz &= ff['DELTACHI2'] > dchi2
+            wz = ff['DELTACHI2'] > dchi2
             print('length after dchi2 cut '+str(len(ff[wz])))
-        wz &= ff['TSNR2_BGS'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+            wz &= selobs
+        
+        
         func = ssr_tools.BGS_ssr
 
 
@@ -2470,13 +2471,20 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #if tp != 'LRG':
     #    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     #    ff['mod_success_rate'] = np.ones(len(ff))
-    selobs = ff['ZWARN'] != 999999
+    #selobs = ff['ZWARN'] != 999999
     
     gal = func(surveys=[survey],specrels=[specrel],versions=[version])
     ffwz = gal.add_modpre(ff[selobs])
     print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
     #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
     ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+    for col in rem_cols:
+        try:
+            ff.remove_columns([col])
+            print(col +' was in full file and will be replaced')
+        except:
+            print(col +' was not yet in full file')    
     ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
     #print(min(zf),max(zf))
     wz = ff['GOODZ']
