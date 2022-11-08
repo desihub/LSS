@@ -2467,9 +2467,9 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #ffz = ff[wz]
     print('length after cutting to good z '+str(len(ff[wz])))
     ff['GOODZ'] = wz
-    if tp != 'LRG':
-        ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-        ff['mod_success_rate'] = np.ones(len(ff))
+    #if tp != 'LRG':
+    #    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    #    ff['mod_success_rate'] = np.ones(len(ff))
     selobs = ff['ZWARN'] != 999999
     
     gal = func(surveys=[survey],specrels=[specrel],versions=[version])
