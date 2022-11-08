@@ -2464,45 +2464,36 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     print('length after cutting to good z '+str(len(ff[wz])))
     ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     ff['mod_success_rate'] = np.ones(len(ff))
+    selobs = ff['ZWARN'] != 999999
     if dchi2 is not None:
         if tp[:3] == 'LRG':
             lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = lrg.add_modpre(ff[wz])
-            ff[wz]['WEIGHT_ZFAIL'] = 1./ff[wz]['mod_success_rate']
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ffwz = lrg.add_modpre(ff[wz])
+            print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+            ff[wz]['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
 
         if tp == 'BGS_BRIGHT':
             bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = bgs.add_modpre(ff[wz],fl)
             ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
 
 
         if tp == 'ELG_LOP':
             elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = elg.add_modpre(ff[wz])
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
 
         if tp == 'QSO':
             qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = qso.add_modpre(ff[wz],fl)
             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+        
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+        print('checking sum of zfail weights compared to length of good spec')
+        print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
     plt.show()
