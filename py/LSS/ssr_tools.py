@@ -447,7 +447,8 @@ class LRG_ssr:
         print(pars)
         dflux = data['FIBERFLUX_Z']*10**(0.4*1.211*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15 * data['TSNR2_LRG']#data['EFFTIME_LRG']
-        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
+        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
+        print(min(data['mod_success_rate']),max(data['mod_success_rate']))      
         return data
 
 class BGS_ssr:
