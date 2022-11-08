@@ -2473,9 +2473,9 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     selobs = ff['ZWARN'] != 999999
     
     gal = func(surveys=[survey],specrels=[specrel],versions=[version])
-    ffwz = gal.add_modpre(ff[wz])
+    ffwz = gal.add_modpre(ff[selobs])
     print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
-    ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+    #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
     ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
     ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
     #print(min(zf),max(zf))
@@ -2492,6 +2492,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
     plt.show()
+    
+    common.write_LSS(ff,fl+'_full.dat.fits',comments='added ZFAIL weight')
     
     
 #     if dchi2 is not None:
