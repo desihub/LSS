@@ -2466,7 +2466,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     ff['mod_success_rate'] = np.ones(len(ff))
     if dchi2 is not None:
         if tp[:3] == 'LRG':
-            lrg = ssr_tools.LRG_ssr()
+            lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ff[wz] = lrg.add_modpre(ff[wz])
             ff[wz]['WEIGHT_ZFAIL'] = 1./ff[wz]['mod_success_rate']
             print('min/max of zfail weights:')
