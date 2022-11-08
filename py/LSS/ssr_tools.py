@@ -438,10 +438,11 @@ class LRG_ssr:
 
     def failure_rate(self,flux, efftime, a, b, c):
         sn = flux * np.sqrt(efftime)
-        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(a*sn+b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+        res = minimize(self.wrapper, [-.1, 3., 0.02], bounds=((-200, 0), (0, 100), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
