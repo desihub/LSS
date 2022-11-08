@@ -222,7 +222,7 @@ def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe
         
         if tracer[:3] == 'LRG':
             gz = data['ZWARN']==0
-            gz &= data[zcol]<1.5
+            gz &= data['Z_not4clus']<1.5
             gz &= data['DELTACHI2']>15  
 
 
