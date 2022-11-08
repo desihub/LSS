@@ -1075,7 +1075,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
     skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
-    stdfield = fitsio.read(randomcat, rows=[0])
+    stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
     skyfield = fitsio.read(skymapvaluescat, rows=[0])
 
     # MMM select unique columns by matching to field list
@@ -1090,7 +1090,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     ##########
     # MMM create header for later.
-    hdr = {field: bitmask for field, bitmask in  zip(fieldslist, bitmasklist)}
+    hdr = {field: bitmask for field, bitmask in zip(fieldslist, bitmasklist)}
 
     # MMM create healpix rec arrays for output pixweight table.
     npix = hp.nside2npix(nside_out)
@@ -1110,16 +1110,17 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM read RA DEC and SKYMAP_MASK for each random.
         # ADM read ALL needed columns from randomcat here as a speed-up.
         ranvalues = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'])
+        skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
         skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
 
         # MMM Should we check that all randoms have the same density?
-        # MMM Don't check targetids match (they should be construction).
+        # MMM Don't check targetids match (they should by construction).
         # MMM find nested HEALPixel in the passed nside for each random.
         theta, phi = np.radians(90-ranvalues['DEC']), np.radians(ranvalues['RA'])
         randpixnums = hp.ang2pix(nside_out, theta, phi, nest=True)
 
         # MMM if all bitmasks are same, no need to set mask every time.
-        # MMM mask-in (i.e, list selected) randoms.
+        # MMM mask-in (i.e., list selected) randoms.
         need2setmask = True
         if bitmasklist.count(bitmasklist[0]) == len(bitmasklist):
             need2setmask = False
@@ -1129,32 +1130,20 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
         ############################
         # MMM ----- option1 read all fields at once ----
-        # ADM if we agree that option 1 is the better choice, remove this
-        # ADM if True.
-        if True:
-            if stdfcol:
+        # ADM if we agree that option 1 is the better choice, remove
+        # ADM the "if True:" below!
+#        if True:
+        for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
+            if len(col) > 0:
                 for field, bitmask in zip(fieldslist, bitmasklist):
-                    if field not in stdfcol:
+                    if field not in col:
                         continue
                     if need2setmask:
                         maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
                         uniq, ii, cnt = np.unique(
                             randpixnums[maskin], return_inverse=True,
                             return_counts=True)
-                    wcnt = np.bincount(ii, ranvalues[field][maskin])
-                    counts[field][uniq] += cnt
-                    wcounts[field][uniq] += wcnt
-            if skyfcol:
-                skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
-                for field, bitmask in zip(fieldslist, bitmasklist):
-                    if field not in skyfcol:
-                        continue
-                    if need2setmask:
-                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-                        uniq, ii, cnt = np.unique(
-                            randpixnums[maskin], return_inverse=True,
-                            return_counts=True)
-                    wcnt = np.bincount(ii, skymapvalues[field][maskin])
+                    wcnt = np.bincount(ii, values[field][maskin])
                     counts[field][uniq] += cnt
                     wcounts[field][uniq] += wcnt
 
