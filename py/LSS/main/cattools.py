@@ -2462,6 +2462,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
 
     #ffz = ff[wz]
     print('length after cutting to good z '+str(len(ff[wz])))
+    ff['GOODZ'] = wz
     if tp != 'LRG':
         ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
         ff['mod_success_rate'] = np.ones(len(ff))
@@ -2475,6 +2476,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
             ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
             #print(min(zf),max(zf))
+            wz = ff['GOODZ']
             print(len(ff[wz]),len(ff))
             #ff[wz]['WEIGHT_ZFAIL'] = zf
 
