@@ -1075,6 +1075,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
     skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
+    # ADM need chxhdr to check random catalogs generated at same density.
     stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
     skyfield = fitsio.read(skymapvaluescat, rows=[0])
 
@@ -1109,11 +1110,16 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
         # MMM read RA DEC and SKYMAP_MASK for each random.
         # ADM read ALL needed columns from randomcat here as a speed-up.
-        ranvalues = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'])
+        ranvalues, ranhdr = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'],
+                                        header=True)
         skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
         skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
 
-        # MMM Should we check that all randoms have the same density?
+        # ADM check all random catalogs were generated at same density.
+        if ranhdr["DENSITY"] != chxhdr["DENSITY"]:
+            raise_myerror("Random catalogs {} and {} made at different densities"
+                          .format(randomcat, randomcatlist[0]))
+
         # MMM Don't check targetids match (they should by construction).
         # MMM find nested HEALPixel in the passed nside for each random.
         theta, phi = np.radians(90-ranvalues['DEC']), np.radians(ranvalues['RA'])
