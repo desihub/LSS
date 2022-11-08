@@ -215,9 +215,16 @@ def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe
             data = data[cond]
 
         #print(len(data))
+
         if tracer[:3] == 'BGS':
             gz = data['ZWARN'] == 0
             gz &= data['DELTACHI2'] > 40
+        
+        if tracer[:3] == 'LRG':
+            gz = data['ZWARN']==0
+            gz &= data[zcol]<1.5
+            gz &= data['DELTACHI2']>15  
+
 
         if tracer[:3] == 'QSO':
             gz = data['Z_not4clus']*0 == 0
@@ -414,8 +421,9 @@ def fit_cons(dl,el,minv=0,step=0.01):
 
 
 class LRG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
-        self.cat = get_LRG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        #self.cat = get_LRG_data(specrel)
+        self.cat = get_data_full('LRG',surveys=surveys,versions=versions,specrels=specrels)
         mask = self.cat['EFFTIME_LRG']>efftime_min
         mask &= self.cat['EFFTIME_LRG']<efftime_max
         self.cat = self.cat[mask]
