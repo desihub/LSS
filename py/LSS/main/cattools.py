@@ -2407,9 +2407,11 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     ff = Table.read(fl+'_full.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:
-        print('Z column already in full file')
-    else:
-        ff['Z_not4clus'].name = 'Z'
+        #print('Z column already in full file')
+    #else:
+        #ff['Z_not4clus'].name = 'Z'
+        ff['Z'].name = 'Z_not4clus'
+        common.write_LSS(ff,fl+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
 
     selobs = ff['ZWARN'] == 0
     selobs &= ff['ZWARN']*0 == 0
