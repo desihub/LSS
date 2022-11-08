@@ -2417,6 +2417,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
         wz &= ff['TSNR2_ELG'] > tsnrcut
+        func = ssr_tools.QSO_ssr
 
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
@@ -2430,6 +2431,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print('length after also making sure location assigned '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+        func = ssr_tools.ELG_ssr
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -2446,6 +2448,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print('length after Rongpu cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_ELG'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+        func = ssr_tools.LRG_ssr
 
     if tp[:3] == 'BGS':
         wz = ff['ZWARN'] == 0
@@ -2458,6 +2461,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             print('length after dchi2 cut '+str(len(ff[wz])))
         wz &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
+        func = ssr_tools.BGS_ssr
 
 
     #ffz = ff[wz]
@@ -2467,44 +2471,57 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
         ff['mod_success_rate'] = np.ones(len(ff))
     selobs = ff['ZWARN'] != 999999
-    if dchi2 is not None:
-        if tp[:3] == 'LRG':
-            lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ffwz = lrg.add_modpre(ff[wz])
-            print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
-            ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
-            ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-            ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
-            #print(min(zf),max(zf))
-            wz = ff['GOODZ']
-            print(len(ff[wz]),len(ff))
-            #ff[wz]['WEIGHT_ZFAIL'] = zf
-
-        if tp == 'BGS_BRIGHT':
-            bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = bgs.add_modpre(ff[wz],fl)
-            ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
-
-
-        if tp == 'ELG_LOP':
-            elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = elg.add_modpre(ff[wz])
-
-        if tp == 'QSO':
-            qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = qso.add_modpre(ff[wz],fl)
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
-        
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-        print('checking sum of zfail weights compared to length of good spec')
-        print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+    
+    gal = func(surveys=[survey],specrels=[specrel],versions=[version])
+    ffwz = gal.add_modpre(ff[wz])
+    print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+    ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+    ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+    ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+    #print(min(zf),max(zf))
+    wz = ff['GOODZ']
+    print(len(ff[wz]),len(ff))
 
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
     plt.show()
+    
+    
+#     if dchi2 is not None:
+#         if tp[:3] == 'LRG':
+#             lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ffwz = lrg.add_modpre(ff[wz])
+#             print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+#             ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+#             ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+#             ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+#             #print(min(zf),max(zf))
+#             wz = ff['GOODZ']
+#             print(len(ff[wz]),len(ff))
+#             #ff[wz]['WEIGHT_ZFAIL'] = zf
+# 
+#         if tp == 'BGS_BRIGHT':
+#             bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = bgs.add_modpre(ff[wz],fl)
+#             ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
+# 
+# 
+#         if tp == 'ELG_LOP':
+#             elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = elg.add_modpre(ff[wz])
+# 
+#         if tp == 'QSO':
+#             qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = qso.add_modpre(ff[wz],fl)
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+#         
+#         print('min/max of zfail weights:')
+#         print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+# 
+#         print('checking sum of zfail weights compared to length of good spec')
+#         print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
