@@ -103,6 +103,9 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         cat_dir = catalog_dir(survey=survey, **kwargs)
     #if survey in ['main', 'DA02']:
     #    tracer += 'zdone'
+    if 'edav1' in cat_dir:
+        cat_dir += ctype
+           
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
