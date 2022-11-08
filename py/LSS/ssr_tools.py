@@ -539,7 +539,7 @@ class BGS_ssr:
 
 
 
-    def add_modpre(self,data,fn_root):
+    def add_modpre(self,data):#,fn_root):
         #res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
         #       method='Powell', tol=1e-6)
         #pars = res.x
@@ -555,7 +555,7 @@ class BGS_ssr:
         plt.ylabel('BGS_BRIGHT Z failure rate')
         plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
         plt.legend()
-        plt.savefig(fn_root+'overall_failratefit.png')        
+        #plt.savefig(fn_root+'overall_failratefit.png')        
         plt.show()
         plt.clf()
 
