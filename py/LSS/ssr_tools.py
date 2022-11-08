@@ -427,6 +427,7 @@ class LRG_ssr:
         mask = self.cat['EFFTIME_LRG']>efftime_min
         mask &= self.cat['EFFTIME_LRG']<efftime_max
         self.cat = self.cat[mask]
+        print('success rate is '+str(sum(self.cat['qf']))/len(self.cat))
 
     def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
