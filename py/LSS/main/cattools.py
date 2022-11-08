@@ -2470,7 +2470,10 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
             ffwz = lrg.add_modpre(ff[wz])
             print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
-            ff[wz]['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+            zf = 1./ffwz['mod_success_rate']
+            print(min(zf),max(zf))
+            print(len(ff[wz]),len(zf))
+            ff[wz]['WEIGHT_ZFAIL'] = zf
 
         if tp == 'BGS_BRIGHT':
             bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
