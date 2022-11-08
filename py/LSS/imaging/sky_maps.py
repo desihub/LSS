@@ -1092,6 +1092,10 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     ##########
     # MMM create header for later.
     hdr = {field: bitmask for field, bitmask in zip(fieldslist, bitmasklist)}
+    # ADM should document the input random catalogs...
+    hdr["INFILES"] = randomcatlist
+    # ADM ...and the directory from which we read the LSS maps.
+    hdr["LSSMAPDIR"] = lssmapdir
 
     # MMM create healpix rec arrays for output pixweight table.
     npix = hp.nside2npix(nside_out)
