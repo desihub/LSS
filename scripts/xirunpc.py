@@ -97,6 +97,7 @@ def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/g
     return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
 
 
+
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
@@ -115,9 +116,13 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
-def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf), weight_type='default', name='data', return_mask=False, option=None):
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None):
 
-    mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
+    if maglim is None:
+        mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
+    if maglim is not None:
+        mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
+
     if option:
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
@@ -173,7 +178,10 @@ def _concatenate(arrays):
     return array
 
 
-def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
+def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
+    
+    if 'GC' in region:
+        region = [region]
 
     def read_positions_weights(name):
         positions, weights = [], []
@@ -183,7 +191,7 @@ def read_clustering_positions_weights(distance, zlim=(0., np.inf), weight_type='
             isscalar = not isinstance(cat_fns, (tuple, list))
             if isscalar:
                 cat_fns = [cat_fns]
-            positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+            positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
             if isscalar:
                 positions.append(positions_weights[0][0])
                 weights.append(positions_weights[0][1])
@@ -503,6 +511,7 @@ if __name__ == '__main__':
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
+    parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
@@ -521,6 +530,8 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
+
+
 
     mpicomm, mpiroot = None, None
     if True:#args.mpi:
@@ -567,6 +578,15 @@ if __name__ == '__main__':
         zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
+
+
+    if args.maglim is not None:
+        magmin = float(args.maglim[0])
+        magmax = float(args.maglim[1])
+        maglims = (magmin,magmax)
+    else:
+        maglims = None
+
     zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
     rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1, 2, 4]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
@@ -581,7 +601,7 @@ if __name__ == '__main__':
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))

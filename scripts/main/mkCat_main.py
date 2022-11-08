@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 #from desihub
 from desitarget import targetmask
 #from regressis, must be installed
-from regressis import DR9Footprint
+#from regressis import DR9Footprint
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
@@ -51,23 +51,28 @@ parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, a
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
-parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
-parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
+parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
+
+
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
+
+#options not typically wanted
+parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
+parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 
 args = parser.parse_args()
@@ -196,7 +201,7 @@ if not os.path.exists(dirout):
 
 tarver = '1.1.1'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
-tarf = maindir+type +'targetsDR9v'+tarver.strip('.')+'.fits'
+tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False:
@@ -216,6 +221,8 @@ if os.path.isfile(etarf) and redotar == False:
 if args.survey != 'main':
     mketar = False
 
+if type == 'BGS_BRIGHT':
+    mketar = False
 
 if mketar: #concatenate target files for given type, with column selection hardcoded
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
@@ -401,6 +408,9 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 if args.regressis == 'y':
+    #from regressis, must be installed
+    from regressis import DR9Footprint
+
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
     nside = 256
@@ -449,7 +459,7 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
-    if args.survey == 'main':
+    if args.survey != 'DA02':
         regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
@@ -470,28 +480,63 @@ if args.add_regressis == 'y':
 
         common.write_LSS(dd,fcd,comments)
 
-    
+if args.add_weight_zfail == 'y':
+    ct.add_zfail_weight2full(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,survey=args.survey,specrel=args.verspec,version=args.version)   
     
 
 if args.add_ke == 'y':
+    if args.survey != 'DA02':
+        regl = ['']
+
     for reg in regl:
-        fn = dirout+tracer_clus+reg+'_clustering.dat.fits'
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+        else:
+            fn = fb+'_full.dat.fits'
         dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        from multiprocessing import Pool
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = i*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+        
+        def _wrapper(N):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            idx = np.arange(mini,maxi)
+            data = list[N]#Table()
+            data['idx'] = idx
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol='Z_not4clus')
+            return data
+
+        with Pool(processes=n_processes+1) as pool:
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
+
         #if args.test == 'y':
         #    dat = dat[:10]
-        cols = list(dat.dtype.names)
-        if 'REST_GMR_0P1' in cols:
-            print('appears columns are already in '+fn)
-        else:
-            dat = common.add_ke(dat)
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
             #if args.test == 'n':
-            common.write_LSS(dat,fn,comments=['added k+e corrections'])
-    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
-    for col in kecols:
-        rcols.append(col)
-    #if args.test == 'y':
-    #    print('k+e test passed')    
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
 
 utlid = False
 if args.ran_utlid == 'y':

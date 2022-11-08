@@ -30,9 +30,12 @@ This will put the main scripts bin/mkCat_* in your $PATH (typically in $HOME/.lo
 
 This code only works on NERSC, in the DESI environment. Therefore, make sure to be in the DESI environment, e.g., run
 
-    $>  source /project/projectdirs/desi/software/desi_environment.sh master
+    $>  source /global/common/software/desi/desi_environment.sh main
 
-before trying anything else (master should soon switch to main).
+before trying anything else (master should soon switch to main). Some code also requires the cosmodesi environment to be loaded (e.g., for 2pt functions and/or reconstruction, regressis tools, etc.) After sourcing the above, source it
+
+    $>  source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+
 
 Structure
 ---------

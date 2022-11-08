@@ -62,6 +62,7 @@ parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; 
 parser.add_argument("--mkclusran_tiles", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_tiles", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
+parser.add_argument("--split_GC",help='whether to combine N/S and then split NGC/SGC',default='n')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
@@ -70,6 +71,8 @@ parser.add_argument("--par", help="run different random number in parallel?",def
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
+parser.add_argument("--equal_data_dens", help="if y, make mock n(z) equal data n(z)", default = 'n')
+parser.add_argument("--nran_clus_data", help="number of random catalogues to use for clustering data", default = 4)
 
 args = parser.parse_args()
 print(args)
@@ -305,6 +308,14 @@ def docat(mocknum,rannum):
         nztl.append('')
         ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
 
+    
+    if args.equal_data_dens == 'y':
+        data_dir = "/global/project/projectdirs/desi/survey/catalogs/edav1/da02/LSScats/clustering"
+        
+        for i in ['N','S']:
+            mocktools.mock_equal_data_density(dirout, data_dir, dirout, args.tracer, i, zmin, zmax, args.nran_clus_data, randens)
+        
+        
 
     if args.mkclusran == 'y':
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
@@ -389,6 +400,7 @@ def docat(mocknum,rannum):
                 ranmin = rannum-1
                 common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,ranmin=ranmin,nran=nran)
 
+    
 
     #print('done with random '+str(ii))
     return True
@@ -401,25 +413,34 @@ if __name__ == '__main__':
     rm = args.minr
     mockmin = args.mockmin
     mockmax = args.mockmax
-    if args.par == 'y':
-        from multiprocessing import Pool
-        from desitarget.internal import sharedmem
-        
-        N = rx-rm+1
-        inds = []
+#     if args.par == 'y':
+#         from multiprocessing import Pool
+#         from desitarget.internal import sharedmem
+#         
+#         N = rx-rm+1
+#         inds = []
+#         for i in range(rm,rx):
+#             inds.append(i)
+#         pool = sharedmem.MapReduce(np=N)
+#         with pool:
+#         
+#             def reduce( r):
+#                 print('chunk done')
+#                 return r
+#             pool.map(prep,inds,reduce=reduce)
+# 
+#         #p.map(doran,inds)
+#     else:
+    for mn in range(mockmin,mockmax):
         for i in range(rm,rx):
-            inds.append(i)
-        pool = sharedmem.MapReduce(np=N)
-        with pool:
-        
-            def reduce( r):
-                print('chunk done')
-                return r
-            pool.map(prep,inds,reduce=reduce)
+            print('processing mock '+str(mn)+' and random '+str(i))
+            docat(mn,i)
+        if args.split_GC == 'y':
+            nztl = ['','_complete']
+            lssdir = maindir+'mock'+str(mn)+'/'
 
-        #p.map(doran,inds)
-    else:
-        for mn in range(mockmin,mockmax):
-            for i in range(rm,rx):
-                print('processing mock '+str(mn)+' and random '+str(i))
-                docat(mn,i)
+            dirout = lssdir+'LSScats/'
+            
+            for zt in nztl:
+                fb = dirout+args.tracer+notqso+zt+'_'                
+                ct.clusNStoGC(fb,rx-rm)

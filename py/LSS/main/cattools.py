@@ -1640,6 +1640,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
     fgu.write(outf,format='fits', overwrite=True)
     return rv
 
+
 def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',redos=False):
 
     s = 0
@@ -1706,6 +1707,8 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',
     else:
         if os.path.isfile(outfs) == False or redos:
             fgu = fitsio.read(outf)
+            sel = np.isin(fgu['TILEID'],tls['TILEID'])
+            fgu = fgu[sel]
             specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             specf.keep_columns(keepcols)
             #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
@@ -2194,7 +2197,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
     if min_tsnr2 > 0:
         sel = dz[tscol] > min_tsnr2
-        dz['GOODTSNR'][sel] = 0
+        dz['GOODTSNR'][sel] = 1
     
     
     dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
@@ -2389,6 +2392,120 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
         ff['relSSR_tile'][selt] = ssr_t/ssr_all
         print(tid,ssr_t,ssr_t/ssr_all)
     return ff
+
+
+def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',specrel='daily',version='test'):
+    '''
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    ff = Table.read(fl+'_full.dat.fits')
+    cols = list(ff.dtype.names)
+    if 'Z' in cols:
+        print('Z column already in full file')
+    else:
+        ff['Z_not4clus'].name = 'Z'
+    if tp == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+
+    if tp[:3] == 'ELG':
+        #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
+        wz = ff['ZWARN']*0 == 0
+        
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+            print('length after oII cut '+str(len(ff[wz])))
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        print('length after also making sure location assigned '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp == 'LRG':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            selg = ssr_tools.LRG_goodz(ff)
+            wz &= selg
+
+        #wz &= ff['DELTACHI2'] > dchi2
+        print('length after Rongpu cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            print('applying extra cut for BGS')
+            wz &= ff['DELTACHI2'] > dchi2
+            print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+
+    #ffz = ff[wz]
+    print('length after cutting to good z '+str(len(ff[wz])))
+    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    ff['mod_success_rate'] = np.ones(len(ff))
+    if dchi2 is not None:
+        if tp[:3] == 'LRG':
+            lrg = ssr_tools.LRG_ssr()
+            ff[wz] = lrg.add_modpre(ff[wz])
+            ff[wz]['WEIGHT_ZFAIL'] = 1./ff[wz]['mod_success_rate']
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+        if tp == 'BGS_BRIGHT':
+            bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+            ff[wz] = bgs.add_modpre(ff[wz],fl)
+            ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+
+        if tp == 'ELG_LOP':
+            elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+            ff[wz] = elg.add_modpre(ff[wz])
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+
+        if tp == 'QSO':
+            qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+            ff[wz] = qso.add_modpre(ff[wz],fl)
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+    plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
+    plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
+    plt.show()
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
@@ -2702,8 +2819,54 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 #         common.write_LSS(ffss,outfn,comments)
 
 
-
-
+def clusNStoGC(flroot,nran=1):
+    '''
+    combine N and S then split NGC/SGC
+    randoms get re-normalized so that Ndata/Nrandom is the same N and S; they will no longer be able to be used to get areas
+    flroot is the common root of the file
+    nran is the number of random files to process
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    fn = Table(fitsio.read(flroot+'N_clustering.dat.fits'))
+    nn = np.sum(fn['WEIGHT'])
+    fs = Table(fitsio.read(flroot+'S_clustering.dat.fits'))
+    ns = np.sum(fs['WEIGHT'])
+    fc = vstack((fn,fs))
+    print(np.sum(fc['WEIGHT']),nn,ns)
+    c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    outf_ngc = flroot+'NGC_clustering.dat.fits'
+    common.write_LSS(fc[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_clustering.dat.fits'
+    common.write_LSS(fc[~sel_ngc],outf_sgc)
+    
+    for rann in range(0,nran):
+        fn = Table(fitsio.read(flroot+'N_'+str(rann)+'_clustering.ran.fits'))
+        nnr = np.sum(fn['WEIGHT'])
+        fs = Table(fitsio.read(flroot+'S_'+str(rann)+'_clustering.ran.fits'))
+        nsr = np.sum(fs['WEIGHT'])
+        rn = nn/nnr
+        rs = ns/nsr
+        #we want rn and rs to be the same, this can be effectively accomplished by 
+        fac = rs/rn
+        fs['WEIGHT'] *= fac
+        #double check
+        nsr = np.sum(fs['WEIGHT'])
+        rs = ns/nsr
+        print('checking that random ratios are now the same size',rn,rs)
+            
+        fc = vstack((fn,fs))
+        print(np.sum(fc['WEIGHT']),nnr,nsr)
+        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+        gc = c.transform_to('galactic')
+        sel_ngc = gc.b > 0
+        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[sel_ngc],outf_ngc)
+        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[~sel_ngc],outf_sgc)
+   
 
 
 def random_mtl(rd,outf ):

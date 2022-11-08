@@ -162,15 +162,16 @@ if __name__ == '__main__':
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
-    parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', action='store_true', default='n')
+    parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', default='n')
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
+    parser.add_argument('--rebinning', help='whether to rebin the pk or just keep the original .npy file', default='n')
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -181,6 +182,11 @@ if __name__ == '__main__':
         args.calc_win = False
     if args.calc_win == 'y':
         args.calc_win = True
+        
+    if args.rebinning == 'n':
+        args.rebinning = False
+    if args.rebinning == 'y':
+        args.rebinning = True
 
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
@@ -251,21 +257,22 @@ if __name__ == '__main__':
                 result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
                 result.save(power_fn(file_type='npy', region='NScomb', **base_file_kwargs))
                 all_regions.append('NScomb')
-            for region in all_regions:
-                txt_kwargs = base_file_kwargs.copy()
-                txt_kwargs.update(region=region)
-                result = PowerSpectrumStatistics.load(power_fn(file_type='npy', **txt_kwargs))
-                for factor in rebinning_factors:
-                    #result = PowerSpectrumStatistics.load(fn)
-                    rebinned = result[:(result.shape[0]//factor)*factor:factor]
-                    txt_kwargs.update(bin_type=bin_type+str(factor))
-                    fn_txt = power_fn(file_type='pkpoles', **txt_kwargs)
-                    rebinned.save_txt(fn_txt)
+            if args.rebinning:
+                for region in all_regions:
+                    txt_kwargs = base_file_kwargs.copy()
+                    txt_kwargs.update(region=region)
+                    result = PowerSpectrumStatistics.load(power_fn(file_type='npy', **txt_kwargs))
+                    for factor in rebinning_factors:
+                        #result = PowerSpectrumStatistics.load(fn)
+                        rebinned = result[:(result.shape[0]//factor)*factor:factor]
+                        txt_kwargs.update(bin_type=bin_type+str(factor))
+                        fn_txt = power_fn(file_type='pkpoles', **txt_kwargs)
+                        rebinned.save_txt(fn_txt)
 
-                    if args.vis:
-                        k, poles = rebinned(return_k=True, complex=False)
-                        for pole in poles: plt.plot(k, k*pole)
-                        tracers = tracer
-                        if tracer2 is not None: tracers += ' x ' + tracer2
-                        plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
-                        plt.show()
+                        if args.vis:
+                            k, poles = rebinned(return_k=True, complex=False)
+                            for pole in poles: plt.plot(k, k*pole)
+                            tracers = tracer
+                            if tracer2 is not None: tracers += ' x ' + tracer2
+                            plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+                            plt.show()
