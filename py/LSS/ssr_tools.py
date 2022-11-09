@@ -604,7 +604,7 @@ class BGS_ssr:
         plt.plot(fper,self.consl)
         plt.show()
         #wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
-        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(relfail_data-1)+1
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*((1.-minfail)/(1.-fail_frac_mod_data)-1)+1
         #minfail_flux = (fcoeff*(self.mft-dflux)/self.mft+1)*
         sel = wtf < 1
         wtf[sel] = 1
