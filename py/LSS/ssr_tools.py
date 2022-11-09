@@ -574,7 +574,7 @@ class BGS_ssr:
         minfail = np.min(fail_frac_mod_cat )
         relfail = fail_frac_mod_cat/minfail
         relfail_data = fail_frac_mod_data/minfail
-        self.wts_fid = relfail
+        self.wts_fid = (1.-minfail)/(1.-fail_frac_mod_cat)#relfail
         nzfper = []
         nzfpere = []
         fper = []
