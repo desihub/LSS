@@ -610,7 +610,7 @@ class BGS_ssr:
             sel = dflux > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
             sel &= dflux < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
             data[sel]['mod_success_rate'] -= (1-self.consl[i])
-        
+        	print(np.min(data[sel]['mod_success_rate']),1-self.consl[i])
         #minfail_flux = (fcoeff*(self.mft-dflux)/self.mft+1)*
         sel = wtf < 1
         wtf[sel] = 1
