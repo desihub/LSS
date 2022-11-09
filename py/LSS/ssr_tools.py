@@ -573,8 +573,8 @@ class BGS_ssr:
         fail_frac_mod_cat = self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)  #
         minfail = np.min(fail_frac_mod_cat )
         relfail = fail_frac_mod_cat/minfail
-        relfail_data = fail_frac_mod_cat/minfail
-        self.wts_fid = 1/(1-relfail)
+        relfail_data = fail_frac_mod_data/minfail
+        self.wts_fid = relfail
         nzfper = []
         nzfpere = []
         fper = []
@@ -604,7 +604,7 @@ class BGS_ssr:
         plt.plot(fper,self.consl)
         plt.show()
         #wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
-        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*relfail_data+1
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(relfail_data-1)+1
         #minfail_flux = (fcoeff*(self.mft-dflux)/self.mft+1)*
         sel = wtf < 1
         wtf[sel] = 1
