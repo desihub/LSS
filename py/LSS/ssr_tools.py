@@ -536,6 +536,7 @@ class BGS_ssr:
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
                 plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
             plt.show()
+            self.consl = consl
         return costt    
 
 
@@ -563,11 +564,15 @@ class BGS_ssr:
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         
-        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
-        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)   
-        relssr = assr/np.max(assr) 
-        drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
-        self.wts_fid = 1/relssr
+        #data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
+        #assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)   
+        #relssr = assr/np.max(assr) 
+        #drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
+        #self.wts_fid = 1/relssr
+        fail_frac_mod = self.failure_rate_eff(deff,*pars)
+        minfail = np.min(fail_frac_mod )
+        relfail = fail_frac_mod/minfail
+        self.wts_fid = 1/(1-relfail)
         nzfper = []
         nzfpere = []
         fper = []
@@ -592,9 +597,13 @@ class BGS_ssr:
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
-        #self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
-        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        self.vis_5hist = True
+        print(fcoeff,self.hist_norm(fcoeff),self.consl,fper)#,self.hist_norm(0.),self.hist_norm(1.)) 
+        plt.plot(fper,self.consl)
+        plt.show()
+        #wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*relfail+1
+        #minfail_flux = (fcoeff*(self.mft-dflux)/self.mft+1)*
         sel = wtf < 1
         wtf[sel] = 1
         data['WEIGHT_ZFAIL'] =  wtf
