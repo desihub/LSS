@@ -63,7 +63,7 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
         sela = dzs['ZWARN'] != 999999
         sela &= dzs['ZWARN']*0 == 0
         tlida = np.unique(dzs[sela]['TILELOCID']) #tilelocids with good assignments
-        #print(tile,len(sela),len(dzs),np.sum(sela)) 
+        #print(tile,len(sela),len(dzs),np.sum(sela))
         tida = np.unique(dzs[sela]['TARGETID']) #targetids with good assignments
         ua = ~np.isin(dzs['TARGETID'],tida) #columns that were not assigned
         #ua &= dzs['NUMOBS'] == 0
@@ -91,11 +91,11 @@ def find_znotposs(dz):
     tids = np.unique(dz['TARGETID'])
     ti = 0
     i = 0
-    
+
     print('finding targetids that were not observed')
     while i < len(dz):
         za = 0
-    
+
         while dz[i]['TARGETID'] == tids[ti]:
             if dz[i]['ZWARN'] != 999999:
                 za = 1
@@ -105,12 +105,12 @@ def find_znotposs(dz):
                 break
         if za == 0:
             tidnoz.append(tids[ti])
-      
+
         if ti%30000 == 0:
             print(ti)
-        ti += 1 
+        ti += 1
 
-    
+
     selnoz = np.isin(dz['TARGETID'],tidnoz)
     tidsb = np.unique(dz[selnoz]['TILELOCID'])
     #dz = dz[selnoz]
@@ -119,13 +119,13 @@ def find_znotposs(dz):
     print('number of targetids with no obs '+str(len(tidnoz)))
     tlidnoz = []
     lznposs = []
-    
+
     ti = 0
     i = 0
-    
+
     while i < len(dz):
         za = 0
-    
+
         while dz[i]['TILELOCID'] == tids[ti]:
             if dz[i]['ZWARN'] != 999999:
                 za = 1
@@ -137,10 +137,10 @@ def find_znotposs(dz):
             tlidnoz.append(tids[ti])
             #if np.isin(tids[ti],tidsb):
             #    lznposs.append(tids[ti])
-      
+
         if ti%30000 == 0:
             print(ti,len(tids))
-        ti += 1 
+        ti += 1
     #the ones to veto are now the join of the two
     wtbtlid = np.isin(tlidnoz,tidsb)
     tlidnoz = np.array(tlidnoz)
@@ -159,21 +159,21 @@ def comp_tile(dz):
     tlsl = dz['TILES']
     tlslu = np.unique(tlsl)
     laa = dz['LOCATION_ASSIGNED']
-    
+
     i = 0
     while i < len(dz):
         tls  = []
         tlis = []
         nli = 0
         nai = 0
-    
+
         while tlsl[i] == tlslu[ti]:
             nli += 1 #counting unique targetids within the given TILES value
             nai += laa[i] #counting the number assigned
             i += 1
             if i == len(dz):
                 break
-    
+
         if ti%1000 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
         cp = nai/nli #completeness is number assigned over number total
@@ -183,7 +183,7 @@ def comp_tile(dz):
     return tll,compa
 
 def comp_tileloc(dz):
-    
+
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
@@ -195,7 +195,7 @@ def comp_tileloc(dz):
     #probability of assignment is then estimated as 1/n_tilelocid
     nm = 0
     nmt =0
-    
+
     loco = []
     fzo = []
     nlist = 0
@@ -208,8 +208,8 @@ def comp_tileloc(dz):
         w = loclz == loc
         nz = 0
         if len(loclz[w]) == 1:
-            nz = nloclz[w][0] #these are supposed all be 1...            
-        else:            
+            nz = nloclz[w][0] #these are supposed all be 1...
+        else:
             nm += 1.
             nmt += nt
         if len(loclz[w]) > 1:
@@ -221,11 +221,11 @@ def comp_tileloc(dz):
         #        nlistg1 += 1
         #    frac = frac[0]
         #    nlist += 1
-            
+
         fzo.append(frac)
     print(str(nlist)+ ' were type list for some reason; '+str(nlistg1)+ ' had length greater than 1')
     print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)    
+    print(nm,nmt)
 
 
     return loco,fzo
@@ -244,9 +244,9 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
     area = ranf['NAXIS2']/randens
     print('area is '+str(area))
-    
+
     df = fitsio.read(fcd)
-    
+
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
     outf = open(fout,'w')
@@ -264,12 +264,12 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
     fb is the root of the file name, including the path
-    nran is the number of random files to add the nz to 
+    nran is the number of random files to add the nz to
     bs is the bin size of the nz file (read this from file in future)
     zmin is the lower edge of the minimum bin (read this from file in future)
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
-    
+
     nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
@@ -291,7 +291,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     fd['NZ'] = nl
     #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
-    
+
     fkpl = 1./(1+nl*P0*mean_comp)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
@@ -302,7 +302,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff['LSS'].write(fd)
     #ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     #ff.close()
-    #ft.write(fn,format='fits',overwrite=True)        
+    #ft.write(fn,format='fits',overwrite=True)
     print('done with data')
     for rann in range(ranmin,nran):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
@@ -331,9 +331,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
         #ff.close()
         #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
-        #ft.write(fn,format='fits',overwrite=True)      
-        print('done with random number '+str(rann))  
-    return True        
+        #ft.write(fn,format='fits',overwrite=True)
+        print('done with random number '+str(rann))
+    return True
 
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
@@ -354,14 +354,14 @@ def add_ke(dat,zcol='Z'):#,n_processes=100):
     from   smith_kcorr     import GAMA_KCorrection
     from   rest_gmr        import smith_rest_gmr,rest_gmr
     from   tmr_ecorr       import tmr_ecorr, tmr_q
-    
+
     kcorr_r   = GAMA_KCorrection(band='R')
     kcorr_g   = GAMA_KCorrection(band='G')
 
     r_dered = 22.5 - 2.5*np.log10(dat['flux_r_dered'])
     g_dered = 22.5 - 2.5*np.log10(dat['flux_g_dered'])
     gmr = g_dered-r_dered
-    
+
 #     chunk_size = len(dat)//n_processes
 #     list = []
 #     for i in range(0,n_processes):
@@ -377,11 +377,11 @@ def add_ke(dat,zcol='Z'):#,n_processes=100):
 #         data['REST_GMR_0P1'], rest_gmr_0p1_warn = smith_rest_gmr(dat[zcol][mini:maxi], gmr[mini:maxi])
 #         list[N] = data
 #         #return data
-# 
+#
 #     with Pool(processes=n_processes+1) as pool:
 #         #res = pool.map(_wrapper, np.arange(n_processes))
 #         pool.map(_wrapper, np.arange(n_processes))
-# 
+#
 #     res = vstack(list)#vstack(res)
 #     res.sort('idx')
 #     res.remove_column('idx')
@@ -403,7 +403,7 @@ def add_ke(dat,zcol='Z'):#,n_processes=100):
     dat['ABSMAG_RP0'][selz] = r_dered[selz] -dm(dat[zcol][selz])-dat['KCORR_R0P0'][selz]-dat['EQ_ALL_0P0'][selz]
     return dat
     #abg = g_dered -dm(data['Z'])
-    
+
 
 def join_etar(fn,tracer,tarver='1.1.1'):
     tr = tracer
@@ -435,7 +435,7 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
         else:
             return True
     else:
-        print('adding '+tracer_mask)        
+        print('adding '+tracer_mask)
     print(len(df))
     df = join(df,maskf,keys=['TARGETID'])
     print(len(df),'should match above')
@@ -501,10 +501,10 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         laa = ff['LOCATION_ASSIGNED']
         print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True))
 
-        #for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+        # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
         while i < len(ff):
-            tls  = []
+            tls = []
             tlis = []
             nli = 0
             nai = 0
@@ -516,11 +516,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
                 if i == len(ff):
                     break
 
-            if ti%1000 == 0:
-                print('at tiles '+str(ti)+' of '+str(nts))
+            if ti % 1000 == 0:
+                print('at tiles ' + str(ti) + ' of ' + str(nts))
 
-            cp = nai/nli#no/nt
-            #print(tls,cp,no,nt)
+            cp = nai / nli #no/nt
+            # print(tls,cp,no,nt)
             compa.append(cp)
             tll.append(tlslu[ti])
             ti += 1
@@ -530,15 +530,15 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             fcompa.append(comp_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         wz = ff['ZWARN'] != 999999
-        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
         print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
-        print(np.sum(1./ff[wz]['FRACZ_TILELOCID']),np.sum(1./ff[wz]['COMP_TILE']),len(ff))
-    
+        print(np.sum(1. / ff[wz]['FRACZ_TILELOCID']), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
+
     if '.ran' in fin:
-        print('area is '+str(len(ff)/2500))
+        print('area is ' + str(len(ff) / 2500))
     comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-    write_LSS(ff,fout,comments)
+    write_LSS(ff, fout, comments)
 
 #     tmpfn = fout+'.tmp'
 #     if os.path.isfile(tmpfn):
@@ -546,93 +546,117 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 #     fd = fitsio.FITS(tmpfn, "rw")
 #     fd.write(np.array(ff),extname='LSS')
 #     fd['LSS'].write_history("created (or over-written) on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-#     fd.close()    
+#     fd.close()
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
 
-def write_LSS(ff,outf,comments=None):
+
+def write_LSS(ff, outf, comments=None):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
     '''
-    tmpfn = outf+'.tmp'
+    tmpfn = outf + '.tmp'
     if os.path.isfile(tmpfn):
-        os.system('rm '+tmpfn)
+        os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff),extname='LSS')
+    fd.write(np.array(ff), extname='LSS')
     if comments is not None:
         for comment in comments:
             fd['LSS'].write_comment(comment)
-    fd['LSS'].write_history("updated on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()    
+    fd['LSS'].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()
     print('closed fits file')
-    os.system('mv '+tmpfn+' '+outf)
-    print('moved output to '+outf)
+    os.system('mv ' + tmpfn + ' ' + outf)
+    print('moved output to ' + outf)
 
-def create_sky(footfn, skyfn):
-    # AR sky folders
-    mydirs = get_desitarget_paths(args.dtver, args.survey, args.program, dr=args.dr, log=log)
+
+def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
+    """ It is a real nightmare to work with all the fits file in hpdirname_list more than 800 for each directory. Rewrite it in a smaller number of files. """
+    from glob import glob
+    import mpytools as mpy
+    from mpi4py import MPI
+    from fiberassign.fba_launch_io import get_desitarget_paths
+
+    if mpicomm is None:
+        print('This code works under MPI paradigm throught cosmodesi/mpytools Software. Please pass a mpi communicator as input: mpicomm=MPI.COMM_WORLD')
+        sys.exit(2)
+
+    if columns is None:
+        columns = ["RA", "DEC", "TARGETID", "DESI_TARGET", "BGS_TARGET", "MWS_TARGET", "SUBPRIORITY", "OBSCONDITIONS", "PRIORITY_INIT", "NUMOBS_INIT"]
+
+    # Now load the sky target files.  These are main-survey files that we will
+    # force to be treated as the survey type of the other target files.
+    mydirs = get_desitarget_paths(release, version, program, dr=dr)
     skydirs = [mydirs["sky"]]
     if os.path.isdir(mydirs["skysupp"]):
         skydirs.append(mydirs["skysupp"])
-    # AR we only store some columns
-    columns = [
-        "RA",
-        "DEC",
-        "TARGETID",
-        "DESI_TARGET",
-        "BGS_TARGET",
-        "MWS_TARGET",
-        "SUBPRIORITY",
-        "OBSCONDITIONS",
-        "PRIORITY_INIT",
-        "NUMOBS_INIT",
-    ]
-    # AR we read
-    tiles = fits.open(footfn)[1].data
-    ds = [read_targets_in_tiles(skydir, tiles=tiles, columns=columns, quick=True) for skydir in skydirs]
-    for skydir, d in zip(skydirs, ds):
-        log.info("{:.1f}s\tcreate_sky\t{}: reading {} targets from {}".format(time() - start, os.path.basename(footfn), len(d), skydir))
-    d = np.concatenate(ds)
-    fitsio.write(skyfn, d, clobber=True)
-    return True
+
+    for hpdirname in skydirs:
+        fns = []
+        if mpicomm.rank == 0:
+            fns = glob(os.path.join(hpdirname, "*fits"))
+        fns = list(mpy.bcast(fns, mpiroot=0))
+
+        # Create mlpytools.Catalog
+        targets = mpy.Catalog.read(fns, mpicomm=mpicomm)
+
+        if format_output == 'fits':
+            # first save it in nfiles fits files.
+            # Create filenames to write targets in less files.
+            basename = '-'.join(os.path.basename(fns[0]).split('-')[:-2])
+            fns_to_save = [os.path.join(dirname, f'{basename}-{i}.fits') for i in range(nfiles)]
+
+            start = MPI.Wtime()
+            targets[columns].write(fns_to_save, filetype='fits')
+            mpicomm.Barrier()
+            if mpicomm.rank == 0: print(f'Write {basename} in {nfiles} done in {MPI.Wtime() - start:2.2f} s.')
+        elif format_output == 'bigfile':
+            # Save it on one bigfile (more efficient ?)
+            start = MPI.Wtime()
+            targets[columns].write(os.path.join(dirname, f'{basename}'), filetype='bigfile')
+            mpicomm.Barrier()
+            if mpicomm.rank == 0: print(f'Write {basename} in {nfiles} done in {MPI.Wtime() - start:2.2f} s.')
+        else:
+            print('Only fits or bigfile format are extected...')
+            sys.exit(2)
 
 
-def combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp='dark',ran='ran'):
+def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'DEC'], fba=True, tp='dark', ran='ran'):
     if ran == 'dat':
-        #addcols.append('PRIORITY')
+        # addcols.append('PRIORITY')
         addcols.append('PRIORITY_INIT')
         addcols.append('DESI_TARGET')
     s = 0
     td = 0
-    #tiles.sort('ZDATE')
+    # tiles.sort('ZDATE')
     print(len(tiles))
-    outf = outdir+'/'+ran+'comb_'+tp+'wdup.fits'
+    outf = outdir + '/' + ran + 'comb_' + tp + 'wdup.fits'
     if fba:
         pa_hdu = 'FAVAIL'
     tl = []
     for tile in tiles['TILEID']:
         if fba:
-            ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
+            ffa = fbadir + '/fba-' + str(tile).zfill(6) + '.fits'
         if os.path.isfile(ffa):
-            fa = Table(fitsio.read(ffa,ext=pa_hdu))
+            fa = Table(fitsio.read(ffa, ext=pa_hdu))
             sel = fa['TARGETID'] >= 0
             fa = fa[sel]
             td += 1
             fa['TILEID'] = int(tile)
             tl.append(fa)
-            print(td,len(tiles))
+            print(td, len(tiles))
         else:
-            print('did not find '+ffa)
+            print('did not find ' + ffa)
     dat_comb = vstack(tl)
     print(len(dat_comb))
-    tar_in = fitsio.read(tarf,columns=addcols)
-    dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
+    tar_in = fitsio.read(tarf, columns=addcols)
+    dat_comb = join(dat_comb, tar_in, keys=['TARGETID'])
     print(len(dat_comb))
-    
-    dat_comb.write(outf,format='fits', overwrite=True)
-    print('wrote '+outf)
+
+    dat_comb.write(outf, format='fits', overwrite=True)
+    print('wrote ' + outf)
     return dat_comb
 
 def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
@@ -663,14 +687,14 @@ def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','T
     tar_in = fitsio.read(tarf,columns=addcols)
     dat_comb = join(dat_comb,tar_in,keys=['TARGETID'])
     print(len(dat_comb))
-    
+
     dat_comb.write(outf,format='fits', overwrite=True)
     print('wrote '+outf)
     return dat_comb
 
 def addNS(tab):
     '''
-    given a table that already includes RA,DEC, add PHOTSYS column denoting whether 
+    given a table that already includes RA,DEC, add PHOTSYS column denoting whether
     the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
     '''
     wra = (tab['RA'] > 100-tab['DEC'])
@@ -679,4 +703,4 @@ def addNS(tab):
     seln = dec > 32.375
     seln &= wra
     tab['PHOTSYS'][seln] = 'N'
-    return tab        
+    return tab
