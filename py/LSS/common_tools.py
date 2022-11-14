@@ -573,7 +573,22 @@ def write_LSS(ff, outf, comments=None):
 
 
 def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
-    """ It is a real nightmare to work with all the fits file in hpdirname_list more than 800 for each directory. Rewrite it in a smaller number of files. """
+    """
+    It is a real nightmare to work with all the fits file in hpdirname_list more than 800 for each directory. Rewrite it in a smaller number of files.
+
+    To create the sky target files:
+
+    /* #my_code.py
+    from mpi4py import MPI
+    mpicomm = MPI.COMM_WORLD
+    create_sky_targets('somewhere/on/nersc', nfiles=1, mpicomm=mpicomm)
+    */
+
+    On cori:
+    salloc -N 1 -C haswell -t 02:00:00 --qos interactive -L SCRATCH,project
+    srun -n 64 python my_code.py
+
+    """
     from glob import glob
     import mpytools as mpy
     from mpi4py import MPI
