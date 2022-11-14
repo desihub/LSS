@@ -75,12 +75,14 @@ def get_ELG_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         #    tfn+='zdone'
         fn = dir+tfn+'_full.dat.fits'    
         data = Table(fitsio.read(fn))
-        print(len(data))
+        #print(len(data))
         sel = data['ZWARN'] != 999999
         data = data[sel]
-        print(len(data))
+        #print(len(data))
         data['q'] = data['o2c'] > 0.9
         cats.append(data)
+        print('# of spectra for fits:'+str(len(data)))
+        print('# of good z for fits:'+str(np.sum(data['q'])))
 
     if len(cats) == 1:
         cat = cats[0]
@@ -107,12 +109,13 @@ def get_BGS_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
         tfn = tracer
         #if sur == 'DA02':
         #    tfn+='zdone'
-        fn = dir+tfn+'_full.dat.fits'    
+        fn = dir+tfn+'_full.dat.fits'  
+        print('loading info from '+fn)  
         data = Table(fitsio.read(fn))
-        print(len(data))
+        #print(len(data))
         sel = data['ZWARN'] != 999999
         data = data[sel]
-        print(len(data))
+        #print(len(data))
         gz = data['ZWARN'] == 0
         gz &= data['DELTACHI2'] > 40
         data['q'] = gz
@@ -185,6 +188,79 @@ def get_QSO_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guada
     cat['qf'] = np.array(cat['q'], dtype=float)
     
     return cat
+
+def get_data_full(tracer,surveys=['DA02'],versions=['test'],specrels=['guadalupe'],cut=None,cut_condition=None):
+    
+    cats = []
+    for sur,ver,sr in zip(surveys,versions,specrels):
+        dir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
+        tfn = tracer
+        #if sur == 'DA02':
+        #    tfn+='zdone'
+        fn = dir+tfn+'_full.dat.fits'  
+        print('loading info from '+fn)  
+        data = Table(fitsio.read(fn))
+        #print(len(data))
+        sel = data['ZWARN'] != 999999
+        if tracer[:3] == 'QSO':
+            sel &= ((data['SPECTYPE'] == 'STAR') & (data['Z_not4clus'] != 999999)) | (data['SPECTYPE'] != 'STAR')
+        data = data[sel]
+
+        if cut == 'galactic':
+            coords = SkyCoord(ra=data['RA']*u.deg,dec=data['DEC']*u.deg)
+            if cut_condition[0] == '>':
+                cond = np.where(np.abs(coords.galactic.b.value) > float(cut_condition[1:]))
+            elif cut_condition[0] == '<':
+                cond = np.where(np.abs(coords.galactic.b.value) < float(cut_condition[1:]))
+            data = data[cond]
+
+        #print(len(data))
+
+        if tracer[:3] == 'BGS':
+            gz = data['ZWARN'] == 0
+            gz &= data['DELTACHI2'] > 40
+        
+        if tracer[:3] == 'LRG':
+            gz = data['ZWARN']==0
+            gz &= data['Z_not4clus']<1.5
+            gz &= data['DELTACHI2']>15  
+
+
+        if tracer[:3] == 'QSO':
+            gz = data['Z_not4clus']*0 == 0
+            gz &= data['Z_not4clus'] != 999999
+            gz &= data['Z_not4clus'] != 1.e20
+        
+        if tracer[:3] == 'ELG':
+            gz = data['o2c'] > 0.9
+
+        data['q'] = gz
+        print('# of spectra for fits:'+str(len(data)))
+        print('# of good z for fits:'+str(np.sum(data['q'])))
+        
+        cats.append(data)
+
+    if len(cats) == 1:
+        cat = cats[0]
+
+    cat['EFFTIME_ELG'] = 8.60 * cat['TSNR2_ELG']
+    cat['EFFTIME_LRG'] = 12.15 * cat['TSNR2_LRG']
+    cat['EFFTIME_QSO'] = 8.60/0.255 * cat['TSNR2_QSO']
+    cat['EFFTIME_BGS'] = 12.15/89.8 * cat['TSNR2_BGS']
+    cat['zfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_Z']) - 1.211 * cat['EBV']
+    cat['FIBERFLUX_Z_EC'] = cat['FIBERFLUX_Z']*10**(0.4*1.211*cat['EBV'])
+    gextc = 3.214
+    cat['gfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_G']) - gextc * cat['EBV']
+    cat['FIBERFLUX_G_EC'] = cat['FIBERFLUX_G']*10**(0.4*gextc*cat['EBV'])
+
+
+    rextc = 2.165
+    cat['rfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_R']) - rextc * cat['EBV']
+    cat['FIBERFLUX_R_EC'] = cat['FIBERFLUX_R']*10**(0.4*rextc*cat['EBV'])
+    cat['qf'] = np.array(cat['q'], dtype=float)
+    
+    return cat
+
 
 
 def get_ELG_data(specrel='fuji',tr='ELG_LOP',maskbits=[1,11,12,13],notqso=True):
@@ -345,11 +421,13 @@ def fit_cons(dl,el,minv=0,step=0.01):
 
 
 class LRG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000):
-        self.cat = get_LRG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=500,efftime_max=2000,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        #self.cat = get_LRG_data(specrel)
+        self.cat = get_data_full('LRG',surveys=surveys,versions=versions,specrels=specrels)
         mask = self.cat['EFFTIME_LRG']>efftime_min
         mask &= self.cat['EFFTIME_LRG']<efftime_max
         self.cat = self.cat[mask]
+        print('success rate is '+str(sum(self.cat['qf'])/len(self.cat)))
 
     def cost(self,q_predict):
         return np.sum((self.cat['qf']-q_predict)**2)
@@ -360,22 +438,25 @@ class LRG_ssr:
 
     def failure_rate(self,flux, efftime, a, b, c):
         sn = flux * np.sqrt(efftime)
-        return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        #return np.clip(np.exp(-(sn+a)/b)+c/flux, 0, 1)
+        return np.clip(np.exp(a*sn+b)+c/flux, 0, 1)
 
     def add_modpre(self,data):
-        res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
+        res = minimize(self.wrapper, [-.1, 3., 0.02], bounds=((-200, 0), (0, 100), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         print(pars)
         dflux = data['FIBERFLUX_Z']*10**(0.4*1.211*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15 * data['TSNR2_LRG']#data['EFFTIME_LRG']
-        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars)       
+        data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
+        print(min(data['mod_success_rate']),max(data['mod_success_rate']))
+        data['WEIGHT_ZFAIL'] = 1./data['mod_success_rate'] 
         return data
 
 class BGS_ssr:
-    def __init__(self,specrel='fuji',efftime_min=120,efftime_max=300):
+    def __init__(self,specrel='fuji',efftime_min=120,efftime_max=300,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
         
-        self.cat = get_BGS_data_full('BGS_BRIGHT')
+        self.cat = get_data_full('BGS_BRIGHT',surveys=surveys,versions=versions,specrels=specrels)
         mask = self.cat['EFFTIME_BGS']>efftime_min
         mask &= self.cat['EFFTIME_BGS']<efftime_max
         print('using '+str(len(self.cat)/len(self.cat[mask])))
@@ -455,11 +536,12 @@ class BGS_ssr:
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
                 plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
             plt.show()
+            self.consl = consl
         return costt    
 
 
 
-    def add_modpre(self,data,fn_root):
+    def add_modpre(self,data):#,fn_root):
         #res = minimize(self.wrapper, [0, 10., 0.01], bounds=((-200, 200), (0, 100), (0., 1)),
         #       method='Powell', tol=1e-6)
         #pars = res.x
@@ -475,17 +557,24 @@ class BGS_ssr:
         plt.ylabel('BGS_BRIGHT Z failure rate')
         plt.xlabel('BGS_BRIGHT EFFECTIVE exp time')
         plt.legend()
-        plt.savefig(fn_root+'overall_failratefit.png')
-        #plt.show()
+        #plt.savefig(fn_root+'overall_failratefit.png')        
+        plt.show()
+        plt.clf()
 
         dflux = data['FIBERFLUX_R']*10**(0.4*2.165*data['EBV'])#data['FIBERFLUX_Z_EC']
         deff = 12.15/89.8 * data['TSNR2_BGS']#data['EFFTIME_LRG']
         
-        data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
-        assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)   
-        relssr = assr/np.max(assr) 
-        drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
-        self.wts_fid = 1/relssr
+        #data['mod_success_rate'] = 1. -self.failure_rate_eff(deff,*pars)   
+        #assr = 1. -self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)   
+        #relssr = assr/np.max(assr) 
+        #drelssr = data['mod_success_rate']/np.max(assr)#np.max(data['mod_success_rate'])
+        #self.wts_fid = 1/relssr
+        fail_frac_mod_data = self.failure_rate_eff(deff,*pars) #
+        fail_frac_mod_cat = self.failure_rate_eff(self.cat['EFFTIME_BGS'],*pars)  #
+        minfail = np.min(fail_frac_mod_cat )
+        relfail = fail_frac_mod_cat/minfail
+        relfail_data = fail_frac_mod_data/minfail
+        self.wts_fid = (1.-minfail)/(1.-fail_frac_mod_cat)#relfail
         nzfper = []
         nzfpere = []
         fper = []
@@ -510,9 +599,23 @@ class BGS_ssr:
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
-        #self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
-        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        self.vis_5hist = True
+        print(fcoeff,self.hist_norm(fcoeff),self.consl,fper)#,self.hist_norm(0.),self.hist_norm(1.)) 
+        plt.plot(fper,self.consl)
+        plt.show()
+        #wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
+        wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*((1.-minfail)/(1.-fail_frac_mod_data)-1)+1
+        data['mod_success_rate'] = 1. - fail_frac_mod_data +minfail
+        minfail = np.zeros(len(dflux))
+        for i in range(0,nb):
+            sel = dflux > np.percentile(self.cat['FIBERFLUX_R_EC'],i*pstep)
+            sel &= dflux < np.percentile(self.cat['FIBERFLUX_R_EC'],(i+1)*pstep)
+            minfail_bin = 1-self.consl[i][0]
+            minfail[sel] = minfail_bin
+            print(np.unique(minfail[sel]),1-minfail_bin)
+        data['mod_success_rate'] = data['mod_success_rate']-minfail
+        print(np.min(data['mod_success_rate']))
+        #minfail_flux = (fcoeff*(self.mft-dflux)/self.mft+1)*
         sel = wtf < 1
         wtf[sel] = 1
         data['WEIGHT_ZFAIL'] =  wtf
@@ -534,8 +637,10 @@ class BGS_ssr:
 
 
 class ELG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500):
-        self.cat = get_ELG_data_full('ELG_LOPnotqso')#get_ELG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        #self.cat = get_ELG_data_full('ELG_LOPnotqso')#,surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
+        self.cat = get_data_full('ELG_LOPnotqso',surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
+
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
         self.cat = self.cat[mask]
@@ -620,10 +725,21 @@ class ELG_ssr:
         
     
     def add_modpre(self,data):
-        res = minimize(self.wrapper_hist, [-200, 10., 0.01], bounds=((-10000, 0), (0, 10000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-20, 225., 0.28], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
-        print(pars,self.wrapper_hist(pars))
+        chi2 = self.wrapper_hist(pars)
+        print(pars,chi2)
+        plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
+        mod = self.failure_rate_eff(self.bc, *pars)
+        plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
+        plt.ylabel('ELG_LOPnotqso Z failure rate')
+        plt.xlabel('ELG EFFECTIVE exp time')
+        plt.legend()
+        #plt.savefig(fn_root+'overall_failratefit.png')        
+        plt.show()
+        plt.clf()
+
         gextc = 3.214
         dflux = data['FIBERFLUX_G']*10**(0.4*gextc*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = 8.60 * data['TSNR2_ELG']#data['EFFTIME_ELG']
@@ -688,8 +804,8 @@ class ELG_ssr:
 #             hf,_ = np.histogram(deff[sel&dselgz],weights=wtf[sel&dselgz],bins=self.bine)
 
 class QSO_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,cut=None,cut_condition=None):
-        self.cat = get_QSO_data_full('QSO',cut=cut,cut_condition=cut_condition)#get_ELG_data(specrel)
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,cut=None,cut_condition=None,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+        self.cat = get_data_full('QSO',cut=cut,cut_condition=cut_condition,surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
         mask = self.cat['EFFTIME_QSO']>efftime_min
         mask &= self.cat['EFFTIME_QSO']<efftime_max
         self.cat = self.cat[mask]
@@ -776,7 +892,7 @@ class QSO_ssr:
         
     
     def add_modpre(self,data,fn_root='',plot_color='k',plot_only=False,savefig=True):
-        res = minimize(self.wrapper_hist, [-0.001, 1, 0.4], bounds=((-1000, 0), (0, 1000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-220, 130, 0.4], bounds=((-1000, 0), (0, 1000), (.25, .5)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
