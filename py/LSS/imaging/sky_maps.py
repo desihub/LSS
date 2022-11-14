@@ -1139,10 +1139,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                                       return_counts=True)
 
         ############################
-        # MMM ----- option1 read all fields at once ----
-        # ADM if we agree that option 1 is the better choice, remove
-        # ADM the "if True:" below!
-#        if True:
+        # MMM ----- read all fields at once ----
         for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
             if len(col) > 0:
                 for field, bitmask in zip(fieldslist, bitmasklist):
@@ -1159,11 +1156,10 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     ##########################
     # MMM compute weighted means.
-    # MMM could be done in the previous loops.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
         ii = counts[field] > 0
-        wcounts[ii][field] = wcounts[ii][field] * counts[ii][field]
+        wcounts[ii][field] = wcounts[ii][field] / counts[ii][field]
         wcounts[counts[field] == 0][field] = hp.UNSEEN
 
     # MMM Write atomically (sanity check done before).
