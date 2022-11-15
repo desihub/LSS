@@ -46,7 +46,53 @@ mtltilefiledm = np.array([], dtype = [
     ('TILEID', '>i4'), ('TIMESTAMP', '<U25'),
     ('VERSION', '<U14'), ('PROGRAM', '<U6'), 
     ('ZDATE', '>i8'), ('ARCHIVEDATE', '>i8')])
+def processTileFile(infile, outfile, startDate, endDate):
+    #ztilefile, outputMTLDir + ztilefn, startDate, endDate
+    if (startDate is None) and (endDate is None):
+        os.symlink(infile, outfile)
+    else:
+        #'2021-11-19T20:43:24+00:00'
+        if startDate is None:
+            startDate = 0
+        else:
+            startDate = int(startDate.split('T')[0].replace('-', ''))       
+        '''
+        elif 'T' in startDate:
+            startDate = int(''.join(startDate.split('T')[0].split('-')))
+        elif type(startDate) == str:
+            startDate = int(startDate)
+        '''
+        if endDate is None:
+            endDate = 99999999
+        else:
+            endDate = int(endDate.split('T')[0].replace('-', ''))       
+        '''
+        if 'T' in endDate:
+            endDate = int(''.join(endDate.split('T')[0].split('-')))
+        elif type(endDate) == str:
+            endDate = int(endDate)
+        '''
+        log.info('ProcessTileFile debug info')
+        log.info('startDate')
+        log.info(startDate)
+        log.info('endDate')
+        log.info(endDate)
+        log.info('type(startDate)')
+        log.info(type(startDate))
+        log.info('type(endDate)')
+        log.info(type(endDate))
+        origtf = Table.read(infile)
+        log.info('origtf[LASTNIGHT][0:5]')
+        log.info(origtf['LASTNIGHT'][0:5])
+        log.info('origtf[LASTNIGHT][0:5].astype(int)')
+        log.info(origtf['LASTNIGHT'][0:5].astype(int))
+        origtf = origtf[origtf['LASTNIGHT'].astype(int) >= startDate ]
+        origtf = origtf[origtf['LASTNIGHT'].astype(int) <= endDate ]
+        #origtf = origtf[np.array(origtf['LASTNIGHT']).astype(int) > startDate ]
+        #origtf = origtf[np.array(origtf['LASTNIGHT']).astype(int) < endDate ]
 
+        origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
+    return 0
 def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     log.critical('this function isn\'t ready yet. Goodbye')
     raise NotImplementedError('Fiber Twin method not implemented yet.')
@@ -268,7 +314,7 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
 
 
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
-    obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, 
+    obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
     ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
     hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleSubpriorities = True, 
     reproducing = False, usetmp = False, finalDir = None, profile = False, debug = False, verbose = False):
@@ -324,10 +370,20 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
         subpriorsInit = initialentries["SUBPRIORITY"]
     else:
+        log.debug('startdate')
+        log.debug(startDate)
+        initialentries = allentries[allentries["TIMESTAMP"] < startDate]
+        subpriorsInit = initialentries["SUBPRIORITY"] 
+        #JL TRIPLE CHECK THIS IS THE RIGHT FILE
+        origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
+        altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
+        startDateShort = int(startDate.split('T')[0].replace('-', ''))       
+        '''
         raise NotImplementedError('not currently debugging this feature, bye.')
         log.warning('Initializing MTLs from a non-zero start date feature is in Beta mode')
         initialentries = allentries[allentries["TIMESTAMP"] < startDate]
         subpriorsInit = initialentries["SUBPRIORITY"]
+
         #JL TRIPLE CHECK THIS IS THE RIGHT FILE
         origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
@@ -362,7 +418,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             log.info('initialentries timestamp 0: {0}'.format(np.sort(initialentries['TIMESTAMP'])[0]))
 
             log.info('initialentries timestamp -1: {0}'.format(np.sort(initialentries['TIMESTAMP'])[-1]))
-
+    '''
     if verbose or debug:
         log.info('generate subset? {0}'.format(genSubset))
     if not genSubset is None:
@@ -410,7 +466,8 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         if not os.path.exists(outputMTLDir):
             os.makedirs(outputMTLDir)
         if not os.path.isfile(outputMTLDir + ztilefn):
-            os.symlink(ztilefile, outputMTLDir + ztilefn)
+            processTileFile(ztilefile, outputMTLDir + ztilefn, startDate, endDate)
+            #os.symlink(ztilefile, outputMTLDir + ztilefn)
         subpriors = initialentries['SUBPRIORITY']
 
         if (not reproducing) and shuffleSubpriorities:
@@ -675,7 +732,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 continue
             else:
                 if singleDate:
-                    return 0
+                    return 151
                 else:
                     return althpdirname, mtltilefn, ztilefn, tiles
         if not (singletile is None):
@@ -755,9 +812,26 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL If the alternate fiberassignment was already performed, don't repeat it
                 #JL Unless the 'redoFA' flag is set to true
                 if  redoFA or (not os.path.exists(FAAltName)):
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA)
+                    if verbose and os.path.exists(FAAltName):
+                        log.info('repeating fiberassignment')
+                    elif verbose:
+                        log.info('fiberassignment not found, running fiberassignment')
+                    if verbose:
+                        log.info(ts)
+                        log.info(altmtldir + survey.lower())
+                        log.info(fbadirbase)
+                        log.info(getosubp)
+                        log.info(redoFA)
+                    if getosubp:
+                        log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
+                        log.info(glob.glob(fbadirbase + '/*' ))
+                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
+                    log.info('fa command_run')
+                    log.info(command_run)
                     result = subprocess.run(command_run, capture_output = True)
+                else: 
+                    log.info('not repeating fiberassignment')
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
                 AltFAs2.append(pf.open(FAAltName)[2].data)
@@ -825,7 +899,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 log.info('has written to mtl_tile_file')
             
             if singleDate:
-                return 1
+                #return 1
+                return althpdirname, altmtltilefn, ztilefn, tiles
     return althpdirname, altmtltilefn, ztilefn, tiles
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
