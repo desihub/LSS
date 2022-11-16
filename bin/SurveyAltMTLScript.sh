@@ -120,10 +120,11 @@ qR=0
 #Number of observation dates to loop through
 #Defaults to 40 dates for SV3
 NObsDates=40
+
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Calculated automatically from number of sims requested and number of processes per node. Be careful if setting manually
-NNodes=$(( $ndir/$ProcPerNode ))
+NNodes=$(( $ndir/$ProcPerNode + 1 ))
 
 #getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
 #This should only be turned on for SV testing/debugging purposes
