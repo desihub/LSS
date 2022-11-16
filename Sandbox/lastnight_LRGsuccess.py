@@ -124,5 +124,5 @@ if args.plotnz == 'y':
         plt.title('LRG')
         plt.xlabel('Z')
         plt.legend()
-        plt.savefig(args.outdir+'LRG'+args.night+args.tiled+str(petal)+'.png')
+        plt.savefig(args.outdir+'LRG'+args.night+'_'+str(petal)+'.png')
         plt.show()
