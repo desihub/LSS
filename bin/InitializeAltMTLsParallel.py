@@ -12,9 +12,6 @@ from sys import argv
 from desiutil.log import get_logger
 import cProfile, pstats, io
 from pstats import SortKey
-import argparse
-
-
 
 profile = False
 if profile:
