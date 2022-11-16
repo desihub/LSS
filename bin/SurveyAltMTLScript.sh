@@ -47,7 +47,7 @@ fi
 
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName="$USER"_SV3TestStartEndDateAllDates
+simName="$USER"_TestAltMTL
 
 #Options for InitializeAltMTLs
 
@@ -58,7 +58,7 @@ seed=314159
 
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=2
+ndir=128
 
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
@@ -122,8 +122,8 @@ qR=0
 NObsDates=40
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
-#Defaults to 4 for 128 directories
-NNodes=1
+#Calculated automatically from number of sims requested and number of processes per node. Be careful if setting manually
+NNodes=$(( $ndir/$ProcPerNode ))
 
 #getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
 #This should only be turned on for SV testing/debugging purposes
