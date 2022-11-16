@@ -117,12 +117,13 @@ if args.plotnz == 'y':
     all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
-        nzp = np.concatenate(nzls[pt])
-        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
-        plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night)
-        plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
-        plt.title('LRG')
-        plt.xlabel('Z')
-        plt.legend(loc='upper left')
-        plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
-        plt.show()
+        if len(nzls[pt]) > 0:
+            nzp = np.concatenate(nzls[pt])
+            a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
+            plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night)
+            plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
+            plt.title('LRG')
+            plt.xlabel('Z')
+            plt.legend(loc='upper left')
+            plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
+            plt.show()
