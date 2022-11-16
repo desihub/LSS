@@ -86,5 +86,5 @@ if args.plotnz == 'y':
         plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily')
         plt.title('LRG')
         plt.xlabel('Z')
-        plt.savefig(args.outdir+'LRG'+args.night+args.tiled+str(petal)+'.png')
+        plt.savefig(args.outdir+'LRG'+args.night++'_'+str(petal)+'.png')
         plt.show()
