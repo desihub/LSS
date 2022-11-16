@@ -7,9 +7,9 @@ start=`date +%s.%N`
 path2LSS=~/.local/desicode/LSS/bin/
 
 #Flags for debug/verbose mode/profiling code time usage
-debug=0
-verbose=0
-profile=0
+debug=1
+verbose=1
+profile=1
 
 #ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
 #There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
@@ -23,6 +23,7 @@ profile=0
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
     QVal='interactive'
+    ProcPerNode=32
     if [[ -z "${ALTMTLHOME}" ]]; then
         ALTMTLHOME=$CSCRATCH
     else
@@ -32,6 +33,7 @@ elif [[ "${NERSC_HOST}" == "perlmutter" ]]; then
     srunConfig='-C cpu -q regular'
     CVal='cpu'
     QVal='interactive'
+    ProcPerNode=128
     if [[ -z "${ALTMTLHOME}" ]]; then
         ALTMTLHOME=$PSCRATCH
     else
@@ -45,18 +47,18 @@ fi
 
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName="$USER"_TestAltMTLs
+simName="$USER"_SV3TestStartEndDateAllDates
 
 #Options for InitializeAltMTLs
 
 #Random seed. Change to any integer you want (or leave the same)
 #If seed is different between two otherwise identical runs, the initial MTLs will also be different
 #seed is also saved in output directory
-seed=31415
+seed=314159
 
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=128
+ndir=2
 
 #Set to true(1) if you want to clobber already existing files for Alt MTL generation
 overwrite=0
@@ -66,6 +68,8 @@ obscon='DARK'
 
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 survey='sv3'
+startDate=20210406
+endDate=20210625
 
 #For rundate formatting in simName, either manually modify the string below 
 #to be the desired date or comment that line out and uncomment the 
@@ -89,12 +93,13 @@ printf -v outputMTLDirBase "$outputMTLDirBaseBase/$simName/" $datestring $ndir $
 printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $survey
 
 #List of healpixels to create Alt MTLs for
+#hpListFile="$path2LSS/MainSurveyHPList.txt"
 hpListFile="$path2LSS/SV3HPList.txt"
 
-#These two options only are considered if the obscon is bright
+#These two options only are considered if the obscon is BRIGHT
 #First option indicates whether to shuffle the top level priorities
 #of BGS_FAINT/BGS_FAINT_HIP. Second option indicates what fraction/percent
-#of BGS_FAINT to promote. Default is 20%, same as SV3
+#of BGS_FAINT to promote to BGS_FAINT_HIP. Default is 20%, same as SV3
 shuffleBrightPriorities=0
 PromoteFracBGSFaint=0.2
 
@@ -113,12 +118,12 @@ exampleledgerbase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 qR=0
 
 #Number of observation dates to loop through
-#Defaults to 33 dates for SV3
-NObsDates=33
+#Defaults to 40 dates for SV3
+NObsDates=40
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Defaults to 4 for 128 directories
-NNodes=4
+NNodes=1
 
 #getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
 #This should only be turned on for SV testing/debugging purposes
@@ -200,7 +205,7 @@ fi
 echo 'moving on to python scripts (REMOVE BEFORE PUSHING)'
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes $usetmp "$outputMTLFinalDestination/Univ{0:03d}" $shuffleSubpriorities $reproducing >& $OFIM
+srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py $seed $ndir $overwrite $obscon $survey $outputMTLDirBase $hpListFile $shuffleBrightPriorities $PromoteFracBGSFaint $exampleledgerbase $NNodes $usetmp "$outputMTLFinalDestination/Univ{0:03d}" $shuffleSubpriorities $reproducing $debug $verbose $ProcPerNode $startDate $endDate >& $OFIM
 if [ $? -ne 0 ]; then
     exit 1234
     endInit=`date +%s.%N`
@@ -218,7 +223,7 @@ printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestinat
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 
-nohup bash $path2LSS/dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLFinalDestination $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp $path2LSS $CVal $QVal >& $OFDL
+nohup bash $path2LSS/dateLoopAltMTL.sh $qR $NObsDates $NNodes $outputMTLFinalDestination $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp $path2LSS $CVal $QVal $debug $verbose $ProcPerNode >& $OFDL
 
 endDL=`date +%s.%N`
 

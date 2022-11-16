@@ -80,28 +80,23 @@ singleDate = True
 
 
 def procFunc(nproc):
-    print('starting fxn call')
+    if verbose:
+        log.debug('calling procFunc')
     retval = amt.loop_alt_ledger(obscon, survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = ndirs, numobs_from_ledger = numobs_from_ledger,secondary = secondary, getosubp = getosubp, quickRestart = quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = redoFA)
-    print('ending function call')
+    if verbose:
+        log.debug('finished with one iteration of procFunc')
     if type(retval) == int:
-        print('retval')
-        print(retval)
+        if verbose:
+            log.debug('retval')
+            log.debug(retval)
         if retval == 151:
             raise ValueError('No more data. Ending script.')
         return retval
-    else:
+    elif verbose:
         print('retval')
         print(retval)
-        return 42
-#amt.quickRestartFxn(ndirs = 1, altmtlbasedir = altmtlbasedir, survey = 'sv3', obscon = 'dark')
-
-#amt.loop_alt_ledger('dark', survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = 1, numobs_from_ledger = True,secondary = False, getosubp = False, quickRestart = True, multiproc = True, nproc = 0, redoFA = True, singleDate = '20210406')
-#for d in zdates:
-#    print('zdate')#
-#    print(d)
-#    amt.loop_alt_ledger('dark', survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = 1, numobs_from_ledger = True,secondary = False, getosubp = False, quickRestart = False, multiproc = True, nproc = 0, redoFA = True, singleDate = d)
-
-
+    
+    return 42
 
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)
@@ -122,20 +117,6 @@ for i in range(start, end):
     inds.append(i)
     
 assert(len(inds))
-    
-print('b')
-print(inds)
 p = Pool(NProc)
 atexit.register(p.close)
 result = p.map(procFunc,inds)
-print('result')
-print(result)
-print('c')
-
-#pr.disable()
-#s = io.StringIO()
-#sortby = SortKey.CUMULATIVE
-#ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-#ps.print_stats()
-#ps.dump_stats(altmtlbasedir + '/runAltMTLParallel.prof')
-#print(s.getvalue())

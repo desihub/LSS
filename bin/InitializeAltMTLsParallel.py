@@ -12,6 +12,10 @@ from sys import argv
 from desiutil.log import get_logger
 import cProfile, pstats, io
 from pstats import SortKey
+import argparse
+
+
+
 profile = False
 if profile:
     pr = cProfile.Profile()
@@ -101,7 +105,7 @@ except:
     log.warning('endDate not provided or incorrect argument provided. Defaulting to None')
     endDate = None
 
-if debug or verbose or profile:
+if debug or verbose:
     log.info('CLAs for script')
     log.info(argv)
 
@@ -122,20 +126,21 @@ else:
         f.write(str(seed))
 
 HPList = np.array(open(HPListFile,'r').readlines()[0].split(',')).astype(int)
-log.info('HPList')
-log.info(HPList)
-log.info('First healpixel: {0:d}'.format(HPList[0]))
-log.info('Last healpixel: {0:d}'.format(HPList[-1]))
-log.info('Number of healpixels: {0:d}'.format(int(len(HPList))))
+if verbose or debug:
+    log.debug('HPList')
+    log.debug(HPList)
+    log.debug('First healpixel: {0:d}'.format(HPList[0]))
+    log.debug('Last healpixel: {0:d}'.format(HPList[-1]))
+    log.debug('Number of healpixels: {0:d}'.format(int(len(HPList))))
 
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
 
 NProc = int(NNodes*ProcPerNode)
-
-log.info('requested number of nodes: {0:d}'.format(NNodes))
-log.info('requested number of directories/realizations: {0:d}'.format(ndir))
-log.info('requested number of processes: {0:d}'.format(NProc))
+if verbose or debug:
+    log.debug('requested number of nodes: {0:d}'.format(NNodes))
+    log.debug('requested number of directories/realizations: {0:d}'.format(ndir))
+    log.debug('requested number of processes: {0:d}'.format(NProc))
 
 outputMTLDir = outputMTLDirBase + "Univ{0:03d}/"
 
