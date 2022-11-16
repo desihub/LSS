@@ -126,7 +126,7 @@ if args.plotnz == 'y':
             plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
             plt.title('BGS_ANY')
             plt.xlabel('Z')
-            plt.legend(loc='upper left')
+            plt.legend(loc='upper right')
             plt.savefig(args.outdir+'BGS_ANY'+args.night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
