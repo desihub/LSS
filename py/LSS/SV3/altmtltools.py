@@ -50,49 +50,27 @@ def processTileFile(infile, outfile, startDate, endDate):
     #ztilefile, outputMTLDir + ztilefn, startDate, endDate
     if (startDate is None) and (endDate is None):
         os.symlink(infile, outfile)
+        return 0
+    
+        
+    if startDate is None:
+        startDate = 0
     else:
-        #'2021-11-19T20:43:24+00:00'
-        if startDate is None:
-            startDate = 0
-        else:
-            startDate = int(startDate.split('T')[0].replace('-', ''))       
-        '''
-        elif 'T' in startDate:
-            startDate = int(''.join(startDate.split('T')[0].split('-')))
-        elif type(startDate) == str:
-            startDate = int(startDate)
-        '''
-        if endDate is None:
-            endDate = 99999999
-        else:
-            endDate = int(endDate.split('T')[0].replace('-', ''))       
-        '''
-        if 'T' in endDate:
-            endDate = int(''.join(endDate.split('T')[0].split('-')))
-        elif type(endDate) == str:
-            endDate = int(endDate)
-        '''
-        log.info('ProcessTileFile debug info')
-        log.info('startDate')
-        log.info(startDate)
-        log.info('endDate')
-        log.info(endDate)
-        log.info('type(startDate)')
-        log.info(type(startDate))
-        log.info('type(endDate)')
-        log.info(type(endDate))
-        origtf = Table.read(infile)
-        log.info('origtf[LASTNIGHT][0:5]')
-        log.info(origtf['LASTNIGHT'][0:5])
-        log.info('origtf[LASTNIGHT][0:5].astype(int)')
-        log.info(origtf['LASTNIGHT'][0:5].astype(int))
-        origtf = origtf[origtf['LASTNIGHT'].astype(int) >= startDate ]
-        origtf = origtf[origtf['LASTNIGHT'].astype(int) <= endDate ]
-        #origtf = origtf[np.array(origtf['LASTNIGHT']).astype(int) > startDate ]
-        #origtf = origtf[np.array(origtf['LASTNIGHT']).astype(int) < endDate ]
+        startDate = int(startDate.split('T')[0].replace('-', ''))       
+    if endDate is None:
+        endDate = 9999999999
+    else:
+        endDate = int(endDate.split('T')[0].replace('-', ''))
 
-        origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
+    origtf = Table.read(infile)
+
+    origtf = origtf[origtf['LASTNIGHT'].astype(int) >= startDate ]
+    origtf = origtf[origtf['LASTNIGHT'].astype(int) <= endDate ]
+
+
+    origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
     return 0
+
 def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     log.critical('this function isn\'t ready yet. Goodbye')
     raise NotImplementedError('Fiber Twin method not implemented yet.')
@@ -355,11 +333,10 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         log.info(initMTL)
         log.info('output MTL')
         log.info(outputMTL)
-    #JL THIS NEEDS TO BE FIXED FOR PEOPLE WHO DONT USE 'Univ' 
-    #JL AS THEIR REALIZATION LABEL
+    
     if not ('Univ' in outputMTL):
         log.warning('Code currently relies on using Univ as realization delimiter. \
-            Code may function improperly. Fix is coming.')
+            Code may function improperly.')
     altmtldir = os.path.dirname(outputMTL).split('Univ')[0]
     origmtldir = os.path.dirname(initMTL).split(survey)[0]
     #zcatdir = os.path.dirname(ztilefile)
@@ -374,7 +351,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         log.debug(startDate)
         initialentries = allentries[allentries["TIMESTAMP"] < startDate]
         subpriorsInit = initialentries["SUBPRIORITY"] 
-        #JL TRIPLE CHECK THIS IS THE RIGHT FILE
+
         origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
         startDateShort = int(startDate.split('T')[0].replace('-', ''))       
@@ -822,7 +799,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                         log.info(fbadirbase)
                         log.info(getosubp)
                         log.info(redoFA)
-                    if getosubp:
+                    if getosubp and verbose:
                         log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                         log.info(glob.glob(fbadirbase + '/*' ))
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose)
