@@ -117,20 +117,13 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
     if fht['DESIROOT'] == '/data/datasystems':
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
-            log.info('targ file loc 1')
-            log.info(indir+ts+'-targ.fits')
-            log.info('globbing indir')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
-            log.info('targ file loc 2')
-            log.info(indir+ts+'-targ.fits')
-            log.info('globbing indir')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-            log.info('indir loc 2')
-            log.info(indir)
+
            
     fa = fitsio.read(indir+'fba-'+ts+'.fits')
     
@@ -158,27 +151,17 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     '''
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
-    log.info('fht filename loc 3')
-    log.info('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     indir = fht['OUTDIR']
-    log.info('indir loc 3')
-    log.info(indir)
     if fht['DESIROOT'] == '/data/datasystems':
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
-            log.info('globbing indir')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
         
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
     tarf = indir+ts+'-targ.fits'
-    log.info('tarf loc 4')
-    log.info(tarf)
-    log.info('globbing indir')
-    log.info(glob.glob(indir + '/*' +str(ts)+'*'))
     try:
         fitsio.read(tarf)
     except:
@@ -219,8 +202,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-    log.info('beginning to write file')
-    log.info(outdir+'fa-'+ts+'.sh')
+    
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh main\n')
@@ -277,16 +259,11 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if (fht['DESIROOT'] == '/data/datasystems') and not ( ('holding' in indir.lower()) or ('main' in indir.lower())):
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
-            log.info('globbing indir2')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
-            log.info('globbing indir3')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
-            log.info('globbing indir4')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
     elif ( ('holding' in indir.lower()) or ('main' in indir.lower())):
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/main/' + ts[0:3] +'/'
 
@@ -342,16 +319,10 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         outdir += 'orig/'
     if newdir == None:
         if mtldir == None:
-            log.info('globbing indir5')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
             tarfn = indir+ts+'-targ.fits' 
         else:
-            log.info('globbing outdir6')
-            log.info(glob.glob(outdir + '/*' +str(ts)+'*'))
             tarfn = outdir+ts+'-targ.fits'   
     else:
-        log.info('globbing newdir7')
-        log.info(glob.glob(newdir + '/' +str(ts)+'*'))
         tarfn = newdir+ts+'-targ.fits' 
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
@@ -362,7 +333,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
 
     if mtldir is not None:
         if 'sv3' in indir.lower():
-            log.info('SV3 SURVEY')
+            if verbose:
+                log.debug('sv3 survey')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -370,9 +342,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tarfn,
             tdir+prog)
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
-            log.info('MAIN SURVEY')
-            log.info('globbing outdir12')
-            log.info(glob.glob(outdir + '/*' +str(ts)+'*'))
+            if verbose:
+                log.info('main survey')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -387,39 +358,24 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         if tileid == 315:
             log.info('special tile 315 case triggered')
             log.info('tileid = {0}'.format(tileid))
-            log.info('otar filename, 315 case')
-            log.info(indir+ts+'-targ.fits')
-            log.info('globbing indir8')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','PRIORITY','SUBPRIORITY'])
-            log.info('ntar filename, 315 case')
-            log.info(tarfn)
-            log.info('globbing indir9')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
             ntar = Table.read(tarfn)
             ntar.remove_columns(['SUBPRIORITY', 'PRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
         else:
-            log.info('otar file, normal case')
-            log.info(indir+ts+'-targ.fits')
-            log.info('globbing indir10')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
+            
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','SUBPRIORITY'])
-            log.info('ntars file')
-            log.info(tarfn)
-            log.info('globbing indir11')
-            log.info(glob.glob(indir + '/*' +str(ts)+'*'))
-            log.info('globbing outdir11')
-            log.info(glob.glob(outdir + '/*' +str(ts)+'*'))
+
             ntar = Table.read(tarfn)
             ntar.remove_columns(['SUBPRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
-    log.info('writing fiberassign sh script')
-    log.info(outdir+'fa-'+ts+'.sh')
+    
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh main\n')
@@ -533,7 +489,6 @@ def altcreate_mtl(
         20210526 : implementation of using subpriority=False in write_targets
                     to avoid an over-writting of the SUBPRIORITY; AJR changed to True reproduce SV3
     """
-    log.info('calling altcreate_mtl')
     tiles = fitsio.read(tilesfn)
     tileIDs = tiles['TILEID']
     # AR mtl: read mtl
@@ -553,9 +508,7 @@ def altcreate_mtl(
         assert(mtltime.shape[0] == 1)
         
         mtltime = str(mtltime[0])
-        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
-        log.info('tiles {0}'.format(tiles))
-        log.info('mtltime {0}'.format(mtltime))
+        
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -571,14 +524,7 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-        log.info('normal altcreate_mtl function')
-        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
-        log.info('mtltime {0}'.format(mtltime))
-        log.info('tiles {0}'.format(tiles))
-        log.info('mtldir')
-        log.info(mtldir)
-        log.info('tiles')
-        log.info(tiles)
+        
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -588,10 +534,7 @@ def altcreate_mtl(
             isodate=mtltime,
             verbose=verbose,
         )
-        log.info('size of target array')
-        log.info(d.shape)
-        log.info('first row of target array')
-        log.info(d[0])
+        
         
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
