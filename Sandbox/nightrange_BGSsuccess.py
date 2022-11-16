@@ -27,6 +27,8 @@ nights = np.unique(ss['LASTNIGHT'])
 sel = nights >= int(args.min_night)
 sel &= nights <= int(args.max_night)
 
+nights = nights[sel]
+
 for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 	month = str(night)[:6]
 	#get the right tileids
