@@ -9,8 +9,7 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--tileid", help="tileid",default=None)
-parser.add_argument("--plotnz",default='y')
-parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/plots/tests/')
+parser.add_argument("--plotnz",default='n')
 args = parser.parse_args()
 
 
@@ -73,18 +72,11 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
-    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRGzdone_full.dat.fits')
-    sel = all['ZWARN'] == 0
-    sel &= all['DELTA_CHI2'] < 15
-    sel &= all['Z_not4clus'] <1.5
-    all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
         nzp = np.concatenate(nzls[pt])
-        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' '+args.tileid+' petal '+str(pt))
-        plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night+' '+args.tileid)
-        plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily')
-        plt.title('LRG')
+        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True)
+        plt.hist(nza,bins=a[1],density=True,histtype='step')
+        plt.title('petal '+str(pt))
         plt.xlabel('Z')
-        plt.savefig(args.outdir+'LRG'+args.night+args.tiled+str(petal)+'.png')
         plt.show()
