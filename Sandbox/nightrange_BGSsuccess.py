@@ -23,9 +23,9 @@ nzla = []
 
 
 for night in range(int(args.min_night),int(args.max_night)+1):
-	month = str(args.night)[:6]
+	month = str(night)[:6]
 	#get the right tileids
-	exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+args.night+'.csv')
+	exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+str(night)+'.csv')
 	print('number of exposures found:')
 	print(len(exps))
 	#cut to dark tiles
@@ -56,7 +56,7 @@ for night in range(int(args.min_night),int(args.max_night)+1):
 	print(len(tidl))
 
 
-	print('looking at BGS redshift results from the night '+str(args.night))
+	print('looking at BGS redshift results from the night '+str(night))
 	print('the tileids are:')
 	print(tidl)
 
@@ -67,7 +67,7 @@ for night in range(int(args.min_night),int(args.max_night)+1):
 	for tid in tidl:
 		for pt in range(0,10):
 		
-			zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
+			zmtlff = zdir+str(tid)+'/'+str(night)+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+str(night)+'.fits'
 			if os.path.isfile(zmtlff):
 				zmtlf = fitsio.read(zmtlff)
 				nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
