@@ -36,8 +36,8 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 	print('number of exposures found:')
 	print(len(exps))
 	#cut to dark tiles
-	sel = exps['FAPRGRM']=='bright'
-	print('number that are bright time:')
+	sel = exps['FAPRGRM']=='dark'
+	print('number that are dark time:')
 	print(len(exps[sel]))
 
 	exps = exps[sel]
@@ -55,15 +55,14 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 		exptl[ii] = expt
 
 
-	#sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
-	sel = exptl/60 > .85
+	sel = exptl > 850
 	tidl = tidl[sel]
 
 	print('number bright tiles that have EFFTIME_ETC/goal > 0.85 during the night:')
 	print(len(tidl))
 
 
-	print('looking at BGS redshift results from the night '+str(night))
+	print('looking at LRG redshift results from the night '+str(night))
 	print('the tileids are:')
 	print(tidl)
 
@@ -86,7 +85,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 				print('number with bad qa '+str(num_badqa))
 				nomtl = nodata | badqa
 				wfqa = ~nomtl
-				wlrg = (zmtlf['BGS_TARGET'] ) > 0
+				wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
 				zlrg = zmtlf[wfqa&wlrg]
 				if len(zlrg) > 0:
 					#drz = (10**(3 - 3.5*zmtlf['Z']))
@@ -96,14 +95,14 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 					#wz = zmtlf['ZWARN'] == 0
 					#wz &= zmtlf['Z']<1.4
 					#wz &= (~mask_bad)
-					mask_bad = (zmtlf['DELTACHI2']<40)
+					mask_bad = (zmtlf['DELTACHI2']<15)
 					wz = zmtlf['ZWARN'] == 0
-					wz &= zmtlf['Z']<0.7
+					wz &= zmtlf['Z']<1.5
 					wz &= (~mask_bad)
 
 					wzwarn = wz#zmtlf['ZWARN'] == 0
 					gzlrg = zmtlf[wzwarn&wlrg]
-					print('The fraction of good BGS is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+					print('The fraction of good LRG is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
 					gz[pt] += len(gzlrg)
 					tz[pt] += len(zlrg)
 					nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
@@ -122,22 +121,22 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
-    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/BGS_ANY_full.dat.fits')
+    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
     sel = all['ZWARN'] == 0
-    sel &= all['DELTACHI2'] > 40
-    sel &= all['Z_not4clus'] < 0.7
+    sel &= all['DELTACHI2'] > 15
+    sel &= all['Z_not4clus'] < 1.5
     all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
         plt.clf()
         if len(nzls[pt]) > 0:
             nzp = np.concatenate(nzls[pt])
-            a = plt.hist(nzp,range=(0.01,0.7),bins=28,density=True,label='petal '+str(pt),histtype='step')
+            a = plt.hist(nzp,range=(0.01,1.5),bins=28,density=True,label='petal '+str(pt),histtype='step')
             plt.hist(nza,bins=a[1],density=True,histtype='step',label='all petals for selected nights')
             plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
-            plt.title('BGS_ANY for nights '+args.min_night+' through '+args.max_night)
+            plt.title('LRG for nights '+args.min_night+' through '+args.max_night)
             plt.xlabel('Z')
             plt.legend(loc='upper right')
-            plt.savefig(args.outdir+'BGS_ANY'+args.min_night+args.max_night+'_'+str(pt)+'.png')
+            plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
