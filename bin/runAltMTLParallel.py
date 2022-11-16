@@ -13,8 +13,8 @@ import atexit
 import glob
 import cProfile, pstats, io
 from pstats import SortKey
-pr = cProfile.Profile()
-pr.enable()
+#pr = cProfile.Profile()
+#pr.enable()
 log = get_logger()
 print('argv')
 print(argv)
@@ -41,7 +41,18 @@ log.info('getosubp value = {0}'.format(getosubp))
 #Get information about environment for multiprocessing
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
-NProcPerNode=32
+try:
+    debug = bool(int(argv[10]))
+except:
+    raise ValueError('Invalid non-integer value of debug: {0}'.format(argv[10]))
+try:
+    verbose = bool(int(argv[11]))
+except:
+    raise ValueError('Invalid non-integer value of verbose: {0}'.format(argv[11]))
+try:
+    NProcPerNode = int(argv[12])
+except:
+    raise ValueError('Invalid non-integer value of ProcPerNode: {0}'.format(argv[12]))
 NNodes = int(argv[1])
 NProc = int(NNodes*NProcPerNode)
 log.info('NProc = {0:d}'.format(NProc))
@@ -70,9 +81,18 @@ singleDate = True
 
 def procFunc(nproc):
     print('starting fxn call')
-    amt.loop_alt_ledger(obscon, survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = ndirs, numobs_from_ledger = numobs_from_ledger,secondary = secondary, getosubp = getosubp, quickRestart = quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = redoFA)
+    retval = amt.loop_alt_ledger(obscon, survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = ndirs, numobs_from_ledger = numobs_from_ledger,secondary = secondary, getosubp = getosubp, quickRestart = quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = redoFA)
     print('ending function call')
-    return 42           
+    if type(retval) == int:
+        print('retval')
+        print(retval)
+        if retval == 151:
+            raise ValueError('No more data. Ending script.')
+        return retval
+    else:
+        print('retval')
+        print(retval)
+        return 42
 #amt.quickRestartFxn(ndirs = 1, altmtlbasedir = altmtlbasedir, survey = 'sv3', obscon = 'dark')
 
 #amt.loop_alt_ledger('dark', survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = 1, numobs_from_ledger = True,secondary = False, getosubp = False, quickRestart = True, multiproc = True, nproc = 0, redoFA = True, singleDate = '20210406')
@@ -108,12 +128,14 @@ print(inds)
 p = Pool(NProc)
 atexit.register(p.close)
 result = p.map(procFunc,inds)
+print('result')
+print(result)
 print('c')
 
-pr.disable()
-s = io.StringIO()
-sortby = SortKey.CUMULATIVE
-ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-ps.print_stats()
-ps.dump_stats(altmtlbasedir + '/runAltMTLParallel.prof')
-print(s.getvalue())
+#pr.disable()
+#s = io.StringIO()
+#sortby = SortKey.CUMULATIVE
+#ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+#ps.print_stats()
+#ps.dump_stats(altmtlbasedir + '/runAltMTLParallel.prof')
+#print(s.getvalue())

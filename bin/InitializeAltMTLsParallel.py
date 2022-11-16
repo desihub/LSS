@@ -18,14 +18,9 @@ if profile:
     pr.enable()
 
 log = get_logger()
-debug = False #These will eventually be CLAs
-verbose = False  #These will eventually be CLAs
-ProcPerNode = 32 #These will eventually be CLAs
-#startDate = '2021-11-19T20:43:24+00:00'
-startDate = None #These will eventually be CLAs
-if debug or verbose or profile:
-    log.info('CLAs for script')
-    log.info(argv)
+print('argvs')
+print(argv)
+
 seed = int(argv[1])
 ndir = int(argv[2])
 try:
@@ -52,7 +47,7 @@ try:
     PromoteFracBGSFaint = float(argv[9])
 except:
     if obscon.lower() == 'dark':
-        log.info('Ignoring invalid nonfloat value of PromoteFracBGSFaint: {0} because dark time MTLs are being initialized'.format(argv[9]))
+        log.warning('Ignoring invalid nonfloat value of PromoteFracBGSFaint: {0} because dark time MTLs are being initialized. This may still signal a problem with out-of-order arguments.'.format(argv[9]))
         PromoteFracBGSFaint = 0.2
     else:
         raise ValueError('Invalid non-float value of PromoteFracBGSFaint: {0}'.format(argv[9]))
@@ -60,6 +55,56 @@ except:
 
 exampleledgerbase = argv[10] #"/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv"
 NNodes = int(argv[11])
+
+usetmp = argv[12] #outputMTLDir.startswith('/dev/shm/') | outputMTLDir.startswith('/tmp/')
+if usetmp:
+    finalDir = argv[13]
+else:
+    finalDir = None
+
+try:
+    shuffleSubpriorities = bool(int(argv[14]))
+except:
+    raise ValueError('Invalid non-integer value of shuffleSubpriorities: {0}'.format(argv[14]))
+
+try:
+    reproducing = bool(int(argv[15]))
+except:
+    raise ValueError('Invalid non-integer value of reproducing: {0}'.format(argv[15]))
+
+try:
+    debug = bool(int(argv[16]))
+except:
+    raise ValueError('Invalid non-integer value of debug: {0}'.format(argv[16]))
+try:
+    verbose = bool(int(argv[17]))
+except:
+    raise ValueError('Invalid non-integer value of verbose: {0}'.format(argv[17]))
+try:
+    ProcPerNode = int(argv[18])
+except:
+    raise ValueError('Invalid non-integer value of ProcPerNode: {0}'.format(argv[18]))
+try:
+    startDate = argv[19]#'2021-11-19T20:43:24+00:00'
+except:
+    log.warning('len(argv) = {0}'.format(argv))
+    if len(argv) >= 20:
+        print(argv[19])
+    log.warning('startDate not provided or incorrect argument provided. Defaulting to None')
+    startDate = None
+try:
+    endDate = argv[20]#'2021-11-19T20:43:24+00:00'
+except:
+    log.warning('len(argv) = {0}'.format(argv))
+    if len(argv) >= 21:
+        print(argv[20])
+    log.warning('endDate not provided or incorrect argument provided. Defaulting to None')
+    endDate = None
+
+if debug or verbose or profile:
+    log.info('CLAs for script')
+    log.info(argv)
+
 # If folder doesn't exist, then create it.
 if not os.path.isdir(outputMTLDirBase):
     os.makedirs(outputMTLDirBase)
@@ -77,6 +122,8 @@ else:
         f.write(str(seed))
 
 HPList = np.array(open(HPListFile,'r').readlines()[0].split(',')).astype(int)
+log.info('HPList')
+log.info(HPList)
 log.info('First healpixel: {0:d}'.format(HPList[0]))
 log.info('Last healpixel: {0:d}'.format(HPList[-1]))
 log.info('Number of healpixels: {0:d}'.format(int(len(HPList))))
@@ -92,18 +139,8 @@ log.info('requested number of processes: {0:d}'.format(NProc))
 
 outputMTLDir = outputMTLDirBase + "Univ{0:03d}/"
 
-HPList = np.array(open(HPListFile,'r').readlines()[0].split(',')).astype(int)
 
-usetmp = argv[12] #outputMTLDir.startswith('/dev/shm/') | outputMTLDir.startswith('/tmp/')
-if usetmp:
-    finalDir = argv[13]
-else:
-    finalDir = None
 
-try:
-    shuffleSubpriorities = bool(int(argv[14]))
-except:
-    raise ValueError('Invalid non-integer value of shuffleSubpriorities: {0}'.format(argv[14]))
 
 
 try:
@@ -124,13 +161,14 @@ def procFunc(nproc):
         log.info(outputMTLDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),HPList[-1], obscon.lower(), mtlprestr))
         return 42
     for hpnum in HPList:
+        log.info('hpnum = {0}'.format(hpnum))
         exampleledger = exampleledgerbase + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(survey.lower(),hpnum, obscon.lower(), mtlprestr)
         if usetmp and (debug or verbose or profile):
             log.info('outputMTLDir, nproc {0}'.format(nproc))
             log.info(outputMTLDir)
             log.info('finalDir, nproc{0}'.format(nproc))
             log.info(finalDir)
-        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, reproducing = reproducing, shuffleSubpriorities = shuffleSubpriorities, startDate = startDate, profile = profile, usetmp=usetmp, finalDir=finalDir, debug = debug, verbose = verbose)
+        initializeAlternateMTLs(exampleledger, outputMTLDir, genSubset = nproc, seed = seed, obscon = obscon, survey = survey, saveBackup = True, hpnum = hpnum, overwrite = overwrite, reproducing = reproducing, shuffleSubpriorities = shuffleSubpriorities, startDate=startDate, endDate=endDate, profile = profile, usetmp=usetmp, finalDir=finalDir, debug = debug, verbose = verbose)
     return 0
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)
