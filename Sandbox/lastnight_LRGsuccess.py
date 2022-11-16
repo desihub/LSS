@@ -110,7 +110,7 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
-    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRGzdone_full.dat.fits')
+    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
     sel = all['ZWARN'] == 0
     sel &= all['DELTA_CHI2'] < 15
     sel &= all['Z_not4clus'] <1.5
