@@ -19,8 +19,7 @@ if profile:
     pr.enable()
 
 log = get_logger()
-print('argvs')
-print(argv)
+
 
 seed = int(argv[1])
 ndir = int(argv[2])
