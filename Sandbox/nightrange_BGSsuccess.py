@@ -21,8 +21,13 @@ tz = np.zeros(10)
 nzls = {x: [] for x in range(0,10)}
 nzla = []
 
+ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 
-for night in range(int(args.min_night),int(args.max_night)+1):
+nights = np.unique(ss['LASTNIGHT'])
+sel = nights >= int(args.min_night)
+sel &= nights <= int(args.max_night)
+
+for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 	month = str(night)[:6]
 	#get the right tileids
 	exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+month+'/exposure_table_'+str(night)+'.csv')
