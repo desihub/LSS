@@ -7,9 +7,9 @@ start=`date +%s.%N`
 path2LSS=~/.local/desicode/LSS/bin/
 
 #Flags for debug/verbose mode/profiling code time usage
-debug=1
-verbose=1
-profile=1
+debug=0
+verbose=0
+profile=0
 
 #ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
 #There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
