@@ -804,8 +804,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                         log.info(glob.glob(fbadirbase + '/*' ))
                     get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
-                    log.info('fa command_run')
-                    log.info(command_run)
+                    if verbose:
+                        log.info('fa command_run')
+                        log.info(command_run)
                     result = subprocess.run(command_run, capture_output = True)
                 else: 
                     log.info('not repeating fiberassignment')
