@@ -136,7 +136,7 @@ if args.plotnz == 'y':
             plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
             plt.title('LRG for nights '+args.min_night+' through '+args.max_night)
             plt.xlabel('Z')
-            plt.legend(loc='upper right')
+            plt.legend(loc='upper left')
             plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
