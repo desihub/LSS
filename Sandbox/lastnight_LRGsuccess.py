@@ -112,17 +112,17 @@ if args.plotnz == 'y':
     from matplotlib import pyplot as plt
     all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
     sel = all['ZWARN'] == 0
-    sel &= all['DELTACHI2'] < 15
+    sel &= all['DELTACHI2'] > 15
     sel &= all['Z_not4clus'] <1.5
     all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
         nzp = np.concatenate(nzls[pt])
-        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt))
+        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
         plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night)
-        plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily')
+        plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
         plt.title('LRG')
         plt.xlabel('Z')
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
         plt.show()
