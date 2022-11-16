@@ -2446,7 +2446,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print('length after tsnrcut '+str(len(ff[selobs])))
 
         if dchi2 is not None:
-            selg = ssr_tools.LRG_goodz(ff)
+            selg = ssr_tools.LRG_goodz(ff,zcol='Z_not4clus')
             wz = selg
             wz &= selobs
 
