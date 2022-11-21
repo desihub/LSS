@@ -1050,11 +1050,21 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         if not isinstance(nom, str):
             msg = "file and field names must be strings ({} is not)".format(nom)
             raise_myerror(msg)
+    
+    # MMM Check there are no repeated field names
+    repeats = set([x for x in fieldslist if fieldslist.count(x) > 1])
+    if repeats != set(): 
+        msg = "Please don't use repeated field names in field list. \n \
+        If you do need this feature contact the developers. \n \
+        You have repeated {} ".format(repeats)
+        raise raise_myerror(msg)
 
     # MMM Determine output filename.
     if write and not outfn:
         outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir)
         log.warning("output filename not passed, defaulting to {}".format(outfn))
+
+
 
     # ------------------
     # MMM create bitmasklist from (and check) masklist.
@@ -1077,6 +1087,16 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # ADM need chxhdr to check random catalogs generated at same density.
     stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
     skyfield = fitsio.read(skymapvaluescat, rows=[0])
+
+    # MMM check if there are no foreign or misspelled items in fieldlist
+    # MMM check all items in fieldlist belong to the stdfcol or skyfcol intersections
+       
+    foreign = [ fieldslist[i]  for i, x in enumerate(fieldslist) if x not in stdfcol+skyfcol] 
+    if foreign :     
+        msg = "You have some wrong or misspelled items in the field list\n \
+        They are {} \n".format(foreign)
+        raise raise_myerror(msg)
+
 
     # MMM select unique columns by matching to field list
     # MMM (standard field, sky_image, and mask).
