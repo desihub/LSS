@@ -67,8 +67,7 @@ maparray = np.array([
     ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
     ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
     ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',     '< 0', False, True),
-    # ADM I temporarily commented out the ALMMAP as reading it is failing.
-    #    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
+    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True),
     ], dtype=mapdt)
 
