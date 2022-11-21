@@ -527,7 +527,7 @@ if __name__ == '__main__':
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
-    parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='n')
+    parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
