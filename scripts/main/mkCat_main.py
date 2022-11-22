@@ -487,10 +487,10 @@ if args.add_weight_zfail == 'y':
 if args.add_ke == 'y':
     if args.survey != 'DA02':
         regl = ['']
-        kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-        ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
-        for col in kecols:
-            rcols.append(col)
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    for col in kecols:
+        rcols.append(col)
 
     for reg in regl:
         fb = dirout+tracer_clus+reg
