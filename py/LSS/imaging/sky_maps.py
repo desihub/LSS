@@ -1003,7 +1003,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                           lssmapdir=None, outfn=None, write=True):
     """
     Creates a pixweight file from randoms filtered by bitmasks.
-    **** Provisional version *** SECOND DRAFT ******
 
     Parameters
     ----------
@@ -1135,7 +1134,11 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # ADM read ALL needed columns from randomcat here as a speed-up.
         ranvalues, ranhdr = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'],
                                         header=True)
-        skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
+        
+        # MMM read field values; only if need be
+        if skyfcol: skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
+        else:       skymapvalues = []
+
         skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
 
         # ADM check all random catalogs were generated at same density.
