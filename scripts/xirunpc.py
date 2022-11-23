@@ -103,6 +103,9 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         cat_dir = catalog_dir(survey=survey, **kwargs)
     #if survey in ['main', 'DA02']:
     #    tracer += 'zdone'
+    if 'edav1' in cat_dir:
+        cat_dir += ctype
+           
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
@@ -509,7 +512,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
@@ -524,6 +527,7 @@ if __name__ == '__main__':
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
+    parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -531,7 +535,10 @@ if __name__ == '__main__':
     setup_logging()
     args = parser.parse_args()
 
-
+    if args.rebinning == 'n':
+        args.rebinning = False
+    if args.rebinning == 'y':
+        args.rebinning = True
 
     mpicomm, mpiroot = None, None
     if True:#args.mpi:
@@ -620,45 +627,46 @@ if __name__ == '__main__':
                                   corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in ['N', 'S']])
                     result.save(corr_fn(file_type='npy', region='NScomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
                     all_regions.append('NScomb')
-                for region in all_regions:
-                    txt_kwargs = base_file_kwargs.copy()
-                    txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
-                    result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
-                    for factor in rebinning_factors:
-                        #result = TwoPointEstimator.load(fn)
-                        rebinned = result[:(result.shape[0] // factor) * factor:factor]
-                        txt_kwargs.update(bin_type=args.bin_type+str(factor))
-                        if corr_type == 'smu':
-                            fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
-                            rebinned.save_txt(fn_txt)
-                            fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
-                            rebinned.save_txt(fn_txt, ells=(0, 2, 4))
-                            fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
-                            rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
-                        elif corr_type == 'rppi':
-                            fn_txt = corr_fn(file_type='wp', **txt_kwargs)
-                            rebinned.save_txt(fn_txt, pimax=40.)
-                            for pifac in pi_rebinning_factors:
-                                rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
-                                txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
-                                fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
-                                rebinned.save_txt(fn_txt)
-                        elif corr_type == 'theta':
-                            fn_txt = corr_fn(file_type='theta', **txt_kwargs)
-                            rebinned.save_txt(fn_txt)
-
-                        if args.vis:
+                if args.rebinning:
+                    for region in all_regions:
+                        txt_kwargs = base_file_kwargs.copy()
+                        txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
+                        result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
+                        for factor in rebinning_factors:
+                            #result = TwoPointEstimator.load(fn)
+                            rebinned = result[:(result.shape[0] // factor) * factor:factor]
+                            txt_kwargs.update(bin_type=args.bin_type+str(factor))
                             if corr_type == 'smu':
-                                sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
+                                fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
+                                rebinned.save_txt(fn_txt)
+                                fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
+                                rebinned.save_txt(fn_txt, ells=(0, 2, 4))
+                                fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
+                                rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                             elif corr_type == 'rppi':
-                                sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
-                            else:
-                                sep, xis = rebinned(return_sep=True, return_std=False)
-                            if args.bin_type == 'log':
-                                for xi in xis: plt.loglog(sep, xi)
-                            if args.bin_type == 'lin':
-                                for xi in xis: plt.plot(sep, sep**2 * xi)
-                            tracers = tracer
-                            if tracer2 is not None: tracers += ' x ' + tracer2
-                            plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
-                            plt.show()
+                                fn_txt = corr_fn(file_type='wp', **txt_kwargs)
+                                rebinned.save_txt(fn_txt, pimax=40.)
+                                for pifac in pi_rebinning_factors:
+                                    rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
+                                    txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
+                                    fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
+                                    rebinned.save_txt(fn_txt)
+                            elif corr_type == 'theta':
+                                fn_txt = corr_fn(file_type='theta', **txt_kwargs)
+                                rebinned.save_txt(fn_txt)
+
+                            if args.vis:
+                                if corr_type == 'smu':
+                                    sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
+                                elif corr_type == 'rppi':
+                                    sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
+                                else:
+                                    sep, xis = rebinned(return_sep=True, return_std=False)
+                                if args.bin_type == 'log':
+                                    for xi in xis: plt.loglog(sep, xi)
+                                if args.bin_type == 'lin':
+                                    for xi in xis: plt.plot(sep, sep**2 * xi)
+                                tracers = tracer
+                                if tracer2 is not None: tracers += ' x ' + tracer2
+                                plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+                                plt.show()

@@ -19,6 +19,7 @@ rm /global/cfs/cdirs/desi/survey/catalogs//main/LSS/random*/*tmp*
 #all "potential assignments" are kept, meaning each targetid will appear many times
 #then, it collects the new spec data for any archived/zdone tiles (incl. the info in the zmtl files used to decide mtl updates)
 #then, it combines data from the healpix files selecting on given target types + notqso combinations; notqso means that targets passing the qso selection are removed
+#for this combination, only data at the tileids/fiberids that were considered good are kept
 #after combining, the sample is matched to the spec data based on 'TARGETID','LOCATION','TILEID','TILELOCID'
 #information on the unique groupings of tileids and tilelocid are determined (along with the number of tiles) and this information is joined by a TARGETID match
 #It will take awhile, >~ 1 hour for dark time and ~> 30 min for bright, with some variance depending on the number of new tiles (test run with 15 new dark and 41 new bright on Perlmutter)
@@ -65,56 +66,41 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 #then, we go through per type
 #the "full" random files are made for each healpix
 #this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
+for tp,notqso in zip(tps,notqsos):
+    #on cori
+   
+    salloc -N 2 -C haswell -t 04:00:00 --qos interactive --account desi
+    ./daily_main_randoms_type_2nodes_noveto.sh tp notqso
+    #or run all
+    ./daily_main_randoms_all_2nodes_noveto.sh
+    #on perlmutter, enough memory so one node fine?
+    #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
+#if data model is stable since the last updates, add to the arguments
+    --refullr n
 
-$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto.sh
+#apply veto mask column for LRGs
+#!don't need this anymore!
+#python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now
-#just do one random (can do all, but not necessary for most basic tasks and also easy to do later)
-python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --maxr 1
-
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --notqso notqso
+#can just run one random and then add --maxr 1
 
 #this applies vetos to both data and randoms (could put randoms in separate script and parallize)
-#pay attention to message "sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match" and check if numbers look good
 
-$LSSCODE/LSS/scripts/main/daily_main_data1ran_vetos.sh
+for tp,notqso in zip(tps,notqsos):
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso
+#can just run one random and then add --maxr 1
+    
+#to do randoms in parallel:
+    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso notqso
 
-#Numbers for each tracer as of Oct 18th 2022, if relative match is much different, report
-ELG
-13710917.0 13912449 13919838
-ELG_LOP
-10706974.0 10860317.0 10866073
-ELG_LOPnotqso
-8722851.0 8735241.0 8741168
-LRG
-3511046.0 3525933.0 3526807
-BGS_BRIGHT
-6462164.0 6465287.0 6465332
-BGS_ANY
-10890090.0 10944202.0 10944275
-
-#Now, the stats can be updated (and what is there should be good any other tests)
-#first run like
-
-python $LSSCODE/LSS/scripts/main/write_daily_stats.py
-
-#This will create/add to a file named temp.txt, with the most recent stats at the bottom.
-
-cat temp.txt
-
-#Check that the numbers make sense compared to https://data.desi.lbl.gov/desi/survey/catalogs/main/LSS/daily/LSScats/stats.txt
-#(e.g., the numbers should get bigger)
-#For instance, you might forget to combine the emission line data, and then the ELG redshifts might not grow, then after
-
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --mkemlin y --dospec n --combpix n
-
-(same as should have been run earlier)
-you could run
-
-$LSSCODE/LSS/scripts/main/daily_main_dataELG_full.sh
-$LSSCODE/LSS/scripts/main/daily_main_dataELG_vetos.sh
-
-If all looks good in temp.txt
-
-python $LSSCODE/LSS/scripts/main/write_daily_stats.py --add y
-
+#get k+e
+python mkCat_main.py --type BGS_BRIGHT --verspec daily --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1
+    
+#get regressis weights
+for tp,notqso in zip(tps,notqsos):
+	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec daily --notqso notqso
+    

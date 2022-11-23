@@ -42,6 +42,13 @@ CVal=${12}
 
 QVal=${13}
 
+debug=${14}
+
+verbose=${15}
+
+ProcPerNode=${16}
+
+
 for i in $(seq 0 1 $NObsDates)
 do
     echo " NextDate"
@@ -52,10 +59,14 @@ do
     echo ""
     echo ""
     echo ""
-    #srun  runAltMTLParallel.py $i
-    srun --cpu-bind=none --nodes=$NNodes -C $CVal -q $QVal -A desi -t 02:00:00 $path2LSS/runAltMTLParallel.py $NNodes $qR $altmtlbasedir $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp
+    
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 02:00:00 $path2LSS/runAltMTLParallel.py $NNodes $qR $altmtlbasedir $secondary $obscon $survey $numobs_from_ledger $redoFA $getosubp $debug $verbose $ProcPerNode
+    retcode=$?
     qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.
-    if [ $? -ne 0 ]; then
+    if [ $retcode -ne 0 ]; then
+        echo 'something went wrong'
+        echo $retcode
         exit 1234
     fi
+
 done

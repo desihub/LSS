@@ -1,4 +1,4 @@
-#!/global/common/software/desi/cori/desiconda/20200801-1.4.0-spec/conda/bin/python -u 
+#!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
 from desiutil.log import get_logger
 from LSS.SV3.mockaltmtltools import writeBitweights
 from LSS.bitweights import pack_bitweights

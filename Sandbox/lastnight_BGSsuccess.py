@@ -20,8 +20,8 @@ exps = Table.read('/global/cfs/cdirs/desi/spectro/redux/daily/exposure_tables/'+
 print('number of exposures found:')
 print(len(exps))
 #cut to dark tiles
-sel = exps['FAPRGRM']=='dark'
-print('number that are dark time:')
+sel = exps['FAPRGRM']=='bright'
+print('number that are bright time:')
 print(len(exps[sel]))
 
 exps = exps[sel]
@@ -40,10 +40,10 @@ for ii in range(0, len(tidl)):
 
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
-sel = exptl > 850
+sel = exptl/60 > .85
 tidl = tidl[sel]
 
-print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
+print('number bright tiles that have EFFTIME_ETC/goal > 0.85 during the night:')
 print(len(tidl))
 
 
@@ -75,7 +75,7 @@ for tid in tidl:
             print('number with bad qa '+str(num_badqa))
             nomtl = nodata | badqa
             wfqa = ~nomtl
-            wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
+            wlrg = (zmtlf['BGS_TARGET'] ) > 0
             zlrg = zmtlf[wfqa&wlrg]
             if len(zlrg) > 0:
                 #drz = (10**(3 - 3.5*zmtlf['Z']))
@@ -85,14 +85,14 @@ for tid in tidl:
                 #wz = zmtlf['ZWARN'] == 0
                 #wz &= zmtlf['Z']<1.4
                 #wz &= (~mask_bad)
-                mask_bad = (zmtlf['DELTACHI2']<15)
+                mask_bad = (zmtlf['DELTACHI2']<40)
                 wz = zmtlf['ZWARN'] == 0
-                wz &= zmtlf['Z']<1.5
+                wz &= zmtlf['Z']<0.7
                 wz &= (~mask_bad)
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
-                print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+                print('The fraction of good BGS is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
@@ -103,30 +103,30 @@ for tid in tidl:
             print(zmtlff+' not found') 
         
 
-print('the total number of LRG considered per petal for the night is:')
+print('the total number of BGS considered per petal for the night is:')
 print(tz)
 tzs = gz/tz
-print('the total fraction of good LRG z per petal for the night is:')
+print('the total fraction of good BGS z per petal for the night is:')
 print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
-    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
+    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/BGS_ANY_full.dat.fits')
     sel = all['ZWARN'] == 0
-    sel &= all['DELTACHI2'] > 15
-    sel &= all['Z_not4clus'] <1.5
+    sel &= all['DELTACHI2'] > 40
+    sel &= all['Z_not4clus'] < 0.7
     all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
         plt.clf()
         if len(nzls[pt]) > 0:
             nzp = np.concatenate(nzls[pt])
-            a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
+            a = plt.hist(nzp,range=(0.01,0.7),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
             plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night)
             plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
-            plt.title('LRG')
+            plt.title('BGS_ANY')
             plt.xlabel('Z')
-            plt.legend(loc='upper left')
-            plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
+            plt.legend(loc='upper right')
+            plt.savefig(args.outdir+'BGS_ANY'+args.night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()

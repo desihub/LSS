@@ -10,6 +10,7 @@ import sys
 import tempfile
 import shutil
 import re
+import glob
 
 # time
 from time import time
@@ -52,7 +53,7 @@ minimal_target_columns_main= ['RELEASE','BRICKNAME','BRICKID','BRICK_OBJID','MOR
 'TARGETID','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT','NUMOBS_INIT','DESI_TARGET',\
 'BGS_TARGET','MWS_TARGET','SCND_TARGET']
 
-def comp_neworig(tileid,dirn='/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'):
+def comp_neworig(tileid,dirn='/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/', verbose = False):
     """
     check that new matches the original
     
@@ -75,7 +76,7 @@ def comp_neworig(tileid,dirn='/global/cfs/cdirs/desi/survey/catalogs/testfiberas
     else:
         return False
 
-def comp_neworig_tgt(tileid):
+def comp_neworig_tgt(tileid, verbose = False):
     """
     check that new matches the original, just tgt
     
@@ -103,7 +104,7 @@ def comp_neworig_tgt(tileid):
     else:
         return False
 
-def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'):
+def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/', verbose = False):
     """
     check that new matches the original, comparing fba files
     
@@ -116,11 +117,13 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
     if fht['DESIROOT'] == '/data/datasystems':
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
         try:
+            
             f = fitsio.read(indir+ts+'-targ.fits')
         except:
-        
+            
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+
            
     fa = fitsio.read(indir+'fba-'+ts+'.fits')
     
@@ -142,7 +145,7 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
 #         return False
 
  
-def redo_fba_fromorig(tileid,outdir=None,faver=None):
+def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
@@ -202,7 +205,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/common/software/desi/desi_environment.sh master\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh main\n')
     if faver == None:
         faver = float(fht['FA_VER'][:3])
         if 'main' in indir:
@@ -248,7 +251,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -260,27 +263,35 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         except:
             date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
             indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+            
+    elif ( ('holding' in indir.lower()) or ('main' in indir.lower())):
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/main/' + ts[0:3] +'/'
 
     tilef = indir+ts+'-tiles.fits'
     try:
         fitsio.read(tilef)
     except:
+        '''
         try:
             if 'sv3' in indir.lower():
                 date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
                 indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
             elif ('main' in indir.lower()) or ('holding' in indir.lower()):
+                ###WHY NOT DATE SET HERE???
+                log.info('WHY NOT DATE SET HERE FOR MAIN')
                 indir = '/global/cfs/cdirs/desi/survey/fiberassign/main/' + ts[0:3] +'/'
             else:
                 raise ValueError('survey not sv3 or main, will have checks for SV2/1/CMX in future.')
             tilef = indir+ts+'-tiles.fits'
             fitsio.read(tilef)
+
         except:
-            log.critical('failed to read tile file')
-            log.critical('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
-            log.critical('indir')
-            log.critical(indir)
-            return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+        '''
+        log.critical('failed to read tile file')
+        log.critical('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+        log.critical('indir')
+        log.critical(indir)
+        return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
@@ -322,6 +333,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
 
     if mtldir is not None:
         if 'sv3' in indir.lower():
+            if verbose:
+                log.debug('sv3 survey')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -329,6 +342,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tarfn,
             tdir+prog)
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
+            if verbose:
+                log.info('main survey')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -336,24 +351,34 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tarfn,
             tdirMain+prog,
             survey = 'main')
+        else:
+            log.critical('invalid input directory. must contain either sv3, main, or holding')
+            raise ValueError('indir must contain either sv3, main, or holding')
     if getosubp:
         if tileid == 315:
+            log.info('special tile 315 case triggered')
+            log.info('tileid = {0}'.format(tileid))
+            
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','PRIORITY','SUBPRIORITY'])
+            
             ntar = Table.read(tarfn)
             ntar.remove_columns(['SUBPRIORITY', 'PRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
         else:
+            
             otar = Table.read(indir+ts+'-targ.fits')
             otar.keep_columns(['TARGETID','SUBPRIORITY'])
+
             ntar = Table.read(tarfn)
             ntar.remove_columns(['SUBPRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
+    
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
-    fo.write('source /global/common/software/desi/desi_environment.sh master\n')
+    fo.write('source /global/common/software/desi/desi_environment.sh main\n')
 
     if faver == None:
         faver = float(fht['FA_VER'][:3])
@@ -424,7 +449,8 @@ def altcreate_mtl(
     survey='sv3',
     mtltime=None,#I think we will just want this to be the latest for the re/alt runs    
     pmtime_utc_str=None,
-    add_plate_cols=True#,
+    add_plate_cols=True,
+    verbose=False
     #tmpoutdir=tempfile.mkdtemp(),
 ):
     """
@@ -438,7 +464,7 @@ def altcreate_mtl(
         gaiadr: Gaia dr ("dr2" or "edr3")
         pmcorr: apply proper-motion correction? ("y" or "n")
         outfn: fits file name to be written (string)
-        survey: should just be sv3
+        survey: sv3 or main
         mtltime: MTL isodate (string formatted as yyyy-mm-ddThh:mm:ss+00:00); this needs be considered carefully for alt mtls
         tmpoutdir (optional, defaults to a temporary directory): temporary directory where
                 write_targets will write (creating some sub-directories)
@@ -482,9 +508,7 @@ def altcreate_mtl(
         assert(mtltime.shape[0] == 1)
         
         mtltime = str(mtltime[0])
-        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
-        log.info('tiles {0}'.format(tiles))
-        log.info('mtltime {0}'.format(mtltime))
+        
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -492,6 +516,7 @@ def altcreate_mtl(
             mtl=True,
             unique=True,
             isodate=mtltime,
+            verbose=verbose,
         )
     elif (315 in tileIDs) and (len(tiles) > 1):
         log.critical('315 in tiles but multiple tiles provided')
@@ -499,10 +524,7 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-        log.info('normal altcreate_mtl function')
-        log.info('running read_targets_in_tiles with mtldir {0}'.format(mtldir))
-        log.info('mtltime {0}'.format(mtltime))
-        log.info('tiles {0}'.format(tiles))
+        
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -510,7 +532,9 @@ def altcreate_mtl(
             mtl=True,
             unique=True,
             isodate=mtltime,
+            verbose=verbose,
         )
+        
         
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,

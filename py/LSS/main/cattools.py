@@ -2407,105 +2407,135 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     ff = Table.read(fl+'_full.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:
-        print('Z column already in full file')
-    else:
-        ff['Z_not4clus'].name = 'Z'
+        #print('Z column already in full file')
+    #else:
+        #ff['Z_not4clus'].name = 'Z'
+        ff['Z'].name = 'Z_not4clus'
+        common.write_LSS(ff,fl+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
+
+    selobs = ff['ZWARN'] == 0
+    selobs &= ff['ZWARN']*0 == 0
+    selobs &= ff['ZWARN'] != 999999
+
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
         wz = ff['Z']*0 == 0
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
-        wz &= ff['ZWARN'] != 999999
-        wz &= ff['TSNR2_ELG'] > tsnrcut
+        wz &= selobs
+        func = ssr_tools.QSO_ssr
 
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
-        wz = ff['ZWARN']*0 == 0
-        
-        wz &= ff['ZWARN'] != 999999
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
         if dchi2 is not None:
-            wz &= ff['o2c'] > dchi2
+            wz = ff['o2c'] > dchi2
             print('length after oII cut '+str(len(ff[wz])))
-        wz &= ff['LOCATION_ASSIGNED'] == 1
-        print('length after also making sure location assigned '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
+        wz &= selobs
+        #wz &= ff['LOCATION_ASSIGNED'] == 1
+        #print('length after also making sure location assigned '+str(len(ff[wz])))
+        
         print('length after tsnrcut '+str(len(ff[wz])))
+        func = ssr_tools.ELG_ssr
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
-        wz = ff['ZWARN'] == 0
-        wz &= ff['ZWARN']*0 == 0
-        wz &= ff['ZWARN'] != 999999
+        selobs &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[selobs])))
 
         if dchi2 is not None:
-            selg = ssr_tools.LRG_goodz(ff)
-            wz &= selg
+            selg = ssr_tools.LRG_goodz(ff,zcol='Z_not4clus')
+            wz = selg
+            wz &= selobs
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+        func = ssr_tools.LRG_ssr
 
     if tp[:3] == 'BGS':
-        wz = ff['ZWARN'] == 0
-        wz &= ff['ZWARN']*0 == 0
-        wz &= ff['ZWARN'] != 999999
-
+        selobs &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[selobs])))
         if dchi2 is not None:
             print('applying extra cut for BGS')
-            wz &= ff['DELTACHI2'] > dchi2
+            wz = ff['DELTACHI2'] > dchi2
             print('length after dchi2 cut '+str(len(ff[wz])))
-        wz &= ff['TSNR2_BGS'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+            wz &= selobs
+        
+        
+        func = ssr_tools.BGS_ssr
 
 
     #ffz = ff[wz]
     print('length after cutting to good z '+str(len(ff[wz])))
-    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    ff['mod_success_rate'] = np.ones(len(ff))
-    if dchi2 is not None:
-        if tp[:3] == 'LRG':
-            lrg = ssr_tools.LRG_ssr()
-            ff[wz] = lrg.add_modpre(ff[wz])
-            ff[wz]['WEIGHT_ZFAIL'] = 1./ff[wz]['mod_success_rate']
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+    ff['GOODZ'] = wz
+    #if tp != 'LRG':
+    #    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    #    ff['mod_success_rate'] = np.ones(len(ff))
+    #selobs = ff['ZWARN'] != 999999
+    
+    gal = func(surveys=[survey],specrels=[specrel],versions=[version])
+    ffwz = gal.add_modpre(ff[selobs])
+    print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+    #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+    ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+    for col in rem_cols:
+        try:
+            ff.remove_columns([col])
+            print(col +' was in full file and will be replaced')
+        except:
+            print(col +' was not yet in full file')    
+    ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+    #print(min(zf),max(zf))
+    wz = ff['GOODZ']
+    #print(len(ff[wz]),len(ff))
 
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-
-        if tp == 'BGS_BRIGHT':
-            bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = bgs.add_modpre(ff[wz],fl)
-            ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+    print('min/max of zfail weights:')
+    print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+ 
+    print('checking sum of zfail weights compared to length of good spec')
+    print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
 
 
-        if tp == 'ELG_LOP':
-            elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = elg.add_modpre(ff[wz])
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-
-        if tp == 'QSO':
-            qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
-            ff[wz] = qso.add_modpre(ff[wz],fl)
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
     plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
     plt.show()
+    
+    common.write_LSS(ff,fl+'_full.dat.fits',comments='added ZFAIL weight')
+    
+    
+#     if dchi2 is not None:
+#         if tp[:3] == 'LRG':
+#             lrg = ssr_tools.LRG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ffwz = lrg.add_modpre(ff[wz])
+#             print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+#             ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+#             ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+#             ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+#             #print(min(zf),max(zf))
+#             wz = ff['GOODZ']
+#             print(len(ff[wz]),len(ff))
+#             #ff[wz]['WEIGHT_ZFAIL'] = zf
+# 
+#         if tp == 'BGS_BRIGHT':
+#             bgs = ssr_tools.BGS_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = bgs.add_modpre(ff[wz],fl)
+#             ff[wz]['WEIGHT_ZFAIL'] = np.clip(1./ff[wz]['mod_success_rate'],1,1.2)
+# 
+# 
+#         if tp == 'ELG_LOP':
+#             elg = ssr_tools.ELG_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = elg.add_modpre(ff[wz])
+# 
+#         if tp == 'QSO':
+#             qso = ssr_tools.QSO_ssr(surveys=[survey],specrels=[specrel],versions=[version])
+#             ff[wz] = qso.add_modpre(ff[wz],fl)
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+#         
+
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
@@ -2944,6 +2974,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
             else:
                 print('creating '+fname)
                 rtw = read_targets_in_tiles(dirrt,tile)
+                print('read targets for '+fname)
                 rmtl = Table(rtw)
                 del rtw
                 #rmtl['TARGETID'] = np.arange(len(rmtl))
@@ -2954,6 +2985,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
                 rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+                print('added columns for '+fname)
                 rmtl.write(fname,format='fits', overwrite=True)
                 del rmtl
                 print('added columns, wrote to '+fname)
