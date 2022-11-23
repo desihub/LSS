@@ -2974,6 +2974,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
             else:
                 print('creating '+fname)
                 rtw = read_targets_in_tiles(dirrt,tile)
+                print('read targets for '+fname)
                 rmtl = Table(rtw)
                 del rtw
                 #rmtl['TARGETID'] = np.arange(len(rmtl))
@@ -2984,6 +2985,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
                 rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
                 rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+                print('added columns for '+fname)
                 rmtl.write(fname,format='fits', overwrite=True)
                 del rmtl
                 print('added columns, wrote to '+fname)
