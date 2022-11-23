@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+import argparse
+import textwrap
+import os
+from glob import glob
+from time import time
+start = time()
+
+from LSS.imaging.sky_maps import generate_map_values, generate_mask, get_lss_map_dir
+
+from desiutil.log import get_logger
+log = get_logger()
+
+# ADM the currently set default lss_map_dir.
+lssmapdir = get_lss_map_dir()
+
+# ADM example input file.
+egd = "/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve"
+egrancat1 = os.path.join(egd, "randoms-1-0.fits")
+egrancat2 = egrancat1.replace("0.fits", "*.fits")
+egrancat3 = egrancat1.replace("0.fits", "?.fits")
+egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
+
+ap = argparse.ArgumentParser(description="Generate files of map and mask values that correspond to a " +
+                    "desitarget random catalog and write them to the sky map directory",
+                    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+                    Examples:
+                    make_imaging_map_mask_catalogs {}
+                    make_imaging_map_mask_catalogs "{}"
+                    make_imaging_map_mask_catalogs "{}"
+                    make_imaging_map_mask_catalogs "{}"
+                    """.format(egrancat1, egrancat2, egrancat3, egrancat4)))
+ap.add_argument("rancatname",
+                help="Full path to a random catalog. Can process multiple catalogs" +
+                " together by passing a wildcard recognized by glob.")
+ap.add_argument("--lssmapdir",
+                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {}).'
+                .format(lssmapdir),
+                default=lssmapdir)
+
+ns = ap.parse_args()
+
+# ADM in case a wildcard was passed.
+# ADM (will also embed a single catalog in a list).
+rancatlist = sorted(glob(ns.rancatname))
+log.info("Processing {} input files: {}".format(len(rancatlist), rancatlist))
+
+for rancatname in rancatlist:
+    log.info("Generating file of mask values for {}...t={:.1f}s".format(
+        rancatname, time()-start))
+    _ = generate_mask(rancatname, lssmapdir=lssmapdir)
+    log.info("Generating file of map values for {}...t={:.1f}s".format(
+        rancatname, time()-start))
+    _ = generate_map_values(rancatname, lssmapdir=lssmapdir)
