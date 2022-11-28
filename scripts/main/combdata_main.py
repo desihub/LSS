@@ -45,6 +45,7 @@ parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
+parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
@@ -65,6 +66,9 @@ version = args.version
 specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
+redoqso = False
+if args.redoqso == 'y':
+    redoqso = True
 
 combpix = True
 if args.combpix == 'n':
@@ -245,7 +249,7 @@ if specrel == 'daily':
 
 if specrel == 'daily' and args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    ct.combtile_qso(tiles4comb,outf)
+    ct.combtile_qso(tiles4comb,outf,restart=True)
 
 if specrel == 'daily' and args.mkemlin == 'y':
     outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
