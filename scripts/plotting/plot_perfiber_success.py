@@ -121,5 +121,5 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
 
 
 for i in range(0,10):
-    plot_all_petal(i)
+    #plot_all_petal(i)
     plot_LRGBGS_petal(i)
