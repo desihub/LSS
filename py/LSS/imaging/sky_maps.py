@@ -756,7 +756,7 @@ def rancat_name_to_pixweight_name(rancatname, lssmapdir=None):
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
-    return os.path.join(lssmapdir, "pixweight", outfn)
+    return os.path.join(os.path.dirname(lssmapdir), "pixweight_maps_all", outfn)
 
 
 def parse_mask_check(mxdata, maskcheck, check=False):
