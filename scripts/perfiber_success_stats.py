@@ -19,8 +19,9 @@ import LSS.common_tools as common
 
 
 parser = argparse.ArgumentParser()
-#parser.add_argument("--type", help="tracer type to be selected")
+
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
+parser.add_argument("--tracer", help="tracer type to be selected",default='all')
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
@@ -40,7 +41,10 @@ specver = args.verspec
 #ff2 = fitsio.read(filepathBGS)
 #hdul = fits.open(filepathBGS)
 
-tracers = ['QSO','LRG','ELG','BGS_ANY']
+if args.tracer == 'all':
+    tracers = ['QSO','LRG','ELG','BGS_ANY']
+else:
+    tracers = [args.tracer]
 
 if args.mkfiles == 'y':
     for tp in tracers:
