@@ -72,15 +72,6 @@ if args.mkfiles == 'y':
             from LSS.globals import main
             pars = main(tp,args.verspec)
         
-        elif survey == 'main':
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_'+tp+'_tarspecwdup_zdone.fits'
-            dz = Table(fitsio.read(zf))
-            if tp == 'ELG':
-                wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
-                dz = dz[wtype]
-            dz = common.cut_specdat(dz)
-            from LSS.globals import main
-            pars = main(tp,args.verspec)
             
 
         elif survey == 'SV3':
@@ -109,6 +100,16 @@ if args.mkfiles == 'y':
             dz = dz[wtype]
             wz = dz['COADD_FIBERSTATUS'] == 0
             dz = dz[wz]
+
+        else: 
+            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_'+tp+'_tarspecwdup_zdone.fits'
+            dz = Table(fitsio.read(zf))
+            if tp == 'ELG':
+                wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
+                dz = dz[wtype]
+            dz = common.cut_specdat(dz)
+            from LSS.globals import main
+            pars = main(tp,args.verspec)
 
 
         z_tot = dz['ZWARN'] != 999999
