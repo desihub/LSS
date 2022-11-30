@@ -54,6 +54,7 @@ parser.add_argument("--combpix",help="if n, just skip to next stage",default='y'
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
+parser.add_argument("--tracer", help="tracer type",default='all')
 
 
 
@@ -499,8 +500,14 @@ if specrel != 'daily' and args.dospec == 'y':
     else:
         #tar
         if prog == 'dark':
-            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
-            notqsos = ['','','','','notqso']
+            if args.tracer == 'all':
+                tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+                notqsos = ['','','','','notqso']
+            else:
+                tps = [args.tracer.strip('notqso')]
+                notqsos = ['']
+                if 'notqso' is in args.tracer:
+                    notqsos = ['notqso'''
         if prog == 'bright':
             tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
             notqsos = ['',''] 
@@ -524,6 +531,9 @@ if specrel != 'daily' and args.dospec == 'y':
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
         #specf.remove_columns(['PRIORITY'])
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        del tarf
+        del specf
+        print('joined tar and spec, now writing')
         tj.write(outfs,format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
         outtc =  ldirspec+'Alltiles_'+tp+notqso+'_tilelocs.dat.fits'
