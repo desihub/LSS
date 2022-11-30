@@ -512,7 +512,7 @@ if specrel != 'daily':
 
         #tarf.remove_columns(['ZWARN_MTL'])
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        specf.remove_columns(['PRIORITY'])
+        #specf.remove_columns(['PRIORITY'])
         tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         tj.write(outfs,format='fits', overwrite=True)
         tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
