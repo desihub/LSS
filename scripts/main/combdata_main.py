@@ -135,6 +135,7 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
+dailydir = maindir+'daily/'
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
@@ -249,7 +250,7 @@ if specrel == 'daily':
 
 if specrel == 'daily' and args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    ct.combtile_qso(tiles4comb,outf,restart=True)
+    ct.combtile_qso(tiles4comb,outf,restart=redoqso)
 
 if specrel == 'daily' and args.mkemlin == 'y':
     outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
@@ -467,7 +468,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel == 'everest' or specrel =='guadalupe':
+if specrel != 'daily':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
@@ -481,19 +482,42 @@ if specrel == 'everest' or specrel =='guadalupe':
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     specf.write(outfs,format='fits', overwrite=True)
     
-    tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
+    if specrel == 'everest' or specrel =='guadalupe':
+        #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
+        tps = [prog]
+        notqsos = ['']
+    else:
+        #tar
+        if prog == 'dark':
+            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+            notqsos = ['','','','','notqso']
+        if prog == 'bright':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+    for tp,notqso in zip(tps,notqsos):
+        #first test to see if we need to update any
+        print('now doing '+tp+notqso)
+        print(len(tiles4comb['TILEID']))
+        tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
+        tarf = Table.read(tarfo)
+        remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+        for col in remcol:
+            try:
+                tarf.remove_columns([col] )#we get this where relevant from spec file
+            except:
+                print('column '+col +' was not in stacked tarwdup table')    
 
-    tarf = Table.read(tarfo)
-    tarf.remove_columns(['ZWARN_MTL'])
-    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-    specf.remove_columns(['PRIORITY'])
-    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
-    outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
-    tj.write(outfs,format='fits', overwrite=True)
-    tc = ct.count_tiles_better('dat',prog,specrel=specrel,survey=args.survey) 
-    outtc =  ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits'
-    tc.write(outtc,format='fits', overwrite=True)
+        #tarf.remove_columns(['ZWARN_MTL'])
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        specf.remove_columns(['PRIORITY'])
+        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        tj.write(outfs,format='fits', overwrite=True)
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        outtc =  ldirspec+'Alltiles_'+tp+notqso+'_tilelocs.dat.fits'
+        tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
