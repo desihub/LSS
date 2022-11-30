@@ -1071,7 +1071,7 @@ def get_specdat(indir,pd,ver='daily',badfib=None):
     #zf = indir+'/datcomb_'+pd+'_tarspecwdup.fits'
     #if ver == 'everest' or ver == 'guadalupe':
     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-    if ver == 'daily':
+    if ver == 'daily' or ver == 'himalayas':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
     print('getting spec data from '+zf)
     dz = Table.read(zf)
