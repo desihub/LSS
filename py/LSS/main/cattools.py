@@ -194,9 +194,9 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
             #tspec = fitsio.read('temp.fits')
             #tspec = np.empty(len(tspecio),dtype=dt)
 
-            #if s == 0:
-            #    specd = tspec
-            #    s = 1
+            if s == 0:
+                specd = tspec
+                s = 1
             #else:
             #specd = vstack([specd,tspec],metadata_conflicts='silent')
             #column order got mixed up
