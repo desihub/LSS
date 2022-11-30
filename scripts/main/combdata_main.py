@@ -95,6 +95,7 @@ print('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
     #if specrel == 'everest':
+    coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 mtd = mt[wd]
@@ -248,28 +249,33 @@ if specrel == 'daily':
                 npx += 1
             tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
-if specrel == 'daily' and args.doqso == 'y':
+if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    ct.combtile_qso(tiles4comb,outf,restart=redoqso)
+    if specrel == 'daily':
+        ct.combtile_qso(tiles4comb,outf,restart=redoqso)
+    else:
+        ct.combtile_qso_alt(tiles4comb,outf,coaddir=coaddir)
 
-if specrel == 'daily' and args.mkemlin == 'y':
-    outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
-    guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
-    guadtiles = np.unique(guadtiles['TILEID'])
-    gtids = np.isin(tiles4comb['TILEID'],guadtiles)
-    tiles4em = tiles4comb[~gtids]
-    ndone = 0
-    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
-        outf = outdir+'emline-'+str(tile)+'.fits'
-        if not os.path.isfile(outf):
-            tdate = str(tdate)
-            ct.combEMdata_daily(tile,zdate,tdate,outf=outf)
-            print('wrote '+outf)
-            ndone += 1
-            print('completed '+str(ndone)+' tiles')
+if  args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
-    ct.combtile_em(tiles4comb,outf)
-    
+    if specrel == 'daily':
+		outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
+		guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+		guadtiles = np.unique(guadtiles['TILEID'])
+		gtids = np.isin(tiles4comb['TILEID'],guadtiles)
+		tiles4em = tiles4comb[~gtids]
+		ndone = 0
+		for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
+			outft = outdir+'emline-'+str(tile)+'.fits'
+			if not os.path.isfile(outf):
+				tdate = str(tdate)
+				ct.combEMdata_daily(tile,zdate,tdate,outf=outft)
+				print('wrote '+outf)
+				ndone += 1
+				print('completed '+str(ndone)+' tiles')
+		ct.combtile_em(tiles4comb,outf)
+    else:
+        combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
 
 if args.survey == 'Y1' and args.counts_only == 'y':    
     if prog == 'dark':
