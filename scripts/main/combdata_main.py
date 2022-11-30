@@ -259,21 +259,21 @@ if  args.doqso == 'y':
 if  args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
     if specrel == 'daily':
-		outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
-		guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
-		guadtiles = np.unique(guadtiles['TILEID'])
-		gtids = np.isin(tiles4comb['TILEID'],guadtiles)
-		tiles4em = tiles4comb[~gtids]
-		ndone = 0
-		for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
-			outft = outdir+'emline-'+str(tile)+'.fits'
-			if not os.path.isfile(outf):
-				tdate = str(tdate)
-				ct.combEMdata_daily(tile,zdate,tdate,outf=outft)
-				print('wrote '+outf)
-				ndone += 1
-				print('completed '+str(ndone)+' tiles')
-		ct.combtile_em(tiles4comb,outf)
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
+        guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+        guadtiles = np.unique(guadtiles['TILEID'])
+        gtids = np.isin(tiles4comb['TILEID'],guadtiles)
+        tiles4em = tiles4comb[~gtids]
+        ndone = 0
+        for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
+            outft = outdir+'emline-'+str(tile)+'.fits'
+            if not os.path.isfile(outf):
+                tdate = str(tdate)
+                ct.combEMdata_daily(tile,zdate,tdate,outf=outft)
+                print('wrote '+outf)
+                ndone += 1
+                print('completed '+str(ndone)+' tiles')
+        ct.combtile_em(tiles4comb,outf)
     else:
         combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
 
