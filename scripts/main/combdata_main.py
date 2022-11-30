@@ -506,8 +506,8 @@ if specrel != 'daily' and args.dospec == 'y':
             else:
                 tps = [args.tracer.strip('notqso')]
                 notqsos = ['']
-                if 'notqso' is in args.tracer:
-                    notqsos = ['notqso'''
+                if 'notqso' in args.tracer:
+                    notqsos = ['notqso']
         if prog == 'bright':
             tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
             notqsos = ['',''] 
