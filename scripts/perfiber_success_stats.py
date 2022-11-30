@@ -77,18 +77,18 @@ if args.mkfiles == 'y':
         elif survey == 'SV3':
             #ys.exit('not written for SV3 yet')
             if tp != 'BGS_ANY':
-				zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
-				dz = Table(fitsio.read(zf))
-				desitarg = 'SV3_DESI_TARGET'
-				if tp == 'LRG':
-					bit = 1 #for selecting LRG
-				if tp == 'ELG':
-					bit = 2
-				if tp == 'QSO':
-					bit = 4
-				wtype = ((dz[desitarg] & bit) > 0)
-				if tp == 'ELG':
-					wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
+                zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
+                dz = Table(fitsio.read(zf))
+                desitarg = 'SV3_DESI_TARGET'
+                if tp == 'LRG':
+                    bit = 1 #for selecting LRG
+                if tp == 'ELG':
+                    bit = 2
+                if tp == 'QSO':
+                    bit = 4
+                wtype = ((dz[desitarg] & bit) > 0)
+                if tp == 'ELG':
+                    wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
             else:
                 zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
                 dz = Table(fitsio.read(zf))
