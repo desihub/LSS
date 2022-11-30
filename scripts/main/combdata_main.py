@@ -103,7 +103,7 @@ if specrel != 'daily':
 
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtd))+' '+prog+' time '+arg.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
+print('found '+str(len(mtd))+' '+prog+' time '+args.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 
 tiles4comb = Table()
