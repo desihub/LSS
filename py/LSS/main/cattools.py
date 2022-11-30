@@ -538,7 +538,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
     for tile,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = None
-        tspec = combEMdata_guad(tile,tdate,coaddir=coaddir)
+        tspec = combEMdata_rel(tile,tdate,coaddir=coaddir)
         if tspec is not None:
             tspec = np.array(tspec)
 
@@ -574,7 +574,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
 
 
 
-def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
+def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
     remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
     zfn = 'emline'
     dl = []
