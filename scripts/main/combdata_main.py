@@ -108,6 +108,10 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
 
+if args.survey == 'Y1':
+    sel = tiles4comb['THRUDATE'] < 20220900
+    tiles4comb = tiles4comb[sel]
+
 print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
 print('Is that what was expected based on MTL updates?')
 if args.check_date_only == 'y':
@@ -474,7 +478,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel != 'daily':
+if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
