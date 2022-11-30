@@ -98,9 +98,12 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+    if args.survey == 'Y1':
+        wd &= mt['ZDATE'] < 20220900
+
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+print('found '+str(len(mtd))+' '+prog+' time '+arg.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 
 tiles4comb = Table()
@@ -108,9 +111,6 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
 
-if args.survey == 'Y1':
-    sel = tiles4comb['THRUDATE'] < 20220900
-    tiles4comb = tiles4comb[sel]
 
 print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
 print('Is that what was expected based on MTL updates?')
