@@ -279,7 +279,7 @@ if  args.mkemlin == 'y':
                 print('completed '+str(ndone)+' tiles')
         ct.combtile_em(tiles4comb,outf)
     else:
-        combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
+        ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
 
 if args.survey == 'Y1' and args.counts_only == 'y':    
     if prog == 'dark':
