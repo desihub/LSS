@@ -23,7 +23,7 @@ egd = "/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve"
 egrancat1 = os.path.join(egd, "randoms-1-0.fits")
 egrancat2 = egrancat1.replace("0.fits", "*.fits")
 egrancat3 = egrancat1.replace("0.fits", "?.fits")
-egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
+egrancat4 = egrancat1.replace("0.fits", "[2-4].fits")
 # ADM example output file name.
 egoutfn = rancat_names_to_pixweight_name(glob(egrancat4))
 # ADM other example inputs.
