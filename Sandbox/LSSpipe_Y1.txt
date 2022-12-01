@@ -40,8 +40,8 @@ for tp,notqso in zip(tps,notqsos):
 #after fiberassign is run, the potential assignments are combined per healpix
 #does 18 randoms in parallel
 #total amount of time is ~linear in the number of tiles to run
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type dark 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type bright 
 
 #if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
@@ -56,13 +56,9 @@ for tp,notqso in zip(tps,notqsos):
     #or run all
     ./daily_main_randoms_all_2nodes_noveto.sh
     #on perlmutter, enough memory so one node fine?
-    #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --rfa n --combhp n --combfull y --fullr y 
+    #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y 
 #if data model is stable since the last updates, add to the arguments
     --refullr n
-
-#apply veto mask column for LRGs
-#!don't need this anymore!
-#python getLRGmask.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --survey main --verspec daily --maxr 18
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now
