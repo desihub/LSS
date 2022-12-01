@@ -1,4 +1,4 @@
-#LSS to run with every MTL update
+#LSS to run for Y1, starting from when there are new redshifts (e.g., himalayas)
 #from the LSS/scripts/main directory
 
 source /global/common/software/desi/desi_environment.sh main
@@ -9,36 +9,18 @@ git clone https://github.com/desihub/LSS.git
 cd LSS
 git pull
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
-module swap fiberassign/5.0.0
-
-#if you need to delete temporary fiberassign files
-rm /global/cfs/cdirs/desi/survey/catalogs//main/LSS/random*/*tmp*
 
 #data, run separately for dark and bright time
-#this script first goes through the fiberassign files, first combining all of the information together split by healpix
-#all "potential assignments" are kept, meaning each targetid will appear many times
-#then, it collects the new spec data for any archived/zdone tiles (incl. the info in the zmtl files used to decide mtl updates)
-#then, it combines data from the healpix files selecting on given target types + notqso combinations; notqso means that targets passing the qso selection are removed
-#for this combination, only data at the tileids/fiberids that were considered good are kept
-#after combining, the sample is matched to the spec data based on 'TARGETID','LOCATION','TILEID','TILELOCID'
-#information on the unique groupings of tileids and tilelocid are determined (along with the number of tiles) and this information is joined by a TARGETID match
-#It will take awhile, >~ 1 hour for dark time and ~> 30 min for bright, with some variance depending on the number of new tiles (test run with 15 new dark and 41 new bright on Perlmutter)
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark 
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright 
+#this script will merge the target info (already compiled from fiberassign files) with the spectroscopic info
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --survey Y1
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog bright --survey Y1
 
 
 #combine quasars:
-#run time is linear in number of tiles to process
-#some number, missing files not necessary for redrock pipeline but necessary for quasar catalog, will fail
-#if number of failures is > 4 (number failing for Y1), notify people so we can keep track
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --doqso y --dospec n --combpix n
-
-#to make the emission line files for each tile
-#run time is ~linear in number of tiles to process, < 100 should take < 1 hr
-srun -N 1 -C cpu -t 02:00:00 -q interactive python $LSSCODE/LSS/scripts/mkemlin.py
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --doqso y --dospec n --combpix n --survey Y1
 
 #to combine the emission line files:
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --mkemlin y --dospec n --combpix n
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --mkemlin y --dospec n --combpix n --survey Y1
 
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
