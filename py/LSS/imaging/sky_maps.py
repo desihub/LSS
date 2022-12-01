@@ -734,13 +734,13 @@ def rancat_name_to_map_name(rancatname, lssmapdir=None):
     return os.path.join(lssmapdir, "mapvalues", outfn)
 
 
-def rancat_name_to_pixweight_name(rancatname, lssmapdir=None):
+def rancat_names_to_pixweight_name(rancatlist, lssmapdir=None):
     """Convert random catalog name to corresponding pixweight filename.
 
     Parameters
     ----------
-    rancatname : :class:`str`
-        Name of, or full path to, a random catalog.
+    rancatlist : :class:`list`
+        List of strings of names of, or full paths to, random catalogs.
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
@@ -751,8 +751,24 @@ def rancat_name_to_pixweight_name(rancatname, lssmapdir=None):
         The full path to the corresponding pixweight filename in the
         pixweight_maps_all directory, which is expected to exist one
         directory below the lssmapdir directory.
+
+    Notes
+    -----
+    - Assumes a standard form for the names of the random catalogs.
+    - Output format for filename resembles pixweight-SEEDS-ITERS
+      where SEEDS are the random catalog seeds and ITERS are the
+      random catalog iterations.
     """
-    outfn = os.path.basename(rancatname).replace(".fits", "-pixweight.fits")
+    # ADM recover the idents for all random catalogs in the input list.
+    idents = [ident_for_randoms(1, fn)[0][0] for fn in rancatlist]
+
+    # ADM split into the seed and iteration for each random catalog.
+    seed, it = np.array([ident.split('-') for ident in idents], dtype='int').T
+
+    # ADM combine the seeds and iterations into a single filename..
+    seedstr = "".join(np.array(sorted(list(set(seed))), dtype="str"))
+    itstr = "".join(np.array(sorted(list(set(it))), dtype="str"))
+    outfn = "randoms-pixweight-{}-{}.fits".format(seedstr, itstr)
 
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
@@ -1023,7 +1039,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
     outfn : :class:`str`, optional, defaults to ``None``
         Output filename. If not passed, the output from
-        :func:`rancat_name_to_pixweight_name()` is used.
+        :func:`rancat_names_to_pixweight_name()` is used.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
 
@@ -1061,7 +1077,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     # MMM Determine output filename.
     if write and not outfn:
-        outfn = rancat_name_to_pixweight_name(rancatname, lssmapdir=lssmapdir)
+        outfn = rancat_names_to_pixweight_name(rancatlist, lssmapdir=lssmapdir)
         log.warning("output filename not passed, defaulting to {}".format(outfn))
 
     # ------------------
