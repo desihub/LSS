@@ -231,17 +231,7 @@ if mketar: #concatenate target files for given type, with column selection hardc
 if mkfulld:
     azf=''
     azfm = 'cumul'        
-    if specrel == 'daily':
-        dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
-        tlf = ldirspec+type+'_tilelocs.dat.fits'
-        if type[:3] == 'ELG':
-            #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
-            azf = ldirspec+'emlin_catalog.fits'
-        if type[:3] == 'QSO':
-            azf =ldirspec+'QSO_catalog.fits'
-    #if specrel == 'daily':
-        #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
-    else:
+    if args.survey == 'DA02':
         #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
         #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
         if type[:3] == 'ELG':
@@ -255,6 +245,17 @@ if mkfulld:
                 azfm = 'cumul'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
+
+    else:
+        dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
+        tlf = ldirspec+type+'_tilelocs.dat.fits'
+        if type[:3] == 'ELG':
+            #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
+            azf = ldirspec+'emlin_catalog.fits'
+        if type[:3] == 'QSO':
+            azf =ldirspec+'QSO_catalog.fits'
+    #if specrel == 'daily':
+        #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
 
 
  
