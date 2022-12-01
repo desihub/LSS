@@ -1134,9 +1134,12 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     counts = np.zeros(npix, dtype=[(field, '>i4') for field in fieldslist])
     wcounts = np.zeros(npix, dtype=[(field, '>f4') for field in fieldslist])
 
+    # ADM useful to cast lists as arrays to facilitate boolean indexing.
+    fieldsarray, bitmaskarray = np.array(fieldslist), np.array(bitmasklist)
+
     # MMM loop over sets of files.
     for randomcat in randomcatlist:
-        # MMM log file we are reading
+        # MMM log file we are reading.
         log.info("Reading in random catalog {} and associated files...t = {:.1f}s"
                  .format(randomcat, time()-start))
 
@@ -1178,9 +1181,13 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
         ############################
         # MMM ----- read all fields at once ----
+        log.info("Determining counts for {}...t = {:.1f}s".format(
+            randomcat, time()-start))
         for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
             if len(col) > 0:
-                for field, bitmask in zip(fieldslist, bitmasklist):
+                # ADM limit to just the fields/bitmasks corresponding to col.
+                ii = np.array([fld in col for fld in fieldslist])
+                for field, bitmask in zip(fieldsarray[ii], bitmaskarray[ii]):
                     if need2setmask:
                         maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
                         uniq, ii, cnt = np.unique(
