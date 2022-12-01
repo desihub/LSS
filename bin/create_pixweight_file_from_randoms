@@ -7,7 +7,7 @@ import json
 from glob import glob
 from time import time
 
-from LSS.imaging.sky_maps import create_pixweight_file, get_lss_map_dir, rancat_name_to_pixweight_name
+from LSS.imaging.sky_maps import create_pixweight_file, get_lss_map_dir, rancat_names_to_pixweight_name
 
 from desiutil.log import get_logger
 log = get_logger()
@@ -25,7 +25,7 @@ egrancat2 = egrancat1.replace("0.fits", "*.fits")
 egrancat3 = egrancat1.replace("0.fits", "?.fits")
 egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
 # ADM example output file name.
-egoutfn = rancat_name_to_pixweight_name(egrancat1)
+egoutfn = rancat_names_to_pixweight_name(glob(egrancat4))
 # ADM other example inputs.
 egfields = """["GALDEPTH_G", "HALPHA_ERROR", "APFLUX_IVAR_R", "WISEMASK_W2", "CALIB_Z"]"""
 egmasks = """[131072, ["MASKBITS", "ARTIFACTS", "ELG_GAIA", "LRG_UNWISE", "EBV_SGF14"], 131072, ["KAPPA_PLANCK"], 4063232]"""
@@ -64,7 +64,7 @@ ap.add_argument("--lssmapdir",
                 default=lssmapdir)
 ap.add_argument("--outfn",
                 help='Output filename. If not passed, will default to something like' +
-                ' {} for an input `rancatname` of {}'.format(egoutfn, egrancat1))
+                ' {} for an input `rancatname` of {}'.format(egoutfn, egrancat4))
 
 ns = ap.parse_args()
 
