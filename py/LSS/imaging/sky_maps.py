@@ -1086,11 +1086,10 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
     skyfield = fitsio.read(skymapvaluescat, rows=[0])
 
-    # MMM check if there are no foreign or misspelled items in fieldlist
-    # MMM check all items in fieldlist belong to the stdfcol or skyfcol intersections
+    # MMM check if there are no foreign or misspelled items in fieldlist.
+    foreign = [fieldslist[i] for i, x in enumerate(fieldslist) if x
+               not in list(stdfield.dtype.names) + list(skyfield.dtype.names)]
 
-    foreign = [fieldslist[i] for i, x in enumerate(fieldslist)
-               if x not in stdfcol+skyfcol]
     if foreign:
         msg = "You have some wrong or misspelled items in the field list\n \
         They are {} \n".format(foreign)
