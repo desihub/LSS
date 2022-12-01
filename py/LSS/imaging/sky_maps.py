@@ -749,7 +749,8 @@ def rancat_name_to_pixweight_name(rancatname, lssmapdir=None):
     -------
     :class:`str`
         The full path to the corresponding pixweight filename in the
-        lssmapdir directory.
+        pixweight_maps_all directory, which is expected to exist one
+        directory below the lssmapdir directory.
     """
     outfn = os.path.basename(rancatname).replace(".fits", "-pixweight.fits")
 
@@ -1021,7 +1022,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         Location of the directory that hosts all of the sky maps. If
         `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
     outfn : :class:`str`, optional, defaults to ``None``
-        Name of output filename. If not passed, the output from
+        Output filename. If not passed, the output from
         :func:`rancat_name_to_pixweight_name()` is used.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
