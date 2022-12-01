@@ -535,8 +535,9 @@ if specrel != 'daily' and args.dospec == 'y':
         del specf
         print('joined tar and spec, now writing')
         tj.write(outfs,format='fits', overwrite=True)
+        print('wrote, now counting tiles')
         tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
-        outtc =  ldirspec+'Alltiles_'+tp+notqso+'_tilelocs.dat.fits'
+        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
 
 
