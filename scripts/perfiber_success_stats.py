@@ -19,8 +19,9 @@ import LSS.common_tools as common
 
 
 parser = argparse.ArgumentParser()
-#parser.add_argument("--type", help="tracer type to be selected")
+
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
+parser.add_argument("--tracer", help="tracer type to be selected",default='all')
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
@@ -40,7 +41,10 @@ specver = args.verspec
 #ff2 = fitsio.read(filepathBGS)
 #hdul = fits.open(filepathBGS)
 
-tracers = ['QSO','LRG','ELG','BGS_ANY']
+if args.tracer == 'all':
+    tracers = ['QSO','LRG','ELG','BGS_ANY']
+else:
+    tracers = [args.tracer]
 
 if args.mkfiles == 'y':
     for tp in tracers:
@@ -72,32 +76,23 @@ if args.mkfiles == 'y':
             from LSS.globals import main
             pars = main(tp,args.verspec)
         
-        elif survey == 'main':
-            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_'+tp+'_tarspecwdup_zdone.fits'
-            dz = Table(fitsio.read(zf))
-            if tp == 'ELG':
-                wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
-                dz = dz[wtype]
-            dz = common.cut_specdat(dz)
-            from LSS.globals import main
-            pars = main(tp,args.verspec)
             
 
         elif survey == 'SV3':
             #ys.exit('not written for SV3 yet')
             if tp != 'BGS_ANY':
-				zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
-				dz = Table(fitsio.read(zf))
-				desitarg = 'SV3_DESI_TARGET'
-				if tp == 'LRG':
-					bit = 1 #for selecting LRG
-				if tp == 'ELG':
-					bit = 2
-				if tp == 'QSO':
-					bit = 4
-				wtype = ((dz[desitarg] & bit) > 0)
-				if tp == 'ELG':
-					wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
+                zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_tarspecwdup_Alltiles.fits'
+                dz = Table(fitsio.read(zf))
+                desitarg = 'SV3_DESI_TARGET'
+                if tp == 'LRG':
+                    bit = 1 #for selecting LRG
+                if tp == 'ELG':
+                    bit = 2
+                if tp == 'QSO':
+                    bit = 4
+                wtype = ((dz[desitarg] & bit) > 0)
+                if tp == 'ELG':
+                    wtype &= ((dz[desitarg] & 4) == 0) #remove QSO
             else:
                 zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_tarspecwdup_Alltiles.fits'
                 dz = Table(fitsio.read(zf))
@@ -109,6 +104,16 @@ if args.mkfiles == 'y':
             dz = dz[wtype]
             wz = dz['COADD_FIBERSTATUS'] == 0
             dz = dz[wz]
+
+        else: 
+            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_'+tp+'_tarspecwdup_zdone.fits'
+            dz = Table(fitsio.read(zf))
+            if tp == 'ELG':
+                wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
+                dz = dz[wtype]
+            dz = common.cut_specdat(dz)
+            from LSS.globals import main
+            pars = main(tp,args.verspec)
 
 
         z_tot = dz['ZWARN'] != 999999

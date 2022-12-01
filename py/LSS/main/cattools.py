@@ -194,9 +194,9 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
             #tspec = fitsio.read('temp.fits')
             #tspec = np.empty(len(tspecio),dtype=dt)
 
-            #if s == 0:
-            #    specd = tspec
-            #    s = 1
+            if s == 0:
+                specd = tspec
+                s = 1
             #else:
             #specd = vstack([specd,tspec],metadata_conflicts='silent')
             #column order got mixed up
@@ -538,7 +538,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
     for tile,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = None
-        tspec = combEMdata_guad(tile,tdate,coaddir=coaddir)
+        tspec = combEMdata_rel(tile,tdate,coaddir=coaddir)
         if tspec is not None:
             tspec = np.array(tspec)
 
@@ -574,7 +574,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
 
 
 
-def combEMdata_guad(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
+def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
     remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
     zfn = 'emline'
     dl = []
@@ -1071,7 +1071,7 @@ def get_specdat(indir,pd,ver='daily',badfib=None):
     #zf = indir+'/datcomb_'+pd+'_tarspecwdup.fits'
     #if ver == 'everest' or ver == 'guadalupe':
     zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-    if ver == 'daily':
+    if ver == 'daily' or ver == 'himalayas':
         zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
     print('getting spec data from '+zf)
     dz = Table.read(zf)
@@ -1200,7 +1200,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
 
     return tc
 
-def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=None):
+def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=None,survey='main'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -1209,13 +1209,13 @@ def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERST
     '''
 
     if dr == 'dat':
-        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
+        fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/datcomb_'+pd+'_tarspecwdup_zdone.fits')
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits'
     if dr == 'ran':
         if px is not None:
-            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
+            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits')
         else:
-            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
+            fj = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specrel+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits')
 
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)

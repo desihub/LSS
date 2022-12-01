@@ -45,6 +45,7 @@ parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
+parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
@@ -53,6 +54,7 @@ parser.add_argument("--combpix",help="if n, just skip to next stage",default='y'
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
+parser.add_argument("--tracer", help="tracer type",default='all')
 
 
 
@@ -65,6 +67,9 @@ version = args.version
 specrel = args.verspec
 prog = args.prog
 progu = prog.upper()
+redoqso = False
+if args.redoqso == 'y':
+    redoqso = True
 
 combpix = True
 if args.combpix == 'n':
@@ -91,17 +96,22 @@ print('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
     #if specrel == 'everest':
+    coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+    if args.survey == 'Y1':
+        wd &= mt['ZDATE'] < 20220900
+
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+print('found '+str(len(mtd))+' '+prog+' time '+args.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
+
 
 print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
 print('Is that what was expected based on MTL updates?')
@@ -131,6 +141,7 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     print('made '+dirout)
 
+dailydir = maindir+'daily/'
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
@@ -243,28 +254,33 @@ if specrel == 'daily':
                 npx += 1
             tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
-if specrel == 'daily' and args.doqso == 'y':
+if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    ct.combtile_qso(tiles4comb,outf)
+    if specrel == 'daily':
+        ct.combtile_qso(tiles4comb,outf,restart=redoqso)
+    else:
+        ct.combtile_qso_alt(tiles4comb,outf,coaddir=coaddir)
 
-if specrel == 'daily' and args.mkemlin == 'y':
-    outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
-    guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
-    guadtiles = np.unique(guadtiles['TILEID'])
-    gtids = np.isin(tiles4comb['TILEID'],guadtiles)
-    tiles4em = tiles4comb[~gtids]
-    ndone = 0
-    for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
-        outf = outdir+'emline-'+str(tile)+'.fits'
-        if not os.path.isfile(outf):
-            tdate = str(tdate)
-            ct.combEMdata_daily(tile,zdate,tdate,outf=outf)
-            print('wrote '+outf)
-            ndone += 1
-            print('completed '+str(ndone)+' tiles')
+if  args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
-    ct.combtile_em(tiles4comb,outf)
-    
+    if specrel == 'daily':
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
+        guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
+        guadtiles = np.unique(guadtiles['TILEID'])
+        gtids = np.isin(tiles4comb['TILEID'],guadtiles)
+        tiles4em = tiles4comb[~gtids]
+        ndone = 0
+        for tile,zdate,tdate in zip(tiles4em['TILEID'],tiles4em['ZDATE'],tiles4em['THRUDATE']):
+            outft = outdir+'emline-'+str(tile)+'.fits'
+            if not os.path.isfile(outf):
+                tdate = str(tdate)
+                ct.combEMdata_daily(tile,zdate,tdate,outf=outft)
+                print('wrote '+outf)
+                ndone += 1
+                print('completed '+str(ndone)+' tiles')
+        ct.combtile_em(tiles4comb,outf)
+    else:
+        ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
 
 if args.survey == 'Y1' and args.counts_only == 'y':    
     if prog == 'dark':
@@ -463,7 +479,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tc.write(outtc,format='fits', overwrite=True)
 
 
-if specrel == 'everest' or specrel =='guadalupe':
+if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
@@ -477,19 +493,52 @@ if specrel == 'everest' or specrel =='guadalupe':
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     specf.write(outfs,format='fits', overwrite=True)
     
-    tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
+    if specrel == 'everest' or specrel =='guadalupe':
+        #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
+        tps = [prog]
+        notqsos = ['']
+    else:
+        #tar
+        if prog == 'dark':
+            if args.tracer == 'all':
+                tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+                notqsos = ['','','','','notqso']
+            else:
+                tps = [args.tracer.strip('notqso')]
+                notqsos = ['']
+                if 'notqso' in args.tracer:
+                    notqsos = ['notqso']
+        if prog == 'bright':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+    for tp,notqso in zip(tps,notqsos):
+        #first test to see if we need to update any
+        print('now doing '+tp+notqso)
+        print(len(tiles4comb['TILEID']))
+        tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
+        tarf = Table.read(tarfo)
+        remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+        for col in remcol:
+            try:
+                tarf.remove_columns([col] )#we get this where relevant from spec file
+            except:
+                print('column '+col +' was not in stacked tarwdup table')    
 
-    tarf = Table.read(tarfo)
-    tarf.remove_columns(['ZWARN_MTL'])
-    tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-    specf.remove_columns(['PRIORITY'])
-    tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','FIBER'],join_type='left')
-    outfs = ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits'
-    tj.write(outfs,format='fits', overwrite=True)
-    tc = ct.count_tiles_better('dat',prog,specrel=specrel,survey=args.survey) 
-    outtc =  ldirspec+'Alltiles_'+prog+'_tilelocs.dat.fits'
-    tc.write(outtc,format='fits', overwrite=True)
+        #tarf.remove_columns(['ZWARN_MTL'])
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        #specf.remove_columns(['PRIORITY'])
+        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+        del tarf
+        del specf
+        print('joined tar and spec, now writing')
+        tj.write(outfs,format='fits', overwrite=True)
+        print('wrote, now counting tiles')
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+        tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)

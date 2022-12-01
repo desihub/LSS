@@ -127,3 +127,8 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/daily/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/daily/QSO_catalog.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
+        
+        if specver == 'himalayas':
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/emlin_catalog.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/QSO_catalog.fits'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')

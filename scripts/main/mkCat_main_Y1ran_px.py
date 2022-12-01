@@ -129,8 +129,6 @@ wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
 wd &= mt['LASTNIGHT'] <= datemax
-if specrel != 'daily':
-    sys.exit('need to support spec other than daily')
     
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -186,6 +184,12 @@ if combhp or mkfullr:
         sel = np.isin(specf['TILEID'],mtld['TILEID'])
         specf = specf[sel]
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    else:
+        specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+        specf = Table.read(specfo)
+        sel = np.isin(specf['TILEID'],mtld['TILEID'])
+        specf = specf[sel]
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         
     print('loaded specf file '+specfo)
     specfc = ct.cut_specdat(specf)
@@ -236,7 +240,7 @@ def doran(ii):
             npx = 0
             for px in hpxs:
                 ct.combran_wdup_hp(px,ta,ii,randir,type,ldirspec,specf,keepcols=kc,redos=redos)
-                tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px)
+                tc = ct.count_tiles_better_px('ran',type,gtl,ii,specrel=specrel,px=px,survey='Y1')
                 tc.write(ldirspec+'/healpix/rancomb_'+str(ii)+type+'_'+str(px)+'__Alltilelocinfo.fits',format='fits', overwrite=True)
                 npx += 1
                 print(npx,len(hpxs))
