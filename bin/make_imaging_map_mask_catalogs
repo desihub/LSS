@@ -5,12 +5,12 @@ import textwrap
 import os
 from glob import glob
 from time import time
-start = time()
 
 from LSS.imaging.sky_maps import generate_map_values, generate_mask, get_lss_map_dir
 
 from desiutil.log import get_logger
 log = get_logger()
+start = time()
 
 # ADM the currently set default lss_map_dir.
 lssmapdir = get_lss_map_dir()
@@ -22,20 +22,21 @@ egrancat2 = egrancat1.replace("0.fits", "*.fits")
 egrancat3 = egrancat1.replace("0.fits", "?.fits")
 egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
 
-ap = argparse.ArgumentParser(description="Generate files of map and mask values that correspond to a " +
-                    "desitarget random catalog and write them to the sky map directory",
-                    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
-                    Examples:
-                    make_imaging_map_mask_catalogs {}
-                    make_imaging_map_mask_catalogs "{}"
-                    make_imaging_map_mask_catalogs "{}"
-                    make_imaging_map_mask_catalogs "{}"
-                    """.format(egrancat1, egrancat2, egrancat3, egrancat4)))
+ap = argparse.ArgumentParser(
+    description="Generate files of map and mask values that correspond to a " +
+    "desitarget random catalog and write them to the sky map directory",
+    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+    Examples:
+    make_imaging_map_mask_catalogs {}
+    make_imaging_map_mask_catalogs "{}"
+    make_imaging_map_mask_catalogs "{}"
+    make_imaging_map_mask_catalogs "{}"
+    """.format(egrancat1, egrancat2, egrancat3, egrancat4)))
 ap.add_argument("rancatname",
                 help="Full path to a random catalog. Can process multiple catalogs" +
-                " together by passing a wildcard recognized by glob.")
+                " together by passing a wildcard recognized by glob")
 ap.add_argument("--lssmapdir",
-                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {}).'
+                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {})'
                 .format(lssmapdir),
                 default=lssmapdir)
 

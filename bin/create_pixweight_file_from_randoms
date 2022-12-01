@@ -5,12 +5,12 @@ import textwrap
 import os
 from glob import glob
 from time import time
-start = time()
 
 from LSS.imaging.sky_maps import create_pixweight_file, get_lss_map_dir, rancat_name_to_pixweight_name
 
 from desiutil.log import get_logger
 log = get_logger()
+start = time()
 
 # ADM the currently set default lss_map_dir.
 lssmapdir = get_lss_map_dir()
@@ -25,35 +25,44 @@ egrancat3 = egrancat1.replace("0.fits", "?.fits")
 egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
 # ADM example output file name.
 egoutfn = rancat_name_to_pixweight_name(egrancat1)
+# ADM other example inputs.
+egfields = ['GALDEPTH_G', 'HALPHA_ERROR', 'APFLUX_IVAR_R', 'WISEMASK_W2', 'CALIB_Z']
+egmasks = [131072, ['MASKBITS', 'ARTIFACTS', 'ELG_GAIA', 'LRG_UNWISE',
+                    'EBV_SGF14'], 131072, ['KAPPA_PLANCK'], 4063232]
+egfn = '$SCRATCH/pixweight.fits'
 
-ap = argparse.ArumentParser(description="Create a pixweight file from randoms filtered by bitmasks",
-                    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
-                    Examples:
-                    make_imaging_map_mask_catalogs {}
-                    make_imaging_map_mask_catalogs "{}"
-                    make_imaging_map_mask_catalogs "{}"
-                    make_imaging_map_mask_catalogs "{}"
-                    """.format(egrancat1, egrancat2, egrancat3, egrancat4)))
+ap = argparse.ArgumentParser(
+    description="Create a pixweight file from randoms, filtered by bitmasks",
+    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+    Examples:
+    create_pixweight_file_from_randoms {} "{}" "{}" --outfn {}
+    create_pixweight_file_from_randoms "{}" "{}" "{}" --outfn {}
+    create_pixweight_file_from_randoms "{}" "{}" "{}" --outfn {}
+    create_pixweight_file_from_randoms "{}" "{}" "{}" --outfn {}
+    """.format(egrancat1, egfields, egmasks, egfn,
+               egrancat2, egfields, egmasks, egfn,
+               egrancat3, egfields, egmasks, egfn,
+               egrancat4, egfields, egmasks, egfn)))
 ap.add_argument("rancatname",
                 help='Full path to a random catalog. Can process multiple catalogs' +
-                ' together by passing a wildcard recognized by glob.')
+                ' together by passing a wildcard recognized by glob')
 ap.add_argument("fieldslist",
-                help='List of field names (column names) to process.')
+                help='List of field names (column names) to process. Must be passed' +
+                ' as a list in quotes')
 ap.add_argument("masklist",
                 help="Masks associated with `fieldslist` fields/columns. Entries must" +
-                " be either an integer or a list of mask names (strings), e.g.: " +
-                " [131072, ['MASKBITS', 'ELG_GAIA'], ['KAPPA_PLANCK'], 4063232]")
-ap.add_argument("nside_out", type=int,
+                " be either an integer or a list of mask names (strings) in quotes")
+ap.add_argument("--nside_out", type=int,
                 help='Resolution (HEALPix nside) at which to build the output (NESTED)' +
                 ' pixweight map (defaults to {})'.format(nside_out),
                 default=nside_out)
 ap.add_argument("--lssmapdir",
-                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {}).'
+                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {})'
                 .format(lssmapdir),
                 default=lssmapdir)
-ap.add_argument("outfn",
+ap.add_argument("--outfn",
                 help='Output filename. If not passed, will default to something like' +
-                ' {} for and input `rancatname` of {}'.format(egoutfn, egrancat1))
+                ' {} for an input `rancatname` of {}'.format(egoutfn, egrancat1))
 
 ns = ap.parse_args()
 
@@ -65,5 +74,6 @@ log.info("Processing {} input files: {}".format(len(rancatlist), rancatlist))
 for rancatname in rancatlist:
     log.info("Creating pixweight file for {}...t={:.1f}s".format(
         rancatname, time()-start))
-    _ = create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=512,
-                          lssmapdir=None, outfn=None
+    _ = create_pixweight_file(rancatlist, ns.fieldslist, ns.masklist,
+                              nside_out=ns.nside_out, lssmapdir=ns.lssmapdir,
+                              outfn=ns.outfn)
