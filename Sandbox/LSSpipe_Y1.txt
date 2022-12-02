@@ -72,12 +72,15 @@ for tp,notqso in zip(tps,notqsos):
 #can just run one random and then add --maxr 1
     
 #to do randoms in parallel:
-    python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec daily --notqso notqso
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec himalayas --survey Y1 --notqso notqso
 
 #get k+e
-python mkCat_main.py --type BGS_BRIGHT --verspec daily --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1
-    
+srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
+
+#to get regressis and zfail weights
+Y1_regeressis_zfail.sh himalayas
+
 #get regressis weights
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec daily --notqso notqso
+	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec himalayas --notqso notqso
     
