@@ -13,86 +13,90 @@ import atexit
 import glob
 import cProfile, pstats, io
 from pstats import SortKey
-#pr = cProfile.Profile()
-#pr.enable()
-log = get_logger()
-print('argv')
-print(argv)
+import argparse
 
 #Base directory for the alternate MTLs created in the InitializeAltMTLs script
-altmtlbasedir=argv[3]
-#Include secondary targets?
-assert((str(argv[4]) == '0') | (str(argv[4]) == '1'))
-secondary = bool(int(argv[4]))
-#Observing conditions to process the observations
-obscon = argv[5].lower()
-#Survey whose observations you are processing
-survey = argv[6]
-numobs_from_ledger = bool(int(argv[7]))
-#Force redo fiber assignment if it has already been done. 
-assert((str(argv[8]) == '0') | (str(argv[8]) == '1'))
-redoFA = bool(int(argv[8]))
-#getosubp: grab subpriorities from the original (exampleledgerbase) MTLs
-#This should only be turned on for testing/debugging purposes
-assert((str(argv[9]) == '0') | (str(argv[9]) == '1'))
 
-getosubp = bool(int(argv[9]))
-log.info('getosubp value = {0}'.format(getosubp))
+
+parser = argparse.ArgumentParser(
+                    prog = 'RunAltMTLParallel',
+                    description = 'Progresses alternate MTLs through the MTL update loop in parallel. More documentation available on the DESI wiki. ')
+parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True, type=str, help = 'the path to the location where alt MTLs are stored, up to, but not including survey and obscon information.')
+parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
+parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
+parser.add_argument('-sec', '--secondary', dest = 'secondary', default=False, action='store_true', help = 'set flag to incorporate secondary targets.')
+parser.add_argument('-v', '--verbose', dest = 'verbose', default=False, action='store_true', help = 'set flag to enter verbose mode')
+parser.add_argument('-qr', '--quickRestart', dest = 'quickRestart', default=False, action='store_true', help = 'set flag to remove any AMTL updates that have already been performed. Useful for rapidfire debugging of steps in this part of the pipeline.')
+parser.add_argument('-prof', '--profile', dest = 'profile', default=False, action='store_true', help = 'set flag to profile code time usage. This flag may not profile all components of any particular stage of the AMTL pipeline. ')
+parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='store_true', help = 'set flag to enter debug mode.')
+parser.add_argument('-nfl', '--NumObsNotFromLedger', dest = 'numobs_from_ledger', default=True, action='store_false', help = 'If True (flag is NOT set) then inherit the number of observations so far from the ledger rather than expecting it to have a reasonable value in the zcat.')
+
+parser.add_argument('-redoFA', '--redoFA', dest = 'redoFA', default=False, action='store_true', help = 'pass this flag to regenerate already existing fiber assignment files.')
+
+parser.add_argument('-getosubp', '--getosubp', action='store_true', dest='getosubp', default=True, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to grab subpriorities directly from the real survey MTLs for fiberassignment.', required = False)
+parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
+parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
+parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
+
+
+
+args = parser.parse_args()
+log = get_logger()
+
+
+
+
+# Leave confirmation file in output directory if using original subpriorities
+if args.getosubp:
+    from pathlib import Path
+    Path(args.altMTLBaseDir + '/GETOSUBPTRUE').touch()
+
 #Get information about environment for multiprocessing
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
 try:
-    debug = bool(int(argv[10]))
+    NNodes = int(os.getenv('SLURM_JOB_NUM_NODES'))
 except:
-    raise ValueError('Invalid non-integer value of debug: {0}'.format(argv[10]))
-try:
-    verbose = bool(int(argv[11]))
-except:
-    raise ValueError('Invalid non-integer value of verbose: {0}'.format(argv[11]))
-try:
-    NProcPerNode = int(argv[12])
-except:
-    raise ValueError('Invalid non-integer value of ProcPerNode: {0}'.format(argv[12]))
-NNodes = int(argv[1])
-NProc = int(NNodes*NProcPerNode)
+    log.warning('no SLURM_JOB_NUM_NODES env set. You may not be on a compute node.')
+    NNodes = 1
+
+if args.ProcPerNode is None:
+    if 'cori' in os.getenv['NERSC_HOST'].lower():
+        args.ProcPerNode = 32
+    elif 'perlmutter' in os.getenv['NERSC_HOST'].lower():
+        args.ProcPerNode = 128
+    else:
+        raise ValueError('Code is only supported on NERSC Cori and NERSC perlmutter.')
+
+NProc = int(NNodes*args.ProcPerNode)
 log.info('NProc = {0:d}'.format(NProc))
 log.info('NNodes = {0:d}'.format(NNodes))
 
 
-try:
-    try:
-        QRArg = int(argv[2])
-    except:
-        QRArg = str(argv[2])
-    quickRestart = bool(QRArg)
-except:
 
-    log.info('No Quick Restart Argument given (or incorrect, non-boolean, non-integer, argument). Defaulting to false.')
-    quickRestart = False
 
-print('quick Restart')
-print(quickRestart)
-mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/'
-zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/'
+# These should be constant/default. 
+# If this changes, add these to argparse
+
 ndirs = None
 multiproc = True
 singleDate = True
 
 
 def procFunc(nproc):
-    if verbose:
+    if args.verbose:
         log.debug('calling procFunc')
-    retval = amt.loop_alt_ledger(obscon, survey = survey, mtldir = mtldir, zcatdir = zcatdir, altmtlbasedir = altmtlbasedir, ndirs = ndirs, numobs_from_ledger = numobs_from_ledger,secondary = secondary, getosubp = getosubp, quickRestart = quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = redoFA)
-    if verbose:
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA)
+    if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:
-        if verbose:
+        if args.verbose:
             log.debug('retval')
             log.debug(retval)
         if retval == 151:
             raise ValueError('No more data. Ending script.')
         return retval
-    elif verbose:
+    elif args.verbose:
         print('retval')
         print(retval)
     
@@ -108,7 +112,7 @@ log.info('EndProc = {0:d}'.format(end))
 
 for i in range(start, end):
     log.info('Process i = {0}'.format(i))
-    files = glob.glob(altmtlbasedir + "Univ{0:03d}/*".format(i))
+    files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
     if len(files):
         pass
     else:

@@ -49,7 +49,9 @@ mtltilefiledm = np.array([], dtype = [
 def processTileFile(infile, outfile, startDate, endDate):
     #ztilefile, outputMTLDir + ztilefn, startDate, endDate
     if (startDate is None) and (endDate is None):
-        os.symlink(infile, outfile)
+        #os.symlink(infile, outfile)
+        from shutil import copyfile
+        copyfile(infile, outfile)
         return 0
     
         
@@ -310,13 +312,13 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     if ('trunk' in outputMTL.lower()) or  ('ops' in outputMTL.lower()):
         raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
 
-    if (not usetmp) or (usetmp and (outputMTL.startswith('/dev/shm/') or outputMTL.startswith('/tmp/'))):
+    if (not usetmp) or (usetmp and (outputMTL.startswith('/dev/shm/') or not(outputMTL.startswith('/tmp/')))):
         pass
     else:
         log.critical('You are trying to write to local tmp directories but \
             your write directory is not in local tmp (/dev/shm/ or /tmp/).')
-        log.critical('directory name: {0}'.format(outputMTLDir))
-        raise ValueError('usetmp set to True but output directory not in tmp. Output directory is {0}'.format(outputMTLDir))
+        log.critical('directory name: {0}'.format(outputMTL))
+        raise ValueError('usetmp set to True but output directory not in tmp. Output directory is {0}'.format(outputMTL))
 
         
 
@@ -493,21 +495,20 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             log.info(meta)
             log.info('--')
         io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
-    
+        log.info('wrote MTLs')
         if saveBackup and (not usetmp):
             if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
                 os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
             
-            from shutil import copyfile
-
-            copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
-
-        elif usetmp:
+            
+            if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn)):
+                from shutil import copyfile
+                copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
+        if usetmp:
             from shutil import copyfile
 
             if not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() ):
                 os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() )
-
             if saveBackup and (not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')):
                 os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
             if debug:
@@ -518,7 +519,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
                 log.info('tempdir contents after copying')
                 log.info(glob.glob(outputMTLDir + '/*' ))
 
-            if saveBackup:
+            if saveBackup and not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn)):
                 #JL Potentially move the saveBackup copying to an afterburner
                 #JL to speed up afterburner process. Copy all at once
                 copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
