@@ -2420,9 +2420,9 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        wz = ff['Z']*0 == 0
-        wz &= ff['Z'] != 999999
-        wz &= ff['Z'] != 1.e20
+        wz = ff['Z_not4clus']*0 == 0
+        wz &= ff['Z_not4clus'] != 999999
+        wz &= ff['Z_not4clus'] != 1.e20
         wz &= selobs
         func = ssr_tools.QSO_ssr
 
