@@ -41,6 +41,11 @@ for ii in range(0, len(tidl)):
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 sel = exptl > 850
+ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+selss = ss['LASTNIGHT'] == int(args.night)
+gt = ss[selss]['EFFTIME_SPEC'] > 850
+tss = ss[selss][gt]['TILEID']
+sel |= np.isin(tidl,tss)
 tidl = tidl[sel]
 
 print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
