@@ -57,13 +57,12 @@ for tp,notqso in zip(tps,notqsos):
     ./daily_main_randoms_all_2nodes_noveto.sh
     #on perlmutter, enough memory so one node fine?
     #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y 
-#if data model is stable since the last updates, add to the arguments
-    --refullr n
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now
+python mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec himalayas --survey Y1
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --notqso notqso
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec himalayas --survey Y1 --notqso notqso
 #can just run one random and then add --maxr 1
 
 #this applies vetos to both data and randoms (could put randoms in separate script and parallize)
