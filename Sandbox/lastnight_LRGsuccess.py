@@ -9,6 +9,8 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='y')
+parser.add_argument("--vis",default='n',help="whether to display plots when you run")
+parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
 args = parser.parse_args()
 
 
@@ -76,12 +78,16 @@ for tid in tidl:
             wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
             zlrg = zmtlf[wfqa&wlrg]
             if len(zlrg) > 0:
-                drz = (10**(3 - 3.5*zmtlf['Z']))
-                mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
-                mask_bad |= (drz<30) & (zmtlf['DELTACHI2']<drz)
-                mask_bad |= (zmtlf['DELTACHI2']<10)
+                #drz = (10**(3 - 3.5*zmtlf['Z']))
+                #mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
+                #mask_bad |= (drz<30) & (zmtlf['DELTACHI2']<drz)
+                #mask_bad |= (zmtlf['DELTACHI2']<10)
+                #wz = zmtlf['ZWARN'] == 0
+                #wz &= zmtlf['Z']<1.4
+                #wz &= (~mask_bad)
+                mask_bad = (zmtlf['DELTACHI2']<15)
                 wz = zmtlf['ZWARN'] == 0
-                wz &= zmtlf['Z']<1.4
+                wz &= zmtlf['Z']<1.5
                 wz &= (~mask_bad)
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
@@ -105,11 +111,22 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
+    all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
+    sel = all['ZWARN'] == 0
+    sel &= all['DELTACHI2'] > 15
+    sel &= all['Z_not4clus'] <1.5
+    all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
-        nzp = np.concatenate(nzls[pt])
-        a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True)
-        plt.hist(nza,bins=a[1],density=True,histtype='step')
-        plt.title('petal '+str(pt))
-        plt.xlabel('Z')
-        plt.show()
+        plt.clf()
+        if len(nzls[pt]) > 0:
+            nzp = np.concatenate(nzls[pt])
+            a = plt.hist(nzp,range=(0.01,1.4),bins=28,density=True,label=args.night+' petal '+str(pt),histtype='step')
+            plt.hist(nza,bins=a[1],density=True,histtype='step',label=args.night)
+            plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
+            plt.title('LRG')
+            plt.xlabel('Z')
+            plt.legend(loc='upper left')
+            plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
+            if args.vis == 'y':
+                plt.show()

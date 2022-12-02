@@ -79,7 +79,8 @@ def read_fits_to_pandas(filename, ext=1, columns=None):
     """
     log.info(f'Read ext: {ext} from {filename}')
     file = fitsio.FITS(filename)[ext]
-    if columns is not None: file = file[columns]
+    if columns is not None:
+        file = file[columns]
     return pd.DataFrame(file.read().byteswap().newbyteorder())
 
 
@@ -122,17 +123,17 @@ def compute_RF_TS_proba(dataframe):
 
     def compute_MW_transmission(dataframe):
         """ TODO """
-        from desiutil.dust import  ext_odonnell
+        from desiutil.dust import ext_odonnell
         from desitarget.io import desitarget_resolve_dec
-        from speclite import filters # to correct the photometry
+        from speclite import filters  # to correct the photometry
 
-        decamwise = filters.load_filters('decam2014-g', 'decam2014-r','decam2014-z', 'wise2010-W1', 'wise2010-W2')
-        bassmzlswise = filters.load_filters('BASS-g', 'BASS-r', 'MzLS-z','wise2010-W1', 'wise2010-W2')
+        decamwise = filters.load_filters('decam2014-g', 'decam2014-r', 'decam2014-z', 'wise2010-W1', 'wise2010-W2')
+        bassmzlswise = filters.load_filters('BASS-g', 'BASS-r', 'MzLS-z', 'wise2010-W1', 'wise2010-W2')
 
-        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300 ) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
+        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
 
         RV = 3.1
-        EBV =  dataframe['EBV']
+        EBV = dataframe['EBV']
 
         mw_transmission = np.array([10**(-0.4 * EBV[i] * RV * ext_odonnell(bassmzlswise.effective_wavelengths.value, Rv=RV)) if north[i]
                                     else 10**(-0.4 * EBV[i] * RV * ext_odonnell(decamwise.effective_wavelengths.value, Rv=RV)) for i in range(EBV.size)])
@@ -148,50 +149,50 @@ def compute_RF_TS_proba(dataframe):
         from desitarget.cuts import shift_photo_north
         from desitarget.io import desitarget_resolve_dec
 
-        gflux  = dataframe['FLUX_G'].values/dataframe['MW_TRANSMISSION_G'].values
-        rflux  = dataframe['FLUX_R'].values/dataframe['MW_TRANSMISSION_R'].values
-        zflux  = dataframe['FLUX_Z'].values/dataframe['MW_TRANSMISSION_Z'].values
-        W1flux  = dataframe['FLUX_W1'].values/dataframe['MW_TRANSMISSION_W1'].values
-        W2flux  = dataframe['FLUX_W2'].values/dataframe['MW_TRANSMISSION_W2'].values
+        gflux = dataframe['FLUX_G'].values / dataframe['MW_TRANSMISSION_G'].values
+        rflux = dataframe['FLUX_R'].values / dataframe['MW_TRANSMISSION_R'].values
+        zflux = dataframe['FLUX_Z'].values / dataframe['MW_TRANSMISSION_Z'].values
+        W1flux = dataframe['FLUX_W1'].values / dataframe['MW_TRANSMISSION_W1'].values
+        W2flux = dataframe['FLUX_W2'].values / dataframe['MW_TRANSMISSION_W2'].values
 
-        gflux[np.isnan(gflux) | np.isinf(gflux)]=0.
-        rflux[np.isnan(rflux) | np.isinf(rflux)]=0.
-        zflux[np.isnan(zflux) | np.isinf(zflux)]=0.
-        W1flux[np.isnan(W1flux) | np.isinf(W1flux)]=0.
-        W2flux[np.isnan(W2flux) | np.isinf(W2flux)]=0.
+        gflux[np.isnan(gflux) | np.isinf(gflux)] = 0.
+        rflux[np.isnan(rflux) | np.isinf(rflux)] = 0.
+        zflux[np.isnan(zflux) | np.isinf(zflux)] = 0.
+        W1flux[np.isnan(W1flux) | np.isinf(W1flux)] = 0.
+        W2flux[np.isnan(W2flux) | np.isinf(W2flux)] = 0.
 
         # Shift the North photometry to match the South:
-        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300 ) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
+        north = (dataframe['TARGET_RA'] > 80) & (dataframe['TARGET_RA'] < 300) & (dataframe['TARGET_DEC'] > desitarget_resolve_dec())
         log.info(f'shift photometry for {north.sum()} objects')
         gflux[north], rflux[north], zflux[north] = shift_photo_north(gflux[north], rflux[north], zflux[north])
 
         # invalid value to avoid warning with log estimation --> deal with nan
         with np.errstate(divide='ignore', invalid='ignore'):
-            g=np.where(gflux>0,22.5-2.5*np.log10(gflux), 0.)
-            r=np.where(rflux>0,22.5-2.5*np.log10(rflux), 0.)
-            z=np.where(zflux>0,22.5-2.5*np.log10(zflux), 0.)
-            W1=np.where(W1flux>0, 22.5-2.5*np.log10(W1flux), 0.)
-            W2=np.where(W2flux>0, 22.5-2.5*np.log10(W2flux), 0.)
+            g = np.where(gflux > 0, 22.5 - 2.5 * np.log10(gflux), 0.)
+            r = np.where(rflux > 0, 22.5 - 2.5 * np.log10(rflux), 0.)
+            z = np.where(zflux > 0, 22.5 - 2.5 * np.log10(zflux), 0.)
+            W1 = np.where(W1flux > 0, 22.5 - 2.5 * np.log10(W1flux), 0.)
+            W2 = np.where(W2flux > 0, 22.5 - 2.5 * np.log10(W2flux), 0.)
 
-        g[np.isnan(g) | np.isinf(g)]=0.
-        r[np.isnan(r) | np.isinf(r)]=0.
-        z[np.isnan(z) | np.isinf(z)]=0.
-        W1[np.isnan(W1) | np.isinf(W1)]=0.
-        W2[np.isnan(W2) | np.isinf(W2)]=0.
+        g[np.isnan(g) | np.isinf(g)] = 0.
+        r[np.isnan(r) | np.isinf(r)] = 0.
+        z[np.isnan(z) | np.isinf(z)] = 0.
+        W1[np.isnan(W1) | np.isinf(W1)] = 0.
+        W2[np.isnan(W2) | np.isinf(W2)] = 0.
 
         # Compute the colors:
         colors = np.zeros((r.size, 11))
-        colors[:,0] = g-r
-        colors[:,1] = r-z
-        colors[:,2] = g-z
-        colors[:,3] = g-W1
-        colors[:,4] = r-W1
-        colors[:,5] = z-W1
-        colors[:,6] = g-W2
-        colors[:,7] = r-W2
-        colors[:,8] = z-W2
-        colors[:,9] = W1-W2
-        colors[:,10] = r
+        colors[:, 0] = g - r
+        colors[:, 1] = r - z
+        colors[:, 2] = g - z
+        colors[:, 3] = g - W1
+        colors[:, 4] = r - W1
+        colors[:, 5] = z - W1
+        colors[:, 6] = g - W2
+        colors[:, 7] = r - W2
+        colors[:, 8] = z - W2
+        colors[:, 9] = W1 - W2
+        colors[:, 10] = r
 
         return colors
 
@@ -206,7 +207,7 @@ def compute_RF_TS_proba(dataframe):
         log.info('    * ' + rf_fileName)
         log.info(f'Random Forest over: {len(attributes)} objects')
         log.info('    * start RF calculation...')
-        myrf =  myRF.myRF(attributes, '', numberOfTrees=500, version=2)
+        myrf = myRF.myRF(attributes, '', numberOfTrees=500, version=2)
         myrf.loadForest(rf_fileName)
         proba_rf = myrf.predict_proba()
 
@@ -236,7 +237,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     from functools import reduce
 
     # selection of which column will be in the final QSO_cat:
-    columns_zbest = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE'] #, 'SUBTYPE', 'DELTACHI2', 'CHI2']
+    columns_zbest = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE']  # , 'SUBTYPE', 'DELTACHI2', 'CHI2']
     # remark: check if the name exist before selecting them
     columns_fibermap = ['TARGETID', 'TARGET_RA', 'TARGET_DEC', 'LOCATION', 'MORPHTYPE', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME',
                         'EBV', 'FLUX_G', 'FLUX_R', 'FLUX_Z', 'FLUX_W1', 'FLUX_W2',
@@ -245,15 +246,17 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
                         'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']
 
     columns_tsnr2 = ['TARGETID', 'TSNR2_QSO', 'TSNR2_LYA']
+    # for david
+    # columns_tsnr2 = ['TARGETID', 'TSNR2_GPBDARK_B', 'TSNR2_ELG_B', 'TSNR2_GPBBRIGHT_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_GPBBACKUP_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_GPBDARK_R', 'TSNR2_ELG_R', 'TSNR2_GPBBRIGHT_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_GPBBACKUP_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_GPBDARK_Z', 'TSNR2_ELG_Z', 'TSNR2_GPBBRIGHT_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_GPBBACKUP_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z','TSNR2_GPBDARK', 'TSNR2_ELG', 'TSNR2_GPBBRIGHT', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_GPBBACKUP', 'TSNR2_QSO', 'TSNR2_LRG']
 
     columns_mgii = ['TARGETID', 'IS_QSO_MGII', 'DELTA_CHI2', 'A', 'SIGMA', 'B', 'VAR_A', 'VAR_SIGMA', 'VAR_B']
-    columns_mgii_rename = {"DELTA_CHI2": "DELTA_CHI2_MGII", "A": "A_MGII", "SIGMA":"SIGMA_MGII", "B":"B_MGII", "VAR_A":"VAR_A_MGII", "VAR_SIGMA":"VAR_SIGMA_MGII", "VAR_B":"VAR_B_MGII"}
+    columns_mgii_rename = {"DELTA_CHI2": "DELTA_CHI2_MGII", "A": "A_MGII", "SIGMA": "SIGMA_MGII", "B": "B_MGII", "VAR_A": "VAR_A_MGII", "VAR_SIGMA": "VAR_SIGMA_MGII", "VAR_B": "VAR_B_MGII"}
 
     columns_qn = ['TARGETID', 'Z_NEW', 'ZERR_NEW', 'Z_RR', 'Z_QN', 'IS_QSO_QN_NEW_RR',
                   'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha',
                   'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha']
 
-    #load data:
+    # load data:
     zbest = read_fits_to_pandas(redrock, ext='ZBEST' if use_old_extname_for_redrock else 'REDSHIFTS', columns=columns_zbest)
     fibermap = read_fits_to_pandas(redrock, ext='FIBERMAP', columns=[name for name in columns_fibermap if name in fitsio.read(redrock, ext='FIBERMAP', rows=[0]).dtype.names])
     tsnr2 = read_fits_to_pandas(redrock, ext='TSNR2', columns=columns_tsnr2)
@@ -288,13 +291,13 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # Add quality cuts: no cut on zwarn, cut on fiberstatus
-    QSO_cat.loc[~((QSO_cat['COADD_FIBERSTATUS']==0) | (QSO_cat['COADD_FIBERSTATUS']==8388608) | (QSO_cat['COADD_FIBERSTATUS']==16777216)), 'QSO_MASKBITS'] = 0
+    QSO_cat.loc[~((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 8388608) | (QSO_cat['COADD_FIBERSTATUS'] == 16777216)), 'QSO_MASKBITS'] = 0
 
     # remove useless columns:
     QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
 
     # Correct bump at z~3.7
-    sel_pb_redshift = (QSO_cat['Z'] > 3.65) & ((QSO_cat['C_LYA']<0.95) | (QSO_cat['C_CIV']<0.95))
+    sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.95) | (QSO_cat['C_CIV'] < 0.95))
     log.info(f'Remove bump at z~3.7: exclude {sel_pb_redshift.sum()} QSOs.')
     QSO_cat.loc[sel_pb_redshift, 'QSO_MASKBITS'] = 0
 
@@ -328,9 +331,9 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
 
     def run_catalog_maker(path_to_tile, tile, night, petal, survey, program):
         """Run qso_catalog_maker in the considered tile-last_night-petal. If one file does not exist it return a void DataFrame."""
-        redrock          = os.path.join(path_to_tile, tile, night, f"redrock-{petal}-{tile}-thru{night}.fits")
+        redrock = os.path.join(path_to_tile, tile, night, f"redrock-{petal}-{tile}-thru{night}.fits")
         mgii_afterburner = os.path.join(path_to_tile, tile, night, f"qso_mgii-{petal}-{tile}-thru{night}.fits")
-        qn_afterburner   = os.path.join(path_to_tile, tile, night, f"qso_qn-{petal}-{tile}-thru{night}.fits")
+        qn_afterburner = os.path.join(path_to_tile, tile, night, f"qso_qn-{petal}-{tile}-thru{night}.fits")
 
         if os.path.isfile(redrock):
             if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
@@ -367,7 +370,6 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     """
     import multiprocessing
     from itertools import repeat
-    import tqdm
 
     # remove desimodule log
     os.environ["DESI_LOGLEVEL"] = "ERROR"
@@ -384,7 +386,7 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     program = np.array(tile_info['PROGRAM'][:], dtype='str')
 
     if tiles_to_use is not None:
-        sel  = np.isin(tiles, tiles_to_use)
+        sel = np.isin(tiles, tiles_to_use)
         tiles, last_night, survey, program = tiles[sel], last_night[sel], survey[sel], program[sel]
 
     log.info(f'There are {tiles.size} tiles to treat with npool={npool}')
@@ -416,9 +418,9 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
     Return:
         QSO_cat (DataFrame): pandas DataFrame containing the QSO_catalog for the considered pixel.
     """
-    redrock          = os.path.join(path_to_pix, str(pre_pix), str(pixel), f"redrock-{survey}-{program}-{pixel}.fits")
+    redrock = os.path.join(path_to_pix, str(pre_pix), str(pixel), f"redrock-{survey}-{program}-{pixel}.fits")
     mgii_afterburner = os.path.join(path_to_pix, str(pre_pix), str(pixel), f"qso_mgii-{survey}-{program}-{pixel}.fits")
-    qn_afterburner   = os.path.join(path_to_pix, str(pre_pix), str(pixel), f"qso_qn-{survey}-{program}-{pixel}.fits")
+    qn_afterburner = os.path.join(path_to_pix, str(pre_pix), str(pixel), f"qso_qn-{survey}-{program}-{pixel}.fits")
 
     if os.path.isfile(redrock):
         if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
@@ -454,7 +456,6 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
     """
     import multiprocessing
     from itertools import repeat
-    import tqdm
 
     # remove desimodule log
     os.environ["DESI_LOGLEVEL"] = "ERROR"
@@ -467,7 +468,7 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
     pre_pix_list_long, pixel_list = [], []
     for pre_pix in pre_pix_list:
         pixel_list_tmp = [os.path.basename(path) for path in glob.glob(os.path.join(DIR, pre_pix, "*"))]
-        pre_pix_list_long += [pre_pix]*len(pixel_list_tmp)
+        pre_pix_list_long += [pre_pix] * len(pixel_list_tmp)
         pixel_list += pixel_list_tmp
 
     log.info(f'There are {len(pixel_list)} pixels to treat with npool={npool}')
@@ -517,13 +518,13 @@ def afterburner_is_missing_in_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/
             for night in nights:
                 for petal in range(10):
                     if os.path.isfile(os.path.join(DIR, tile, night, f"redrock-{petal}-{tile}-{suff_dir}{night}.fits")):
-                        if not (os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.fits"))
-                             or os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.notargets"))
-                             or os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.misscamera"))):
+                        if not (os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.fits")) or
+                                os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.notargets")) or
+                                os.path.isfile(os.path.join(DIR, tile, night, f"qso_qn-{petal}-{tile}-{suff_dir}{night}.misscamera"))):
                             pb_qn += [[int(tile), int(night), int(petal)]]
-                        if not (os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.fits"))
-                             or os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.notargets"))
-                             or os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.misscamera"))):
+                        if not (os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.fits")) or
+                                os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.notargets")) or
+                                os.path.isfile(os.path.join(DIR, tile, night, f"qso_mgii-{petal}-{tile}-{suff_dir}{night}.misscamera"))):
                             pb_mgII += [[int(tile), int(night), int(petal)]]
 
         log.info(f'Under the directory {DIR} it lacks:')
@@ -548,7 +549,7 @@ def afterburner_is_missing_in_healpix(redux='/global/cfs/cdirs/desi/spectro/redu
 
     DIR = os.path.join(redux, release, 'healpix')
 
-    #sv1 / sv3 / main
+    # sv1 / sv3 / main
     survey_list = [os.path.basename(path) for path in glob.glob(os.path.join(DIR, '*'))]
     for survey in survey_list:
 
@@ -564,13 +565,13 @@ def afterburner_is_missing_in_healpix(redux='/global/cfs/cdirs/desi/spectro/redu
                 pix_numbers = np.sort([os.path.basename(path) for path in glob.glob(os.path.join(DIR, survey, program, num, '*'))])
                 for pix in pix_numbers:
                     if os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"redrock-{survey}-{program}-{pix}.fits")):
-                        if not (os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.fits"))
-                             or os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.notargets"))
-                             or os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.misscamera"))):
+                        if not (os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.fits")) or
+                                os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.notargets")) or
+                                os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_qn-{survey}-{program}-{pix}.misscamera"))):
                             pb_qn += [[int(num), int(pix)]]
-                        if not (os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.fits"))
-                            or  os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.notargets"))
-                            or  os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.misscamera"))):
+                        if not (os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.fits")) or
+                                os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.notargets")) or
+                                os.path.isfile(os.path.join(DIR, survey, program, num, pix, f"qso_mgii-{survey}-{program}-{pix}.misscamera"))):
                             pb_mgII += [[int(num), int(pix)]]
 
             log.info(f'Under the directory {os.path.join(DIR, survey, program)} it lacks:')
@@ -610,8 +611,8 @@ if __name__ == '__main__':
 
         redux = '/global/cfs/cdirs/desi/spectro/redux/'
 
-        log.info(f'Build QSO catalog from cumulative directory for guadalupe release:')
+        log.info('Build QSO catalog from cumulative directory for guadalupe release:')
         build_qso_catalog_from_tiles(redux=redux, release='guadalupe', dir_output='')
 
-        log.info(f'Build QSO catalog from healpix directory for guadalupe release:')
+        log.info('Build QSO catalog from healpix directory for guadalupe release:')
         build_qso_catalog_from_healpix(redux=redux, release='guadalupe', survey='main', program='dark', dir_output='')

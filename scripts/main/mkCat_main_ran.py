@@ -199,7 +199,10 @@ if specrel != 'daily':
                 wtype &= ((dz[desitarg] & 4) == 0)
             dz = dz[wtype]
             #lznp = common.find_znotposs(dz)
-            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=3000)
+            pthresh = 3000
+            if type[:3] == 'BGS':
+                pthresh = 2000
+            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
             del specdat
             del dz
 

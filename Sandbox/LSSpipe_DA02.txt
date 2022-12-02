@@ -49,8 +49,11 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02
 
+#cut and then fit for BGS_BRIGHT
+python mkCat_main.py --type BGS_BRIGHT --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --clusd y --clusran y --imsys n --nz y --regressis y --add_regressis y --survey DA02 --ccut -21.5
+
 #add k+e corrections
-python mkCat_main.py --type BGS_BRIGHT --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --clusran y  --survey DA02
+python mkCat_main.py --type BGS_BRIGHT --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --clusran y  --survey DA02 --nz y
 
 #BGS subcats
 python mkBGS_flavors.py --survey DA02 --verspec guadalupe --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version 2.1 --clus y --clusran y

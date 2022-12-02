@@ -107,9 +107,12 @@ def run_realspace_reconstruction(Reconstruction, distance, data_fn, randoms_fn, 
         
 def get_f_bias(tracer='ELG'):
     if tracer.startswith('ELG') or tracer.startswith('QSO'):
-        return 0.8, 1.
+        return 0.9, 1.3
     if tracer.startswith('LRG'):
-        return 0.7, 1.8
+        return 0.8, 2.
+    if tracer.startswith('BGS'):
+        return 0.67, 1.5
+
     return 0.8, 1.2
 
 
@@ -121,7 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['N', 'S', 'DN', 'DS', ''], default=None)
+    parser.add_argument('--region', help='regions; by default, run on all regions', type=str, nargs='*', choices=['NGC','SGC','N', 'S', 'DN', 'DS', ''], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=5)

@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 #from desihub
 from desitarget import targetmask
 #from regressis, must be installed
-from regressis import DR9Footprint
+#from regressis import DR9Footprint
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
@@ -46,25 +46,33 @@ parser.add_argument("--verspec",help="version for redshifts",default='guadalupe'
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
+parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
-parser.add_argument("--imsys",help="add weights for imaging systematics?",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
-parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
+parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
+
+
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
+
+#options not typically wanted
+parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
+parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
 
 args = parser.parse_args()
@@ -193,7 +201,7 @@ if not os.path.exists(dirout):
 
 tarver = '1.1.1'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
-tarf = maindir+type +'targetsDR9v'+tarver.strip('.')+'.fits'
+tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False:
@@ -202,13 +210,43 @@ if os.path.isfile(tarf) and redotar == False:
 #    mktar = False    
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
-    ss.gather_targets(type,tardir,maindir,tarver,'main',progl,keys=keys)
-        
-        
+    ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
+
+mketar = True
+etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
+etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
+if os.path.isfile(etarf) and redotar == False: 
+    mketar = False
+
+if args.survey != 'main':
+    mketar = False
+
+if type == 'BGS_BRIGHT':
+    mketar = False
+
+if mketar: #concatenate target files for given type, with column selection hardcoded
+    ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
+
+       
 if mkfulld:
     azf=''
     azfm = 'cumul'        
-    if specrel == 'daily':
+    if args.survey == 'DA02':
+        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
+        #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
+        if type[:3] == 'ELG':
+            azf = mainp.elgzf
+            #azfm = 'hp'
+        if type[:3] == 'QSO':
+            azf = mainp.qsozf
+            azfm = 'hp'
+            if specrel == 'newQSOtemp_tagged':
+                azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
+                azfm = 'cumul'
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
+
+    else:
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
         if type[:3] == 'ELG':
@@ -218,17 +256,6 @@ if mkfulld:
             azf =ldirspec+'QSO_catalog.fits'
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
-    else:
-        #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+progl+'-cumulative.fits')
-        #zmtlf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/everest/datcomb_'+progl+'_zmtl_zdone.fits')
-        if type[:3] == 'ELG':
-            azf = mainp.elgzf
-            #azfm = 'hp'
-        if type[:3] == 'QSO':
-            azf = mainp.qsozf
-            azfm = 'hp'
-        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
-        tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
 
  
@@ -251,6 +278,18 @@ if args.add_veto == 'y':
         fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
+if args.join_etar == 'y':
+    fin = dirout+type+notqso+'_full_noveto.dat.fits'
+    common.join_etar(fin,type)
+
+if args.fillran == 'y':
+    print('filling randoms with imaging properties')
+    for ii in range(rm,rx):
+        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        ct.addcol_ran(fn,ii)
+        print('done with '+str(ii))
+
+
 if args.apply_veto == 'y':
     print('applying vetos')
     maxp = 3400
@@ -301,12 +340,6 @@ regl = ['_N','_S']
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
-if args.fillran == 'y':
-    print('filling randoms with imaging properties')
-    for ii in range(rm,rx):
-        fn = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
-        ct.addcol_ran(fn,ii)
-        print('done with '+str(ii))
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
@@ -376,6 +409,9 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 if args.regressis == 'y':
+    #from regressis, must be installed
+    from regressis import DR9Footprint
+
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
     nside = 256
@@ -394,7 +430,10 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
-    rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    if args.survey == 'DA02':
+        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+    else:
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
 
     suffix_tracer = ''
@@ -421,45 +460,94 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
+    if args.survey != 'DA02':
+        regl = ['']
     for reg in regl:
         fb = dirout+tracer_clus+reg
-        fcd = fb+'_clustering.dat.fits'
+        if args.survey == 'DA02':
+            fcd = fb+'_clustering.dat.fits'
+        else:
+            fcd = fb+'_full.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
         dd['WEIGHT_SYS'] = drfw
-        dd['WEIGHT'] *= dd['WEIGHT_SYS']
-        #dd.write(fcd,format='fits',overwrite=True)
-        comments = ["DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax)]
-        comments = ["Using regressis for WEIGHT_SYS"]
+        comments = []
+        if args.survey == 'DA02':
+            dd['WEIGHT'] *= dd['WEIGHT_SYS']
+            comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
+        comments.append("Using regressis for WEIGHT_SYS")
 
         common.write_LSS(dd,fcd,comments)
 
-    
+if args.add_weight_zfail == 'y':
+    ct.add_zfail_weight2full(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,survey=args.survey,specrel=args.verspec,version=args.version)   
     
 
 if args.add_ke == 'y':
-    for reg in regl:
-        fn = dirout+tracer_clus+reg+'_clustering.dat.fits'
-        dat = Table(fitsio.read(fn))
-        #if args.test == 'y':
-        #    dat = dat[:10]
-        cols = list(dat.dtype.names)
-        if 'REST_GMR_0P1' in cols:
-            print('appears columns are already in '+fn)
-        else:
-            dat = common.add_ke(dat)
-            #if args.test == 'n':
-            common.write_LSS(dat,fn,comments=['added k+e corrections'])
+    if args.survey != 'DA02':
+        regl = ['']
     kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_R'] 
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
     for col in kecols:
         rcols.append(col)
-    #if args.test == 'y':
-    #    print('k+e test passed')    
 
+    for reg in regl:
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+            zcol = 'Z'
+        else:
+            fn = fb+'_full.dat.fits'
+            zcol = 'Z_not4clus'
+        dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        from multiprocessing import Pool
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = i*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+        
+        def _wrapper(N):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            idx = np.arange(mini,maxi)
+            data = list[N]#Table()
+            data['idx'] = idx
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol=zcol)
+            return data
 
+        with Pool(processes=n_processes+1) as pool:
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
+
+        #if args.test == 'y':
+        #    dat = dat[:10]
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
+            #if args.test == 'n':
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
+
+utlid = False
+if args.ran_utlid == 'y':
+    utlid = True
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -477,7 +565,7 @@ if mkclusran:
 #         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid)#,ntilecut=ntile,ccut=ccut)
 
     
 
@@ -517,6 +605,33 @@ if args.nz == 'y':
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+if args.addnbar_ran == 'y':
+    utlid_sw = ''
+    if utlid:
+        utlid_sw = '_utlid'
+    if type == 'QSO':
+        #zmin = 0.6
+        #zmax = 4.5
+        dz = 0.05
+        P0 = 6000
+        
+    else:    
+        dz = 0.02
+        #zmin = 0.01
+        #zmax = 1.61
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
+    
+    for reg in regl:
+        fb = dirout+tracer_clus+utlid_sw+reg
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
+
 
 if args.swapz == 'y':
     import LSS.blinding_tools as blind

@@ -1,0 +1,22 @@
+#pseudo pipeline for creating LSS catalogs from abacus 1st gen mocks, using DA02 footprint
+#from the LSS/scripts/mock_tools directory
+
+source /global/common/software/desi/desi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
+#1st files need to be prepared for fiberassign and then have fiberassign run
+# <realnum> can be 1-25, rannum can be up to 20, but a few are probably enough
+module swap fiberassign/5.0.0
+python prepare_mocks_main.py --realization <realnum> --survey DA02
+#then, run the script name that above prints to the terminal and that will produce all of the fiberassign files
+#for randoms, 5 randoms have been prepped already and have had fiberassign run for DA02
+#probably, nothing more to do for DA02
+python prepare_mocks_ran_main.py --ranmin <minran> --ranmax <minran> --survey DA02
+
+#then, run the catalog pipeline script
+#this combines across tiles for dark time info
+#default just does dark time
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --combd y --combr y --combdr y --tracer dark
+
+#then, for each <tracer> of QSO, LRG, ELG
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --fulld y --fullr y --apply_veto y --mkclusran y --mkclusdat y --nz y

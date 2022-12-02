@@ -1,0 +1,39 @@
+#pseudo pipeline for creating dark time LSS catalogs from abacus 1st gen mocks, using Y1 footprint
+#25 mock realizations, 1-25
+#20 randoms are available, 1 provides ~10x density on the Y1 ELG sample
+
+#from the 'LSS/scripts/mock_tools' directory run the below commands
+
+source /global/common/software/desi/desi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
+#1st files need to be prepared for fiberassign and then have fiberassign run
+#Code from Anand Raichoor runs assignment in 7 passes; tiles in each pass don't overlap so can be run in parallel
+#use an interactive node on Perlmutter and this will finish pretty quickly (using code from )
+#only mock 1 has been processed so far
+
+salloc -N 1 -C cpu -t 04:00:00 --qos interactive --account desi
+python run_mocks_multipass.py --realmin <minimum_mock_number> --realmax <maximum_mock_number+1> --footprint Y1 --nproc 64
+
+#for randoms, a similar process is used, except no need to do multiple passes
+#1 random has been processed so far; should be enough for basic tasks
+python prepare_mocks_ran_main.py --ranmin <min_random_file> --ranmax <max_ran_file+1> --footprint Y1
+
+#then, run the catalog pipeline script
+#this combines across tiles for dark time info
+#default just does dark time
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --combd y --combr y --combdr y --countran y --tracer dark --add_gtl n
+
+#setting --add_gtl n means that we are not using the good fiber list from the actual observed data
+#we should change that when we are ready (maybe after himalayas data)
+
+#then, for each <tracer> of QSO, LRG, ELG
+python mkCat_mock.py --tracer <tracer> --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --fulld y --fullr y --apply_veto y --mkclusran y --mkclusdat y -mkclusran_allpot y --mkclusdat_allpot y --nz y
+
+#That will produce the LSS catalogs for assigned data and everything reachable ('_complete' in the name)
+#outputs are here https://data.desi.lbl.gov/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/Y1/mock1/LSScats/
+
+#Right now, all assigned targets get a good redshift. This means the ELG and QSO densities are quite a bit higher than the real data
+#Sub-sampling could easily be added on to the full catalogs in order to simulate redshift failures
+
+#Simulating imaging systematics would need to happen at the very beginning, before fiberassign
