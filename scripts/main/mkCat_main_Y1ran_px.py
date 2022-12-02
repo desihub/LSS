@@ -197,7 +197,8 @@ if combhp or mkfullr:
         ntls = len(np.unique(specf['TILEID']))
         if ntls != len(ta):
             print(ntls,len(ta))
-            sys.exit('mismatch in number of tileids NOT PROCEEDING')
+            #sys.exit('mismatch in number of tileids NOT PROCEEDING')
+            print('mismatch in number of tileids')
     gtl = np.unique(specfc['TILELOCID'])
     del specfc
 
