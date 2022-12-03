@@ -913,6 +913,16 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
     if type(par) == str:
         if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
             pixlp,pixlv = gethpmap_var(ft,reg)
+        parsp = par.split('-')
+        if parsp[1] == 'EBV':
+            ebv = parv[wp]['EBV']
+            if '_R' in par:
+                R_v = R_R
+            if '_G' in par:
+                R_v = R_g
+            if '_Z' in par:
+                R_v = R_Z
+            parv = 10.**(-0.4*R_v*ebv*2.)*parv[wp][parsp[0]]
 
         if len(par.split('-')) > 1: 
     
