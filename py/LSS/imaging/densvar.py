@@ -912,7 +912,7 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
 
     
     print(len(parv[wp]))
-    if type(par) == str
+    if type(par) == str:
 		if len(par.split('-')) > 1: 
 	
 			if par.split('-')[0] == 'VAR':
