@@ -912,38 +912,40 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
 
     
     print(len(parv[wp]))
-    if len(par.split('-')) > 1: 
-    
-        if par.split('-')[0] == 'VAR':
-            parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
-        elif par.split('-')[0] == 'STDPER':
-            var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
-            parv = var**.5/(pixlp[wp]/pixlg[wp])
-        elif par.split('-')[1] == 'X':
-            parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
-        elif par.split('-')[1] == 'DIV':
-            parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
-    elif par == 'PSFTOT':
-        parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-    elif par == 'SN2TOT_FLAT':
-        ebv = parv[wp]['EBV']
-        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+    if type(par) == str
+		if len(par.split('-')) > 1: 
+	
+			if par.split('-')[0] == 'VAR':
+				parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
+			elif par.split('-')[0] == 'STDPER':
+				var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
+				parv = var**.5/(pixlp[wp]/pixlg[wp])
+			elif par.split('-')[1] == 'X':
+				parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+			elif par.split('-')[1] == 'DIV':
+				parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
+		elif par == 'PSFTOT':
+			parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+		elif par == 'SN2TOT_FLAT':
+			ebv = parv[wp]['EBV']
+			parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
 
-    elif par == 'SN2TOT_G':
-        ebv = parv[wp]['EBV']
-        parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
+		elif par == 'SN2TOT_G':
+			ebv = parv[wp]['EBV']
+			parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
 
-    elif par == 'fracPSF':
-        wpsf = ft['MORPHTYPE'] == 'PSF'
-        pixlgp = np.zeros(12*nside*nside)
-        dpixp = dpix[wpsf]
-        for i in range(0,len(dpixp)): 
-            pix = dpixp[i]
-            pixlgp[pix] += 1.
-        parv = pixlgp[wp]/pixlg[wp]
+		elif par == 'fracPSF':
+			wpsf = ft['MORPHTYPE'] == 'PSF'
+			pixlgp = np.zeros(12*nside*nside)
+			dpixp = dpix[wpsf]
+			for i in range(0,len(dpixp)): 
+				pix = dpixp[i]
+				pixlgp[pix] += 1.
+			parv = pixlgp[wp]/pixlg[wp]
+		else:
+			parv = parv[wp][par]
     else:
-        parv = parv[wp][par]
-
+        parv  = par[wp]
     
     bc,sv,ep = plot_pixdens1d(pixlg[wp],pixlr[wp],parv,weights[wp],vmin,vmax,titl=titl,xlab=xlab)
     return bc,sv,ep
