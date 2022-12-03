@@ -874,8 +874,6 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
         wp = (pixlr > 0) 
     wp &= (weights*0 == 0)
 
-    if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
-        pixlp,pixlv = gethpmap_var(ft,reg)
 
 
     parv = fitsio.read(pixfn)
@@ -913,6 +911,9 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
     
     print(len(parv[wp]))
     if type(par) == str:
+        if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
+            pixlp,pixlv = gethpmap_var(ft,reg)
+
         if len(par.split('-')) > 1: 
     
             if par.split('-')[0] == 'VAR':
