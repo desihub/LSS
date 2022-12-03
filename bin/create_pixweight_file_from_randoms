@@ -13,8 +13,6 @@ from desiutil.log import get_logger
 log = get_logger()
 start = time()
 
-# ADM the currently set default lss_map_dir.
-lssmapdir = get_lss_map_dir()
 # ADM a default HEALPixel size for output maps.
 nside_out = 512
 
@@ -25,7 +23,7 @@ egrancat2 = egrancat1.replace("0.fits", "*.fits")
 egrancat3 = egrancat1.replace("0.fits", "?.fits")
 egrancat4 = egrancat1.replace("0.fits", "[2-4].fits")
 # ADM example output file name.
-egoutfn = rancat_names_to_pixweight_name(glob(egrancat4))
+egoutfn = rancat_names_to_pixweight_name(glob(egrancat4), lssmapdir="/$LSS_MAP_DIR/../blat")
 # ADM other example inputs.
 egfields = """["GALDEPTH_G", "HALPHA_ERROR", "APFLUX_IVAR_R", "WISEMASK_W2", "CALIB_Z"]"""
 egmasks = """[131072, ["MASKBITS", "ARTIFACTS", "ELG_GAIA", "LRG_UNWISE", "EBV_SGF14"], 131072, ["KAPPA_PLANCK"], 4063232]"""
@@ -59,14 +57,17 @@ ap.add_argument("--nside_out", type=int,
                 ' pixweight map (defaults to {})'.format(nside_out),
                 default=nside_out)
 ap.add_argument("--lssmapdir",
-                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {})'
-                .format(lssmapdir),
-                default=lssmapdir)
+                help="Directory that hosts sky maps. You MUST pass this if you" +
+                " haven't set the $LSS_MAP_DIR environment variable")
 ap.add_argument("--outfn",
                 help='Output filename. If not passed, will default to something like' +
                 ' {} for an input `rancatname` of {}'.format(egoutfn, egrancat4))
 
 ns = ap.parse_args()
+
+# ADM check early that the LSS Map directory is set or passed.
+lssmapdir = get_lss_map_dir(ns.lssmapdir)
+log.info("LSS Map Directory is set to: {}".format(lssmapdir))
 
 # ADM parse the rancatname in case a wildcard was passed.
 # ADM (this will also embed a single catalog in a list).
@@ -78,4 +79,4 @@ fieldslist = json.loads(ns.fields)
 masklist = json.loads(ns.masks)
 
 _ = create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=ns.nside_out,
-                          lssmapdir=ns.lssmapdir, outfn=ns.outfn)
+                          lssmapdir=lssmapdir, outfn=ns.outfn)

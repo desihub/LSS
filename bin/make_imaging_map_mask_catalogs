@@ -12,9 +12,6 @@ from desiutil.log import get_logger
 log = get_logger()
 start = time()
 
-# ADM the currently set default lss_map_dir.
-lssmapdir = get_lss_map_dir()
-
 # ADM example input file.
 egd = "/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve"
 egrancat1 = os.path.join(egd, "randoms-1-0.fits")
@@ -36,11 +33,14 @@ ap.add_argument("rancatname",
                 help="Full path to a random catalog. Can process multiple catalogs" +
                 " together by passing a wildcard recognized by glob")
 ap.add_argument("--lssmapdir",
-                help='Directory that hosts sky maps. Default is $LSS_MAP_DIR (currently {})'
-                .format(lssmapdir),
-                default=lssmapdir)
+                help="Directory that hosts sky maps. You MUST pass this if you" +
+                " haven't set the $LSS_MAP_DIR environment variable")
 
 ns = ap.parse_args()
+
+# ADM check early that the LSS Map directory is set or passed.
+lssmapdir = get_lss_map_dir(ns.lssmapdir)
+log.info("LSS Map Directory is set to: {}".format(lssmapdir))
 
 # ADM in case a wildcard was passed.
 # ADM (will also embed a single catalog in a list).
