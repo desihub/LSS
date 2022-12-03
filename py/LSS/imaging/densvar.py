@@ -851,7 +851,7 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights=None,vmin=None,vmax=None,smean=True,
     print('fraction of randoms not included in plot: '+str(frac))
     return bc,sv,ep 
 
-def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl=''):        
+def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None,fnc=None,vmin=None,vmax=None,ebvcut=None,edscut=None,sn2cut=None,fpsfcut=None,gfluxcut=None,rfluxcut=None,gbcut=None,nbin=10,weights=None,titl='',rng=0.3):        
     if bl is not None:
         wr = np.isin(rl['BRICKID'],bl)
         rl = rl[wr]
@@ -948,7 +948,7 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
     else:
         parv  = par[wp]
     
-    bc,sv,ep = plot_pixdens1d(pixlg[wp],pixlr[wp],parv,weights[wp],vmin,vmax,titl=titl,xlab=xlab)
+    bc,sv,ep = plot_pixdens1d(pixlg[wp],pixlr[wp],parv,weights[wp],vmin,vmax,titl=titl,xlab=xlab,rng=rng)
     return bc,sv,ep
 
 
