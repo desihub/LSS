@@ -944,6 +944,9 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
         elif par == 'SN2TOT_FLAT':
             ebv = parv[wp]['EBV']
             parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+        elif par == 'SNTOT_FLAT':
+            ebv = parv[wp]['EBV']
+            parv = 10.**(-0.4*R_G*ebv)*np.sqrt(parv[wp]['PSFDEPTH_G']) + 10.**(-0.4*R_R*ebv)*np.sqrt(parv[wp]['PSFDEPTH_R']) + 10.**(-0.4*R_Z*ebv)*np.sqrt(parv[wp]['PSFDEPTH_Z'])
 
         elif par == 'SN2TOT_G':
             ebv = parv[wp]['EBV']
