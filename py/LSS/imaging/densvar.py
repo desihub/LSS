@@ -846,7 +846,7 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights=None,vmin=None,vmax=None,smean=True,
     
     plt.title(titl)
     coeff = np.polyfit(bc,sv,1,w=1/ep)
-    plt.plot(bc,coeff[0]+np.array(bc)*coeff[1]-sb,'r--')
+    plt.plot(bc,coeff[1]+np.array(bc)*coeff[0]-sb,'r--')
     print(coeff)
     plt.show()
     wv = (parv>=vmin) & (parv <=vmax)
