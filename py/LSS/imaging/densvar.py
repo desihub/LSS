@@ -845,6 +845,8 @@ def plot_pixdens1d(pixlg,pixlr,parv,weights=None,vmin=None,vmax=None,smean=True,
     plt.xlabel(xlab)
     
     plt.title(titl)
+    coeff = np.polyfit(bc,sv,1,w=1/ep)
+    plt.plot(bc,coeff[0]+bc*coeff[1])
     plt.show()
     wv = (parv>=vmin) & (parv <=vmax)
     frac = sum(pixlr[~wv])/sum(pixlr)
@@ -1513,6 +1515,55 @@ class densvar:
         plt.ylim(0.7,1.3)
         plt.title(title)
         plt.show()    
+
+class cell:
+    def __init__(self,dat,ran,randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',ranallf='randoms-allsky-1-0.fits'):
+        self.dat = dat
+        self.ran = ran
+        ranall = fitsio.read(randir+ranallf,columns=['RA','DEC'])
+		th,phi = radec2thphi(ranall['RA'],ranall['DEC'])
+		ranpix = hp.ang2pix(256,th,phi)
+		ranpall = np.zeros(12*256*256)
+		for pix in ranpix:
+			ranpall[pix] += 1.
+        self.ranpall = ranpall
+ 
+    def get_delta(self,reg,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True):#,ranpall=None
+        dat = sel_reg(dat[racol],dat[decol],reg)
+        ran = sel_reg(ran[racol],ran[decol],reg)
+        th,phi = radec2thphi(dat[racol],dat[decol])
+        datpix = hp.ang2pix(256,th,phi,nest=nest)
+        datp = np.zeros(12*256*256)
+        for i in range(0,len(datpix)):
+            pix = datpix[i]
+            if wts is not None:
+                datp[pix] += wts[i]
+            else:
+                datp[pix] += 1.
+        if wtspix is not None:
+            datp *= wtspix
+        th,phi = radec2thphi(ran[racol],ran[decol])
+        ranpix = hp.ang2pix(256,th,phi,nest=nest)
+        ranp = np.zeros(12*256*256)
+        for pix in ranpix:
+            ranp[pix] += 1.
+        #ranp /= rannorm
+    
+        sel = ranp > thresh
+        mnr = np.mean(datp[sel]/ranp[sel])
+        print(mnr)
+        delta = (datp/ranp/mnr -1)
+        #if ranpall is not None:
+        if appfrac:
+            if nest:
+                frac = ranp/self.ranpall
+            #else:
+            #    frac = ranp/ranpall_nest
+            delta *= frac
+        delta[~sel] = hp.UNSEEN
+        fsky = np.sum(ranp[sel])/np.sum(ranpall)
+        return delta,fsky 
+
             
 if __name__ == "__main__":
     obiLRGvs_depthmag('S','psfdepth','g',md='sv3',syspix=True)#,vmin=24.3,vmax=25)
