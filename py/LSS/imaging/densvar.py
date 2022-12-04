@@ -925,7 +925,7 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
             parv = 10.**(-0.4*R_v*ebv*2.)*parv[wp][parsp[0]]
 
         if len(par.split('-')) > 1: 
-    
+            print(par.split('-'))   
             if par.split('-')[0] == 'VAR':
                 parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
             elif par.split('-')[0] == 'STDPER':
