@@ -1521,11 +1521,11 @@ class cell:
         self.dat = dat
         self.ran = ran
         ranall = fitsio.read(randir+ranallf,columns=['RA','DEC'])
-		th,phi = radec2thphi(ranall['RA'],ranall['DEC'])
-		ranpix = hp.ang2pix(256,th,phi)
-		ranpall = np.zeros(12*256*256)
-		for pix in ranpix:
-			ranpall[pix] += 1.
+        th,phi = radec2thphi(ranall['RA'],ranall['DEC'])
+        ranpix = hp.ang2pix(256,th,phi)
+        ranpall = np.zeros(12*256*256)
+        for pix in ranpix:
+            ranpall[pix] += 1.
         self.ranpall = ranpall
  
     def get_delta(self,reg,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True):#,ranpall=None
