@@ -8,6 +8,12 @@ from LSS import imsys_fitter as sf
 
 pixfn      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'#'/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/pixweight/sv3/resolve/dark/sv3pixweight-1-dark.fits'
 pixfn_ext      = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight_external.fits'
+syst_names = ['STARDENS','EBV', 'PSFDEPTH_G', 'PSFDEPTH_R',\
+    'PSFDEPTH_Z','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z',\
+    'PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+syst_names_ext = ['HALPHA','EBVreconMEANF15', 'CALIBG', 'CALIBR',\
+    'CALIBZ']
+
 hdr        = fits.getheader(pixfn,1)
 nside,nest = hdr['HPXNSIDE'],hdr['HPXNEST']
 print(nside,nest)
@@ -23,6 +29,58 @@ ranf = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/random
 #ranf = '/global/cscratch1/sd/ajross/tarcat/vtest/tv0.49.0/randomsDR9v0.49.0_0_masked.fits'
 
  #these get used to veto imaging area; combination of bits applied to ELGs and LRGs in DR8 targeting
+
+def get_prop_map(name):
+    if name in syst_names:
+        return fitsio.read(pixfn)[name]
+    if name in syst_names_ext:
+        return fitsio.read(pixfn_ext)[name]
+	parsp = name.split('-')
+	if len(parsp) > 1: 
+		if parsp[1] == 'EBV':
+			ebv = fitsio.read(pixfn)['EBV']
+			if '_R' in par:
+				R_v = R_R
+			if '_G' in par:
+				R_v = R_g
+			if '_Z' in par:
+				R_v = R_Z
+			return = 10.**(-0.4*R_v*ebv*2.)*fitsio.read(pixfn)[parsp[0]]
+		elif parsp[1] == 'X' or parsp[1] == 'DIV':
+			name1 = parsp[0]
+			if name1 in syst_names:
+			    par1 = fitsio.read(pixfn)[name1]
+			if name1 in syst_names_ext:
+			    par1 = fitsio.read(pixfn_ext)[name1]
+			name2 = parsp[2]
+			if name2 in syst_names:
+			    par2 = fitsio.read(pixfn)[name2]
+			if name2 in syst_names_ext:
+			    par2 = fitsio.read(pixfn_ext)[name2]
+			if parsp[1] == 'X':
+			    return par1*par2
+			if parsp[1] == 'DIV':
+			    return par1/par2
+
+	if par == 'PSFTOT':
+		parv = fitsio.read(pixfn)
+		return = (parv['PSFSIZE_G'])*(parv['PSFSIZE_R'])*(parv['PSFSIZE_Z'])
+	elif par == 'SN2TOT_FLAT':
+		parv = fitsio.read(pixfn)
+		ebv = parv['EBV']
+		return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+	elif par == 'SNTOT_FLAT':
+		parv = fitsio.read(pixfn)
+		ebv = parv['EBV']
+		mp = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+		return = np.sqrt(mp)
+	elif par == 'SN2TOT_G':
+		parv = fitsio.read(pixfn)
+		ebv = parv['EBV']
+		return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G']
+    sys.exit('invalid map name')
+	
+
 
 def mask(dd,mb=[1]):
     keep = (dd['NOBS_G']>0) & (dd['NOBS_R']>0) & (dd['NOBS_Z']>0)
@@ -245,11 +303,6 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
     pixmext = fitsio.read(pixfn_ext)
     data_pix = get_pix(nside, data_ra, data_dec,nest) 
     rand_pix = get_pix(nside, rand_ra, rand_dec,nest)
-    syst_names = ['STARDENS','EBV', 'PSFDEPTH_G', 'PSFDEPTH_R',\
-    'PSFDEPTH_Z','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z',\
-    'PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    syst_names_ext = ['HALPHA','EBVreconMEANF15', 'CALIBG', 'CALIBR',\
-    'CALIBZ']
 
     for syst_name in syst_names:
         data_syst[syst_name] = pixm[syst_name][data_pix]
@@ -916,42 +969,11 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
     if type(par) == str:
         if par.split('-')[0] == 'VAR' or par.split('-')[0] == 'STDPER':
             pixlp,pixlv = gethpmap_var(ft,reg)
-        parsp = par.split('-')
-        if len(par.split('-')) > 1: 
-            if parsp[1] == 'EBV':
-                ebv = parv[wp]['EBV']
-                if '_R' in par:
-                    R_v = R_R
-                if '_G' in par:
-                    R_v = R_g
-                if '_Z' in par:
-                    R_v = R_Z
-                parv = 10.**(-0.4*R_v*ebv*2.)*parv[wp][parsp[0]]
-
-        
-            #print(par.split('-'))   
             if par.split('-')[0] == 'VAR':
                 parv = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2.  
             elif par.split('-')[0] == 'STDPER':
                 var = pixlv[wp]/pixlg[wp]-(pixlp[wp]/pixlg[wp])**2. 
                 parv = var**.5/(pixlp[wp]/pixlg[wp])
-            elif par.split('-')[1] == 'X':
-                parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
-            elif par.split('-')[1] == 'DIV':
-                parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
-        elif par == 'PSFTOT':
-            parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
-        elif par == 'SN2TOT_FLAT':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
-        elif par == 'SNTOT_FLAT':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
-            parv = np.sqrt(parv)
-        elif par == 'SN2TOT_G':
-            ebv = parv[wp]['EBV']
-            parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
-
         elif par == 'fracPSF':
             wpsf = ft['MORPHTYPE'] == 'PSF'
             pixlgp = np.zeros(12*nside*nside)
@@ -961,7 +983,40 @@ def densvsimpar_pix(rl,ft,par,reg=None,wsel=None,xlab='',datweights=None,bl=None
                 pixlgp[pix] += 1.
             parv = pixlgp[wp]/pixlg[wp]
         else:
-            parv = parv[wp][par]
+            parv = get_prop_map(par)[wp]
+#         parsp = par.split('-')
+#         if len(par.split('-')) > 1: 
+#             if parsp[1] == 'EBV':
+#                 ebv = parv[wp]['EBV']
+#                 if '_R' in par:
+#                     R_v = R_R
+#                 if '_G' in par:
+#                     R_v = R_g
+#                 if '_Z' in par:
+#                     R_v = R_Z
+#                 parv = 10.**(-0.4*R_v*ebv*2.)*parv[wp][parsp[0]]
+# 
+#         
+#             #print(par.split('-'))   
+#             elif par.split('-')[1] == 'X':
+#                 parv = parv[wp][par.split('-')[0]]*parv[wp][par.split('-')[2]]
+#             elif par.split('-')[1] == 'DIV':
+#                 parv = parv[wp][par.split('-')[0]]/parv[wp][par.split('-')[2]]
+#         elif par == 'PSFTOT':
+#             parv = (parv[wp]['PSFSIZE_G'])*(parv[wp]['PSFSIZE_R'])*(parv[wp]['PSFSIZE_Z'])
+#         elif par == 'SN2TOT_FLAT':
+#             ebv = parv[wp]['EBV']
+#             parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+#         elif par == 'SNTOT_FLAT':
+#             ebv = parv[wp]['EBV']
+#             parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv[wp]['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv[wp]['PSFDEPTH_Z']
+#             parv = np.sqrt(parv)
+#         elif par == 'SN2TOT_G':
+#             ebv = parv[wp]['EBV']
+#             parv = 10.**(-0.4*R_G*ebv*2.)*parv[wp]['PSFDEPTH_G']
+# 
+#         else:
+#             parv = parv[wp][par]
     else:
         parv  = par[wp]
     
