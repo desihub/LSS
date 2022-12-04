@@ -62,19 +62,19 @@ def get_prop_map(name):
             if parsp[1] == 'DIV':
                 return par1/par2
 
-    if par == 'PSFTOT':
+    if name == 'PSFTOT':
         parv = fitsio.read(pixfn)
         return  (parv['PSFSIZE_G'])*(parv['PSFSIZE_R'])*(parv['PSFSIZE_Z'])
-    elif par == 'SN2TOT_FLAT':
+    elif name == 'SN2TOT_FLAT':
         parv = fitsio.read(pixfn)
         ebv = parv['EBV']
         return  10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-    elif par == 'SNTOT_FLAT':
+    elif name == 'SNTOT_FLAT':
         parv = fitsio.read(pixfn)
         ebv = parv['EBV']
         mp = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
         return  np.sqrt(mp)
-    elif par == 'SN2TOT_G':
+    elif name == 'SN2TOT_G':
         parv = fitsio.read(pixfn)
         ebv = parv['EBV']
         return  10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G']
