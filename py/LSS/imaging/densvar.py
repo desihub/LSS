@@ -35,51 +35,51 @@ def get_prop_map(name):
         return fitsio.read(pixfn)[name]
     if name in syst_names_ext:
         return fitsio.read(pixfn_ext)[name]
-	parsp = name.split('-')
-	if len(parsp) > 1: 
-		if parsp[1] == 'EBV':
-			ebv = fitsio.read(pixfn)['EBV']
-			if '_R' in par:
-				R_v = R_R
-			if '_G' in par:
-				R_v = R_g
-			if '_Z' in par:
-				R_v = R_Z
-			return = 10.**(-0.4*R_v*ebv*2.)*fitsio.read(pixfn)[parsp[0]]
-		elif parsp[1] == 'X' or parsp[1] == 'DIV':
-			name1 = parsp[0]
-			if name1 in syst_names:
-			    par1 = fitsio.read(pixfn)[name1]
-			if name1 in syst_names_ext:
-			    par1 = fitsio.read(pixfn_ext)[name1]
-			name2 = parsp[2]
-			if name2 in syst_names:
-			    par2 = fitsio.read(pixfn)[name2]
-			if name2 in syst_names_ext:
-			    par2 = fitsio.read(pixfn_ext)[name2]
-			if parsp[1] == 'X':
-			    return par1*par2
-			if parsp[1] == 'DIV':
-			    return par1/par2
+    parsp = name.split('-')
+    if len(parsp) > 1: 
+        if parsp[1] == 'EBV':
+            ebv = fitsio.read(pixfn)['EBV']
+            if '_R' in par:
+                R_v = R_R
+            if '_G' in par:
+                R_v = R_g
+            if '_Z' in par:
+                R_v = R_Z
+            return = 10.**(-0.4*R_v*ebv*2.)*fitsio.read(pixfn)[parsp[0]]
+        elif parsp[1] == 'X' or parsp[1] == 'DIV':
+            name1 = parsp[0]
+            if name1 in syst_names:
+                par1 = fitsio.read(pixfn)[name1]
+            if name1 in syst_names_ext:
+                par1 = fitsio.read(pixfn_ext)[name1]
+            name2 = parsp[2]
+            if name2 in syst_names:
+                par2 = fitsio.read(pixfn)[name2]
+            if name2 in syst_names_ext:
+                par2 = fitsio.read(pixfn_ext)[name2]
+            if parsp[1] == 'X':
+                return par1*par2
+            if parsp[1] == 'DIV':
+                return par1/par2
 
-	if par == 'PSFTOT':
-		parv = fitsio.read(pixfn)
-		return = (parv['PSFSIZE_G'])*(parv['PSFSIZE_R'])*(parv['PSFSIZE_Z'])
-	elif par == 'SN2TOT_FLAT':
-		parv = fitsio.read(pixfn)
-		ebv = parv['EBV']
-		return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-	elif par == 'SNTOT_FLAT':
-		parv = fitsio.read(pixfn)
-		ebv = parv['EBV']
-		mp = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
-		return = np.sqrt(mp)
-	elif par == 'SN2TOT_G':
-		parv = fitsio.read(pixfn)
-		ebv = parv['EBV']
-		return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G']
+    if par == 'PSFTOT':
+        parv = fitsio.read(pixfn)
+        return = (parv['PSFSIZE_G'])*(parv['PSFSIZE_R'])*(parv['PSFSIZE_Z'])
+    elif par == 'SN2TOT_FLAT':
+        parv = fitsio.read(pixfn)
+        ebv = parv['EBV']
+        return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+    elif par == 'SNTOT_FLAT':
+        parv = fitsio.read(pixfn)
+        ebv = parv['EBV']
+        mp = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G'] + 10.**(-0.4*R_R*ebv*2.)*parv['PSFDEPTH_R'] + 10.**(-0.4*R_Z*ebv*2.)*parv['PSFDEPTH_Z']
+        return = np.sqrt(mp)
+    elif par == 'SN2TOT_G':
+        parv = fitsio.read(pixfn)
+        ebv = parv['EBV']
+        return = 10.**(-0.4*R_G*ebv*2.)*parv['PSFDEPTH_G']
     sys.exit('invalid map name')
-	
+    
 
 
 def mask(dd,mb=[1]):
