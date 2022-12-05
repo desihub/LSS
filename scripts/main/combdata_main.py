@@ -48,6 +48,7 @@ parser.add_argument("--doqso",help="whether or not to combine qso data",default=
 parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
+parser.add_argument("--dotarspec",help="whether or not to combine spec and tar data per type, for non-daily data",default='y')
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
@@ -511,34 +512,35 @@ if specrel != 'daily' and args.dospec == 'y':
         if prog == 'bright':
             tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
             notqsos = ['',''] 
-    for tp,notqso in zip(tps,notqsos):
-        #first test to see if we need to update any
-        print('now doing '+tp+notqso)
-        print(len(tiles4comb['TILEID']))
-        tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
-        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
-        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+    if args.dotarspec == 'y':
+        for tp,notqso in zip(tps,notqsos):
+            #first test to see if we need to update any
+            print('now doing '+tp+notqso)
+            print(len(tiles4comb['TILEID']))
+            tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+            outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+            outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
-        tarf = Table.read(tarfo)
-        remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
-        for col in remcol:
-            try:
-                tarf.remove_columns([col] )#we get this where relevant from spec file
-            except:
-                print('column '+col +' was not in stacked tarwdup table')    
+            tarf = Table.read(tarfo)
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+            for col in remcol:
+                try:
+                    tarf.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    print('column '+col +' was not in stacked tarwdup table')    
 
-        #tarf.remove_columns(['ZWARN_MTL'])
-        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        #specf.remove_columns(['PRIORITY'])
-        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
-        del tarf
-        del specf
-        print('joined tar and spec, now writing')
-        tj.write(outfs,format='fits', overwrite=True)
-        print('wrote, now counting tiles')
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
-        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
-        tc.write(outtc,format='fits', overwrite=True)
+            #tarf.remove_columns(['ZWARN_MTL'])
+            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            #specf.remove_columns(['PRIORITY'])
+            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            del tarf
+            del specf
+            print('joined tar and spec, now writing')
+            tj.write(outfs,format='fits', overwrite=True)
+            print('wrote, now counting tiles')
+            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+            outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+            tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)
