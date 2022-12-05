@@ -85,7 +85,7 @@ class main:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
             self.ebits = [8,9,11]    
-            self.tsnrcut = 0
+            self.tsnrcut = 80
             self.dchi2 = 0
             self.zmin = 0.8
             self.zmax = 3.5
