@@ -486,14 +486,14 @@ if specrel != 'daily' and args.dospec == 'y':
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
     ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY','DESI_TARGET','BGS_TARGET','RA','DEC'])
+    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY','DESI_TARGET','BGS_TARGET','TARGET_RA','TARGET_DEC'])
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
     fzmtl = fitsio.read(specfo)
     specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     specf.write(outfs,format='fits', overwrite=True)
-    specf.remove_columns(['DESI_TARGET','BGS_TARGET','RA','DEC']) #remove these columns because they are in the targets already
+    specf.remove_columns(['DESI_TARGET','BGS_TARGET','TARGET_RA','TARGET_DEC']) #remove these columns because they are in the targets already
     if specrel == 'everest' or specrel =='guadalupe':
         #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
         tps = [prog]
