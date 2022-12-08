@@ -100,8 +100,8 @@ if  args.doqso == 'y':
         for ssd in ssdir:
             du = fd+ssd+'/'
             app = surpipe+'-'+prog+'-'+ssd+'.fits'
-            rr = du+'redrock-'+app
-            mgii = du+'qso-mgii-'+app
+            rr = du+'redrock_'+app
+            mgii = du+'qso_mgii-'+app
             qn = du+'qso_qn'+app
             old_extname_redrock = False
             old_extname_for_qn = False #if int(tdate) >= 20220118 else True
