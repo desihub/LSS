@@ -91,7 +91,7 @@ if  args.doqso == 'y':
     surpipe = 'main'
     if args.survey == 'SV3':
         surpipe = 'sv3'
-    dirspec = '/global/cfs/cdirs/desi/spectro/redux/'+args.specver+'/healpix/'+surpipe+'/'+args.prog+'/'
+    dirspec = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/healpix/'+surpipe+'/'+args.prog+'/'
     subdirs = os.listdir(dirspec)
     qsocats = []
     for sd in subdirs:
