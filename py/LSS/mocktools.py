@@ -243,7 +243,7 @@ def mkclusdat_allpot(fl,ztable,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccu
     print('after join to z',str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))
     
-    kl = ['RA','DEC','Z','WEIGHT']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID']
     wn = ff['PHOTSYS'] == 'N'
 
     ff.keep_columns(kl)
@@ -284,7 +284,7 @@ def mkclusdat_tiles(fl,ztable,bit=None,zmin=0,zmax=6):
     
     ff['WEIGHT'] = np.ones(len(ff))
     
-    kl = ['RA','DEC','Z','WEIGHT']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID']
     wn = ff['PHOTSYS'] == 'N'
 
     ff.keep_columns(kl)
