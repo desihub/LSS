@@ -111,19 +111,19 @@ if  args.doqso == 'y':
             try:
                 qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
                 names = list(qso_cati.dtype.names)
-                kll = []
-                for i in range(0,len(kl)):
-                    if kl[i] in names:
-                        kll.append(kl[i])
-                    else:
-                        print(kl[i])
+                kll = kl#[]
+                #for i in range(0,len(kl)):
+                #    if kl[i] in names:
+                #        kll.append(kl[i])
+                #    else:
+                #        print(kl[i])
                 qso_cati.keep_columns(kll)
                 qsocats.append(qso_cati)
                 n += 1
             except:
                 print('healpix '+ssd +' failed')
-        if n > 3:
-            break
+        #if n > 3:
+        #    break
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
     common.write_LSS(qso_cat, outf)   
 
