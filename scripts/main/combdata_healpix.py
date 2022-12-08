@@ -94,7 +94,7 @@ if  args.doqso == 'y':
     dirspec = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/healpix/'+surpipe+'/'+args.prog+'/'
     subdirs = os.listdir(dirspec)
     qsocats = []
-    kl = ['TARGET_RA','TARGET_DEC','DESI_TARGET','TARGETID', 'Z', 'LOCATION',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS']
+    kl = ['TARGET_RA','TARGET_DEC','DESI_TARGET','TARGETID', 'Z',  'TSNR2_LYA', 'TSNR2_QSO', 'DELTA_CHI2_MGII', 'A_MGII', 'SIGMA_MGII', 'B_MGII', 'VAR_A_MGII', 'VAR_SIGMA_MGII', 'VAR_B_MGII', 'Z_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'QSO_MASKBITS']
     for sd in subdirs:
         fd = dirspec+sd+'/'
         ssdir = os.listdir(fd)
@@ -109,6 +109,7 @@ if  args.doqso == 'y':
             old_extname_for_qn = False #if int(tdate) >= 20220118 else True
             try:
                 qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+                names 
                 qso_cati.keep_columns(kl)
                 qsocats.append(qso_cati)
             except:
