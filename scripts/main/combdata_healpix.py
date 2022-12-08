@@ -103,7 +103,7 @@ if  args.doqso == 'y':
             rr = du+'redrock-'+app
             mgii = du+'qso-mgii-'+app
             qn = du+'qso_qn'+app
-            old_extname_redrock = True if zhdu == 'ZBEST' else False
+            old_extname_redrock = False
             old_extname_for_qn = False #if int(tdate) >= 20220118 else True
             qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
             qsocats.append(qso_cati)
