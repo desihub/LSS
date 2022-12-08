@@ -27,7 +27,7 @@ from desitarget import targetmask
 #from this package
 #try:
 import LSS.main.cattools as ct
-import LSS.common as common
+import LSS.common_tools as common
 from LSS.globals import main
 from LSS.qso_cat_utils import qso_catalog_maker
 
