@@ -97,6 +97,7 @@ if  args.doqso == 'y':
     for sd in subdirs:
         fd = dirspec+sd+'/'
         ssdir = os.listdir(fd)
+        print(sd)
         for ssd in ssdir:
             du = fd+ssd+'/'
             app = surpipe+'-'+prog+'-'+ssd+'.fits'
@@ -105,9 +106,11 @@ if  args.doqso == 'y':
             qn = du+'qso_qn-'+app
             old_extname_redrock = False
             old_extname_for_qn = False #if int(tdate) >= 20220118 else True
-            qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
-            qsocats.append(qso_cati)
-            
+            try:
+                qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
+                qsocats.append(qso_cati)
+            except:
+                print('healpix '+ssd +' failed')
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
     common.write_LSS(qso_cat, outf)   
 
