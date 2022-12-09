@@ -91,7 +91,7 @@ if  args.doqso == 'y':
     surpipe = 'main'
     if args.survey == 'SV3':
         surpipe = 'sv3'
-    build_qso_catalog_from_healpix( release=arg.verspec, survey=surpipe, program=arg.prog, dir_output=ldirspec, npool=20, keep_qso_targets=False, keep_all=False,qsoversion='test')
+    build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program=args.prog, dir_output=ldirspec, npool=20, keep_qso_targets=False, keep_all=False,qsoversion='test')
 #     dirspec = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/healpix/'+surpipe+'/'+args.prog+'/'
 #     
 #     subdirs = os.listdir(dirspec)
