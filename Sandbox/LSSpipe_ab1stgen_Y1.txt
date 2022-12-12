@@ -13,7 +13,7 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 #only mock 1 has been processed so far
 
 salloc -N 1 -C cpu -t 04:00:00 --qos interactive --account desi
-python run_mocks_multipass.py --realmin <minimum_mock_number> --realmax <maximum_mock_number+1> --footprint Y1 --nproc 64
+python scripts/mock_tools/run_mocks_multipass.py --realmin <minimum_mock_number> --realmax <maximum_mock_number+1> --footprint Y1 --nproc 64
 
 #for randoms, a similar process is used, except no need to do multiple passes
 #1 random has been processed so far; should be enough for basic tasks
