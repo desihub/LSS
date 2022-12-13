@@ -56,7 +56,7 @@ def goodz_infull(tp,dz,zcol='Z_not4clus'):
         z_suc &= dz[zcol] != 1.e20
 
 
-    if tp == 'BGS_ANY':    
+    if tp == 'BGS':    
         z_suc = dz['ZWARN']==0
         z_suc &= dz['DELTACHI2']>40
     
