@@ -9,6 +9,7 @@ from astropy.table import join,Table
 import healpy as hp
 
 from LSS.imaging import densvar
+from LSS import common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
@@ -59,7 +60,7 @@ for tp in tps:
         selgz = df['Z'].mask == False
     else:
         df = dtf
-        selgz = goodz_infull(tp,df,zcol='z_not4clus')
+        selgz = common.goodz_infull(tp,df,zcol='z_not4clus')
 
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
