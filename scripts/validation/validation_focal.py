@@ -11,6 +11,7 @@ from astropy.table import join,Table
 import healpy as hp
 
 from LSS.imaging import densvar
+from LSS import common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
