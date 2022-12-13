@@ -60,7 +60,7 @@ for tp in tps:
         selgz = df['Z'].mask == False
     else:
         df = dtf
-        selgz = common.goodz_infull(tp,df)
+        selgz = common.goodz_infull(tp[:3],df)
 
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
