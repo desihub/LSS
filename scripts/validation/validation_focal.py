@@ -72,7 +72,7 @@ for tp in tps:
     cnts_tot,bins = np.histogram(focal_r[selo],bins=20)
     cnts_wt,_= np.histogram(focal_r[selo&selgz],bins=bins,weights=df['WEIGHT_ZFAIL'][selo&selgz])
     cnts_good,_= np.histogram(focal_r[selo&selgz],bins=bins)
-    nfail = cnts_tot-cnts_goog
+    nfail = cnts_tot-cnts_good
     err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
     bs = bins[1]-bins[0]
     plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
@@ -93,7 +93,7 @@ for tp in tps:
         cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
         cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'][selo&selgz&selfib])
         cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
-        nfail = cnts_tot-cnts_goog
+        nfail = cnts_tot-cnts_good
         err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
         bs = bins[1]-bins[0]
         plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
