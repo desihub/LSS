@@ -70,7 +70,7 @@ for tp in tps:
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
     focal_r = np.sqrt(df['FIBERASSIGN_X']**2.+df['FIBERASSIGN_Y']**2.)
     cnts_tot,bins = np.histogram(focal_r[selo],bins=20)
-    cnts_wt,_= np.histogram(focal_r[selo&selgz],bins=bins,weights=df['WEIGHT_ZFAIL'])
+    cnts_wt,_= np.histogram(focal_r[selo&selgz],bins=bins,weights=df['WEIGHT_ZFAIL'][selo&selgz])
     cnts_good,_= np.histogram(focal_r[selo&selgz],bins=bins)
     nfail = cnts_tot-cnts_goog
     err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
@@ -91,7 +91,7 @@ for tp in tps:
         sel_fib = df['FIBER'] >= fmin
         sel_fib &= df['FIBER'] < fmax
         cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
-        cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'])
+        cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'][selo&selgz&selfib])
         cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
         nfail = cnts_tot-cnts_goog
         err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
