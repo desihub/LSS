@@ -332,9 +332,10 @@ def docat(mocknum,rannum):
 
     
     if args.mkclusdat_allpot == 'y':
-        fbadir = maindir+'fba'+str(mocknum)
-        tarf = fbadir+'/targs.fits'
-
+        #fbadir = maindir+'fba'+str(mocknum)
+        #tarf = fbadir+'/targs.fits'
+        #'/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit
+        tarf = mockdir+'/forFA'+str(mocknum)+'.fits'
         ztab = Table(fitsio.read(tarf,columns=['TARGETID','RSDZ']))
         ztab.rename_column('RSDZ', 'Z')
         mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,ztab,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
