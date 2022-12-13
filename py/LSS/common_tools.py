@@ -41,7 +41,7 @@ def cut_specdat(dz,badfib=None):
         wfqa &= ~bad
     return fs[wfqa]
 
-def goodz_infull(tp,dz,zcol='z_not4clus'):
+def goodz_infull(tp,dz,zcol='Z_not4clus'):
     if tp == 'LRG':
         z_suc= dz['ZWARN']==0
         z_suc &= dz['DELTACHI2']>15
