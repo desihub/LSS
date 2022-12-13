@@ -67,10 +67,10 @@ for tp in tps:
         selgz = common.goodz_infull(tp[:3],df)
     zw = ''
     if args.zmin is not None:
-        selgz &= df[zcol] > args.zmin
+        selgz &= df[zcol] > float(args.zmin)
         zw += str(args.zmin)
     if args.zmin is not None:
-        selgz &= df[zcol] < args.zmax
+        selgz &= df[zcol] < float(args.zmax)
         zw += str(args.zmax)   
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
