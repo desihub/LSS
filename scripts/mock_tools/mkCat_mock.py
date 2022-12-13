@@ -127,7 +127,8 @@ if args.add_gtl == 'y':
         datarel = 'guadalupe'
     datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'    
     specdat = ct.get_specdat(datadir,pdir,datarel)
-    gtl = np.unique(specdat['TILELOCID'])
+    tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
+    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
 
 def docat(mocknum,rannum):
 
