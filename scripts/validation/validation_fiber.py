@@ -49,14 +49,18 @@ for tp in tps:
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
 
+    if args.survey == 'DA02' or args.survey == 'SV3':
+        dcl = []
+        for reg in regl:
+            dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+            dcl.append(dtc)
+        dc = np.concatenate(dcl)
+        df = join(dtf,dc,keys=['TARGETID'],join_type='left')
+        selgz = df['Z'].mask == False
+    else:
+        df = dtf
+        selgz = goodz_infull(tp,df,zcol='z_not4clus')
 
-    dcl = []
-    for reg in regl:
-        dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-        dcl.append(dtc)
-    dc = np.concatenate(dcl)
-    df = join(dtf,dc,keys=['TARGETID'],join_type='left')
-    selgz = df['Z'].mask == False
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
