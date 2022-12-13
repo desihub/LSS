@@ -88,8 +88,8 @@ for tp in tps:
     for pt in range(0,10):
         fmin = pt*500
         fmax = fmin+500
-        sel_fib = df['FIBER'] >= fmin
-        sel_fib &= df['FIBER'] < fmax
+        selfib = df['FIBER'] >= fmin
+        selfib &= df['FIBER'] < fmax
         cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
         cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'][selo&selgz&selfib])
         cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
