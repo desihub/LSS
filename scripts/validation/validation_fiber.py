@@ -67,11 +67,11 @@ for tp in tps:
         selgz = common.goodz_infull(tp[:3],df)
     zw = ''
     if args.zmin is not None:
-        selgz &= df[zcol] > zmin
-        zw += str(zmin)
+        selgz &= df[zcol] > args.zmin
+        zw += str(args.zmin)
     if args.zmin is not None:
-        selgz &= df[zcol] < zmax
-        zw += str(zmax)   
+        selgz &= df[zcol] < args.zmax
+        zw += str(args.zmax)   
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
