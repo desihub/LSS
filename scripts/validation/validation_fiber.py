@@ -17,6 +17,8 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--zmin",help="minimum redshift",default=None)
+parser.add_argument("--zmax",help="maximum redshift",default=None)
 args = parser.parse_args()
 
 
@@ -57,11 +59,19 @@ for tp in tps:
             dcl.append(dtc)
         dc = np.concatenate(dcl)
         df = join(dtf,dc,keys=['TARGETID'],join_type='left')
+        zcol = 'Z'
         selgz = df['Z'].mask == False
     else:
         df = dtf
+        zcol = 'Z_not4clus'
         selgz = common.goodz_infull(tp[:3],df)
-
+    zw = ''
+    if args.zmin is not None:
+        selgz &= df[zcol] > zmin
+        zw += str(zmin)
+    if args.zmin is not None:
+        selgz &= df[zcol] < zmax
+        zw += str(zmax)   
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
@@ -91,9 +101,9 @@ for tp in tps:
             plt.text(fib_obs[sel_3l&sel_4p][ii],nw_goodz[sel_3l&sel_4p][ii]/n_obs[sel_3l&sel_4p][ii],str(fib_obs[sel_3l&sel_4p][ii]),color='red')
         plt.xlabel('FIBER')
         plt.ylabel('fraction with good z in clus cat')
-        plt.title(tp+' on petal '+str(pt))
+        plt.title(tp+' on petal '+str(pt)+ ' '+zw)
         plt.grid()
-        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber.png')
+        plt.savefig(outdir+tp+'_'+str(pt)+zw+'_zfailweighted_relsuccess_fiber.png')
         plt.clf()
 
         plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
@@ -124,9 +134,9 @@ for tp in tps:
     plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
     plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
     plt.xlabel('FIBER -500*FIBER//500')
-    plt.ylabel('fraction with good z in clus cat')
+    plt.ylabel('fraction with good z in clus cat '+zw)
     plt.grid()
-    plt.savefig(outdir+tp+'_stacked_zfailweighted_relsuccess_fiber_zoom.png')
+    plt.savefig(outdir+tp+'_stacked_zfailweighted'+zw+'_relsuccess_fiber_zoom.png')
     plt.clf()
 
 
