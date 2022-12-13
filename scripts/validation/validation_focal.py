@@ -90,18 +90,18 @@ for tp in tps:
         fmax = fmin+500
         sel_fib = df['FIBER'] >= fmin
         sel_fib &= df['FIBER'] < fmax
-		cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
-		cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'])
-		cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
-		nfail = cnts_tot-cnts_goog
-		err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
-		bs = bins[1]-bins[0]
-		plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
-		plt.grid()
-		plt.xlabel('focal plane radius (mm)')
-		plt.ylabel('relative z success (with zfail weight)')
-		plt.title(tp+' petal '+str(pt))
-		plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')
-		plt.clf()
+        cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
+        cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'])
+        cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
+        nfail = cnts_tot-cnts_goog
+        err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
+        bs = bins[1]-bins[0]
+        plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
+        plt.grid()
+        plt.xlabel('focal plane radius (mm)')
+        plt.ylabel('relative z success (with zfail weight)')
+        plt.title(tp+' petal '+str(pt))
+        plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')
+        plt.clf()
 
 
