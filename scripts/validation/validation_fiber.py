@@ -113,7 +113,7 @@ for tp in tps:
         plt.title(tp+' on petal '+str(pt))
         plt.ylim(mean_gz-0.1,mean_gz+0.1)
         plt.grid()
-        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber_zoom.png')
+        plt.savefig(outdir+tp+'_'+str(pt)+zw+'_zfailweighted_relsuccess_fiber_zoom.png')
         plt.clf()
     fibrel = df['FIBER'] -500*(df['FIBER']//500)
     fib_obs,n_obs = np.unique(fibrel[selo],return_counts=True)                
