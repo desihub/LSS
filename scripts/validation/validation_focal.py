@@ -68,67 +68,40 @@ for tp in tps:
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
+    focal_r = np.sqrt(df['FIBERASSIGN_X']**2.+df['FIBERASSIGN_Y']**2.)
+    cnts_tot,bins = np.histogram(focal_r[selo],bins=20)
+    cnts_wt,_= np.histogram(focal_r[selo&selgz],bins=bins,weights=df['WEIGHT_ZFAIL'])
+    cnts_good,_= np.histogram(focal_r[selo&selgz],bins=bins)
+    nfail = cnts_tot-cnts_goog
+    err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
+    bs = bins[1]-bins[0]
+    plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
+    plt.grid()
+    plt.xlabel('focal plane radius (mm)')
+    plt.ylabel('relative z success (with zfail weight)')
+    plt.title(tp+' all petals')
+    plt.savefig(outdir+tp+'_allpetals_focalr_relsuccess.png')
+    plt.clf()
+
+    #plt.plot(bins[:-1]+bs/2,np.ones(len(fib_obs))*mean_gz,'r--')
+
     for pt in range(0,10):
         fmin = pt*500
         fmax = fmin+500
         sel_fib = df['FIBER'] >= fmin
         sel_fib &= df['FIBER'] < fmax
-        fib_obs,n_obs = np.unique(df[sel_fib&selo]['FIBER'],return_counts=True)
-        nw_goodz = []
-        n_goodz = []
-        dat_gz = df[selgz&sel_fib]
-        for fib in fib_obs:
-            sel_fn = dat_gz['FIBER'] == fib
-            nw_goodz.append(sum(dat_gz[sel_fn]['WEIGHT_ZFAIL']))
-            n_goodz.append(len(dat_gz[sel_fn]))
-        nw_goodz = np.array(nw_goodz)
-        n_goodz = np.array(n_goodz)
-        n_fail = n_obs-n_goodz
-        err = np.sqrt(nw_goodz*n_fail/n_obs)/n_obs
-        sel_4p = n_obs > 10
-        plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
-        plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
-        sel_3l = (mean_gz - (nw_goodz/n_obs))/err > 3
-        for ii in range(0,len(fib_obs[sel_3l&sel_4p])):
-            plt.text(fib_obs[sel_3l&sel_4p][ii],nw_goodz[sel_3l&sel_4p][ii]/n_obs[sel_3l&sel_4p][ii],str(fib_obs[sel_3l&sel_4p][ii]),color='red')
-        plt.xlabel('FIBER')
-        plt.ylabel('fraction with good z in clus cat')
-        plt.title(tp+' on petal '+str(pt))
-        plt.grid()
-        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber.png')
-        plt.clf()
-
-        plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
-        plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
-        plt.xlabel('FIBER')
-        plt.ylabel('fraction with good z in clus cat')
-        plt.title(tp+' on petal '+str(pt))
-        plt.ylim(mean_gz-0.1,mean_gz+0.1)
-        plt.grid()
-        plt.savefig(outdir+tp+'_'+str(pt)+'_zfailweighted_relsuccess_fiber_zoom.png')
-        plt.clf()
-    fibrel = df['FIBER'] -500*(df['FIBER']//500)
-    fib_obs,n_obs = np.unique(fibrel[selo],return_counts=True)                
-    sel_4p = n_obs > 10
-    fibrel_gz = fibrel[selgz]
-    dat_gz = df[selgz]
-    nw_goodz = []
-    n_goodz = []
-
-    for fib in fib_obs:
-        sel_fn = fibrel_gz == fib
-        nw_goodz.append(sum(dat_gz[sel_fn]['WEIGHT_ZFAIL']))
-        n_goodz.append(len(dat_gz[sel_fn]))
-    nw_goodz = np.array(nw_goodz)
-    n_goodz = np.array(n_goodz)
-    n_fail = n_obs-n_goodz
-    err = np.sqrt(nw_goodz*n_fail/n_obs)/n_obs
-    plt.errorbar(fib_obs[sel_4p],nw_goodz[sel_4p]/n_obs[sel_4p],err[sel_4p],fmt='.k')
-    plt.plot(fib_obs,np.ones(len(fib_obs))*mean_gz,'r--')
-    plt.xlabel('FIBER -500*FIBER//500')
-    plt.ylabel('fraction with good z in clus cat')
-    plt.grid()
-    plt.savefig(outdir+tp+'_stacked_zfailweighted_relsuccess_fiber_zoom.png')
-    plt.clf()
+		cnts_tot,bins = np.histogram(focal_r[selo&selfib],bins=20)
+		cnts_wt,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins,weights=df['WEIGHT_ZFAIL'])
+		cnts_good,_= np.histogram(focal_r[selo&selgz&selfib],bins=bins)
+		nfail = cnts_tot-cnts_goog
+		err = np.sqrt(cnts_good*nfail/counts_tot)/counts_tot
+		bs = bins[1]-bins[0]
+		plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
+		plt.grid()
+		plt.xlabel('focal plane radius (mm)')
+		plt.ylabel('relative z success (with zfail weight)')
+		plt.title(tp+' petal '+str(pt))
+		plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')
+		plt.clf()
 
 
