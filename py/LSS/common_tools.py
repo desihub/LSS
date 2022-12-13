@@ -42,23 +42,25 @@ def cut_specdat(dz,badfib=None):
     return fs[wfqa]
 
 def goodz_infull(tp,dz,zcol='z_not4clus'):
-	if tp == 'LRG':
-		z_suc= dz['ZWARN']==0
-		z_suc &= dz['DELTACHI2']>15
-		z_suc &= dz[zcol]<1.5
+    if tp == 'LRG':
+        z_suc= dz['ZWARN']==0
+        z_suc &= dz['DELTACHI2']>15
+        z_suc &= dz[zcol]<1.5
 
-	if tp == 'ELG':
-		z_suc = dz['o2c'] > 0.9
+    if tp == 'ELG':
+        z_suc = dz['o2c'] > 0.9
 
-	if tp == 'QSO':
+    if tp == 'QSO':
         z_suc = dz[zcol]*0 == 0
         z_suc &= dz[zcol] != 999999
         z_suc &= dz[zcol] != 1.e20
 
 
-	if tp == 'BGS_ANY':    
-		z_suc = dz['ZWARN']==0
-		z_suc &= dz['DELTACHI2']>40
+    if tp == 'BGS_ANY':    
+        z_suc = dz['ZWARN']==0
+        z_suc &= dz['DELTACHI2']>40
+    
+    return z_suc
 
 
 def cutphotmask(aa,bits):
