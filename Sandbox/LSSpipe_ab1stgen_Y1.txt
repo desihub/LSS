@@ -22,13 +22,13 @@ python prepare_mocks_ran_main.py --ranmin <min_random_file> --ranmax <max_ran_fi
 #then, run the catalog pipeline script
 #this combines across tiles for dark time info
 #default just does dark time
-python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --combd y --combr y --combdr y --countran y --tracer dark --add_gtl n
+python mkCat_mock.py --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --combd y --combr y --combdr y --countran y --tracer dark --add_gtl y
 
 #setting --add_gtl n means that we are not using the good fiber list from the actual observed data
 #we should change that when we are ready (maybe after himalayas data)
 
 #then, for each <tracer> of QSO, LRG, ELG
-python mkCat_mock.py --tracer <tracer> --mockmin <realization_min> --mockmax <realization_max> --survey DA02 --fulld y --fullr y --apply_veto y --mkclusran y --mkclusdat y -mkclusran_allpot y --mkclusdat_allpot y --nz y
+python mkCat_mock.py --tracer <tracer> --mockmin <realization_min> --mockmax <realization_max> --survey Y1 --fulld y --fullr y --apply_veto y --mkclusran y --mkclusdat y -mkclusran_allpot y --mkclusdat_allpot y --nz y
 
 #That will produce the LSS catalogs for assigned data and everything reachable ('_complete' in the name)
 #outputs are here https://data.desi.lbl.gov/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/Y1/mock1/LSScats/
