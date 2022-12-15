@@ -433,16 +433,31 @@ if __name__ == '__main__':
 # 
 #         #p.map(doran,inds)
 #     else:
-    for mn in range(mockmin,mockmax):
-        for i in range(rm,rx):
-            print('processing mock '+str(mn)+' and random '+str(i))
-            docat(mn,i)
-        if args.split_GC == 'y':
-            nztl = ['','_complete']
-            lssdir = maindir+'mock'+str(mn)+'/'
+    for i in range(rm,rx):
+        if args.par == 'y':
+            from multiprocessing import Pool
+            from desitarget.internal import sharedmem
+            N = mockmax-mockmin+1       
+            inds = []
+            for mn in range(mockmin,mockmax):
+                 inds.append((mn,i))
+            pool = sharedmem.MapReduce(np=N)
+            with pool:
+                def reduce( r):
+                    print('mock done')
+                    return r
+                pool.map(docat,inds,reduce=reduce)
+        for mn in range(mockmin,mockmax):
+        
+            if args.par != 'y':
+                print('processing mock '+str(mn)+' and random '+str(i))
+                docat(mn,i)
+            if args.split_GC == 'y':
+                nztl = ['','_complete']
+                lssdir = maindir+'mock'+str(mn)+'/'
 
-            dirout = lssdir+'LSScats/'
+                dirout = lssdir+'LSScats/'
             
-            for zt in nztl:
-                fb = dirout+args.tracer+notqso+zt+'_'                
-                ct.clusNStoGC(fb,rx-rm)
+                for zt in nztl:
+                    fb = dirout+args.tracer+notqso+zt+'_'                
+                    ct.clusNStoGC(fb,rx-rm)
