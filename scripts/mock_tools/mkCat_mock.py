@@ -444,7 +444,7 @@ if __name__ == '__main__':
                  inds.append((mn,i))
             #pool = sharedmem.MapReduce(np=N)
             #with pool:
-            with multiprocessing.Pool(processes=N) as pool
+            with multiprocessing.Pool(processes=N) as pool:
                 #def reduce( r):
                 #    print('mock done')
                 #    return r
