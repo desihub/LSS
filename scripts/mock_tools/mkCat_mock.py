@@ -436,6 +436,7 @@ if __name__ == '__main__':
     for i in range(rm,rx):
         if args.par == 'y':
             from multiprocessing import Pool
+            from itertools import repeat
             from desitarget.internal import sharedmem
             N = mockmax-mockmin+1       
             inds = []
