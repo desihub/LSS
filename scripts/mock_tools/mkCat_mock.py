@@ -442,12 +442,13 @@ if __name__ == '__main__':
             inds = []
             for mn in range(mockmin,mockmax):
                  inds.append((mn,i))
-            pool = sharedmem.MapReduce(np=N)
-            with pool:
-                def reduce( r):
-                    print('mock done')
-                    return r
-                pool.starmap(docat,inds,reduce=reduce)
+            #pool = sharedmem.MapReduce(np=N)
+            #with pool:
+            with multiprocessing.Pool(processes=N) as pool
+                #def reduce( r):
+                #    print('mock done')
+                #    return r
+                pool.starmap(docat,inds)#,reduce=reduce)
         for mn in range(mockmin,mockmax):
         
             if args.par != 'y':
