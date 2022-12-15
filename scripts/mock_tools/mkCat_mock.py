@@ -440,13 +440,13 @@ if __name__ == '__main__':
             N = mockmax-mockmin+1       
             inds = []
             for mn in range(mockmin,mockmax):
-                 inds.append((mn,i))
+                 inds.append(mn)
             pool = sharedmem.MapReduce(np=N)
             with pool:
                 def reduce( r):
                     print('mock done')
                     return r
-                pool.map(docat,inds,reduce=reduce)
+                pool.map(docat,zip(inds,repeat(i)),reduce=reduce)
         for mn in range(mockmin,mockmax):
         
             if args.par != 'y':
