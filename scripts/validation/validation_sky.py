@@ -83,6 +83,9 @@ for tp in tps:
             sel_obs = dtf['ZWARN'] != 999999
             dtf = dtf[sel_obs&sel_gz]
             dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
+            sel_nan = dtf['WEIGHT']*0 != 0
+            if len(dtf[sel_nan]) != 0:
+                print(str(len(dtf[sel_nan]))+ ' nan weights')
             rf = indir+tp+zdw+'_0_full.ran.fits'
             rt = fitsio.read(rf)
             selr = rt['PHOTSYS'] == reg
