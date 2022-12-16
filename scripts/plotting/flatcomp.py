@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 
 
-outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/plots/'
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/plots/'
 qt = 'COMP_TILE'
 
 if args.type == 'all':
