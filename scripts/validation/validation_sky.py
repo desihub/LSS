@@ -139,6 +139,7 @@ for tp in tps:
                 titl = tp +titlb+ '0.1<z<0.4'
 
             dtf = dtf[wg]
+            print(reg,len(dtf))
             wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=args.ps,vm=.5,vx=1.5)
 
             pixls = np.arange(12*nside*nside,dtype=int)
