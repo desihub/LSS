@@ -40,7 +40,7 @@ if args.tracers == 'all':
 
 
 def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True):#,ranpall=None
-    th,phi = radec2thphi(dat[racol],dat[decol])
+    th,phi = densvar.radec2thphi(dat[racol],dat[decol])
     datpix = hp.ang2pix(256,th,phi,nest=nest)
     datp = np.zeros(12*256*256)
     for i in range(0,len(datpix)):
