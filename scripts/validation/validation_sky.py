@@ -9,7 +9,7 @@ from astropy.table import join,Table
 import healpy as hp
 
 from LSS.imaging import densvar
-mport LSS.common_tools as common
+import LSS.common_tools as common
 
 
 parser = argparse.ArgumentParser()
