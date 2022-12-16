@@ -34,7 +34,7 @@ qt = 'COMP_TILE'
 
 nside = 256
 nest = True
-zcol = 'Z'
+zcol = 'Z_not4clus'
 nran = 18
 
 tps = [args.tracers]
@@ -71,8 +71,10 @@ for tp in tps:
 
     if args.data == 'LSS':
         for reg in regl:
-            dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-            rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
+            #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+            #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
+            dtf = fitsio.read(indir+tp+zdw+reg+'_full.dat.fits')
+            rf = indir+tp+zdw+reg+'_0_full.ran.fits'
             rt = fitsio.read(rf)
             rad = dtf['RA']
             wr = rad > 300
