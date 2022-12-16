@@ -43,7 +43,8 @@ if args.tracers == 'all':
 
 zdw = ''#'zdone'
 
-regl = ['_N','_S']
+#regl = ['_N','_S']
+regl = ['']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
