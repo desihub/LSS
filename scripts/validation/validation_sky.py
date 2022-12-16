@@ -76,14 +76,14 @@ for tp in tps:
         for reg in regl:
             #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
             #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
-            dtf = Table(fitsio.read(indir+tp+zdw+reg+'_full.dat.fits'))
+            dtf = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
             seld = dtf['PHOTSYS'] == reg
             dtf = dtf[seld]
             sel_gz = goodz_infull(tp[:3],dtf)
             sel_obs = dtf['ZWARN'] != 999999
             dtf = dtf[sel_obs&sel_gz]
             dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
-            rf = indir+tp+zdw+reg+'_0_full.ran.fits'
+            rf = indir+tp+zdw+'_0_full.ran.fits'
             rt = fitsio.read(rf)
             selr = rt['PHOTSYS'] == reg
             rt = rt[selr]
