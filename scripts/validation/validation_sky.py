@@ -46,7 +46,7 @@ if args.tracers == 'all':
 zdw = ''#'zdone'
 
 #regl = ['_N','_S']
-regl = ['N','S']
+regl = ['S','N']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -152,7 +152,7 @@ for tp in tps:
                 ra[wr] -=360
             vx = 1.25
             vm = 0.75
-            print(np.min(ra),np.max(ra))
+            print(np.min(ra),np.max(ra),np.min(od),np.max(od))
 
             plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='o')
             plt.xlabel('RA')
