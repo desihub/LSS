@@ -86,9 +86,9 @@ for tp in tps:
             sel_nan = dtf['WEIGHT']*0 != 0
             if len(dtf[sel_nan]) != 0:
                 print(str(len(dtf[sel_nan]))+ ' nan weights')
-                print(np.unique(dtf[sel_nan]['FRACZ_TILELOCID']))
-                print(np.unique(dtf[sel_nan]['WEIGHT_ZFAIL']))
-                print(np.unique(dtf[sel_nan]['WEIGHT_SYS']))
+                #print(np.unique(dtf[sel_nan]['FRACZ_TILELOCID']))
+                #print(np.unique(dtf[sel_nan]['WEIGHT_ZFAIL']))
+                #print(np.unique(dtf[sel_nan]['WEIGHT_SYS']))
             rf = indir+tp+zdw+'_0_full.ran.fits'
             rt = fitsio.read(rf)
             selr = rt['PHOTSYS'] == reg
