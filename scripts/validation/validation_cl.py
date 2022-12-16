@@ -78,7 +78,7 @@ zdw = ''
 for tp in tps:
     
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
-    ran = fitsio.read(indir+tp+zdw+'0_full.ran.fits')
+    ran = fitsio.read(indir+tp+zdw+'_0_full.ran.fits')
     #seld = dtf['PHOTSYS'] == reg
     #dtf = dtf[seld]
     sel_gz = common.goodz_infull(tp[:3],dtf)
