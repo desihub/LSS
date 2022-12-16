@@ -28,7 +28,7 @@ outdir = indir+'plots/sky/'
 
 randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ranall = fitsio.read(randir+'randoms-allsky-1-0.fits',columns=['RA','DEC'])
-th,phi = radec2thphi(ranall['RA'],ranall['DEC'])
+th,phi = densvar.radec2thphi(ranall['RA'],ranall['DEC'])
 ranpix = hp.ang2pix(256,th,phi)
 ranpall = np.zeros(12*256*256)
 for pix in ranpix:
