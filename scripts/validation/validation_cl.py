@@ -88,7 +88,7 @@ for tp in tps:
     if tp[:3] == 'LRG':
         zmin = 0.4
         zmax = 1.1
-     if tp[:3] == 'BGS':
+    if tp[:3] == 'BGS':
         zmin = 0.1
         zmax = 0.4
     if tp[:3] == 'ELG':
