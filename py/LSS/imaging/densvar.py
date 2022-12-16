@@ -789,6 +789,7 @@ def get_hpdens(rl,ft,reg=False,fnc=None,sz=.2,vx=1.5,vm=.5,datweights=None,weigh
     else:
         wp = (pixlr > 0) 
     wp &= (weights*0 == 0)
+    wp &= pixlg*0 == 0
     od = pixlg[wp]/pixlr[wp]*weights[wp]
     od = od/np.mean(od)
     return wp,od
