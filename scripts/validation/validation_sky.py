@@ -9,6 +9,8 @@ from astropy.table import join,Table
 import healpy as hp
 
 from LSS.imaging import densvar
+mport LSS.common_tools as common
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
@@ -44,7 +46,7 @@ if args.tracers == 'all':
 zdw = ''#'zdone'
 
 #regl = ['_N','_S']
-regl = ['']
+regl = ['N','S']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -74,9 +76,17 @@ for tp in tps:
         for reg in regl:
             #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
             #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
-            dtf = fitsio.read(indir+tp+zdw+reg+'_full.dat.fits')
+            dtf = Table(fitsio.read(indir+tp+zdw+reg+'_full.dat.fits'))
+            seld = dtf['PHOTSYS'] == reg
+            dtf = dtf[seld]
+            sel_gz = goodz_infull(tp[:3],dtf)
+            sel_obs = dtf['ZWARN'] != 999999
+            dtf = dtf[sel_obs&sel_gz]
+            dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
             rf = indir+tp+zdw+reg+'_0_full.ran.fits'
             rt = fitsio.read(rf)
+            selr = rt['PHOTSYS'] == reg
+            rt = rt[selr]
             rad = dtf['RA']
             wr = rad > 300
             rad[wr] -=360
@@ -125,8 +135,8 @@ for tp in tps:
             if tp[:3] == 'BGS':
 
                 wg = dtf[zcol] > 0.1
-                wg &= dtf[zcol] < .5
-                titl = tp +titlb+ '0.1<z<0.5'
+                wg &= dtf[zcol] < .4
+                titl = tp +titlb+ '0.1<z<0.4'
 
             dtf = dtf[wg]
             wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=args.ps,vm=.5,vx=1.5)
