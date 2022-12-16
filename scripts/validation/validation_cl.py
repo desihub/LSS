@@ -51,7 +51,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
             datp[pix] += 1.
     if wtspix is not None:
         datp *= wtspix
-    th,phi = radec2thphi(ran[racol],ran[decol])
+    th,phi = densvar.radec2thphi(ran[racol],ran[decol])
     ranpix = hp.ang2pix(256,th,phi,nest=nest)
     ranp = np.zeros(12*256*256)
     for pix in ranpix:
