@@ -139,18 +139,20 @@ for tp in tps:
                 titl = tp +titlb+ '0.1<z<0.4'
 
             dtf = dtf[wg]
-            print(reg,len(dtf))
+            #print(reg,len(dtf))
             wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=args.ps,vm=.5,vx=1.5)
 
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
             ra,dec = densvar.thphi2radec(th,phi)
+            print(np.min(ra),np.max(ra))
     
             if args.survey != 'DA02':
                 wr = ra > 300
                 ra[wr] -=360
-            vx = 1.5
-            vm = 0.5
+            vx = 1.25
+            vm = 0.75
+            print(np.min(ra),np.max(ra))
 
             plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='o')
             plt.xlabel('RA')
