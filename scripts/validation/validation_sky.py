@@ -79,7 +79,7 @@ for tp in tps:
             dtf = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
             seld = dtf['PHOTSYS'] == reg
             dtf = dtf[seld]
-            sel_gz = goodz_infull(tp[:3],dtf)
+            sel_gz = common.goodz_infull(tp[:3],dtf)
             sel_obs = dtf['ZWARN'] != 999999
             dtf = dtf[sel_obs&sel_gz]
             dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
