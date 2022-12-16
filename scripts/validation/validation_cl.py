@@ -39,7 +39,7 @@ if args.tracers == 'all':
     tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
 
 
-def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True):#,ranpall=None
+def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True,maskreg=None):#,ranpall=None
     th,phi = densvar.radec2thphi(dat[racol],dat[decol])
     datpix = hp.ang2pix(256,th,phi,nest=nest)
     datp = np.zeros(12*256*256)
@@ -59,9 +59,18 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
     #ranp /= rannorm
     
     sel = ranp > thresh
-    mnr = np.mean(datp[sel]/ranp[sel])
-    print(mnr)
-    delta = (datp/ranp/mnr -1)
+    if maskreg == None
+        mnr = np.mean(datp[sel]/ranp[sel])
+        print(mnr)
+        delta = (datp/ranp/mnr -1)
+    else:
+        regl = ['South','North','Des']
+        delta = np.zeros(len(datp))
+        for reg in regl:
+            mr = maskreg[reg]
+            mnr = np.mean(datp[sel&mr]/ranp[sel&mr])
+            print(reg,mnr)
+            delta[mr] = (datp[mr]/ranp[mr]/mnr -1)
     #if ranpall is not None:
     if appfrac:
         if nest:
@@ -79,6 +88,10 @@ for tp in tps:
     
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     ran = fitsio.read(indir+tp+zdw+'_0_full.ran.fits')
+    fnreg = indir+'/regressis_data/main_'+tp+'_256/RF/main_'+tp+'_imaging_weight_256.npy'
+    rfw = np.load(fnreg,allow_pickle=True)
+    maskreg = rfw.item()['mask_region']
+
     #seld = dtf['PHOTSYS'] == reg
     #dtf = dtf[seld]
     sel_gz = common.goodz_infull(tp[:3],dtf)
@@ -102,12 +115,12 @@ for tp in tps:
 
     sel_zr = dtfoz['Z_not4clus'] > zmin
     sel_zr &= dtfoz['Z_not4clus'] < zmax
-    delta_raw,fsky = get_delta(dtf,ran)
+    delta_raw,fsky = get_delta(dtf,ran,maskreg=maskreg)
     cl_raw = hp.anafast(delta_raw)
     ell = np.arange(len(cl_raw))
-    delta_allz,_ = get_delta(dtfoz,ran,wts=wt)
+    delta_allz,_ = get_delta(dtfoz,ran,wts=wt,maskreg=maskreg)
     cl_allz = hp.anafast(delta_allz)
-    delta_zr,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr])
+    delta_zr,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskreg)
     cl_zr = hp.anafast(delta_zr)
     plt.loglog(ell[1:],cl_raw[1:]/fsky,label='targets in Y1 area')
     plt.loglog(ell[1:],cl_allz[1:]/fsky,label='all z')
