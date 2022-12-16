@@ -73,6 +73,8 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
     fsky = np.sum(ranp[sel])/np.sum(ranpall)
     return delta,fsky
 
+zdw = ''
+
 for tp in tps:
     
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
