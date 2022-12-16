@@ -21,7 +21,7 @@ outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.vers
 qt = 'COMP_TILE'
 
 if args.type == 'all':
-    tps = ['QSO','ELG','ELG_LOP','ELG_LOPnotqso','LRG','BGS_ANY','BGS_BRIGHT']
+    tps = ['LRG','BGS_ANY','BGS_BRIGHT','QSO','ELG','ELG_LOP']
 else:
     tps = args.type.split(',')    
 for tp in tps:
