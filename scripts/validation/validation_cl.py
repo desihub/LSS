@@ -63,7 +63,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         mnr = np.mean(datp[sel]/ranp[sel])
         print(mnr)
         delta = (datp/ranp/mnr -1)
-    elif len(maskreg==len(datp)):
+    elif len(maskreg)==len(datp):
         sel &= maskreg
         mnr = np.mean(datp[sel]/ranp[sel])
         delta = (datp/ranp/mnr -1)
