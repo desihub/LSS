@@ -19,7 +19,7 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 #from LSS.common_tools import find_znotposs
-import LSS.common_tools as common
+
 from LSS import ssr_tools
 
 import logging
@@ -1097,6 +1097,7 @@ def get_specdat(indir,pd,ver='daily',badfib=None):
     return fs[wfqa]
 
 def cut_specdat(dz):
+    import LSS.common_tools as common
     print('moved to common_tools')
     return common.cut_specdat(dz)
 #     selz = dz['ZWARN'] != 999999
@@ -1917,7 +1918,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
 def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None,badfib=None):
-
+    import LSS.common_tools as common
     if pd == 'bright':
         tscol = 'TSNR2_BGS'
     else:
@@ -2007,6 +2008,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     del dz
 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
+    import LSS.common_tools as common
     if pd == 'bright':
         tscol = 'TSNR2_BGS'
     else:
@@ -2108,6 +2110,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
+    import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
     zf : :class:`str` path to the file containing merged potential targets and redshift 
@@ -2395,6 +2398,7 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
 
 
 def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',specrel='daily',version='test'):
+    import LSS.common_tools as common
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -2539,6 +2543,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
 
 
 def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
+    import LSS.common_tools as common
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -2768,6 +2773,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         common.write_LSS(ffs[sel],outfn,comments)
 
 def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None):
+    import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
@@ -2850,6 +2856,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 
 
 def clusNStoGC(flroot,nran=1):
+    import LSS.common_tools as common
     '''
     combine N and S then split NGC/SGC
     randoms get re-normalized so that Ndata/Nrandom is the same N and S; they will no longer be able to be used to get areas
