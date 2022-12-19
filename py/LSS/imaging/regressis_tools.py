@@ -165,6 +165,8 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
         foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if tracer == 'QSO':
         north, south, des = foot.get_imaging_surveys()
+    else:
+        north, south_ngc, south_sgc = foot.update_map(foot.data['ISNORTH']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISNGC']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISSGC'])
     #logger.info("Number of pixels observed in each region:")
     #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")

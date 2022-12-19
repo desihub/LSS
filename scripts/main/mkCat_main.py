@@ -447,7 +447,10 @@ if args.regressis == 'y':
     param['output_dir'] = dirreg
     param['use_median'] = False
     param['use_new_norm'] = False
-    param['regions'] = ['North', 'South', 'Des']
+    if tracer_clus[:3] == 'QSO':
+        param['regions'] = ['North', 'South', 'Des']
+    else:
+        param['regions'] = ['North', 'South_ngc', 'South_sgc']
     max_plot_cart = 1000
 
     cut_fracarea = False
