@@ -434,7 +434,7 @@ if args.regressis == 'y':
         rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
         rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
-    dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False)
+    dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
 
     suffix_tracer = ''
     suffix_regressor = ''
