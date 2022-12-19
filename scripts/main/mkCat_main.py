@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 #try:
 import LSS.main.cattools as ct
 import LSS.common_tools as common
-import LSS.imaging.select_samples as ss
+
 from LSS.globals import main
 #except:
 #    print('import of LSS.mkCat_singletile.cattools failed')
@@ -210,6 +210,7 @@ if os.path.isfile(tarf) and redotar == False:
 #    mktar = False    
 
 if mktar: #concatenate target files for given type, with column selection hardcoded
+    import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
 
 mketar = True
@@ -225,6 +226,7 @@ if type == 'BGS_BRIGHT':
     mketar = False
 
 if mketar: #concatenate target files for given type, with column selection hardcoded
+    import LSS.imaging.select_samples as ss
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
 
        
