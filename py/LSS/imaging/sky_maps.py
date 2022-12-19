@@ -54,21 +54,26 @@ mapdt = [
 #     EBV_SGF     - column names: ebv f4, mask: status i4 (masked area if status > 0)
 #     kappa       - values: index, real, imag;  mask :
 maparray = np.array([
-    ('HALPHA',     'Halpha', 'Halpha_fwhm06_0512.fits',          512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
-    ('HALPHA_ERROR',  'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
-    ('HALPHA_MASK', 'Halpha', 'Halpha_mask_fwhm06_0512.fits',    512, 'PIXMASK', 'MASK',       '> 1', False, True),
-    ('CALIB_G',     'calibration', 'decam-ps1-0128-g.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_R',     'calibration', 'decam-ps1-0128-r.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_Z',     'calibration', 'decam-ps1-0128-z.fits',      128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',     128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('EBV_GAIA_FW15',      'EBV', 'recon_fw15.fits',            2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
-    ('EBV_GAIA_FW6P1',     'EBV', 'recon_fw6-1.fits',           2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
-    ('EBV_SGF14',          'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMAP',  'ebv',           '', False, True),
-    ('EBV_SGF14_MASK',     'EBV', 'ps1-ebv-4.5kpc.fits',         512, 'PIXMASK', 'status',     '< 0', False, True),
-    ('KAPPA_PLANCK',     'kappa', 'dat_klm.fits',               2048, 'ALMMAP',  'NONE-3col',     '', False, True),
-    ('KAPPA_PLANCK_MASK', 'kappa', 'mask.fits.gz',              2048, 'PIXMASK', 'I',          '==0', False, True),
+    ('HALPHA',       'Halpha',       'Halpha_fwhm06_0512.fits', 512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
+    ('HALPHA_ERROR', 'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
+    ('HALPHA_MASK',  'Halpha',  'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK',       '> 1', False, True),
+    ('CALIB_G',      'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_R',      'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_Z',      'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
+    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('EBV_GAIA_FW15',        'EBV', 'recon_fw15.fits',         2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
+    ('EBV_GAIA_FW6P1',       'EBV', 'recon_fw6-1.fits',        2048, 'PIXMAP',  'Recon_Mean',    '', False, True),
+    ('EBV_SGF14',            'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMAP',  'ebv',           '', False, True),
+    ('EBV_SGF14_MASK',       'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'status',     '< 0', False, True),
+    ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
+    ('KAPPA_PLANCK_MASK',  'kappa', 'mask.fits.gz',            2048, 'PIXMASK', 'I',          '==0', False, True),
+    ('STARDENS',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'STARDENS',      '', True, False),
+    ('ELG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'ELG',           '', True, False),
+    ('LRG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'LRG',           '', True, False),
+    ('QSO',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'QSO',           '', True, False),
+    ('BGS_ANY', 'pixweight-bright', 'pixweight-1-bright.fits',  256, 'PIXMAP',  'BGS_ANY',       '', True, False)
     ], dtype=mapdt)
 
 
@@ -1341,7 +1346,7 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
         HEALPixel map at the given nside. The name of the column in the
         output array is `mapname` in upper-case letters.
     """
-    # ADM limit to just the map are we working with.
+    # ADM limit to just the map we are working with.
     pixmap = maparray[maparray["MAPNAME"] == mapname]
 
     if len(pixmap) != 1:
