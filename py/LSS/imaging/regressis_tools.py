@@ -230,9 +230,13 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     feature_names: list of str
         If not None use this list of feature during the regression otherwise use the default one.
     """
+    print('about to make dataframe')
     dataframe = PhotometricDataFrame(survey, tracer, footprint, suffix_tracer, **dataframe_params)
+    print('about to set feature')
     dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path)
+    print('about to set targets')
     dataframe.set_targets()
+    print('about to build')
     dataframe.build(cut_fracarea=cut_fracarea)
     print('about to do regression')
     regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
