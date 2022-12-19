@@ -63,6 +63,11 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         mnr = np.mean(datp[sel]/ranp[sel])
         print(mnr)
         delta = (datp/ranp/mnr -1)
+    elif len(maskreg==len(datp)):
+        sel &= maskreg
+        mnr = np.mean(datp[sel]/ranp[sel])
+        delta = (datp/ranp/mnr -1)
+        
     else:
         regl = list(maskreg.keys())#['South','North','Des']
         delta = np.zeros(len(datp))
@@ -131,4 +136,19 @@ for tp in tps:
     plt.ylabel(r'$C_{\ell}$')
     plt.savefig(outdir+tp+'_cell.png')
     plt.clf()
+    regl = list(maskreg.keys())
+    for reg in regl:
+        maskr = maskreg[reg]
+        delta_reg,fsky_reg = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskr)
+        cl_reg = hp.anafast(delta_reg)
+        plt.loglog(ell[1:],cl_reg[1:]/fsky_reg,label=reg)
+    plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
+    plt.legend()
+    plt.xlabel(r'$\ell$')
+    plt.ylabel(r'$C_{\ell}$')
+    plt.savefig(outdir+tp+'_cell_reg.png')
+    plt.clf()
+
+        
+        
     
