@@ -18,7 +18,7 @@ import healpy as hp
 
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
-from LSS.common_tools import find_znotposs
+#from LSS.common_tools import find_znotposs
 import LSS.common_tools as common
 from LSS import ssr_tools
 
