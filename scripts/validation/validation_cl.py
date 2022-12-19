@@ -129,9 +129,11 @@ for tp in tps:
     delta_zr,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskreg)
     cl_zr = hp.anafast(delta_zr)
     print(len(dtf),np.sum(wt),np.sum(wt[sel_zr]))
+    neff_oz = (np.sum(wt)+len(dtfoz))/2.
+    neff_zr = (np.sum(wt[sel_zr])+len(dtfoz[sel_zr]))/2.
     plt.loglog(ell[1:],cl_raw[1:]/fsky-4.*np.pi*fsky/len(dtf),label='targets in Y1 area')
-    plt.loglog(ell[1:],cl_allz[1:]/fsky-4.*np.pi*fsky/np.sum(wt),label='all z')
-    plt.loglog(ell[1:],cl_zr[1:]/fsky-4.*np.pi*fsky/np.sum(wt[sel_zr]),label=str(zmin)+' < z < '+str(zmax))
+    plt.loglog(ell[1:],cl_allz[1:]/fsky-4.*np.pi*fsky/neff_oz,label='all z')
+    plt.loglog(ell[1:],cl_zr[1:]/fsky-4.*np.pi*fsky/neff_zr,label=str(zmin)+' < z < '+str(zmax))
     plt.title(tp)
     plt.legend()
     plt.xlabel(r'$\ell$')
