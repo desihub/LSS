@@ -131,9 +131,10 @@ for tp in tps:
     print(len(dtf),np.sum(wt),np.sum(wt[sel_zr]))
     neff_oz = (np.sum(wt)+len(dtfoz))/2.
     neff_zr = (np.sum(wt[sel_zr])+len(dtfoz[sel_zr]))/2.
-    plt.loglog(ell[1:],cl_raw[1:]/fsky-4.*np.pi*fsky/len(dtf),label='targets in Y1 area')
-    plt.loglog(ell[1:],cl_allz[1:]/fsky-4.*np.pi*fsky/neff_oz,label='all z')
-    plt.loglog(ell[1:],cl_zr[1:]/fsky-4.*np.pi*fsky/neff_zr,label=str(zmin)+' < z < '+str(zmax))
+    lmax = -100
+    plt.loglog(ell[1:lmax],cl_raw[1:lmax]/fsky-4.*np.pi*fsky/len(dtf),label='targets in Y1 area')
+    plt.loglog(ell[1:lmax],cl_allz[1:lmax]/fsky-4.*np.pi*fsky/neff_oz,label='all z')
+    plt.loglog(ell[1:lmax],cl_zr[1:lmax]/fsky-4.*np.pi*fsky/neff_zr,label=str(zmin)+' < z < '+str(zmax))
     plt.title(tp)
     plt.legend()
     plt.xlabel(r'$\ell$')
