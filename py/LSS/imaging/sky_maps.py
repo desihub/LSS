@@ -910,7 +910,7 @@ def read_sky_map(mapname, lssmapdir=None):
     return mapdata
 
 
-def generate_mask(rancatname, lssmapdir=None, write=True):
+def generate_mask(rancatname, lssmapdir=None, outdir=None, write=True):
     """Generate a file of mask values and TARGETID for a random catalog.
 
     Parameters
@@ -920,6 +920,8 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+    outdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory to write output files.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
 
@@ -932,6 +934,10 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
     """
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
+
+    # ADM default to an output directory of lssmapdir.
+    if outdir is None:
+        outdir = lssmapdir
 
     # ADM read the random catalog.
     randoms, hdr, ident = read_randoms(rancatname)
@@ -947,7 +953,7 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
     done["TARGETID"] = randoms["TARGETID"]
 
     # ADM grab the output filename.
-    outfn = rancat_name_to_mask_name(rancatname, lssmapdir=lssmapdir)
+    outfn = rancat_name_to_mask_name(rancatname, lssmapdir=outdir)
 
     # ADM first generate the bits from the LS masks.
     outmx = ls_bitmask_for_randoms(randoms, ident, lssmapdir=lssmapdir)
@@ -972,7 +978,7 @@ def generate_mask(rancatname, lssmapdir=None, write=True):
         c1, c2 = randoms["RA"], randoms["DEC"]
         # ADM if needed, use Galactic coordinates.
         if mx["GALACTIC"]:
-            log.info("Using Galactic coordinates for {} map".format(mx["MAPNAME"]))
+            log.info("Using Galactic coordinates for {}".format(mx["MAPNAME"]))
             c1, c2 = lgal, bgal
 
         # ADM determine whether each of the randoms is masked for the
@@ -1217,7 +1223,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     return wcounts
 
 
-def generate_map_values(rancatname, lssmapdir=None, write=True):
+def generate_map_values(rancatname, lssmapdir=None, outdir=None, write=True):
     """Generate a file of map values and TARGETID for a random catalog.
 
     Parameters
@@ -1227,6 +1233,8 @@ def generate_map_values(rancatname, lssmapdir=None, write=True):
     lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
         Location of the directory that hosts all of the sky maps. If
        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
+    outdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
+        Location of the directory to write output files.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
 
@@ -1240,6 +1248,10 @@ def generate_map_values(rancatname, lssmapdir=None, write=True):
     # ADM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
     lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
 
+    # ADM default to an output directory of lssmapdir.
+    if outdir is None:
+        outdir = lssmapdir
+
     # ADM read the random catalog.
     randoms, hdr, ident = read_randoms(rancatname)
 
@@ -1248,7 +1260,7 @@ def generate_map_values(rancatname, lssmapdir=None, write=True):
     lgal, bgal = c.galactic.l.value, c.galactic.b.value
 
     # ADM grab the output filename.
-    outfn = rancat_name_to_map_name(rancatname, lssmapdir=lssmapdir)
+    outfn = rancat_name_to_map_name(rancatname, lssmapdir=outdir)
 
     # ADM limit to just the maps that correspond to pixel-maps.
     maps = maparray[maparray["MAPTYPE"] == "PIXMAP"]
