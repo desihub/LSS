@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import healpy as hp
 
-from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logging
+from regressis import PhotometricDataFrame, Regression, footprint, setup_logging
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
 from LSS import ssr_tools
@@ -46,7 +46,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
-    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()
+    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
     #logger.info("Number of pixels observed in each region:")
     #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
@@ -80,7 +80,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
 
-def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
+def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fracthresh=5.):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
@@ -98,6 +98,12 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         Resolution of the healpix distribution map of the objects.
     dir_out : str
         Path where the ouputs will be saved.
+    zlim : list
+    	contains minimum,maximum redshifts to apply
+    nran : int
+        number of random files to use
+    fracthresh : float
+    	inverse of fraction coverage of healpix pixel maximum to be considered for building weights    
     """
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
@@ -154,7 +160,10 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
-    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()
+    #north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
+    foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    if tracer == 'QSO':
+        north, south, des = foot.get_imaging_surveys()
     #logger.info("Number of pixels observed in each region:")
     #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
