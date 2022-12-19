@@ -24,10 +24,10 @@ ap = argparse.ArgumentParser(
     "desitarget random catalog and write them to the sky map directory",
     formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
     Examples:
-    make_imaging_map_mask_catalogs {}
-    make_imaging_map_mask_catalogs "{}"
-    make_imaging_map_mask_catalogs "{}"
-    make_imaging_map_mask_catalogs "{}"
+    make_imaging_mapvalues_mask_randoms {}
+    make_imaging_mapvalues_mask_randoms "{}"
+    make_imaging_mapvalues_mask_randoms "{}"
+    make_imaging_mapvalues_mask_randoms "{}"
     """.format(egrancat1, egrancat2, egrancat3, egrancat4)))
 ap.add_argument("rancatname",
                 help="Full path to a random catalog. Can process multiple catalogs" +
