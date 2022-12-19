@@ -450,7 +450,7 @@ if args.regressis == 'y':
     if tracer_clus[:3] == 'QSO':
         param['regions'] = ['North', 'South', 'Des']
     else:
-        param['regions'] = ['North', 'South_ngc', 'South_sgc']
+        param['regions'] = ['north', 'south_ngc', 'south_all_sgc']
     max_plot_cart = 1000
 
     cut_fracarea = False
