@@ -189,11 +189,13 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
     filename_data = os.path.join(dir_out, f'{survey}_{tracer}_{nside}.npy')
+    print('saved data to '+filename_data )
     #logger.info(f'Save data: {filename_data}')
     np.save(filename_data, map_data)
     filename_fracarea = os.path.join(dir_out, f'{survey}_{tracer}_fracarea_{nside}.npy')
     #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
+    print('saved fracarea to '+filename_fracarea )
 
 
 def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, sgr_stream_path=None,feature_names=None):
