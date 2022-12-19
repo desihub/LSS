@@ -13,14 +13,6 @@ import fitsio
 
 from matplotlib import pyplot as plt
 
-import desimodel.footprint as foot
-import desimodel.focalplane
-
-from desitarget.io import read_targets_in_tiles
-from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
-
-from desispec.io.emlinefit import read_emlines_inputs
-from desispec.emlinefit import get_emlines
 
 import healpy as hp
 
@@ -511,6 +503,7 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
         return False
 
 def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
+
     s = 0
     n = 0
     nfail = 0
@@ -595,6 +588,9 @@ def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guad
         return None
 
 def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
+    from desispec.io.emlinefit import read_emlines_inputs
+    from desispec.emlinefit import get_emlines
+
     allems = ['OII','HDELTA','HGAMMA','HBETA','OIII','HALPHA']
     props = ['FLUX','FLUX_IVAR','SIGMA','SIGMA_IVAR','CONT','CONT_IVAR','SHARE','SHARE_IVAR','EW','EW_IVAR','CHI2','NDOF']
     zdate = str(zdate)
@@ -891,6 +887,7 @@ def goodlocdict(tf):
 #     return aa
 
 def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+    from desitarget.io import read_targets_in_tiles
     s = 0
     n = 0
     if os.path.isfile(fout):
@@ -929,6 +926,8 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
     tarsn.write(fout,format='fits', overwrite=True)
 
 def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+    import desimodel.footprint as foot
+    from desitarget.io import read_targets_in_tiles
     s = 0
     n = 0
 
@@ -1067,6 +1066,7 @@ def gettarinfo_type(faf,tars,goodloc,pdict,tp='SV3_DESI_TARGET'):
 
 
 def get_specdat(indir,pd,ver='daily',badfib=None):
+    from desitarget.targetmask import zwarn_mask
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
     #zf = indir+'/datcomb_'+pd+'_tarspecwdup.fits'
     #if ver == 'everest' or ver == 'guadalupe':
@@ -1642,7 +1642,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
 
 
 def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',redos=False):
-
+    import desimodel.footprint as foot
     s = 0
 
     #tiles.sort('ZDATE')
@@ -2918,6 +2918,7 @@ def random_mtl(rd,outf ):
 
 
 def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,rann=1,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
+    import desimodel.focalplane
     '''
     tiles should be a table containing the relevant info
     '''
@@ -2960,7 +2961,7 @@ def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs
     '''
     tiles should be a table containing the relevant info
     '''
-
+    from desitarget.io import read_targets_in_tiles
     for ii in range(imin,imax):
         nd = 0
         for i in range(0,len(tiles)):
