@@ -234,6 +234,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path)
     dataframe.set_targets()
     dataframe.build(cut_fracarea=cut_fracarea)
+    print('about to do regression')
     regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
     _ = regression.get_weight(save=True)
     #regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
