@@ -129,7 +129,7 @@ for tp in tps:
     cl_zr = hp.anafast(delta_zr)
     plt.loglog(ell[1:],cl_raw[1:]/fsky-4.*np.pi/len(dtf),label='targets in Y1 area')
     plt.loglog(ell[1:],cl_allz[1:]/fsky-4.*np.pi/len(dtfoz),label='all z')
-    plt.loglog(ell[1:],cl_zr[1:]/fsky--4.*np.pi/len(dtf[sel_zr]),label=str(zmin)+' < z < '+str(zmax))
+    plt.loglog(ell[1:],cl_zr[1:]/fsky--4.*np.pi/len(dtfoz[sel_zr]),label=str(zmin)+' < z < '+str(zmax))
     plt.title(tp)
     plt.legend()
     plt.xlabel(r'$\ell$')
