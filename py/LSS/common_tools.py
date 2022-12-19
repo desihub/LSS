@@ -5,7 +5,7 @@ import datetime
 import os
 import sys
 
-from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
+
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -21,6 +21,7 @@ def dm(z):
 #functions that shouldn't have any dependence on survey go here
 
 def cut_specdat(dz,badfib=None):
+    from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
     fs = dz[selz]
