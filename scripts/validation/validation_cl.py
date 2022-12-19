@@ -64,7 +64,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         print(mnr)
         delta = (datp/ranp/mnr -1)
     else:
-        regl = ['South','North','Des']
+        regl = list(maskreg.keys)#['South','North','Des']
         delta = np.zeros(len(datp))
         for reg in regl:
             mr = maskreg[reg]
