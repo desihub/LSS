@@ -453,6 +453,7 @@ if args.regressis == 'y':
     fit_maps = None
     if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
         fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    print('computing RF regressis weight')
     rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
 if args.add_regressis == 'y':
