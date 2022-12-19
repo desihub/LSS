@@ -103,6 +103,7 @@ for tp in tps:
     sel_obs = dtf['ZWARN'] != 999999
     dtfoz = dtf[sel_obs&sel_gz]
     wt = 1./dtfoz['FRACZ_TILELOCID']*dtfoz['WEIGHT_ZFAIL']*dtfoz['WEIGHT_SYS']
+    
     sel_nan = wt*0 != 0
     wt[sel_nan] = 1.
     if tp[:3] == 'LRG':
@@ -127,6 +128,7 @@ for tp in tps:
     cl_allz = hp.anafast(delta_allz)
     delta_zr,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskreg)
     cl_zr = hp.anafast(delta_zr)
+    print(len(dtf),np.sum(wt),np.sum(wt[sel_zr]))
     plt.loglog(ell[1:],cl_raw[1:]/fsky-4.*np.pi*fsky/len(dtf),label='targets in Y1 area')
     plt.loglog(ell[1:],cl_allz[1:]/fsky-4.*np.pi*fsky/np.sum(wt),label='all z')
     plt.loglog(ell[1:],cl_zr[1:]/fsky-4.*np.pi*fsky/np.sum(wt[sel_zr]),label=str(zmin)+' < z < '+str(zmax))
