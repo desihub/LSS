@@ -69,6 +69,7 @@ maparray = np.array([
     ('EBV_SGF14_MASK',       'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'status',     '< 0', False, True),
     ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK',  'kappa', 'mask.fits.gz',            2048, 'PIXMASK', 'I',          '==0', False, True),
+    ('FRACAREA',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'FRACAREA',      '', True, False),
     ('STARDENS',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'STARDENS',      '', True, False),
     ('ELG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'ELG',           '', True, False),
     ('LRG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'LRG',           '', True, False),
