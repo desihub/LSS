@@ -430,11 +430,12 @@ if args.regressis == 'y':
         print('made '+dirreg)   
     pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
+    dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if args.survey == 'DA02':
         rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl)
-    dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint)
+    
 
     suffix_tracer = ''
     suffix_regressor = ''

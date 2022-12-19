@@ -80,7 +80,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
 
-def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fracthresh=5.):
+def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fracthresh=5.,foot=None):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
@@ -161,7 +161,8 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
 
     #load photometric regions:
     #north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
-    foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    if foot is None:
+        foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if tracer == 'QSO':
         north, south, des = foot.get_imaging_surveys()
     #logger.info("Number of pixels observed in each region:")
@@ -235,4 +236,4 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     dataframe.build(cut_fracarea=cut_fracarea)
     regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
     _ = regression.get_weight(save=True)
-    regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
+    #regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
