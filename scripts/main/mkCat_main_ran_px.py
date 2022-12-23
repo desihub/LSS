@@ -432,6 +432,7 @@ def doran(ii):
             maxp = 2100
 
         npx = 0
+        uhpxs = []
         if args.refullr == 'y':
             uhpxs = hpxs
         else:
@@ -448,7 +449,8 @@ def doran(ii):
                 otls = np.unique(tls['TILEID'])
                 print('got tileids currently in '+dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
                 selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
-                uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+                if len(ta[selt]) > 0:
+                    uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(uhpxs))
