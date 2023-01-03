@@ -2066,6 +2066,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
                 dz = common.cutphotmask(dz,imbits)
             else:
                 print('did not find '+tarfn)
+                ranisf = False
             #print('length after cutting to based on imaging veto mask '+str(len(dz)))
             if len(dz) > 0 and ranisf:
                 #pl = np.copy(dz['PRIORITY']).astype(float)#dz['PRIORITY']
