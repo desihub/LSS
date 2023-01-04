@@ -197,9 +197,11 @@ def docat(mocknum,rannum):
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tj.write(outfs,format='fits', overwrite=True)
+        print('wrote '+outfs)
         tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir,gtl=gtl) 
         outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
+        print('wrote '+outtc)
     
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
@@ -219,7 +221,7 @@ def docat(mocknum,rannum):
         print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
-        print(outf)
+        print('wrote '+outf)
         fgu.write(outf,format='fits', overwrite=True)
         del fgu
      
