@@ -221,8 +221,9 @@ def docat(mocknum,rannum):
         print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
-        print('wrote '+outf)
+        
         fgu.write(outf,format='fits', overwrite=True)
+        print('wrote '+outf)
         del fgu
      
     if args.countran == 'y':
