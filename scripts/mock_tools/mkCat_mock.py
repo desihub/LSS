@@ -241,7 +241,7 @@ def docat(mocknum,rannum):
             fn0 = lssdir+'/rancomb_0'+pdir+'_Alltilelocinfo.fits'
             fn = lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
             os.system('cp '+fn0+' '+fn)
-            print('copied 'fn0+' to '+fn)
+            print('copied '+fn0+' to '+fn)
 
     specver = 'mock'    
     imbits = []    
