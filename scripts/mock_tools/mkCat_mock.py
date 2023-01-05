@@ -211,11 +211,11 @@ def docat(mocknum,rannum):
             fbadir_ran = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
 
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
-        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         specf.remove_columns(['TARGETID'])
         fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
         print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        fgu['TILELOCID'] = 10000*fgu['TILEID'] +fgu['LOCATION']
         del specf
         print(len(fgu))
         print(fgu.dtype.names)
@@ -235,6 +235,7 @@ def docat(mocknum,rannum):
         tc.keep_columns(['TARGETID','NTILE','TILES'])
         #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
         tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+        print('wrote random counts')
 
     specver = 'mock'    
     imbits = []    
