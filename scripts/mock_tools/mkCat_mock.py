@@ -228,20 +228,20 @@ def docat(mocknum,rannum):
      
     if args.countran == 'y':
         if mocknum == 0:
-			tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
-			print('got counts')
-			print(len(tc))
-			print(tc.dtype.names)
-			print(np.max(tc['NTILE']))
-			tc.keep_columns(['TARGETID','NTILE','TILES'])
-			#common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
-			tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
-			print('wrote random counts')
-		else:
-		    fn0 = lssdir+'/rancomb_0'+pdir+'_Alltilelocinfo.fits'
-		    fn = lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
-			os.system('cp '+fn0+' '+fn)
-			print('copied 'fn0+' to '+fn)
+            tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
+            print('got counts')
+            print(len(tc))
+            print(tc.dtype.names)
+            print(np.max(tc['NTILE']))
+            tc.keep_columns(['TARGETID','NTILE','TILES'])
+            #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
+            tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+            print('wrote random counts')
+        else:
+            fn0 = lssdir+'/rancomb_0'+pdir+'_Alltilelocinfo.fits'
+            fn = lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
+            os.system('cp '+fn0+' '+fn)
+            print('copied 'fn0+' to '+fn)
 
     specver = 'mock'    
     imbits = []    
