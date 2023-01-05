@@ -238,7 +238,7 @@ def docat(mocknum,rannum):
             tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
             print('wrote random counts')
         else:
-            fn0 = maindir+'mock'+str(mocknum)+'/rancomb_0'+pdir+'_Alltilelocinfo.fits'
+            fn0 = maindir+'mock0/rancomb_0'+pdir+'_Alltilelocinfo.fits'
             fn = lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
             os.system('cp '+fn0+' '+fn)
             print('copied '+fn0+' to '+fn)
