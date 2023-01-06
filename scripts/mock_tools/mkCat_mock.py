@@ -53,6 +53,7 @@ parser.add_argument("--add_gtl", help="whether to get the list of good tileloc f
 
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
+parser.add_argument("--apply_veto_ran", help="apply vetos to the full files",default='n')
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
@@ -303,12 +304,19 @@ def docat(mocknum,rannum):
         fin = dirout+args.tracer+notqso+'_full_noveto.dat.fits'
         fout = dirout+args.tracer+notqso+'_full.dat.fits'
         common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+
         print('applying vetos to random '+str(rannum))
         fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
 
         #print('random veto '+str(ii)+' done')
+    if args.apply_veto_ran == 'y':
+        print('applying vetos to random '+str(rannum))
+        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
+        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+
 
     regl = ['_N','_S']    
     
@@ -329,6 +337,8 @@ def docat(mocknum,rannum):
         
 
     if args.mkclusran == 'y':
+        if len(nztl) == 0:
+            nztl.append('')
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
