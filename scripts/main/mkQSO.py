@@ -106,12 +106,12 @@ build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='b
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-bright.fits',columns=columns))
 zcat.keep_columns(kc)
 #load bright time QSO cat and get extra columns
-qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_bright_healpix_v'+args.version+'.fits'
-print('loading '+qsofn+' to add columns to')
+#qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_bright_healpix_v'+args.version+'.fits'
+#print('loading '+qsofn+' to add columns to')
 
-qf = fitsio.read(qsofn)
-qf = join(qf,zcat,keys=['TARGETID'])
-common.write_LSS(qf,qsofn,extname='QSOCAT')
+#qf = fitsio.read(qsofn)
+#qf = join(qf,zcat,keys=['TARGETID'])
+#common.write_LSS(qf,qsofn,extname='QSOCAT')
 
 #make the per tile version; only used for LSS
 build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=20, tiles_to_use=None, qsoversion=args.version)
