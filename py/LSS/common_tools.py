@@ -586,8 +586,8 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     fd.write(np.array(ff), extname=extname)
     if comments is not None:
         for comment in comments:
-            fd['LSS'].write_comment(comment)
-    fd['LSS'].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+            fd[extname].write_comment(comment)
+    fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     print('closed fits file')
     os.system('mv ' + tmpfn + ' ' + outf)
