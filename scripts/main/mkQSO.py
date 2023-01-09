@@ -73,7 +73,7 @@ if args.survey == 'SV3':
 
 reldir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel
 
-os.system('rm '+qsodir+'*.tmp')
+os.system('rm '+qsodir+'/*.tmp')
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
