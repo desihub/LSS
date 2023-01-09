@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+import argparse
+import textwrap
+import os
+from glob import glob
+from time import time
+
+from LSS.imaging.sky_maps import generate_map_values, generate_mask, get_lss_map_dir
+
+from desiutil.log import get_logger
+log = get_logger()
+start = time()
+
+# ADM example input file.
+egd = "/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve"
+egout = "$SCRATCH"
+egrancat1 = os.path.join(egd, "randoms-1-0.fits")
+egrancat2 = egrancat1.replace("0.fits", "*.fits")
+egrancat3 = egrancat1.replace("0.fits", "?.fits")
+egrancat4 = egrancat1.replace("0.fits", "[2-9].fits")
+
+ap = argparse.ArgumentParser(
+    description="Generate files of map and mask values that correspond to a " +
+    "desitarget random catalog and write them to the sky map directory",
+    formatter_class=argparse.RawDescriptionHelpFormatter, epilog=textwrap.dedent("""
+    Examples:
+    make_imaging_mapvalues_mask_randoms {} --outdir {}
+    make_imaging_mapvalues_mask_randoms "{}" --outdir {}
+    make_imaging_mapvalues_mask_randoms "{}" --outdir {}
+    make_imaging_mapvalues_mask_randoms "{}" --outdir {}
+    """.format(egrancat1, egout, egrancat2, egout,
+               egrancat3, egout, egrancat4, egout)))
+ap.add_argument("rancatname",
+                help="Full path to a random catalog. Can process multiple catalogs" +
+                " together by passing a wildcard recognized by glob")
+ap.add_argument("--lssmapdir",
+                help="Directory that hosts sky maps. You MUST pass this if you" +
+                " haven't set the $LSS_MAP_DIR environment variable")
+ap.add_argument("--outdir",
+                help="Location of the directory to write output files. Defaults to" +
+                " the same value as `--lssmapdir`")
+
+ns = ap.parse_args()
+
+# ADM check early that the LSS Map directory is set or passed.
+lssmapdir = get_lss_map_dir(ns.lssmapdir)
+log.info("LSS Map Directory is set to: {}".format(lssmapdir))
+
+# ADM in case a wildcard was passed.
+# ADM (will also embed a single catalog in a list).
+rancatlist = sorted(glob(ns.rancatname))
+log.info("Processing {} input files: {}".format(len(rancatlist), rancatlist))
+
+for rancatname in rancatlist:
+    log.info("Generating file of mask values for {}...t={:.1f}s".format(
+        rancatname, time()-start))
+    _ = generate_mask(rancatname, outdir=ns.outdir, lssmapdir=lssmapdir)
+    log.info("Generating file of map values for {}...t={:.1f}s".format(
+        rancatname, time()-start))
+    _ = generate_map_values(rancatname, outdir=ns.outdir, lssmapdir=lssmapdir)
