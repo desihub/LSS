@@ -57,7 +57,7 @@ specrel = args.verspec
 
 
 qsodir = basedir +'/'+args.survey+'/QSO/'+specrel
-if not os.path.exists(basedir +'/'+args.survey+'/QSO/')
+if not os.path.exists(basedir +'/'+args.survey+'/QSO/'):
     os.mkdir(basedir +'/'+args.survey+'/QSO/')
 
 if not os.path.exists(qsodir):
