@@ -73,6 +73,7 @@ if args.survey == 'SV3':
 
 reldir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel
 
+os.system('rm '+qsodir+'*.tmp')
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
@@ -80,6 +81,7 @@ zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=c
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
+print('loading 'qsofn+' to add columns to')
 qf = fitsio.read(qsofn)
 qcols = list(qf.dtype.names)
 kc = ['TARGETID']
@@ -93,6 +95,8 @@ common.write_LSS(qf,qsofn,extname='QSOCAT')
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
+print('loading 'qsofn+' to add columns to')
+
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
 common.write_LSS(qf,qsofn,extname='QSOCAT')
@@ -103,6 +107,8 @@ zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-bright.fits',columns
 zcat.keep_columns(kc)
 #load bright time QSO cat and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_bright_healpix_v'+args.version+'.fits'
+print('loading 'qsofn+' to add columns to')
+
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
 common.write_LSS(qf,qsofn,extname='QSOCAT')
