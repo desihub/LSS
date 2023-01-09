@@ -573,7 +573,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     #ff.write(fout,overwrite=True,format='fits')
 
 
-def write_LSS(ff, outf, comments=None):
+def write_LSS(ff, outf, comments=None,extname='LSS'):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
@@ -583,7 +583,7 @@ def write_LSS(ff, outf, comments=None):
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff), extname='LSS')
+    fd.write(np.array(ff), extname=extname)
     if comments is not None:
         for comment in comments:
             fd['LSS'].write_comment(comment)
