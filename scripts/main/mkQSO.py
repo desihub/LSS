@@ -95,7 +95,7 @@ common.write_LSS(qf,qsofn,extname='QSOCAT')
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
-print('loading 'qsofn+' to add columns to')
+print('loading '+qsofn+' to add columns to')
 
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
@@ -107,7 +107,7 @@ zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-bright.fits',columns
 zcat.keep_columns(kc)
 #load bright time QSO cat and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_bright_healpix_v'+args.version+'.fits'
-print('loading 'qsofn+' to add columns to')
+print('loading '+qsofn+' to add columns to')
 
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
