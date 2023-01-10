@@ -65,7 +65,7 @@ if not os.path.exists(qsodir):
     print('made '+qsodir)
 
 #required columns for importing from zcatalogs, add any as needed
-columns = ['TARGETID','ZWARN','ZERR','SPECTYPE']
+columns = ['TARGETID','ZWARN','ZERR','SPECTYPE','TSNR2_QSO', 'TSNR2_LYA','TSNR2_ELG','TSNR2_LRG']
 
 surpipe = 'main'
 if args.survey == 'SV3':
