@@ -77,6 +77,21 @@ os.system('rm '+qsodir+'/*.tmp')
 
 extname = 'QSO_CAT'
 
+def add_lastnight(qf,prog='dark'):
+    qf['LASTNIGHT'] = np.zeros(len(qf),dtype=int)
+    targetid2index = {targetid:index for index,targetid in enumerate(qf["TARGETID"])}
+    tilefn = reldir+'/zcatalog/zpix-'+surpipe+'-'+prog+'.fits'
+    t=Table(fitsio.read(tilefn,columns=['TARGETID','LASTNIGHT']))
+    selection=np.in1d(t["TARGETID"],qf["TARGETID"])
+    if np.sum(selection)==0 :
+        print("no intersection")
+        continue
+    ii=[targetid2index[tid] for tid in t["TARGETID"][selection]]
+    qf["LASTNIGHT"][ii] = np.maximum(qf["LASTNIGHT"][ii],t["LASTNIGHT"][selection])
+    print(np.sum(qf["LASTNIGHT"]==0),"entries without LASTNIGHT info")
+    return qf
+    
+
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
 #make the dark time QSO target only QSO catalog
@@ -92,7 +107,10 @@ for col in columns:
         kc.append(col)
 zcat.keep_columns(kc)
 qf = join(qf,zcat,keys=['TARGETID'])
+#get night/tile info from tiles zcat
+add_lastnight(qf,prog='dark')
 common.write_LSS(qf,qsofn,extname=extname)
+
 #make the dark time any target type QSO catalog
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
@@ -100,6 +118,8 @@ qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.
 print('loading '+qsofn+' to add columns to')
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
+#get night/tile info from tiles zcat
+add_lastnight(qf,prog='dark')
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
