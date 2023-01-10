@@ -85,7 +85,6 @@ def add_lastnight(qf,prog='dark'):
     selection=np.in1d(t["TARGETID"],qf["TARGETID"])
     if np.sum(selection)==0 :
         print("no intersection")
-        continue
     ii=[targetid2index[tid] for tid in t["TARGETID"][selection]]
     qf["LASTNIGHT"][ii] = np.maximum(qf["LASTNIGHT"][ii],t["LASTNIGHT"][selection])
     print(np.sum(qf["LASTNIGHT"]==0),"entries without LASTNIGHT info")
