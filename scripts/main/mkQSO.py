@@ -80,7 +80,7 @@ extname = 'QSO_CAT'
 def add_lastnight(qf,prog='dark'):
     qf['LASTNIGHT'] = np.zeros(len(qf),dtype=int)
     targetid2index = {targetid:index for index,targetid in enumerate(qf["TARGETID"])}
-    tilefn = reldir+'/zcatalog/zpix-'+surpipe+'-'+prog+'.fits'
+    tilefn = reldir+'/zcatalog/ztile-'+surpipe+'-'+prog+'-cumulative.fits'
     t=Table(fitsio.read(tilefn,columns=['TARGETID','LASTNIGHT']))
     selection=np.in1d(t["TARGETID"],qf["TARGETID"])
     if np.sum(selection)==0 :
