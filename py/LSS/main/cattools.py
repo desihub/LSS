@@ -880,6 +880,36 @@ def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadal
     specd.write(outf,format='fits',overwrite=True)
     return True
 
+def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe'):
+    s = 0
+    n = 0
+    nfail = 0
+    tl = []
+    if os.path.isfile(outf) and redo == 'n':
+        specd = Table.read(outf)
+        tl.append(specd)
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    newtabs = []
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/'
+        fn = coaddir + +str(tile)+'/'+tdate+'/tile-qa-'+str(tile)+'-thru'+tdate+'.fits'
+        tile_data = Table.read(fn, "PETALQA")
+        newtabs.append(tile_data)
+    newtabs = vstack(newtabs)
+    if s == 1:
+        specd = vstack([specd,newtabs]) 
+
+    specd.write(outf,format='fits',overwrite=True)
+    return True
+
+
 
 def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
     #put data from different spectrographs together, one table for fibermap, other for z
