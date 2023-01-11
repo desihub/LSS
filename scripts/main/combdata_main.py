@@ -53,6 +53,8 @@ parser.add_argument("--redospec",help="whether or not to combine spec data from 
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--get_petalsky",help="if y, combine info across tiles to get dispersion in sky fibers",default='n')
+parser.add_argument("--comb_petalqa",help="if y, combine petal qa info across tiles ",default='n')
+
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
