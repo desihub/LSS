@@ -843,7 +843,7 @@ def get_skystd(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/ti
             snrs = snrs[snrs != 0] #should remove any masked pixels?
             disp = snrs.std()
             if disp > 2 or disp == 0:
-                print('tile '+tile+' petal '+str(i)+' dispersion is '+str(disp) )
+                print('tile '+str(tile)+' petal '+str(i)+' dispersion is '+str(disp) )
             cam_stats[camera].append(disp)
     tab = Table()
     tab['TILEID'] = np.ones(len(specs))*int(tile)
