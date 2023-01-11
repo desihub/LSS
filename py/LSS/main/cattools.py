@@ -802,6 +802,84 @@ def combzmtl(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tile
     tspec['ZTILEID'].name = 'TILEID'
     return tspec
 
+def get_skystd(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/',clip=3. ):
+    #put data from different spectrographs together, one table for fibermap, other for z
+    zdate = str(zdate)
+    specs = []
+    #find out which spectrograph have data
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+zdate+'/zmtl-'+str(si)+'-'+str(tile)+'-thru'+zdate+'.fits'
+        if os.path.isfile(ff):
+            specs.append(si)
+        else:
+            print('did not find '+ff)
+    #print('spectrographs with data:')
+    #print(specs)
+    if len(specs) == 0:
+        return None
+    
+    cam_stats = {}
+    for camera in ["B", "R", "Z"]:
+        cam_stats[camera] = []
+    
+    for i in range(0,len(specs)):
+        fn = coaddir+str(tile)+'/'+zdate+'/coadd-'+str(specs[i])+'-'+str(tile)+'-thru'+zdate+'.fits'
+        h = fits.open(fn)
+        fm = Table(h["FIBERMAP"].data)
+        sel = fm["OBJTYPE"] == "SKY"
+        #nsky = sel.sum()
+        #snrs = np.zeros((sel.sum(), 0))
+        #tab_petal = Table()
+        #tab_petal['TILEID'] = int(tile)
+        
+        for camera in ["B", "R", "Z"]:
+            fluxes = h["{}_FLUX".format(camera)].data[sel, :]
+            ivars = h["{}_IVAR".format(camera)].data[sel, :]
+            snrs = fluxes * np.sqrt(ivars) #array of snr per pixel, one row per spectrum
+            stds = np.std(snrs,axis=1) #array of the standard deviations of snr per spectrum
+            disp_std = (stds-np.std(stds))/np.mean(stds) #how many standard deviations is each spectrum away for petal/camera
+            snrs = snrs[disp_std < clip] #remove any spectra that are more than 3 sigma
+            snrs = snrs.flatten()
+            snrs = snrs[snrs != 0] #should remove any masked pixels?
+            disp = snrs.std()
+            if disp > 2 or disp == 0:
+                print('tile '+tile+' petal '+str(i)+' dispersion is '+str(disp) )
+            cam_stats[camera].append(disp)
+    tab = Table()
+    tab['TILEID'] = np.ones(len(specs))*int(tile)
+    tab['PETAL_LOC'] = np.array(specs,dtype=int)
+    for camera in ["B", "R", "Z"]:
+        tab['SKY_DISP_'+camera] = np.array(cam_stats[camera])
+    return tab
+
+def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',clip=3):
+    s = 0
+    n = 0
+    nfail = 0
+    tl = []
+    if os.path.isfile(outf) and redo == 'n':
+        specd = Table.read(outf)
+        tl.append(specd)
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    newtabs = []
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/'
+        tile_data = get_skystd(tile,zdate,coaddir,clip)
+        newtabs.append(tile_data)
+    newtabs = vstack(newtabs)
+    if s == 1:
+        specd = vstack([specd,newtabs]) 
+
+    specd.write(outf,format='fits',overwrite=True)
+    return True
+
 
 def combfibmap(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/' ):
     #put data from different spectrographs together, one table for fibermap, other for z

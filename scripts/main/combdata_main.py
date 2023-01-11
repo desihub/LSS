@@ -52,6 +52,7 @@ parser.add_argument("--dotarspec",help="whether or not to combine spec and tar d
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
+parser.add_argument("--get_petalsky",help="if y, combine info across tiles to get dispersion in sky fibers",default='n')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
@@ -479,6 +480,10 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
             tc.write(outtc,format='fits', overwrite=True)
 
+
+if args.get_petalsky == 'y':
+    petalsky_fn = ldirspec+'tile_petal_skydisp.fits'
+    ct.combtile_skystd(tiles4comb,petalsky_fn,specver=specrel,clip=3)
 
 if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
