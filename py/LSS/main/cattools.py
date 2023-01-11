@@ -875,9 +875,11 @@ def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadal
         newtabs.append(tile_data)
     newtabs = vstack(newtabs)
     if s == 1:
-        specd = vstack([specd,newtabs]) 
+        specd.write(outf,format='fits',overwrite=True)
+    else:
+        newtabs.write(outf,format='fits',overwrite=True)
 
-    specd.write(outf,format='fits',overwrite=True)
+    
     return True
 
 def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
@@ -905,8 +907,9 @@ def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
     newtabs = vstack(newtabs)
     if s == 1:
         specd = vstack([specd,newtabs]) 
-
-    specd.write(outf,format='fits',overwrite=True)
+        specd.write(outf,format='fits',overwrite=True)
+    else:
+        newtabs.write(outf,format='fits',overwrite=True)
     return True
 
 
