@@ -882,7 +882,7 @@ def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadal
     
     return True
 
-def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
+def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='y'):
     s = 0
     n = 0
     nfail = 0
@@ -902,7 +902,8 @@ def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
         tdate = str(tdate)
         coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/'
         fn = coaddir  +str(tile)+'/'+tdate+'/tile-qa-'+str(tile)+'-thru'+tdate+'.fits'
-        tile_data = Table.read(fn, "PETALQA")
+        tile_data = Table(fitsio.read(fn,ext= "PETALQA"))
+        tile_data['TILEID'] = np.ones(len(tile_data),dtype=int)*tile
         newtabs.append(tile_data)
     newtabs = vstack(newtabs)
     if s == 1:
