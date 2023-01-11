@@ -880,7 +880,7 @@ def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadal
     specd.write(outf,format='fits',overwrite=True)
     return True
 
-def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe'):
+def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
     s = 0
     n = 0
     nfail = 0
