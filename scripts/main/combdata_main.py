@@ -482,7 +482,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 
 
 if args.get_petalsky == 'y':
-    petalsky_fn = ldirspec+'tile_petal_skydisp.fits'
+    petalsky_fn = ldirspec+'tile_petal_skydisp_'+prog+'.fits'
     ct.combtile_skystd(tiles4comb,petalsky_fn,specver=specrel,clip=3)
 
 if specrel != 'daily' and args.dospec == 'y':
