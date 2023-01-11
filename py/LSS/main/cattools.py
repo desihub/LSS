@@ -901,7 +901,7 @@ def combtile_petalqa(tiles,outf='',md='',specver='daily',redo='n'):
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/'
-        fn = coaddir + +str(tile)+'/'+tdate+'/tile-qa-'+str(tile)+'-thru'+tdate+'.fits'
+        fn = coaddir  +str(tile)+'/'+tdate+'/tile-qa-'+str(tile)+'-thru'+tdate+'.fits'
         tile_data = Table.read(fn, "PETALQA")
         newtabs.append(tile_data)
     newtabs = vstack(newtabs)
