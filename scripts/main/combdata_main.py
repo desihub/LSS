@@ -485,6 +485,10 @@ if args.get_petalsky == 'y':
     petalsky_fn = ldirspec+'tile_petal_skydisp_'+prog+'.fits'
     ct.combtile_skystd(tiles4comb,petalsky_fn,specver=specrel,clip=3)
 
+if args.comb_petalqa == 'y':
+    petalqa_fn = ldirspec+'tile_petal_qa_'+prog+'.fits'
+    combtile_petalqa(tiles4comb,petalqa_fn,specver=specrel)
+
 if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
     ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
