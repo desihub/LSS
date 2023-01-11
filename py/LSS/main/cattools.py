@@ -871,7 +871,7 @@ def combtile_skystd(tiles,outf='',md='',specver='daily',redo='n',specrel='guadal
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/'
-        tile_data = get_skystd(tile,zdate,coaddir,clip)
+        tile_data = get_skystd(tile,tdate,coaddir,clip)
         newtabs.append(tile_data)
     newtabs = vstack(newtabs)
     if s == 1:
