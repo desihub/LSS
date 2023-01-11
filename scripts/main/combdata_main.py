@@ -489,7 +489,7 @@ if args.get_petalsky == 'y':
 
 if args.comb_petalqa == 'y':
     petalqa_fn = ldirspec+'tile_petal_qa_'+prog+'.fits'
-    combtile_petalqa(tiles4comb,petalqa_fn,specver=specrel)
+    ct.combtile_petalqa(tiles4comb,petalqa_fn,specver=specrel)
 
 if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
