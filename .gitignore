@@ -64,3 +64,9 @@ target/
 # Script Output Files
 *.out
 bin/*.out
+
+#Local Test/Debug files
+
+LOCAL*.sh
+LOCAL*.py
+*DEBUG*
