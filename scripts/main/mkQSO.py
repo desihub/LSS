@@ -161,7 +161,7 @@ qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.
 print('loading '+qsofn+' to add columns to')
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
-get night/tile info from tiles zcat
+#get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
 add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
