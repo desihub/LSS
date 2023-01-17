@@ -44,6 +44,7 @@ parser.add_argument("--basedir", help="base directory for output, default is SCR
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--verspec",help="version for redshifts",default='himalayas')
+parser.add_argument("--mkqso",help="whether to perform the 1st stage",default='y')
 
 
 
@@ -103,7 +104,7 @@ def add_fminfo(qf,expinfo):
     print('getting LAST info')
     expinfo_last = unique(expinfo,keys=['TARGETID'],keep='last')
     expinfo_last['NIGHT'].name = 'LAST_NIGHT'
-    expinfo_first['MJD'].name = 'LAST_MJD'
+    expinfo_last['MJD'].name = 'LAST_MJD'
     expinfo_last.keep_columns(['TARGETID','LAST_NIGHT','LAST_MJD'])
     qf = join(qf,expinfo_last,keys=['TARGETID'],join_type='left')
     del expinfo_last
@@ -135,7 +136,8 @@ def add_fminfo(qf,expinfo):
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
 expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD']))
 #make the dark time QSO target only QSO catalog
-build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
+if args.mkqso == 'y':
+    build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
 print('loading '+qsofn+' to add columns to')
@@ -153,13 +155,13 @@ add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the dark time any target type QSO catalog
-build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
+#build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
 print('loading '+qsofn+' to add columns to')
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
-#get night/tile info from tiles zcat
+get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
 add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
