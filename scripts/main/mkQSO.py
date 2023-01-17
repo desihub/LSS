@@ -134,7 +134,7 @@ def add_fminfo(qf,expinfo):
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
-expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD']))
+expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
 #make the dark time QSO target only QSO catalog
 if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
