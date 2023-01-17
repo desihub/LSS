@@ -124,6 +124,7 @@ def add_fminfo(qf,expinfo):
             if i == len(expinfo):
                 break
         meanmjd[ti] = mjds/mjdw
+        ti += 1
     meantab = Table()
     meantab['TARGETID'] = tids
     meantab['MEAN_MJD'] = meanmjd
