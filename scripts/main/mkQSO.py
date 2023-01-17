@@ -118,7 +118,7 @@ def add_fminfo(qf,expinfo):
         mjds = 0
         mjdw = 0
         while expinfo[i]['TARGETID'] == tids[ti]:
-            mjds += expinfo[i]['MJD']*f[expinfo]['EXPTIME']
+            mjds += expinfo[i]['MJD']*expinfo[i]['EXPTIME']
             mjdw += expinfo[i]['EXPTIME']
             i += 1
             if i == len(expinfo):
