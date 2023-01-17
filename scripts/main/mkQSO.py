@@ -129,14 +129,6 @@ def add_fminfo(qf,expinfo):
     qf = join(qf,meantab,keys=['TARGETID'],join_type='left')
     return qf
 
-# identify first appearance for each TARGETID, which is now the largest NIGHT (i.e. LASTNIGHT)
-lastnight_map = dict()
-for targetid, i in zip(*np.unique(expinfo['TARGETID'], return_index=True)):
-    lastnight_map[targetid] = expinfo['NIGHT'][i]
-
-# convert into an array row-matched to zcat (i.e. it could be added as a column)
-lastnight = np.array([lastnight_map[tid] for tid in zcat['TARGETID']])
-
     
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
