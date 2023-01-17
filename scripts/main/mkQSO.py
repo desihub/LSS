@@ -114,14 +114,14 @@ def add_fminfo(qf,expinfo):
     meanmjd = np.zeros(len(tids))
     ti = 0
     i = 0
-    while i < len(f):
+    while i < len(expinfo):
         mjds = 0
         mjdw = 0
-        while f[i]['TARGETID'] == tids[ti]:
-            mjds += f[i]['MJD']*f[i]['EXPTIME']
-            mjdw += f[i]['EXPTIME']
+        while expinfo[i]['TARGETID'] == tids[ti]:
+            mjds += expinfo[i]['MJD']*f[expinfo]['EXPTIME']
+            mjdw += expinfo[i]['EXPTIME']
             i += 1
-            if i == len(f):
+            if i == len(expinfo):
                 break
         meanmjd[ti] = mjds/mjdw
     meantab = Table()
