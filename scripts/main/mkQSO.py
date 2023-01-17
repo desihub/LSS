@@ -89,10 +89,59 @@ def add_lastnight(qf,prog='dark'):
     qf["LASTNIGHT"][ii] = np.maximum(qf["LASTNIGHT"][ii],t["LASTNIGHT"][selection])
     print(np.sum(qf["LASTNIGHT"]==0),"entries without LASTNIGHT info")
     return qf
+
+def add_fminfo(qf,expinfo):
+    # sort expinfo by NIGHT in descending order
+    print('getting FIRST info')
+    expinfo.sort('NIGHT')
+    expinfo_first = unique(expinfo,keys=['TARGETID'])
+    expinfo_first['NIGHT'].name = 'FIRST_NIGHT'
+    expinfo_first['MJD'].name = 'FIRST_MJD'
+    expinfo_first.keep_columns(['TARGETID','FIRST_NIGHT','FIRST_MJD'])
+    qf = join(qf,expinfo_first,keys=['TARGETID'],join_type='left')
+    del expinfo_first
+    print('getting LAST info')
+    expinfo_last = unique(expinfo,keys=['TARGETID'],keep='last')
+    expinfo_last['NIGHT'].name = 'LAST_NIGHT'
+    expinfo_first['MJD'].name = 'LAST_MJD'
+    expinfo_last.keep_columns(['TARGETID','LAST_NIGHT','LAST_MJD'])
+    qf = join(qf,expinfo_last,keys=['TARGETID'],join_type='left')
+    del expinfo_last
+    print('getting mean info')
+    expinfo.sort('TARGETID')
+    tids = np.unique(expinfo['TARGETID'])
+    meanmjd = np.zeros(len(tids))
+    ti = 0
+    i = 0
+    while i < len(f):
+        mjds = 0
+        mjdw = 0
+        while f[i]['TARGETID'] == tids[ti]:
+            mjds += f[i]['MJD']*f[i]['EXPTIME']
+            mjdw += f[i]['EXPTIME']
+            i += 1
+            if i == len(f):
+                break
+        meanmjd[ti] = mjds/mjdw
+    meantab = Table()
+    meantab['TARGETID'] = tids
+    meantab['MEAN_MJD'] = meanmjd
+    qf = join(qf,meantab,keys=['TARGETID'],join_type='left')
+    return qf
+
+# identify first appearance for each TARGETID, which is now the largest NIGHT (i.e. LASTNIGHT)
+lastnight_map = dict()
+for targetid, i in zip(*np.unique(expinfo['TARGETID'], return_index=True)):
+    lastnight_map[targetid] = expinfo['NIGHT'][i]
+
+# convert into an array row-matched to zcat (i.e. it could be added as a column)
+lastnight = np.array([lastnight_map[tid] for tid in zcat['TARGETID']])
+
     
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
+expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD'])
 #make the dark time QSO target only QSO catalog
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
@@ -107,7 +156,8 @@ for col in columns:
 zcat.keep_columns(kc)
 qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
-add_lastnight(qf,prog='dark')
+#add_lastnight(qf,prog='dark')
+add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the dark time any target type QSO catalog
@@ -118,7 +168,8 @@ print('loading '+qsofn+' to add columns to')
 qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
-add_lastnight(qf,prog='dark')
+#add_lastnight(qf,prog='dark')
+add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
