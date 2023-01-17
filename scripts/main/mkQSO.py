@@ -141,7 +141,7 @@ lastnight = np.array([lastnight_map[tid] for tid in zcat['TARGETID']])
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
 zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
-expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD'])
+expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD']))
 #make the dark time QSO target only QSO catalog
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
