@@ -52,7 +52,7 @@ if args.tracer=='BGS_BRIGHT':
 else:
     tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/{arg.survey}/LSS/tiles-DARK.fits'
 
-if args.outdir: save_fn = os.path.join(args.outdir,healpix_map_ran_comp_{args.tracer}.fits)
+if args.outdir: save_fn = os.path.join(args.outdir,'healpix_map_ran_comp_{args.tracer}.fits')
 
 target = cut_randoms(target_fns, tile_fn)
 fibered = cut_randoms(fibered_fns, tile_fn)
