@@ -28,6 +28,8 @@ def map_count(cat, nside = 1024):
 
     return map_c
 
+print('test')
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--tracer', help='tracer to be selected', type=str, default='QSO')
 parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
