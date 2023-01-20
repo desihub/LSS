@@ -12,7 +12,7 @@ def radec2thphi(ra,dec):
 def cut_randoms(cat_fns, tls_fn):
 
     tls = fitsio.read(tls_fn)
-    cat = Catalog.read(fns)
+    cat = Catalog.read(cat_fns)
     inds = desimodel.footprint.is_point_in_desi(tls,cat['RA'], cat['DEC'])
     cat_cut = cat[inds]
 
