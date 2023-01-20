@@ -28,7 +28,7 @@ def map_count(cat, nside = 1024):
 
     return map_c
 
-print('test')
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tracer', help='tracer to be selected', type=str, default='QSO')
@@ -41,6 +41,8 @@ parser.add_argument('--nran', help='number of random files to combine together (
 parser.add_argument('--outdir', help='base directory for output', type=str, default=None)
 
 args = parser.parse_args()
+
+print('test')
 
 target_fns = [f'/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-{idx}.fits' for idx in range(args.nran)]
 fibered_fns = [f'//global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.verspec}/LSScats/{args.version}/{args.tracer}zdone_{idx}_full.ran.fits' for idx in range(args.nran)]
