@@ -31,7 +31,7 @@ def map_count(cat, nside = 1024):
 parser = argparse.ArgumentParser()
 parser.add_argument('--tracer', help='tracer to be selected', type=str, default=['QSO'])
 parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
-parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main'], default='DA02')
+parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main','Y1'], default='DA02')
 parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
 parser.add_argument('--version', help='catalog version', type=str, default='test')
 parser.add_argument('--nside', help='nside for healpix map', type=int, default=1024)
