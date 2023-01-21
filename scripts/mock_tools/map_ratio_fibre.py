@@ -60,6 +60,6 @@ nside = args.nside
 map_fib = map_count(fibered, nside=nside)
 map_target = map_count(target, nside=nside)
 
-map_weight = np.divide(map_fib, map_tar, out=np.zeros_like(map_fib), where=map_fib!=0)
+map_weight = np.divide(map_fib, map_target, out=np.zeros_like(map_fib), where=map_fib!=0)
 
 hp.write_map(save_fn, map_weight, overwrite=True)
