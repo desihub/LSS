@@ -56,7 +56,7 @@ if args.outdir: save_fn = os.path.join(args.outdir,'healpix_map_ran_comp_{args.t
 
 target = cut_randoms(target_fns, tile_fn)
 fibered = cut_randoms(fibered_fns, tile_fn)
-
+nside = args.nside
 map_fib = map_count(fibered, nside=nside)
 map_target = map_count(target, nside=nside)
 
