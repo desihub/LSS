@@ -95,13 +95,13 @@ parser.add_argument("--minr", help="minimum number for random files",default=0,t
 parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
 parser.add_argument("--dorecon",help="if y, run the recon needed for RSD blinding",default='n')
 parser.add_argument("--rsdblind",help="if y, do the RSD blinding shift",default='n')
-#parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
+parser.add_argument("--hashcode", help="Code for the blinding procedure", default='0x1')
 parser.add_argument("--fiducial_w0", help="Value for w0 in the DESI fiducial cosmology", default=-1)
 parser.add_argument("--fiducial_wa", help="Value for wa in the DESI fiducial cosmology", default=0)
 parser.add_argument("--fiducial_f", help="Value for the RSD parameter in the DESI fiducial cosmology", default=0.8)
-#parser.add_argument("--expected_w0_uncertainty", help="Expected uncertainty for w0", default=0.05)
-#parser.add_argument("--expected_wa_uncertainty", help="Expected uncertainty for wa", default=0.2)
-#parser.add_argument("--expected_f_uncertainty", help="Expected uncertainty for RSD f", default=0.05)
+parser.add_argument("--expected_w0_uncertainty", help="Expected uncertainty for w0", default=0.05)
+parser.add_argument("--expected_wa_uncertainty", help="Expected uncertainty for wa", default=0.2)
+parser.add_argument("--expected_f_uncertainty", help="Expected uncertainty for RSD f", default=0.05)
 parser.add_argument("--specified_w0",
                     help="Specify a blind w0 value to overwrite the random blinding procedure",
                     default=None)
@@ -111,7 +111,7 @@ parser.add_argument("--specified_wa",
 parser.add_argument("--specified_f",
                     help="Specify a blind f value to overwrite the random blinding procedure",
                     default=None)
-
+parser.add_argument("--fix_monopole",help="whether to choose f such that the amplitude of the monopole is fixed",default='n')
 
 def make_parameter_blind(expected_value,
                          expected_error,
@@ -202,37 +202,6 @@ w0_blind = make_parameter_blind(args.fiducial_w0,
 wa_blind = make_parameter_blind(args.fiducial_wa,
                                 args.expected_wa_uncertainty, rs)
 
-#choose f_shift to compensate shift in monopole amplitude
-cosmo_fid = DESI()
-cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
-
-DM_fid = cosmo_fid.comoving_angular_distance(ztp)
-DH_fid = 1./cosmo_fid.hubble_function(ztp)
-
-DM_shift = cosmo_shift.comoving_angular_distance(ztp)
-DH_shift = 1./cosmo_shift.hubble_function(ztp)
-
-
-vol_fac =  DM_fid**2*DH_fid/(DM_shift**2*DH_shift)
-
-#a, b, c for quadratic formula
-a = 0.2/bias**2.
-b = 2/(3*bias)
-c = 1-(1+0.2*(args.fiducial_f/bias)**2.+2/3*args.fiducial_f/bias)/vol_fac
-
-f_shift = (-b+np.sqrt(b**2.-4.*a*c))/(2*a)
-
-dfper = (f_shift-args.fiducial_f)/args.fiducial_f
-
-maxfper = 0.1
-if abs(dfper) > maxfper:
-    dfper = maxfper*dfper/abs(dfper)
-    f_shift = (1+dfper)*args.fiducial_f
-
-
-#fgrowth_blind = make_parameter_blind(args.fiducial_f,
-#                                     args.expected_f_uncertainty, rs)
-
 # If blinded values have been specified, overwrite the random procedure here:
 if args.specified_w0 is not None:
     w0_blind = float(args.specified_w0)
@@ -242,6 +211,42 @@ if args.specified_wa is not None:
 
 if args.specified_f is not None:
     fgrowth_blind = float(args.specified_f)
+else:
+    if args.fix_monopole == 'n':
+        fgrowth_blind = make_parameter_blind(args.fiducial_f,
+                                             args.expected_f_uncertainty, rs)
+    elif args.fix_monopole == 'y':
+        #choose f_shift to compensate shift in monopole amplitude
+        cosmo_fid = DESI()
+        cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
+
+        DM_fid = cosmo_fid.comoving_angular_distance(ztp)
+        DH_fid = 1./cosmo_fid.hubble_function(ztp)
+
+        DM_shift = cosmo_shift.comoving_angular_distance(ztp)
+        DH_shift = 1./cosmo_shift.hubble_function(ztp)
+
+
+        vol_fac =  DM_fid**2*DH_fid/(DM_shift**2*DH_shift)
+
+        #a, b, c for quadratic formula
+        a = 0.2/bias**2.
+        b = 2/(3*bias)
+        c = 1-(1+0.2*(args.fiducial_f/bias)**2.+2/3*args.fiducial_f/bias)/vol_fac
+
+        f_shift = (-b+np.sqrt(b**2.-4.*a*c))/(2*a)
+
+        dfper = (f_shift-args.fiducial_f)/args.fiducial_f
+
+        maxfper = 0.1
+        if abs(dfper) > maxfper:
+            dfper = maxfper*dfper/abs(dfper)
+            print('f computed is '+str(round(f_shift,3))+', which is more than '+str(maxfper*100)+'% different than the fiducial value. Setting f to '+str(round((1+dfper)*args.fiducial_f,3)))
+            f_shift = (1+dfper)*args.fiducial_f
+
+        fgrowth_blind = f_shift
+
+        print('f is '+str(fgrowth_blind))
 
 # Write out the blind parameter values
 to_write = [['w0', 'wa', 'f'],
