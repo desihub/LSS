@@ -43,7 +43,7 @@ print('test')
 
 tracer = 'QSO'
 if args.prog == 'bright':
-tracer = 'BGS_BRIGHT'
+    tracer = 'BGS_BRIGHT'
 
 ran_fns = [f'{args.basedir}/{tracer}_{idx}_full.ran.fits' for idx in range(args.nran)]
 ran_cat = Catalog.read(cat_fns)
