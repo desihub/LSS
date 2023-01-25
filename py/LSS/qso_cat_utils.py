@@ -219,6 +219,60 @@ def compute_RF_TS_proba(dataframe):
     compute_proba(dataframe)
 
 
+def is_target_in_survey(QSO_cat, DESI_TARGET, target_name):
+    """
+
+    TODO
+
+    """
+    from desitarget.targetmask import desi_mask
+    from desitarget.sv3.sv3_targetmask import desi_mask as sv3_mask
+    from desitarget.sv2.sv2_targetmask import desi_mask as sv2_mask
+    from desitarget.sv1.sv1_targetmask import desi_mask as sv1_mask
+    from desitarget.cmx.cmx_targetmask import cmx_mask
+
+    mask_bit = None
+
+    if target_name == 'BGS':
+        if DESI_TARGET == 'DESI_TARGET':
+            mask_bit = desi_mask.mask('BGS_ANY')
+        elif DESI_TARGET == 'SV3_DESI_TARGET':
+            mask_bit = sv3_mask.mask('BGS_ANY')
+        elif DESI_TARGET == 'SV2_DESI_TARGET':
+            mask_bit = sv2_mask.mask('BGS_ANY')
+        elif DESI_TARGET == 'SV1_DESI_TARGET':
+            mask_bit = sv1_mask.mask('BGS_ANY')
+        elif DESI_TARGET == 'CMX_TARGET':
+            mask_bit = cmx_mask.mask('SV0_BGS|MINI_SV_BGS_BRIGHT')
+    elif target_name == 'ELG':
+        if DESI_TARGET == 'DESI_TARGET':
+            mask_bit = desi_mask.mask('ELG')
+        elif DESI_TARGET == 'SV3_DESI_TARGET':
+            mask_bit = sv3_mask.mask('ELG')
+        elif DESI_TARGET == 'SV2_DESI_TARGET':
+            mask_bit = sv2_mask.mask('ELG')
+        elif DESI_TARGET == 'SV1_DESI_TARGET':
+            mask_bit = sv1_mask.mask('ELG')
+        elif DESI_TARGET == 'CMX_TARGET':
+            mask_bit = cmx_mask.mask('SV0_ELG|MINI_SV_ELG')
+    elif target_name == 'QSO':
+        if DESI_TARGET == 'DESI_TARGET':
+            mask_bit = desi_mask.mask('QSO')
+        elif DESI_TARGET == 'SV3_DESI_TARGET':
+            mask_bit = sv3_mask.mask('QSO')
+        elif DESI_TARGET == 'SV2_DESI_TARGET':
+            mask_bit = sv2_mask.mask('QSO')
+        elif DESI_TARGET == 'SV1_DESI_TARGET':
+            mask_bit = sv1_mask.mask('QSO')
+        elif DESI_TARGET == 'CMX_TARGET':
+            mask_bit = cmx_mask.mask('SV0_QSO|MINI_SV_QSO')
+    else:
+        print("not ready for other targets tahan BGS / ELG")
+        sys.exit(1)
+
+    return QSO_cat[DESI_TARGET].values & mask_bit != 0
+
+
 def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_old_extname_for_fitsio=False, keep_all=False):
     """
     Compile the different QSO identifications to build the QSO catalog from a RR, mgII, Qn file.
@@ -235,6 +289,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
         QSO_cat (pandas dataframe): Dataframe containing all the information
     """
     from functools import reduce
+
+    from desitarget.targets import main_cmx_or_sv
 
     # selection of which column will be in the final QSO_cat:
     columns_zbest = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE']  # , 'SUBTYPE', 'DELTACHI2', 'CHI2']
@@ -263,38 +319,67 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     mgii = read_fits_to_pandas(mgii, ext='MGII', columns=columns_mgii).rename(columns=columns_mgii_rename)
     qn = read_fits_to_pandas(qn, ext='QN+RR' if use_old_extname_for_fitsio else 'QN_RR', columns=columns_qn)
 
+    # Find which selection is used (SV1/ SV2 / SV3 / MAIN / ...)
+    DESI_TARGET = main_cmx_or_sv(fitsio.read(redrock, ext='FIBERMAP', rows=[0]))[0][0]
+
     # add DESI_TARGET column to avoid error of conversion when concatenate the different files with pd.concat() which fills with NaN columns that do not exit in a DataFrame.
     # convert int64 to float 64 --> destructive tranformation !!
-    for DESI_TARGET in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET', 'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']:
-        if not(DESI_TARGET in fibermap.columns):
-            fibermap[DESI_TARGET] = np.zeros(fibermap['TARGETID'].size, dtype=np.int64)
+    for DESI_TARGET_TMP in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET', 'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']:
+        if not(DESI_TARGET_TMP in fibermap.columns):
+            fibermap[DESI_TARGET_TMP] = np.zeros(fibermap['TARGETID'].size, dtype=np.int64)
 
     # QN afterburner is run with a threshold 0.5. With VI, we choose 0.95 as final threshold.
-    # &= since IS_QSO_QN_NEW_RR contains only QSO for QN which are not QSO for RR.
     log.info('Increase the QN threshold selection from 0.5 to 0.95.')
-    qn['IS_QSO_QN'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
-    qn['IS_QSO_QN_NEW_RR'] &= qn['IS_QSO_QN']
+    qn['IS_QSO_QN_095'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
+    qn['IS_QSO_QN_06'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.6
 
     log.info('Merge on TARGETID all the info into a singe dataframe.')
     QSO_cat = reduce(lambda left, right: pd.merge(left, right, on=['TARGETID'], how='outer'), [zbest, fibermap, tsnr2, mgii, qn])
 
     # Add BITMASK:
     QSO_cat['QSO_MASKBITS'] = np.zeros(QSO_cat.shape[0], dtype='i')
+
+    # No selection for LRG targets. Specific selection for other targets.
+    # note: in case a target is both BGS and ELG we stick to the decision from ELG
+    # order of decision: BGS < ELG < QSO
+    # Keep the info in the bitmask and keep also the info from how they are selected only for the QSO targets.
+    # selection for BGS targets:
+    is_BGS = is_target_in_survey(QSO_cat, DESI_TARGET, 'BGS')
+    is_ELG = is_target_in_survey(QSO_cat, DESI_TARGET, 'ELG')
+    is_QSO = is_target_in_survey(QSO_cat, DESI_TARGET, 'QSO')
+
+    is_OK_for_BGS = (QSO_cat['SPECTYPE'] == 'QSO') & (QSO_cat['IS_QSO_QN_06'] | QSO_cat['IS_QSO_MGII'])
+    QSO_cat.loc[is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'QSO_MASKBITS'] += 2**5
+    # do not forget to update redshift for QN object !
+    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'Z'] = QSO_cat['Z_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS].values
+    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS].values
+
+    # selection for ELG targets:
+    is_OK_for_ELG = (QSO_cat['SPECTYPE'] == 'QSO') & QSO_cat['IS_QSO_QN_06']
+    QSO_cat.loc[is_ELG & (~is_QSO) & is_OK_for_ELG, 'QSO_MASKBITS'] += 2**6
+    # do not forget to update redshift for QN object !
+    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG, 'Z'] = QSO_cat['Z_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG].values
+    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG, 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG].values
+
+    # selection for QSO targets
+    # &= since IS_QSO_QN_NEW_RR contains only QSO for QN which are not QSO for RR AND which are RR but with correct new redshift .
+    # I do this here to match the same behavior than previously !
+    QSO_cat['IS_QSO_QN_NEW_RR'] &= QSO_cat['IS_QSO_QN_095']
     log.info('Selection with SPECTYPE.')
-    QSO_cat.loc[QSO_cat['SPECTYPE'] == 'QSO', 'QSO_MASKBITS'] += 2**1
+    QSO_cat.loc[is_QSO & (QSO_cat['SPECTYPE'] == 'QSO'), 'QSO_MASKBITS'] += 2**1
     log.info('Selection with MgII.')
-    QSO_cat.loc[QSO_cat['IS_QSO_MGII'], 'QSO_MASKBITS'] += 2**2
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_MGII'], 'QSO_MASKBITS'] += 2**2
     log.info('Selection with QN (add new z from Redrock with QN prior where it is relevant).')
-    QSO_cat.loc[QSO_cat['IS_QSO_QN'], 'QSO_MASKBITS'] += 2**3
-    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'], 'QSO_MASKBITS'] += 2**4
-    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][QSO_cat['IS_QSO_QN_NEW_RR']].values
-    QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR']].values
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_095'], 'QSO_MASKBITS'] += 2**3
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'QSO_MASKBITS'] += 2**4
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # Add quality cuts: no cut on zwarn, cut on fiberstatus
     QSO_cat.loc[~((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 8388608) | (QSO_cat['COADD_FIBERSTATUS'] == 16777216)), 'QSO_MASKBITS'] = 0
 
     # remove useless columns:
-    QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
+    QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_095', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
 
     # Correct bump at z~3.7
     sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.95) | (QSO_cat['C_CIV'] < 0.95))
@@ -438,7 +523,7 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
     return qso_cat
 
 
-def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', survey='sv3', program='dark', dir_output='', npool=20, keep_qso_targets=True, keep_all=False,qsoversion='test'):
+def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', survey='sv3', program='dark', dir_output='', npool=20, keep_qso_targets=True, keep_all=False, qsoversion='test'):
     """
     Build the QSO catalog from the healpix directory.
 
