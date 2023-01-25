@@ -21,7 +21,8 @@ def map_ntile(cat, nside = 1024):
         ntile = cat['NTILE'][ii]
         map_c[pi] += 1.
         map_ntile[pi] += ntile
-    map_ntile /= map_c
+    sel = map_c > 0
+    map_ntile[sel] /= map_c[sel]
     print(np.min(map_ntile),np.max(map_ntile))
     return map_ntile
 
@@ -53,7 +54,7 @@ else:
     ran_cat = Catalog.read(ran_fns)
 
 
-save_fn = os.path.join(args.basedir,f'/healpix_map_ntile_{args.prog}.fits')
+save_fn = args.basedir+f'/healpix_map_ntile_{args.prog}.fits'
 
 nside = args.nside
 map_nt = map_ntile(ran_cat, nside=nside)
