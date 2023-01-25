@@ -96,16 +96,16 @@ def add_fminfo(qf,expinfo):
     print('getting FIRST info')
     expinfo.sort('NIGHT')
     expinfo_first = unique(expinfo,keys=['TARGETID'])
-    expinfo_first['NIGHT'].name = 'FIRST_NIGHT'
-    expinfo_first['MJD'].name = 'FIRST_MJD'
-    expinfo_first.keep_columns(['TARGETID','FIRST_NIGHT','FIRST_MJD'])
+    expinfo_first['NIGHT'].name = 'COADD_FIRSTNIGHT'
+    expinfo_first['MJD'].name = 'COADD_FIRSTMJD'
+    expinfo_first.keep_columns(['TARGETID','COADD_FIRSTNIGHT','COADD_FIRSTMJD'])
     qf = join(qf,expinfo_first,keys=['TARGETID'],join_type='left')
     del expinfo_first
     print('getting LAST info')
     expinfo_last = unique(expinfo,keys=['TARGETID'],keep='last')
-    expinfo_last['NIGHT'].name = 'LAST_NIGHT'
-    expinfo_last['MJD'].name = 'LAST_MJD'
-    expinfo_last.keep_columns(['TARGETID','LAST_NIGHT','LAST_MJD'])
+    expinfo_last['NIGHT'].name = 'COADD_LASTNIGHT'
+    expinfo_last['MJD'].name = 'COADD_LASTMJD'
+    expinfo_last.keep_columns(['TARGETID','COADD_LASTNIGHT','COADD_LASTMJD'])
     qf = join(qf,expinfo_last,keys=['TARGETID'],join_type='left')
     del expinfo_last
     print('getting mean info')
@@ -127,7 +127,7 @@ def add_fminfo(qf,expinfo):
         ti += 1
     meantab = Table()
     meantab['TARGETID'] = tids
-    meantab['MEAN_MJD'] = meanmjd
+    meantab['COADD_MEANMJD'] = meanmjd
     qf = join(qf,meantab,keys=['TARGETID'],join_type='left')
     return qf
 
@@ -152,7 +152,7 @@ zcat.keep_columns(kc)
 qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
-add_fminfo(qf,expinfo)
+qf = add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the dark time any target type QSO catalog
@@ -164,7 +164,7 @@ qf = fitsio.read(qsofn)
 qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
-add_fminfo(qf,expinfo)
+qf = add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
