@@ -46,7 +46,7 @@ if args.prog == 'bright':
     tracer = 'BGS_BRIGHT'
 
 ran_fns = [f'{args.basedir}/{tracer}_{idx}_full.ran.fits' for idx in range(args.nran)]
-ran_cat = Catalog.read(cat_fns)
+ran_cat = Catalog.read(ran_fns)
 
 
 save_fn = os.path.join(args.basedir,f'/healpix_map_ntile_{args.prog}.fits')
