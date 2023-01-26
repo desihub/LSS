@@ -227,7 +227,7 @@ else:
         DH_shift = 1./cosmo_shift.hubble_function(ztp)
 
 
-        vol_fac =  DM_fid**2*DH_fid/(DM_shift**2*DH_shift)
+        vol_fac =  (DM_shift**2*DH_shift)/(DM_fid**2*DH_fid)
 
         #a, b, c for quadratic formula
         a = 0.2/bias**2.
