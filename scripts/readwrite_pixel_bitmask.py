@@ -29,7 +29,7 @@ parser.add_argument('-i', '--input', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
 parser.add_argument( '--cat_type', default='targets', choices=['targets','ran','obielg'],required=False)
-parser.add_argument( '--reg', default='targets', choices=['north','south'],required=False)
+parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 
 args = parser.parse_args()
 
@@ -117,7 +117,11 @@ bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/random
 #except ValueError:
 #    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
 
-cat = Table(fitsio.read(input_path))
+if args.cat_type == 'obielg':
+    cat = Table(fitsio.read(input_path,columns=['input_ra','input_dec']))
+    cat.rename_columns(['input_ra', 'input_dec'], ['RA', 'DEC'])
+else:
+    cat = Table(fitsio.read(input_path))
 
 print(len(cat))
 
