@@ -41,7 +41,7 @@ if args.cat_type == 'ran':
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(args.input)+args.tracer+'imask.fits'
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
-    output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_imask.fits'
+    output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_'+args.tracer+'_imask.fits'
     
 
 
