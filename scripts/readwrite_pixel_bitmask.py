@@ -24,7 +24,7 @@ n_processes = 32
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
-#parser.add_argument('-i', '--input', required=True)
+parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
