@@ -24,19 +24,26 @@ n_processes = 32
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
-parser.add_argument('-i', '--input', required=True)
+#parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
-parser.add_argument( '--ran', default=False, required=False,type=bool)
+parser.add_argument( '--cat_type', default='targets', choices=['targets','ran','obielg'],required=False)
+parser.add_argument( '--reg', default='targets', choices=['north','south'],required=False)
+
 args = parser.parse_args()
 
 
 input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'.fits'
 output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'_'+args.tracer+'imask.fits'
-if args.ran:
+if args.cat_type == 'ran':
     input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(args.input)+'.fits'
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(args.input)+args.tracer+'imask.fits'
+if args.cat_type == 'obielg':
+    input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
+    output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_imask.fits'
+    
+
 
 tracer = args.tracer.lower()
 version = args.version
@@ -105,15 +112,20 @@ def wrapper(bid_index):
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
-try:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
-except ValueError:
-    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
+#try:
+#    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
+#except ValueError:
+#    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
+
+cat = Table(fitsio.read(input_path))
 
 print(len(cat))
 
 for col in cat.colnames:
     cat.rename_column(col, col.upper())
+
+if 'TARGETID' not in cat.colnames:
+    cat['TARGETID'] = np.arange(len(cat))
 
 if 'TARGET_RA' in cat.colnames:
     cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
