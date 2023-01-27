@@ -218,14 +218,21 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
                 fo.write("module swap fiberassign/2.3.0\n")
             else:
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
+        elif faver >= 5.0:
+            fo.write("module swap fiberassign/main")
         else:
+            assert(faver < 5.0)
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     else:
+        faver = float(faver[:3])
         if 'main' in indir:
             assert(faver > 3.0)
-
-        fo.write("module swap fiberassign/"+str(faver)+"\n")
-        faver = float(faver[:3])
+        if faver >= 5.0:
+            fo.write("module swap fiberassign/main")
+        else:
+            assert(faver < 5.0)
+            fo.write("module swap fiberassign/"+str(faver)+"\n")
+        
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
@@ -251,7 +258,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -340,7 +347,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             gaiadr,
             fht['PMCORR'],
             tarfn,
-            tdir+prog)
+            tdir+prog,
+            mock = mock)
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
@@ -350,7 +358,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             fht['PMCORR'],
             tarfn,
             tdirMain+prog,
-            survey = 'main')
+            survey = 'main',
+            mock = mock)
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -407,7 +416,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if rundate == '2021-04-10T21:28:37':
         rundate = '2021-04-10T20:00:00'
     fo.write(" --rundate "+rundate)
-    fo.write(" --fieldrot "+str(fht['FIELDROT']))
+    fo.write(" --fieldrot "+np.format_float_positional(fht['FIELDROT']))
     fo.write(" --dir "+outdir)
     fo.write(" --sky_per_petal 40 --standards_per_petal 10")
     if overwriteFA:
@@ -450,7 +459,8 @@ def altcreate_mtl(
     mtltime=None,#I think we will just want this to be the latest for the re/alt runs    
     pmtime_utc_str=None,
     add_plate_cols=True,
-    verbose=False
+    verbose=False,
+    mock=False
     #tmpoutdir=tempfile.mkdtemp(),
 ):
     """
@@ -535,7 +545,13 @@ def altcreate_mtl(
             verbose=verbose,
         )
         
-        
+    
+    try:
+        log.info('shape of read_targets_in_tiles output')
+        log.info(d.shape)  
+    except:
+        log.info('len of read_targets_in_tiles output post failure of shape')
+        log.info(len(d))
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
@@ -557,35 +573,41 @@ def altcreate_mtl(
     #tcol = ['SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
     #for col in tcol:
     #    columns.append(col) 
-    d = inflate_ledger(
-            d, targdir, columns=columns, header=False, strictcols=False, quick=True
-        )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
-    
-    if add_plate_cols:
-        d = Table(d)
-        d["PLATE_RA"] = d["RA"]
-        d["PLATE_DEC"] = d["DEC"]
-        d["PLATE_REF_EPOCH"] = d["REF_EPOCH"]
-        d = d.as_array()
+    if not mock:
+        d = inflate_ledger(
+                d, targdir, columns=columns, header=False, strictcols=False, quick=True
+            )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
+        
+        if add_plate_cols:
+            d = Table(d)
+            d["PLATE_RA"] = d["RA"]
+            d["PLATE_DEC"] = d["DEC"]
+            d["PLATE_REF_EPOCH"] = d["REF_EPOCH"]
+            d = d.as_array()
 
-    # AR mtl: PMRA, PMDEC: convert NaN to zeros
-    d = force_finite_pm(d)
+        # AR mtl: PMRA, PMDEC: convert NaN to zeros
+        d = force_finite_pm(d)
 
-    # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
-    if pmcorr == "y":
-        if pmtime_utc_str is None:
-            sys.exit(1)
-        d = update_nowradec(d, gaiadr, pmtime_utc_str)
-    else:
-        d = force_nonzero_refepoch(
-            d, gaia_ref_epochs[gaiadr]
-        )
+        # AR mtl: update RA, DEC, REF_EPOCH using proper motion?
+        if pmcorr == "y":
+            if pmtime_utc_str is None:
+                sys.exit(1)
+            d = update_nowradec(d, gaiadr, pmtime_utc_str)
+        else:
+            d = force_nonzero_refepoch(
+                d, gaia_ref_epochs[gaiadr]
+            )
     d = Table(d)
 
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
         os.makedirs(outfndir, exist_ok=True)
-
+    try:
+        log.info('shape of read_targets_in_tiles output pre writing')
+        log.info(d.shape)  
+    except:
+        log.info('len of read_targets_in_tiles output pre writing post failure of shape')
+        log.info(len(d))
     d.write(outfn,format='fits', overwrite=True)
     del d
     return True
