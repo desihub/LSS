@@ -6,6 +6,13 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import sys
+import os
+from importlib import import_module
+
+
 project = 'LSS'
 copyright = '2023, DESI'
 author = 'DESI'
@@ -20,11 +27,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import sys
-import os
-from importlib import import_module
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
