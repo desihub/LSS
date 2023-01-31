@@ -136,5 +136,16 @@ try:
 except ImportError:
     pass
 
+# -- Options for manual page output ---------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('index', 'LSS', 'LSS Documentation',
+     ['DESI'], 1)
+]
+
+
+
   # Output file base name for HTML help builder.
 htmlhelp_basename = 'LSSdoc'
