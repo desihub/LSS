@@ -1,0 +1,6 @@
+# started from desisurvey
+astropy
+healpy
+numpy
+fitsio
+scipy
