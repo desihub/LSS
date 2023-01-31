@@ -39,7 +39,6 @@ jobs:
                 python -m pip install git+https://github.com/desihub/desimodel.git@0.18.0#egg=desimodel
                 svn export https://desi.lbl.gov/svn/code/desimodel/${DESIMODEL_DATA}/data
                 python -m pip install git+https://github.com/desihub/desitarget.git@2.4.0#egg=desitarget
-                python -m pip install git+https://github.com/desihub/fiberassign.git@v5.0.0#egg=fiberassign
                 python -m pip install -r requirements.txt
             - name: Run the test
               run: DESIMODEL=$(pwd) pytest
@@ -72,7 +71,6 @@ jobs:
                 python -m pip install git+https://github.com/desihub/desimodel.git@0.13.0#egg=desimodel
                 svn export https://desi.lbl.gov/svn/code/desimodel/${DESIMODEL_DATA}/data
                 python -m pip install git+https://github.com/desihub/desitarget.git@2.4.0#egg=desitarget
-                python -m pip install git+https://github.com/desihub/fiberassign.git@v5.0.0#egg=fiberassign
                 python -m pip install -r requirements.txt
             - name: Run the test with coverage
               run: DESIMODEL=$(pwd) pytest --cov
