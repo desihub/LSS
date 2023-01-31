@@ -6,9 +6,13 @@
 Welcome to LSS's documentation!
 ===============================
 
+Contents
+--------
+
 .. toctree::
-   :maxdepth: 2
-   api.rst
+    :maxdepth: 1
+
+    api.rst
 
 
 
