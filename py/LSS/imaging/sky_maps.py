@@ -71,13 +71,13 @@ maparray = np.array([
     ('EBV_MPF_Mean_FW6P1',    'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
     ('EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV', 'recon_fw6-1_final_mult.fits', 2048, 'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
     ('EBV_MPF_Var_FW6P1',     'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
-    ('EBV_MPF_VarCorr_FW6P1', 'EBV',    'recon_fw6-1.final_mult.fits',  2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
+    ('EBV_MPF_VarCorr_FW6P1', 'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
     ('EBV_SGF14',            'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMAP',  'ebv',           '', False, True),
     ('EBV_SGF14_MASK',       'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'status',     '< 0', False, True),
     ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK',  'kappa', 'mask.fits.gz',            2048, 'PIXMASK', 'I',          '==0', False, True),
     ('FRACAREA',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'FRACAREA',      '', True, False),
-    ('STARDENS',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'STARDENS',      '', True, False),
+    ('STARDENS',  'stardens',       'stardens.fits',            512, 'PIXMAP',  'STARDENS',      '', True, False),
     ('ELG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'ELG',           '', True, False),
     ('LRG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'LRG',           '', True, False),
     ('QSO',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'QSO',           '', True, False),
@@ -93,6 +93,14 @@ def sanity_check_map_array():
     for skymap in maparray:
 
         mapname = skymap['MAPNAME']
+
+        # ADM check named files/directories exist (at least at NERSC).
+        lssmapdir = os.getenv("LSS_MAP_DIR")
+        if lssmapdir is not None:
+            fn = os.path.join(lssmapdir, skymap["SUBDIR"], skymap["FILENAME"])
+            if not os.path.exists(fn):
+                msg = "{} does not exist".format(fn)
+                raise_myerror(msg)
 
         # MMM check nside is an integer.
         if not isinstance(skymap["NSIDE"].tolist(), int):
@@ -918,12 +926,12 @@ def read_sky_map(mapname, lssmapdir=None):
     return mapdata
 
 
-def make_stardens(nside=1024, gaiadir=None, outdir=None, write=True):
+def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
     """Make star density map (wraps desitarget.randoms.stellar_density).
 
     Parameters
     ----------
-    nside : :class:`int`, optional, defaults to nside=1024
+    nside : :class:`int`, optional, defaults to nside=512
         Resolution (HEALPixel NESTED nside) at which to build the map.
     gaiadir : :class:`str`, optional, defaults to $GAIA_DIR
         Location of the directory that hosts HEALPixel-split Gaia files.
