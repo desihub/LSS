@@ -1,0 +1,106 @@
+# Workflow is based on the Astropy GitHub actions workflow, ci_workflows.yml
+name: CI
+
+on:
+    push:
+        branches:
+            - '*'
+        tags:
+            - '*'
+    pull_request:
+
+jobs:
+    tests:
+        name: Unit tests
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: true
+            matrix:
+                os: [ubuntu-latest]
+                python-version: [3.7, 3.8, 3.9]
+                astropy-version: ['4.0.2', '4.2', '<5.0']
+        env:
+            DESIMODEL_DATA: branches/test-0.13
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v2
+              with:
+                python-version: ${{ matrix.python-version }}
+            - name: Install Python dependencies
+              run: |
+                python -m pip install --upgrade pip wheel
+                python -m pip install pytest
+                python -m pip install git+https://github.com/desihub/desiutil.git@3.2.6#egg=desiutil
+                python -m pip install git+https://github.com/desihub/desimodel.git@0.18.0#egg=desimodel
+                svn export https://desi.lbl.gov/svn/code/desimodel/${DESIMODEL_DATA}/data
+                python -m pip install git+https://github.com/desihub/specsim.git@v0.16#egg=specsim
+                python -m pip install git+https://github.com/desihub/speclite.git@v0.16#egg=speclite
+                python -m pip install -r requirements.txt
+            - name: Run the test
+              run: DESIMODEL=$(pwd) pytest
+
+    coverage:
+        name: Test coverage
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: true
+            matrix:
+                os: [ubuntu-latest]
+                python-version: [3.8]
+        env:
+            DESIMODEL_DATA: branches/test-0.13
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v2
+              with:
+                python-version: ${{ matrix.python-version }}
+            - name: Install Python dependencies
+              run: |
+                python -m pip install --upgrade pip wheel
+                python -m pip install pytest pytest-cov coveralls
+                python -m pip install git+https://github.com/desihub/desiutil.git@3.2.3#egg=desiutil
+                python -m pip install git+https://github.com/desihub/desimodel.git@0.13.0#egg=desimodel
+                svn export https://desi.lbl.gov/svn/code/desimodel/${DESIMODEL_DATA}/data
+                python -m pip install git+https://github.com/desihub/desitarget.git@v2.4.0#egg=desitarget
+                python -m pip install git+https://github.com/desihub/fiberassign.git@v5.0.0#egg=fiberassign
+                python -m pip install -r requirements.txt
+            - name: Run the test with coverage
+              run: DESIMODEL=$(pwd) pytest --cov
+            - name: Coveralls
+              env:
+                COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: coveralls
+
+    docs:
+        name: Doc test
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest]
+                python-version: [3.8]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v2
+              with:
+                python-version: ${{ matrix.python-version }}
+            - name: Install Python dependencies
+              run: python -m pip install --upgrade pip wheel docutils\<0.18 Sphinx
+            - name: Test the documentation
+              run: sphinx-build -W --keep-going -b html doc doc/_build/html
