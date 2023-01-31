@@ -19,6 +19,7 @@ from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header
 from desitarget.geomask import match
+from desitarget.randoms import stellar_density
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -63,14 +64,14 @@ maparray = np.array([
     ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('EBV_MPF_Mean_FW15',    'EBV',     'recon_fw15_final_mult.fits',   2048, 'PIXMAP',  'Recon_Mean',         '', False, True),
-    ('EBV_MPF_Mean_ZptCorr_FW15','EBV', 'recon_fw15_final_mult.fits',   2048, 'PIXMAP',  'Recon_Mean_ZptCorr', '', False, True),
-    ('EBV_MPF_Var_FW15',     'EBV',     'recon_fw15_final_mult.fits',   2048, 'PIXMAP',  'Recon_Variance',     '', False, True),
-    ('EBV_MPF_VarCorr_FW15', 'EBV',     'recon_fw15_final_mult.fits',   2048, 'PIXMAP',  'Recon_VarianceCorr', '', False, True),
-    ('EBV_MPF_Mean_FW6P1',    'EBV',    'recon_fw6-1_final_mult.fits',  2048, 'PIXMAP',  'Recon_Mean',         '', False, True),
-    ('EBV_MPF_Mean_ZptCorr_FW6P1','EBV','recon_fw6-1_final_mult.fits',  2048, 'PIXMAP',  'Recon_Mean_ZptCorr', '', False, True),
-    ('EBV_MPF_Var_FW6P1',     'EBV',    'recon_fw6-1_final_mult.fits',  2048, 'PIXMAP',  'Recon_Variance',     '', False, True),
-    ('EBV_MPF_VarCorr_FW6P1', 'EBV',    'recon_fw6-1.final_mult.fits',  2048, 'PIXMAP',  'Recon_VarianceCorr', '', False, True),
+    ('EBV_MPF_Mean_FW15',    'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
+    ('EBV_MPF_Mean_ZptCorr_FW15', 'EBV', 'recon_fw15_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
+    ('EBV_MPF_Var_FW15',     'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
+    ('EBV_MPF_VarCorr_FW15', 'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
+    ('EBV_MPF_Mean_FW6P1',    'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
+    ('EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV', 'recon_fw6-1_final_mult.fits', 2048, 'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
+    ('EBV_MPF_Var_FW6P1',     'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
+    ('EBV_MPF_VarCorr_FW6P1', 'EBV',    'recon_fw6-1.final_mult.fits',  2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
     ('EBV_SGF14',            'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMAP',  'ebv',           '', False, True),
     ('EBV_SGF14_MASK',       'EBV', 'ps1-ebv-4.5kpc.fits',      512, 'PIXMASK', 'status',     '< 0', False, True),
     ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
@@ -915,6 +916,79 @@ def read_sky_map(mapname, lssmapdir=None):
                 mapdata = hp.read_map(fn, field=w[0][0])
 
     return mapdata
+
+
+def make_stardens(nside=1024, gaiadir=None, outdir=None, write=True):
+    """Make star density map (wraps desitarget.randoms.stellar_density).
+
+    Parameters
+    ----------
+    nside : :class:`int`, optional, defaults to nside=1024
+        Resolution (HEALPixel NESTED nside) at which to build the map.
+    gaiadir : :class:`str`, optional, defaults to $GAIA_DIR
+        Location of the directory that hosts HEALPixel-split Gaia files.
+        See the Notes, below. Must be passed if $GAIA_DIR is not set (or
+        if $GAIA_DIR is ``None``).
+    outdir : :class:`str`, optional, defaults to $LSS_MAP_DIR/stardens
+        Location of the directory to write output files. Must be passed
+        if $LSS_MAP_DIR is not set (or if $LSS_MAP_DIR is ``None``).
+    write : :class:`bool`, optional, defaults to ``True``
+        If ``True`` then also write the output to file.
+
+    Notes
+    -----
+    - Uses Gaia at NERSC to generate HEALPixel map of stellar density. If
+      the parameter `gaiadir` is not passed then the environment variable
+      $GAIA_DIR must be set. At NERSC, $GAIA_DIR typically points to
+      /global/cfs/cdirs/desi/target/gaia_dr3 or
+      /global/cfs/cdirs/desi/target/gaia_dr2.
+    """
+    # ADM record the incoming $GAIA_DIR, in case we overwrite it.
+    gaiastore = os.getenv("GAIA_DIR")
+    log.info("$GAIA_DIR is set to {}".format(gaiastore))
+    if gaiadir is not None:
+        os.environ["GAIA_DIR"] = gaiadir
+        log.info("Updating $GAIA_DIR to passed gaiadir: {}".format(gaiadir))
+    else:
+        gaiadir = gaiastore
+
+    # ADM default to an output directory of lssmapdir/stardens.
+    if outdir is None:
+        outdir = get_lss_map_dir()
+        outdir = os.path.join(outdir, "stardens")
+        log.info("Setting output directory to {}".format(outdir))
+
+    # ADM check that all the needed directories are set.
+    msg = "{} must be passed or {} must be set!"
+    if gaiadir is None:
+        raise_myerror(msg.format("gaiadir", "$GAIA_DIR"))
+    if outdir is None:
+        raise_myerror(msg.format("outdir", "$LSS_MAP_DIR"))
+
+    # ADM determine the stellar density from Gaia.
+    sd = stellar_density(nside=nside)
+
+    # ADM set up an output structure with the STARDENS column.
+    npix = hp.nside2npix(nside)
+    done = np.zeros(npix, dtype=[('STARDENS', '>f4')])
+    done["STARDENS"] = sd
+
+    # ADM write the results to file.
+    if write:
+        hdr = fitsio.FITSHDR()
+        hdr["GAIADIR"] = gaiadir
+        hdr["NSIDE"] = nside
+        outfn = os.path.join(outdir, "stardens.fits")
+        write_atomically(outfn, done, extname='STARDENS', header=hdr)
+
+    # ADM reset $GAIA_DIR to what it was at the start of the function.
+    log.info("Setting $GAIA_DIR back to {}".format(gaiastore))
+    if gaiastore is None:
+        del os.environ["GAIA_DIR"]
+    else:
+        os.environ["GAIA_DIR"] = gaiastore
+
+    return done
 
 
 def generate_mask(rancatname, lssmapdir=None, outdir=None, write=True):
