@@ -2562,6 +2562,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         
         print('length after tsnrcut '+str(len(ff[wz])))
         func = ssr_tools.ELG_ssr
+        minefftime = tsnrcut*8.6
+        maxefftime = 200*8.7
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -2599,7 +2601,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
     
-    gal = func(surveys=[survey],specrels=[specrel],versions=[version])
+    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
     ffwz = gal.add_modpre(ff[selobs])
     print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
     #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
