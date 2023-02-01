@@ -637,12 +637,14 @@ class BGS_ssr:
 
 
 class ELG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe'],reg=None):
         #self.cat = get_ELG_data_full('ELG_LOPnotqso')#,surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
         self.cat = get_data_full('ELG_LOPnotqso',surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
 
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
+        if reg is not None:
+            mask &= self.cat['PHOTSYS'] == reg
         self.cat = self.cat[mask]
         self.selgz = self.cat['q'] == 1
         ha,bine = np.histogram(self.cat['EFFTIME_ELG'])

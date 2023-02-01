@@ -2540,6 +2540,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     selobs = ff['ZWARN'] == 0
     selobs &= ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
+    
+    regl = [None]
 
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
@@ -2564,6 +2566,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         func = ssr_tools.ELG_ssr
         minefftime = tsnrcut*8.6
         maxefftime = 200*8.7
+        regl = ['N','S']
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -2579,7 +2582,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
         func = ssr_tools.LRG_ssr
-
+        mainefftime=500
+        maxefftime=2000
     if tp[:3] == 'BGS':
         selobs &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[selobs])))
@@ -2601,28 +2605,38 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
     
-    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
-    ffwz = gal.add_modpre(ff[selobs])
-    print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
-    #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
-    ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
-    for col in rem_cols:
-        try:
-            ff.remove_columns([col])
-            print(col +' was in full file and will be replaced')
-        except:
-            print(col +' was not yet in full file')    
-    ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
-    #print(min(zf),max(zf))
-    wz = ff['GOODZ']
-    #print(len(ff[wz]),len(ff))
+    for reg in regl:
+        selreg = np.ones(len(ff),dtype='bool')
+        if reg is not None:
+            print('working with data from region '+reg)
+            gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime,reg=reg)
+            selreg = ff['PHOTSYS'] == reg
+            ffwz = gal.add_modpre(ff[selobs&selreg])
+        else:    
+            print('working with the full data, no region split')
+            gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
+            ffwz = gal.add_modpre(ff[selobs])
 
-    print('min/max of zfail weights:')
-    print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+        print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+        #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
+        ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+        for col in rem_cols:
+            try:
+                ff.remove_columns([col])
+                print(col +' was in full file and will be replaced')
+            except:
+                print(col +' was not yet in full file')    
+        ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+        #print(min(zf),max(zf))
+        wz = ff['GOODZ']
+        #print(len(ff[wz]),len(ff))
+
+        print('min/max of zfail weights:')
+        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
  
-    print('checking sum of zfail weights compared to length of good spec')
-    print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+        print('checking sum of zfail weights compared to length of good spec')
+        print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
 
 
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
