@@ -657,6 +657,7 @@ class ELG_ssr:
         self.bc = np.array(bc)
         self.bine = bine
         self.vis_5hist = False
+        self.outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
         
         
         
@@ -720,6 +721,11 @@ class ELG_ssr:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
                 plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
+            plt.ylabel('ELG_LOPnotqso Z failure rate, in fiber bins')
+            plt.xlabel('ELG EFFECTIVE exp time')
+            plt.legend()
+            plt.savefig(self.outdir+'ELG_LOPnotqso_gfibbin_failratefit.png')        
+
             plt.show()
         return costt    
         
@@ -736,7 +742,7 @@ class ELG_ssr:
         plt.ylabel('ELG_LOPnotqso Z failure rate')
         plt.xlabel('ELG EFFECTIVE exp time')
         plt.legend()
-        #plt.savefig(fn_root+'overall_failratefit.png')        
+        plt.savefig(self.outdir+'ELG_LOPnotqso_overall_failratefit.png')        
         plt.show()
         plt.clf()
 
