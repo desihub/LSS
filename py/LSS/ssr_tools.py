@@ -657,7 +657,7 @@ class ELG_ssr:
         self.bc = np.array(bc)
         self.bine = bine
         self.vis_5hist = False
-        self.outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+sur+'/LSS/'+sr+'/LSScats/'+ver+'/'
+        self.outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+surveys[0]+'/LSS/'+specrels[0]+'/LSScats/'+versions[0]+'/'
         
         
         
