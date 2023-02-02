@@ -2619,6 +2619,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
             
         ffwz = gal.add_modpre(ff[selobs&selreg])
         print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+        print(min(ffwz['WEIGHT_ZFAIL']),max(ffwz['WEIGHT_ZFAIL']))
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
         ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
         #if s == 0:
@@ -2630,8 +2631,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         #        except:
         #            print(col +' was not yet in full file')    
         #ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
-        ff[selobs&selreg]['WEIGHT_ZFAIL'] = ffwz['WEIGHT_ZFAIL']
-        ff[selobs&selreg]['WEIGHT_ZFAIL'] = ffwz['mod_success_rate']
+        ff[selobs&selreg]['WEIGHT_ZFAIL'] = np.array(ffwz['WEIGHT_ZFAIL'])
+        ff[selobs&selreg]['WEIGHT_ZFAIL'] =  np.array(ffwz['mod_success_rate'])
         #print(min(zf),max(zf))
         wz = ff['GOODZ']
         #print(len(ff[wz]),len(ff))
