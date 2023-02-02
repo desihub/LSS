@@ -2605,8 +2605,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
     s = 0
-    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    ff['mod_success_rate'] = np.ones(len(ff))
+    wzf = np.ones(len(ff))
+    msr = np.ones(len(ff))
     for reg in regl:
         selreg = np.ones(len(ff),dtype='bool')
         if reg is not None:
@@ -2622,27 +2622,30 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print(min(ffwz['WEIGHT_ZFAIL']),max(ffwz['WEIGHT_ZFAIL']))
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
         ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-        #if s == 0:
-        #    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
-        #    for col in rem_cols:
-        #        try:
-        #            ff.remove_columns([col])
-        #            print(col +' was in full file and will be replaced')
-        #        except:
-        #            print(col +' was not yet in full file')    
+        if s == 0:
+            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+            for col in rem_cols:
+                try:
+                    ff.remove_columns([col])
+                    print(col +' was in full file and will be replaced')
+                except:
+                    print(col +' was not yet in full file')    
         #ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
-        ff[selobs&selreg]['WEIGHT_ZFAIL'] = np.array(ffwz['WEIGHT_ZFAIL'])
-        ff[selobs&selreg]['WEIGHT_ZFAIL'] =  np.array(ffwz['mod_success_rate'])
-        #print(min(zf),max(zf))
-        wz = ff['GOODZ']
-        #print(len(ff[wz]),len(ff))
-
-        print('min/max of zfail weights:')
-        print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
- 
-        print('checking sum of zfail weights compared to length of good spec')
-        print(len(ff[selobs&selreg]),np.sum(ff[wz&selreg]['WEIGHT_ZFAIL']))
+        wzf[selobs&selreg] = np.array(ffwz['WEIGHT_ZFAIL'])
+        msr[selobs&selreg] =  np.array(ffwz['mod_success_rate'])
+        print(min(wzf),max(wzf))
         s = 1
+    ff['WEIGHT_ZFAIL'] = wzf
+    ff['mod_succeses_rate'] = msr
+    wz = ff['GOODZ']
+    #print(len(ff[wz]),len(ff))
+
+    print('min/max of zfail weights:')
+    print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+ 
+    print('checking sum of zfail weights compared to length of good spec')
+    print(len(ff[selobs&selreg]),np.sum(ff[wz&selreg]['WEIGHT_ZFAIL']))
+        
 
 
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
