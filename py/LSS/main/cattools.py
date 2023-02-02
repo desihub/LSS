@@ -2605,30 +2605,33 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
     s = 0
+    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    ff['mod_success_rate'] = np.ones(len(ff))
     for reg in regl:
         selreg = np.ones(len(ff),dtype='bool')
         if reg is not None:
             print('working with data from region '+reg)
             gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime,reg=reg)
-            selreg = ff['PHOTSYS'] == reg
-            ffwz = gal.add_modpre(ff[selobs&selreg])
+            selreg = ff['PHOTSYS'] == reg            
         else:    
             print('working with the full data, no region split')
             gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
-            ffwz = gal.add_modpre(ff[selobs])
-
+            
+        ffwz = gal.add_modpre(ff[selobs&selreg])
         print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
         ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-        if s == 0:
-            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
-            for col in rem_cols:
-                try:
-                    ff.remove_columns([col])
-                    print(col +' was in full file and will be replaced')
-                except:
-                    print(col +' was not yet in full file')    
-        ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+        #if s == 0:
+        #    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+        #    for col in rem_cols:
+        #        try:
+        #            ff.remove_columns([col])
+        #            print(col +' was in full file and will be replaced')
+        #        except:
+        #            print(col +' was not yet in full file')    
+        #ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
+        ff[selobs&selreg]['WEIGHT_ZFAIL'] = ffwz['WEIGHT_ZFAIL']
+        ff[selobs&selreg]['WEIGHT_ZFAIL'] = ffwz['mod_success_rate']
         #print(min(zf),max(zf))
         wz = ff['GOODZ']
         #print(len(ff[wz]),len(ff))
