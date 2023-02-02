@@ -2644,7 +2644,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
  
     print('checking sum of zfail weights compared to length of good spec')
-    print(len(ff[selobs&selreg]),np.sum(ff[wz&selreg]['WEIGHT_ZFAIL']))
+    print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
         
 
 
