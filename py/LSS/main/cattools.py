@@ -2604,7 +2604,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     #    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
-    
+    s = 0
     for reg in regl:
         selreg = np.ones(len(ff),dtype='bool')
         if reg is not None:
@@ -2620,13 +2620,14 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
         ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-        rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
-        for col in rem_cols:
-            try:
-                ff.remove_columns([col])
-                print(col +' was in full file and will be replaced')
-            except:
-                print(col +' was not yet in full file')    
+        if s == 0:
+            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+            for col in rem_cols:
+                try:
+                    ff.remove_columns([col])
+                    print(col +' was in full file and will be replaced')
+                except:
+                    print(col +' was not yet in full file')    
         ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
         #print(min(zf),max(zf))
         wz = ff['GOODZ']
@@ -2637,6 +2638,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
  
         print('checking sum of zfail weights compared to length of good spec')
         print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
+        s = 1
 
 
     plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
