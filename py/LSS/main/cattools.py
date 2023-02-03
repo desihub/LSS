@@ -2537,8 +2537,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         ff['Z'].name = 'Z_not4clus'
         common.write_LSS(ff,fl+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
 
-    selobs = ff['ZWARN'] == 0
-    selobs &= ff['ZWARN']*0 == 0
+    #selobs = ff['ZWARN'] == 0
+    selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
     
     regl = [None]
