@@ -739,6 +739,9 @@ class ELG_ssr:
         pars = res.x
         chi2 = self.wrapper_hist(pars)
         print(pars,chi2)
+        rw = ''
+        if self.reg is not None:
+            rw = self.reg
         fo = open(self.outdir+'ELG_LOPnotqso_'+rw+'pars.txt','w')
         fo.write('#overall fit\n')
         fo.write('#a b c chi2\n')
@@ -751,9 +754,6 @@ class ELG_ssr:
         plt.ylabel('ELG_LOPnotqso Z failure rate')
         plt.xlabel('ELG EFFECTIVE exp time')
         plt.legend()
-        rw = ''
-        if self.reg is not None:
-            rw = self.reg
         plt.savefig(self.outdir+'ELG_LOPnotqso_'+rw+'overall_failratefit.png')        
         plt.show()
         plt.clf()
