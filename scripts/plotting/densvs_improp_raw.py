@@ -157,6 +157,7 @@ for tp in tps:
         rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
         dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
         dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
+        print((np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
         print(rh)
         print(dh)
         norm = sum(rh)/sum(dh)
