@@ -2623,7 +2623,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
         ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
         if s == 0:
-            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate','mod_succeses_rate']
             for col in rem_cols:
                 try:
                     ff.remove_columns([col])
@@ -2636,7 +2636,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         print(min(wzf),max(wzf))
         s = 1
     ff['WEIGHT_ZFAIL'] = wzf
-    ff['mod_succeses_rate'] = msr
+    ff['mod_success_rate'] = msr
     wz = ff['GOODZ']
     #print(len(ff[wz]),len(ff))
 
