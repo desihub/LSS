@@ -131,7 +131,59 @@ for tp in tps:
     dtf = dtf[seld]
     rf = indir+tp+zdw+'_0_full.ran.fits'
     rt = fitsio.read(rf)
+    
+    sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
+    parv = sag
+	map = 'sagstream'
+	for reg,cl in zip(regl,clrs):
+			
+		sel_reg_d = dtf['PHOTSYS'] == reg
+		sel_reg_r = rt['PHOTSYS'] == reg
+		dt_reg = dtf[sel_reg_d]
+		rt_reg = rt[sel_reg_r]
+		dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
+		rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+		pixlg = np.zeros(nside*nside*12)
+		pixlgw = np.zeros(nside*nside*12)
+		for ii in range(0,len(dpix)):
+			pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
+			pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+		pixlr = np.zeros(nside*nside*12)
+		for ii in range(0,len(rpix)):
+			pixlr[rpix[ii]] += 1.
+		wp = pixlr > 0
+		wp &= pixlgw*0 == 0
+		print(len(parv[wp]))
+		rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+		dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
+		dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
+		print(rh)
+		print(dh)
+		norm = sum(rh)/sum(dh)
+		sv = dh/rh*norm
+		normw = sum(rh)/sum(dhw)
+		svw = dhw/rh*normw
 
+		ep = np.sqrt(dh)/rh*norm
+		bc = []
+		for i in range(0,len(bn)-1):
+			bc.append((bn[i]+bn[i+1])/2.)
+		lab = reg+', full, no imsys weights'
+		print(lab)    
+		plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
+		plt.plot(bc,svw,'-',color=cl,label='with imsys weights')
+
+	plt.legend()
+	plt.xlabel(map)
+	plt.ylabel('Ngal/<Ngal> ')
+
+	plt.title(args.survey+' '+tp+zr)
+	plt.grid()
+	plt.ylim(yl[0],yl[1])
+	plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+	plt.clf()
+    
+    
     if sky_g is not None:
         parv = sky_g
         map = 'g_sky_res'
