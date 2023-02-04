@@ -545,7 +545,7 @@ if specrel != 'daily' and args.dospec == 'y':
             #specf.remove_columns(['PRIORITY'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             del tarf
-            del specf
+            #del specf
             print('joined tar and spec, now writing')
             tj.write(outfs,format='fits', overwrite=True)
             print('wrote, now counting tiles')
