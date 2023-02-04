@@ -1181,10 +1181,11 @@ def get_specdat(indir,pd,ver='daily',badfib=None):
     from desitarget.targetmask import zwarn_mask
     #indir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+specrel
     #zf = indir+'/datcomb_'+pd+'_tarspecwdup.fits'
-    #if ver == 'everest' or ver == 'guadalupe':
-    zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
-    if ver == 'daily' or ver == 'himalayas':
-        zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
+    zf = indir+'/datcomb_'+pd+'_spec_zdone.fits'
+    if ver == 'everest' or ver == 'guadalupe':
+        zf = indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits'
+    #if ver == 'daily' or ver == 'himalayas':
+        
     print('getting spec data from '+zf)
     dz = Table.read(zf)
     #dz = fitsio.read(zf)
