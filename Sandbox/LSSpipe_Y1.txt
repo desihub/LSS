@@ -29,7 +29,7 @@ python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/de
 #if enhanced information on qso or ELG targets exists, it is addedca
 #completeness statistics per tile grouping ('COMP_TILE') and per tileid/fiberid ('FRACZTILELOCID') are calculated
 #running this script will go through all, takes ~1 hr
-$LSSCODE/LSS/scripts/main/daily_main_data_full.sh
+$LSSCODE/LSS/scripts/main/Y1_data_full.sh iron
 #or go through one by one
 for tp,notqso in zip(tps,notqsos):
     python $LSSCODE/LSS/scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso notqso
