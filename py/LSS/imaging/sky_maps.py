@@ -18,9 +18,10 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.wcs import WCS
 
-from desitarget.io import read_targets_header
+from desitarget.io import read_targets_header, find_target_files, read_targets_in_box
 from desitarget.geomask import match
 from desitarget.gaiamatch import get_gaia_dir, gaia_psflike
+from desitarget import __version__ as desitarget_version
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -145,6 +146,59 @@ def sanity_check_map_array():
     log.info("...maparray seems to be correctly formatted")
 
     return
+
+
+def read_main_survey_targets(obscon):
+    """Read in DESI Main Survey targets.
+
+    Parameters
+    ----------
+    obscon : :class:`list`
+        Pass "dark" to read in dark-time targets (e.g. ELGs, LRGs, QSOs)
+        or "bright" to read in bright-time targets (BGS).
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A numpy structured array of all DESI Main Survey targets for the
+        passed observing condition (`obscon`) that contains columns "RA",
+       "DEC", "DESI_TARGET" and "BGS_TARGET". Useful for limiting targets
+       to specific target classes.
+
+    Notes
+    -----
+    - If the environment variable $TARG_DIR is set, then that is used
+      as the root directory to find the target files. Otherwise, the
+      filenames are hardcoded with their locations at NERSC.
+    """
+    # ADM hard-code the root target directory, unless $TARG_DIR is set.
+    targdir = os.environ.get('TARG_DIR')
+    if targdir is None:
+        targdir = "/global/cfs/cdirs/desi/target/catalogs"
+
+    # ADM check whether the passed observing condition was valid.
+    if obscon not in ["bright", "dark"]:
+        msg = 'Allowed obscons are "bright" and "dark". You passed "{}"!'
+        raise_myerror(msg.format(obscon))
+
+    # ADM use desitarget I/O code to find the appropriate filename for
+    # ADM Main Survey targets and the given observing conditions.
+    filename = find_target_files(targdir, dr="9", flavor="targets",
+                                 survey="main", obscon=obscon)
+
+    # ADM find_target_files() defaults to the currenct version of
+    # ADM desitarget, so we need to replace this with the version
+    # ADM used for the main survey.
+    filename = filename.replace(desitarget_version, "1.1.1")
+
+    # ADM use desitarget I/O code to read in targets.
+    targets = read_targets_in_box(filename, quick=True,
+                                  columns=["RA", "DEC", "DESI_TARGET", "BGS_TARGET"])
+
+    log.info("Read {} {}-time targets in {:.1f}s".format(
+        len(targets), obscon, time()-start))
+
+    return targets
 
 
 def get_lss_map_dir(lssmapdir=None):
