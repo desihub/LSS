@@ -191,7 +191,7 @@ for tp in tps:
             ax.set_aspect(90)
             plt.colorbar(mp, pad=0.01)
             
-            plt.xlabel('RA')
+            plt.xlabel('RA',pad=0.01)
             plt.ylabel('sin(DEC)')
             plt.title(titl)
             plt.grid()
