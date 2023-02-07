@@ -8,7 +8,7 @@ import fitsio
 from astropy.table import join,Table
 import healpy as hp
 
-from LSS.imaging import densvar
+#from LSS.imaging import densvar
 import LSS.common_tools as common
 
 
@@ -19,6 +19,7 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
+parser.add_argument("--nside",help="point size for density map",default=64,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
 
@@ -34,7 +35,7 @@ if args.data == 'LSS':
 
 qt = 'COMP_TILE'
 
-nside = 256
+nside = args.nside
 nest = True
 zcol = 'Z_not4clus'
 nran = 18
@@ -47,6 +48,19 @@ zdw = ''#'zdone'
 
 #regl = ['_N','_S']
 regl = ['S','N']
+
+def gethpmap(dl,weights=None):
+    rth,rphi = (-dl['DEC']+90.)*np.pi/180.,dl['RA']*np.pi/180. 
+    rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+    wts = np.ones(len(rth))
+    if weights is not None:
+        wts = dl[weights]
+    pixlr = np.zeros(12*nside*nside)
+    for pix,wt in zip(rpix,wts):
+        
+        pixlr[pix] += wt
+    return pixlr
+
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -147,7 +161,11 @@ for tp in tps:
 
             dtf = dtf[wg]
             #print(reg,len(dtf))
-            wp,od = densvar.get_hpdens(rt,dtf,datweights='WEIGHT',sz=args.ps,vm=.5,vx=1.5)
+            rpix = gethpmap(rt)
+            dpix = gethpmap(dtf,weights='WEIGHT')
+            wp = (rpix > 0) 
+            od = dpix[wp]/rpix[wp]
+            od = od/np.mean(od)
 
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
@@ -169,7 +187,7 @@ for tp in tps:
             plt.grid()
 
 
-            plt.savefig(outdir+tp+reg+'_weighteddens.png',dpi=args.dpi)
+            plt.savefig(outdir+tp+reg+'_weighteddens'+str(nside)+'.png',dpi=args.dpi)
             plt.clf()
             del dtf
             del rt
