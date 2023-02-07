@@ -442,6 +442,49 @@ def join_etar(fn,tracer,tarver='1.1.1'):
     write_LSS(df,fn,comments)
 
 
+def add_map_cols(fn,rann,new_cols=['EBV',],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=False):
+    fid_fn = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
+    new_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits')
+    
+    df = Table(fitsio.read(fn))
+    
+    cols2read_new = ['TARGETID']
+    for col in new_cols:
+        if np.isin(col,list(df.dtype.names)):
+            print(col+' already in '+fn)
+            if redo:
+                df.remove_columns([col])
+                print('will replace '+col)
+                cols2read_new.append(col)
+            else:
+                print('not replacing '+col)
+        else:
+            cols2read_new.append(col)
+
+    rannew = fitsio.read(new_fn,columns=new_cols)
+    df = join(df,rannew,keys=['TARGETID'])
+    del rannew
+    cols2read_fid = ['TARGETID']
+    for col in fid_cols:
+        if np.isin(col,list(df.dtype.names)):
+            print(col+' already in '+fn)
+            if redo:
+                df.remove_columns([col])
+                print('will replace '+col)
+                cols2read_fid.append(col)
+            else:
+                print('not replacing '+col)
+        else:
+            cols2read_fid.append(col)
+
+    ranfid = fitsio.read(fid_fn,columns=fid_cols)
+    df = join(df,ranfid,keys=['TARGETID'])
+
+    print(len(df))
+    comments = ['Adding map columns']
+    write_LSS(df,fn,comments)
+
+
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
