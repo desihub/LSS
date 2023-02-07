@@ -218,7 +218,7 @@ for tp in tps:
         ax = fig.add_subplot(111)
         mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
         ax.set_aspect(90)
-        plt.colorbar(mp, pad=0.01,shrink=size_fac/yfac)
+        plt.colorbar(mp, pad=0.01,shrink=2/2.3)
         
         plt.xlabel('RA')
         plt.ylabel('sin(DEC)')
