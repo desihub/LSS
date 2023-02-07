@@ -138,6 +138,7 @@ for tp in tps:
             plt.clf()
 
             plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['COMP_TILE'],s=.1)
+            plt.colorbar()
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.title(tp+' COMP_TILE')
@@ -145,6 +146,7 @@ for tp in tps:
             plt.clf()
 
             plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['WEIGHT_SYS'],s=.1)
+            plt.colorbar()
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.title(tp+' WEIGHT_SYS')
@@ -216,7 +218,7 @@ for tp in tps:
         ax = fig.add_subplot(111)
         mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
         ax.set_aspect(90)
-        plt.colorbar(mp, pad=0.01,shrink=sizefac/yfac)
+        plt.colorbar(mp, pad=0.01,shrink=size_fac/yfac)
         
         plt.xlabel('RA')
         plt.ylabel('sin(DEC)')
