@@ -18,7 +18,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='fuji')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
-parser.add_argument("--ps",help="point size for density map",default=8,type=float)
+parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
@@ -178,8 +178,19 @@ for tp in tps:
             vx = 1.25
             vm = 0.75
             print(np.min(ra),np.max(ra),np.min(od),np.max(od))
-
-            plt.scatter(ra,np.sin(dec*np.pi/180),c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps,marker='d')
+            nside_fac = (256/nside)**2.
+            size_fac = 2
+            sin_dec = np.sin(dec*np.pi/180)
+            yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
+            xr = (np.max(ra)-np.min(ra))*1.1/90
+            xfac = 2.5*size_fac
+            yfac = 2*size_fac
+            fig = plt.figure(figsize=(xr*xfac, yr*yfac))
+            ax = fig.add_subplot(111)
+            mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='d')
+            ax.set_aspect(90)
+            plt.colorbar(mp, pad=0.01)
+            
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.colorbar()
