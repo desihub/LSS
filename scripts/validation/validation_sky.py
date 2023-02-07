@@ -82,7 +82,8 @@ for tp in tps:
             sel_gz = common.goodz_infull(tp[:3],dtf)
             sel_obs = dtf['ZWARN'] != 999999
             dtf = dtf[sel_obs&sel_gz]
-            dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
+            #dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
+            dtf['WEIGHT'] = 1./dtf['COMP_TILE']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
             sel_nan = dtf['WEIGHT']*0 != 0
             if len(dtf[sel_nan]) != 0:
                 print(str(len(dtf[sel_nan]))+ ' nan weights')
