@@ -179,11 +179,11 @@ for tp in tps:
             vm = 0.75
             print(np.min(ra),np.max(ra),np.min(od),np.max(od))
             nside_fac = (256/nside)**2.
-            size_fac = 2
+            size_fac = 4
             sin_dec = np.sin(dec*np.pi/180)
             yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
             xr = (np.max(ra)-np.min(ra))*1.1/90
-            xfac = 2.5*size_fac
+            xfac = 2.2*size_fac
             yfac = 2*size_fac
             fig = plt.figure(figsize=(xr*xfac, yr*yfac))
             ax = fig.add_subplot(111)
@@ -193,7 +193,6 @@ for tp in tps:
             
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
-            plt.colorbar()
             plt.title(titl)
             plt.grid()
 
