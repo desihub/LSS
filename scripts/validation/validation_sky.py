@@ -136,9 +136,24 @@ for tp in tps:
             plt.title(tp+' data plotted over randoms')
             plt.savefig(outdir+tp+reg+'_datoran.png')
             plt.clf()
+
+            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['COMP_TILE'],s=.1)
+            plt.xlabel('RA')
+            plt.ylabel('sin(DEC)')
+            plt.title(tp+' COMP_TILE')
+            plt.savefig(outdir+tp+reg+'_comptile.png')
+            plt.clf()
+
+            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['WEIGHT_SYS'],s=.1)
+            plt.xlabel('RA')
+            plt.ylabel('sin(DEC)')
+            plt.title(tp+' WEIGHT_SYS')
+            plt.savefig(outdir+tp+reg+'_weightsys.png')
+            plt.clf()
+
     
     
-            titlb = ' weighted over-density for '
+            titlb = ' weighted relative density for '
             if tp == 'QSO':
                 #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
                 wg = dtf[zcol] > 0.8
@@ -201,7 +216,7 @@ for tp in tps:
         ax = fig.add_subplot(111)
         mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
         ax.set_aspect(90)
-        plt.colorbar(mp, pad=0.01)
+        plt.colorbar(mp, pad=0.01,shrink=sizefac/yfac)
         
         plt.xlabel('RA')
         plt.ylabel('sin(DEC)')
