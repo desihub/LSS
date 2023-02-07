@@ -179,7 +179,7 @@ for tp in tps:
             vm = 0.75
             print(np.min(ra),np.max(ra),np.min(od),np.max(od))
             nside_fac = (256/nside)**2.
-            size_fac = 4
+            size_fac = 2
             sin_dec = np.sin(dec*np.pi/180)
             yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
             xr = (np.max(ra)-np.min(ra))*1.1/90
@@ -187,7 +187,7 @@ for tp in tps:
             yfac = 2.2*size_fac
             fig = plt.figure(figsize=(xr*xfac, yr*yfac))
             ax = fig.add_subplot(111)
-            mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='d')
+            mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
             ax.set_aspect(90)
             plt.colorbar(mp, pad=0.01)
             
