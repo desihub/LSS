@@ -137,7 +137,7 @@ for tp in tps:
             plt.savefig(outdir+tp+reg+'_datoran.png')
             plt.clf()
 
-            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['COMP_TILE'],s=.1)
+            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['COMP_TILE'],s=.01)
             plt.colorbar()
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
@@ -145,7 +145,7 @@ for tp in tps:
             plt.savefig(outdir+tp+reg+'_comptile.png')
             plt.clf()
 
-            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['WEIGHT_SYS'],s=.1)
+            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['WEIGHT_SYS'],s=.01)
             plt.colorbar()
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
