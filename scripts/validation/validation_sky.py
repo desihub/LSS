@@ -183,28 +183,28 @@ for tp in tps:
             del dtf
             del rt
             
-		ra = np.concatenate(ral)
-		sin_dec = np.concatenate(sdecl)
-		vx = 1.25
-		vm = 0.75
-		print(np.min(ra),np.max(ra),np.min(od),np.max(od))
-		nside_fac = (256/nside)**2.
-		size_fac = 2
-		
-		yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
-		xr = (np.max(ra)-np.min(ra))*1.1/90
-		xfac = 2.*size_fac
-		yfac = 2.3*size_fac
-		fig = plt.figure(figsize=(xr*xfac, yr*yfac))
-		ax = fig.add_subplot(111)
-		mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
-		ax.set_aspect(90)
-		plt.colorbar(mp, pad=0.01)
-		
-		plt.xlabel('RA')
-		plt.ylabel('sin(DEC)')
-		plt.title(titl)
-		plt.grid()
+        ra = np.concatenate(ral)
+        sin_dec = np.concatenate(sdecl)
+        vx = 1.25
+        vm = 0.75
+        print(np.min(ra),np.max(ra),np.min(od),np.max(od))
+        nside_fac = (256/nside)**2.
+        size_fac = 2
+        
+        yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
+        xr = (np.max(ra)-np.min(ra))*1.1/90
+        xfac = 2.*size_fac
+        yfac = 2.3*size_fac
+        fig = plt.figure(figsize=(xr*xfac, yr*yfac))
+        ax = fig.add_subplot(111)
+        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
+        ax.set_aspect(90)
+        plt.colorbar(mp, pad=0.01)
+        
+        plt.xlabel('RA')
+        plt.ylabel('sin(DEC)')
+        plt.title(titl)
+        plt.grid()
 
 
         plt.savefig(outdir+tp+'_weighteddens'+str(nside)+'.png',dpi=args.dpi)
