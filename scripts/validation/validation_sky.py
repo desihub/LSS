@@ -89,6 +89,7 @@ for tp in tps:
     if args.data == 'LSS':
         ral = []
         sdecl = []
+        odl = []
         for reg in regl:
             #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
             #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
@@ -168,7 +169,7 @@ for tp in tps:
             wp = (rpix > 0) 
             od = dpix[wp]/rpix[wp]
             od = od/np.mean(od)
-
+            odl.append(od)
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
             ra,dec = 180./np.pi*phi,-(180./np.pi*th-90)#densvar.thphi2radec(th,phi)
@@ -185,6 +186,7 @@ for tp in tps:
             
         ra = np.concatenate(ral)
         sin_dec = np.concatenate(sdecl)
+        od = np.concatenate(odl)
         vx = 1.25
         vm = 0.75
         print(np.min(ra),np.max(ra),np.min(od),np.max(od))
