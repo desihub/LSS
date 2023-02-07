@@ -184,14 +184,14 @@ for tp in tps:
             yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
             xr = (np.max(ra)-np.min(ra))*1.1/90
             xfac = 2.*size_fac
-            yfac = 2.2*size_fac
+            yfac = 2.3*size_fac
             fig = plt.figure(figsize=(xr*xfac, yr*yfac))
             ax = fig.add_subplot(111)
             mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
             ax.set_aspect(90)
             plt.colorbar(mp, pad=0.01)
             
-            plt.xlabel('RA',pad=0.01)
+            plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
             plt.title(titl)
             plt.grid()
