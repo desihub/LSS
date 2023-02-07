@@ -12,6 +12,7 @@ import fitsio
 import numpy as np
 from time import time
 import healpy as hp
+from glob import glob
 
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -19,7 +20,7 @@ from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header
 from desitarget.geomask import match
-from desitarget.randoms import stellar_density
+from desitarget.gaiamatch import get_gaia_dir, gaia_psflike
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -926,8 +927,8 @@ def read_sky_map(mapname, lssmapdir=None):
     return mapdata
 
 
-def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
-    """Make star density map (wraps desitarget.randoms.stellar_density).
+def make_stardens(nside=512, gaiadir=None, dr="dr2", outdir=None, write=True):
+    """Make a stellar density map using Gaia.
 
     Parameters
     ----------
@@ -937,6 +938,10 @@ def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
         Location of the directory that hosts HEALPixel-split Gaia files.
         See the Notes, below. Must be passed if $GAIA_DIR is not set (or
         if $GAIA_DIR is ``None``).
+    dr : :class:`str`, optional, defaults to "dr2"
+        If `gaiadir` is NOT passed, `dr` is used to determine which Gaia
+        Data Release to use at NERSC. `dr` also sets criteria for a Gaia
+        point-source (via :func:`desitarget.gaiamatch.gaia_psflike()`).
     outdir : :class:`str`, optional, defaults to $LSS_MAP_DIR/stardens
         Location of the directory to write output files. Must be passed
         if $LSS_MAP_DIR is not set (or if $LSS_MAP_DIR is ``None``).
@@ -945,20 +950,17 @@ def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
 
     Notes
     -----
-    - Uses Gaia at NERSC to generate HEALPixel map of stellar density. If
-      the parameter `gaiadir` is not passed then the environment variable
+    - Uses Gaia to generate HEALPixel map of stellar density. If the
+      parameter `gaiadir` is not passed then the environment variable
       $GAIA_DIR must be set. At NERSC, $GAIA_DIR typically points to
       /global/cfs/cdirs/desi/target/gaia_dr3 or
       /global/cfs/cdirs/desi/target/gaia_dr2.
+    - Mostly stolen from :func:`desitarget.randoms.stellar_density()`.
     """
-    # ADM record the incoming $GAIA_DIR, in case we overwrite it.
-    gaiastore = os.getenv("GAIA_DIR")
-    log.info("$GAIA_DIR is set to {}".format(gaiastore))
-    if gaiadir is not None:
-        os.environ["GAIA_DIR"] = gaiadir
-        log.info("Updating $GAIA_DIR to passed gaiadir: {}".format(gaiadir))
-    else:
-        gaiadir = gaiastore
+    # ADM If gaiadir was not passed, then check that the GAIA_DIR is set
+    # ADM and retrieve it.
+    if gaiadir is None:
+        gaiadir = get_gaia_dir(dr=dr)
 
     # ADM default to an output directory of lssmapdir/stardens.
     if outdir is None:
@@ -968,13 +970,70 @@ def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
 
     # ADM check that all the needed directories are set.
     msg = "{} must be passed or {} must be set!"
-    if gaiadir is None:
-        raise_myerror(msg.format("gaiadir", "$GAIA_DIR"))
     if outdir is None:
         raise_myerror(msg.format("outdir", "$LSS_MAP_DIR"))
 
-    # ADM determine the stellar density from Gaia.
-    sd = stellar_density(nside=nside)
+    # ADM retrieve the HEALPixel-ized Gaia sub-directory.
+    hpdir = os.path.join(gaiadir, 'healpix')
+
+    if not os.path.exists(hpdir):
+        msg = "The Gaia HEALPixel directory is set to {} which doesn't exist. "
+        msg += "Is $GAIA_DIR set correctly? Or did you pass a bad gaiadir?"
+        raise_myerror(msg.format(hpdir))
+    else:
+        log.info("Gaia HEALPixel directory is set to {}".format(hpdir))
+
+    # ADM the gaia_psflike function is only set for "edr3," which should
+    # ADM have the same criteria as "dr3". Switch to "edr3", if needed.
+    psfdr = dr
+    if psfdr == "dr3":
+        psfdr = "edr3"
+    log.info("Using point-source criteria for {}".format(psfdr))
+
+    # ADM the number of pixels and the pixel area at nside.
+    npix = hp.nside2npix(nside)
+    pixarea = hp.nside2pixarea(nside, degrees=True)
+
+    # ADM an output array of all possible HEALPixels at nside.
+    pixout = np.zeros(npix, dtype='int32')
+
+    # ADM find all of the Gaia files.
+    filenames = sorted(glob(os.path.join(hpdir, '*fits')))
+
+    # ADM read in each file, restricting to the criteria for point
+    # ADM sources and storing in a HEALPixel map at resolution nside.
+    nfiles = len(filenames)
+    t0 = time()
+    for nfile, filename in enumerate(filenames):
+        if nfile % 1000 == 0 and nfile > 0:
+            elapsed = time() - t0
+            rate = nfile / elapsed
+            log.info('{}/{} files; {:.1f} files/sec; {:.1f} total mins elapsed'
+                     .format(nfile, nfiles, rate, elapsed/60.))
+
+        # ADM save memory, speed up by only reading a subset of columns.
+        gobjs = fitsio.read(
+            filename,
+            columns=['RA', 'DEC', 'PHOT_G_MEAN_MAG', 'ASTROMETRIC_EXCESS_NOISE']
+        )
+
+        # ADM restrict to subset of point sources.
+        ra, dec = gobjs["RA"], gobjs["DEC"]
+        gmag = gobjs["PHOT_G_MEAN_MAG"]
+        aen = gobjs["ASTROMETRIC_EXCESS_NOISE"]
+        pointlike = gaia_psflike(aen, gmag, dr=psfdr)
+
+        # ADM calculate the HEALPixels for the point sources.
+        theta, phi = np.radians(90-dec[pointlike]), np.radians(ra[pointlike])
+        pixnums = hp.ang2pix(nside, theta, phi, nest=True)
+
+        # ADM return the counts in each pixel number...
+        pixnum, pixcnt = np.unique(pixnums, return_counts=True)
+        # ADM...and populate the output array with the counts.
+        pixout[pixnum] += pixcnt
+
+    # ADM calculate the stellar density.
+    sd = pixout/pixarea
 
     # ADM set up an output structure with the STARDENS column.
     npix = hp.nside2npix(nside)
@@ -988,13 +1047,6 @@ def make_stardens(nside=512, gaiadir=None, outdir=None, write=True):
         hdr["NSIDE"] = nside
         outfn = os.path.join(outdir, "stardens.fits")
         write_atomically(outfn, done, extname='STARDENS', header=hdr)
-
-    # ADM reset $GAIA_DIR to what it was at the start of the function.
-    log.info("Setting $GAIA_DIR back to {}".format(gaiastore))
-    if gaiastore is None:
-        del os.environ["GAIA_DIR"]
-    else:
-        os.environ["GAIA_DIR"] = gaiastore
 
     return done
 
