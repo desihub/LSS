@@ -179,7 +179,7 @@ for tp in tps:
             vm = 0.75
             print(np.min(ra),np.max(ra),np.min(od),np.max(od))
             nside_fac = (256/nside)**2.
-            size_fac = 4
+            size_fac = 2
             sin_dec = np.sin(dec*np.pi/180)
             yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
             xr = (np.max(ra)-np.min(ra))*1.1/90
