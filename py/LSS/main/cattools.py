@@ -2552,7 +2552,9 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         wz &= ff['Z_not4clus'] != 1.e20
         wz &= selobs
         func = ssr_tools.QSO_ssr
-
+        minefftime=450
+        maxefftime=1500
+        
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
         selobs &= ff['TSNR2_ELG'] > tsnrcut
@@ -2583,7 +2585,7 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
         func = ssr_tools.LRG_ssr
-        mainefftime=500
+        minefftime=500
         maxefftime=2000
     if tp[:3] == 'BGS':
         selobs &= ff['TSNR2_BGS'] > tsnrcut
@@ -2596,6 +2598,8 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
         
         
         func = ssr_tools.BGS_ssr
+        minefftime=120
+        maxefftime=300
 
 
     #ffz = ff[wz]
