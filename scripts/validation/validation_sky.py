@@ -169,7 +169,7 @@ for tp in tps:
 
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
-            ra,dec = densvar.thphi2radec(th,phi)
+            ra,dec = 180./np.pi*phi,-(180./np.pi*th-90)#densvar.thphi2radec(th,phi)
             print(np.min(ra),np.max(ra))
     
             if args.survey != 'DA02':
