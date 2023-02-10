@@ -404,6 +404,13 @@ def doran(ii):
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii)
 
+    if args.fillran == 'y':
+        print('filling randoms with imaging properties')
+        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        #ct.addcol_ran(fn,ii)
+        common.add_map_cols(fn,ii)
+        print('done with '+str(ii))
+
 
     if args.apply_veto == 'y':
         print('applying vetos')

@@ -288,7 +288,8 @@ if args.fillran == 'y':
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
         fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        ct.addcol_ran(fn,ii)
+        #ct.addcol_ran(fn,ii)
+        common.add_map_cols(fn,ii)
         print('done with '+str(ii))
 
 
