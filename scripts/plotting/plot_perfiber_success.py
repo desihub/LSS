@@ -24,6 +24,7 @@ basedir='/global/cfs/cdirs/desi/survey/catalogs'
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--version",help="version for catalogs",default='test')
 
 args = parser.parse_args()
 basedir = args.basedir
@@ -53,12 +54,13 @@ def plot_all_petal(petal):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-        bfib = pars.badfib
+        bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
+        bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
         sel_bfib = np.isin(fibl[sel],bfib)
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
         if tp == 'ELG':
             plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
@@ -105,7 +107,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',label='true value below min ',zorder=100)
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
         if tp == 'BGS_ANY':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',zorder=100)
