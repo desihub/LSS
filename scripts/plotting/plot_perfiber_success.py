@@ -34,6 +34,10 @@ specver = args.verspec
 
 tracers = ['QSO','LRG','ELG','BGS_ANY']
 
+bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
+bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
+
+
 
 def plot_all_petal(petal):
     for tp in tracers:
@@ -54,8 +58,6 @@ def plot_all_petal(petal):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-        bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
-        bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
         sel_bfib = np.isin(fibl[sel],bfib)
 
         if tp == 'LRG':
@@ -99,7 +101,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-        bfib = pars.badfib
+        #bfib = pars.badfib
         sel_bfib = np.isin(fibl[sel],bfib)
         sel_low = f_succ[sel] < ymin
         f_succ[sel][sel_low] = ymin+0.01
