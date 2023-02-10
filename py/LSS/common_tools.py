@@ -461,7 +461,7 @@ def add_map_cols(fn,rann,new_cols=['HALPHA','HALPHA_ERROR','CALIB_G','CALIB_R','
         else:
             cols2read_new.append(col)
 
-    rannew = fitsio.read(new_fn,columns=new_cols)
+    rannew = fitsio.read(new_fn,columns=cols2read_new)
     df = join(df,rannew,keys=['TARGETID'])
     del rannew
     cols2read_fid = ['TARGETID']
@@ -477,7 +477,7 @@ def add_map_cols(fn,rann,new_cols=['HALPHA','HALPHA_ERROR','CALIB_G','CALIB_R','
         else:
             cols2read_fid.append(col)
 
-    ranfid = fitsio.read(fid_fn,columns=fid_cols)
+    ranfid = fitsio.read(fid_fn,columns=cols2read_fid)
     df = join(df,ranfid,keys=['TARGETID'])
 
     print(len(df))
