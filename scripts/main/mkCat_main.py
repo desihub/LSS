@@ -68,6 +68,8 @@ parser.add_argument("--add_weight_zfail",help="add weights for redshift systemat
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
+parser.add_argument("--ranonly",help="if y, only operate on randoms when applying vetos",default='n')
+
 
 #options not typically wanted
 parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
@@ -300,9 +302,10 @@ if args.apply_veto == 'y':
         maxp = 3200
     if type[:3] == 'BGS':
         maxp = 2100
-    fin = dirout+type+notqso+'_full_noveto.dat.fits'
-    fout = dirout+type+notqso+'_full.dat.fits'
-    common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+    if args.ranonly != 'y':
+        fin = dirout+type+notqso+'_full_noveto.dat.fits'
+        fout = dirout+type+notqso+'_full.dat.fits'
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
     print('data veto done, now doing randoms')
     for rn in range(rm,rx):
         fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
