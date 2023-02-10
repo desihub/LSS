@@ -20,6 +20,8 @@ Introduction
 
 This package contains codes to create LSS catalogs and randoms.
 
+The code for k+e corrections was originally copied from Sam Moore's github (https://github.com/SgmAstro/DESI)
+
 Installation
 ------------
 
