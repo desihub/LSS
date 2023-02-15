@@ -711,7 +711,10 @@ class model_ssr:
             hf,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],bins=self.bine)
             hfw,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
-            nzfpere.append(np.sqrt(ha-hf)/ha)
+            sel = ha == hf
+            ha[sel] -= 1 #so that the errors aren't 0
+            err = np.sqrt(ha*(1-ha/hf))/ha
+            nzfpere.append(err)
         self.nzfpere = nzfpere
         print(nzfpere)    
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
