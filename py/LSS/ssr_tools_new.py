@@ -712,7 +712,8 @@ class model_ssr:
             hfw,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             nzfpere.append(np.sqrt(ha-hf)/ha)
-        self.nzfpere = nzfpere    
+        self.nzfpere = nzfpere
+        print(nzfpere)    
         rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
