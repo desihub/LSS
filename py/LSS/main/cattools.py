@@ -2589,8 +2589,8 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #wz &= ff['DELTACHI2'] > dchi2
         #print('length after Rongpu cut '+str(len(ff[wz])))
         #func = ssr_tools.LRG_ssr
-        #minefftime=500
-        #maxefftime=2000
+        mintsnr=500/12.15
+        maxtsnr =2000/12.15
         band = 'Z'
         
     if tp[:3] == 'BGS':
