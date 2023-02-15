@@ -648,6 +648,7 @@ class model_ssr:
         if reg is not None:
             mask &= self.cat['PHOTSYS'] == reg
         self.cat = self.cat[mask]
+        print(len(self.cat))
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
         ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
