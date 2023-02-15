@@ -781,7 +781,7 @@ class model_ssr:
             resc = minimize(ccost, np.ones(1))
             bc = resc.x
             cost = ccost(bc)
-            consl.append(bc)
+            consl.append(bc[0])
             costt += cost
         if self.vis_5hist:
             for i in range(0,nb):
