@@ -722,7 +722,7 @@ class model_ssr:
                #method='Powell', tol=1e-6)
         fcoeff,piv = rest.x
         self.vis_5hist = True
-        chi2 = self.hist_norm(fcoeff,piv)
+        chi2 = self.hist_norm([fcoeff,piv])
         print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
         fo.write('#'+self.band+'flux fit\n')
         fo.write('#fcoeff chi2\n')
