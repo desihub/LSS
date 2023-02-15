@@ -668,7 +668,7 @@ class model_ssr:
         self.tracer = tracer
         
         #fit to TSNR2
-        res = minimize(self.wrapper_hist, [-20, 225., 0.28], bounds=((-1000, 0), (0, 1000), (0., 1)),
+        res = minimize(self.wrapper_hist, [-20, 20., 0.3], bounds=((-1000, 0), (0, 1000), (0., 1)),
                method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
