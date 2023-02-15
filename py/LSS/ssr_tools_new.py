@@ -718,7 +718,7 @@ class model_ssr:
             nzfpere.append(err)
         self.nzfpere = nzfpere
         print(nzfpere)    
-        rest = minimize(self.hist_norm, [1,self.mft])#np.ones(1))#, bounds=((-10, 10)),
+        rest = minimize(self.hist_norm, [2,self.mft])#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff,piv = rest.x
         self.vis_5hist = True
