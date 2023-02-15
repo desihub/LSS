@@ -766,31 +766,31 @@ class model_ssr:
                 self.flux_mod = self.ssrvflux_erf
                 
         else:
-			fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
-			fo.write('#fit parameters for maximum ssr as a function of flux\n')
-		
+            fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
+            fo.write('#fit parameters for maximum ssr as a function of flux\n')
+        
 
-			if tracer == 'ELG':
-				flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
-				print(flux_par)
-				self.flux_mod = np.poly1d(flux_par)
-				for par in flux_par :
-					fo.write(str(par)+' ')
-				fo.write('\n')    
+            if tracer == 'ELG':
+                flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
+                print(flux_par)
+                self.flux_mod = np.poly1d(flux_par)
+                for par in flux_par :
+                    fo.write(str(par)+' ')
+                fo.write('\n')    
 
-			else:
-				#we expect asymptotic behavior for LRG and BGS
-				ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
-				self.pars_ferf = ssrvflux.x
-				print(self.pars_ferf)
-				self.flux_mod = self.ssrvflux_erf
-				for par in self.pars_ferf :
-					fo.write(str(par)+' ')
-				fo.write('\n')    
-			fo.close()
-			plt.plot(self.mfl,self.consl,'ko')
-			plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
-			plt.show()
+            else:
+                #we expect asymptotic behavior for LRG and BGS
+                ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
+                self.pars_ferf = ssrvflux.x
+                print(self.pars_ferf)
+                self.flux_mod = self.ssrvflux_erf
+                for par in self.pars_ferf :
+                    fo.write(str(par)+' ')
+                fo.write('\n')    
+            fo.close()
+            plt.plot(self.mfl,self.consl,'ko')
+            plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
+            plt.show()
            
             
         
