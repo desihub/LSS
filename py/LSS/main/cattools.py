@@ -2553,8 +2553,8 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #wz &= ff['Z_not4clus'] != 1.e20
         #wz &= selobs
         #func = ssr_tools.QSO_ssr
-        #minefftime=450
-        #maxefftime=1500
+        mintsnr=450/(8.60/0.255)
+        maxtsnr=1500/(8.60/0.255)
         band = 'R'
         
     if tp[:3] == 'ELG':
@@ -2604,6 +2604,9 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #func = ssr_tools.BGS_ssr
         #minefftime=120
         #maxefftime=300
+        mintsnr=120/(12.15/89.8)
+        maxtsnr =300/(12.15/89.8)
+
         band = 'R'
 
 
