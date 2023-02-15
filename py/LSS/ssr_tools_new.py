@@ -720,10 +720,10 @@ class model_ssr:
         print(nzfpere)    
         rest = minimize(self.hist_norm, [1,self.mft])#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
-        fcoeff = rest.x
+        fcoeff,piv = rest.x
         self.vis_5hist = True
-        chi2 = self.hist_norm(fcoeff)
-        print(fcoeff,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
+        chi2 = self.hist_norm(fcoeff,piv)
+        print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
         fo.write('#'+self.band+'flux fit\n')
         fo.write('#fcoeff chi2\n')
         
