@@ -712,8 +712,8 @@ class model_ssr:
             hfw,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             sel = ha == hf
-            ha[sel] -= 1 #so that the errors aren't 0
-            err = np.sqrt(ha*(1-ha/hf))/ha
+            hf[sel] -= 1 #so that the errors aren't 0
+            err = np.sqrt(ha*(1-hf/ha))/ha
             nzfpere.append(err)
         self.nzfpere = nzfpere
         print(nzfpere)    
