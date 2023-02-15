@@ -642,7 +642,7 @@ class BGS_ssr:
 
 
 class model_ssr:
-    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test'):
+    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False):
         self.cat = input_data
 
         mask = self.cat['TSNR2_'+tracer]>tsnr_min
@@ -679,18 +679,24 @@ class model_ssr:
         
         #fit to TSNR2
         
-        res = minimize(self.wrapper_hist, [-16, 10., high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
+        if readpars:
+            parsf = np.loadtxt(self.outdir+outfn_root+rw+'pars_overall.txt')
+            pars = np.array([parsf[0],parsf[1],parsf[2]])
+            chi2 = parsf[3]
+        else:
+            res = minimize(self.wrapper_hist, [-16, 10., high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
                #method='Powell', tol=1e-6)
-        pars = res.x
-        chi2 = self.wrapper_hist(pars)
-        print(pars,chi2)
-        fo = open(self.outdir+outfn_root+rw+'pars_overall.txt','w')
-        fo.write('#overall fit\n')
-        fo.write('#a b c chi2\n')
-        for par in pars:
-            fo.write(str(par)+' ')
-        fo.write(str(chi2)+'\n')
-        fo.close()
+            pars = res.x
+            chi2 = self.wrapper_hist(pars)
+            print(pars,chi2)
+            fo = open(self.outdir+outfn_root+rw+'pars_overall.txt','w')
+            fo.write('#overall fit\n')
+            fo.write('#a b c chi2\n')
+            for par in pars:
+                fo.write(str(par)+' ')
+            fo.write(str(chi2)+'\n')
+            fo.close()
+        self.pars = pars
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
         plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
@@ -724,52 +730,67 @@ class model_ssr:
             err = np.sqrt(ha*(1-hf/ha))/ha
             nzfpere.append(err)
         self.nzfpere = nzfpere
-        print(nzfpere)    
-        rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
-               #method='Powell', tol=1e-6)
-        fcoeff,piv = rest.x
-        self.vis_5hist = True
-        chi2 = self.hist_norm([fcoeff,piv])
-        print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
-        fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
-        fo.write('#'+self.band+'flux fit\n')
-        fo.write('coeff flux_pivot chi2\n')
+        #print(nzfpere)    
         
-        fo.write(str(fcoeff)+' '+str(piv)+' ')
-        fo.write(str(chi2)+'\n')
-        fo.close()
-        self.pars = pars
+        if readpars:
+            parsflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_fluxfit.txt')
+            fcoeff,piv = parsflux[0],parsflux[1]
+        else:
+            rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
+               #method='Powell', tol=1e-6)
+            fcoeff,piv = rest.x
+            self.vis_5hist = True
+            chi2 = self.hist_norm([fcoeff,piv])
+            print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
+            fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
+            fo.write('#'+self.band+'flux fit\n')
+            fo.write('coeff flux_pivot chi2\n')
+        
+            fo.write(str(fcoeff)+' '+str(piv)+' ')
+            fo.write(str(chi2)+'\n')
+            fo.close()
+            self.mfl = np.array(self.mfl)
+            print(self.consl)
+            
         self.fcoeff = fcoeff
-        print(self.mfl)
-        self.mfl = np.array(self.mfl)
-        print(self.consl)
+        self.piv = piv
+            #print(self.mfl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
-        fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
-        fo.write('#fit parameters for maximum ssr as a function of flux\n')
-        
-
-        if tracer == 'ELG':
-            flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
-            print(flux_par)
-            self.flux_mod = np.poly1d(flux_par)
-            for par in flux_par :
-                fo.write(str(par)+' ')
-            fo.write('\n')    
-
+        if readpars:
+            parsmaxflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt')
+            if tracer == 'ELG':
+                self.flux_mod = np.poly1d(parsmaxflux)
+            else:
+                self.pars_ferf = parsmaxflux
+                self.flux_mod = self.ssrvflux_erf
+                
         else:
-            #we expect asymptotic behavior for LRG and BGS
-            ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
-            self.pars_ferf = ssrvflux.x
-            print(self.pars_ferf)
-            self.flux_mod = self.ssrvflux_erf
-            for par in self.pars_ferf :
-                fo.write(str(par)+' ')
-            fo.write('\n')    
-        fo.close()
-        plt.plot(self.mfl,self.consl,'ko')
-        plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
-        plt.show()
+			fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
+			fo.write('#fit parameters for maximum ssr as a function of flux\n')
+		
+
+			if tracer == 'ELG':
+				flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
+				print(flux_par)
+				self.flux_mod = np.poly1d(flux_par)
+				for par in flux_par :
+					fo.write(str(par)+' ')
+				fo.write('\n')    
+
+			else:
+				#we expect asymptotic behavior for LRG and BGS
+				ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
+				self.pars_ferf = ssrvflux.x
+				print(self.pars_ferf)
+				self.flux_mod = self.ssrvflux_erf
+				for par in self.pars_ferf :
+					fo.write(str(par)+' ')
+				fo.write('\n')    
+			fo.close()
+			plt.plot(self.mfl,self.consl,'ko')
+			plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
+			plt.show()
            
             
         
@@ -852,11 +873,12 @@ class model_ssr:
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
         tssr = 1.-self.failure_rate_eff(deff,*self.pars)
         max_tssr = 1. - self.failure_rate_eff(self.tsnr_max,*self.pars)
-        relssr = tssr/maxt_ssr
+        relssr = tssr/max_tssr
         max_ssr_flux = self.flux_mod(dflux) 
         #data['mod_success_rate'] = 1. -   
+        rel_flux = dflux/self.piv
+        wtf = (self.fcoeff*(1-rel_flux)+1)*(1/relssr-1)+1
         
-        wtf = (self.fcoeff*(self.mft-dflux)/self.mft+1)*(1/relssr-1)+1
         sel = wtf < 1
         wtf[sel] = 1
         mod = max_ssr_flux/wtf
