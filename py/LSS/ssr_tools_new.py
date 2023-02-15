@@ -670,7 +670,7 @@ class model_ssr:
         self.outfn_root = outfn_root
         
         #fit to TSNR2
-        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0, tsnr_max), (0., tot_failrate)))#,
+        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0.001, tsnr_max), (0., tot_failrate)))#,
                #method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
@@ -718,7 +718,7 @@ class model_ssr:
             nzfpere.append(err)
         self.nzfpere = nzfpere
         print(nzfpere)    
-        rest = minimize(self.hist_norm, np.ones(1))#, bounds=((-10, 10)),
+        rest = minimize(self.hist_norm, [1,self.mft])#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
@@ -756,7 +756,7 @@ class model_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
     
-    def hist_norm(self,fluxc,outfn='test.png'):
+    def hist_norm(self,fluxc,piv_flux,outfn='test.png'):
         nzfper = []
         consl = []
         
@@ -773,7 +773,7 @@ class model_ssr:
                 mfl.append(mf)
             #fper.append(mf)
             
-            rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/self.mft
+            rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/piv_flux#self.mft
             wtf = (fluxc*(1-rel_flux)+1)*(self.wts_fid-1)+1
             selw = wtf < 1
             wtf[selw] = 1
