@@ -725,6 +725,8 @@ class model_ssr:
         fo.close()
         self.pars = pars
         self.fcoeff = fcoeff
+        print(self.mfl)
+        print(self.consl)
         flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
         print(flux_par)
         self.flux_mod = np.poly1d(flux_par)
