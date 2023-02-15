@@ -745,6 +745,7 @@ class model_ssr:
             print(flux_par)
             self.flux_mod = np.poly1d(flux_par)
         else:
+            #we expect asymptotic behavior for LRG and BGS
             ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]])
             self.pars_ferf = ssrvflux.x
             print(self.pars_ferf)
