@@ -2580,8 +2580,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     #    ff['mod_success_rate'] = np.ones(len(ff))
     #selobs = ff['ZWARN'] != 999999
     s = 0
-    wzf = np.ones(len(ff))
-    msr = np.ones(len(ff))
+    modl =[]
     for reg in regl:
         #selreg = np.ones(len(ff),dtype='bool')
         #if reg is not None:
@@ -2593,7 +2592,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
             
         mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp)
-        
+        modl.append(mod)
         #ffwz = gal.add_modpre(ff[selobs&selreg])
         #print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
         #print(min(ffwz['WEIGHT_ZFAIL']),max(ffwz['WEIGHT_ZFAIL']))
@@ -2612,25 +2611,37 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #msr[selobs&selreg] =  np.array(ffwz['mod_success_rate'])
         #print(min(wzf),max(wzf))
         #s = 1
-    return True
+    
+    ff = Table.read(indir+tp+'_full_noveto.dat.fits')
+    wzf = np.ones(len(ff))
+    msr = np.ones(len(ff))
+    selobs = ff['ZWARN']*0 == 0
+    selobs &= ff['ZWARN'] != 999999
+    selgz = common.goodz_infull(tp,ff,zcol='Z_not4clus')
+    for reg,mod in zip(regl,modl):
+        selreg = ff['PHOTSYS'] == reg
+        wts,md = mod.add_modpre(ff[selobs&selreg])
+        wzf[selobs&selreg] = wts
+        msr[selobs&selreg] = md
+        print('compare good z frac to sum of model')
+        print(len(ff[selgz&selobs&selreg])/len(ff[selobs&selreg]),np.sum(msr[selobs&selreg])/len(ff[selobs&selreg]))
+
     ff['WEIGHT_ZFAIL'] = wzf
     ff['mod_success_rate'] = msr
-    wz = ff['GOODZ']
+    
     #print(len(ff[wz]),len(ff))
 
     print('min/max of zfail weights:')
-    print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+    print(np.min(ff[selobs]['WEIGHT_ZFAIL']),np.max(ff[selobs]['WEIGHT_ZFAIL']))
  
-    print('checking sum of zfail weights compared to length of good spec')
-    print(len(ff[selobs]),np.sum(ff[wz]['WEIGHT_ZFAIL']))
         
 
 
-    plt.plot(ff[wz]['TSNR2_'+tp[:3]],ff[wz]['WEIGHT_ZFAIL'],'k,')
-    plt.xlim(np.percentile(ff[wz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[wz]['TSNR2_'+tp[:3]],99))
+    plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
+    plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,fl+'_full.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS(ff,fl+'_full_noveto.dat.fits',comments='added ZFAIL weight')
     
     
 #     if dchi2 is not None:
