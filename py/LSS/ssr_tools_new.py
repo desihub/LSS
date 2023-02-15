@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table, vstack, hstack, join
 import fitsio
 from scipy.optimize import curve_fit, minimize
+from scipy.special import erf
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
@@ -15,6 +16,9 @@ import LSS.common_tools as common
 elgcol = ['SUBSET','EBV','PRIORITY','TARGETID','OII_FLUX','OII_FLUX_IVAR','ELG_LOP','ELG_VLO','TSNR2_ELG','TSNR2_LRG','PHOTSYS','MASKBITS','FIBERFLUX_G','FIBERFLUX_R','FIBERFLUX_Z','COADD_FIBERSTATUS','Z','ZWARN','DELTACHI2']
 
 extdict ={'G':3.214,'R':2.165,'Z':1.211}
+
+def gen_erf(val,a,b,c):
+    return a*erf((b+val)/c)
 
 def ELG_goodobs(data,fbs_col='COADD_FIBERSTATUS'):#,dt_col='DESI_TARGET'):
     mask = data[fbs_col]==0
@@ -734,15 +738,30 @@ class model_ssr:
         self.fcoeff = fcoeff
         print(self.mfl)
         print(self.consl)
-        flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
-        print(flux_par)
-        self.flux_mod = np.poly1d(flux_par)
+        if tracer == 'ELG' or tracer == 'QSO':
+            flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
+            print(flux_par)
+            self.flux_mod = np.poly1d(flux_par)
+        else:
+            ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]])
+            self.pars_ferf = ssrvflux.x
+            print(self.pars_ferf)
+            self.flux_mod = self.ssrvflux_erf
         plt.plot(self.mfl,self.consl,'ko')
         plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
         plt.show()
+           
+            
         
         
-        
+    def ssrvflux_erf(self,flux):
+        return self.pars_ferf[0]*erf((self.pars_ferf[1]+flux)/self.pars+ferf[2])
+    
+    def wrapper_ssrvflux(self,params):
+        mod = gen_erf(self.mfl,*params)
+        cost = np.sum((self.consl-mod)**2.)
+        return cost
+    
     def wrapper_hist(self,params):
         h_predict = self.failure_rate_eff(self.bc, *params)
         diff = self.nzf-h_predict
