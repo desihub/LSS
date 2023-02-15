@@ -2617,7 +2617,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
-    selgz = common.goodz_infull(tp,ff,zcol='Z_not4clus')
+    selgz = common.goodz_infull(tp,ff,zcol='Z')
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
         wts,md = mod.add_modpre(ff[selobs&selreg])
