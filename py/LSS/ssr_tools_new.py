@@ -737,6 +737,7 @@ class model_ssr:
         self.pars = pars
         self.fcoeff = fcoeff
         print(self.mfl)
+        self.mfl = np.array(self.mfl)
         print(self.consl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
@@ -746,7 +747,7 @@ class model_ssr:
             self.flux_mod = np.poly1d(flux_par)
         else:
             #we expect asymptotic behavior for LRG and BGS
-            ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]])
+            ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
             self.pars_ferf = ssrvflux.x
             print(self.pars_ferf)
             self.flux_mod = self.ssrvflux_erf
@@ -758,7 +759,7 @@ class model_ssr:
         
         
     def ssrvflux_erf(self,flux):
-        return self.pars_ferf[0]*erf((self.pars_ferf[1]+flux)/self.pars+ferf[2])
+        return self.pars_ferf[0]*erf((self.pars_ferf[1]+flux)/self.pars_ferf[2])
     
     def wrapper_ssrvflux(self,params):
         mod = gen_erf(self.mfl,*params)
