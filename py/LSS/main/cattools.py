@@ -2517,9 +2517,9 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
     return ff
 
 
-def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',specrel='daily',version='test'):
+def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     import LSS.common_tools as common
-    from LSS import ssr_tools
+    from LSS import ssr_tools_new
     '''
     fl is the root of the input/output file
     weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
@@ -2529,82 +2529,87 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''
-    ff = Table.read(fl+'_full.dat.fits')
+    ff = Table.read(indir+tp+'_full.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:
         #print('Z column already in full file')
     #else:
         #ff['Z_not4clus'].name = 'Z'
         ff['Z'].name = 'Z_not4clus'
-        common.write_LSS(ff,fl+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
+        common.write_LSS(ff,indir+tp+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
 
     #selobs = ff['ZWARN'] == 0
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
     
-    regl = [None]
+    regl = ['N','S']
 
+    
     if tp == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        wz = ff['Z_not4clus']*0 == 0
-        wz &= ff['Z_not4clus'] != 999999
-        wz &= ff['Z_not4clus'] != 1.e20
-        wz &= selobs
-        func = ssr_tools.QSO_ssr
-        minefftime=450
-        maxefftime=1500
+        #wz = ff['Z_not4clus']*0 == 0
+        #wz &= ff['Z_not4clus'] != 999999
+        #wz &= ff['Z_not4clus'] != 1.e20
+        #wz &= selobs
+        #func = ssr_tools.QSO_ssr
+        #minefftime=450
+        #maxefftime=1500
+        band = 'R'
         
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        if dchi2 is not None:
-            wz = ff['o2c'] > dchi2
-            print('length after oII cut '+str(len(ff[wz])))
-        wz &= selobs
+        #if dchi2 is not None:
+        #    wz = ff['o2c'] > dchi2
+        #    print('length after oII cut '+str(len(ff[wz])))
+        #wz &= selobs
         #wz &= ff['LOCATION_ASSIGNED'] == 1
         #print('length after also making sure location assigned '+str(len(ff[wz])))
         
-        print('length after tsnrcut '+str(len(ff[wz])))
-        func = ssr_tools.ELG_ssr
-        minefftime = tsnrcut*8.6
-        maxefftime = 200*8.7
-        regl = ['N','S']
+        #print('length after tsnrcut '+str(len(ff[wz])))
+        #func = ssr_tools.ELG_ssr
+        #minefftime = tsnrcut*8.6
+        #maxefftime = 200*8.7
+        mintsnr = 80
+        maxtnsr = 200
+        band = 'G'
 
     if tp == 'LRG':
-        print('applying extra cut for LRGs')
+        #print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[selobs])))
+        #print('length after tsnrcut '+str(len(ff[selobs])))
 
-        if dchi2 is not None:
-            selg = ssr_tools.LRG_goodz(ff,zcol='Z_not4clus')
-            wz = selg
-            wz &= selobs
+        #if dchi2 is not None:
+        #    selg = ssr_tools.LRG_goodz(ff,zcol='Z_not4clus')
+        #    wz = selg
+        #    wz &= selobs
 
         #wz &= ff['DELTACHI2'] > dchi2
-        print('length after Rongpu cut '+str(len(ff[wz])))
-        func = ssr_tools.LRG_ssr
-        minefftime=500
-        maxefftime=2000
+        #print('length after Rongpu cut '+str(len(ff[wz])))
+        #func = ssr_tools.LRG_ssr
+        #minefftime=500
+        #maxefftime=2000
+        band = 'Z'
+        
     if tp[:3] == 'BGS':
         selobs &= ff['TSNR2_BGS'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[selobs])))
-        if dchi2 is not None:
-            print('applying extra cut for BGS')
-            wz = ff['DELTACHI2'] > dchi2
-            print('length after dchi2 cut '+str(len(ff[wz])))
-            wz &= selobs
-        
-        
-        func = ssr_tools.BGS_ssr
-        minefftime=120
-        maxefftime=300
+        #print('length after tsnrcut '+str(len(ff[selobs])))
+        #if dchi2 is not None:
+        #    print('applying extra cut for BGS')
+        #    wz = ff['DELTACHI2'] > dchi2
+        #    print('length after dchi2 cut '+str(len(ff[wz])))
+        #    wz &= selobs        
+        #func = ssr_tools.BGS_ssr
+        #minefftime=120
+        #maxefftime=300
+        band = 'R'
 
 
     #ffz = ff[wz]
-    print('length after cutting to good z '+str(len(ff[wz])))
-    ff['GOODZ'] = wz
+    #print('length after cutting to good z '+str(len(ff[wz])))
+    #ff['GOODZ'] = wz
     #if tp != 'LRG':
     #    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
     #    ff['mod_success_rate'] = np.ones(len(ff))
@@ -2613,33 +2618,36 @@ def add_zfail_weight2full(fl,tp='',dchi2=9,tsnrcut=80,zmin=0,zmax=6,survey='Y1',
     wzf = np.ones(len(ff))
     msr = np.ones(len(ff))
     for reg in regl:
-        selreg = np.ones(len(ff),dtype='bool')
-        if reg is not None:
-            print('working with data from region '+reg)
-            gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime,reg=reg)
-            selreg = ff['PHOTSYS'] == reg            
-        else:    
-            print('working with the full data, no region split')
-            gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
+        #selreg = np.ones(len(ff),dtype='bool')
+        #if reg is not None:
+        #    print('working with data from region '+reg)
+        #    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime,reg=reg)
+        #    selreg = ff['PHOTSYS'] == reg            
+        #else:    
+        #    print('working with the full data, no region split')
+        #    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
             
-        ffwz = gal.add_modpre(ff[selobs&selreg])
-        print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
-        print(min(ffwz['WEIGHT_ZFAIL']),max(ffwz['WEIGHT_ZFAIL']))
+        mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp)
+        
+        #ffwz = gal.add_modpre(ff[selobs&selreg])
+        #print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
+        #print(min(ffwz['WEIGHT_ZFAIL']),max(ffwz['WEIGHT_ZFAIL']))
         #ffwz['WEIGHT_ZFAIL'] = 1./ffwz['mod_success_rate']
-        ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-        if s == 0:
-            rem_cols = ['WEIGHT_ZFAIL','mod_success_rate','mod_succeses_rate']
-            for col in rem_cols:
-                try:
-                    ff.remove_columns([col])
-                    print(col +' was in full file and will be replaced')
-                except:
-                    print(col +' was not yet in full file')    
+        #ffwz.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        #if s == 0:
+        #    rem_cols = ['WEIGHT_ZFAIL','mod_success_rate']
+        #    for col in rem_cols:
+        #        try:
+        #            ff.remove_columns([col])
+        #            print(col +' was in full file and will be replaced')
+        #        except:
+        #            print(col +' was not yet in full file')    
         #ff = join(ff,ffwz,keys=['TARGETID'],join_type='left')
-        wzf[selobs&selreg] = np.array(ffwz['WEIGHT_ZFAIL'])
-        msr[selobs&selreg] =  np.array(ffwz['mod_success_rate'])
-        print(min(wzf),max(wzf))
-        s = 1
+        #wzf[selobs&selreg] = np.array(ffwz['WEIGHT_ZFAIL'])
+        #msr[selobs&selreg] =  np.array(ffwz['mod_success_rate'])
+        #print(min(wzf),max(wzf))
+        #s = 1
+    return True
     ff['WEIGHT_ZFAIL'] = wzf
     ff['mod_success_rate'] = msr
     wz = ff['GOODZ']
