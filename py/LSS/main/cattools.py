@@ -2549,7 +2549,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         selobs &= ff['TSNR2_ELG'] > tsnrcut
         #might want to add something to remove stars/galaxies from selobs
         mintsnr=450/(8.60/0.255)
-        maxtsnr=1500/(8.60/0.255)
+        maxtsnr=1800/(8.60/0.255)
         band = 'R'
         
     if tp[:3] == 'ELG':

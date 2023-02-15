@@ -741,7 +741,7 @@ class model_ssr:
         print(self.consl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
-        if tracer == 'ELG' or tracer == 'QSO':
+        if tracer == 'ELG':
             flux_par = np.polyfit(np.array(self.mfl),np.array(self.consl),2)
             print(flux_par)
             self.flux_mod = np.poly1d(flux_par)
