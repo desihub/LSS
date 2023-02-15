@@ -654,6 +654,7 @@ class model_ssr:
         ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
         hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz])
         self.nzf = hf/ha
+        tot_failrate = np.sum(hf)/np.sum(ha)
         print(self.nzf)
         self.nzfe = np.sqrt(hf)/ha
         bc = []
@@ -668,7 +669,7 @@ class model_ssr:
         self.tracer = tracer
         
         #fit to TSNR2
-        res = minimize(self.wrapper_hist, [-20, 10., 0.25])#, bounds=((-1000, 0), (0, 1000), (0., 1)))#,
+        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0, tsnr_max), (0., tot_failrate)))#,
                #method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
