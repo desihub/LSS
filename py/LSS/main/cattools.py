@@ -2546,64 +2546,26 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
 
     
     if tp == 'QSO':
-        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        #wz = ff['Z_not4clus']*0 == 0
-        #wz &= ff['Z_not4clus'] != 999999
-        #wz &= ff['Z_not4clus'] != 1.e20
-        #wz &= selobs
-        #func = ssr_tools.QSO_ssr
+        #might want to add something to remove stars/galaxies from selobs
         mintsnr=450/(8.60/0.255)
         maxtsnr=1500/(8.60/0.255)
         band = 'R'
         
     if tp[:3] == 'ELG':
-        #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        #if dchi2 is not None:
-        #    wz = ff['o2c'] > dchi2
-        #    print('length after oII cut '+str(len(ff[wz])))
-        #wz &= selobs
-        #wz &= ff['LOCATION_ASSIGNED'] == 1
-        #print('length after also making sure location assigned '+str(len(ff[wz])))
-        
-        #print('length after tsnrcut '+str(len(ff[wz])))
-        #func = ssr_tools.ELG_ssr
-        #minefftime = tsnrcut*8.6
-        #maxefftime = 200*8.7
         mintsnr = 80
         maxtsnr = 200
         band = 'G'
 
     if tp == 'LRG':
-        #print('applying extra cut for LRGs')
-        # Custom DELTACHI2 vs z cut from Rongpu
         selobs &= ff['TSNR2_ELG'] > tsnrcut
-        #print('length after tsnrcut '+str(len(ff[selobs])))
-
-        #if dchi2 is not None:
-        #    selg = ssr_tools.LRG_goodz(ff,zcol='Z_not4clus')
-        #    wz = selg
-        #    wz &= selobs
-
-        #wz &= ff['DELTACHI2'] > dchi2
-        #print('length after Rongpu cut '+str(len(ff[wz])))
-        #func = ssr_tools.LRG_ssr
         mintsnr=500/12.15
         maxtsnr =2000/12.15
         band = 'Z'
         
     if tp[:3] == 'BGS':
         selobs &= ff['TSNR2_BGS'] > tsnrcut
-        #print('length after tsnrcut '+str(len(ff[selobs])))
-        #if dchi2 is not None:
-        #    print('applying extra cut for BGS')
-        #    wz = ff['DELTACHI2'] > dchi2
-        #    print('length after dchi2 cut '+str(len(ff[wz])))
-        #    wz &= selobs        
-        #func = ssr_tools.BGS_ssr
-        #minefftime=120
-        #maxefftime=300
         mintsnr=120/(12.15/89.8)
         maxtsnr =300/(12.15/89.8)
 
