@@ -2572,7 +2572,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #minefftime = tsnrcut*8.6
         #maxefftime = 200*8.7
         mintsnr = 80
-        maxtnsr = 200
+        maxtsnr = 200
         band = 'G'
 
     if tp == 'LRG':
