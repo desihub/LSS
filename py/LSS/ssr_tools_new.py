@@ -656,7 +656,7 @@ class model_ssr:
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
         ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
-        hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz])
+        hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz],bins=bine)
         self.nzf = hf/ha
         tot_failrate = np.sum(hf)/np.sum(ha)
         print(self.nzf)
@@ -674,7 +674,7 @@ class model_ssr:
         self.outfn_root = outfn_root
         
         #fit to TSNR2
-        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-2*tsnr_max, 0), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
+        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
                #method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
