@@ -846,7 +846,7 @@ class model_ssr:
         sel = wtf < 1
         wtf[sel] = 1
         mod = max_ssr_flux/wtf
-        data['WEIGHT_ZFAIL'] =  wtf
+        #data['WEIGHT_ZFAIL'] =  wtf
         return wtf,mod
 
 #         nb = 5
