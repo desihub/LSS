@@ -674,7 +674,7 @@ class model_ssr:
         self.outfn_root = outfn_root
         
         #fit to TSNR2
-        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0.001, tsnr_max), (0., tot_failrate)))#,
+        res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
                #method='Powell', tol=1e-6)
         pars = res.x
         chi2 = self.wrapper_hist(pars)
