@@ -772,7 +772,9 @@ class model_ssr:
                 print(mf)
                 mfl.append(mf)
             #fper.append(mf)
-            wtf = (fluxc*self.cat['FIBERFLUX_'+self.band+'_EC']/self.mft)*(self.wts_fid-1)+1
+            
+            rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/self.mft
+            wtf = (fluxc*(1-rel_flux)+1)*(self.wts_fid-1)+1
             selw = wtf < 1
             wtf[selw] = 1
             ha,_ = np.histogram(self.cat['TSNR2_'+self.tracer][sel],bins=self.bine)
