@@ -667,6 +667,7 @@ class model_ssr:
         self.outdir = outdir
         self.band = band
         self.tracer = tracer
+        self.outfn_root = outfn_root
         
         #fit to TSNR2
         res = minimize(self.wrapper_hist, [-20, 10., tot_failrate*.9], bounds=((-1000, 0), (0, tsnr_max), (0., tot_failrate)))#,
@@ -793,8 +794,8 @@ class model_ssr:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
                 plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
-            plt.ylabel('ELG_LOPnotqso Z failure rate, in fiber bins')
-            plt.xlabel('ELG EFFECTIVE exp time')
+            plt.ylabel(self.outfn_root+' Z success rate, in fiber bins')
+            plt.xlabel('TSNR2_'+self.tracer)
             plt.legend()
             plt.savefig(self.outdir+outfn)        
 
