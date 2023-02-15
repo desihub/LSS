@@ -493,7 +493,7 @@ if args.add_regressis == 'y':
         common.write_LSS(dd,fcd,comments)
 
 if args.add_weight_zfail == 'y':
-    ct.add_zfail_weight2full(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,survey=args.survey,specrel=args.verspec,version=args.version)   
+    ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut)   
     
 
 if args.add_ke == 'y':
