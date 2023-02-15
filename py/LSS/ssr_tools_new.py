@@ -756,10 +756,10 @@ class model_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
     
-    def hist_norm(self,fluxc,piv_flux,outfn='test.png'):
+    def hist_norm(self,params,outfn='test.png'):
         nzfper = []
         consl = []
-        
+        fluxc,piv_flux = params
         nb = 5
         pstep = 100//5
         costt = 0
