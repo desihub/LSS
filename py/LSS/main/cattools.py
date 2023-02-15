@@ -2542,7 +2542,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
     
-    regl = ['N','S']
+    regl = ['S','N']
 
     
     if tp == 'QSO':
