@@ -744,7 +744,7 @@ class model_ssr:
             print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
             fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
             fo.write('#'+self.band+'flux fit\n')
-            fo.write('coeff flux_pivot chi2\n')
+            fo.write('#coeff flux_pivot chi2\n')
         
             fo.write(str(fcoeff)+' '+str(piv)+' ')
             fo.write(str(chi2)+'\n')
