@@ -731,7 +731,7 @@ class model_ssr:
         print(flux_par)
         self.flux_mod = np.poly1d(flux_par)
         plt.plot(self.mfl,self.consl,'ko')
-        plt.plot(self.mfl,flux_mod(self.mfl),'k-')
+        plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
         plt.show()
         
         
