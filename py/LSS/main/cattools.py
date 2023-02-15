@@ -2591,7 +2591,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
         #    print('working with the full data, no region split')
         #    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
             
-        mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp,readpars=False)
+        mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp,readpars=True)
         modl.append(mod)
         #ffwz = gal.add_modpre(ff[selobs&selreg])
         #print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))
@@ -2617,6 +2617,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
+    selobs &= ff['GOODHARDLOC'] == 1
     selgz = common.goodz_infull(tp,ff,zcol='Z')
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
@@ -2641,7 +2642,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80):
     plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,fl+'_full_noveto.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS(ff,indir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
     
     
 #     if dchi2 is not None:
