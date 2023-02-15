@@ -765,8 +765,8 @@ class model_ssr:
             wtf = (fluxc*(self.mft-self.cat['FIBERFLUX_'+self.band+'_EC'])/self.mft+1)*(self.wts_fid-1)+1
             selw = wtf < 1
             wtf[selw] = 1
-            ha,_ = np.histogram(self.cat['TSNR2_'+tracer][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
+            ha,_ = np.histogram(self.cat['TSNR2_'+self.tracer][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['TSNR2_'+self.tracer][sel&self.selgz],weights=wtf[sel&self.selgz],bins=self.bine)
             #if self.vis_5hist:
             #    print(mf)
             #    print(np.sum(ha))
