@@ -70,7 +70,7 @@ if args.mkfiles == 'y':
             z_tot &= dz['TSNR2_BGS'] > 1000
 
 
-        z_suc = common.goodz_infull(tp,dz,zcol='Z')
+        z_suc = common.goodz_infull(tp[:3],dz,zcol='Z')
 
         #print(len(ff[z_suc]),len(ff[z_tot]))
         print("zsuccess rate for "+tp,len(dz[z_suc&z_tot])/len(dz[z_tot]))
