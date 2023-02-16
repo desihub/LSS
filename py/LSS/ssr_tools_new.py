@@ -290,11 +290,11 @@ class model_ssr:
         deff = data['TSNR2_'+self.tracer]#data['EFFTIME_ELG']
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
         tssr = 1.-self.failure_rate_eff(deff,*self.pars)
+        sel = tssr == 0
+        tssr[sel] = .01
+
         max_tssr = 1. - self.failure_rate_eff(self.tsnr_max,*self.pars)
         relssr = tssr/max_tssr
-        sel = relssr == 0
-        print(len(relssr[sel]))
-        print(np.mean(data[sel]['TSNR2_'+self.tracer]))
         max_ssr_flux = self.flux_mod(dflux) 
         print(np.min(max_ssr_flux),np.max(max_ssr_flux),np.mean(max_ssr_flux))
         #data['mod_success_rate'] = 1. -   
