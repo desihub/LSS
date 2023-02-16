@@ -294,7 +294,7 @@ class model_ssr:
         relssr = tssr/max_tssr
         sel = relssr == 0
         print(len(relssr[sel]))
-        print(np.mean(relssr[sel]['TSNR2_'+self.tracer]))
+        print(np.mean(data[sel]['TSNR2_'+self.tracer]))
         max_ssr_flux = self.flux_mod(dflux) 
         print(np.min(max_ssr_flux),np.max(max_ssr_flux),np.mean(max_ssr_flux))
         #data['mod_success_rate'] = 1. -   
