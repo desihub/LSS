@@ -173,6 +173,13 @@ class model_ssr:
 
             #else:
             #we expect asymptotic behavior for LRG and BGS
+            rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/self.piv#self.mft
+            wtf = (self.fcoeff*(1-rel_flux)+1)*(self.wts_fid-1)+1
+            a = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'][self.selgz],weights=wtf[self.selgz],bins=20)
+            b = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'],bins=a[1])
+            self.ssr_flux = a[0]/b[0]
+            self.flux_vals = a[1][:-1]+(a[1][1]-a[1][0])/2
+
             ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
             self.pars_ferf = ssrvflux.x
             print(self.pars_ferf)
@@ -181,8 +188,10 @@ class model_ssr:
                 fo.write(str(par)+' ')
             fo.write('\n')    
             fo.close()
-            plt.plot(self.mfl,self.consl,'ko')
-            plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
+            plt.plot(self.mfl,self.consl,'rd')
+            plt.plot(self.mfl,self.flux_mod(self.mfl),'r--')
+            plt.plot(self.flux_vals,self.ssr_flux,'ko')
+            plt.plot(self.flux_vals,self.flux_mod(self.flux_vals),'k-')
             plt.show()
            
             
@@ -192,8 +201,10 @@ class model_ssr:
         return self.pars_ferf[0]*erf((self.pars_ferf[1]+flux)/self.pars_ferf[2])
     
     def wrapper_ssrvflux(self,params):
-        mod = gen_erf(self.mfl,*params)
-        cost = np.sum((self.consl-mod)**2.)
+        #mod = gen_erf(self.mfl,*params)
+        #cost = np.sum((self.consl-mod)**2.)
+        mod = gen_erf(self.flux_vals,*params)
+        cost = np.sum((self.ssr_flux-mod)**2.)        
         return cost
     
     def wrapper_hist(self,params):
