@@ -268,6 +268,7 @@ class model_ssr:
         max_tssr = 1. - self.failure_rate_eff(self.tsnr_max,*self.pars)
         relssr = tssr/max_tssr
         max_ssr_flux = self.flux_mod(dflux) 
+        print(np.min(max_ssr_flux),np.max(max_ssr_flux),np.mean(max_ssr_flux))
         #data['mod_success_rate'] = 1. -   
         rel_flux = dflux/self.piv
         wtf = (self.fcoeff*(1-rel_flux)+1)*(1/relssr-1)+1
