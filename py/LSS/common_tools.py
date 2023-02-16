@@ -445,9 +445,25 @@ def join_etar(fn,tracer,tarver='1.1.1'):
 def add_map_cols(fn,rann,new_cols=['HALPHA','HALPHA_ERROR','CALIB_G','CALIB_R','CALIB_Z','EBV_GAIA_FW15','EBV_GAIA_FW6P1','EBV_SGF14','STARDENS'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=False):
     fid_fn = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
     new_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
-    
+    mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'
+   
     df = Table(fitsio.read(fn))
     
+    col = 'SKYMAP_MASK'
+    domask = True
+    if np.isin(col,list(df.dtype.names)):
+        print(col+' already in '+fn)
+        if redo:
+            df.remove_columns([col])
+            print('will replace '+col) 
+        else:
+            print('not replacing '+col)
+            domask = False
+    if domask:
+        mask = fitsio.read(mask_fn)
+        df = join(df,mask,keys=['TARGETID'])
+        del mask
+        
     cols2read_new = ['TARGETID']
     for col in new_cols:
         if np.isin(col,list(df.dtype.names)):
