@@ -175,7 +175,12 @@ class model_ssr:
             #we expect asymptotic behavior for LRG and BGS
             rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/self.piv#self.mft
             wtf = (self.fcoeff*(1-rel_flux)+1)*(self.wts_fid-1)+1
-            a = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'][self.selgz],weights=wtf[self.selgz],bins=20)
+            selw = wtf < 1
+            wtf[selw] = 1
+            flux_max = np.percentile(self.cat['FIBERFLUX_'+self.band+'_EC'],99)
+            flux_min = np.min(self.cat['FIBERFLUX_'+self.band+'_EC'])
+
+            a = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'][self.selgz],weights=wtf[self.selgz],bins=20,range=(flux_min,flux_max))
             b = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'],bins=a[1])
             self.ssr_flux = a[0]/b[0]
             self.flux_vals = a[1][:-1]+(a[1][1]-a[1][0])/2
