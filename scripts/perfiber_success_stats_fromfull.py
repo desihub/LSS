@@ -50,7 +50,7 @@ else:
 if args.mkfiles == 'y':
     for tp in tracers:
      
-        zf = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+args.catver+'/'tp+'_full_noveto.fits'
+        zf = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+args.catver+'/'+tp+'_full_noveto.fits'
         dz = Table(fitsio.read(zf))
         z_tot = dz['ZWARN'] != 999999
         z_tot &= dz['ZWARN']*0 == 0
