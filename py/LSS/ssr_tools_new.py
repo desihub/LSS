@@ -150,7 +150,7 @@ class model_ssr:
             #print(self.mfl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
-        if readpars:
+        if readpars == 'junk':
             parsmaxflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt')
             #if tracer == 'ELG':
             #    self.flux_mod = np.poly1d(parsmaxflux)
