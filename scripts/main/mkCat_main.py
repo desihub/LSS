@@ -69,6 +69,7 @@ parser.add_argument("--notqso",help="if y, do not include any qso targets",defau
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 parser.add_argument("--ranonly",help="if y, only operate on randoms when applying vetos",default='n')
+parser.add_argument("--readpars",help="set to y for certain steps if you want to read from previous fits",default='n')
 
 
 #options not typically wanted
@@ -493,7 +494,10 @@ if args.add_regressis == 'y':
         common.write_LSS(dd,fcd,comments)
 
 if args.add_weight_zfail == 'y':
-    ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut)   
+    readpars = False
+    if args.readpars == 'y':
+        readpars = True
+    ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
     
 
 if args.add_ke == 'y':

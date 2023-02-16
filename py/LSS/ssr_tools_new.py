@@ -128,6 +128,10 @@ class model_ssr:
         if readpars:
             parsflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_fluxfit.txt')
             fcoeff,piv = parsflux[0],parsflux[1]
+            ssrvsflux = np.loadt(self.outdir+outfn_root+rw+'maxssrvsflux.txt').transpose()
+            self.mfl = ssrvsflux[0]
+            self.consl = ssrvsflux[1]
+            
         else:
             rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
@@ -144,13 +148,18 @@ class model_ssr:
             fo.close()
             self.mfl = np.array(self.mfl)
             print(self.consl)
+            fo = open(self.outdir+outfn_root+rw+'maxssrvsflux.txt','w')
+            fo.write('#flux max_ssr\n')
+            for i in range(0,len(self.mfl)):
+                fo.write(str(self.mfl[i])+' '+str(self.consl[i])+'\n')
+            fo.close()
             
         self.fcoeff = fcoeff
         self.piv = piv
             #print(self.mfl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
-        if readpars == 'junk':
+        if readpars:
             parsmaxflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt')
             #if tracer == 'ELG':
             #    self.flux_mod = np.poly1d(parsmaxflux)
