@@ -172,14 +172,14 @@ class model_ssr:
             #    fo.write('\n')    
 
             #else:
-			#we expect asymptotic behavior for LRG and BGS
-			ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
-			self.pars_ferf = ssrvflux.x
-			print(self.pars_ferf)
-			self.flux_mod = self.ssrvflux_erf
-			for par in self.pars_ferf :
-				fo.write(str(par)+' ')
-			fo.write('\n')    
+            #we expect asymptotic behavior for LRG and BGS
+            ssrvflux = minimize(self.wrapper_ssrvflux,[self.consl[-1],self.mfl[0],self.mfl[-1]],method='Powell')
+            self.pars_ferf = ssrvflux.x
+            print(self.pars_ferf)
+            self.flux_mod = self.ssrvflux_erf
+            for par in self.pars_ferf :
+                fo.write(str(par)+' ')
+            fo.write('\n')    
             fo.close()
             plt.plot(self.mfl,self.consl,'ko')
             plt.plot(self.mfl,self.flux_mod(self.mfl),'k-')
