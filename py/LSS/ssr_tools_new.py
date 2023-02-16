@@ -128,7 +128,7 @@ class model_ssr:
         if readpars:
             parsflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_fluxfit.txt')
             fcoeff,piv = parsflux[0],parsflux[1]
-            ssrvsflux = np.loadt(self.outdir+outfn_root+rw+'maxssrvsflux.txt').transpose()
+            ssrvsflux = np.loadtxt(self.outdir+outfn_root+rw+'maxssrvsflux.txt').transpose()
             self.mfl = ssrvsflux[0]
             self.consl = ssrvsflux[1]
             
