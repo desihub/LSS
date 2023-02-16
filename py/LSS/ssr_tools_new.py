@@ -159,7 +159,7 @@ class model_ssr:
             #print(self.mfl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
-        if readpars:
+        if readpars == 'junk':
             parsmaxflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt')
             #if tracer == 'ELG':
             #    self.flux_mod = np.poly1d(parsmaxflux)
@@ -186,7 +186,7 @@ class model_ssr:
             wtf = (self.fcoeff*(1-rel_flux)+1)*(self.wts_fid-1)+1
             selw = wtf < 1
             wtf[selw] = 1
-            flux_max = np.percentile(self.cat['FIBERFLUX_'+self.band+'_EC'],99)
+            flux_max = np.percentile(self.cat['FIBERFLUX_'+self.band+'_EC'],95)
             flux_min = np.min(self.cat['FIBERFLUX_'+self.band+'_EC'])
 
             a = np.histogram(self.cat['FIBERFLUX_'+self.band+'_EC'][self.selgz],weights=wtf[self.selgz],bins=20,range=(flux_min,flux_max))
@@ -292,6 +292,9 @@ class model_ssr:
         tssr = 1.-self.failure_rate_eff(deff,*self.pars)
         max_tssr = 1. - self.failure_rate_eff(self.tsnr_max,*self.pars)
         relssr = tssr/max_tssr
+        sel = relssr == 0
+        print(len(relssr[sel]))
+        print(np.mean(relssr[sel]['TSNR2_'+self.tracer]))
         max_ssr_flux = self.flux_mod(dflux) 
         print(np.min(max_ssr_flux),np.max(max_ssr_flux),np.mean(max_ssr_flux))
         #data['mod_success_rate'] = 1. -   
