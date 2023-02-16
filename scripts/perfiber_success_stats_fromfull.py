@@ -16,6 +16,7 @@ from astropy.time import Time
 from astropy.io import fits
 
 import LSS.common_tools as common
+from LSS.globals import main
 
 
 parser = argparse.ArgumentParser()
@@ -49,14 +50,26 @@ else:
 
 if args.mkfiles == 'y':
     for tp in tracers:
-     
+        mainp = main(tp,args.verspec)
         zf = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+args.catver+'/'+tp+'_full_noveto.dat.fits'
         dz = Table(fitsio.read(zf))
+        if mainp.ebits is not None:
+            print('number before imaging mask '+str(len(dz)))
+            if mainp.ebits == 'lrg_mask':
+                sel = dz['lrg_mask'] == 0
+                dz = dz[sel]
+            else:
+                dz = common.cutphotmask(dz,mainp.ebits)
+
         z_tot = dz['ZWARN'] != 999999
         z_tot &= dz['ZWARN']*0 == 0
         z_tot &= dz['GOODHARDLOC'] == 1
         if tp[:3] != 'BGS':
             z_tot &= dz['TSNR2_ELG'] > 80
+        else:
+            z_tot &= dz['TSNR2_BGS'] > 1000
+
+
         z_suc = common.goodz_infull(tp,dz,zcol='Z')
 
         #print(len(ff[z_suc]),len(ff[z_tot]))
@@ -76,11 +89,14 @@ if args.mkfiles == 'y':
             sel = dz['FIBER'] == fib
             nmod = np.sum(dz[sel&z_tot]['mod_success_rate'])
             modl.append(nmod)
-            print(fib)
-        fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess_fromfull.txt'
+            if fib%100 == 0:
+                print(fib)
+        fn = basedir+'/'+survey+'/LSS/'+specver+'/LSScats/'+args.catver+'/'+tp+'_zsuccess_fromfull.txt'
         fo = open(fn,'w')
         for ii in range(len(fibl)):
             fo.write(str(fibl[ii])+' '+str(n_g[ii]/n_tot[ii])+' '+str(n_g[ii])+' '+str(n_tot[ii])+' '+str(modl[ii])+'\n')
         fo.close()
+        print('tracer, std ssr, std success/model, <ssr>, <success/model>')
+        print(tp,np.std(n_g/n_tot),np.std(n_g/modl),np.mean(n_g/n_tot),np.mean(n_g/modl))
  
 
