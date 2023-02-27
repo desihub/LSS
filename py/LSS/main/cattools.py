@@ -2644,7 +2644,15 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     plt.show()
     
     common.write_LSS(ff,indir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
-    
+    ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+    ffc = Table.read(indir+tp+'_full.dat.fits')
+    cols = list(ffc.dtype.names)
+    if 'WEIGHT_ZFAIL' in cols:
+        ffc.remove_columns(['WEIGHT_ZFAIL'])
+    if 'mod_success_rate' in cols:
+        ffc.remove_columns(['mod_success_rate'])
+    ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        
     
 #     if dchi2 is not None:
 #         if tp[:3] == 'LRG':
