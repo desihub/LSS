@@ -2652,6 +2652,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     if 'mod_success_rate' in cols:
         ffc.remove_columns(['mod_success_rate'])
     ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+    common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
         
     
 #     if dchi2 is not None:
