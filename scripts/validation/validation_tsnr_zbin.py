@@ -90,6 +90,9 @@ for tp in tps:
     #df = join(dtf,dc,keys=['TARGETID'],join_type='left')
     selgz = common.goodz_infull(tp[:3],df)#df['Z'].mask == False
     selo = df['ZWARN'] != 999999
+    selo &= df['ZWARN']*0 == 0
+    
+
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
