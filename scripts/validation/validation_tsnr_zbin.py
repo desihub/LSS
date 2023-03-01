@@ -99,9 +99,9 @@ for tp in tps:
     while zm < zmax:
         selz = df['Z_not4clus'] > zm
         selz &= df['Z_not4clus'] < zm+dz
-        seln = elgfull['PHOTSYS'] == 'N'
-        normed_plot(elgfull,sel_obs&seln,sel_obs&gz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol)
-        normed_plot(elgfull,sel_obs&~seln,sel_obs&gz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol)
+        seln = df['PHOTSYS'] == 'N'
+        normed_plot(df,sel_obs&seln,sel_obs&gz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol)
+        normed_plot(df,sel_obs&~seln,sel_obs&gz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol)
         plt.legend()
         plt.grid()
         plt.ylabel(tp+' relative z success')
