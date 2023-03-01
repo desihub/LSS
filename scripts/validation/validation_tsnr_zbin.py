@@ -93,22 +93,27 @@ for tp in tps:
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
-    tsnrcol = 'TSNR2_ELG'#+tp[:3]
+    if tp[:3] == 'BGS':
+        tsnrcol = 'TSNR2_BGS'
+        rng=(880,2200)
+    else:
+        tsnrcol = 'TSNR2_ELG'#+tp[:3]
+        rng=(80,200)
     
     zm = zmin
     while zm < zmax:
         selz = df['Z_not4clus'] > zm
         selz &= df['Z_not4clus'] < zm+dz
         seln = df['PHOTSYS'] == 'N'
-        normed_plot(df,selo&seln,selo&selgz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol)
-        normed_plot(df,selo&~seln,selo&selgz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol)
+        normed_plot(df,selo&seln,selo&selgz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol,range=rng)
+        normed_plot(df,selo&~seln,selo&selgz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol,range=rng)
         plt.legend()
         plt.grid()
         plt.ylabel(tp+' relative z success')
         plt.xlabel(tsnrcol)
         plt.title(str(round(zm,3))+'<z<'+str(round(zm+dz,3)))
-        zm += dz
         plt.savefig(outdir+tp+'_'+str(round(zm,3))+'ltzlt'+str(round(zm+dz,3))+'_relsuccess_tnsr.png')
         plt.clf()
+        zm += dz
 
 
