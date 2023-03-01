@@ -194,13 +194,13 @@ class model_ssr_zfac:
         for i in range(0,100//pstep):
             minzfac = np.percentile(self.relzfac[self.selz],i*pstep)
             maxzfac = np.percentile(self.relzfac[self.selz],(i+1)*pstep)
-            selzfac = relzfac > minzfac
-            selzfac &= relzfac < maxzfac
+            selzfac = self.relzfac > minzfac
+            selzfac &= self.relzfac < maxzfac
             seltot = np.ones(len(self.cat),dtype='bool')
             sel = self.selz & self.selgz & selzfac
             res = normed_linfit(self.cat,seltot,sel)
             slpl.append(res[0])
-            zfacl.append(np.median(relzfac[sel]))
+            zfacl.append(np.median(self.relzfac[sel]))
         res = np.polyfit(zfacl,slpl,1)
         return res
 
