@@ -170,7 +170,7 @@ class model_ssr_zfac:
         self.selz &= self.cat['Z_not4clus'] < maxz
         self.maxz = maxz
         
-        self.res_mod_slp = self.get_slpfunc(relzfac)
+        self.res_mod_slp = self.get_slpfunc()
         self.ssrtot = len(self.cat[selgz])/len(self.cat)
         self.tracer = tracer
             
