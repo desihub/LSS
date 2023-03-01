@@ -162,7 +162,7 @@ class model_ssr_zfac:
         for i in range(0,len(self.ztsnr)):
             self.ztsnr[i] = round(self.ztsnr[i],3)
         self.modo2_dict = dict(zip(self.ztsnr,modo2))
-        relzfac = get_relzfac(self.cat)
+        relzfac = self.get_relzfac(self.cat)
         if tracer == 'ELG':
             minz = 0.8
             maxz = 1.6
