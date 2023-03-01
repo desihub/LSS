@@ -205,7 +205,7 @@ class model_ssr_zfac:
         return res
 
     def add_modpre(self,data,zcol='Z'):
-        relzfac = self.get_relzfac(data,,zcol=zcol)
+        relzfac = self.get_relzfac(data,zcol=zcol)
         mod_slp = self.res_mod_slp[1]+self.res_mod_slp[0]*relzfac
         sel_neg = mod_slp < 0
         mod_slp[sel_neg] = 0
