@@ -162,7 +162,7 @@ class model_ssr_zfac:
         for i in range(0,len(self.ztsnr)):
             self.ztsnr[i] = round(self.ztsnr[i],3)
         self.modo2_dict = dict(zip(self.ztsnr,modo2))
-        relzfac = self.get_relzfac(self.cat)
+        self.relzfac = self.get_relzfac(self.cat)
         if tracer == 'ELG':
             minz = 0.8
             maxz = 1.6
@@ -170,7 +170,7 @@ class model_ssr_zfac:
         self.selz &= self.cat['Z_not4clus'] < maxz
         self.maxz = maxz
         
-        self.res_mod_slp = self.get_slpfunc()
+        self.res_mod_slp = self.get_slpfunc(relzfac)
         self.ssrtot = len(self.cat[selgz])/len(self.cat)
         self.tracer = tracer
             
@@ -192,8 +192,8 @@ class model_ssr_zfac:
         slpl = []
         zfacl = []
         for i in range(0,100//pstep):
-            minzfac = np.percentile(relzfac[selz],i*pstep)
-            maxzfac = np.percentile(relzfac[selz],(i+1)*pstep)
+            minzfac = np.percentile(self.relzfac[self.selz],i*pstep)
+            maxzfac = np.percentile(self.relzfac[self.selz],(i+1)*pstep)
             selzfac = relzfac > minzfac
             selzfac &= relzfac < maxzfac
             seltot = np.ones(len(self.cat),dtype='bool')
