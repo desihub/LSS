@@ -171,7 +171,7 @@ class model_ssr_zfac:
         self.maxz = maxz
         
         self.res_mod_slp = self.get_slpfunc()
-        self.ssrtot = len(self.cat[selgz])/len(self.cat)
+        self.ssrtot = len(self.cat[self.selgz])/len(self.cat)
         self.tracer = tracer
             
  
