@@ -100,8 +100,8 @@ for tp in tps:
         selz = df['Z_not4clus'] > zm
         selz &= df['Z_not4clus'] < zm+dz
         seln = df['PHOTSYS'] == 'N'
-        normed_plot(df,sel_obs&seln,sel_obs&gz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol)
-        normed_plot(df,sel_obs&~seln,sel_obs&gz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol)
+        normed_plot(df,selo&seln,selo&selgz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol)
+        normed_plot(df,selo&~seln,selo&selgz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol)
         plt.legend()
         plt.grid()
         plt.ylabel(tp+' relative z success')
