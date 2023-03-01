@@ -6,9 +6,9 @@ import argparse
 
 import fitsio
 from astropy.table import join,Table
-import healpy as hp
 
-from LSS.imaging import densvar
+import LSS.common_tools as common
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
