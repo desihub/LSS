@@ -2591,7 +2591,10 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
         #    print('working with the full data, no region split')
         #    gal = func(surveys=[survey],specrels=[specrel],versions=[version],efftime_min=minefftime,efftime_max=maxefftime)
             
-        mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp,readpars=readpars)
+        if tp[:3] == 'ELG':
+            mod = ssr_tools_new.model_ssr_zfac(reg=reg,outdir=indir)
+        else:
+            mod = ssr_tools_new.model_ssr(ff[selobs],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=indir,band=band,outfn_root=tp,readpars=readpars)
         modl.append(mod)
         #ffwz = gal.add_modpre(ff[selobs&selreg])
         #print(min(ffwz['mod_success_rate']),max(ffwz['mod_success_rate']))

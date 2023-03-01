@@ -31,10 +31,199 @@ def fit_cons(dl,el,minv=0,step=0.01):
     
     return oldcost,c
 
+def get_tsnr2z(tracer='ELG',night=20230118,expid=165078,tsnrdir='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/TSNR2z/'):
+    '''
+    get the relative template signal to noise ^2 for a given tracer type, night, and expid
+    Copied from script from Julien Guy
+    '''
+    from desispec.io import read_frame
+    import desisim.templates
+    import scipy.ndimage
+    ivar_table_filename = tsnrdir+"desi-"+str(night)+"-"+str(expid)+"-ivar.csv"
+    if not os.path.isfile(ivar_table_filename) :
+        spec_wave = None
+        spec_ivar = []
+
+        for spec in range(10) :
+
+            wave_list=[]
+            ivar_list=[]
+
+            for arm in ["b","r","z"] :
+                cam=f"{arm}{spec}"
+                cframe_filename="/global/cfs/cdirs/desi/spectro/redux/daily/exposures/{}/{:08d}/cframe-{}-{:08d}.fits.gz".format(night,expid,cam,expid)
+                if not os.path.isfile(cframe_filename) :
+                    print("No file",cframe_filename,"?")
+                    continue
+
+                cframe = read_frame(cframe_filename)
+                # directly get inverse variance from the sky fibers
+                selection = np.where(cframe.fibermap["OBJTYPE"]=="SKY")[0]
+                if len(selection)==0 :
+                    print("No sky fibers?")
+                    continue
+
+                sw =  np.sum((cframe.ivar[selection]>0)*(cframe.mask[selection]==0),axis=0)
+                median_ivar = np.sum(cframe.ivar[selection]*(cframe.mask[selection]==0),axis=0)/(sw+(sw==0))
+
+                #plt.plot(cframe.wave,median_ivar)
+
+                # store wavelength and ivar to merge them
+                wave_list.append(cframe.wave)
+                ivar_list.append(median_ivar)
+            wave=np.unique(np.hstack(wave_list)) # this works because the wavelength of different cameras are aligned
+            ivar=np.zeros(wave.size)
+            for cam_wave,cam_ivar in zip(wave_list,ivar_list) :
+                # we add the ivar of different cameras in overlapping area
+                ivar += np.interp(wave,cam_wave,cam_ivar,left=0,right=0) # this works because the wavelength of different cameras are aligned
+
+
+            if spec_wave is None :
+                spec_wave = wave
+            else :
+                assert(np.all(spec_wave==wave))
+            spec_ivar.append(ivar)
+            #plt.plot(wave,ivar,"-")
+
+        ivar=np.mean(np.array(spec_ivar),axis=0)
+        #plt.plot(spec_wave,ivar,c="k")
+        t=Table()
+        t["WAVE"]=spec_wave[spec_wave<9820]
+        t["IVAR"]=ivar[spec_wave<9820]
+        t.write(ivar_table_filename,overwrite=True)
+
+    t=Table.read(ivar_table_filename)
+    wave=t["WAVE"]
+    ivar=t["IVAR"]
+
+    if tracer == 'ELG':
+        # average an ensemble of ELG spectra at the same redshift and magnitude
+        #if 1 :
+        zmin=0.
+        zmax=2.
+        zref=1.
+        wmin=wave[0]*(1+zmin)/(1+zref)
+        wmax=wave[-1]*(1+zmax)/(1+zref)
+        twave=np.linspace(wmin,wmax,int((wmax-wmin)/0.4))
+        maker = desisim.templates.ELG(wave=twave)#, normfilter_south=normfilter_south)
+        nmodel=50
+        flux, other_wave, meta, objmeta = maker.make_templates(nmodel=nmodel, redshift=np.repeat(1.,nmodel), mag=np.repeat(22,nmodel), seed=12)
+        tflux=np.mean(flux,axis=0)
+        print(flux.shape)
+
+        # use median filter to remove the continuum
+        dw = twave[1]-twave[0]
+        width = int(100./dw) #100A smoothing
+        smooth_flux = scipy.ndimage.median_filter(tflux, width, mode='constant')
+        dflux = tflux-smooth_flux
+
+        # compute tsnr2 on a redshift range
+        redshift=np.linspace(0,1.7,int(1.700001/0.001)+1)
+        tsnr2=np.zeros(redshift.shape)
+        for i,z in enumerate(redshift):
+            tmp=np.interp(wave,twave*(1+z)/(1+zref),dflux)
+            tsnr2[i]=np.sum(ivar*tmp**2)
+        #print(redshift[:20])
+        return redshift,tsnr2
+    else:
+        print('ERROR, only ELG tracer type supported so far')
+
+
+
+
+def normed_linfit(data,seltot,sel,range=(80,200),col='TSNR2_ELG',cl='k',ps='o',lab=''):
+    a,bins = np.histogram(data[seltot][col],range=range)
+    b,_ = np.histogram(data[sel][col],bins=bins)
+    sp = bins[1]-bins[0]
+    err = np.sqrt(b)/a #rough, correct formula is to use binomial
+    normb = np.sum(b)/np.sum(a)
+    cchi = np.sum((b/a/normb-1.)**2./(err/normb)**2.)
+    bc = bins[:-1]+sp/2.
+    #plt.errorbar(bc,b/a/normb,err/normb,fmt=cl+ps,label=lab+str(round(cchi,3)))
+    res = np.polyfit(bc, b/a/normb,1, w=1./(err/normb))
+    #chi2lin = np.sum((b/a/normb-(res[0]*bc+res[1]))**2./(err/normb)**2.)
+    #plt.plot(bc,res[0]*bc+res[1],'r--',label=r'$\chi^2_{\rm lin}=$'+str(round(chi2lin,3)))
+    return res
+
+class model_ssr_zfac:
+    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False):
+        self.cat = input_data
+
+        mask = self.cat['TSNR2_'+tracer]>tsnr_min
+        mask &= self.cat['TSNR2_'+tracer]<tsnr_max
+        self.tsnr_max = tsnr_max
+        self.reg = reg
+        if reg is not None:
+            mask &= self.cat['PHOTSYS'] == reg
+        self.cat = self.cat[mask]
+        self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
+        self.ztsnr,self.tsnr2z = get_tsnr2z(tracer)
+        modo2 = (1500/self.tsnr2z-1)/(15/((self.ztsnr-1)))+1
+        for i in range(0,len(self.ztsnr)):
+            self.ztsnr[i] = round(self.ztsnr[i],3)
+        self.modo2_dict = dict(zip(self.ztsnr,modo2))
+        relzfac = get_relzfac(self.cat)
+        if tracer == 'ELG':
+            minz = 0.8
+            maxz = 1.6
+        self.selz = self.cat['Z_not4clus'] > minz
+        self.selz &= self.cat['Z_not4clus'] < maxz
+        self.maxz = maxz
+        
+        self.res_mod_slp = self.get_slpfunc()
+        self.ssrtot = len(self.cat[selgz])/len(self.cat)
+        self.tracer = tracer
+            
+ 
+    def get_relzfac(self,data,zcol='Z_not4clus',zmax=1.6):           
+        relzfac = []
+        for z in data[zcol]:
+            rz = round(z,3)
+            if rz >0 and rz < zmax:
+                relzfac.append(self.modo2_dict[rz])
+            else:
+                relzfac.append(1)
+        relzfac = np.array(relzfac)
+        return relzfac
+
+
+    
+    def get_slpfunc(self,pstep=5):
+        slpl = []
+        zfacl = []
+        for i in range(0,100//pstep):
+            minzfac = np.percentile(relzfac[selz],i*pstep)
+            maxzfac = np.percentile(relzfac[selz],(i+1)*pstep)
+            selzfac = relzfac > minzfac
+            selzfac &= relzfac < maxzfac
+            seltot = np.ones(len(self.cat),dtype='bool')
+            sel = self.selz & self.selgz & selzfac
+            res = normed_linfit(self.cat,seltot,sel)
+            slpl.append(res[0])
+            zfacl.append(np.median(relzfac[sel]))
+        res = np.polyfit(zfacl,slpl,1)
+        return res
+
+    def add_modpre(self,data):
+        relzfac = self.get_relzfac(data)
+        mod_slp = self.res_mod_slp[1]+self.res_mod_slp[0]*relzfac
+        sel_neg = mod_slp < 0
+        mod_slp[sel_neg] = 0
+        mtsnr2 = np.median(self.cat['TSNR2_'+self.tracer])
+        mod_relssr = mod_slp*data['TSNR2_'+self.tracer]+1-mod_slp*mtsnr2
+        mod_ssr = np.clip(self.ssrtot*mod_relssr,0,1)
+        wtf = 1./mod_relssr
+
+        return wtf,mod_ssr
+
 
 
 
 class model_ssr:
+    '''
+    This class will fit a model based on TSNR2_<type> and FIBERFLUX_<band> for the redshift success and produce weights
+    that are the inverse of the relative predicted redshift success
+    '''
     def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False):
         self.cat = input_data
 
