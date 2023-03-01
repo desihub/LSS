@@ -204,8 +204,8 @@ class model_ssr_zfac:
         res = np.polyfit(zfacl,slpl,1)
         return res
 
-    def add_modpre(self,data):
-        relzfac = self.get_relzfac(data)
+    def add_modpre(self,data,zcol='Z'):
+        relzfac = self.get_relzfac(data,,zcol=zcol)
         mod_slp = self.res_mod_slp[1]+self.res_mod_slp[0]*relzfac
         sel_neg = mod_slp < 0
         mod_slp[sel_neg] = 0
