@@ -31,7 +31,7 @@ def fit_cons(dl,el,minv=0,step=0.01):
     
     return oldcost,c
 
-def get_tsnr2z(tracer='ELG',night=20230118,expid=165078,tsnrdir='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/TSNR2z/'):
+def get_tsnr2z(tracer='ELG',night=20230128,expid=165078,tsnrdir='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/TSNR2z/'):
     '''
     get the relative template signal to noise ^2 for a given tracer type, night, and expid
     Copied from script from Julien Guy
