@@ -2543,6 +2543,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
 
     s = 0
     modl =[]
+    regl = ['S','N']
     for reg in regl:
         mod = ssr_tools_new.model_ssr(ff,tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=outdir,band=band,outfn_root=tp,readpars=readpars)
         modl.append(mod)    
@@ -2556,7 +2557,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
     
-    regl = ['S','N']
+    
     
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
