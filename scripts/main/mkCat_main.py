@@ -499,14 +499,14 @@ if args.add_weight_zfail == 'y':
     readpars = False
     if args.readpars == 'y':
         readpars = True
-    if tp[:3] == 'QSO':
+    if type[:3] == 'QSO':
         ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars) 
     else:
         ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
 if args.add_bitweight == 'y':
     ff = fitsio.read(dirout+tracer_clus+'_full.dat.fits')
-    if tp[:3] != 'BGS':
+    if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
     ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
     common.write(ff,dirout+tracer_clus+'_full.dat.fits',comment='Added alt MTL info')
