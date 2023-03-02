@@ -2541,6 +2541,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     mintsnr=450/(8.60/0.255)
     maxtsnr=1800/(8.60/0.255)
     band = 'R'
+    tp = 'QSO'
     
     
 
