@@ -91,7 +91,8 @@ for tp in tps:
     selgz = common.goodz_infull(tp[:3],df)#df['Z'].mask == False
     selo = df['ZWARN'] != 999999
     selo &= df['ZWARN']*0 == 0
-    
+    if tp[:3] == 'QSO':
+	    selo &= df['PRIORITY'] == 3400 #repeats throw things off
 
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
