@@ -796,7 +796,7 @@ def addNS(tab):
     wra = (tab['RA'] > 100-tab['DEC'])
     wra &= (tab['RA'] < 280 +tab['DEC'])
     tab['PHOTSYS'] = 'S'
-    seln = dec > 32.375
+    seln = tab['DEC'] > 32.375
     seln &= wra
     tab['PHOTSYS'][seln] = 'N'
     return tab
