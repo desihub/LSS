@@ -2534,12 +2534,15 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
     ff = common.addNS(ff)
     ff = common.cut_specdat(ff)
+    outdir = indir+'LSScats/'+version+'/'
+    ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
+    ff = join(ff,ffv,keys=['TARGETID'],join_type='left')
 
     mintsnr=450/(8.60/0.255)
     maxtsnr=1800/(8.60/0.255)
     band = 'R'
     
-    outdir = indir+'LSScats/'+version+'/'
+    
 
     s = 0
     modl =[]
@@ -2548,7 +2551,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
         mod = ssr_tools_new.model_ssr(ff,tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer='QSO',reg=reg,outdir=outdir,band=band,outfn_root='QSO',readpars=readpars)
         modl.append(mod)    
 
-    ff = Table.read(outdir+tp+'_full_noveto.dat.fits')
+    ff = ffv#Table.read(outdir+tp+'_full_noveto.dat.fits')
     wzf = np.ones(len(ff))
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
