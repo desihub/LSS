@@ -2535,13 +2535,14 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     ff = common.addNS(ff)
     ff = common.cut_specdat(ff)
     outdir = indir+'LSScats/'+version+'/'
+    tp = 'QSO'
     ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
     ff = join(ff,ffv,keys=['TARGETID'],join_type='left')
 
     mintsnr=450/(8.60/0.255)
     maxtsnr=1800/(8.60/0.255)
     band = 'R'
-    tp = 'QSO'
+    
     
     
 
