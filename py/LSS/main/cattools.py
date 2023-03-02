@@ -2537,6 +2537,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     outdir = indir+'LSScats/'+version+'/'
     tp = 'QSO'
     ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
+    ffv.keep_columns(['TARGETID','FIBERFLUX_R','MW_TRANSMISSION_R'])
     ff = join(ff,ffv,keys=['TARGETID'],join_type='left')
     print(ff.dtype.names)
     mintsnr=450/(8.60/0.255)
