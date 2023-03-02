@@ -2521,16 +2521,16 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     selobs = ff['ZWARN'] != 999999
     selobs &= ff['TSNR2_ELG'] > tsnrcut
     ff = ff[selobs]
-	azf = qsocat
-	arz = Table(fitsio.read(azf))
-	arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
-	arz['TILEID'] = arz['TILEID'].astype(int)
-	print(arz.dtype.names)
-	ff = join(ff,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-	ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
-	ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
-	ff = common.addNS(ff)
-	ff = common.cut_specdat(ff)
+    azf = qsocat
+    arz = Table(fitsio.read(azf))
+    arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+    arz['TILEID'] = arz['TILEID'].astype(int)
+    print(arz.dtype.names)
+    ff = join(ff,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+    ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
+    ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
+    ff = common.addNS(ff)
+    ff = common.cut_specdat(ff)
 
     mintsnr=450/(8.60/0.255)
     maxtsnr=1800/(8.60/0.255)
@@ -2542,7 +2542,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     modl =[]
     for reg in regl:
         mod = ssr_tools_new.model_ssr(ff,tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=outdir,band=band,outfn_root=tp,readpars=readpars)
-        modl.append(mod)	
+        modl.append(mod)    
 
     ff = Table.read(outdir+tp+'_full_noveto.dat.fits')
     wzf = np.ones(len(ff))
