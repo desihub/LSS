@@ -2555,6 +2555,9 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     selobs &= ff['GOODHARDLOC'] == 1
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
+    
+    regl = ['S','N']
+    
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
         wts,md = mod.add_modpre(ff[selobs&selreg])
