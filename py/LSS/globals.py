@@ -135,5 +135,6 @@ class main:
 
         if specver == 'iron':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/emlin_catalog.fits'
-            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/QSO_catalog.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/QSO/'+specver+'/QSO_cat_iron_cumulative_v0.fits'
             #self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
+        self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/dark_bitweight_v0.fits'

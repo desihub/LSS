@@ -2516,6 +2516,77 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
         print(tid,ssr_t,ssr_t/ssr_all)
     return ff
 
+def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
+    ff = fitsio.read(indir+'datcomb_QSO_tarspecwdup_zdone.fits')
+    selobs = ff['ZWARN'] != 999999
+    selobs &= ff['TSNR2_ELG'] > tsnrcut
+    ff = ff[selobs]
+	azf = qsocat
+	arz = Table(fitsio.read(azf))
+	arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+	arz['TILEID'] = arz['TILEID'].astype(int)
+	print(arz.dtype.names)
+	ff = join(ff,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+	ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
+	ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
+	ff = common.addNS(ff)
+	ff = common.cut_specdat(ff)
+
+    mintsnr=450/(8.60/0.255)
+    maxtsnr=1800/(8.60/0.255)
+    band = 'R'
+    
+    outdir = indir+'LSScats/'+version+'/'
+
+    s = 0
+    modl =[]
+    for reg in regl:
+        mod = ssr_tools_new.model_ssr(ff,tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer=tp[:3],reg=reg,outdir=outdir,band=band,outfn_root=tp,readpars=readpars)
+        modl.append(mod)	
+
+    ff = Table.read(outdir+tp+'_full_noveto.dat.fits')
+    wzf = np.ones(len(ff))
+    msr = np.ones(len(ff))
+    selobs = ff['ZWARN']*0 == 0
+    selobs &= ff['ZWARN'] != 999999
+    selobs &= ff['GOODHARDLOC'] == 1
+    selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
+    selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
+    for reg,mod in zip(regl,modl):
+        selreg = ff['PHOTSYS'] == reg
+        wts,md = mod.add_modpre(ff[selobs&selreg])
+        wzf[selobs&selreg] = wts
+        msr[selobs&selreg] = md
+        print('compare good z frac to sum of model')
+        print(len(ff[selgz&selobs&selreg])/len(ff[selobs&selreg]),np.sum(msr[selobs&selreg])/len(ff[selobs&selreg]))
+
+    ff['WEIGHT_ZFAIL'] = wzf
+    ff['mod_success_rate'] = msr
+    
+    #print(len(ff[wz]),len(ff))
+
+    print('min/max of zfail weights:')
+    print(np.min(ff[selobs]['WEIGHT_ZFAIL']),np.max(ff[selobs]['WEIGHT_ZFAIL']))
+ 
+        
+
+
+    plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
+    plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
+    plt.show()
+    
+    common.write_LSS(ff,outdir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
+    ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+    ffc = Table.read(outdir+tp+'_full.dat.fits')
+    cols = list(ffc.dtype.names)
+    if 'WEIGHT_ZFAIL' in cols:
+        ffc.remove_columns(['WEIGHT_ZFAIL'])
+    if 'mod_success_rate' in cols:
+        ffc.remove_columns(['mod_success_rate'])
+    ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+    common.write_LSS(ffc,outdir+tp+'_full.dat.fits',comments='added ZFAIL weight')
+ 
+
 
 def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     import LSS.common_tools as common
@@ -2529,6 +2600,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''
+    
     ff = Table.read(indir+tp+'_full.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:

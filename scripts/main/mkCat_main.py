@@ -63,6 +63,7 @@ parser.add_argument("--regressis",help="RF weights for imaging systematics?",def
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
+parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -258,7 +259,8 @@ if mkfulld:
             #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
             azf = ldirspec+'emlin_catalog.fits'
         if type[:3] == 'QSO':
-            azf =ldirspec+'QSO_catalog.fits'
+            #azf =ldirspec+'QSO_catalog.fits'
+            azf = mainp.qsozf
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
 
@@ -497,7 +499,17 @@ if args.add_weight_zfail == 'y':
     readpars = False
     if args.readpars == 'y':
         readpars = True
-    ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
+    if tp[:3] == 'QSO':
+        ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars) 
+    else:
+        ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
+
+if args.add_bitweight == 'y':
+    ff = fitsio.read(dirout+tracer_clus+'_full.dat.fits')
+    if tp[:3] != 'BGS':
+        bitf = fitsio.read(mainp.darkbitweightfile)
+    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
+    common.write(ff,dirout+tracer_clus+'_full.dat.fits',comment='Added alt MTL info')
     
 
 if args.add_ke == 'y':
