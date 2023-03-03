@@ -238,6 +238,7 @@ class model_ssr:
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
         ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
+        medt = np.median(self.cat['TSNR2_'+tracer])
         hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz],bins=bine)
         self.nzf = hf/ha
         tot_failrate = np.sum(hf)/np.sum(ha)
@@ -266,7 +267,12 @@ class model_ssr:
             pars = np.array([parsf[0],parsf[1],parsf[2]])
             chi2 = parsf[3]
         else:
-            res = minimize(self.wrapper_hist, [-16, 10., high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., tot_failrate)),method='Powell')#,
+            maxv = tot_failrate
+            if high_failrate > tot_failrate:
+                maxv = 1.01*high_failrate
+            bgeuss = 10*medt/120.
+            aguess = -16*medt/120.
+            res = minimize(self.wrapper_hist, [aguess, bguess, high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., maxv)),method='Powell')#,
                #method='Powell', tol=1e-6)
             pars = res.x
             chi2 = self.wrapper_hist(pars)
