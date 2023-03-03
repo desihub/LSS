@@ -270,7 +270,7 @@ class model_ssr:
             maxv = tot_failrate
             if high_failrate > tot_failrate:
                 maxv = 1.01*high_failrate
-            bgeuss = 10*medt/120.
+            bguess = 10*medt/120.
             aguess = -16*medt/120.
             res = minimize(self.wrapper_hist, [aguess, bguess, high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., maxv)),method='Powell')#,
                #method='Powell', tol=1e-6)
