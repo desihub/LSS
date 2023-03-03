@@ -481,7 +481,7 @@ class model_ssr:
         
     
     def add_modpre(self,data):
-        dflux = data['FIBERFLUX_'+self.band]*10**(0.4**extdict[self.band]*data['EBV']) #data['FIBERFLUX_G_EC']
+        dflux = data['FIBERFLUX_'+self.band]*10**(0.4*extdict[self.band]*data['EBV']) #data['FIBERFLUX_G_EC']
         deff = data['TSNR2_'+self.tracer]#data['EFFTIME_ELG']
         #data['mod_success_rate'] = 1. -self.failure_rate(dflux,deff,*pars) 
         tssr = 1.-self.failure_rate_eff(deff,*self.pars)
