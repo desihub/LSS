@@ -509,7 +509,7 @@ if args.add_bitweight == 'y':
     if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
     ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write(ff,dirout+tracer_clus+'_full.dat.fits',comment='Added alt MTL info')
+    common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comment='Added alt MTL info')
     
 
 if args.add_ke == 'y':
