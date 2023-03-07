@@ -6,11 +6,16 @@ import argparse
 import logging
 
 import numpy as np
+
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
+
+import LSS.main.cattools as ct
+
+
 
 
 logger = logging.getLogger('xirunpc')
@@ -181,31 +186,61 @@ def _concatenate(arrays):
     return array
 
 
-def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
+def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read = None, dat_cat = None, ran_cat = None,**kwargs):
     
     if 'GC' in region:
         region = [region]
+    
+    if cat_read == None:
+        def read_positions_weights(name):
+            positions, weights = [], []
+            for reg in region:
+                cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
+                logger.info('Loading {}.'.format(cat_fns))
+                isscalar = not isinstance(cat_fns, (tuple, list))
+   
+                
+                if isscalar:
+                    cat_fns = [cat_fns]
+                positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                
+                if isscalar:
+                    positions.append(positions_weights[0][0])
+                    weights.append(positions_weights[0][1])
+                else:
+                    p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
+                    if concatenate:
+                        p, w = _concatenate(p), _concatenate(w)
+                    positions.append(p)
+                    weights.append(w)
+            
+            return positions, weights
 
-    def read_positions_weights(name):
-        positions, weights = [], []
-        for reg in region:
-            cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
-            logger.info('Loading {}.'.format(cat_fns))
-            isscalar = not isinstance(cat_fns, (tuple, list))
-            if isscalar:
-                cat_fns = [cat_fns]
-            positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
-            if isscalar:
-                positions.append(positions_weights[0][0])
-                weights.append(positions_weights[0][1])
-            else:
-                p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
-                if concatenate:
-                    p, w = _concatenate(p), _concatenate(w)
-                positions.append(p)
-                weights.append(w)
-        return positions, weights
-
+    if cat_read != None:
+        def read_positions_weights(name):
+            positions, weights = [], []
+            for reg in region:
+                logger.info('Using arrays.')
+                
+                if name == 'data':
+                    cat_read = dat_cat
+                if name == 'randoms':
+                    cat_read = ran_cat
+                   
+                    
+                positions_weights = [get_clustering_positions_weights(cat_read, distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option)]
+                if name == 'data':
+                    positions.append(positions_weights[0][0])
+                    weights.append(positions_weights[0][1])
+                
+                if name == 'randoms':
+                    p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
+                    positions.append(p)
+                    weights.append(w)
+            
+            return positions, weights
+        
+    
     if isinstance(name, (tuple, list)):
         return [read_positions_weights(n) for n in name]
     return read_positions_weights(name)
@@ -363,7 +398,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read = None, dat_cat = None, ran_cat = None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -381,8 +416,9 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
-        if with_shifted:
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, cat_read = cat_read, dat_cat = dat_cat, ran_cat = ran_cat, **catalog_kwargs)
+
+        if (with_shifted) & (cat_read == None):
             shifted = randoms  # above returned shifted randoms
             randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
         (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
@@ -405,6 +441,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
                                       dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
         if mpicomm is None or mpicomm.rank == mpiroot:
+ 
             data_samples1 = subsampler.label(data_positions1)
             randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
             if with_shifted:
@@ -504,10 +541,292 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
+
+def mkclusdat(fl,outaa,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6, write_catalogs = "N"):
+    import LSS.common_tools as common
+    from LSS import ssr_tools
+    '''
+    fl is the root of the input/output file
+    weighttileloc determines whether to include 1/FRACZ_TILELOCID as a completeness weight
+    zmask determines whether to apply a mask at some given redshift
+    tp is the target type
+    dchi2 is the threshold for keeping as a good redshift
+    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+
+    '''
+    wzm = '_'
+    if ccut is not None:
+        wzm = ccut+'_' #you could change this to however you want the file names to turn out
+
+    if zmask:
+        wzm += 'zmask_'
+    if rcut is not None:
+        wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
+    if ntilecut > 0:
+        wzm += 'ntileg'+str(ntilecut)+'_'
+    outf = fl+wzm+'clustering.dat.fits'
+    ff = Table.read(fl+'_full.dat.fits')
+    cols = list(ff.dtype.names)
+    if 'Z' in cols:
+        print('Z column already in full file')
+    else:
+        ff['Z_not4clus'].name = 'Z'
+    if tp == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+
+    if tp[:3] == 'ELG':
+        #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
+        wz = ff['ZWARN']*0 == 0
+        
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+            print('length after oII cut '+str(len(ff[wz])))
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        print('length after also making sure location assigned '+str(len(ff[wz])))
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp == 'LRG':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            selg = ssr_tools.LRG_goodz(ff)
+            wz &= selg
+
+        #wz &= ff['DELTACHI2'] > dchi2
+        print('length after Rongpu cut '+str(len(ff[wz])))
+
+        wz &= ff['TSNR2_ELG'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+
+        if dchi2 is not None:
+            print('applying extra cut for BGS')
+            wz &= ff['DELTACHI2'] > dchi2
+            print('length after dchi2 cut '+str(len(ff[wz])))
+        wz &= ff['TSNR2_BGS'] > tsnrcut
+        print('length after tsnrcut '+str(len(ff[wz])))
+
+
+    ff = ff[wz]
+    print('length after cutting to good z '+str(len(ff)))
+    ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
+    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if dchi2 is not None:
+        if tp[:3] == 'LRG':
+            lrg = ssr_tools.LRG_ssr()
+            ff = lrg.add_modpre(ff)
+            ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+        if tp == 'BGS_BRIGHT':
+            bgs = ssr_tools.BGS_ssr()
+            ff = bgs.add_modpre(ff,fl)
+            ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+
+        if tp == 'ELG_LOP':
+            elg = ssr_tools.ELG_ssr()
+            ff = elg.add_modpre(ff)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+        if tp == 'QSO':
+            qso = ssr_tools.QSO_ssr()
+            ff = qso.add_modpre(ff,fl)
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+            print('min/max of zfail weights:')
+            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+            print('checking sum of zfail weights compared to length of good z')
+            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+
+    if weighttileloc == True:
+        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        ff['WEIGHT'] *= ff['WEIGHT_COMP']
+
+    #weights for imaging systematic go here
+    ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
+
+    #apply cut on ntile
+    if ntilecut > 0:
+        print('length before ntile cut '+str(len(ff)))
+        wt = ff['NTILE'] > ntilecut
+        ff = ff[wt]
+        print('length after ntile cut '+str(len(ff)))
+    if ccut == 'zQSO':
+        wc = ff['SPECTYPE'] ==  'QSO'
+        print('length before cutting to spectype QSO '+str(len(ff)))
+        ff = ff[wc]
+        print('length after cutting to spectype QSO '+str(len(ff)))
+
+    #select down to specific columns below and then also split N/S
+    
+    selz = ff['Z'] > zmin
+    selz &= ff['Z'] < zmax
+    ff = ff[selz]
+
+
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+    if tp[:3] == 'BGS':
+        #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
+        #kl.append('flux_r_dered')
+        #print(kl)
+        fcols = ['G','R','Z','W1','W2']
+        ff = common.add_dered_flux(ff,fcols)
+        for col in fcols:
+            kl.append('flux_'+col.lower()+'_dered')
+        print(kl)
+        if ccut == '-21.5':
+            from LSS.tabulated_cosmo import TabulatedDESI
+            cosmo = TabulatedDESI()
+            dis_dc = cosmo.comoving_radial_distance
+            dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
+            r_dered = 22.5 - 2.5*np.log10(ff['flux_r_dered'])
+            abr = r_dered -dm
+            sel = abr < float(ccut)
+            print('comparison before/after abs mag cut')
+            print(len(ff),len(ff[sel]))
+            ff = ff[sel]
+        
+    wn = ff['PHOTSYS'] == 'N'
+
+    ff.keep_columns(kl)
+    print('minimum,maximum weight')
+    print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
+
+    #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ff,outf,comments)
+
+    outfn = outaa+wzm+'N_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+    if write_catalogs == "Y":
+        common.write_LSS(ff[wn],outfn,comments)
+
+    outfn = outaa+wzm+'S_clustering.dat.fits'
+    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+    ffs = ff[~wn]
+    
+    if write_catalogs == "Y":
+        common.write_LSS(ffs,outfn,comments)
+    return ff[wn], ff[~wn]
+
+
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None, write_catalogs = "N"):
+    import LSS.common_tools as common
+    #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
+    wzm = ''
+    if zmask:
+        wzm += 'zmask_'
+    ws = ''
+    if utlid:
+        ws = 'utlid_'
+    #ffd = Table.read(fl+'full.dat.fits')
+    #fcd = Table.read(fl+wzm+'clustering.dat.fits')
+    ffr = Table.read(flin+"_"+str(rann)+'_full.ran.fits')
+
+    #if type[:3] == 'ELG' or type == 'LRG':
+    wz = ffr[tsnrcol] > tsnrcut
+    #wif = np.isin(ffr['TILELOCID'],ffd['TILELOCID'])
+    #wic = np.isin(ffr['TILELOCID'],fcd['TILELOCID'])
+    #wb = wif & ~wic #these are the tilelocid in the full but not in clustering, should be masked
+    #ffc = ffr[~wb]
+    ffc = ffr[wz]
+    print('length after,before tsnr cut:')
+    print(len(ffc),len(ffr))
+    if utlid:
+        ffc = unique(ffc,keys=['TILELOCID'])
+        print('length after cutting to unique tilelocid '+str(len(ffc)))
+    #inds = np.random.choice(len(fcd),len(ffc))
+    #dshuf = fcd[inds]
+    fcdn = Table.read(fl+"_"+wzm+'N_clustering.dat.fits')
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(fcdn.dtype.names))
+    rcols = rcols[wc]
+    print('columns sampled from data are:')
+    print(rcols)
+
+    #for col in rcols:
+    #    ffc[col] = dshuf[col]
+    #    kc.append(col)
+    wn = ffc['PHOTSYS'] == 'N'
+
+    #ffc.keep_columns(kc)
+    #outf =  fl+wzm+str(rann)+'_clustering.ran.fits'
+    #comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", all regions","entries are only for data with good redshifts"]
+    #common.write_LSS(ffc,outf,comments)
+
+    outfn =  fl+"_"+ws+wzm+'N_'+str(rann - 1)+'_clustering.ran.fits'
+    
+    ffcn = ffc[wn]
+    inds = np.random.choice(len(fcdn),len(ffcn))
+    dshuf = fcdn[inds]
+    for col in rcols:
+        ffcn[col] = dshuf[col]
+        kc.append(col)
+    ffcn.keep_columns(kc)
+    
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+    if write_catalogs == "Y":
+        common.write_LSS(ffcn,outfn,comments)
+    
+
+    outfs =  fl+"_"+ws+wzm+'S_'+str(rann-1)+'_clustering.ran.fits'
+    fcds = Table.read(fl+"_"+wzm+'S_clustering.dat.fits')
+    ffcs = ffc[~wn]
+    inds = np.random.choice(len(fcds),len(ffcs))
+    dshuf = fcds[inds]
+    for col in rcols:
+        ffcs[col] = dshuf[col]
+    ffcs.keep_columns(kc)
+    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+    
+    if write_catalogs == "Y":
+        common.write_LSS(ffcs,outfs,comments)
+    return ffcn, ffcs
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
+    # Set basedir to the actual location of catalogs when starting with full (not clustering) catalogs for mocks. No need to set survey, verspec, version then.
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
@@ -528,12 +847,15 @@ if __name__ == '__main__':
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
-
+    # arguments relevant for when running directly from full catalogs.
+    parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = False)
+    parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
     setup_logging()
     args = parser.parse_args()
+    write_arrays = args.write_arrays
 
     if args.rebinning == 'n':
         args.rebinning = False
@@ -546,31 +868,62 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-        cat_dir = args.basedir
-        args.region = ['']
-    else:
-        cat_dir = args.basedir
-    if mpicomm is None or mpicomm.rank == mpiroot:
-        logger.info('Catalog directory is {}.'.format(cat_dir))
 
-    if args.outdir is None:
-        out_dir = os.path.join(get_scratch_dir(), args.survey)
-    else:
+    if args.use_arrays:
+        print("Using arrays")
+        tracer2 = None
+        tracer = args.tracer[0]
+        outaa = args.outdir
+        flaa = args.basedir
+        outaa = outaa + "/" + tracer
+        flaa = flaa + "/" + tracer
+        flinr = args.basedir + "/" + tracer + "_"
+
+        rann = 1
+
+        if tracer == "LRG":
+            zminr = 0.4
+            zmaxr = 1.1
+        if tracer == "ELG":
+            zminr = 0.8
+            zmaxr = 1.6
+        if tracer == "QSO":
+            zminr = 0.8
+            zmaxr = 3.5
+        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=None,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat=write_arrays,return_cat='y')
+
+        randoms_ = ct.mkclusran(flinr,flaa,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
         out_dir = args.outdir
-    if mpicomm is None or mpicomm.rank == mpiroot:
-        logger.info('Output directory is {}.'.format(out_dir))
 
-    tracer, tracer2 = args.tracer[0], None
-    if len(args.tracer) > 1:
-        tracer2 = args.tracer[1]
-        if len(args.tracer) > 2:
-            raise ValueError('Provide <= 2 tracers!')
-    if tracer2 == tracer:
-        tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+    
+    else:
+        print("use_arrays set to false")
+        if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+            cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+        elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+            cat_dir = args.basedir
+            args.region = ['']
+        else:
+            cat_dir = args.basedir
+        if mpicomm is None or mpicomm.rank == mpiroot:
+            logger.info('Catalog directory is {}.'.format(cat_dir))
+
+        if args.outdir is None:
+            out_dir = os.path.join(get_scratch_dir(), args.survey)
+        else:
+            out_dir = args.outdir
+        if mpicomm is None or mpicomm.rank == mpiroot:
+            logger.info('Output directory is {}.'.format(out_dir))
+
+        tracer, tracer2 = args.tracer[0], None
+        if len(args.tracer) > 1:
+            tracer2 = args.tracer[1]
+            if len(args.tracer) > 2:
+                raise ValueError('Provide <= 2 tracers!')
+        if tracer2 == tracer:
+            tracer2 = None # otherwise counting of self-pairs
+        catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+        
     distance = TabulatedDESI().comoving_radial_distance
 
     regions = args.region
@@ -603,11 +956,18 @@ if __name__ == '__main__':
     for zmin, zmax in zlims:
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option)
         for region in regions:
+            if args.use_arrays:
+                if region == "N":
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[0], ran_cat = randoms_[0])
+                if region == "S":
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[1], ran_cat = randoms_[1])
+                
             wang = None
             for corr_type in args.corr_type:
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
+            
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
