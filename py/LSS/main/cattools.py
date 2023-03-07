@@ -2777,7 +2777,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',return_cat='n'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -2789,6 +2789,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
 
     '''
+    if write_cat == 'n' and return_cat == 'n':
+        print('writing and returning both set to n, this will do nothing so exiting!')
+        return True
+    
     wzm = '_'
     if ccut is not None:
         wzm = ccut+'_' #you could change this to however you want the file names to turn out
@@ -2993,22 +2997,24 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #comments = ["DA02 'clustering' LSS catalog for data, all regions","entries are only for data with good redshifts"]
     #common.write_LSS(ff,outf,comments)
 
-    outfn = fl+wzm+'N_clustering.dat.fits'
-    comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-    common.write_LSS(ff[wn],outfn,comments)
+    if write_cat == 'y':
+        outfn = fl+wzm+'N_clustering.dat.fits'
+        comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+        common.write_LSS(ff[wn],outfn,comments)
 
-    outfn = fl+wzm+'S_clustering.dat.fits'
-    comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
-    ffs = ff[~wn]
-    common.write_LSS(ffs,outfn,comments)
-
+        outfn = fl+wzm+'S_clustering.dat.fits'
+        comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+        ffs = ff[~wn]
+        common.write_LSS(ffs,outfn,comments)
+    if return_cat == 'y':
+        return ff[wn],ffs
 #     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
 #         outfn = fl+wzm+reg+'_clustering.dat.fits'
 #         sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n'):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
@@ -3063,8 +3069,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         kc.append(col)
     ffcn.keep_columns(kc)
     
-    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
-    common.write_LSS(ffcn,outfn,comments)
+    if write_cat == 'y':
+        comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+        common.write_LSS(ffcn,outfn,comments)
 
     outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
@@ -3074,9 +3081,12 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     for col in rcols:
         ffcs[col] = dshuf[col]
     ffcs.keep_columns(kc)
-    comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
-    common.write_LSS(ffcs,outfs,comments)
-
+    if write_cat == 'y':
+        comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+        common.write_LSS(ffcs,outfs,comments)
+    
+    if return_cat == 'y':
+        return ffcn,ffcs
 #     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
 #         outfn = fl+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'
 #         sel = densvar.sel_reg(ffcs['RA'],ffcs['DEC'],reg)
