@@ -3014,7 +3014,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n'):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n',clus_arrays=None):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
@@ -3041,7 +3041,10 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         print('length after cutting to unique tilelocid '+str(len(ffc)))
     #inds = np.random.choice(len(fcd),len(ffc))
     #dshuf = fcd[inds]
-    fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+    if clus_arrays is None:
+        fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
+    else:
+        fcdn = clus_arrays[0]
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
@@ -3070,11 +3073,14 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ffcn.keep_columns(kc)
     
     if write_cat == 'y':
-        comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+        comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
         common.write_LSS(ffcn,outfn,comments)
 
     outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
-    fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+    if clus_arrays is None:
+        fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
+    else:
+        fcds = clus_arrays[1]
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
     dshuf = fcds[inds]
