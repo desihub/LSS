@@ -2,7 +2,6 @@
 
 set -e
 
-source /global/common/software/desi/desi_environment.sh master
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 module swap fiberassign/5.0.0
 
