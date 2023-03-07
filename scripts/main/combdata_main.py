@@ -392,7 +392,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 #print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
                 print(len(tiles4comb[tidc]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
-
+            del fo
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             stids = np.unique(fo['TILEID'])
@@ -471,14 +471,17 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
+            print('joining spec info to target info')
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+            print('added TILELOCID, about to do join')
             tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
         if uptileloc:
+            print('counting tiles')
             tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
             tc.write(outtc,format='fits', overwrite=True)
 
