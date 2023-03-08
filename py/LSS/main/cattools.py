@@ -3007,7 +3007,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ffs = ff[~wn]
         common.write_LSS(ffs,outfn,comments)
     if return_cat == 'y':
-        return ff[wn],ffs
+        return ff[wn],ff[~wn]
 #     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
 #         outfn = fl+wzm+reg+'_clustering.dat.fits'
 #         sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)

@@ -6,11 +6,16 @@ import argparse
 import logging
 
 import numpy as np
+
 from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
+
+import LSS.main.cattools as ct
+
+
 
 
 logger = logging.getLogger('xirunpc')
@@ -181,31 +186,61 @@ def _concatenate(arrays):
     return array
 
 
-def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, **kwargs):
+def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read = None, dat_cat = None, ran_cat = None,**kwargs):
     
     if 'GC' in region:
         region = [region]
+    
+    if cat_read == None:
+        def read_positions_weights(name):
+            positions, weights = [], []
+            for reg in region:
+                cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
+                logger.info('Loading {}.'.format(cat_fns))
+                isscalar = not isinstance(cat_fns, (tuple, list))
+   
+                
+                if isscalar:
+                    cat_fns = [cat_fns]
+                positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                
+                if isscalar:
+                    positions.append(positions_weights[0][0])
+                    weights.append(positions_weights[0][1])
+                else:
+                    p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
+                    if concatenate:
+                        p, w = _concatenate(p), _concatenate(w)
+                    positions.append(p)
+                    weights.append(w)
+            
+            return positions, weights
 
-    def read_positions_weights(name):
-        positions, weights = [], []
-        for reg in region:
-            cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
-            logger.info('Loading {}.'.format(cat_fns))
-            isscalar = not isinstance(cat_fns, (tuple, list))
-            if isscalar:
-                cat_fns = [cat_fns]
-            positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
-            if isscalar:
-                positions.append(positions_weights[0][0])
-                weights.append(positions_weights[0][1])
-            else:
-                p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
-                if concatenate:
-                    p, w = _concatenate(p), _concatenate(w)
-                positions.append(p)
-                weights.append(w)
-        return positions, weights
-
+    if cat_read != None:
+        def read_positions_weights(name):
+            positions, weights = [], []
+            for reg in region:
+                logger.info('Using arrays.')
+                
+                if name == 'data':
+                    cat_read = dat_cat
+                if name == 'randoms':
+                    cat_read = ran_cat
+                   
+                    
+                positions_weights = [get_clustering_positions_weights(cat_read, distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option)]
+                if name == 'data':
+                    positions.append(positions_weights[0][0])
+                    weights.append(positions_weights[0][1])
+                
+                if name == 'randoms':
+                    p, w = [tmp[0] for tmp in positions_weights], [tmp[1] for tmp in positions_weights]
+                    positions.append(p)
+                    weights.append(w)
+            
+            return positions, weights
+        
+    
     if isinstance(name, (tuple, list)):
         return [read_positions_weights(n) for n in name]
     return read_positions_weights(name)
@@ -363,7 +398,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read = None, dat_cat = None, ran_cat = None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -381,8 +416,9 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
-        if with_shifted:
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, cat_read = cat_read, dat_cat = dat_cat, ran_cat = ran_cat, **catalog_kwargs)
+
+        if (with_shifted) & (cat_read == None):
             shifted = randoms  # above returned shifted randoms
             randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
         (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
@@ -405,6 +441,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
                                       dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
         if mpicomm is None or mpicomm.rank == mpiroot:
+ 
             data_samples1 = subsampler.label(data_positions1)
             randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
             if with_shifted:
@@ -504,10 +541,14 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
+
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
+    # Set basedir to the actual location of catalogs when starting with full (not clustering) catalogs for mocks. No need to set survey, verspec, version then.
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
@@ -517,6 +558,7 @@ if __name__ == '__main__':
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
+    # Need to add support for fkp weights for use_arrays option
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
@@ -528,13 +570,16 @@ if __name__ == '__main__':
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
-
+    # arguments relevant for when running directly from full catalogs.
+    parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'n')
+    parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
     setup_logging()
     args = parser.parse_args()
-
+    write_arrays = args.write_arrays
+    
     if args.rebinning == 'n':
         args.rebinning = False
     if args.rebinning == 'y':
@@ -546,31 +591,61 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-        cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-        cat_dir = args.basedir
-        args.region = ['']
-    else:
-        cat_dir = args.basedir
-    if mpicomm is None or mpicomm.rank == mpiroot:
-        logger.info('Catalog directory is {}.'.format(cat_dir))
+    if args.use_arrays == 'y':
+        print("Using arrays")
+        tracer2 = None
+        tracer = args.tracer[0]
+        outaa = args.outdir
+        flaa = args.basedir
+        outaa = outaa + "/" + tracer
+        flaa = flaa + "/" + tracer
+        flinr = args.basedir + "/" + tracer + "_"
 
-    if args.outdir is None:
-        out_dir = os.path.join(get_scratch_dir(), args.survey)
-    else:
+        rann = 1
+
+        if tracer == "LRG":
+            zminr = 0.4
+            zmaxr = 1.1
+        if tracer == "ELG":
+            zminr = 0.8
+            zmaxr = 1.6
+        if tracer == "QSO":
+            zminr = 0.8
+            zmaxr = 3.5
+        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=None,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat=write_arrays,return_cat='y')
+
+        randoms_ = ct.mkclusran(flinr,flinr,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
         out_dir = args.outdir
-    if mpicomm is None or mpicomm.rank == mpiroot:
-        logger.info('Output directory is {}.'.format(out_dir))
 
-    tracer, tracer2 = args.tracer[0], None
-    if len(args.tracer) > 1:
-        tracer2 = args.tracer[1]
-        if len(args.tracer) > 2:
-            raise ValueError('Provide <= 2 tracers!')
-    if tracer2 == tracer:
-        tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+    
+    elif args.use_arrays == 'n':
+        print("use_arrays set to false")
+        if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+            cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+        elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+            cat_dir = args.basedir
+            args.region = ['']
+        else:
+            cat_dir = args.basedir
+        if mpicomm is None or mpicomm.rank == mpiroot:
+            logger.info('Catalog directory is {}.'.format(cat_dir))
+
+        if args.outdir is None:
+            out_dir = os.path.join(get_scratch_dir(), args.survey)
+        else:
+            out_dir = args.outdir
+        if mpicomm is None or mpicomm.rank == mpiroot:
+            logger.info('Output directory is {}.'.format(out_dir))
+
+        tracer, tracer2 = args.tracer[0], None
+        if len(args.tracer) > 1:
+            tracer2 = args.tracer[1]
+            if len(args.tracer) > 2:
+                raise ValueError('Provide <= 2 tracers!')
+        if tracer2 == tracer:
+            tracer2 = None # otherwise counting of self-pairs
+        catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+        
     distance = TabulatedDESI().comoving_radial_distance
 
     regions = args.region
@@ -603,11 +678,18 @@ if __name__ == '__main__':
     for zmin, zmax in zlims:
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option)
         for region in regions:
+            if args.use_arrays == 'y':
+                if region == "N":
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[0], ran_cat = randoms_[0])
+                if region == "S":
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[1], ran_cat = randoms_[1])
+                
             wang = None
             for corr_type in args.corr_type:
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
+            
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
