@@ -848,7 +848,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
     # arguments relevant for when running directly from full catalogs.
-    parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = False)
+    parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'n')
     parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -856,7 +856,7 @@ if __name__ == '__main__':
     setup_logging()
     args = parser.parse_args()
     write_arrays = args.write_arrays
-
+    
     if args.rebinning == 'n':
         args.rebinning = False
     if args.rebinning == 'y':
@@ -868,8 +868,7 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-
-    if args.use_arrays:
+    if args.use_arrays == 'y':
         print("Using arrays")
         tracer2 = None
         tracer = args.tracer[0]
@@ -892,11 +891,11 @@ if __name__ == '__main__':
             zmaxr = 3.5
         data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=None,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat=write_arrays,return_cat='y')
 
-        randoms_ = ct.mkclusran(flinr,flaa,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
+        randoms_ = ct.mkclusran(flinr,flinr,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
         out_dir = args.outdir
 
     
-    else:
+    elif args.use_arrays == 'n':
         print("use_arrays set to false")
         if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
             cat_dir = catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
@@ -956,7 +955,7 @@ if __name__ == '__main__':
     for zmin, zmax in zlims:
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option)
         for region in regions:
-            if args.use_arrays:
+            if args.use_arrays == 'y':
                 if region == "N":
                     catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[0], ran_cat = randoms_[0])
                 if region == "S":
