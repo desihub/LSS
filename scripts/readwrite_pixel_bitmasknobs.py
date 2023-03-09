@@ -61,7 +61,7 @@ def bitmask_radec(brickid, ra, dec):
         nobsz = 0
         return bitmask,nobsg,nobsr,nobsz
 
-    bitmask_fn = bitmaskdir+'{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
+    bitmask_fn = bitmask_dir+'{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
 
     bitmask_img = fitsio.read(bitmask_fn)
 
@@ -75,7 +75,7 @@ def bitmask_radec(brickid, ra, dec):
     nobsl = []
     bl = ['g','r','z']
     for band in bl:
-        nobs_fn = bitmaskdir+'{}/coadd/{}/{}/legacysurvey-{}-nexp-{}.fits.fz'.format(field, brickname[:3], brickname, brickname,band)
+        nobs_fn = bitmask_dir+'{}/coadd/{}/{}/legacysurvey-{}-nexp-{}.fits.fz'.format(field, brickname[:3], brickname, brickname,band)
         if os.path.isfile(nobs_fn): 
             nobs_img = fitsio.read(nobs_fn)
             nobs = nobs_img[coadd_y,coadd_x]
