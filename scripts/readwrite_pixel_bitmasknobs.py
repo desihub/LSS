@@ -81,6 +81,7 @@ def bitmask_radec(brickid, ra, dec):
             nobs = nobs_img[coadd_y,coadd_x]
         else:
             nobs = 0
+        nobsl.append(nobs)
     return bitmask,nobsl[0],nobsl[1],nobsl[2]
 
 
