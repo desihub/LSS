@@ -241,26 +241,28 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = F
         #log.info(n)
         altZCat['TARGETID'][i] = altid
     if debug:
-        print('negIDs')
-        print(negativeIDs)
-        print('failures')
-        print(failures)
-        print('testctr')
+        log.info('negIDs')
+        log.info(negativeIDs)
+        log.info('failures')
+        log.info(failures)
+        log.info('testctr')
     d =  Counter(altZCat['TARGETID'])  
     res = [ k for k, v in d.items() if v > 1]
-    print(res)
+    if debug:
+        log.info('res')
+        log.info(res)
     if len(res):
-        print('how many pre dup cuts')
-        print(zcatids.shape)
+        log.info('how many pre dup cuts')
+        log.info(zcatids.shape)
         cond2 = np.ones(zcatids.shape, dtype=bool)
         for i in res:
-            print('test')
-            print(np.sum(zcatids == i))
+            log.info('test')
+            log.info(np.sum(zcatids == i))
             cond2 = cond2 & (altcatids != i)
-        print("how many post dup cuts")
-        print(np.sum(cond2))
+        log.info("how many post dup cuts")
+        log.info(np.sum(cond2))
     else:
-        print("supposedly, no duplicates")
+        log.info("supposedly, no duplicates")
     return altZCat
 
 def checkMTLChanged(MTLFile1, MTLFile2):
@@ -794,16 +796,13 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL stripping out the time of fiber assignment to leave only the date
                 #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
                 fadate = ''.join(fadate.split('T')[0].split('-'))
-                log.info('precheck three')
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
                 if getosubp:
-                    log.info('precheck four')
                     #JL When we are trying to reproduce a prior survey and/or debug, create a separate
                     #JL directory in fbadirbase + /orig/ to store the reproduced FA files. 
                     FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
                     fbadir = fbadirbase + '/orig/'
                 else:
-                    log.info('precheck five')
 
                     #JL For normal "alternate" operations, store the fiber assignmens
                     #JL in the fbadirbase directory. 
@@ -815,7 +814,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL This command removes those temp files to prevent endless crashes. 
                 if os.path.exists(FAAltName + '.tmp'):
                     os.remove(FAAltName + '.tmp')
-                log.info('precheck six')
                 #JL If the alternate fiberassignment was already performed, don't repeat it
                 #JL Unless the 'redoFA' flag is set to true
                 if  redoFA or (not os.path.exists(FAAltName)):
@@ -867,33 +865,17 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             A2RMap = {}
             R2AMap = {}
-            log.info('FAcheck zero')
             for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
-                log.info('FAcheck one')
                 if changeFiberOpt is None:
-                    log.info('FAcheck two')
                     if debug:
-                        log.info('FAcheck three')
                         tempsortofa = np.sort(ofa, order = 'FIBER')
                         tempsortafa = np.sort(afa, order = 'FIBER')
-                        log.info('orig fiberassign sorted on fiber, first 20')
-                        log.info(tempsortofa['TARGETID'][0:20])
-                        log.info(tempsortofa['FIBER'][0:20])
-                        log.info('alt fiberassign sorted on fiber, first 20')
-                        log.info(tempsortafa['TARGETID'][0:20])
-                        log.info(tempsortafa['FIBER'][0:20])
+                        
 
                         tempsortofa = np.sort(ofa, order = 'TARGETID')
                         tempsortafa = np.sort(afa, order = 'TARGETID')
-                        log.info('orig fiberassign sorted on TARGETID, first 20')
-                        log.info(tempsortofa['TARGETID'][0:20])
-                        log.info(tempsortofa['FIBER'][0:20])
-                        log.info('alt fiberassign sorted on TARGETID, first 20')
-                        log.info(tempsortafa['TARGETID'][0:20])
-                        log.info(tempsortafa['FIBER'][0:20])
-                    log.info('FAcheck four')
+                        
                     A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
-                    log.info('FAcheck five')
                 else:
                     raise NotImplementedError('changeFiberOpt has not yet been implemented')
 
@@ -914,13 +896,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
 
-            #if debug:
-            log.info('altZCat sortedTargetID, first 10')
-            log.info(np.sort(altZCat['TARGETID'][0:20]))
+            
 
             # ADM update the appropriate ledger.
             if mock:
-                log.info('check one')
                 if targets is None:
                     raise ValueError('If processing mocks, you MUST specify a target file')
                 if debug:
@@ -928,17 +907,13 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     log.info(np.sort(targets['TARGETID'])[0:10])
                     log.info('altZCat passed to update ledger sorted on targetid, first 10')
                     log.info(np.sort(targets['TARGETID'])[0:10])
-                log.info('numobs_from_ledger')
-                log.info(numobs_from_ledger)
+                
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger, targets = targets)
-                log.info('check two')
             elif targets is None:
-                log.info('check three')
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
             else:
-                log.info('check four')
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger, targets = targets)
             if verbose or debug:

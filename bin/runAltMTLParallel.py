@@ -1,6 +1,7 @@
 #!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
 from multiprocessing import Pool
 from LSS.SV3 import altmtltools as amt
+from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
 import dill
@@ -22,9 +23,12 @@ parser = argparse.ArgumentParser(
                     prog = 'RunAltMTLParallel',
                     description = 'Progresses alternate MTLs through the MTL update loop in parallel. More documentation available on the DESI wiki. ')
 parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True, type=str, help = 'the path to the location where alt MTLs are stored, up to, but not including survey and obscon information.')
+
 parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
 parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
 parser.add_argument('-sec', '--secondary', dest = 'secondary', default=False, action='store_true', help = 'set flag to incorporate secondary targets.')
+parser.add_argument('-mock', '--mock', dest = 'mock', default=False, action='store_true', help = 'set flag if running pipeline on mocks.')
+parser.add_argument('-tf', '--targfile', dest='targfile', required=False, default = None, type=str, help = 'Location for target file for mocks or data. Only required if mocks are being processed.')
 parser.add_argument('-v', '--verbose', dest = 'verbose', default=False, action='store_true', help = 'set flag to enter verbose mode')
 parser.add_argument('-qr', '--quickRestart', dest = 'quickRestart', default=False, action='store_true', help = 'set flag to remove any AMTL updates that have already been performed. Useful for rapidfire debugging of steps in this part of the pipeline.')
 parser.add_argument('-prof', '--profile', dest = 'profile', default=False, action='store_true', help = 'set flag to profile code time usage. This flag may not profile all components of any particular stage of the AMTL pipeline. ')
@@ -33,18 +37,21 @@ parser.add_argument('-nfl', '--NumObsNotFromLedger', dest = 'numobs_from_ledger'
 
 parser.add_argument('-redoFA', '--redoFA', dest = 'redoFA', default=False, action='store_true', help = 'pass this flag to regenerate already existing fiber assignment files.')
 
-parser.add_argument('-getosubp', '--getosubp', action='store_true', dest='getosubp', default=True, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to grab subpriorities directly from the real survey MTLs for fiberassignment.', required = False)
+parser.add_argument('-getosubp', '--getosubp', action='store_true', dest='getosubp', default=False, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING AND NEVER FOR MOCKS. Pass this flag to grab subpriorities directly from the real survey MTLs for fiberassignment.', required = False)
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
 
-
+print(argv)
 
 args = parser.parse_args()
 log = get_logger()
 
-
-
+if args.mock:
+    assert(not (args.targfile is None))
+    print('args.getosubp')
+    print(args.getosubp)
+    assert(not (args.getosubp))
 
 # Leave confirmation file in output directory if using original subpriorities
 if args.getosubp:
@@ -86,7 +93,19 @@ singleDate = True
 def procFunc(nproc):
     if args.verbose:
         log.debug('calling procFunc')
-    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA)
+    if not(args.targfile is None):
+        targets = Table.read(args.targfile)
+        print('targets.dtype')
+        print(targets.dtype)
+        print('targets[0:5]')
+        print(targets[0:5])
+        print('targets TARGETID,RA,DEC')
+        print(targets['TARGETID'][0:5])
+        print(targets['RA'][0:5])
+        print(targets['DEC'][0:5])
+    else:
+        targets = None
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:
