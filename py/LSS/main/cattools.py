@@ -1263,13 +1263,13 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         gtl = np.unique(stlid)
 
     if dr == 'dat':
-        fj = fitsio.read(indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILEID'])
+        fj = fitsio.read(indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits'
     if dr == 'ran':
         if px:
-            fj = fitsio.read(indir+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits',columns=['TARGETID','TILEID'])
+            fj = fitsio.read(indir+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         else:
-            fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILEID'])
+            fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
 
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)
