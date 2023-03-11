@@ -481,7 +481,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outfs,format='fits', overwrite=True)
+            #tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS(tj,outfs)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
             print('joining spec info to target info')
@@ -498,7 +499,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tj = vstack(tjl)
             print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS(tj,outfs)
+            #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
         if uptileloc:
