@@ -27,6 +27,7 @@ from desitarget import targetmask
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.main.common_tools as common
 from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
