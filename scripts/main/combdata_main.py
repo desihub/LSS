@@ -182,6 +182,8 @@ if specrel == 'daily':
         ng.write(specfo,format='fits',overwrite=True)
     del specf
 
+regl = ['N','S']
+
 # speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
 # 'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
 # 'REF_EPOCH','LAMBDA_REF','FA_TARGET','FA_TYPE','OBJTYPE','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY',\
@@ -467,7 +469,18 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #except:
             #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            #seems to run out of memory on join
+            tjl = []
+            selreg = tarfn['DEC'] > 0
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('2nd join done')
+            tj = vstack(tjl)
+            print('stacked now writing out')
+            #for reg in regl:                
+            #    sel = tarfn['PHOTSYS'] == reg
+            #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
@@ -475,8 +488,16 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            print('added TILELOCID, about to do join')
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            print('added TILELOCID, about to do joins')
+            tjl = []
+            selreg = tarfn['DEC'] > 0
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('2nd join done')
+            tj = vstack(tjl)
+            print('stacked now writing out')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
