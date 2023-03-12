@@ -500,7 +500,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tj = np.concatenate(tjl)
             print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            print(np.unique(tj['ZWARN']),return_counts=True)
+            print(np.unique(tj['ZWARN'],return_counts=True))
             common.write_LSS(tj,outfs)
             #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
