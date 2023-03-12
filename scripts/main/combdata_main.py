@@ -165,9 +165,10 @@ if specrel == 'daily':
         specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
-    spec_cols_4tar = ['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
-    ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-    ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    #spec_cols_4tar = ['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
+    #,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+    #,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    spec_cols_4tar = ['TARGETID','ZWARN','ZWARN_MTL','LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
     print(spec_cols_4tar)
     if args.subguad == 'y':
         dz = Table(fitsio.read(specfo))
@@ -491,22 +492,22 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             print('added TILELOCID, about to do joins')
-            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-            tjl = []
-            selreg = tarfn['DEC'] > 0
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-            print('1st join done')
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-            print('2nd join done')
-            tj = vstack(tjl)
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+            #tjl = []
+            #selreg = tarfn['DEC'] > 0
+            #tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            #tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            #print('1st join done')
+            #tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            #tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            #print('2nd join done')
+            #tj = vstack(tjl)
             #tj = np.concatenate(tjl)
-            print('stacked now writing out')
+            #print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            print(np.unique(tj['ZWARN'],return_counts=True))
-            common.write_LSS(tj,outfs)
-            #tj.write(outfs,format='fits', overwrite=True)
+            #print(np.unique(tj['ZWARN'],return_counts=True))
+            #common.write_LSS(tj,outfs)
+            tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
         if uptileloc:
