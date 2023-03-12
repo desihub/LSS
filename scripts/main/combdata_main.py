@@ -491,13 +491,14 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             print('added TILELOCID, about to do joins')
-            tjl = []
-            selreg = tarfn['DEC'] > 0
-            tjl.append(np.array(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
-            print('1st join done')
-            tjl.append(np.array(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
-            print('2nd join done')
-            tj = np.concatenate(tjl)
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            #tjl = []
+            #selreg = tarfn['DEC'] > 0
+            #tjl.append(np.array(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
+            #print('1st join done')
+            #tjl.append(np.array(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
+            #print('2nd join done')
+            #tj = np.concatenate(tjl)
             print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             print(np.unique(tj['ZWARN'],return_counts=True))
