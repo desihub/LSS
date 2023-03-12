@@ -2343,7 +2343,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         dz = join(dz,ftar,keys=['TARGETID'])
     
     if specver == 'daily':
-        spec_cols = ['TARGETID','Z','ZERR','SPECTYPE','DELTACHI2'\
+        spec_cols = ['TARGETID','TILEID','Z','ZERR','SPECTYPE','DELTACHI2'\
         ,'COADD_FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
         ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_LYA','TSNR2_QSO','TSNR2_LRG']
         dailydir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
@@ -2352,7 +2352,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
             prog = 'bright'
 
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
-        dz = join(dz,specdat,keys=['TARGETID'],join_type='left')
+        dz = join(dz,specdat,keys=['TARGETID','TILEID'],join_type='left')
     
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits)
