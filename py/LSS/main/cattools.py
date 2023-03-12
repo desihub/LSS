@@ -2342,6 +2342,18 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
                 dz.remove_columns([col]) #these come back in with merge to full target file
         dz = join(dz,ftar,keys=['TARGETID'])
     
+    if specver == 'daily':
+        spec_cols = ['TARGETID','Z','ZERR','SPECTYPE','DELTACHI2'\
+        ,'COADD_FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+        ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_LYA','TSNR2_QSO','TSNR2_LRG']
+        dailydir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
+        prog = 'dark'
+        if tp[:3] == 'BGS':
+            prog = 'bright'
+
+        specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
+        dz = join(dz,specdat,keys=['TARGETID'],join_type='left')
+    
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits)
         print('length after imaging mask; should not have changed '+str(len(dz)))
