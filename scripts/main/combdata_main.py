@@ -491,13 +491,16 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             print('added TILELOCID, about to do joins')
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-            #tjl = []
-            #selreg = tarfn['DEC'] > 0
-            #tjl.append(np.array(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
-            #print('1st join done')
-            #tjl.append(np.array(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
-            #print('2nd join done')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+            tjl = []
+            selreg = tarfn['DEC'] > 0
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            print('2nd join done')
+            tj = vstack(tjl)
             #tj = np.concatenate(tjl)
             print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
