@@ -493,13 +493,14 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             print('added TILELOCID, about to do joins')
             tjl = []
             selreg = tarfn['DEC'] > 0
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            tjl.append(np.array(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
             print('1st join done')
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            tjl.append(np.array(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')))
             print('2nd join done')
-            tj = vstack(tjl)
+            tj = np.concatenate(tjl)
             print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            print(np.unique(tj['ZWARN']),return_counts=True)
             common.write_LSS(tj,outfs)
             #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
