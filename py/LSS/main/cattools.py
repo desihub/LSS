@@ -2352,7 +2352,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
             prog = 'bright'
 
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
-        dz = join(dz,specdat,keys=['TARGETID','TILEID'],join_type='left')
+        dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
     
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits)
