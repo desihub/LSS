@@ -1,9 +1,6 @@
 # Get bitmask values from pixel-level per-brick masks for a catalog
 # Examples:
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input catalog.fits --output catalog_lrgmask_v1.1.npy
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits --output $CSCRATCH/temp/randoms-1-0-lrgmask_v1.1.fits
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/users/rongpu/targets/dr9.0/1.0.0/resolve/dr9_lrg_south_1.0.0_basic.fits --output $CSCRATCH/temp/dr9_lrg_south_1.0.0_lrgmask_v1.1.fits
-
+# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmaskmasknobs.py 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import numpy as np
