@@ -138,4 +138,4 @@ class main:
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/QSO/'+specver+'/QSO_cat_iron_cumulative_v0.fits'
             #self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/dark_bitweights_v0.fits'
-        self.brighbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/bright_bitweights_v0.fits'
+        self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/bright_bitweights_v0.fits'
