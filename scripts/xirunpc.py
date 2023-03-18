@@ -124,6 +124,11 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
+def _format_bitweights(bitweights):
+    if bitweights.ndim == 2: return list(bitweights.T)
+    return [bitweights]
+
+
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None):
 
     if maglim is None:
@@ -156,8 +161,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         if 'FKP' in weight_type:
             weights *= catalog['WEIGHT_FKP'][mask]
         if 'bitwise' in weight_type:
-            if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T) + [weights]
-            else: weights = [catalog['BITWEIGHTS'][mask]] + [weights]
+            weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
 
     if name == 'randoms':
         if 'default' in weight_type:
@@ -186,7 +190,7 @@ def _concatenate(arrays):
     return array
 
 
-def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None,weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read = None, dat_cat = None, ran_cat = None,**kwargs):
+def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None, weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
     
     if 'GC' in region:
         region = [region]
@@ -246,8 +250,10 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim =None
     return read_positions_weights(name)
 
 
-def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False):
-
+def get_full_positions_weights(catalog, name='data', weight_type='default', fibered=False, region='', return_mask=False, weight_attrs=None):
+    
+    from pycorr.twopoint_counter import get_inverse_probability_weight
+    if weight_attrs is None: weight_attrs = {}
     mask = np.ones(len(catalog), dtype='?')
     if region in ['DS', 'DN']:
         mask &= select_region(catalog['RA'], catalog['DEC'], region)
@@ -256,16 +262,18 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
     positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
-    if name == 'data' and fibered and 'bitwise' in weight_type:
-        if catalog['BITWEIGHTS'].ndim == 2: weights = list(catalog['BITWEIGHTS'][mask].T)
-        else: weights = [catalog['BITWEIGHTS'][mask]]
+    if name == 'data' and fibered:
+        if 'default' in weight_type or 'completeness' in weight_type:
+            weights = get_inverse_probability_weight(_format_bitweights(catalog['BITWEIGHTS'][mask]), **weight_attrs)
+        if 'bitwise' in weight_type:
+            weights = _format_bitweights(catalog['BITWEIGHTS'][mask])
     else: weights = np.ones_like(positions[0])
     if return_mask:
         return positions, weights, mask
     return positions, weights
 
 
-def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', **kwargs):
+def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', weight_attrs=None, **kwargs):
 
     def read_positions_weights(name):
         positions, weights = [], []
@@ -276,7 +284,7 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
                 catalog = vstack([Table.read(fn) for fn in cat_fn])
             else:
                 catalog = Table.read(cat_fn)
-            p, w = get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=reg)
+            p, w = get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=reg, weight_attrs=weight_attrs)
             positions.append(p)
             weights.append(w)
         return positions, weights
@@ -398,7 +406,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read = None, dat_cat = None, ran_cat = None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -406,7 +414,6 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
-
         wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
 
     data_positions1, data_weights1, data_samples1, data_positions2, data_weights2, data_samples2 = None, None, None, None, None, None
@@ -416,7 +423,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, cat_read = cat_read, dat_cat = dat_cat, ran_cat = ran_cat, **catalog_kwargs)
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, cat_read=cat_read, dat_cat=dat_cat, ran_cat=ran_cat, **catalog_kwargs)
 
         if (with_shifted) & (cat_read == None):
             shifted = randoms  # above returned shifted randoms
@@ -521,7 +528,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
         else:
             edges = (sedges, np.linspace(0., 40., 41))
     elif corr_type == 'theta':
-        edges = np.linspace(0., 4., 101)
+        edges = (np.linspace(0., 4., 101),)
     else:
         raise ValueError('corr_type must be one of ["smu", "rppi", "theta"]')
     return edges
