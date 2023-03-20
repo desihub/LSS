@@ -8,6 +8,8 @@ import h5py
 import argparse
 import sys
 
+from desitarget.targetmask import obsconditions
+
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = 'CSCRATCH'
 elif os.environ['NERSC_HOST'] == 'perlmutter':
@@ -107,7 +109,7 @@ for real in range(args.realmin,args.realmax):
         targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
         targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
         targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-        targets['OBSCONDITIONS'] = np.zeros(n, dtype='i8')+int(3) 
+        targets['OBSCONDITIONS'] = obsconditions.mask(program.upper()) #np.zeros(n, dtype='i8')+int(3) 
         targets['NUMOBS_MORE'] = np.zeros(n, dtype='i8')+int(1) 
         targets['NUMOBS_INIT'] = np.zeros(n, dtype='i8')+int(1)
         targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
