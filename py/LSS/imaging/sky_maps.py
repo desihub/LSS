@@ -980,11 +980,17 @@ def read_sky_map(mapname, lssmapdir=None):
         if len(mapdata.shape) > 1:
             colnames = fitsio.read(fn, rows=0).dtype.names
             w = np.where([pixmap["COLNAME"] in i for i in colnames])
+            # MMM test what passes through this piece of code
+            # mapdata = hp.read_map(fn, field=w[0][0])
+            # print("HELLO2", len(mapdata), pixmap["NSIDE"]) 
+            msg = "TEST specified column name ({}) HERE for (2-D) map {}?"
+            # log.critical(msg.format(aux), mapname)
+            log.critical(msg.format(pixmap["COLNAME"], mapname))
             # ADM guard against a common incorrect-column-name error.
             if len(w) == 0:
                 msg = "is the specified column name ({}) wrong for (2-D) map {}?"
-                log.critical(msg.format(pixmap["COLNAME"]), mapname)
-                raise ValueError(msg.format(pixmap["COLNAME"]), mapname)
+                log.critical(msg.format(pixmap["COLNAME"], mapname))
+                raise ValueError(msg.format(pixmap["COLNAME"], mapname))
             else:
                 mapdata = hp.read_map(fn, field=w[0][0])
 
