@@ -1336,7 +1336,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM ra, dec, all fields and masks should be in the same file
         # MMM for now won't check if they come from the same density ***
         randomswithallfields = True
-        skyfield = []
+        skyfield = np.array([],dtype=[]) #dtype is needed
+        print("HELLO TEST A") 
 
     else: 
    
@@ -1345,7 +1346,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
         skyfield = fitsio.read(skymapvaluescat, rows=[0])
-
+        print("HELLO TEST B")
 
     # MMM check if there are no foreign or misspelled items in fieldlist.
     foreign = [fieldslist[i] for i, x in enumerate(fieldslist) if x
@@ -1395,13 +1396,14 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         if skyfcol:
             skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
         else:
-            skymapvalues = []
+            skymapvalues = [] 
 
         if not randomswithallfields: 
             skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
         else:
             skymapmask = np.zeros(len(ranvalues),dtype=[('SKYMAP_MASK','i8')]) 
-            skymapmask["SKYMAP_MASK"] = ranvalues["SKYMAP_MASK"]  
+            #skymapmask["SKYMAP_MASK"] = ranvalues["SKYMAP_MASK"]
+            skymapmask["SKYMAP_MASK"] = fitsio.read(randomcat, columns=['SKYMAP_MASK'])
 
         # ADM check all random catalogs were generated at same density.
         # MMM I can only do this if not reading from user made randoms
