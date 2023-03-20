@@ -983,8 +983,7 @@ def read_sky_map(mapname, lssmapdir=None):
             # MMM test what passes through this piece of code
             # mapdata = hp.read_map(fn, field=w[0][0])
             # print("HELLO2", len(mapdata), pixmap["NSIDE"]) 
-            msg = "TEST specified column name ({}) HERE for (2-D) map {}?"
-            # log.critical(msg.format(aux), mapname)
+            msg = "Non-regular field, specified column name ({}) HERE for (2-D) map {}?"
             log.critical(msg.format(pixmap["COLNAME"], mapname))
             # ADM guard against a common incorrect-column-name error.
             if len(w) == 0:
@@ -1337,7 +1336,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM for now won't check if they come from the same density ***
         randomswithallfields = True
         skyfield = np.array([],dtype=[]) #dtype is needed
-        print("HELLO TEST A") 
 
     else: 
    
@@ -1346,7 +1344,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
         skyfield = fitsio.read(skymapvaluescat, rows=[0])
-        print("HELLO TEST B")
 
     # MMM check if there are no foreign or misspelled items in fieldlist.
     foreign = [fieldslist[i] for i, x in enumerate(fieldslist) if x
@@ -1402,7 +1399,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
             skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
         else:
             skymapmask = np.zeros(len(ranvalues),dtype=[('SKYMAP_MASK','i8')]) 
-            #skymapmask["SKYMAP_MASK"] = ranvalues["SKYMAP_MASK"]
             skymapmask["SKYMAP_MASK"] = fitsio.read(randomcat, columns=['SKYMAP_MASK'])
 
         # ADM check all random catalogs were generated at same density.
