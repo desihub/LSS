@@ -9,7 +9,7 @@ python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/de
 
 $LSSCODE/LSS/scripts/main/daily_main_data_full.sh
 
-$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto.sh
+$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto_redo.sh
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --maxr 1
 
