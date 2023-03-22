@@ -1431,8 +1431,9 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
             if len(col) > 0:
                 # ADM limit to just the fields/bitmasks corresponding to col.
-                ii = np.array([fld in col for fld in fieldslist])
-                for field, bitmask in zip(fieldsarray[ii], bitmaskarray[ii]):
+                
+                jj = np.array([fld in col for fld in fieldslist])
+                for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):                    
                     if need2setmask:
                         maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
                         uniq, ii, cnt = np.unique(
