@@ -65,14 +65,17 @@ for tp,notqso in zip(tps,notqsos):
     python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec himalayas --survey Y1 --notqso notqso
 #can just run one random and then add --maxr 1
 
-#this applies vetos to both data and randoms (could put randoms in separate script and parallize)
+#fill randoms and apply vetoes to them:
+for tp,notqso in zip(tps,notqsos):
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --fillran y --apply_veto y
+
+#this applies vetos to both data 
 
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso
-#can just run one random and then add --maxr 1
-    
-#to do randoms in parallel:
-    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --apply_veto y --verspec himalayas --survey Y1 --notqso notqso
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso --maxr 0
+#--maxr 0 stops the code from running any randoms
+
+
 
 #get k+e
 srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
