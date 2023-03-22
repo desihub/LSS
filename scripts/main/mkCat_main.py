@@ -368,7 +368,7 @@ if args.mkHPmaps:
     nside = 256
     outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
-                          lssmapdir=lssmapdir, outfn=None)    
+                          lssmapdir=lssmapdir, outfn=outfn)    
 
     
 
