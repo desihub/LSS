@@ -1448,6 +1448,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM compute weighted means.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
+        print(field,np.sum(wcounts[field]),np.sum(counts[field]),np.sum(wcounts[field])/np.sum(counts[field]))
         for ii in range(0,len(counts[field])):
             if counts[ii][field] > 0:
                 wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
@@ -1456,12 +1457,13 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         
         ii = counts[field] > 0
         #below was not actually dividing by counts for some reason
+        #print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
+
         #wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
         #print(np.mean(wcounts[ii][field]))
         #wcounts[counts[field] == 0][field] = hp.UNSEEN
         #print(np.mean(wcounts[ii][field]))
-        print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
-        print(np.mean(wcounts[ii][field]),np.mean(counts[ii][field]))
+        print(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field]))
 
     # MMM Write atomically (sanity check done before).
     if write:
