@@ -1523,8 +1523,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     for field in fieldslist:
         ii = counts[field] > 0
         print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
-        print(np.mean(wcounts[ii][field]))
-        wcounts[ii][field] = wcounts[ii][field] / counts[ii][field]
+        print(np.mean(wcounts[ii][field]),np.mean(counts[ii][field]))
+        wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
         print(np.mean(wcounts[ii][field]))
         wcounts[counts[field] == 0][field] = hp.UNSEEN
         print(np.mean(wcounts[ii][field]))
