@@ -364,7 +364,7 @@ if args.mkHPmaps:
     rancatname = dirout+tracer_clus+'_*_full.ran.fits'
     rancatlist = sorted(glob.glob(rancatname))
     fieldslist = allmapcols
-    masklist = np.zeros(len(fieldslist))
+    masklist = list(np.zeros(len(fieldslist),dtype=int))
     nside = 256
     outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
