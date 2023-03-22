@@ -357,7 +357,7 @@ if mkclusdat:
 if args.mkHPmaps:
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
     lssmapdirout = dirout+'/hpmaps/'
-    if not os.path.exists(lssmapdir):
+    if not os.path.exists(lssmapdirout):
         os.mkdir(lssmapdirout)
         print('made '+lssmapdirout)
     lssmapdir = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/'
