@@ -362,7 +362,7 @@ if args.mkHPmaps:
         print('made '+lssmapdirout)
     lssmapdir = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/'
     rancatname = dirout+tracer_clus+'_*_full.ran.fits'
-    rancatlist = sorted(glob(rancatname))
+    rancatlist = sorted(glob.glob(rancatname))
     fieldslist = allmapcols
     masklist = np.zeros(len(fieldslist))
     nside = 256
