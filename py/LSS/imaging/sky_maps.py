@@ -1237,79 +1237,6 @@ def aux_test_mask():
         randomcatlist, fieldslist, masklist, nside_out=nside_out,
         lssmapdir=None, outfn=outfn, write=True)
 
-def create_pixweight_file_simp(randomcatlist, fieldslist, nside_out=256,
-                          lssmapdir=None, outfn=None, write=True):
-    """
-    Creates a pixweight file from randoms with no filtering by bit masks
-
-    Parameters
-    ----------
-    randomcatlist : :class:`list`
-        List of strings representing (full paths to) random catalogs.
-    fieldslist : :class:`list`
-        List of fields/columns to process.
-    nside_out : :class:`int`, optional, defaults to 512
-        Resolution (HEALPix nside) at which to build the output (NESTED)
-        pixweight map.
-    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
-        Location of the directory that hosts all of the sky maps. If
-        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
-    outfn : :class:`str`, optional, defaults to ``None``
-        Output filename. If not passed, the output from
-        :func:`rancat_names_to_pixweight_name()` is used.
-    write : :class:`bool`, optional, defaults to ``True``
-        If ``True`` then also write the output to file.
-
-    Returns
-    -------
-    :class:`~numpy.ndarray`
-        Pixweight array of the requested masked fields. This is also
-        written to file if `write`=``True``.
-    """
-    # MMM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
-    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
-
-    #  ---- format checks -----
-    # MMM check inputs are lists of correct length.
-    for listy, word in zip([randomcatlist, fieldslist],
-                           ["file(s)", "fields"]):
-        if not isinstance(listy, list):
-            raise_myerror("the input {} is not a list".format(word))
-
-    # MMM check passed catalog names and fields are strings.
-    for nom in randomcatlist + fieldslist:
-        if not isinstance(nom, str):
-            msg = "file and field names must be strings ({} is not)".format(nom)
-            raise_myerror(msg)
-
-    # MMM Check there are no repeated field names
-    repeats = set([x for x in fieldslist if fieldslist.count(x) > 1])
-    if repeats != set():
-        msg = "Please don't use repeated field names in field list. \n \
-        If you do need this feature contact the developers. \n \
-        You have repeated {} ".format(repeats)
-        raise raise_myerror(msg)
-
-    # MMM Determine output filename.
-    if write and not outfn:
-        outfn = rancat_names_to_pixweight_name(rancatlist, lssmapdir=lssmapdir)
-        log.warning("output filename not passed, defaulting to {}".format(outfn))
-
-    # MMM---------  create header for later ------
-    # MMM document fields
-    hdr = {field for field in fieldslist}
-    # ADM document the input random catalogs...
-    hdr["INFILES"] = randomcatlist
-    # ADM and the directory from which we read the LSS maps.
-    hdr["LSSMAPDIR"] = lssmapdir
-
-
-    ###------ get columns/dtypes for pixweight files 
-
-    # Check which set of files to use 
-    # ADM need chxhdr if I want to check random catalogs generated at same density.
-    randomcat = randomcatlist[0]
-    stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
 
 
 def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
@@ -1521,13 +1448,20 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM compute weighted means.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
+        for ii in range(0,len(counts[field])):
+            if counts[ii][field] > 0:
+                wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
+            else:
+                wcounts[ii][field] =hp.UNSEEN
+        
         ii = counts[field] > 0
+        #below was not actually dividing by counts for some reason
+        #wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
+        #print(np.mean(wcounts[ii][field]))
+        #wcounts[counts[field] == 0][field] = hp.UNSEEN
+        #print(np.mean(wcounts[ii][field]))
         print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
         print(np.mean(wcounts[ii][field]),np.mean(counts[ii][field]))
-        wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
-        print(np.mean(wcounts[ii][field]))
-        wcounts[counts[field] == 0][field] = hp.UNSEEN
-        print(np.mean(wcounts[ii][field]))
 
     # MMM Write atomically (sanity check done before).
     if write:
