@@ -1418,6 +1418,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM mask-in (i.e., list selected) randoms.
         need2setmask = True
         if bitmasklist.count(bitmasklist[0]) == len(bitmasklist):
+            bitmask = bitmasklist[0]
             need2setmask = False
             maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
             uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
