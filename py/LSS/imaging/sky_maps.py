@@ -1453,7 +1453,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM compute weighted means.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
-        log.info("raw numbers {} {} {} {}".format(field,np.sum(wcounts[field]),np.sum(counts[field]),np.sum(wcounts[field])/np.sum(counts[field]))
+        log.info("raw numbers {} {} {} {}".format(field,np.sum(wcounts[field]),np.sum(counts[field]),np.sum(wcounts[field])/np.sum(counts[field])))
         for ii in range(0,len(counts[field])):
             if counts[ii][field] > 0:
                 wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
@@ -1468,7 +1468,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         #print(np.mean(wcounts[ii][field]))
         #wcounts[counts[field] == 0][field] = hp.UNSEEN
         #print(np.mean(wcounts[ii][field]))
-        log.info("final numbers {} {} {}".(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field]))
+        log.info("final numbers {} {} {}".(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field])))
 
     # MMM Write atomically (sanity check done before).
     if write:
