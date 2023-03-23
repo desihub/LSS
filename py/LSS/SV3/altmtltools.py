@@ -159,14 +159,7 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
     TIDAlt = FAAlt['TARGETID']
     FibReal = FAReal['FIBER']
     FibAlt = FAAlt['FIBER']
-    #log.info('Fiber Real')
-    #log.info(FibReal[0:10])
-    #log.info('Fiber Alt')
-    #log.info(FibAlt[0:10])
-    #log.info('TargetID real')
-    #log.info(TIDReal[0:10])
-    #log.info('TargetID alt')
-    #log.info(TIDAlt[0:10])
+
     if not (changeFiberOpt is None):
         raise NotImplementedError('changeFiberOpt is not implemented yet.')
         assert(not(TargAlt is None))
@@ -187,7 +180,6 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
             except:
                 inc1+=1
         Real2Alt[tr] = taMatch[0]
-        #log.info('tr = {0}; taMatch = {1}'.format(tr, taMatch[0]))
     
     for ta, fa in zip(TIDAlt, FibAlt):
         trMatch = TIDReal[FibReal == fa]
@@ -233,12 +225,8 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = F
         cond = (n == zcatids)
         if debug and (n < 0):
             negativeIDs +=1   
-        #try:
         altid = real2AltMap[n]
-        #log.info('altid')
-        #log.info(altid)
-        #log.info('zcatid')
-        #log.info(n)
+
         altZCat['TARGETID'][i] = altid
     if debug:
         log.info('negIDs')
@@ -673,7 +661,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     """
 
     if mock:
-        log.info('check one')
         if targets is None:
             raise ValueError('If processing mocks, you MUST specify a target file')
     if debug:
@@ -768,13 +755,11 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
         
         for date in dates:
-            log.info('precheck zero')
             dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == date]
             zdates = np.sort(np.unique(dateTiles['ZDATE']))
             dateTiles = dateTiles[dateTiles['ZDATE'] == zdates[0]]
             assert(len(np.unique(dateTiles['ARCHIVEDATE'])) == 1)
             assert(len(np.unique(dateTiles['ZDATE'])) == 1)
-            log.info('precheck one')
             OrigFAs = []
             AltFAs = []
             AltFAs2 = []
@@ -782,7 +767,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             fadates = []
 
             for t in dateTiles:
-                log.info('precheck two')
                 #JL This loop takes each of the original fiberassignments for each of the tiles on $date
                 #JL and opens them to obtain information for the alternative fiber assignments.
                 #JL Then it runs the alternative fiber assignments, stores the results in an array (AltFAs)
@@ -867,13 +851,13 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             R2AMap = {}
             for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
                 if changeFiberOpt is None:
-                    if debug:
-                        tempsortofa = np.sort(ofa, order = 'FIBER')
-                        tempsortafa = np.sort(afa, order = 'FIBER')
-                        
-
-                        tempsortofa = np.sort(ofa, order = 'TARGETID')
-                        tempsortafa = np.sort(afa, order = 'TARGETID')
+                    #if debug:
+                    #    tempsortofa = np.sort(ofa, order = 'FIBER')
+                    #    tempsortafa = np.sort(afa, order = 'FIBER')
+                    #    
+                    # 
+                    #    tempsortofa = np.sort(ofa, order = 'TARGETID')
+                    #    tempsortafa = np.sort(afa, order = 'TARGETID')
                         
                     A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
                 else:
@@ -902,11 +886,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             if mock:
                 if targets is None:
                     raise ValueError('If processing mocks, you MUST specify a target file')
-                if debug:
-                    log.info('targets passed to update ledger sorted on targetid, first 10')
-                    log.info(np.sort(targets['TARGETID'])[0:10])
-                    log.info('altZCat passed to update ledger sorted on targetid, first 10')
-                    log.info(np.sort(targets['TARGETID'])[0:10])
                 
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger, targets = targets)
@@ -928,10 +907,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
             if verbose or debug:
                 log.info('has written to mtl_tile_file')
-            log.info('singleDate = {0}'.format(singleDate))
             if singleDate:
                 #return 1
-                log.info('singleDateActivated')
                 return althpdirname, altmtltilefn, ztilefn, tiles
     return althpdirname, altmtltilefn, ztilefn, tiles
 
