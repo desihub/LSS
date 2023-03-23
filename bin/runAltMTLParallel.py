@@ -1,4 +1,4 @@
-#!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
+#!/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/conda/bin/python -u
 from multiprocessing import Pool
 from LSS.SV3 import altmtltools as amt
 from astropy.table import Table, vstack, join

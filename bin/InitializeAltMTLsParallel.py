@@ -1,4 +1,4 @@
-#!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
+#!/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/conda/bin/python -u
 import multiprocessing as mp
 from multiprocessing import Pool
 import logging
