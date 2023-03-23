@@ -12,9 +12,9 @@ from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -250,7 +250,7 @@ for tp in tps:
         parv = m1-m2
         parv[sel] = hp.UNSEEN
         map = map_pair[0]+' - '+map_pair[1]
-         for reg,cl in zip(regl,clrs):
+        for reg,cl in zip(regl,clrs):
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
