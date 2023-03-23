@@ -17,8 +17,8 @@ profile=''
 #profile='--profile'
 
 #Uncomment second option if running on mocks
-#mock=''
-mock='--mock'
+mock=''
+#mock='--mock'
 
 #ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
 #There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
@@ -73,7 +73,7 @@ overwrite=''
 #overwrite='--overwrite'
 
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
-obscon='BRIGHT'
+obscon='DARK'
 
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 #survey='main'
@@ -159,10 +159,10 @@ getosubp=''
 #subpriorities are shuffled. debug mode for main survey
 #will only require these flags to be set by uncommenting second options
 
-#dontShuffleSubpriorities=''
-#reproducing=''
-dontShuffleSubpriorities='--dontShuffleSubpriorities'
-reproducing='--reproducing'
+dontShuffleSubpriorities=''
+reproducing=''
+#dontShuffleSubpriorities='--dontShuffleSubpriorities'
+#reproducing='--reproducing'
 #Include secondary targets?
 secondary=''
 #secondary='--secondary'
@@ -170,10 +170,10 @@ secondary=''
 
 #If running from mocks, must set target directory. 
 #Otherwise this is optional
-#targfile=''
+targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
-targfile='--targfile=CHANGEME' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+#targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
@@ -282,13 +282,8 @@ echo $runtimeDateLoop
 
 
 
-#if [ $splitByReal -ne 0 ]; then
 printf -v OFBW "%s/MakeBitweights%sOutput%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
 srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
-#else
-#    printf -v OFBW "%s/MakeBitweights%sOutputCase2%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-#    srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
-#fi
 
 endBW=`date +%s.%N`
 
