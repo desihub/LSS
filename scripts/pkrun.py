@@ -108,23 +108,24 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                mpicomm=mpicomm, mpiroot=mpiroot).poles)
         window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
-        if mpicomm.rank == mpiroot:
-            # Let us compute the wide-angle and window function matrix
-            kout = result.k # output k-bins
-            ellsout = [0, 2, 4] # output multipoles
-            ellsin = [0, 2, 4] # input (theory) multipoles
-            wa_orders = 1 # wide-angle order
-            sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
-            kin_rebin = 4 # rebin input theory to save memory
-            kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
-            # Input projections for window function matrix:
-            # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
-            projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
-            # Window matrix
-            wm = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
-            # We resum over theory odd-wide angle
-            wawm = wm.copy()
-            wawm.resum_input_odd_wide_angle()
+        wawm = window
+        # if mpicomm.rank == mpiroot:
+        #     # Let us compute the wide-angle and window function matrix
+        #     kout = result.k # output k-bins
+        #     ellsout = [0, 2, 4] # output multipoles
+        #     ellsin = [0, 2, 4] # input (theory) multipoles
+        #     wa_orders = 1 # wide-angle order
+        #     sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
+        #     kin_rebin = 4 # rebin input theory to save memory
+        #     kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
+        #     # Input projections for window function matrix:
+        #     # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
+        #     projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
+        #     # Window matrix
+        #     wm = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
+        #     # We resum over theory odd-wide angle
+        #     wawm = wm.copy()
+        #     wawm.resum_input_odd_wide_angle()
 
     return result, wang, wawm
 
