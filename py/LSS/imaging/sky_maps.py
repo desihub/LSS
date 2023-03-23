@@ -1423,8 +1423,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
             bitmask = bitmasklist[0]
             need2setmask = False
             maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-            uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
-                                      return_counts=True)
+            #uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
+            #                          return_counts=True)
 
         ############################
         # MMM ----- read all fields at once ----
@@ -1440,7 +1440,12 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                         uniq, ii, cnt = np.unique(
                             randpixnums[maskin], return_inverse=True,
                             return_counts=True)
-                    wcnt = np.bincount(ii, values[field][maskin])
+                    masknan = values[field]*0 == 0
+                    maskhpun = values[field] != hp.UNSEEN
+                    uniq, ii, cnt = np.unique(
+                            randpixnums[maskin&masknan&maskhpun], return_inverse=True,
+                            return_counts=True)
+                    wcnt = np.bincount(ii, values[field][maskin&masknan&maskhpun])
                     counts[field][uniq] += cnt
                     wcounts[field][uniq] += wcnt
 
