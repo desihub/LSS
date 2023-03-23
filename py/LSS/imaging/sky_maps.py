@@ -1468,7 +1468,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         #print(np.mean(wcounts[ii][field]))
         #wcounts[counts[field] == 0][field] = hp.UNSEEN
         #print(np.mean(wcounts[ii][field]))
-        log.info("final numbers {} {} {}".(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field])))
+        log.info("final numbers {} {} {}".format(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field])))
 
     # MMM Write atomically (sanity check done before).
     if write:
