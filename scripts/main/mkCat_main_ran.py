@@ -409,7 +409,9 @@ def doran(ii):
         print('filling randoms with imaging properties')
         fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         #ct.addcol_ran(fn,ii)
-        common.add_map_cols(fn,ii)
+        new_cols=mainp.new_cols
+        fid_cols=mainp.fid_cols
+        common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
         print('done with '+str(ii))
 
 
