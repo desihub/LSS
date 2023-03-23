@@ -354,7 +354,7 @@ if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 
-if args.mkHPmaps:
+if args.mkHPmaps == 'y':
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
     lssmapdirout = dirout+'/hpmaps/'
     if not os.path.exists(lssmapdirout):
