@@ -385,7 +385,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         print('done with random number '+str(rann))
     return True
 
-def addFKPfull(fb,nz,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
