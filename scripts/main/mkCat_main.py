@@ -55,6 +55,7 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 
@@ -657,13 +658,13 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-if args.nzfull == 'y':
+if args.fkpfull == 'y':
     
 	fb = dirout+tracer_clus
 	fcr = fb+'_0_full.ran.fits'
 	fcd = fb+'_full.dat.fits'
 	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
-	common.addnbar_full(fb,nz,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+	common.addFKPfull(fb,nz,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
     
 
 if args.addnbar_ran == 'y':
