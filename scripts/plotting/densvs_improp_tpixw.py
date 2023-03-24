@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import os
 import sys
@@ -17,6 +18,7 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
+parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
 
@@ -64,6 +66,10 @@ maps = ['STARDENS','CALIB_G',
  'PSFSIZE_G',
  'PSFSIZE_R',
  'PSFSIZE_Z']
+
+if args.test = 'y':
+    maps = maps[0] 
+ 
 dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 
 sky_g = np.zeros(256*256*12)
