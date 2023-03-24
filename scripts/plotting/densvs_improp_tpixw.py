@@ -288,3 +288,4 @@ for tp in tps:
         for fig in figs:
             pdf.savefig(fig)
             plt.close()
+    print('done with '+tp)
