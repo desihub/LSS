@@ -400,6 +400,7 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     zind = ((zl-zmin)/bs).astype(int)
     gz &= zl > zmin
     gz &= zl < zmin
+    gz &= fd['ZWARN'] != 999999
     nl = np.zeros(len(fd))
     nl[gz] = nz[zind[gz]]
     nl = np.zeros(len(zl))
