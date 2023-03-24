@@ -299,12 +299,21 @@ for tp in tps:
         nv = ebvn[i]['EBV_NEW'] 
         debv[pix] = nv-sfdv
     parv = debv
+    fig = plt.figure()
     for reg,cl in zip(regl,clrs):
         sel_reg_d = dtf['PHOTSYS'] == reg
         sel_reg_r = rt['PHOTSYS'] == reg
         dt_reg = dtf[sel_reg_d]
         rt_reg = rt[sel_reg_r]
         plot_reldens(parv,dt_reg,rt_reg,cl,reg)
+    plt.legend()
+    plt.xlabel('EBV_RZ - EBV_SFD')
+    plt.ylabel('Ngal/<Ngal> ')
+
+    plt.title(args.survey+' '+tp+zr)
+    plt.grid()
+    plt.ylim(yl[0],yl[1])
+    figs.append(fig)
     
        
     tw = ''
