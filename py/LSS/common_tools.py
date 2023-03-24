@@ -401,9 +401,9 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     gz &= zl > zmin
     gz &= zl < zmin
     gz &= fd['ZWARN'] != 999999
+    print(np.min(fd[gz]['FRACZ_TILELOCID']),np.max(fd[gz]['FRACZ_TILELOCID']))
     nl = np.zeros(len(fd))
     nl[gz] = nz[zind[gz]]
-    nl = np.zeros(len(zl))
     mean_comp = len(fd[gz])/np.sum(1./fd[gz]['FRACZ_TILELOCID'])
     print('mean completeness '+str(mean_comp))
 
