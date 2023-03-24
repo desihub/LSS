@@ -308,7 +308,7 @@ for tp in tps:
     
        
     tw = ''
-    if arg.test == 'y':
+    if args.test == 'y':
         tw = '_test'
     with PdfPages(outdir+tp+'_densfullvsall'+tw+'.pdf') as pdf:
         for fig in figs:
