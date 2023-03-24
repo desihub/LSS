@@ -68,8 +68,8 @@ maps = ['STARDENS','CALIB_G',
  'PSFSIZE_Z']
 
 if args.test == 'y':
-    maps = maps[0] 
-    print(maps)
+    maps = [maps[0]] 
+    #print(maps)
  
 dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 
