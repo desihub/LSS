@@ -664,7 +664,7 @@ if args.FKPfull == 'y':
 	fcr = fb+'_0_full.ran.fits'
 	fcd = fb+'_full.dat.fits'
 	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
-	common.addFKPfull(fb,nz,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+	common.addFKPfull(fcd,nz,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
     
 
 if args.addnbar_ran == 'y':
