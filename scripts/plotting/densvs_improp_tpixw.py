@@ -133,7 +133,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     lab = reg+r', full, no imsys weights, $\chi^2$='+str(round(chi2nw,3))
     print(lab)    
     plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
-    plt.plot(bc,svw,'-',color=cl,label=r'with imsys weights, $\chi^2$='+str(round(chi2,3))
+    plt.plot(bc,svw,'-',color=cl,label=r'with imsys weights, $\chi^2$='+str(round(chi2,3)))
 
     
 
