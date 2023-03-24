@@ -272,6 +272,6 @@ for tp in tps:
         #plt.clf()
        
     with PdfPages(outdir+tp+'_densfullvsall.pdf') as pdf:
-    for fig in figs:
-        pdf.savefig(fig)
-        plt.close()
+        for fig in figs:
+            pdf.savefig(fig)
+            plt.close()
