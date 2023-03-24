@@ -298,12 +298,12 @@ for tp in tps:
         sfdv = ebvn[i]['EBV_SFD']
         nv = ebvn[i]['EBV_NEW'] 
         debv[pix] = nv-sfdv
-	for reg,cl in zip(regl,clrs):
-		sel_reg_d = dtf['PHOTSYS'] == reg
-		sel_reg_r = rt['PHOTSYS'] == reg
-		dt_reg = dtf[sel_reg_d]
-		rt_reg = rt[sel_reg_r]
-		plot_reldens(parv,dt_reg,rt_reg,cl,reg)
+    for reg,cl in zip(regl,clrs):
+        sel_reg_d = dtf['PHOTSYS'] == reg
+        sel_reg_r = rt['PHOTSYS'] == reg
+        dt_reg = dtf[sel_reg_d]
+        rt_reg = rt[sel_reg_r]
+        plot_reldens(parv,dt_reg,rt_reg,cl,reg)
     
        
     tw = ''
