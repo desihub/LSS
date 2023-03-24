@@ -618,6 +618,23 @@ if mkclusran:
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid)#,ntilecut=ntile,ccut=ccut)
 
+if type == 'QSO':
+    #zmin = 0.6
+    #zmax = 4.5
+    dz = 0.02
+    P0 = 6000
+    
+else:    
+    dz = 0.01
+    #zmin = 0.01
+    #zmax = 1.61
+
+if type[:3] == 'LRG':
+    P0 = 10000
+if type[:3] == 'ELG':
+    P0 = 4000
+if type[:3] == 'BGS':
+    P0 = 7000
     
 
 if args.nz == 'y':
@@ -631,23 +648,6 @@ if args.nz == 'y':
 
 #    regl = ['_DN','_DS','','_N','_S']
     
-    if type == 'QSO':
-        #zmin = 0.6
-        #zmax = 4.5
-        dz = 0.05
-        P0 = 6000
-        
-    else:    
-        dz = 0.02
-        #zmin = 0.01
-        #zmax = 1.61
-    
-    if type[:3] == 'LRG':
-        P0 = 10000
-    if type[:3] == 'ELG':
-        P0 = 4000
-    if type[:3] == 'BGS':
-        P0 = 7000
     
     for reg in regl:
         fb = dirout+tracer_clus+reg
@@ -657,27 +657,19 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
+if args.nzfull == 'y':
+    
+	fb = dirout+tracer_clus
+	fcr = fb+'_0_full.ran.fits'
+	fcd = fb+'_full.dat.fits'
+	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+	common.addnbar_full(fb,nz,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+    
+
 if args.addnbar_ran == 'y':
     utlid_sw = ''
     if utlid:
         utlid_sw = '_utlid'
-    if type == 'QSO':
-        #zmin = 0.6
-        #zmax = 4.5
-        dz = 0.05
-        P0 = 6000
-        
-    else:    
-        dz = 0.02
-        #zmin = 0.01
-        #zmax = 1.61
-    
-    if type[:3] == 'LRG':
-        P0 = 10000
-    if type[:3] == 'ELG':
-        P0 = 4000
-    if type[:3] == 'BGS':
-        P0 = 7000
     
     for reg in regl:
         fb = dirout+tracer_clus+utlid_sw+reg

@@ -283,6 +283,34 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
+    '''
+    fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
+    fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
+    bs is the bin width for the n(z) calculation
+    zmin is the lower edge of the first bin
+    zmax is the upper edge of the last bin
+    returns array with n(z) values
+    '''
+    #cd = distance(om,1-om)
+    ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+    area = ranf['NAXIS2']/randens
+    print('area is '+str(area))
+
+    df = fitsio.read(fcd)
+    gz = goodz_infull(tp,df)
+    df = df[gz]
+    nbin = int((zmax-zmin)/bs)
+    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=1/df['FRACZ_TILELOCID'])
+    zl = zhist[1][:-1]
+    zh = zhist[1][1:]
+    zm = (zl+zh)/2.
+    vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
+    nz = zhist[0]/vol
+    print(nz)
+    return nz
+
+
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
     fb is the root of the file name, including the path
@@ -356,6 +384,36 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ft.write(fn,format='fits',overwrite=True)
         print('done with random number '+str(rann))
     return True
+
+def addFKPfull(fb,nz,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
+    '''
+    fb is the root of the file name, including the path
+    nran is the number of random files to add the nz to
+    bs is the bin size of the nz file (read this from file in future)
+    zmin is the lower edge of the minimum bin (read this from file in future)
+    zmax is the upper edge of the maximum bin (read this from file in the future)
+    '''
+
+    fd = Table(fitsio.read(fb))
+    gz = goodz_infull(tp,fd)
+    zl = fd['Z_not4clus']
+    zind = ((z-zmin)/bs).astype(int)
+    gz &= zl > zmin
+    gz &= zl < zmin
+    nl = np.zeros(len(fd))
+    nl[gz] = nz[zind[gz]]
+    nl = np.zeros(len(zl))
+    mean_comp = len(fd[gz])/np.sum(1./fd[gz]['FRACZ_TILELOCID'])
+    print('mean completeness '+str(mean_comp))
+
+    fkpl = 1./(1+nl*P0*mean_comp)
+    #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+    if add_data:
+        fd['WEIGHT_FKP'] = fkpl
+        write_LSS(fd,fn)
+    return True
+
+
 
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
