@@ -271,4 +271,7 @@ for tp in tps:
         #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         #plt.clf()
        
-    
+    with PdfPages(outdir+tp+'_densfullvsall.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
