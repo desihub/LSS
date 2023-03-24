@@ -298,6 +298,7 @@ for tp in tps:
         sfdv = ebvn[i]['EBV_SFD']
         nv = ebvn[i]['EBV_NEW'] 
         debv[pix] = nv-sfdv
+    parv = debv
     for reg,cl in zip(regl,clrs):
         sel_reg_d = dtf['PHOTSYS'] == reg
         sel_reg_r = rt['PHOTSYS'] == reg
