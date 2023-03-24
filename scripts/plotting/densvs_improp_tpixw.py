@@ -138,6 +138,8 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     
 
 for tp in tps:
+    nside,nest = 256,True
+
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     seld = dtf['ZWARN'] != 999999
     seld &= dtf['ZWARN']*0 == 0
@@ -198,6 +200,7 @@ for tp in tps:
     sel_reg_r = rt['PHOTSYS'] == reg
     dt_reg = dtf[sel_reg_d]
     rt_reg = rt[sel_reg_r]
+    fig = plt.figure()
     plot_reldens(parv,dt_reg,rt_reg,cl,reg)
     plt.legend()
     plt.xlabel(map)
@@ -206,10 +209,12 @@ for tp in tps:
     plt.title(args.survey+' '+tp+zr)
     plt.grid()
     plt.ylim(yl[0],yl[1])
-    plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-    plt.clf()
+    figs.append(fig)
+    #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+    #plt.clf()
     
-    
+
+
     if sky_g is not None:
         fig = plt.figure()
         parv = sky_g
@@ -283,8 +288,28 @@ for tp in tps:
         figs.append(fig)
         #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         #plt.clf()
+    
+    ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
+    nside = 64
+    nest = False
+    debv = np.zeros(nside*nside*12)
+    for i in range(0,len(ebvn)):
+        pix = ebvn[i]['HPXPIXEL']
+        sfdv = ebvn[i]['EBV_SFD']
+        nv = ebvn[i]['EBV_NEW'] 
+        debv[pix] = nv-sfdv
+	for reg,cl in zip(regl,clrs):
+		sel_reg_d = dtf['PHOTSYS'] == reg
+		sel_reg_r = rt['PHOTSYS'] == reg
+		dt_reg = dtf[sel_reg_d]
+		rt_reg = rt[sel_reg_r]
+		plot_reldens(parv,dt_reg,rt_reg,cl,reg)
+    
        
-    with PdfPages(outdir+tp+'_densfullvsall.pdf') as pdf:
+    tw = ''
+    if arg.test == 'y':
+        tw = '_test'
+    with PdfPages(outdir+tp+'_densfullvsall'+tw+'.pdf') as pdf:
         for fig in figs:
             pdf.savefig(fig)
             plt.close()
