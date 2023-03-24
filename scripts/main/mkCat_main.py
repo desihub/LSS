@@ -658,7 +658,7 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-if args.fkpfull == 'y':
+if args.FKPfull == 'y':
     
 	fb = dirout+tracer_clus
 	fcr = fb+'_0_full.ran.fits'
