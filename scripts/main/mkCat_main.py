@@ -354,10 +354,10 @@ regl = ['_N','_S']
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
-
+lssmapdirout = dirout+'/hpmaps/'
 if args.mkHPmaps == 'y':
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
-    lssmapdirout = dirout+'/hpmaps/'
+    
     if not os.path.exists(lssmapdirout):
         os.mkdir(lssmapdirout)
         print('made '+lssmapdirout)
@@ -460,11 +460,13 @@ if args.regressis == 'y':
     if not os.path.exists(dirreg):
         os.mkdir(dirreg)
         print('made '+dirreg)   
-    pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
+    #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
+    pwf = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if args.survey == 'DA02':
-        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
+       pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits' 
+       rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
         rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint)
     
@@ -488,6 +490,8 @@ if args.regressis == 'y':
     fit_maps = None
     if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
         fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    if tracer_clus[:3] == 'LRG':
+        fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'
     print('computing RF regressis weight')
     rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
