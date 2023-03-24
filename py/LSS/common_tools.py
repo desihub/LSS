@@ -387,7 +387,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
 
 def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     '''
-    fb is the root of the file name, including the path
+    fb is the file name, including the path
     nran is the number of random files to add the nz to
     bs is the bin size of the nz file (read this from file in future)
     zmin is the lower edge of the minimum bin (read this from file in future)
@@ -410,7 +410,7 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fn)
+        write_LSS(fd,fb)
     return True
 
 
