@@ -38,8 +38,10 @@ zcol = 'Z_not4clus'
 nran = 18
 
 tps = [args.tracers]
+#fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
 if args.tracers == 'all':
     tps = ['ELG_LOPnotqso','BGS_BRIGHT','QSO','LRG']
+    
 
 zdw = ''#'zdone'
 
@@ -100,8 +102,8 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     pixlg = np.zeros(nside*nside*12)
     pixlgw = np.zeros(nside*nside*12)
     for ii in range(0,len(dpix)):
-        pixlg[dpix[ii]] += 1./dt_reg[ii]['FRACZ_TILELOCID']
-        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']/dt_reg[ii]['FRACZ_TILELOCID']
+        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
         pixlr[rpix[ii]] += 1.
@@ -120,14 +122,18 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     normw = sum(rh)/sum(dhw)
     svw = dhw/rh*normw
 
-    ep = np.sqrt(dh)/rh*norm
+    meancomp = np.mean(dt_reg['FRACZ_TILELOCID'])
+    ep = np.sqrt(dh/meancomp)/rh*norm #put in mean completeness factor to account for completeness weighting
+    
+    chi2 = np.sum((svw-1)**2./ep**2.)
+    chi2nw = np.sum((sv-1)**2./ep**2.)
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    lab = reg+', full, no imsys weights'
+    lab = reg+r', full, no imsys weights, $\chi^2$='+str(round(chi2nw,3))
     print(lab)    
     plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
-    plt.plot(bc,svw,'-',color=cl,label='with imsys weights')
+    plt.plot(bc,svw,'-',color=cl,label=r'with imsys weights, $\chi^2$='+str(round(chi2,3))
 
     
 
