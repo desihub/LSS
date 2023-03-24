@@ -67,7 +67,7 @@ maps = ['STARDENS','CALIB_G',
  'PSFSIZE_R',
  'PSFSIZE_Z']
 
-if args.test = 'y':
+if args.test == 'y':
     maps = maps[0] 
  
 dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
