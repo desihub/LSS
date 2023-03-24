@@ -136,7 +136,7 @@ for tp in tps:
     else:
         zcol = 'Z_not4clus'
 
-
+    figs = []
 
     yl = (0.8,1.1)
     if tp == 'LRG':
@@ -198,6 +198,7 @@ for tp in tps:
     
     
     if sky_g is not None:
+        fig = plt.figure()
         parv = sky_g
         map = 'g_sky_res'
         for reg,cl in zip(regl,clrs):
@@ -215,14 +216,15 @@ for tp in tps:
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
         plt.ylim(yl[0],yl[1])
-        plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-        plt.clf()
+        figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
 
 
 
     mf = fitsio.read(indir+'hpmaps/'+tp+zdw+'_mapprops_healpix_nested_nside256.fits')
     for map in maps:
-        
+        fig = plt.figure()
         parv = mf[map]
         print(map)
         for reg,cl in zip(regl,clrs):
@@ -239,10 +241,12 @@ for tp in tps:
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
         plt.ylim(yl[0],yl[1])
-        plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-        plt.clf()
+        figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
     
     for map_pair in dmaps:
+        fig = plt.figure()
         m1 = mf[map_pair[0]]
         m2 = mf[map_pair[1]]
         sel = (m1 == hp.UNSEEN)
@@ -263,7 +267,8 @@ for tp in tps:
         plt.title(args.survey+' '+tp+zr)
         plt.grid()
         plt.ylim(yl[0],yl[1])
-        plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-        plt.clf()
+        figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
        
     
