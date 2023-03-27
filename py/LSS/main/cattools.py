@@ -2589,7 +2589,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
-        wts,md = mod.add_modpre(ff[selobs&selreg])
+        wts,md = mod.add_modpre(ff[selobs&selreg&selp])
         
         wzf[selobs&selreg&selp] = wts
         msr[selobs&selreg&selp] = md
