@@ -2582,14 +2582,18 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     selobs &= ff['GOODHARDLOC'] == 1
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
-    
+    selp = ff['PRIORITY'] == 3400
+    print('check that ~98% fulfill priority cut:')
+    print(np.sum(selp&selobs)/np.sum(selobs))
     
     
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
         wts,md = mod.add_modpre(ff[selobs&selreg])
-        wzf[selobs&selreg] = wts
-        msr[selobs&selreg] = md
+        
+        wzf[selobs&selreg&selp] = wts
+        msr[selobs&selreg&selp] = md
+        
         print('compare good z frac to sum of model')
         print(len(ff[selgz&selobs&selreg])/len(ff[selobs&selreg]),np.sum(msr[selobs&selreg])/len(ff[selobs&selreg]))
 
