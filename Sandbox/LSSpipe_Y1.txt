@@ -84,7 +84,7 @@ for tp,notqso in zip(tps,notqsos):
 srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
 
 #to get regressis and zfail weights
-Y1_regeressis_zfail.sh himalayas
+Y1_regressis_zfail.sh iron
 
 #get regressis weights
 #for most up to date version, need to start clean in cosmodesi environment and install seaborn
