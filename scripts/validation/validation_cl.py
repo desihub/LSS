@@ -215,7 +215,7 @@ for tp in tps:
     for reg in regl:
         maskr = maskreg[reg]
         delta_reg,fsky_reg,frac = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskr)
-        delta_reg_raw,_,_ = get_delta(dtfoz[sel_zr],ran,maskreg=maskr)
+        delta_reg_raw,_,_ = get_delta(dtf[sel_zr],ran,maskreg=maskr)
         cl_reg = hp.anafast(delta_reg)
         cls.append(cl_reg)
         cl_reg_raw = hp.anafast(delta_reg_raw)
