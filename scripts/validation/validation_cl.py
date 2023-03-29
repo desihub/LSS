@@ -48,7 +48,7 @@ cosdec = np.cos(dec*np.pi/180.)
 sinra = np.sin(ra*np.pi/180.)
 cosra = np.cos(ra*np.pi/180.)
 
-def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac)#,thmin=0.1,thmax=10,bs=.1):
+def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac):#,thmin=0.1,thmax=10,bs=.1):
     '''
     sines and cosines of ra,dec coordinates, already cut by whatever masking
     overdensity (in same pixels)
