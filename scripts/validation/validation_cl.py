@@ -36,7 +36,7 @@ for pix in ranpix:
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
+    tps = ['LRG','ELG_LOPnotqso','QSO','BGS_BRIGHT']
 
 pix_list = np.arange(12*256*256)
 th,phi = hp.pix2ang(256,pix_list)
@@ -130,7 +130,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
 zdw = ''
 
 for tp in tps:
-    
+    print('doing '+tp)
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     ran = fitsio.read(indir+tp+zdw+'_0_full.ran.fits')
     fnreg = indir+'/regressis_data/main_'+tp+'_256/RF/main_'+tp+'_imaging_weight_256.npy'
