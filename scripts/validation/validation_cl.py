@@ -54,7 +54,7 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0.1,thmax=10,bs=.
     overdensity (in same pixels)
     fractional area of same pixels
     '''
-    nbin = int((thmax-thmax)/bs)
+    nbin = int((thmax-thmin)/bs)
     odl = np.zeros(nbin)
     fracl = np.zeros(nbin)
     binedges = []#np.zeros(nbin+1)
@@ -70,7 +70,7 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0.1,thmax=10,bs=.
             cosang = cosdec[ii]*cosdec[jj]*(cosra[ii]*cosra[jj] + sinra[ii]*sinra[jj]) + sindec[ii]*sindec[jj]
             be = binedges[0]
             ba = -1 #start at -1 because of condition below
-            while ang > be:
+            while cosang > be:
                 ba += 1
                 be = binedges[ba+1]
             
