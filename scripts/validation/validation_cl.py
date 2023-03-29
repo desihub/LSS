@@ -208,26 +208,44 @@ for tp in tps:
     
     regl = list(maskreg.keys())
     cls = []
+    cls_raw = []
     wths = []
+    wths_raw = []
     fskys = []
     for reg in regl:
         maskr = maskreg[reg]
         delta_reg,fsky_reg,frac = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskr)
+        delta_reg_raw,_,_ = get_delta(dtfoz[sel_zr],ran,maskreg=maskr)
         cl_reg = hp.anafast(delta_reg)
         cls.append(cl_reg)
+        cl_reg_raw = hp.anafast(delta_reg_raw)
+        cls_raw.append(cl_reg_raw)
+
         fskys.append(fsky)
         sel = delta_reg != hp.UNSEEN
-        _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
+        _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg[sel],frac[sel])
         wths.append(wth_reg)
-        
+         _,wth_reg_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg_raw[sel],frac[sel])
+        wths_raw.append(wth_reg_raw)
+       
     for cl,reg,fsky in zip(cls,regl,fskys):
-        plt.loglog(ell[1:],cl[1:]/fsky_reg,label=reg)
+        plt.loglog(ell[1:],cl[1:]/fsky,label=reg)
     plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
     plt.legend()
     plt.xlabel(r'$\ell$')
     plt.ylabel(r'$C_{\ell}$')
     plt.savefig(outdir+tp+'_cell_reg.png')
     plt.clf()
+
+    for cl,reg,fsky in zip(cls_raw,regl,fskys):
+        plt.loglog(ell[1:],cl[1:]/fsky,label=reg)
+    plt.title(tp+' targets in Y1')
+    plt.legend()
+    plt.xlabel(r'$\ell$')
+    plt.ylabel(r'$C_{\ell}$')
+    plt.savefig(outdir+tp+'_cell_regtar.png')
+    plt.clf()
+
     
     for wth,reg in zip(wths,regl):
         plt.plot(angl,1000*angl*wth,label=reg)
@@ -236,6 +254,15 @@ for tp in tps:
     plt.xlabel(r'$\theta$')
     plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
     plt.savefig(outdir+tp+'_wth_reg.png')
+    plt.clf()
+
+    for wth,reg in zip(wths_raw,regl):
+        plt.plot(angl,1000*angl*wth,label=reg)
+    plt.title(tp+' targets in Y1')
+    plt.legend()
+    plt.xlabel(r'$\theta$')
+    plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
+    plt.savefig(outdir+tp+'_wth_regtar.png')
     plt.clf()
     
         
