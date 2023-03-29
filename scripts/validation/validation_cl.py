@@ -48,7 +48,7 @@ cosdec = np.cos(dec*np.pi/180.)
 sinra = np.sin(ra*np.pi/180.)
 cosra = np.cos(ra*np.pi/180.)
 
-def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac):#,thmin=0.1,thmax=10,bs=.1):
+def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0,thmax=10,bs=.1):
     '''
     sines and cosines of ra,dec coordinates, already cut by whatever masking
     overdensity (in same pixels)
@@ -59,7 +59,7 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac):#,thmin=0.1,thmax=10,b
     for i in range(len(sindec)):
         fo.write(str(sinra[i])+' '+str(cosra[i])+' '+str(sindec[i])+' '+str(cosdec[i])+' '+str(odens[i])+' '+str(frac[i])+'\n ')
     fo.close()
-    os.system('/global/homes/a/ajross/code/LSSanalysis/pix2p_linbin_test temp 1')
+    os.system('/global/homes/a/ajross/code/LSSanalysis/pix2p_linbin_test temp 1 '+str(bs)+' '+str(thmax))
     res = np.loadtxt('temp2ptPixclb.dat').transpose()
 #     nbin = int((thmax-thmin)/bs)
 #     odl = np.zeros(nbin)
