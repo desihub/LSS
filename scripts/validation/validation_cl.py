@@ -69,9 +69,9 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0.1,thmax=10,bs=.
         for jj in range(ii+1,len(cosdec)):
             cosang = cosdec[ii]*cosdec[jj]*(cosra[ii]*cosra[jj] + sinra[ii]*sinra[jj]) + sindec[ii]*sindec[jj]
             be = binedges[0]
-            ba = -1
+            ba = -1 #start at -1 because of condition below
             while ang > be:
-                ba++
+                ba += 1
                 be = binedges[ba+1]
             
             if ba > -1 and ba < nbin:
