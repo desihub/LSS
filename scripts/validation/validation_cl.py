@@ -225,7 +225,7 @@ for tp in tps:
         sel = delta_reg != hp.UNSEEN
         _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg[sel],frac[sel])
         wths.append(wth_reg)
-         _,wth_reg_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg_raw[sel],frac[sel])
+        _,wth_reg_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg_raw[sel],frac[sel])
         wths_raw.append(wth_reg_raw)
        
     for cl,reg,fsky in zip(cls,regl,fskys):
