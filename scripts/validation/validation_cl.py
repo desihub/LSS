@@ -230,7 +230,7 @@ for tp in tps:
     plt.clf()
     
     for wth,reg in zip(wths,regl):
-        plt.plot(angl,1000*angl*wth_zr,label=reg)
+        plt.plot(angl,1000*angl*wth,label=reg)
     plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
     plt.legend()
     plt.xlabel(r'$\theta$')
