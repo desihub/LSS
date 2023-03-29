@@ -14,9 +14,9 @@ import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='SV3')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--verspec",help="version for redshifts",default='fuji')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -68,16 +68,16 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0.1,thmax=10,bs=.
     for ii in range(0,len(sindec)):
         for jj in range(ii+1,len(cosdec)):
             cosang = cosdec[ii]*cosdec[jj]*(cosra[ii]*cosra[jj] + sinra[ii]*sinra[jj]) + sindec[ii]*sindec[jj]
-			be = binedges[0]
-			ba = -1
-			while ang > be:
-				ba++
-				be = binedges[ba+1]
-			
-			if ba > -1 and ba < nbin:
-				odl[ba] += odens[ii]*odens[jj] #note, frac was already applied to odl
-				fracl[ba] += frac[ii]*frac[jj] 
-	return bin_angs,odl/fracl
+            be = binedges[0]
+            ba = -1
+            while ang > be:
+                ba++
+                be = binedges[ba+1]
+            
+            if ba > -1 and ba < nbin:
+                odl[ba] += odens[ii]*odens[jj] #note, frac was already applied to odl
+                fracl[ba] += frac[ii]*frac[jj] 
+    return bin_angs,odl/fracl
 
 def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True,maskreg=None):#,ranpall=None
     th,phi = densvar.radec2thphi(dat[racol],dat[decol])
