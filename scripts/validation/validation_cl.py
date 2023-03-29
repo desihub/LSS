@@ -38,6 +38,46 @@ tps = [args.tracers]
 if args.tracers == 'all':
     tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
 
+pix_list = np.arange(12*256*256)
+th,phi = hp.pix2ang(256,pix_list)
+ra,dec = densvar.thphi2radec(th,phi)
+
+sindec = np.sin(dec*np.pi/180.)
+cosdec = np.cos(dec*np.pi/180.)
+
+sinra = np.sin(ra*np.pi/180.)
+cosra = np.cos(ra*np.pi/180.)
+
+def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0.1,thmax=10,bs=.1):
+    '''
+    sines and cosines of ra,dec coordinates, already cut by whatever masking
+    overdensity (in same pixels)
+    fractional area of same pixels
+    '''
+    nbin = int((thmax-thmax)/bs)
+    odl = np.zeros(nbin)
+    fracl = np.zeros(nbin)
+    binedges = []#np.zeros(nbin+1)
+    th = thmax
+    while th > thmin:
+        be = np.cos(th*np.pi/180.)
+        binedges.append(be)
+        th -= 0.1
+    print(len(binedges),len(odl))
+    bin_angs = np.flip(np.arange(thmin+bs/2.,thmax,bs))
+    for ii in range(0,len(sindec)):
+        for jj in range(ii+1,len(cosdec)):
+            cosang = cosdec[ii]*cosdec[jj]*(cosra[ii]*cosra[jj] + sinra[ii]*sinra[jj]) + sindec[ii]*sindec[jj]
+			be = binedges[0]
+			ba = -1
+			while ang > be:
+				ba++
+				be = binedges[ba+1]
+			
+			if ba > -1 and ba < nbin:
+				odl[ba] += odens[ii]*odens[jj] #note, frac was already applied to odl
+				fracl[ba] += frac[ii]*frac[jj] 
+	return bin_angs,odl/fracl
 
 def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True,maskreg=None):#,ranpall=None
     th,phi = densvar.radec2thphi(dat[racol],dat[decol])
@@ -77,15 +117,15 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
             print(reg,mnr)
             delta[mr] = (datp[mr]/ranp[mr]/mnr -1)
     #if ranpall is not None:
-    if appfrac:
-        if nest:
-            frac = ranp/ranpall_nest
-        else:
-            frac = ranp/ranpall
-        delta *= frac
+    #if appfrac:
+    if nest:
+        frac = ranp/ranpall_nest
+    else:
+        frac = ranp/ranpall
+    delta *= frac
     delta[~sel] = hp.UNSEEN
     fsky = np.sum(ranp[sel])/np.sum(ranpall)
-    return delta,fsky
+    return delta,fsky,frac
 
 zdw = ''
 
@@ -121,12 +161,12 @@ for tp in tps:
 
     sel_zr = dtfoz['Z_not4clus'] > zmin
     sel_zr &= dtfoz['Z_not4clus'] < zmax
-    delta_raw,fsky = get_delta(dtf,ran,maskreg=maskreg)
+    delta_raw,fsky,frac = get_delta(dtf,ran,maskreg=maskreg)
     cl_raw = hp.anafast(delta_raw)
     ell = np.arange(len(cl_raw))
-    delta_allz,_ = get_delta(dtfoz,ran,wts=wt,maskreg=maskreg)
+    delta_allz,_,_ = get_delta(dtfoz,ran,wts=wt,maskreg=maskreg)
     cl_allz = hp.anafast(delta_allz)
-    delta_zr,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskreg)
+    delta_zr,_,_ = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskreg)
     cl_zr = hp.anafast(delta_zr)
     print(len(dtf),np.sum(wt),np.sum(wt[sel_zr]))
     neff_oz = (np.sum(wt)+len(dtfoz))/2.
@@ -141,6 +181,23 @@ for tp in tps:
     plt.ylabel(r'$C_{\ell}$')
     plt.savefig(outdir+tp+'_cell.png')
     plt.clf()
+    print('doing w(theta)')
+    sel = delta_raw != hp.UNSEEN
+    angl,wth_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_raw[sel],frac[sel])
+    _,wth_allz = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_allz[sel],frac[sel])
+    _,wth_zr = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
+
+    plt.plot(angl,angl*wth_raw,label='targets in Y1 area')
+    plt.plot(angl,angl*wth_allz,label='all z')
+    plt.plot(angl,angl*wth_zr,label=str(zmin)+' < z < '+str(zmax))
+    plt.title(tp)
+    plt.legend()
+    plt.xlabel(r'$\theta$')
+    plt.ylabel(r'$\theta\times w(\theta)$')
+    plt.savefig(outdir+tp+'_wth.png')
+    plt.clf()
+    
+    
     regl = list(maskreg.keys())
     for reg in regl:
         maskr = maskreg[reg]
