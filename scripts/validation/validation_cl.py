@@ -194,13 +194,14 @@ for tp in tps:
     _,wth_allz = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_allz[sel],frac[sel])
     _,wth_zr = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
 
-    plt.plot(angl,angl*wth_raw,label='targets in Y1 area')
-    plt.plot(angl,angl*wth_allz,label='all z')
-    plt.plot(angl,angl*wth_zr,label=str(zmin)+' < z < '+str(zmax))
+    plt.plot(angl,1000*angl*wth_raw,label='targets in Y1 area')
+    plt.plot(angl,1000*angl*wth_allz,label='all z')
+    plt.plot(angl,1000*angl*wth_zr,label=str(zmin)+' < z < '+str(zmax))
+    plt.grid()
     plt.title(tp)
     plt.legend()
     plt.xlabel(r'$\theta$')
-    plt.ylabel(r'$\theta\times w(\theta)$')
+    plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
     plt.savefig(outdir+tp+'_wth.png')
     plt.clf()
     
@@ -208,7 +209,7 @@ for tp in tps:
     regl = list(maskreg.keys())
     for reg in regl:
         maskr = maskreg[reg]
-        delta_reg,fsky_reg = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskr)
+        delta_reg,fsky_reg,frac = get_delta(dtfoz[sel_zr],ran,wts=wt[sel_zr],maskreg=maskr)
         cl_reg = hp.anafast(delta_reg)
         plt.loglog(ell[1:],cl_reg[1:]/fsky_reg,label=reg)
     plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
