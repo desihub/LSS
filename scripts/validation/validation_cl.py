@@ -54,7 +54,7 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0,thmax=10,bs=.1)
     overdensity (in same pixels)
     fractional area of same pixels
     '''
-    odens /= frac #because it got multiplied by frac for cl
+    #odens /= frac #because it got multiplied by frac for cl
     fo = open('tempodenspczw.dat','w')
     for i in range(len(sindec)):
         fo.write(str(sinra[i])+' '+str(cosra[i])+' '+str(sindec[i])+' '+str(cosdec[i])+' '+str(odens[i])+' '+str(frac[i])+'\n ')
@@ -129,7 +129,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         frac = ranp/ranpall_nest
     else:
         frac = ranp/ranpall
-    delta *= frac
+    #delta *= frac
     delta[~sel] = hp.UNSEEN
     fsky = np.sum(ranp[sel])/np.sum(ranpall)
     return delta,fsky,frac
