@@ -3248,8 +3248,6 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
     print(trad)
 
-    rtall = read_targets_in_tiles(dirrt,tiles)
-    print('read targets on all tiles')
     nd = 0
     sel_tile = np.zeros(len(tiles),dtype=bool)
     for i in range(0,len(tiles)):
@@ -3263,6 +3261,9 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         else:
             sel_tile[i] = True
     tiles = tiles[sel_tile]
+    rtall = read_targets_in_tiles(dirrt,tiles)
+    print('read targets on all tiles')
+
     print('creating files for '+str(len(tiles))+' tiles')
     for i in range(0,len(tiles)):
         fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
