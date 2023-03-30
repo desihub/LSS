@@ -221,7 +221,7 @@ for tp in tps:
         cl_reg_raw = hp.anafast(delta_reg_raw)
         cls_raw.append(cl_reg_raw)
 
-        fskys.append(fsky)
+        fskys.append(fsky_reg)
         sel = delta_reg != hp.UNSEEN
         _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg[sel],frac[sel])
         wths.append(wth_reg)
