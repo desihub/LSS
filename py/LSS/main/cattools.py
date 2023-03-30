@@ -3261,6 +3261,9 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         else:
             sel_tile[i] = True
     tiles = tiles[sel_tile]
+    if len(tiles) == 0:
+        print('no tiles to process for '+str(ii))
+        return True
     rtall = read_targets_in_tiles(dirrt,tiles)
     print('read targets on all tiles')
 
