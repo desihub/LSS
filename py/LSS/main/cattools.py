@@ -3238,6 +3238,56 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
+    '''
+    tiles should be a table containing the relevant info
+    '''
+    from desitarget.io import read_targets_in_tiles
+    import desimodel.focalplane
+    import desimodel.footprint
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+
+    rtall = read_targets_in_tiles(dirrt,tiles)
+    print('read targets on all tiles')
+	nd = 0
+	for i in range(0,len(tiles)):
+
+		#print('length of tile file is (expected to be 1):'+str(len(tiles)))
+		#tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
+		fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
+		if os.path.isfile(fname):
+			#print(fname +' already exists')
+			pass
+		else:
+			print('creating '+fname)
+            tdec = tiles['DEC'][i]
+            decmin = tdec - trad
+            decmax = tdec + trad
+            wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
+            #print(len(rt[wdec]))
+            inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
+            print('got indexes')
+            rtw = rtall[wdec][inds]
+            rmtl = Table(rtw)
+			print('made table for '+fname)
+			del rtw
+			#rmtl['TARGETID'] = np.arange(len(rmtl))
+			#print(len(rmtl['TARGETID'])) #checking this column is there
+			rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+			rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+			rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+			rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+			rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+			rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+			print('added columns for '+fname)
+			rmtl.write(fname,format='fits', overwrite=True)
+			del rmtl
+			print('added columns, wrote to '+fname)
+			nd += 1
+			print(str(nd))
+
+
 def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
     '''
     tiles should be a table containing the relevant info
