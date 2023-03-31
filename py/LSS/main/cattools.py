@@ -1768,12 +1768,14 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',
     outfs = lspecdir+'healpix/rancomb_'+str(rann)+tp+'_'+str(hpx)+'_wdupspec_zdone.fits'
     tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)
-    if os.path.isfile(outf):
+    #if os.path.isfile(outf):
+    try:
         fgu = Table.read(outf)
         s = 1
         tdone = np.unique(fgu['TILEID'])
         tmask = ~np.isin(tls['TILEID'],tdone)
-    else:
+    #else:
+    except:
         tmask = np.ones(len(tls)).astype('bool')
 
     td = len(tls[~tmask])
