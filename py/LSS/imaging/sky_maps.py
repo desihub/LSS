@@ -57,15 +57,17 @@ mapdt = [
 #     EBV_SGF     - column names: ebv f4, mask: status i4 (masked area if status > 0)
 #     kappa       - values: index, real, imag;  mask :
 maparray = np.array([
-    ('HALPHA',       'Halpha',       'Halpha_fwhm06_0512.fits', 512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
-    ('HALPHA_ERROR', 'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
-    ('HALPHA_MASK',  'Halpha',  'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK',       '> 1', False, True),
+    ('HALPHA',       'Halpha',       'Halpha_fwhm06_0512.fits', 512, 'PIXMAP',  'TEMPERATURE',   '', True, True),
+    ('HALPHA_ERROR', 'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', True, True),
+    ('HALPHA_MASK',  'Halpha',  'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK',       '> 1', True, True),
     ('CALIB_G',      'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
     ('CALIB_R',      'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
     ('CALIB_Z',      'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
     ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
     ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
+    ('EBV_Chiang_SFDcorr', 'EBV',    'Chiang23_SFD_corrected_hp2048_nest.fits', 2048, 'PIXMAP', 'T', '', True, True),
+    ('EBV_Chiang_LSSmask', 'EBV',    'Chiang23_mask_hp2048_nest.fits', 2048, 'PIXMASK', 'T', '==0', True, True),
     ('EBV_MPF_Mean_FW15',    'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
     ('EBV_MPF_Mean_ZptCorr_FW15', 'EBV', 'recon_fw15_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
     ('EBV_MPF_Var_FW15',     'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
@@ -991,7 +993,7 @@ def read_sky_map(mapname, lssmapdir=None):
                 log.critical(msg.format(pixmap["COLNAME"], mapname))
                 raise ValueError(msg.format(pixmap["COLNAME"], mapname))
             else:
-                mapdata = hp.read_map(fn, field=w[0][0])
+                mapdata = hp.read_map(fn, field=w[0][0],nest=pixmap["NESTED"])
 
 
     return mapdata
@@ -1437,9 +1439,9 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                 for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):
                     if need2setmask:
                         maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-                        uniq, ii, cnt = np.unique(
-                            randpixnums[maskin], return_inverse=True,
-                            return_counts=True)
+                    #    uniq, ii, cnt = np.unique(
+                    #        randpixnums[maskin], return_inverse=True,
+                    #        return_counts=True)
                     masknan = values[field]*0 == 0
                     maskhpun = values[field] != hp.UNSEEN
                     uniq, ii, cnt = np.unique(
@@ -1453,22 +1455,27 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM compute weighted means.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
+
         log.info("raw numbers {} {} {} {}".format(field,np.sum(wcounts[field]),np.sum(counts[field]),np.sum(wcounts[field])/np.sum(counts[field])))
-        for ii in range(0,len(counts[field])):
-            if counts[ii][field] > 0:
-                wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
-            else:
-                wcounts[ii][field] =hp.UNSEEN
-        
+
         ii = counts[field] > 0
+        wcounts[field][ii] = wcounts[field][ii]/counts[field][ii]
+        wcounts[counts[field] == 0][field] = hp.UNSEEN
+
+        log.info("final numbers {} {} {}".format(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field])))
+
+#for ii in range(0,len(counts[field])):
+        #    if counts[ii][field] > 0:
+        #        wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
+        #    else:
+        #        wcounts[ii][field] =hp.UNSEEN
+        # 
+        #ii = counts[field] > 0
         #below was not actually dividing by counts for some reason
         #print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
 
-        #wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
-        #print(np.mean(wcounts[ii][field]))
-        #wcounts[counts[field] == 0][field] = hp.UNSEEN
-        #print(np.mean(wcounts[ii][field]))
-        log.info("final numbers {} {} {}".format(field,np.mean(wcounts[ii][field]),np.mean(counts[ii][field])))
+        
+
 
     # MMM Write atomically (sanity check done before).
     if write:
@@ -1478,7 +1485,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
 
 
-def create_pixweight_file_old(randomcatlist, fieldslist, masklist, nside_out=512,
+def create_pixweight_file_old_wrong(randomcatlist, fieldslist, masklist, nside_out=512,
                           lssmapdir=None, outfn=None, write=True):
     """
     Creates a pixweight file from randoms filtered by bitmasks.
