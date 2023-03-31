@@ -365,18 +365,18 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
-        if args.tracers == 'all':
+        if args.tracer == 'all':
             tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
             notqsos = ['','','','','notqso']
         else:
-            tps = [args.tracers]
+            tps = [args.tracer]
             notqsos = [args.notqso]    
     if prog == 'bright':
-        if args.tracers == 'all':
+        if args.tracer == 'all':
             tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
             notqsos = ['',''] 
         else:
-            tps = [args.tracers]
+            tps = [args.tracer]
             notqsos = [args.notqso]    
 
     for tp,notqso in zip(tps,notqsos):
