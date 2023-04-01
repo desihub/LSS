@@ -31,4 +31,4 @@ skymap_mask:
     - [CALIB_Z,      20, "Mask for z-band calibration residuals map (constructed by comparing LS to stars from PS1)."]
     - [EBV_SGF14,    21, "Mask for Schlafly, Green & Finkbeiner (2014) map."]
     - [KAPPA_PLANCK, 22, "Mask for Planck lensing convergence map."]
-    - [EBV_Chiang_LSS_MASK, 23, "Mask for Chiang's 2023 lss mask for EBV corrected values."]
+    - [EBV_CHIANG_LSS, 23, "Mask for Chiang's 2023 lss mask for EBV corrected values."]
