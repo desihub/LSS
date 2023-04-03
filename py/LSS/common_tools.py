@@ -283,7 +283,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -301,13 +301,27 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     gz = goodz_infull(tp,df)
     df = df[gz]
     nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=1/df['FRACZ_TILELOCID'])
+    cols = list(df.dtype.names)
+    if 'WEIGHT_SYS' in cols:
+        wts = df['WEIGHT_SYS']/df['FRACZ_TILELOCID']
+    else:
+        print('no WEIGHT_SYS')
+        wts = 1./df['FRACZ_TILELOCID']
+    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=)
     zl = zhist[1][:-1]
     zh = zhist[1][1:]
     zm = (zl+zh)/2.
     vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
     nz = zhist[0]/vol
-    print(nz)
+    #print(nz)
+    if write == 'y':
+        fout = fcd.replace('.dat.fits','')+'_nz.txt'
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+        outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+
+        for i in range(0,len(nz)):
+            outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
     return nz
 
 

@@ -2887,8 +2887,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
-    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    if dchi2 is not None:
+    if 'WEIGHT_ZFAIL' not in cols:
+        ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if dchi2 is not None and 'WEIGHT_ZFAIL' not in cols:
         if tp[:3] == 'LRG':
             lrg = ssr_tools.LRG_ssr()
             ff = lrg.add_modpre(ff)
@@ -2990,7 +2991,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[selz]
 
 
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_FKP']
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')

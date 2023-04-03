@@ -187,17 +187,72 @@ regl = ['_S','_N']
 #if args.reg_md == 'GC':
 gcl = ['_SGC','_NGC']
 
+
+fb_in = dirin+type+notqso
+fcr_in = fb_in+'_0_full.ran.fits'
+fcd_in = fb_in+'_full.dat.fits'
+nzf_in = dirin+type+notqso+'_full_nz.txt'
+wo = 'y'
+if os.path.isfile(nzf_in):
+    wo = 'n'
+if type[:3] == 'QSO':
+    dz = 0.02
+    zmin = 0.02
+    zmax = 3.5
+    P0 = 6000
+else:
+    dz = 0.01
+    zmin = 0.01
+    zmax = 1.6
+    
+if type[:3] == 'LRG':
+    P0 = 10000
+if type[:3] == 'ELG':
+    P0 = 4000
+if type[:3] == 'BGS':
+    P0 = 7000
+
+nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo)
+
+fin = fitsio.read(fcd_in)
+cols = list(fin.dtype.names)
+if 'WEIGHT_FKP' not in cols:
+    common.addFKPfull(fcd_in,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+
 if args.baoblind == 'y':
     data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
     outf = dirout + type+notqso+'_full.dat.fits'
     blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
-    if args.type == 'LRG':
-        hdul = fits.open(outf,mode='update')
-        hdul['LSS'].header['FILEROW'] = ind
-        hdul.close()
-        hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
-        if hdtest != ind:
-            sys.exit('ERROR writing/reading row from blind file')
+
+fb_out = dirout+type+notqso
+fcr_out = fb_out+'_0_full.ran.fits'
+fcd_out = fb_out+'_full.dat.fits'
+nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+
+ratio_nz = nz_in/nz_out
+
+fd = Table(fitsio.read(fcd_out))
+cols = list(fd.dtype.names)
+if 'WEIGHT_SYS' not in cols:
+    fd['WEIGHT_SYS'] = np.ones(len(fd))
+zl = fd['Z_not4clus']
+zind = ((zl-zmin)/bs).astype(int)
+gz &= zl > zmin
+gz &= zl < zmax
+gz &= fd['ZWARN'] != 999999
+wl = np.ones(len(fd))
+wl[gz] = nz[zind[gz]]
+fd['WEIGHT_SYS'] *= wl
+common.write_LSS(fd,fcd_out)
+
+if args.type == 'LRG':
+	hdul = fits.open(fcd_out,mode='update')
+	hdul['LSS'].header['FILEROW'] = ind
+	hdul.close()
+	hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
+	if hdtest != ind:
+		sys.exit('ERROR writing/reading row from blind file')
         
 
 
@@ -250,6 +305,6 @@ if args.rsdblind == 'y':
         out_file = fnd
         blind.apply_zshift_RSD(data,data_real,out_file,
                                fgrowth_fid=args.fiducial_f,
-                               fgrowth_blind=fgrowth_blind,
-                               comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
+                               fgrowth_blind=fgrowth_blind)#,
+                               #comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
 
