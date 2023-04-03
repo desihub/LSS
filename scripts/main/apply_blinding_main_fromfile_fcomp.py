@@ -72,6 +72,8 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1",defa
 parser.add_argument("--dorecon",help="if y, run the recon needed for RSD blinding",default='n')
 parser.add_argument("--rsdblind",help="if y, do the RSD blinding shift",default='n')
 
+parser.add_argument("--fiducial_f",help="fiducial value for f",default=0.8)
+
 #parser.add_argument("--fix_monopole",help="whether to choose f such that the amplitude of the monopole is fixed",default='y')
 
 
@@ -193,7 +195,7 @@ if args.baoblind == 'y':
         hdul = fits.open(outf,mode='update')
         hdul['LSS'].header['FILEROW'] = ind
         hdul.close()
-        hdtest = fitsio.read_header(ext='LSS')['FILEROW']
+        hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
         if hdtest != ind:
             sys.exit('ERROR writing/reading row from blind file')
         
