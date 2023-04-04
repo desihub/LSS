@@ -239,7 +239,7 @@ cols = list(fd.dtype.names)
 if 'WEIGHT_SYS' not in cols:
     fd['WEIGHT_SYS'] = np.ones(len(fd))
 zl = fd['Z_not4clus']
-zind = ((zl-zmin)/bs).astype(int)
+zind = ((zl-zmin)/dz).astype(int)
 gz &= zl > zmin
 gz &= zl < zmax
 gz &= fd['ZWARN'] != 999999
