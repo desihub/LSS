@@ -229,9 +229,8 @@ if args.baoblind == 'y':
     blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
 fb_out = dirout+type+notqso
-fcr_out = fb_out+'_1_full.ran.fits'
 fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd)
+nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd)
 
 ratio_nz = nz_in/nz_out
 
