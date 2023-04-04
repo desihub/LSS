@@ -307,7 +307,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n'):
     else:
         print('no WEIGHT_SYS')
         wts = 1./df['FRACZ_TILELOCID']
-    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=)
+    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=wts)
     zl = zhist[1][:-1]
     zh = zhist[1][1:]
     zm = (zl+zh)/2.
