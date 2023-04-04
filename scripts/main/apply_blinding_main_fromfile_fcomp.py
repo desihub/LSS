@@ -245,7 +245,7 @@ gz &= zl > zmin
 gz &= zl < zmax
 
 wl = np.ones(len(fd))
-wl[gz] = nz[zind[gz]]
+wl[gz] = nz_in[zind[gz]]/nz_out[zind[gz]]
 fd['WEIGHT_SYS'] *= wl
 common.write_LSS(fd,fcd_out)
 
