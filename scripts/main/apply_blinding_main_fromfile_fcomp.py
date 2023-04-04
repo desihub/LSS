@@ -117,11 +117,13 @@ if 'mock' not in args.verspec:
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
     randens = 2500.
+    nzmd = 'data'
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
     dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
     dchi2=None
     tsnrcut=0
     randens = 10460.
+    nzmd = 'mock'
 
 else:
     sys.exit('verspec '+args.verspec+' not supported')
@@ -213,7 +215,7 @@ if type[:3] == 'ELG':
 if type[:3] == 'BGS':
     P0 = 7000
 
-nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens)
+nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
 
 fin = fitsio.read(fcd_in)
 cols = list(fin.dtype.names)
@@ -229,7 +231,7 @@ if args.baoblind == 'y':
 fb_out = dirout+type+notqso
 fcr_out = fb_out+'_1_full.ran.fits'
 fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens)
+nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd)
 
 ratio_nz = nz_in/nz_out
 

@@ -283,7 +283,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n'):
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -298,7 +298,10 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n'):
     print('area is '+str(area))
 
     df = fitsio.read(fcd)
-    gz = goodz_infull(tp,df)
+    if md == 'data':
+        gz = goodz_infull(tp,df)
+    if md == 'mock':
+        gz = df['ZWARN'] == 0
     df = df[gz]
     nbin = int((zmax-zmin)/bs)
     cols = list(df.dtype.names)
