@@ -283,7 +283,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data'):
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -310,7 +310,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     else:
         print('no WEIGHT_SYS')
         wts = 1./df['FRACZ_TILELOCID']
-    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=wts)
+    zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax),weights=wts)
     zl = zhist[1][:-1]
     zh = zhist[1][1:]
     zm = (zl+zh)/2.
