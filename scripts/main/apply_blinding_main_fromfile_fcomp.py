@@ -116,13 +116,12 @@ if 'mock' not in args.verspec:
     dirin = ldirspec+'LSScats/'+version+'/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
-          
-
-
+    randens = 2500.
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
     dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
     dchi2=None
     tsnrcut=0
+    randens = 10460.
 
 else:
     sys.exit('verspec '+args.verspec+' not supported')
@@ -191,7 +190,7 @@ gcl = ['_SGC','_NGC']
 
 
 fb_in = dirin+type+notqso
-fcr_in = fb_in+'_0_full.ran.fits'
+fcr_in = fb_in+'_1_full.ran.fits'
 fcd_in = fb_in+'_full.dat.fits'
 nzf_in = dirin+type+notqso+'_full_nz.txt'
 wo = 'y'
@@ -214,12 +213,12 @@ if type[:3] == 'ELG':
 if type[:3] == 'BGS':
     P0 = 7000
 
-nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo)
+nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens)
 
 fin = fitsio.read(fcd_in)
 cols = list(fin.dtype.names)
 if 'WEIGHT_FKP' not in cols:
-    common.addFKPfull(fcd_in,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+    common.addFKPfull(fcd_in,nz_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
 
 if args.baoblind == 'y':
@@ -228,9 +227,9 @@ if args.baoblind == 'y':
     blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
 fb_out = dirout+type+notqso
-fcr_out = fb_out+'_0_full.ran.fits'
+fcr_out = fb_out+'_1_full.ran.fits'
 fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+nz_out = common.mknz_full(fcd_out,fcr_out,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens)
 
 ratio_nz = nz_in/nz_out
 
