@@ -402,7 +402,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         print('done with random number '+str(rann))
     return True
 
-def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data'):
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
     '''
     fb is the file name, including the path
     nran is the number of random files to add the nz to
@@ -413,7 +413,7 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
 
     fd = Table(fitsio.read(fb))
     
-    zl = fd['Z_not4clus']
+    zl = fd[zcol]
     zind = ((zl-zmin)/bs).astype(int)
     gz = fd['ZWARN'] != 999999
     if md == 'data':

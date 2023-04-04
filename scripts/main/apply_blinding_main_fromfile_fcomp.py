@@ -230,7 +230,7 @@ if args.baoblind == 'y':
 
 fb_out = dirout+type+notqso
 fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd)
+nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd,zcol='Z')
 
 ratio_nz = nz_in/nz_out
 
