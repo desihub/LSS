@@ -244,14 +244,14 @@ fd = Table(fitsio.read(fcd_out))
 cols = list(fd.dtype.names)
 if 'WEIGHT_SYS' not in cols:
     fd['WEIGHT_SYS'] = np.ones(len(fd))
-zl = fd['Z_not4clus']
+zl = fd['Z']
 zind = ((zl-zmin)/dz).astype(int)
 gz = fd['ZWARN'] != 999999
-gz &= zl > zmin
-gz &= zl < zmax
+zr = zl > zmin
+zr &= zl < zmax
 
 wl = np.ones(len(fd))
-wl[gz] = nz_in[zind[gz]]/nz_out[zind[gz]]
+wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
 fd['WEIGHT_SYS'] *= wl
 common.write_LSS(fd,fcd_out)
 
@@ -261,7 +261,7 @@ if nzmd == 'mock':
     fdin = fitsio.read(fcd_in)
     a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
     b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
-    c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded')
+    c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
     plt.legend()
     plt.show()
     
