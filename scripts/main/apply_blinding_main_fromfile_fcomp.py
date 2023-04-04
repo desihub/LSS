@@ -200,20 +200,26 @@ if os.path.isfile(nzf_in):
     wo = 'n'
 if type[:3] == 'QSO':
     dz = 0.02
-    zmin = 0.02
+    zmin = 0.8
     zmax = 3.5
     P0 = 6000
 else:
     dz = 0.01
-    zmin = 0.01
-    zmax = 1.6
+    #zmin = 0.01
+    #zmax = 1.6
     
 if type[:3] == 'LRG':
     P0 = 10000
+    zmin = 0.4
+    zmax = 1.1
 if type[:3] == 'ELG':
     P0 = 4000
+    zmin = 0.6
+    zmax = 1.6
 if type[:3] == 'BGS':
     P0 = 7000
+    zmin = 0.1
+    zmax = 0.5
 
 nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
 
@@ -248,6 +254,18 @@ wl = np.ones(len(fd))
 wl[gz] = nz_in[zind[gz]]/nz_out[zind[gz]]
 fd['WEIGHT_SYS'] *= wl
 common.write_LSS(fd,fcd_out)
+
+if nzmd == 'mock':
+    print('min/max of weights for nz:')
+    print(np.min(wl),np.max(wl))
+    fdin = fitsio.read(fcd_in)
+    a = plt.hist(fdin['Z_not4clus'][gz],bins=100.,range=(zmin,zmax),histtype='step',label='input')
+    b = plt.hist(fd['Z'][gz],bins=100.,range=(zmin,zmax),histtype='step',label='blinded')
+    c = plt.hist(fd['Z'][gz],bins=100.,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded')
+    plt.legend()
+    plt.show()
+    
+    
 
 if args.type == 'LRG':
 	hdul = fits.open(fcd_out,mode='update')
