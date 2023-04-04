@@ -240,9 +240,10 @@ if 'WEIGHT_SYS' not in cols:
     fd['WEIGHT_SYS'] = np.ones(len(fd))
 zl = fd['Z_not4clus']
 zind = ((zl-zmin)/dz).astype(int)
+gz = fd['ZWARN'] != 999999
 gz &= zl > zmin
 gz &= zl < zmax
-gz &= fd['ZWARN'] != 999999
+
 wl = np.ones(len(fd))
 wl[gz] = nz[zind[gz]]
 fd['WEIGHT_SYS'] *= wl
