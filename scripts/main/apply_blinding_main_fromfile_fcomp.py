@@ -200,8 +200,8 @@ if os.path.isfile(nzf_in):
     wo = 'n'
 if type[:3] == 'QSO':
     dz = 0.02
-    zmin = 0.8
-    zmax = 3.5
+    #zmin = 0.8
+    #zmax = 3.5
     P0 = 6000
 else:
     dz = 0.01
@@ -210,16 +210,16 @@ else:
     
 if type[:3] == 'LRG':
     P0 = 10000
-    zmin = 0.4
-    zmax = 1.1
+    #zmin = 0.4
+    #zmax = 1.1
 if type[:3] == 'ELG':
     P0 = 4000
-    zmin = 0.6
-    zmax = 1.6
+    #zmin = 0.6
+    #zmax = 1.6
 if type[:3] == 'BGS':
     P0 = 7000
-    zmin = 0.1
-    zmax = 0.5
+    #zmin = 0.1
+    #zmax = 0.5
 
 nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
 
@@ -307,10 +307,10 @@ sys.stdout.flush()
 if args.dorecon == 'y':
     nran = args.maxr-args.minr
     if reg_md == 'NS':
-        os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran))
+        os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --zlim '+str(zmin)+' '+str(zmax))
     else:
         for gc in gcl:
-            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --region '+gc.strip('_'))
+            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --region '+gc.strip('_')+' --zlim '+str(zmin)+' '+str(zmax))
 
 if args.rsdblind == 'y':
     if reg_md == 'NS':
