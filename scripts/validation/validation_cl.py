@@ -200,9 +200,9 @@ for tp in tps:
     _,wth_allz = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_allz[sel],frac[sel])
     _,wth_zr = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
 
-    plt.plot(angl,1000*angl*wth_raw,label='targets in Y1 area')
-    plt.plot(angl,1000*angl*wth_allz,label='all z')
-    plt.plot(angl,1000*angl*wth_zr,label=str(zmin)+' < z < '+str(zmax))
+    plt.plot(angl[:-1],1000*angl[:-1]*wth_raw[:-1],label='targets in Y1 area')
+    plt.plot(angl[:-1],1000*angl[:-1]*wth_allz[:-1],label='all z')
+    plt.plot(angl[:-1],1000*angl[:-1]*wth_zr[:-1],label=str(zmin)+' < z < '+str(zmax))
     plt.grid()
     plt.title(tp)
     plt.legend()
@@ -254,7 +254,7 @@ for tp in tps:
 
     
     for wth,reg in zip(wths,regl):
-        plt.plot(angl,1000*angl*wth,label=reg)
+        plt.plot(angl[:-1],1000*angl[:-1]*wth[:-1],label=reg)
     plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
     plt.legend()
     plt.xlabel(r'$\theta$')
@@ -263,7 +263,7 @@ for tp in tps:
     plt.clf()
 
     for wth,reg in zip(wths_raw,regl):
-        plt.plot(angl,1000*angl*wth,label=reg)
+        plt.plot(angl[:-1],1000*angl[:-1]*wth[:-1],label=reg)
     plt.title(tp+' targets in Y1')
     plt.legend()
     plt.xlabel(r'$\theta$')
