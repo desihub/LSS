@@ -184,19 +184,27 @@ for tp in tps:
             rpix = gethpmap(rt)
             dpix = gethpmap(dtf,weights='WEIGHT')
             wp = (rpix > 0) 
-            od = dpix[wp]/rpix[wp]
-            od = od/np.mean(od)
-            odl.append(od)
+            od = dpix/rpix
+            od = od/np.mean(od[wp])
+            rth,rphi = (-dtf['DEC']+90.)*np.pi/180.,dtf['RA']*np.pi/180. 
+            rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
+            odd = np.zeros(len(rpix))
+            odd = od[rpix]
+            odl.append(odd)
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
             ra,dec = 180./np.pi*phi,-(180./np.pi*th-90)#densvar.thphi2radec(th,phi)
             print(np.min(ra),np.max(ra))
     
             if args.survey != 'DA02':
-                wr = ra > 300
-                ra[wr] -=360
-            ral.append(ra)
-            sin_dec = np.sin(dec*np.pi/180)
+                #wr = ra > 300
+                #ra[wr] -=360
+                rad = dtf['RA']
+                wr = rad > 300
+                rad[wr] -=360
+
+            ral.append(rad)
+            sin_dec = np.sin(dtf['DEC']*np.pi/180)#np.sin(dec*np.pi/180)
             sdecl.append(sin_dec)
             del dtf
             del rt
@@ -216,7 +224,7 @@ for tp in tps:
         yfac = 2.3*size_fac
         fig = plt.figure(figsize=(xr*xfac, yr*yfac))
         ax = fig.add_subplot(111)
-        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker='o')
+        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps*nside_fac*size_fac,marker=',')
         ax.set_aspect(90)
         plt.colorbar(mp, pad=0.01,shrink=2/2.3)
         
