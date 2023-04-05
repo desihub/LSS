@@ -14,9 +14,9 @@ import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='SV3')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--verspec",help="version for redshifts",default='fuji')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
@@ -42,7 +42,7 @@ nran = 18
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
+    tps = ['LRG','BGS_BRIGHT','ELG_LOPnotqso','QSO']
 
 zdw = ''#'zdone'
 
