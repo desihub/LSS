@@ -8,7 +8,7 @@ import numpy as np
 #Therefore, be careful. Suggestion is to work on a copy of the original files.
 
 #This is the directory where we make the modifications. 
-dir_ = '/pscratch/sd/a/acarnero/tobereleased'
+dir_ = '/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public'
 
 #Here it reads all the directory tree structure
 directories = [x[0] for x in os.walk(dir_)]
@@ -31,14 +31,16 @@ names_col_official = list(columns_official.Name)
 #5) Define name to extensions in fits files (this is compulsory for all fits files run through desidatamodel)
 #6) Add units to columns in fits files
 #7) Add header comment redirecting to readthedocs
+#8) Remove columns from specific files or directory
 
-check_columns = False
-change_names = True
-change_types = True
-remove_columns = True
-define_extname = True
-add_units = True
-add_comment_header = True
+check_columns = True
+change_names = False
+change_types = False
+remove_columns = False
+define_extname = False
+add_units = False
+add_comment_header = False
+remove_specific_columns = False
 
 ''' to check if there are columns not defined in description files '''
 if check_columns:
@@ -229,5 +231,70 @@ if add_comment_header:
                     fits.setval(filename, 'COMMENT', value=comment, ext=i)
     print(count,' headers affected')
 
+
+''' Remove specific columns in files or directory'''
+if remove_specific_columns:
+    print('Removing specific columns from file or directory')
+
+    isDir = True
+    
+
+    columns_to_remove = {'/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/LSScats/full': ['REF_EPOCH','PARALLAX','PMRA','PMDEC','OBSCONDITIONS','NUMOBS_INIT','NUMOBS_MORE','NUMOBS','ZTILEID','VERSION']}
+    count=0
+    if isDir:
+        for dir_check in columns_to_remove:
+            for root, dirs, files in os.walk(dir_check):
+                for file in files:
+                    if file.endswith(".fits"):
+                        filename = os.path.join(root,file)
+                        hdul = fits.open(filename)#, mode='update')
+                        cols_to_remove = []
+                        for i in range(len(hdul)-1):
+                            hindex = i+1
+                            data_to_read = hdul[hindex]
+                            for colrem in columns_to_remove[dir_check]:
+                                if colrem in data_to_read.columns.names:
+                                    cols_to_remove.append(colrem)
+                        hdul.close()
+                        if len(cols_to_remove) != 0:
+                            count+=1
+                            hdul = fits.open(filename, mode='update')
+                            for i in range(len(hdul)-1):
+                                hindex = i+1
+                                data_to_read = hdul[hindex]
+                                colsgood = []
+                                for colindata,forindata in zip(data_to_read.columns.names,data_to_read.columns.formats):
+                                    if colindata not in cols_to_remove:
+                                        colsgood.append(fits.Column(name=colindata, array=data_to_read.data[colindata], format=forindata))
+                                hdul[hindex] = fits.BinTableHDU.from_columns(colsgood)
+                            hdul.close()
+    else:
+        for filename in columns_to_remove:
+            hdul = fits.open(filename)#, mode='update')
+            cols_to_remove = []
+            for i in range(len(hdul)-1):
+                hindex = i+1
+                data_to_read = hdul[hindex]
+                for colrem in columns_to_remove[filename]:
+                    if colrem in data_to_read.columns.names:
+                        cols_to_remove.append(colrem)
+            hdul.close()
+            if len(cols_to_remove) != 0:
+                count+=1
+                hdul = fits.open(filename, mode='update')
+                for i in range(len(hdul)-1):
+                    hindex = i+1
+                    data_to_read = hdul[hindex]
+                    colsgood = []
+                    for colindata,forindata in zip(data_to_read.columns.names,data_to_read.columns.formats):
+                        if colindata not in cols_to_remove:
+                            colsgood.append(fits.Column(name=colindata, array=data_to_read.data[colindata], format=forindata))
+                    hdul[hindex] = fits.BinTableHDU.from_columns(colsgood)
+                hdul.close()
+
+    if count==0:
+        print('No files are affected')
+    else:
+        print(count, ' files have been affected')
 
 
