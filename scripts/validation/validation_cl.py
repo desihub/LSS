@@ -54,7 +54,7 @@ def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0,thmax=10,bs=.1)
     overdensity (in same pixels)
     fractional area of same pixels
     '''
-    odens *= frac #because it got multiplied by frac for cl
+    odens /= frac #because it got multiplied by frac for cl
     fo = open('tempodenspczw.dat','w')
     for i in range(len(sindec)):
         fo.write(str(sinra[i])+' '+str(cosra[i])+' '+str(sindec[i])+' '+str(cosdec[i])+' '+str(odens[i])+' '+str(frac[i])+'\n ')
@@ -111,6 +111,9 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         print(mnr)
         delta = (datp/ranp/mnr -1)
     elif len(maskreg)==len(datp):
+        if nest == False:
+            maskreg = hp.reorder(maskreg,n2r=True)
+
         sel &= maskreg
         mnr = np.mean(datp[sel]/ranp[sel])
         delta = (datp/ranp/mnr -1)
@@ -120,6 +123,9 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
         delta = np.zeros(len(datp))
         for reg in regl:
             mr = maskreg[reg]
+            if nest == False:
+                mr = hp.reorder(mr,n2r=True)
+
             mnr = np.mean(datp[sel&mr]/ranp[sel&mr])
             print(reg,mnr)
             delta[mr] = (datp[mr]/ranp[mr]/mnr -1)
@@ -221,7 +227,7 @@ for tp in tps:
         cl_reg_raw = hp.anafast(delta_reg_raw)
         cls_raw.append(cl_reg_raw)
 
-        fskys.append(fsky)
+        fskys.append(fsky_reg)
         sel = delta_reg != hp.UNSEEN
         _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg[sel],frac[sel])
         wths.append(wth_reg)

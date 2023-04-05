@@ -1769,11 +1769,13 @@ def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',
     tarsn = None
     tls = foot.pix2tiles(8,[hpx],tiles)
     if os.path.isfile(outf):
+    #try:
         fgu = Table.read(outf)
         s = 1
         tdone = np.unique(fgu['TILEID'])
         tmask = ~np.isin(tls['TILEID'],tdone)
     else:
+    #except:
         tmask = np.ones(len(tls)).astype('bool')
 
     td = len(tls[~tmask])
@@ -2885,8 +2887,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[wz]
     print('length after cutting to good z '+str(len(ff)))
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
-    ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    if dchi2 is not None:
+    if 'WEIGHT_ZFAIL' not in cols:
+        ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
+    if dchi2 is not None and 'WEIGHT_ZFAIL' not in cols:
         if tp[:3] == 'LRG':
             lrg = ssr_tools.LRG_ssr()
             ff = lrg.add_modpre(ff)
@@ -2988,7 +2991,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[selz]
 
 
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_FKP']
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')
@@ -3237,6 +3240,66 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
+
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
+    '''
+    tiles should be a table containing the relevant info
+    '''
+    from desitarget.io import read_targets_in_tiles
+    import desimodel.focalplane
+    import desimodel.footprint
+    trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+    print(trad)
+
+    nd = 0
+    sel_tile = np.zeros(len(tiles),dtype=bool)
+    for i in range(0,len(tiles)):
+
+        #print('length of tile file is (expected to be 1):'+str(len(tiles)))
+        #tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
+        fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
+        if os.path.isfile(fname):
+            #print(fname +' already exists')
+            pass
+        else:
+            sel_tile[i] = True
+    tiles = tiles[sel_tile]
+    if len(tiles) == 0:
+        print('no tiles to process for '+str(ii))
+        return True
+    rtall = read_targets_in_tiles(dirrt,tiles)
+    print('read targets on all tiles')
+
+    print('creating files for '+str(len(tiles))+' tiles')
+    for i in range(0,len(tiles)):
+        fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
+        print('creating '+fname)
+        tdec = tiles['DEC'][i]
+        decmin = tdec - trad
+        decmax = tdec + trad
+        wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
+        #print(len(rt[wdec]))
+        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
+        print('got indexes')
+        rtw = rtall[wdec][inds]
+        rmtl = Table(rtw)
+        print('made table for '+fname)
+        del rtw
+        #rmtl['TARGETID'] = np.arange(len(rmtl))
+        #print(len(rmtl['TARGETID'])) #checking this column is there
+        rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+        rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+        rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+        rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+        rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+        rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+        print('added columns for '+fname)
+        rmtl.write(fname,format='fits', overwrite=True)
+        del rmtl
+        print('added columns, wrote to '+fname)
+        nd += 1
+        print(str(nd),len(tiles))
+
 
 def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
     '''

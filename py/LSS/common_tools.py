@@ -283,7 +283,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -298,16 +298,33 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     print('area is '+str(area))
 
     df = fitsio.read(fcd)
-    gz = goodz_infull(tp,df)
+    if md == 'data':
+        gz = goodz_infull(tp,df)
+    if md == 'mock':
+        gz = df['ZWARN'] == 0
     df = df[gz]
     nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(df['Z_not4clus'],bins=nbin,range=(zmin,zmax),weights=1/df['FRACZ_TILELOCID'])
+    cols = list(df.dtype.names)
+    if 'WEIGHT_SYS' in cols:
+        wts = df['WEIGHT_SYS']/df['FRACZ_TILELOCID']
+    else:
+        print('no WEIGHT_SYS')
+        wts = 1./df['FRACZ_TILELOCID']
+    zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax),weights=wts)
     zl = zhist[1][:-1]
     zh = zhist[1][1:]
     zm = (zl+zh)/2.
     vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
     nz = zhist[0]/vol
-    print(nz)
+    #print(nz)
+    if write == 'y':
+        fout = fcd.replace('.dat.fits','')+'_nz.txt'
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+        outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+
+        for i in range(0,len(nz)):
+            outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
     return nz
 
 
@@ -385,7 +402,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         print('done with random number '+str(rann))
     return True
 
-def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
     '''
     fb is the file name, including the path
     nran is the number of random files to add the nz to
@@ -395,12 +412,15 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True):
     '''
 
     fd = Table(fitsio.read(fb))
-    gz = goodz_infull(tp,fd)
-    zl = fd['Z_not4clus']
+    
+    zl = fd[zcol]
     zind = ((zl-zmin)/bs).astype(int)
+    gz = fd['ZWARN'] != 999999
+    if md == 'data':
+        gz &= goodz_infull(tp,fd)
     gz &= zl > zmin
     gz &= zl < zmax
-    gz &= fd['ZWARN'] != 999999
+    
     print(np.min(fd[gz]['FRACZ_TILELOCID']),np.max(fd[gz]['FRACZ_TILELOCID']))
     nl = np.zeros(len(fd))
     nl[gz] = nz[zind[gz]]

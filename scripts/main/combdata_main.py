@@ -60,7 +60,7 @@ parser.add_argument("--redotarspec",help="re-join target and spec data even if n
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
 parser.add_argument("--tracer", help="tracer type",default='all')
-
+parser.add_argument("--notqso", help="tracer type",default='')
 
 
 
@@ -365,11 +365,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
-        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
-        notqsos = ['','','','','notqso']
+        if args.tracer == 'all':
+            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+            notqsos = ['','','','','notqso']
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
     if prog == 'bright':
-        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-        notqsos = ['',''] 
+        if args.tracer == 'all':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
+
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
         print('now doing '+tp+notqso)
@@ -486,8 +495,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            #tj.write(outfs,format='fits', overwrite=True)
-            common.write_LSS(tj,outfs)
+            tj.write(outfs,format='fits', overwrite=True)
+            #common.write_LSS(tj,outfs)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
             print('joining spec info to target info')

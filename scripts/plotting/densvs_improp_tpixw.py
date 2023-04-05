@@ -48,15 +48,17 @@ zdw = ''#'zdone'
 regl = ['N','S']
 clrs = ['r','b']
 
-maps = ['STARDENS','CALIB_G',
+maps = ['CALIB_G',
  'CALIB_R',
  'CALIB_Z',
+ 'STARDENS',
+ 'EBV',
+ 'EBV_CHIANG_SFDcorr',
  'EBV_MPF_Mean_FW15',
  'EBV_SGF14',
  'BETA_ML',
  'HI',
  'KAPPA_PLANCK',
- 'EBV',
  'PSFDEPTH_G',
  'PSFDEPTH_R',
  'PSFDEPTH_Z',
