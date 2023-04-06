@@ -18,7 +18,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
-parser.add_argument("--ps",help="point size for density map",default=1,type=float)
+parser.add_argument("--ps",help="point size for density map",default=.01,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
@@ -61,14 +61,14 @@ def gethpmap(dl,weights=None):
         pixlr[pix] += wt
     return pixlr
 
-def plot_map_sindec(ra,sin_dec,od,size_fac,vm,vx,titl,outf):
+def plot_map_sindec(ra,sin_dec,od,vm,vx,titl,outf,size_fac=2):
 	yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
 	xr = (np.max(ra)-np.min(ra))*1.1/90
 	xfac = 2.*size_fac
 	yfac = 2.3*size_fac
 	fig = plt.figure(figsize=(xr*xfac, yr*yfac))
 	ax = fig.add_subplot(111)
-	mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=.2,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
+	mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=args.ps)#,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
 	ax.set_aspect(90)
 	plt.colorbar(mp, pad=0.01,shrink=2/2.3)
 	
@@ -78,7 +78,7 @@ def plot_map_sindec(ra,sin_dec,od,size_fac,vm,vx,titl,outf):
 	plt.grid()
 
 
-	plt.savefig(outf,dpi=args.dpi)
+	plt.savefig(outf)#,dpi=args.dpi)
 	plt.clf()
 
 
@@ -112,39 +112,54 @@ for tp in tps:
         sdecl = []
         odl = []
         odl_oc = []
+        dt = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
+        sel_gz = common.goodz_infull(tp[:3],dt)
+        sel_obs = dt['ZWARN'] != 999999
+        dt = dt[sel_obs&sel_gz]
+        dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
+        dt['WEIGHT'] = 1./dt['FRACZ_TILELOCID']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
+        sel_nan = dt['WEIGHT']*0 != 0
+        if len(dt[sel_nan]) != 0:
+            print(str(len(dt[sel_nan]))+ ' nan weights')
+        rada = dt['RA']
+        wr = rada > 300
+        rada[wr] -=360
+
+ 
+        rf = indir+tp+zdw+'_0_full.ran.fits'
+        rta = fitsio.read(rf)
+
+        rara = rta['RA']
+        wr = rara > 300
+        rara[wr] -=360
+        
+        sindd = np.sin(dt['DEC']*np.pi/180.)
+        sindr = np.sin(rta['DEC']*np.pi/180.)
+
+        vm = np.min(dt['COMP_TILE'])
+        vx = np.max(dt['COMP_TILE'])
+        titl  = tp+' COMP_TILE'
+        outf = outdir+tp+reg+'_comptile.png'
+        plot_map_sindec(ra,sin_dec,dt['COMP_TILE'],vm,vx,titl,outf)
+        vm = np.min(dt['WEIGHT_SYS'])
+        vx = np.max(dt['WEIGHT_SYS'])
+        titl = tp+' WEIGHT_SYS'
+        outf = outdir+tp+reg+'_weightsys.png'
+        plot_map_sindec(ra,sin_dec,dt['WEIGHT_SYS'],vm,vx,titl,outf)
+
         for reg in regl:
-            #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-            #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
-            dtf = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
-            seld = dtf['PHOTSYS'] == reg
-            dtf = dtf[seld]
-            sel_gz = common.goodz_infull(tp[:3],dtf)
-            sel_obs = dtf['ZWARN'] != 999999
-            dtf = dtf[sel_obs&sel_gz]
-            dtf['WEIGHT_COMP'] = 1./dtf['FRACZ_TILELOCID']
-            dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
             
-            #dtf['WEIGHT'] = 1./dtf['COMP_TILE']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
-            sel_nan = dtf['WEIGHT']*0 != 0
-            if len(dtf[sel_nan]) != 0:
-                print(str(len(dtf[sel_nan]))+ ' nan weights')
-                #print(np.unique(dtf[sel_nan]['FRACZ_TILELOCID']))
-                #print(np.unique(dtf[sel_nan]['WEIGHT_ZFAIL']))
-                #print(np.unique(dtf[sel_nan]['WEIGHT_SYS']))
-            rf = indir+tp+zdw+'_0_full.ran.fits'
-            rt = fitsio.read(rf)
+            seld = dt['PHOTSYS'] == reg
+            dtf = dt[seld]
+            rad = rada[seld]
+            
             selr = rt['PHOTSYS'] == reg
             rt = rt[selr]
-            rad = dtf['RA']
-            wr = rad > 300
-            rad[wr] -=360
+            rar = rara[selr]
     
-            rar = rt['RA']
-            wr = rar > 300
-            rar[wr] -=360
    
-            plt.plot(rad,np.sin(dtf['DEC']*np.pi/180.),'k,',label='data')
-            plt.plot(rar,np.sin(rt['DEC']*np.pi/180.),'r,',label='randoms')
+            plt.plot(rad,sindd[seld],'k,',label='data')
+            plt.plot(rar,sindr[selr],'r,',label='randoms')
             plt.legend(labelcolor='linecolor')
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
@@ -152,8 +167,8 @@ for tp in tps:
             plt.savefig(outdir+tp+reg+'_ranodat.png')
             plt.clf()
 
-            plt.plot(rar,np.sin(rt['DEC']*np.pi/180.),'r,',label='randoms')
-            plt.plot(rad,np.sin(dtf['DEC']*np.pi/180.),'k,',label='data')    
+            plt.plot(rar,sindr[selr],'r,',label='randoms')
+            plt.plot(rad,sindd[seld],'k,',label='data')    
             plt.legend(labelcolor='linecolor')
             plt.xlabel('RA')
             plt.ylabel('sin(DEC)')
@@ -161,21 +176,6 @@ for tp in tps:
             plt.savefig(outdir+tp+reg+'_datoran.png')
             plt.clf()
 
-            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['COMP_TILE'],s=.01)
-            plt.colorbar()
-            plt.xlabel('RA')
-            plt.ylabel('sin(DEC)')
-            plt.title(tp+' COMP_TILE')
-            plt.savefig(outdir+tp+reg+'_comptile.png')
-            plt.clf()
-
-            plt.scatter(rad,np.sin(dtf['DEC']*np.pi/180.),c=dtf['WEIGHT_SYS'],s=.01)
-            plt.colorbar()
-            plt.xlabel('RA')
-            plt.ylabel('sin(DEC)')
-            plt.title(tp+' WEIGHT_SYS')
-            plt.savefig(outdir+tp+reg+'_weightsys.png')
-            plt.clf()
 
     
     
@@ -247,10 +247,10 @@ for tp in tps:
         vm = 0.75
         print(np.min(ra),np.max(ra),np.min(od),np.max(od))
         nside_fac = (256/nside)**2.
-        size_fac = 2
+        
         outf = outdir+tp+'_weighteddens'+str(nside)+'.png'
-        plot_map_sindec(ra,sin_dec,od,size_fac,vm,vx,titl,outf)
+        plot_map_sindec(ra,sin_dec,od,vm,vx,titl,outf)
         outf = outdir+tp+'_componly_weighteddens'+str(nside)+'.png'
-        plot_map_sindec(ra,sin_dec,od_oc,size_fac,vm,vx,titl+' only comp.',outf)
+        plot_map_sindec(ra,sin_dec,od_oc,vm,vx,titl+' only comp.',outf)
 
         print(tp+' done')
