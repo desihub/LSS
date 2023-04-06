@@ -59,7 +59,7 @@ def plot_all_petal(petal):
         sel = fibl >= fmin
         sel &= fibl < fmax
         sel_bfib = np.isin(fibl[sel],bfib)
-        print(str(petal)+' '+str(np.sum(n_g[sel_bfib]))+' "good" redshifts on masked fibers for tracer type '+tp)
+        print(str(petal)+' '+str(np.sum(n_g[sel][sel_bfib]))+' "good" redshifts on masked fibers for tracer type '+tp)
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
