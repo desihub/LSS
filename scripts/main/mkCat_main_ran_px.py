@@ -477,7 +477,8 @@ def doran(ii):
                 try:
                     pf = fitsio.read(po,columns=cols)
                 except:
-                    ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
+                    print(po+' was corrupted')
+                    ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,po,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
                     pf = fitsio.read(po,columns=cols)
                 pl.append(pf)
                 print(npx,len(hpxs))
