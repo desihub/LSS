@@ -22,8 +22,8 @@ parser = argparse.ArgumentParser()
 #parser.add_argument("--type", help="tracer type to be selected")
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--version",help="version for catalogs",default='test')
 
 args = parser.parse_args()
@@ -34,9 +34,9 @@ specver = args.verspec
 
 tracers = ['QSO','LRG','ELG','BGS_ANY']
 
-bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
-bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
-
+#bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
+#bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
+bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/unique_badfibers.txt")
 
 
 def plot_all_petal(petal):
@@ -59,6 +59,7 @@ def plot_all_petal(petal):
         sel = fibl >= fmin
         sel &= fibl < fmax
         sel_bfib = np.isin(fibl[sel],bfib)
+        print(str(petal)+' '+str(np.sum(n_g[sel]))+' "good" redshifts on masked fibers for tracer type '+tp)
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
