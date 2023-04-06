@@ -61,6 +61,27 @@ def gethpmap(dl,weights=None):
         pixlr[pix] += wt
     return pixlr
 
+def plot_map_sindec(ra,sin_dec,od,size_fac,vm,vx,titl,outf):
+	yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
+	xr = (np.max(ra)-np.min(ra))*1.1/90
+	xfac = 2.*size_fac
+	yfac = 2.3*size_fac
+	fig = plt.figure(figsize=(xr*xfac, yr*yfac))
+	ax = fig.add_subplot(111)
+	mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=.2,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
+	ax.set_aspect(90)
+	plt.colorbar(mp, pad=0.01,shrink=2/2.3)
+	
+	plt.xlabel('RA')
+	plt.ylabel('sin(DEC)')
+	plt.title(titl)
+	plt.grid()
+
+
+	plt.savefig(outf,dpi=args.dpi)
+	plt.clf()
+
+
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -90,6 +111,7 @@ for tp in tps:
         ral = []
         sdecl = []
         odl = []
+        odl_oc = []
         for reg in regl:
             #dtf = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
             #rf = indir+tp+zdw+reg+'_0_clustering.ran.fits'
@@ -99,8 +121,10 @@ for tp in tps:
             sel_gz = common.goodz_infull(tp[:3],dtf)
             sel_obs = dtf['ZWARN'] != 999999
             dtf = dtf[sel_obs&sel_gz]
-            #dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
-            dtf['WEIGHT'] = 1./dtf['COMP_TILE']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
+            dtf['WEIGHT_COMP'] = 1./dtf['FRACZ_TILELOCID']
+            dtf['WEIGHT'] = 1./dtf['FRACZ_TILELOCID']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
+            
+            #dtf['WEIGHT'] = 1./dtf['COMP_TILE']*dtf['WEIGHT_ZFAIL']*dtf['WEIGHT_SYS']
             sel_nan = dtf['WEIGHT']*0 != 0
             if len(dtf[sel_nan]) != 0:
                 print(str(len(dtf[sel_nan]))+ ' nan weights')
@@ -183,14 +207,20 @@ for tp in tps:
             #print(reg,len(dtf))
             rpix = gethpmap(rt)
             dpix = gethpmap(dtf,weights='WEIGHT')
+            dpix_oc = gethpmap(dtf,weights='WEIGHT_COMP')
             wp = (rpix > 0) 
             od = dpix/rpix
             od = od/np.mean(od[wp])
+            od_oc = dpix_oc/rpix
+            od_oc = od_oc/np.mean(od_oc[wp])
             rth,rphi = (-dtf['DEC']+90.)*np.pi/180.,dtf['RA']*np.pi/180. 
             rpix = hp.ang2pix(nside,rth,rphi,nest=nest)
             odd = np.zeros(len(rpix))
             odd = od[rpix]
             odl.append(odd)
+            odd_oc = np.zeros(len(rpix))
+            odd_oc = od_oc[rpix]
+            odl_oc.append(odd_oc)
             pixls = np.arange(12*nside*nside,dtype=int)
             th,phi = hp.pix2ang(nside,pixls[wp],nest=nest)
             ra,dec = 180./np.pi*phi,-(180./np.pi*th-90)#densvar.thphi2radec(th,phi)
@@ -212,28 +242,15 @@ for tp in tps:
         ra = np.concatenate(ral)
         sin_dec = np.concatenate(sdecl)
         od = np.concatenate(odl)
+        od_oc = np.concatenate(odl_oc)
         vx = 1.25
         vm = 0.75
         print(np.min(ra),np.max(ra),np.min(od),np.max(od))
         nside_fac = (256/nside)**2.
         size_fac = 2
-        
-        yr = (np.max(sin_dec)-np.min(sin_dec))*1.05
-        xr = (np.max(ra)-np.min(ra))*1.1/90
-        xfac = 2.*size_fac
-        yfac = 2.3*size_fac
-        fig = plt.figure(figsize=(xr*xfac, yr*yfac))
-        ax = fig.add_subplot(111)
-        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=.2,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
-        ax.set_aspect(90)
-        plt.colorbar(mp, pad=0.01,shrink=2/2.3)
-        
-        plt.xlabel('RA')
-        plt.ylabel('sin(DEC)')
-        plt.title(titl)
-        plt.grid()
+        outf = outdir+tp+'_weighteddens'+str(nside)+'.png'
+        plot_map_sindec(ra,sin_dec,od,size_fac,vm,vx,titl,outf)
+        outf = outdir+tp+'_componly_weighteddens'+str(nside)+'.png'
+        plot_map_sindec(ra,sin_dec,od_oc,size_fac,vm,vx,titl+' only comp.',outf)
 
-
-        plt.savefig(outdir+tp+'_weighteddens'+str(nside)+'.png',dpi=args.dpi)
-        plt.clf()
         print(tp+' done')
