@@ -139,12 +139,12 @@ for tp in tps:
         vm = np.min(dt['COMP_TILE'])
         vx = np.max(dt['COMP_TILE'])
         titl  = tp+' COMP_TILE'
-        outf = outdir+tp+reg+'_comptile.png'
+        outf = outdir+tp+'_comptile.png'
         plot_map_sindec(ra,sin_dec,dt['COMP_TILE'],vm,vx,titl,outf)
         vm = np.min(dt['WEIGHT_SYS'])
         vx = np.max(dt['WEIGHT_SYS'])
         titl = tp+' WEIGHT_SYS'
-        outf = outdir+tp+reg+'_weightsys.png'
+        outf = outdir+tp+'_weightsys.png'
         plot_map_sindec(ra,sin_dec,dt['WEIGHT_SYS'],vm,vx,titl,outf)
 
         for reg in regl:
