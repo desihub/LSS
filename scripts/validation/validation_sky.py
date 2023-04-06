@@ -224,7 +224,7 @@ for tp in tps:
         yfac = 2.3*size_fac
         fig = plt.figure(figsize=(xr*xfac, yr*yfac))
         ax = fig.add_subplot(111)
-        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=.1,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
+        mp = plt.scatter(ra,sin_dec,c=od,edgecolor='none',vmax=vx,vmin=vm,s=.2,marker=',')#s=args.ps*nside_fac*size_fac,marker='o')
         ax.set_aspect(90)
         plt.colorbar(mp, pad=0.01,shrink=2/2.3)
         
