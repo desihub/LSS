@@ -153,8 +153,8 @@ for tp in tps:
             dtf = dt[seld]
             rad = rada[seld]
             
-            selr = rt['PHOTSYS'] == reg
-            rt = rt[selr]
+            selr = rta['PHOTSYS'] == reg
+            rt = rta[selr]
             rar = rara[selr]
     
    
