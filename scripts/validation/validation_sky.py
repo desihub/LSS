@@ -141,8 +141,10 @@ for tp in tps:
         titl  = tp+' COMP_TILE'
         outf = outdir+tp+'_comptile.png'
         plot_map_sindec(rada,sindd,dt['COMP_TILE'],vm,vx,titl,outf)
-        vm = np.min(dt['WEIGHT_SYS'])
-        vx = np.max(dt['WEIGHT_SYS'])
+        #vm = np.min(dt['WEIGHT_SYS'])
+        #vx = np.max(dt['WEIGHT_SYS'])
+        vm = 0.75
+        vx = 1.25
         titl = tp+' WEIGHT_SYS'
         outf = outdir+tp+'_weightsys.png'
         plot_map_sindec(rada,sindd,dt['WEIGHT_SYS'],vm,vx,titl,outf)
