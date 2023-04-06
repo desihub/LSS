@@ -474,7 +474,11 @@ def doran(ii):
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
                 #pf = Table.read(po)
-                pf = fitsio.read(po,columns=cols)
+                try:
+                    pf = fitsio.read(po,columns=cols)
+                except:
+                    ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,outf,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
+                    pf = fitsio.read(po,columns=cols)
                 pl.append(pf)
                 print(npx,len(hpxs))
                 #ptls = Table.read(po)
