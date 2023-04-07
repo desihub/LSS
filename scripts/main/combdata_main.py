@@ -299,7 +299,7 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         notqsos = ['',''] 
     for tp,notqso in zip(tps,notqsos):
 
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey,badfib=badfib) 
         outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
 

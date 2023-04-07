@@ -1228,7 +1228,7 @@ def cut_specdat(dz):
 #     return fs[wfqa]
 
 
-def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None):
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -1257,7 +1257,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         ps = 'bright'
     if gtl is None:
         print('getting good tileloc')
-        fs = get_specdat(indir,ps,specrel)
+        fs = get_specdat(indir,ps,specrel,badfib=badfib)
 
         stlid = 10000*fs['TILEID'] +fs['LOCATION']
         gtl = np.unique(stlid)
