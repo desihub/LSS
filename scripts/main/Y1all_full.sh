@@ -6,7 +6,7 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 
 #python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --survey Y1 --counts_only y --dospec n
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog bright --survey Y1 --counts_only y --dospec n
+#python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog bright --survey Y1 --counts_only y --dospec n
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type dark 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type bright 
