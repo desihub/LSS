@@ -33,8 +33,8 @@ def map_count(cat, nside = 1024):
 parser = argparse.ArgumentParser()
 parser.add_argument('--tracer', help='tracer to be selected', type=str, default='QSO')
 parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs')
-parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main','Y1'], default='DA02')
-parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
+parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main','Y1'], default='Y1')
+parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
 parser.add_argument('--version', help='catalog version', type=str, default='test')
 parser.add_argument('--nside', help='nside for healpix map', type=int, default=1024)
 parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=18)
@@ -52,7 +52,11 @@ if args.tracer=='BGS_BRIGHT':
 else:
     tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-DARK.fits'
 
-if args.outdir: save_fn = os.path.join(args.outdir,f'healpix_map_ran_comp_{args.tracer}.fits')
+if args.outdir is None:
+    outdir = '/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.verspec}/LSScats/{args.version}/''
+else:
+    outdir = args.outdir
+save_fn = os.path.join(outdir,f'healpix_map_ran_comp_{args.tracer}.fits')
 
 target = cut_randoms(target_fns, tile_fn)
 fibered = cut_randoms(fibered_fns, tile_fn)
