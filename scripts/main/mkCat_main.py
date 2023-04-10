@@ -700,7 +700,7 @@ if args.nzfull == 'y':
         bs = 0.02
     for reg in regl:
         reg = reg.strip('_')
-        common.mknz_full(fcd,fcr,tp,bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
+        common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
 
 if args.addnbar_ran == 'y':
     utlid_sw = ''
