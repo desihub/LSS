@@ -55,6 +55,8 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--nz", help="get n(z) from full files",default='n')
+
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
@@ -685,7 +687,20 @@ if args.FKPfull == 'y':
 	fcd = fb+'_full.dat.fits'
 	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
 	common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
-    
+
+if args.nzfull == 'y':
+	fb = dirout+tracer_clus
+	fcr = fb+'_0_full.ran.fits'
+	fcd = fb+'_full.dat.fits'
+    zmax = 1.6
+    zmin = 0.01
+    bs = 0.01
+    if tp == 'QSO':
+        zmax = 4
+        bs = 0.02
+    for reg in regl:
+        reg = reg.strip('_')
+        common.mknz_full(fcd,fcr,tp,bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
 
 if args.addnbar_ran == 'y':
     utlid_sw = ''
