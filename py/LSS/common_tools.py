@@ -283,7 +283,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
-def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus'):
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus',reg=None):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -293,8 +293,15 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     returns array with n(z) values
     '''
     #cd = distance(om,1-om)
-    ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
-    area = ranf['NAXIS2']/randens
+    if reg is None:
+        ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+        area = ranf['NAXIS2']/randens
+    else:
+        ranf = fitsio.read(fcr,columns=["PHOTSYS"])
+        selreg = ranf['PHOTSYS'] == reg
+        area = len(ranf[selreg])/randens
+        del ranf
+        
     print('area is '+str(area))
 
     df = fitsio.read(fcd)
@@ -303,6 +310,11 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     if md == 'mock':
         gz = df['ZWARN'] == 0
     df = df[gz]
+    wo = ''
+    if reg is not None:
+        selreg = df['PHOTSYS'] == reg
+        df = df[selreg]
+        wo = '_'+reg
     nbin = int((zmax-zmin)/bs)
     cols = list(df.dtype.names)
     if 'WEIGHT_SYS' in cols:
@@ -318,7 +330,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     nz = zhist[0]/vol
     #print(nz)
     if write == 'y':
-        fout = fcd.replace('.dat.fits','')+'_nz.txt'
+        fout = fcd.replace('.dat.fits','')+wo+'_nz.txt'
         outf = open(fout,'w')
         outf.write('#area is '+str(area)+'square degrees\n')
         outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
