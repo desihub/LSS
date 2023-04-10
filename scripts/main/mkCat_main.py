@@ -55,7 +55,7 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-parser.add_argument("--nz", help="get n(z) from full files",default='n')
+parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
 
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
