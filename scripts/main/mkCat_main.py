@@ -695,7 +695,7 @@ if args.nzfull == 'y':
     zmax = 1.6
     zmin = 0.01
     bs = 0.01
-    if tp == 'QSO':
+    if type[:3] == 'QSO':
         zmax = 4
         bs = 0.02
     for reg in regl:
