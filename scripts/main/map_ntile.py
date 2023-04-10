@@ -38,7 +38,7 @@ parser.add_argument('--nran', help='number of random files to combine together (
 args = parser.parse_args()
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/'
 
 
 args = parser.parse_args()
