@@ -682,16 +682,16 @@ if args.nz == 'y':
 
 if args.FKPfull == 'y':
     
-	fb = dirout+tracer_clus
-	fcr = fb+'_0_full.ran.fits'
-	fcd = fb+'_full.dat.fits'
-	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
-	common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+    fb = dirout+tracer_clus
+    fcr = fb+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
+    nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+    common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
 if args.nzfull == 'y':
-	fb = dirout+tracer_clus
-	fcr = fb+'_0_full.ran.fits'
-	fcd = fb+'_full.dat.fits'
+    fb = dirout+tracer_clus
+    fcr = fb+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
     zmax = 1.6
     zmin = 0.01
     bs = 0.01
