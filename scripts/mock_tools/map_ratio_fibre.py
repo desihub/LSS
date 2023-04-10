@@ -53,7 +53,7 @@ else:
     tile_fn = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-DARK.fits'
 
 if args.outdir is None:
-    outdir = '/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.verspec}/LSScats/{args.version}/''
+    outdir = '/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.verspec}/LSScats/{args.version}/'
 else:
     outdir = args.outdir
 save_fn = os.path.join(outdir,f'healpix_map_ran_comp_{args.tracer}.fits')
