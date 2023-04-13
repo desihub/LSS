@@ -96,7 +96,7 @@ def wrapper(bid_index):
     data['MASKBITS'] = bitmask
     data['NOBS_G'] = nobsg
     data['NOBS_R'] = nobsr
-    data['NOBS_Z'] = nobsr
+    data['NOBS_Z'] = nobsz
     data['TARGETID'] = tid
 
     return data
