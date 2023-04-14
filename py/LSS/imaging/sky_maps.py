@@ -81,7 +81,7 @@ maparray = np.array([
     ('BETA_ML',  'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_ML',   '', True, True),
     ('BETA_MEAN','EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_MEAN', '', True, True),
     ('BETA_RMS', 'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_RMS',  '', True, True),
-    ('HI',       'NHI', 'NHI_HPX.fits.gz',                                1024, 'PIXIMG', 'NHI',  '', False, True),
+    ('HI',       'NHI', 'NHI_HPX.fits.gz',                                1024, 'PIXMAP', 'NHI',  '', False, True),
     ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
     ('KAPPA_PLANCK_MASK',  'kappa', 'mask.fits.gz',            2048, 'PIXMASK', 'I',          '==0', False, True),
     ('FRACAREA',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'FRACAREA',      '', True, False),
@@ -117,7 +117,7 @@ def sanity_check_map_array():
             raise ValueError(msg.format(mapname))
 
         # MMM perform a sanity check on options or maptype.
-        if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP', 'PIXIMG']:
+        if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
             msg = "There is NO acceptable value for MAPTYPE"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
@@ -971,13 +971,9 @@ def read_sky_map(mapname, lssmapdir=None):
         mapdata = get_map_from_alms(alms, ellmin, ellmax,
                                     nside_out=nsidemap, nside_in=nsidemap)
 
-    # MMM piximg when the input is a 2d matrix to be read as a hp array
-    elif pixmap["MAPTYPE"] == "PIXIMG": 
-        dataFITS = fitsio.FITS(fn)
-        mapdata = dataFITS[1][pixmap["COLNAME"]][:]
-
+    # ADM these are the MAPTYPE cases of either PIXMAP or PIXMASK.
     else:
-        mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+        mapdata = fitsio.read(fn, 1, columns=pixmap["COLNAME"])
         # ADM if we're dealing with a 2-D map, use hp.read_map.
         if len(mapdata.shape) > 1:
             colnames = fitsio.read(fn, rows=0).dtype.names
@@ -994,7 +990,6 @@ def read_sky_map(mapname, lssmapdir=None):
                 raise ValueError(msg.format(pixmap["COLNAME"], mapname))
             else:
                 mapdata = hp.read_map(fn, field=w[0][0],nest=pixmap["NESTED"])
-
 
     return mapdata
 
@@ -1722,9 +1717,8 @@ def generate_map_values(rancatname, lssmapdir=None, outdir=None, write=True):
     outfn = rancat_name_to_map_name(rancatname, lssmapdir=outdir)
 
     # MMM limit to maps that are not masks 
-    maps = maparray[(maparray["MAPTYPE"] == "PIXIMG") | 
-             (maparray["MAPTYPE"] == "PIXMAP") |
-             (maparray["MAPTYPE"] == "ALMMAP")]
+    maps = maparray[(maparray["MAPTYPE"] == "PIXMAP") |
+                    (maparray["MAPTYPE"] == "ALMMAP")]
 
     # ADM set up an initial output array. We'll modify the dtypes later.
     dt = [('TARGETID', '>i8')]
