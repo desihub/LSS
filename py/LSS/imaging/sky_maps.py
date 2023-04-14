@@ -981,8 +981,8 @@ def read_sky_map(mapname, lssmapdir=None):
             # MMM test what passes through this piece of code
             # mapdata = hp.read_map(fn, field=w[0][0])
             # print("HELLO2", len(mapdata), pixmap["NSIDE"]) 
-            msg = "Non-regular field, specified column name ({}) HERE for (2-D) map {}?"
-            log.critical(msg.format(pixmap["COLNAME"], mapname))
+            # msg = "Non-regular field, specified column name ({}) HERE for (2-D) map {}?"
+            # log.critical(msg.format(pixmap["COLNAME"], mapname))
             # ADM guard against a common incorrect-column-name error.
             if len(w) == 0:
                 msg = "is the specified column name ({}) wrong for (2-D) map {}?"
