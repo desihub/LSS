@@ -61,9 +61,10 @@ if args.mkfiles == 'y':
             else:
                 dz = common.cutphotmask(dz,mainp.ebits)
 
-        z_tot = dz['ZWARN'] != 999999
-        z_tot &= dz['ZWARN']*0 == 0
-        z_tot &= dz['GOODHARDLOC'] == 1
+        #z_tot = dz['ZWARN'] != 999999
+        #z_tot &= dz['ZWARN']*0 == 0
+        #z_tot &= dz['GOODHARDLOC'] == 1
+        z_tot = common.cut_specdat(dz)
         if tp[:3] != 'BGS':
             z_tot &= dz['TSNR2_ELG'] > 80
         else:
