@@ -44,7 +44,7 @@ specver = args.verspec
 #hdul = fits.open(filepathBGS)
 
 if args.tracer == 'all':
-    tracers = ['QSO','LRG','ELG_LOPnotqso','BGS_ANY']
+    tracers = ['QSO','LRG','ELG_LOPnotqso','BGS_BRIGHT']
 else:
     tracers = [args.tracer]
 
