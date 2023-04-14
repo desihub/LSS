@@ -44,7 +44,7 @@ specver = args.verspec
 #hdul = fits.open(filepathBGS)
 
 if args.tracer == 'all':
-    tracers = ['QSO','LRG','ELG_LOPnotqso','BGS_ANY']
+    tracers = ['QSO','LRG','ELG_LOPnotqso','BGS_BRIGHT']
 else:
     tracers = [args.tracer]
 
@@ -61,13 +61,14 @@ if args.mkfiles == 'y':
             else:
                 dz = common.cutphotmask(dz,mainp.ebits)
 
-        z_tot = dz['ZWARN'] != 999999
-        z_tot &= dz['ZWARN']*0 == 0
-        z_tot &= dz['GOODHARDLOC'] == 1
+        #z_tot = dz['ZWARN'] != 999999
+        #z_tot &= dz['ZWARN']*0 == 0
+        #z_tot &= dz['GOODHARDLOC'] == 1
+        dz = common.cut_specdat(dz)
         if tp[:3] != 'BGS':
-            z_tot &= dz['TSNR2_ELG'] > 80
+            z_tot = dz['TSNR2_ELG'] > 80
         else:
-            z_tot &= dz['TSNR2_BGS'] > 1000
+            z_tot = dz['TSNR2_BGS'] > 1000
 
 
         z_suc = common.goodz_infull(tp[:3],dz,zcol='Z')
