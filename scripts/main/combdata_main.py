@@ -45,6 +45,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
+parser.add_argument("--make_tile_file",help="whether or not to make a tile file",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
@@ -154,6 +155,9 @@ if not os.path.exists(ldirspec):
 if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
+
+if args.make_tile_file == 'y':
+    tiles4comb.write(ldirspec+'tiles_'+prog.upper()+'.fits',overwrite=True,format='fits')
 
 print('specrel is '+specrel)
 if specrel == 'daily':
