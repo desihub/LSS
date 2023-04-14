@@ -11,6 +11,7 @@ import fitsio
 from astropy.table import Table
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--verspec",help="version for redshifts",default='himalayas')
@@ -24,7 +25,7 @@ parser.add_argument("--quantity", help="the observing condition: TSNR2_ELG, FIBE
 args = parser.parse_args()
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = args.basedir+'/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/ssr/'
 
 # create the susscessful rate vs observation figure
