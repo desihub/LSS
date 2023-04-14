@@ -64,11 +64,11 @@ if args.mkfiles == 'y':
         #z_tot = dz['ZWARN'] != 999999
         #z_tot &= dz['ZWARN']*0 == 0
         #z_tot &= dz['GOODHARDLOC'] == 1
-        z_tot = common.cut_specdat(dz)
+        dz = common.cut_specdat(dz)
         if tp[:3] != 'BGS':
-            z_tot &= dz['TSNR2_ELG'] > 80
+            z_tot = dz['TSNR2_ELG'] > 80
         else:
-            z_tot &= dz['TSNR2_BGS'] > 1000
+            z_tot = dz['TSNR2_BGS'] > 1000
 
 
         z_suc = common.goodz_infull(tp[:3],dz,zcol='Z')
