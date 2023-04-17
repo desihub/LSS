@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 
 from LSS.tabulated_cosmo import TabulatedDESI
-import cosmodesi_io_tools as io
+import LSS.cosmodesi_io_tools as io
 import LSS.main.cattools as ct
 
 
