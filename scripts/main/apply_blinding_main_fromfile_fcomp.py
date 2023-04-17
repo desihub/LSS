@@ -317,8 +317,8 @@ if args.dorecon == 'y':
     distance = TabulatedDESI().comoving_radial_distance
 
     f, bias = rectools.get_f_bias(args.type)
-    
-    Reconstruction = 'MG'        
+    from pyrecon import MultiGridReconstruction
+    Reconstruction = MultiGridReconstruction       
 
 
     if reg_md == 'NS':
