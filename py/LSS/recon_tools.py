@@ -1,26 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-"""
-Note
-----
-The script can be used either with pyrecon/main (non-MPI, but OpenMP-thread version) or pyrecon/mpi (MPI version).
-To use the MPI version:
-```
-module swap pyrecon/main pyrecon/mpi
-```
-In this case, the script can (should) be called with multiple processes as:
-```
-srun -n 32 python recon.py ...
-```
-As other scripts, xirunpc.py, pkrun.py, the non-MPI astropy's Table() is used for catalogs...
-But in some future, it would be much better to use everywhere the MPI version of mockfactory (mpytools):
-```
-from mockfactory import Catalog
-catalog = Catalog.read(data_fn)
-catalog.write(data_fn)
-```
-"""
 
 import os
 import argparse
