@@ -322,11 +322,11 @@ if args.dorecon == 'y':
 
 
     if reg_md == 'NS':
-        regl = ['N','S']
+        regions = ['N','S']
     else:
-        regl = ['NGC','SGC']
+        regions = ['NGC','SGC']
     
-    for region in regl:
+    for region in regions:
         catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=nran)
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
