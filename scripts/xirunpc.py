@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+"""
+Note
+----
+The script can be called with multiple processes as (e.g. on 2 nodes, 64 threads for each):
+```
+srun -n 2 python xirunpc.py --nthreads 64 ...
+```
+Privilege nthreads over MPI processes.
+"""
+
 import os
 import argparse
 import logging
@@ -11,10 +21,9 @@ from astropy.table import Table, vstack
 from matplotlib import pyplot as plt
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
+
 from LSS.tabulated_cosmo import TabulatedDESI
-
-import LSS.main.cattools as ct
-
+#import LSS.main.cattools as ct
 
 
 
