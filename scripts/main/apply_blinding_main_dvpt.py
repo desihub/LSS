@@ -66,16 +66,16 @@ def collect_argparser():
                         help="base directory where the catalogs clustering are saved. The mocks are here: /global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/Y1/mock1/LSScats")
 
     parser.add_argument("--type", type=str, default='LRG', help="tracer type to be selected")
-    parser.add_argument("--notqso", type=str, default='n', help="if y, do not include any qso targets")
+    parser.add_argument("--notqso", type=str, default='n', help="do not include any qso targets")
     parser.add_argument("--split_GC", type=str, default='n', help="whether to make the split NGC/SGC")
     parser.add_argument("--minr", type=int, default=0, help="minimum number for random files; use 1 for abacus mocks")
     parser.add_argument("--maxr", type=int, default=1, help="maximum for random files, default is 1; use 2 for abacus mocks") 
 
     parser.add_argument("--seed", type=int, required=False, default=741, help="Fix the seed, when draw the blinded parameters.")
 
-    parser.add_argument("--apply_rsd_blinding", type=str, required=False, default='False', help="if True, do the rsd blinding.")
-    parser.add_argument("--apply_bao_blinding", type=str, required=False, default='False', help="if True, do the bao blinding.")
-    parser.add_argument("--apply_fnl_blinding", type=str, required=False, default='True', help="if True, do the fnl blinding.")
+    parser.add_argument("--apply_rsd_blinding", action='store_true', help="do the rsd blinding.")
+    parser.add_argument("--apply_bao_blinding", action='store_true', help="do the bao blinding.")
+    parser.add_argument("--apply_fnl_blinding", action='store_true', help="do the fnl blinding.")
 
     parser.add_argument("--suff_output", type=str, required=False, default='-test',
                         help="If you do not want to overwrite the input catalog, set --suff_output != '' ")
@@ -117,16 +117,16 @@ if __name__ == '__main__':
         data = CutskyCatalog.read(path_data)
 
         # Apply RSD blinding:
-        if args.apply_rsd_blinding == 'True':
+        if args.apply_rsd_blinding:
             data['RA'], data['DEC'], data['Z'] = blinding.rsd([data['RA'], data['DEC'], data['Z']], data_weights=data['WEIGHT'],
                                                             randoms_positions=[randoms['RA'], randoms['DEC'], randoms['Z']], randoms_weights=randoms['WEIGHT'])
 
         # Apply AP blinding:
-        if args.apply_bao_blinding == 'True':
+        if args.apply_bao_blinding:
             data['RA'], data['DEC'], data['Z'] = blinding.ap([data['RA'], data['DEC'], data['Z']])
 
         # Apply fNL blinding: 
-        if args.apply_fnl_blinding == 'True':
+        if args.apply_fnl_blinding:
             data['WEIGHT'] = blinding.png([data['RA'], data['DEC'], data['Z']], data_weights=data['WEIGHT'],
                                         randoms_positions=[randoms['RA'], randoms['DEC'], randoms['Z']], randoms_weights=randoms['WEIGHT'],
                                         method='data_weights', shotnoise_correction=True)
