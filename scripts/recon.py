@@ -32,7 +32,7 @@ from astropy.table import Table, vstack
 import pyrecon
 from pyrecon import MultiGridReconstruction, IterativeFFTReconstruction, IterativeFFTParticleReconstruction, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
-from cosmodesi_io_tools import get_clustering_positions_weights, catalog_dir, catalog_fn, get_regions, get_zlims, get_scratch_dir
+from LSS.cosmodesi_io_tools import get_clustering_positions_weights, catalog_dir, catalog_fn, get_regions, get_zlims, get_scratch_dir
 
 logger = logging.getLogger('recon')
 
