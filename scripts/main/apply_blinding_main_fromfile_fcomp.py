@@ -198,8 +198,8 @@ dfper = (f_shift-args.fiducial_f)/args.fiducial_f
 
 maxfper = 0.1
 if abs(dfper) > maxfper:
-	dfper = maxfper*dfper/abs(dfper)
-	f_shift = (1+dfper)*args.fiducial_f
+    dfper = maxfper*dfper/abs(dfper)
+    f_shift = (1+dfper)*args.fiducial_f
 
 fgrowth_blind = f_shift
 
@@ -240,84 +240,93 @@ if type[:3] == 'BGS':
     #zmin = 0.1
     #zmax = 0.5
 
-nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
+try:
+    mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+except AttributeError:
+    mpicomm = None  # non-MPI version
+root = mpicomm is None or mpicomm.rank == 0
 
-fin = fitsio.read(fcd_in)
-cols = list(fin.dtype.names)
-if 'WEIGHT_FKP' not in cols:
-    common.addFKPfull(fcd_in,nz_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0,md=nzmd)
+
+if root:
+
+    nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
+
+    fin = fitsio.read(fcd_in)
+    cols = list(fin.dtype.names)
+    if 'WEIGHT_FKP' not in cols:
+        common.addFKPfull(fcd_in,nz_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0,md=nzmd)
 
 
-if args.baoblind == 'y':
-    data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
-    outf = dirout + type+notqso+'_full.dat.fits'
-    blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
+    if args.baoblind == 'y':
+        data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
+        outf = dirout + type+notqso+'_full.dat.fits'
+        blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
-fb_out = dirout+type+notqso
-fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd,zcol='Z')
+    fb_out = dirout+type+notqso
+    fcd_out = fb_out+'_full.dat.fits'
+    nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd,zcol='Z')
 
-ratio_nz = nz_in/nz_out
+    ratio_nz = nz_in/nz_out
 
-fd = Table(fitsio.read(fcd_out))
-cols = list(fd.dtype.names)
-if 'WEIGHT_SYS' not in cols:
-    fd['WEIGHT_SYS'] = np.ones(len(fd))
-zl = fd['Z']
-zind = ((zl-zmin)/dz).astype(int)
-gz = fd['ZWARN'] != 999999
-zr = zl > zmin
-zr &= zl < zmax
+    fd = Table(fitsio.read(fcd_out))
+    cols = list(fd.dtype.names)
+    if 'WEIGHT_SYS' not in cols:
+        fd['WEIGHT_SYS'] = np.ones(len(fd))
+    zl = fd['Z']
+    zind = ((zl-zmin)/dz).astype(int)
+    gz = fd['ZWARN'] != 999999
+    zr = zl > zmin
+    zr &= zl < zmax
 
-wl = np.ones(len(fd))
-wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
-fd['WEIGHT_SYS'] *= wl
-common.write_LSS(fd,fcd_out)
+    wl = np.ones(len(fd))
+    wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
+    fd['WEIGHT_SYS'] *= wl
+    common.write_LSS(fd,fcd_out)
 
-if args.visnz == 'y':
-    print('min/max of weights for nz:')
-    print(np.min(wl),np.max(wl))
-    fdin = fitsio.read(fcd_in)
-    a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
-    b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
-    c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
-    plt.legend()
-    plt.show()
+    if args.visnz == 'y':
+        print('min/max of weights for nz:')
+        print(np.min(wl),np.max(wl))
+        fdin = fitsio.read(fcd_in)
+        a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
+        b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
+        c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
+        plt.legend()
+        plt.show()
     
     
 
-if args.type == 'LRG':
-	hdul = fits.open(fcd_out,mode='update')
-	hdul['LSS'].header['FILEROW'] = ind
-	hdul.close()
-	hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
-	if hdtest != ind:
-		sys.exit('ERROR writing/reading row from blind file')
+    if args.type == 'LRG':
+        hdul = fits.open(fcd_out,mode='update')
+        hdul['LSS'].header['FILEROW'] = ind
+        hdul.close()
+        hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
+        if hdtest != ind:
+            sys.exit('ERROR writing/reading row from blind file')
         
 
 
 
-if args.mkclusdat == 'y':
-    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
+    if args.mkclusdat == 'y':
+        ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
 
 
-if args.mkclusran == 'y':
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
-    tsnrcol = 'TSNR2_ELG'
-    if args.type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-    for rannum in range(args.minr,args.maxr):
-        ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
-        #for clustering, make rannum start from 0
-        if 'Y1/mock' in args.verspec:
-            for reg in regl:
-                ranf = dirout+args.type+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
-                ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
-                os.system('mv '+ranf+' '+ranfm)
+    if args.mkclusran == 'y':
+        rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+        tsnrcol = 'TSNR2_ELG'
+        if args.type[:3] == 'BGS':
+            tsnrcol = 'TSNR2_BGS'
+        for rannum in range(args.minr,args.maxr):
+            ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+            #for clustering, make rannum start from 0
+            if 'Y1/mock' in args.verspec:
+                for reg in regl:
+                    ranf = dirout+args.type+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+                    ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+                    os.system('mv '+ranf+' '+ranfm)
 
 reg_md = args.reg_md
 
-if args.split_GC == 'y':
+if args.split_GC == 'y' and root:
     fb = dirout+args.type+notqso+'_'                
     ct.clusNStoGC(fb,args.maxr-args.minr)
 
@@ -331,11 +340,6 @@ if args.dorecon == 'y':
     f, bias = rectools.get_f_bias(args.type)
     from pyrecon import MultiGridReconstruction
     Reconstruction = MultiGridReconstruction       
-
-    try:
-        mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
-    except AttributeError:
-        mpicomm = None  # non-MPI version
 
 
     if reg_md == 'NS':
@@ -351,7 +355,7 @@ if args.dorecon == 'y':
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='randoms')
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax),mpicomm=mpicomm)
 
-if args.rsdblind == 'y':
+if args.rsdblind == 'y' and root:
     if reg_md == 'NS':
         cl = regl
     if reg_md == 'GC':
