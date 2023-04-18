@@ -154,10 +154,6 @@ else:
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 
-if root:
-	if not os.path.exists(dirout):
-		os.makedirs(dirout)
-		print('made '+dirout)
 
 
 tp2z = {'LRG':0.8,'ELG':1.1,'QSO':1.6}
@@ -165,92 +161,96 @@ tp2bias = {'LRG':2.,'ELG':1.3,'QSO':2.3}
 ztp = tp2z[args.type]
 bias = tp2bias[args.type]
 
-w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
-
-if args.get_par_mode == 'random':
-    #if args.type != 'LRG':
-    #    sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
-    ind = int(random()*1000)
-    [w0_blind,wa_blind] = w0wa[ind]
-
-if args.get_par_mode == 'from_file' and root:
-    fn = LSSdir + 'filerow.txt'
-    if not os.path.isfile(fn):
-        ind_samp = int(random()*1000)
-        fo = open(fn,'w')
-        fo.write(str(ind_samp)+'\n')
-        fo.close()
-    ind = int(np.loadtxt(fn))    
-    [w0_blind,wa_blind] = w0wa[ind]
-
-#choose f_shift to compensate shift in monopole amplitude
-cosmo_fid = DESI()
-cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
-
-DM_fid = cosmo_fid.comoving_angular_distance(ztp)
-DH_fid = 1./cosmo_fid.hubble_function(ztp)
-
-DM_shift = cosmo_shift.comoving_angular_distance(ztp)
-DH_shift = 1./cosmo_shift.hubble_function(ztp)
-
-
-vol_fac =  (DM_shift**2*DH_shift)/(DM_fid**2*DH_fid)
-
-#a, b, c for quadratic formula
-a = 0.2/bias**2.
-b = 2/(3*bias)
-c = 1-(1+0.2*(args.fiducial_f/bias)**2.+2/3*args.fiducial_f/bias)/vol_fac
-
-f_shift = (-b+np.sqrt(b**2.-4.*a*c))/(2*a)
-
-dfper = (f_shift-args.fiducial_f)/args.fiducial_f
-
-maxfper = 0.1
-if abs(dfper) > maxfper:
-    dfper = maxfper*dfper/abs(dfper)
-    f_shift = (1+dfper)*args.fiducial_f
-
-fgrowth_blind = f_shift
-
-
-#if args.reg_md == 'NS':
-regl = ['_S','_N']
-#if args.reg_md == 'GC':
-gcl = ['_SGC','_NGC']
-
-
-fb_in = dirin+type+notqso
-fcr_in = fb_in+'_1_full.ran.fits'
-fcd_in = fb_in+'_full.dat.fits'
-nzf_in = dirin+type+notqso+'_full_nz.txt'
-wo = 'y'
-if os.path.isfile(nzf_in):
-    wo = 'n'
-if type[:3] == 'QSO':
-    dz = 0.02
-    #zmin = 0.8
-    #zmax = 3.5
-    P0 = 6000
-else:
-    dz = 0.01
-    #zmin = 0.01
-    #zmax = 1.6
-    
-if type[:3] == 'LRG':
-    P0 = 10000
-    #zmin = 0.4
-    #zmax = 1.1
-if type[:3] == 'ELG':
-    P0 = 4000
-    #zmin = 0.6
-    #zmax = 1.6
-if type[:3] == 'BGS':
-    P0 = 7000
-    #zmin = 0.1
-    #zmax = 0.5
-
 
 if root:
+    if not os.path.exists(dirout):
+        os.makedirs(dirout)
+        print('made '+dirout)
+
+
+    w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
+
+    if args.get_par_mode == 'random':
+        #if args.type != 'LRG':
+        #    sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
+        ind = int(random()*1000)
+        [w0_blind,wa_blind] = w0wa[ind]
+
+    if args.get_par_mode == 'from_file' and root:
+        fn = LSSdir + 'filerow.txt'
+        if not os.path.isfile(fn):
+            ind_samp = int(random()*1000)
+            fo = open(fn,'w')
+            fo.write(str(ind_samp)+'\n')
+            fo.close()
+        ind = int(np.loadtxt(fn))    
+        [w0_blind,wa_blind] = w0wa[ind]
+
+    #choose f_shift to compensate shift in monopole amplitude
+    cosmo_fid = DESI()
+    cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
+
+    DM_fid = cosmo_fid.comoving_angular_distance(ztp)
+    DH_fid = 1./cosmo_fid.hubble_function(ztp)
+
+    DM_shift = cosmo_shift.comoving_angular_distance(ztp)
+    DH_shift = 1./cosmo_shift.hubble_function(ztp)
+
+
+    vol_fac =  (DM_shift**2*DH_shift)/(DM_fid**2*DH_fid)
+
+    #a, b, c for quadratic formula
+    a = 0.2/bias**2.
+    b = 2/(3*bias)
+    c = 1-(1+0.2*(args.fiducial_f/bias)**2.+2/3*args.fiducial_f/bias)/vol_fac
+
+    f_shift = (-b+np.sqrt(b**2.-4.*a*c))/(2*a)
+
+    dfper = (f_shift-args.fiducial_f)/args.fiducial_f
+
+    maxfper = 0.1
+    if abs(dfper) > maxfper:
+        dfper = maxfper*dfper/abs(dfper)
+        f_shift = (1+dfper)*args.fiducial_f
+
+    fgrowth_blind = f_shift
+
+
+    #if args.reg_md == 'NS':
+    regl = ['_S','_N']
+    #if args.reg_md == 'GC':
+    gcl = ['_SGC','_NGC']
+
+
+    fb_in = dirin+type+notqso
+    fcr_in = fb_in+'_1_full.ran.fits'
+    fcd_in = fb_in+'_full.dat.fits'
+    nzf_in = dirin+type+notqso+'_full_nz.txt'
+    wo = 'y'
+    if os.path.isfile(nzf_in):
+        wo = 'n'
+    if type[:3] == 'QSO':
+        dz = 0.02
+        #zmin = 0.8
+        #zmax = 3.5
+        P0 = 6000
+    else:
+        dz = 0.01
+        #zmin = 0.01
+        #zmax = 1.6
+    
+    if type[:3] == 'LRG':
+        P0 = 10000
+        #zmin = 0.4
+        #zmax = 1.1
+    if type[:3] == 'ELG':
+        P0 = 4000
+        #zmin = 0.6
+        #zmax = 1.6
+    if type[:3] == 'BGS':
+        P0 = 7000
+        #zmin = 0.1
+        #zmax = 0.5
 
     nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
 
