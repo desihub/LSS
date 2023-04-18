@@ -90,7 +90,16 @@ parser.add_argument("--visnz",help="whether to look at the original, blinded, an
 
 
 args = parser.parse_args()
-print(args)
+
+try:
+    mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+except AttributeError:
+    mpicomm = None  # non-MPI version
+root = mpicomm is None or mpicomm.rank == 0
+
+
+if root:
+    print(args)
 
 type = args.type
 version = args.version
@@ -100,7 +109,8 @@ notqso = ''
 if args.notqso == 'y':
     notqso = 'notqso'
 
-print('blinding catalogs for tracer type '+type+notqso)
+if root:
+    print('blinding catalogs for tracer type '+type+notqso)
 
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
@@ -144,9 +154,10 @@ else:
 dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
 
 
-if not os.path.exists(dirout):
-    os.makedirs(dirout)
-    print('made '+dirout)
+if root:
+	if not os.path.exists(dirout):
+		os.makedirs(dirout)
+		print('made '+dirout)
 
 
 tp2z = {'LRG':0.8,'ELG':1.1,'QSO':1.6}
@@ -164,14 +175,12 @@ if args.get_par_mode == 'random':
 
 if args.get_par_mode == 'from_file':
     fn = LSSdir + 'filerow.txt'
-    if os.path.isfile(fn):
-        ind = int(np.loadtxt(fn))
-    else:
+    if not os.path.isfile(fn) and root:
         ind_samp = int(random()*1000)
         fo = open(fn,'w')
         fo.write(str(ind_samp)+'\n')
         fo.close()
-        ind = int(np.loadtxt(fn))    
+    ind = int(np.loadtxt(fn))    
     [w0_blind,wa_blind] = w0wa[ind]
 
 #choose f_shift to compensate shift in monopole amplitude
@@ -239,12 +248,6 @@ if type[:3] == 'BGS':
     P0 = 7000
     #zmin = 0.1
     #zmax = 0.5
-
-try:
-    mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
-except AttributeError:
-    mpicomm = None  # non-MPI version
-root = mpicomm is None or mpicomm.rank == 0
 
 
 if root:
