@@ -342,7 +342,9 @@ if args.dorecon == 'y':
 
     f, bias = rectools.get_f_bias(args.type)
     from pyrecon import MultiGridReconstruction
-    Reconstruction = MultiGridReconstruction       
+    Reconstruction = MultiGridReconstruction      
+    
+    setup_logging() 
 
 
     if reg_md == 'NS':
