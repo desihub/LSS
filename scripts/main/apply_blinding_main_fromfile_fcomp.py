@@ -83,6 +83,9 @@ parser.add_argument("--rsdblind",help="if y, do the RSD blinding shift",default=
 
 parser.add_argument("--fiducial_f",help="fiducial value for f",default=0.8)
 
+parser.add_argument("--visnz",help="whether to look at the original, blinded, and weighted n(z)",default='n')
+
+
 #parser.add_argument("--fix_monopole",help="whether to choose f such that the amplitude of the monopole is fixed",default='y')
 
 
@@ -262,7 +265,7 @@ wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
 fd['WEIGHT_SYS'] *= wl
 common.write_LSS(fd,fcd_out)
 
-if nzmd == 'mock':
+if args.visnz == 'y':
     print('min/max of weights for nz:')
     print(np.min(wl),np.max(wl))
     fdin = fitsio.read(fcd_in)
