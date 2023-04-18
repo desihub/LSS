@@ -165,13 +165,13 @@ if args.get_par_mode == 'random':
 if args.get_par_mode == 'from_file':
     fn = LSSdir + 'filerow.txt'
     if os.path.isfile(fn):
-        ind = int(np.loadtxt(fn)[0])
+        ind = int(np.loadtxt(fn))
     else:
         ind_samp = int(random()*1000)
         fo = open(fn,'w')
         fo.write(str(ind_samp)+'\n')
         fo.close()
-        ind = int(np.loadtxt(fn)[0])    
+        ind = int(np.loadtxt(fn))    
     [w0_blind,wa_blind] = w0wa[ind]
 
 #choose f_shift to compensate shift in monopole amplitude
