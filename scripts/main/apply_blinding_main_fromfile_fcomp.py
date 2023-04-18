@@ -173,9 +173,9 @@ if args.get_par_mode == 'random':
     ind = int(random()*1000)
     [w0_blind,wa_blind] = w0wa[ind]
 
-if args.get_par_mode == 'from_file':
+if args.get_par_mode == 'from_file' and root:
     fn = LSSdir + 'filerow.txt'
-    if not os.path.isfile(fn) and root:
+    if not os.path.isfile(fn):
         ind_samp = int(random()*1000)
         fo = open(fn,'w')
         fo.write(str(ind_samp)+'\n')
