@@ -35,8 +35,15 @@ from matplotlib import pyplot as plt
 import LSS.main.cattools as ct
 from LSS.globals import main
 import LSS.blinding_tools as blind
+from LSS.tabulated_cosmo import TabulatedDESI
 
+import LSS.recon_tools as rectools
+from LSS.cosmodesi_io_tools import catalog_fn
 import LSS.common_tools as common
+
+import pyrecon
+from pyrecon import MultiGridReconstruction, IterativeFFTReconstruction, IterativeFFTParticleReconstruction, utils, setup_logging
+
 
 from cosmoprimo.fiducial import DESI
 from cosmoprimo.utils import DistanceToRedshift
@@ -306,11 +313,26 @@ sys.stdout.flush()
 
 if args.dorecon == 'y':
     nran = args.maxr-args.minr
+            
+    distance = TabulatedDESI().comoving_radial_distance
+
+    f, bias = rectools.get_f_bias(args.type)
+    from pyrecon import MultiGridReconstruction
+    Reconstruction = MultiGridReconstruction       
+
+
     if reg_md == 'NS':
-        os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --zlim '+str(zmin)+' '+str(zmax))
+        regions = ['N','S']
     else:
-        for gc in gcl:
-            os.system('python recon.py --tracer '+args.type+' --prepare_blinding True --indir '+dirout+' --outdir '+dirout+' --nran '+str(nran)+' --region '+gc.strip('_')+' --zlim '+str(zmin)+' '+str(zmax))
+        regions = ['NGC','SGC']
+    
+    for region in regions:
+        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=nran)
+        data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
+        randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
+        data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='data')
+        randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='randoms')
+        rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax))
 
 if args.rsdblind == 'y':
     if reg_md == 'NS':

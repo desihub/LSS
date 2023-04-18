@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+"""
+Note
+----
+The script can (should) be called with multiple processes as (e.g. on 2 nodes, 64 threads for each):
+```
+srun -n 128 python pkrun.py ...
+```
+"""
+
 # To run: srun -n 64 python pkrun.py --tracer ELG...
 
 import os

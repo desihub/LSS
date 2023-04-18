@@ -157,7 +157,7 @@ if not os.path.exists(ldirspec+'healpix'):
     print('made '+ldirspec+'healpix')
 
 if args.make_tile_file == 'y':
-    tiles4comb.write(ldirspec+'tiles_'+prog.upper()+'.fits',overwrite=True,format='fits')
+    tiles4comb.write(maindir+'tiles-'+prog.upper()+'.fits',overwrite=True,format='fits')
 
 print('specrel is '+specrel)
 if specrel == 'daily':
