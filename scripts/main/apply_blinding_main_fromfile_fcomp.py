@@ -124,12 +124,14 @@ if 'mock' not in args.verspec:
     ldirspec = maindir+specrel+'/'
 
     dirin = ldirspec+'LSScats/'+version+'/'
+    LSSdir = ldirspec+'LSScats/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
     randens = 2500.
     nzmd = 'data'
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
     dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+    LSSdir = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'
     dchi2=None
     tsnrcut=0
     randens = 10460.
@@ -155,14 +157,21 @@ bias = tp2bias[args.type]
 w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
 if args.get_par_mode == 'random':
-    if args.type != 'LRG':
-        sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
+    #if args.type != 'LRG':
+    #    sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
     ind = int(random()*1000)
     [w0_blind,wa_blind] = w0wa[ind]
 
 if args.get_par_mode == 'from_file':
-    hd = fitsio.read_header(dirout+ 'LRG_full.dat.fits',ext='LSS')
-    ind = hd['FILEROW']
+    fn = LSSdir + 'filerow.txt'
+    if os.path.isfile(fn):
+        ind = int(np.loadtxt(fn)[0])
+    else:
+        ind_samp = int(random()*1000)
+        fo = open(fn,'w')
+        fo.write(str(ind_samp)+'\n')
+        fo.close()
+        ind = int(np.loadtxt(fn)[0])    
     [w0_blind,wa_blind] = w0wa[ind]
 
 #choose f_shift to compensate shift in monopole amplitude
