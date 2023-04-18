@@ -332,6 +332,11 @@ if args.dorecon == 'y':
     from pyrecon import MultiGridReconstruction
     Reconstruction = MultiGridReconstruction       
 
+    try:
+        mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+    except AttributeError:
+        mpicomm = None  # non-MPI version
+
 
     if reg_md == 'NS':
         regions = ['N','S']
@@ -344,7 +349,7 @@ if args.dorecon == 'y':
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
         data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='data')
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='randoms')
-        rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax))
+        rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax),mpicomm=mpicomm)
 
 if args.rsdblind == 'y':
     if reg_md == 'NS':
