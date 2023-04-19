@@ -76,7 +76,7 @@ if args.mockversion == '1stgen':
 
 #load geometric mask
 
-healpix_mask = fitiso.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.version+'/healpix_map_ran_comp_'+args.tracer+'.fits')
+healpix_mask = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.version+'/healpix_map_ran_comp_'+args.tracer+'.fits')
 
 ### SUBSAMPLE ###
 
