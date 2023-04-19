@@ -106,9 +106,12 @@ ntile_comp = np.zeros(len(data))
 for i in range(0,len(ntile)):
     nt = ntile[i]
     nti = int(nt)
-    cp_low = ntile_dic[args.tracer][nti]
-    cp_high = ntile_dic[args.tracer][nti+1]
-    cp = cp_low + (nt-nti)*(cp_high-cp_low) #just linearly interpolate
+    if nti == nt:
+        cp = ntile_dic[args.tracer][nti]
+    else:
+        cp_low = ntile_dic[args.tracer][nti]
+        cp_high = ntile_dic[args.tracer][nti+1]
+        cp = cp_low + (nt-nti)*(cp_high-cp_low) #just linearly interpolate
     ntile_comp[i] = cp
 
 wts = 1/ntile_comp
