@@ -77,7 +77,7 @@ if args.mockversion == '1stgen':
 
 #load geometric mask
 
-healpix_mask = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.dataver+'/healpix_map_ran_comp_'+args.tracer+'.fits')
+healpix_mask = hp.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.dataver+'/healpix_map_ran_comp_'+args.tracer+'.fits')
 
 ### SUBSAMPLE ###
 
@@ -98,7 +98,7 @@ ntile_dic = {'BGS_BRIGHT':{0:0,1:0.512,2:755,3:0.889,4:0.954},'ELG_LOPnotqso':{0
 
 #load ntile map
 
-ntile_map = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.dataver+'/healpix_map_ntile_'+prog+'.fits')
+ntile_map = hp.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.dataver+'/healpix_map_ntile_'+prog+'.fits')
 
 ntile = np.zeros(len(data))
 ntile = ntile_map[dpix]
