@@ -51,6 +51,10 @@ if args.mockversion == '1stgen':
         mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/'+args.tracer[:3]+'/'+zs[args.tracer[3]]+'/'
         if args.tracer == 'LRG':
             file_name = 'cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed'+str(args.real)+'_'+args.reg+'.fits'
+        if args.tracer[:3] == 'ELG':
+            file_name = 'cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed'+str(args.real)+'_'+args.reg+'.fits'
+        if args.tracer == 'QSO':
+            file_name = 'cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed'+str(args.real)+'_'+args.reg+'.fits'
     def mask(main=0, nz=0, Y5=0, sv3=0):
         return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
     thepath = os.path.join(mockpath,file_name)
