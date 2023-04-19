@@ -43,7 +43,7 @@ else:
     prog = 'dark'
 #select mock data
 
-outdir = arg.base_output+args.mockversion+'/'+args.mocktype+'/'+args.fastver+'/'+args.tracer+'/'
+outdir = args.base_output+args.mockversion+'/'+args.mocktype+'/'+args.fastver+'/'+args.tracer+'/'
 os.makedirs(outdir)
 foutname = outdir + args.tracer+'_'+str(args.real)+'_'+args.reg+'_clustering.dat.fits'
 
