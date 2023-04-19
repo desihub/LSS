@@ -126,6 +126,10 @@ data = Table(data)
 
 data['WEIGHT'] = wts
 data = data[mask_keep&comp_keep]
+
+### NEED TO ADD SOME KIND OF n(z) sub-sampling ###
+
+
 data.write(foutname,overwrite=True,format='fits')
 
 
