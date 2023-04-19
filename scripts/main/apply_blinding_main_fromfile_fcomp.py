@@ -63,8 +63,9 @@ try:
     mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
 except AttributeError:
     mpicomm = None  # non-MPI version
-    sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
-root = mpicomm.rank == 0
+    print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
+    #sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
+root = mpicomm is None or mpicomm.rank == 0
 
 
 # to remove jax warning (from cosmoprimo)
@@ -79,9 +80,9 @@ parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
-parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='NS')
+#parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='GC')
 
-parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='n')
+#parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
 
 parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file'], default='random')
 
@@ -96,7 +97,8 @@ parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
 
-# parser.add_argument("--fix_monopole", help="whether to choose f such that the amplitude of the monopole is fixed",default='y')
+parser.add_argument("--visnz",help="whether to look at the original, blinded, and weighted n(z)",default='n')
+
 
 args = parser.parse_args()
 if root: print(args)
@@ -263,6 +265,17 @@ if root:
         plt.legend()
         plt.show()
 
+    if args.visnz == 'y':
+        print('min/max of weights for nz:')
+        print(np.min(wl),np.max(wl))
+        fdin = fitsio.read(fcd_in)
+        a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
+        b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
+        c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
+        plt.legend()
+        plt.show()
+
+
 
     if args.type == 'LRG':
         hdul = fits.open(fcd_out,mode='update')
@@ -291,9 +304,9 @@ if root:
                     ranfm = dirout + args.type + notqso + reg + '_' + str(rannum - 1) + '_clustering.ran.fits'
                     os.system('mv ' + ranf + ' ' + ranfm)
 
-    if args.split_GC == 'y':
-        fb = dirout + args.type + notqso + '_'
-        ct.clusNStoGC(fb, args.maxr - args.minr)
+    #if args.split_GC == 'y':
+    fb = dirout + args.type + notqso + '_'
+    ct.clusNStoGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
@@ -304,7 +317,8 @@ if args.dorecon == 'y':
     from pyrecon import MultiGridReconstruction
     Reconstruction = MultiGridReconstruction
 
-    regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
+    #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
+    regions = ['NGC', 'SGC']
     for region in regions:
         catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
@@ -314,10 +328,10 @@ if args.dorecon == 'y':
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
 
 if root and (args.rsdblind == 'y'):
-    if args.reg_md == 'NS':
-        cl = regl
-    if args.reg_md == 'GC':
-        cl = gcl
+    #if args.reg_md == 'NS':
+    #    cl = regl
+    #if args.reg_md == 'GC':
+    cl = gcl
     for reg in cl:
         fnd = dirout + type + notqso + reg + '_clustering.dat.fits'
         fndr = dirout + type + notqso + reg + '_clustering.MGrsd.dat.fits'
@@ -331,6 +345,8 @@ if root and (args.rsdblind == 'y'):
                                #comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
 
 if args.fnlblind == 'y':
+    if mpicomm is None:
+        sys.exit('fNL blinding requires MPI, exiting')
     from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
 
     if root:
@@ -358,7 +374,8 @@ if args.fnlblind == 'y':
     blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
 
     # loop over the different region of the sky
-    regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
+    #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
+    regions = ['NGC', 'SGC']
     for region in regions:
         # path of data and randoms:
         catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
