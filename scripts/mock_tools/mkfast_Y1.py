@@ -29,10 +29,11 @@ parser.add_argument("--mockversion", help="version of mock type ",choices=['1stg
 #parser.add_argument("--mockpath", help="Location of mock file(s)",default='/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/')
 #parser.add_argument("--mockfile", help="formattable name of mock file(s). e.g. cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits. TYPE will be replaced with tracer type. PH will be replaced with realization number for simulation of mock.",default='cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits')
 parser.add_argument("--real", help="number for the realization",default=1,type=int)
-parser.add_argument("--survey", help="points to set of tiles",default='Y1')
+#parser.add_argument("--survey", help="points to set of tiles",default='Y1')
 parser.add_argument("--reg", help="region",choices=['NGC','SGC'],default='NGC')
 parser.add_argument("--dataver", help="points to set of tiles",default='v0.1')
-parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
+parser.add_argument("--fastver", help="version for output",default='test')
+parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/fast/')
 
 args = parser.parse_args()
 
@@ -41,6 +42,12 @@ if args.tracer[3] == 'BGS':
 else:
     prog = 'dark'
 #select mock data
+
+outdir = arg.base_output+args.mockversion+'/'+args.mocktype+'/'+args.fastver+'/'+args.tracer+'/'
+os.makedirs(outdir)
+foutname = outdir + args.tracer+'_'+str(args.real)+'_'+args.reg+'_clustering.dat.fits'
+
+print('output will be written to '+foutname)
 
 if args.mockversion == '1stgen':
     zs = {'ELG':'z1.100','LRG':'z0.800','QSO':'z1.400'}
@@ -71,15 +78,48 @@ if args.mockversion == '1stgen':
 
 healpix_mask = fitiso.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.version+'/healpix_map_ran_comp_'+args.tracer+'.fits')
 
+### SUBSAMPLE ###
+
 th,phi = radec2thphi(data['RA'],data['DEC'])
 dpix = hp.ang2pix(1024,th,phi)
+mask_comp = np.zeros(len(data))
+mask_comp = healpix_mask[dpix]
+rans = np.random.random(len(data))
+mask_keep = (rans < mask_comp)
 
-### ADD LINES TO SUBSAMPLE ###
 
 ### ADD LINES TO GET RANDOMS AND SUBSAMPLE ###
 
-### PUT IN COMPLETENESS AS FUNCTION OF NTILE FROM https://desi.lbl.gov/trac/wiki/keyprojects/y1kp3/Y1details#Completenessfootprintstatistics
+### COMPLETENESS AS FUNCTION OF NTILE FROM https://desi.lbl.gov/trac/wiki/keyprojects/y1kp3/Y1details#Completenessfootprintstatistics
+
+ntile_dic = {'BGS_BRIGHT':{0:0,1:0.512,2:755,3:0.889,4:0.954},'ELG_LOPnotqso':{0:0,1:0.308,2:0.400,3:0.528,4:0.658,5:0.767,6:0.853,7:0.917},\
+'LRG':{0:0,1:0.585,2:0.741,3:0.869,4:0.936,5:0.968,6:0.985,7:0.995},'QSO':{0:0,1:0.794,2:0.957,3:0.989,4:0.994,5:0.996,6:0.998,7:0.999}}
+}
+
+#load ntile map
 
 ntile_map = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.version+'/healpix_map_ntile_'+prog+'.fits')
+
+ntile = np.zeros(len(data))
+ntile = ntile_map[dpix]
+ntile_comp = np.zeros(len(data))
+for i in range(0,len(ntile)):
+    ntile_comp[i] = ntile_dic[args.tracer][ntile[i]]
+
+wts = 1/ntile_comp
+
+rans = np.random.random(len(data))
+comp_keep = (rans < ntile_comp)
+
+print('we will keep '+str(np.sum(mask_keep&comp_keep))+' for Y1 out of '+str(len(data)))
+
+data = Table(data)
+
+data['WEIGHT'] = wts
+data = data[mask_keep&comp_keep]
+data.write(foutname,overwrite=True,format='fits')
+
+
+
 
 ### ADD LINES TO SUBSAMPLE AS FUNCTION OF NTILE AND ADD WEIGHT THAT COMPENSATES
