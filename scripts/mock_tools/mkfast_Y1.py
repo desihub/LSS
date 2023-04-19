@@ -44,7 +44,8 @@ else:
 #select mock data
 
 outdir = args.base_output+args.mockversion+'/'+args.mocktype+'/'+args.fastver+'/'+args.tracer+'/'
-os.makedirs(outdir)
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
 foutname = outdir + args.tracer+'_'+str(args.real)+'_'+args.reg+'_clustering.dat.fits'
 
 print('output will be written to '+foutname)
