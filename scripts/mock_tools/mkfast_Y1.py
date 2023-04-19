@@ -37,7 +37,7 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 
 args = parser.parse_args()
 
-if args.tracer[3] == 'BGS':
+if args.tracer[:3] == 'BGS':
     prog = 'bright'
 else:
     prog = 'dark'
@@ -53,9 +53,9 @@ if args.mockversion == '1stgen':
     zs = {'ELG':'z1.100','LRG':'z0.800','QSO':'z1.400'}
     if args.mocktype == 'Ab':
         mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'    
-        file_name = 'cutsky_'+args.tracer[3]+'_'+zs[args.tracer[3]]+'_AbacusSummit_base_c000_ph'+str(args.real)+'.fits'
+        file_name = 'cutsky_'+args.tracer[:3]+'_'+zs[args.tracer[:3]]+'_AbacusSummit_base_c000_ph'+str(args.real)+'.fits'
     if args.mocktype == 'EZ':
-        mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/'+args.tracer[:3]+'/'+zs[args.tracer[3]]+'/'
+        mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/'+args.tracer[:3]+'/'+zs[args.tracer[:3]]+'/'
         if args.tracer == 'LRG':
             file_name = 'cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed'+str(args.real)+'_'+args.reg+'.fits'
         if args.tracer[:3] == 'ELG':
