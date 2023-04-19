@@ -82,12 +82,13 @@ healpix_mask = hp.read_map('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/L
 ### SUBSAMPLE ###
 
 th,phi = radec2thphi(data['RA'],data['DEC'])
-dpix = hp.ang2pix(1024,th,phi)
+dpix = hp.ang2pix(1024,th,phi,nest=True)
 mask_comp = np.zeros(len(data))
 mask_comp = healpix_mask[dpix]
 rans = np.random.random(len(data))
 mask_keep = (rans < mask_comp)
 
+print('mask will keep '+str(np.sum(mask_keep))+' for Y1 out of '+str(len(data)))
 
 ### ADD LINES TO GET RANDOMS AND SUBSAMPLE ###
 
