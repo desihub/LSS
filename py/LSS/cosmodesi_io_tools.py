@@ -27,7 +27,7 @@ from LSS.tabulated_cosmo import TabulatedDESI
 
 
 
-logger = logging.getLogger('xirunpc')
+logger = logging.getLogger('cosmodesi_io')
 
 
 def get_scratch_dir():

@@ -23,7 +23,8 @@ from matplotlib import pyplot as plt
 from pypower import CatalogFFTPower, PowerSpectrumStatistics, CatalogSmoothWindow, PowerSpectrumSmoothWindow, PowerSpectrumOddWideAngleMatrix, PowerSpectrumSmoothWindowMatrix, utils, setup_logging
 from LSS.tabulated_cosmo import TabulatedDESI
 
-from xirunpc import read_clustering_positions_weights, concatenate_data_randoms, compute_angular_weights, catalog_dir, get_regions, get_zlims, get_scratch_dir
+from xirunpc import compute_angular_weights
+from LSS.cosmodesi_io_tools import read_clustering_positions_weights, concatenate_data_randoms, catalog_dir, get_regions, get_zlims, get_scratch_dir
 
 
 os.environ['OMP_NUM_THREADS'] = os.environ['NUMEXPR_MAX_THREADS'] = '1'
