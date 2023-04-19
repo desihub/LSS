@@ -17,6 +17,7 @@ NOTES FOR TESTING AND VALIDATION
 
 import sys
 import os
+import logging
 import shutil
 import unittest
 from datetime import datetime
@@ -59,6 +60,18 @@ else:
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 
+try:
+    mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+except AttributeError:
+    mpicomm = None  # non-MPI version
+    sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
+root = mpicomm.rank == 0
+
+
+# to remove jax warning (from cosmoprimo)
+logging.getLogger("jax._src.lib.xla_bridge").addFilter(logging.Filter("No GPU/TPU found, falling back to CPU."))
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
@@ -80,32 +93,23 @@ parser.add_argument("--minr", help="minimum number for random files",default=0,t
 parser.add_argument("--maxr", help="maximum for random files, default is 1",default=1,type=int) #use 2 for abacus mocks
 parser.add_argument("--dorecon",help="if y, run the recon needed for RSD blinding",default='n')
 parser.add_argument("--rsdblind",help="if y, do the RSD blinding shift",default='n')
+parser.add_argument("--fnlblind",help="if y, do the fnl blinding",default='n')
 
 parser.add_argument("--fiducial_f",help="fiducial value for f",default=0.8)
 
 #parser.add_argument("--fix_monopole",help="whether to choose f such that the amplitude of the monopole is fixed",default='y')
 
-
 args = parser.parse_args()
-print(args)
+if root: print(args)
 
 type = args.type
 version = args.version
 specrel = args.verspec
 
-notqso = ''
-if args.notqso == 'y':
-    notqso = 'notqso'
+notqso = 'notqso' if (args.notqso == 'y') else ''
+if root: print('blinding catalogs for tracer type ' + type + notqso)
 
-print('blinding catalogs for tracer type '+type+notqso)
-
-
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
-    prog = 'BRIGHT'
-
-else:
-    prog = 'DARK'
-
+prog = 'BRIGHT' if (type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY') else 'DARK'
 progl = prog.lower()
 
 mainp = main(args.type)
@@ -113,215 +117,201 @@ zmin = mainp.zmin
 zmax = mainp.zmax
 tsnrcol = mainp.tsnrcol  
 
-
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 if 'mock' not in args.verspec:
-    maindir = args.basedir_in +'/'+args.survey+'/LSS/'
-
-    ldirspec = maindir+specrel+'/'
-
-    dirin = ldirspec+'LSScats/'+version+'/'
+    maindir = args.basedir_in + '/' + args.survey + '/LSS/'
+    ldirspec = maindir + specrel + '/'
+    dirin = ldirspec + 'LSScats/' + version + '/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
     randens = 2500.
     nzmd = 'data'
 elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
-    dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+    dirin = args.basedir_in + '/' + args.survey + '/' + args.verspec + '/LSScats/' + version + '/'
     dchi2=None
     tsnrcut=0
     randens = 10460.
     nzmd = 'mock'
-
 else:
-    sys.exit('verspec '+args.verspec+' not supported')
-    
+    sys.exit('verspec ' + args.verspec + ' not supported')
 
-dirout = args.basedir_out+'/LSScats/'+version+'/blinded/'
+dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
 
-
-if not os.path.exists(dirout):
+if root and (not os.path.exists(dirout)):
     os.makedirs(dirout)
     print('made '+dirout)
 
-
 tp2z = {'LRG':0.8,'ELG':1.1,'QSO':1.6}
 tp2bias = {'LRG':2.,'ELG':1.3,'QSO':2.3}
-ztp = tp2z[args.type]
-bias = tp2bias[args.type]
 
-w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
+if root:
+    ztp = tp2z[args.type]
+    bias = tp2bias[args.type]
 
-if args.get_par_mode == 'random':
-    if args.type != 'LRG':
-        sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
-    ind = int(random()*1000)
-    [w0_blind,wa_blind] = w0wa[ind]
+    w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
-if args.get_par_mode == 'from_file':
-    hd = fitsio.read_header(dirout+ 'LRG_full.dat.fits',ext='LSS')
-    ind = hd['FILEROW']
-    [w0_blind,wa_blind] = w0wa[ind]
+    if args.get_par_mode == 'random':
+        if args.type != 'LRG':
+            sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
+        ind = int(random()*1000)
+        [w0_blind,wa_blind] = w0wa[ind]
 
-#choose f_shift to compensate shift in monopole amplitude
-cosmo_fid = DESI()
-cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
+    if args.get_par_mode == 'from_file':
+        hd = fitsio.read_header(dirout+ 'LRG_full.dat.fits',ext='LSS')
+        ind = hd['FILEROW']
+        [w0_blind,wa_blind] = w0wa[ind]
 
-DM_fid = cosmo_fid.comoving_angular_distance(ztp)
-DH_fid = 1./cosmo_fid.hubble_function(ztp)
+    #choose f_shift to compensate shift in monopole amplitude
+    cosmo_fid = DESI()
+    cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
 
-DM_shift = cosmo_shift.comoving_angular_distance(ztp)
-DH_shift = 1./cosmo_shift.hubble_function(ztp)
+    DM_fid = cosmo_fid.comoving_angular_distance(ztp)
+    DH_fid = 1./cosmo_fid.hubble_function(ztp)
 
+    DM_shift = cosmo_shift.comoving_angular_distance(ztp)
+    DH_shift = 1./cosmo_shift.hubble_function(ztp)
 
-vol_fac =  (DM_shift**2*DH_shift)/(DM_fid**2*DH_fid)
+    vol_fac =  (DM_shift**2 * DH_shift) / (DM_fid**2 * DH_fid)
 
-#a, b, c for quadratic formula
-a = 0.2/bias**2.
-b = 2/(3*bias)
-c = 1-(1+0.2*(args.fiducial_f/bias)**2.+2/3*args.fiducial_f/bias)/vol_fac
+    #a, b, c for quadratic formula
+    a = 0.2 / bias**2
+    b = 2 / (3 * bias)
+    c = 1 - (1 + 0.2 * (args.fiducial_f / bias)**2. + 2/3 * args.fiducial_f / bias) / vol_fac
 
-f_shift = (-b+np.sqrt(b**2.-4.*a*c))/(2*a)
+    f_shift = (-b + np.sqrt(b**2. - 4.*a*c))/(2*a)
+    dfper = (f_shift - args.fiducial_f)/args.fiducial_f
+    maxfper = 0.1
+    if abs(dfper) > maxfper:
+        dfper = maxfper*dfper/abs(dfper)
+        f_shift = (1+dfper)*args.fiducial_f
+    fgrowth_blind = f_shift
 
-dfper = (f_shift-args.fiducial_f)/args.fiducial_f
+    #if args.reg_md == 'NS':
+    regl = ['_S','_N']
+    #if args.reg_md == 'GC':
+    gcl = ['_SGC','_NGC']
 
-maxfper = 0.1
-if abs(dfper) > maxfper:
-	dfper = maxfper*dfper/abs(dfper)
-	f_shift = (1+dfper)*args.fiducial_f
+    fb_in = dirin+type+notqso
+    fcr_in = fb_in+'_1_full.ran.fits'
+    fcd_in = fb_in+'_full.dat.fits'
+    nzf_in = dirin+type+notqso+'_full_nz.txt'
+    wo = 'y'
+    if os.path.isfile(nzf_in):
+        wo = 'n'
+    if type[:3] == 'QSO':
+        dz = 0.02
+        #zmin = 0.8
+        #zmax = 3.5
+        P0 = 6000
+    else:
+        dz = 0.01
+        #zmin = 0.01
+        #zmax = 1.6
+        
+    if type[:3] == 'LRG':
+        P0 = 10000
+        #zmin = 0.4
+        #zmax = 1.1
+    if type[:3] == 'ELG':
+        P0 = 4000
+        #zmin = 0.6
+        #zmax = 1.6
+    if type[:3] == 'BGS':
+        P0 = 7000
+        #zmin = 0.1
+        #zmax = 0.5
 
-fgrowth_blind = f_shift
+    nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
 
-
-#if args.reg_md == 'NS':
-regl = ['_S','_N']
-#if args.reg_md == 'GC':
-gcl = ['_SGC','_NGC']
-
-
-fb_in = dirin+type+notqso
-fcr_in = fb_in+'_1_full.ran.fits'
-fcd_in = fb_in+'_full.dat.fits'
-nzf_in = dirin+type+notqso+'_full_nz.txt'
-wo = 'y'
-if os.path.isfile(nzf_in):
-    wo = 'n'
-if type[:3] == 'QSO':
-    dz = 0.02
-    #zmin = 0.8
-    #zmax = 3.5
-    P0 = 6000
-else:
-    dz = 0.01
-    #zmin = 0.01
-    #zmax = 1.6
-    
-if type[:3] == 'LRG':
-    P0 = 10000
-    #zmin = 0.4
-    #zmax = 1.1
-if type[:3] == 'ELG':
-    P0 = 4000
-    #zmin = 0.6
-    #zmax = 1.6
-if type[:3] == 'BGS':
-    P0 = 7000
-    #zmin = 0.1
-    #zmax = 0.5
-
-nz_in = common.mknz_full(fcd_in,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,write=wo,randens=randens,md=nzmd)
-
-fin = fitsio.read(fcd_in)
-cols = list(fin.dtype.names)
-if 'WEIGHT_FKP' not in cols:
-    common.addFKPfull(fcd_in,nz_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0,md=nzmd)
+    fin = fitsio.read(fcd_in)
+    cols = list(fin.dtype.names)
+    if 'WEIGHT_FKP' not in cols:
+        common.addFKPfull(fcd_in,nz_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0,md=nzmd)
 
 
-if args.baoblind == 'y':
-    data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
-    outf = dirout + type+notqso+'_full.dat.fits'
-    blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
+    if args.baoblind == 'y':
+        data = Table(fitsio.read(dirin+type+notqso+'_full.dat.fits'))
+        outf = dirout + type+notqso+'_full.dat.fits'
+        blind.apply_zshift_DE(data,outf,w0=w0_blind,wa=wa_blind,zcol='Z_not4clus')
 
-fb_out = dirout+type+notqso
-fcd_out = fb_out+'_full.dat.fits'
-nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd,zcol='Z')
+    fb_out = dirout+type+notqso
+    fcd_out = fb_out+'_full.dat.fits'
+    nz_out = common.mknz_full(fcd_out,fcr_in,type[:3],bs=dz,zmin=zmin,zmax=zmax,randens=randens,md=nzmd,zcol='Z')
 
-ratio_nz = nz_in/nz_out
+    ratio_nz = nz_in/nz_out
 
-fd = Table(fitsio.read(fcd_out))
-cols = list(fd.dtype.names)
-if 'WEIGHT_SYS' not in cols:
-    fd['WEIGHT_SYS'] = np.ones(len(fd))
-zl = fd['Z']
-zind = ((zl-zmin)/dz).astype(int)
-gz = fd['ZWARN'] != 999999
-zr = zl > zmin
-zr &= zl < zmax
+    fd = Table(fitsio.read(fcd_out))
+    cols = list(fd.dtype.names)
+    if 'WEIGHT_SYS' not in cols:
+        fd['WEIGHT_SYS'] = np.ones(len(fd))
+    zl = fd['Z']
+    zind = ((zl-zmin)/dz).astype(int)
+    gz = fd['ZWARN'] != 999999
+    zr = zl > zmin
+    zr &= zl < zmax
 
-wl = np.ones(len(fd))
-wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
-fd['WEIGHT_SYS'] *= wl
-common.write_LSS(fd,fcd_out)
+    wl = np.ones(len(fd))
+    wl[gz&zr] = nz_in[zind[gz&zr]]/nz_out[zind[gz&zr]]
+    fd['WEIGHT_SYS'] *= wl
+    common.write_LSS(fd,fcd_out)
 
-if nzmd == 'mock':
-    print('min/max of weights for nz:')
-    print(np.min(wl),np.max(wl))
-    fdin = fitsio.read(fcd_in)
-    a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
-    b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
-    c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
-    plt.legend()
-    plt.show()
-    
-    
 
-if args.type == 'LRG':
-	hdul = fits.open(fcd_out,mode='update')
-	hdul['LSS'].header['FILEROW'] = ind
-	hdul.close()
-	hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
-	if hdtest != ind:
-		sys.exit('ERROR writing/reading row from blind file')
+    if nzmd == 'mock':
+        print('min/max of weights for nz:')
+        print(np.min(wl),np.max(wl))
+        fdin = fitsio.read(fcd_in)
+        a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
+        b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
+        c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
+        plt.legend()
+        plt.show()
         
 
+    if args.type == 'LRG':
+        hdul = fits.open(fcd_out,mode='update')
+        hdul['LSS'].header['FILEROW'] = ind
+        hdul.close()
+        hdtest = fitsio.read_header(dirout+ 'LRG_full.dat.fits', ext='LSS')['FILEROW']
+        if hdtest != ind:
+            sys.exit('ERROR writing/reading row from blind file')
 
 
-if args.mkclusdat == 'y':
-    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax)
+    if args.mkclusdat == 'y':
+        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax)
 
 
-if args.mkclusran == 'y':
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
-    tsnrcol = 'TSNR2_ELG'
-    if args.type[:3] == 'BGS':
-        tsnrcol = 'TSNR2_BGS'
-    for rannum in range(args.minr,args.maxr):
-        ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
-        #for clustering, make rannum start from 0
-        if 'Y1/mock' in args.verspec:
-            for reg in regl:
-                ranf = dirout+args.type+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
-                ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
-                os.system('mv '+ranf+' '+ranfm)
+    if args.mkclusran == 'y':
+        rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
+        tsnrcol = 'TSNR2_ELG'
+        if args.type[:3] == 'BGS':
+            tsnrcol = 'TSNR2_BGS'
+        for rannum in range(args.minr,args.maxr):
+            ct.mkclusran(dirin+args.type+notqso+'_',dirout+args.type+notqso+'_',rannum,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+            #for clustering, make rannum start from 0
+            if 'Y1/mock' in args.verspec:
+                for reg in regl:
+                    ranf = dirout+args.type+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
+                    ranfm = dirout+args.type+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+                    os.system('mv '+ranf+' '+ranfm)
 
-reg_md = args.reg_md
+    if args.split_GC == 'y':
+        fb = dirout+args.type+notqso+'_'                
+        ct.clusNStoGC(fb,args.maxr-args.minr)
 
-if args.split_GC == 'y':
-    fb = dirout+args.type+notqso+'_'                
-    ct.clusNStoGC(fb,args.maxr-args.minr)
-
-sys.stdout.flush()
+    sys.stdout.flush()
 
 if args.dorecon == 'y':
-    nran = args.maxr-args.minr
-            
+    nran = args.maxr - args.minr
+
+    if root: print('on est la')
+
     distance = TabulatedDESI().comoving_radial_distance
 
     f, bias = rectools.get_f_bias(args.type)
     from pyrecon import MultiGridReconstruction
     Reconstruction = MultiGridReconstruction       
 
-
-    if reg_md == 'NS':
+    if args.reg_md == 'NS':
         regions = ['N','S']
     else:
         regions = ['NGC','SGC']
@@ -332,22 +322,86 @@ if args.dorecon == 'y':
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
         data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='data')
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='randoms')
-        rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax))
+        rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
 
-if args.rsdblind == 'y':
-    if reg_md == 'NS':
+if root and (args.rsdblind == 'y'):
+
+    if root: print('on est ici')
+
+    if args.reg_md == 'NS':
         cl = regl
-    if reg_md == 'GC':
+    if args.reg_md == 'GC':
         cl = gcl
     for reg in cl:
-        fnd = dirout+type+notqso+reg+'_clustering.dat.fits'
-        fndr = dirout+type+notqso+reg+'_clustering.MGrsd.dat.fits'
+        fnd = dirout + type + notqso + reg + '_clustering.dat.fits'
+        fndr = dirout + type + notqso + reg + '_clustering.MGrsd.dat.fits'
         data = Table(fitsio.read(fnd))
         data_real = Table(fitsio.read(fndr))
 
         out_file = fnd
-        blind.apply_zshift_RSD(data,data_real,out_file,
+        blind.apply_zshift_RSD(data, data_real, out_file,
                                fgrowth_fid=args.fiducial_f,
                                fgrowth_blind=fgrowth_blind)#,
                                #comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
 
+if args.fnlblind == 'y':
+    from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
+
+    if root: print('on est ici')
+
+    if root:
+        f_blind = fgrowth_blind
+        # generate blinding value from the choosen index above
+        np.random.seed(ind)
+        fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
+    if not root:
+        w0_blind, wa_blind, f_blind, fnl_blind = None, None, None, None
+    w0_blind = mpicomm.bcast(w0_blind, root=0)
+    wa_blind = mpicomm.bcast(wa_blind, root=0)
+    f_blind = mpicomm.bcast(f_blind, root=0)
+    fnl_blind = mpicomm.bcast(fnl_blind, root=0)
+
+    # collect effective redshift and bias for the considered tracer
+    zeff = tp2z[args.type]
+    bias = tp2bias[args.type]
+
+    # build blinding cosmology
+    cosmo_blind = get_cosmo_blind('DESI', z=zeff)
+    cosmo_blind.params['w0_fld'] = w0_blind
+    cosmo_blind.params['wa_fld'] = wa_blind
+    cosmo_blind._derived['f'] = f_blind
+    cosmo_blind._derived['fnl'] = fnl_blind   # on fixe la valeur pour de bon
+    blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
+
+    # loop over the different region of the sky
+    if args.reg_md == 'NS':
+        cl = regl
+    if args.reg_md == 'GC':
+        cl = gcl
+    for reg in cl:
+        # path of data and randoms:
+        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=nran)
+        data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
+        randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
+        if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
+    
+        data_positions, data_weights = None, None
+        randoms_positions, randoms_weights = None, None
+        if root:
+            print('Loading {}.'.format(data_fn))
+            data = Table.read(data_fn)
+            data_positions, data_weights = [data['RA'], data['DEC'], data['Z']], data['WEIGHT']
+
+            print('Loading {}'.format(randoms_fn))
+            randoms = vstack([Table.read(fn) for fn in randoms_fn])
+            randoms_positions, randoms_weights  = [randoms['RA'], randoms['DEC'], randoms['Z']], randoms['WEIGHT']
+
+        # add fnl blinding weight to the data weight
+        new_data_weights = blinding.png(data_positions, data_weights=data_weights,
+                                       randoms_positions=randoms_positions, randoms_weights=randoms_weights,
+                                       method='data_weights', shotnoise_correction=True)
+        
+        # overwrite the data!
+        if root:
+            data['WEIGHT'] = new_data_weights
+            common.write_LSS(data, data_fn)
