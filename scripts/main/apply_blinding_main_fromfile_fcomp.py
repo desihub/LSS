@@ -84,7 +84,7 @@ parser.add_argument("--notqso", help="if y, do not include any qso targets", def
 
 #parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
 
-parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file'], default='random')
+parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file','specified'],default='from_file')
 
 parser.add_argument("--baoblind", help="if y, do the bao blinding shift", default='n')
 parser.add_argument("--mkclusdat", help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)", default='n')
@@ -96,6 +96,18 @@ parser.add_argument("--rsdblind", help="if y, do the RSD blinding shift", defaul
 parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
+
+#relevant if args.get_par_mode is specified
+parser.add_argument("--specified_w0",
+                    help="Specify a blind w0 value",
+                    default=None)
+parser.add_argument("--specified_wa",
+                    help="Specify a blind wa value ",
+                    default=None)
+parser.add_argument("--specified_fnl",
+                    help="Specify a blind fnl value ",
+                    default=None)
+
 
 parser.add_argument("--visnz",help="whether to look at the original, blinded, and weighted n(z)",default='n')
 
@@ -154,6 +166,11 @@ if root:
 
     w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
+    if args.get_par_mode == 'specified':
+        [w0_blind, wa_blind] = [args.specified_w0,args.specified_wa]
+        if w0_blind is None or wa_blind is None:
+            sys.exit('you must provide arguments for --specified_w0 and --specified_wa in the specified get_par_mode')
+    
     if args.get_par_mode == 'random':
         if args.type != 'LRG':
             sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
@@ -351,9 +368,14 @@ if args.fnlblind == 'y':
 
     if root:
         f_blind = fgrowth_blind
-        # generate blinding value from the choosen index above
-        np.random.seed(ind)
-        fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
+        if args.get_par_mode == 'specified':
+            fnl_blind = args.specified_fnl
+            if fnl_blind is None:
+                sys.exit('you must provide arguments for --specified_fnl  in the specified get_par_mode')
+        else:
+            # generate blinding value from the choosen index above
+            np.random.seed(ind)
+            fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
     if not root:
         w0_blind, wa_blind, f_blind, fnl_blind = None, None, None, None
     w0_blind = mpicomm.bcast(w0_blind, root=0)
