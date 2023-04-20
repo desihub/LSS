@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument( '--cat_type', default='obielg', choices=['obielg', 'abacus'],required=False)
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 parser.add_argument('--abacus_fa_num', default = 0, required = False)
-parser.add_argument('--do_randoms', default = '', choices = ['y'], required = False)
+parser.add_argument('--do_randoms', default = 'n', choices = ['n','y'], required = False)
 parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
@@ -36,7 +36,7 @@ if args.cat_type == 'obielg':
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_masknobs.fits'
     
 if args.cat_type == 'abacus':
-    if args.do_randoms == '':
+    if args.do_randoms == 'n':
         fa_num = args.abacus_fa_num
         str_fa_num = str(fa_num)
         input_dir = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/"
