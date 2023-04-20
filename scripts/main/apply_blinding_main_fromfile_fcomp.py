@@ -172,15 +172,20 @@ if root:
             sys.exit('you must provide arguments for --specified_w0 and --specified_wa in the specified get_par_mode')
     
     if args.get_par_mode == 'random':
-        if args.type != 'LRG':
-            sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
+        #if args.type != 'LRG':
+        #    sys.exit('Only do LRG in random mode, read from LRG file for other tracers')
         ind = int(random() * 1000)
         [w0_blind, wa_blind] = w0wa[ind]
 
     if args.get_par_mode == 'from_file':
-        hd = fitsio.read_header(dirout + 'LRG_full.dat.fits', ext='LSS')
-        ind = hd['FILEROW']
-        [w0_blind, wa_blind] = w0wa[ind]
+        fn = LSSdir + 'filerow.txt'
+        if not os.path.isfile(fn):
+            ind_samp = int(random()*1000)
+            fo = open(fn,'w')
+            fo.write(str(ind_samp)+'\n')
+            fo.close()
+        ind = int(np.loadtxt(fn))    
+        [w0_blind,wa_blind] = w0wa[ind]
 
     #choose f_shift to compensate shift in monopole amplitude
     cosmo_fid = DESI()
@@ -294,13 +299,13 @@ if root:
 
 
 
-    if args.type == 'LRG':
-        hdul = fits.open(fcd_out,mode='update')
-        hdul['LSS'].header['FILEROW'] = ind
-        hdul.close()
-        hdtest = fitsio.read_header(dirout + 'LRG_full.dat.fits', ext='LSS')['FILEROW']
-        if hdtest != ind:
-            sys.exit('ERROR writing/reading row from blind file')
+    #if args.type == 'LRG':
+    #    hdul = fits.open(fcd_out,mode='update')
+    #    hdul['LSS'].header['FILEROW'] = ind
+    #    hdul.close()
+    #    hdtest = fitsio.read_header(dirout + 'LRG_full.dat.fits', ext='LSS')['FILEROW']
+    #    if hdtest != ind:
+    #        sys.exit('ERROR writing/reading row from blind file')
 
 
     if args.mkclusdat == 'y':
