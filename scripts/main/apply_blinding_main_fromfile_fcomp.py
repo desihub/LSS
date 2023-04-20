@@ -59,13 +59,6 @@ else:
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding')
 
 
-try:
-    mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
-except AttributeError:
-    mpicomm = None  # non-MPI version
-    print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
-    #sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
-root = mpicomm is None or mpicomm.rank == 0
 
 
 # to remove jax warning (from cosmoprimo)
@@ -110,9 +103,23 @@ parser.add_argument("--specified_fnl",
 
 
 parser.add_argument("--visnz",help="whether to look at the original, blinded, and weighted n(z)",default='n')
+parser.add_argument("--useMPI",help="whether to try to use MPI or not",default='y')
 
 
 args = parser.parse_args()
+
+mpicomm = None
+if args.useMPI == 'y':
+	try:
+		mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+	except AttributeError:
+		mpicomm = None  # non-MPI version
+		print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
+		#sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
+
+root = mpicomm is None or mpicomm.rank == 0
+
+
 if root: print(args)
 
 type = args.type
@@ -331,8 +338,10 @@ if args.dorecon == 'y':
     distance = TabulatedDESI().comoving_radial_distance
 
     f, bias = rectools.get_f_bias(args.type)
-    from pyrecon import MultiGridReconstruction
+
     Reconstruction = MultiGridReconstruction
+    
+    setup_logging() 
 
     #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
     regions = ['NGC', 'SGC']
