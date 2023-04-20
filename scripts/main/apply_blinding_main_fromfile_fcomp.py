@@ -117,6 +117,9 @@ if args.useMPI == 'y':
 		print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
 		#sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
 
+if mpicomm is None:
+    print('NOT using MPI. If you specified a number of processes, e.g. "srun ... -n 32", greater than 1, things will not work well')
+
 root = mpicomm is None or mpicomm.rank == 0
 
 
