@@ -130,23 +130,28 @@ zmin = mainp.zmin
 zmax = mainp.zmax
 tsnrcol = mainp.tsnrcol
 
-# share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
+#share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 if 'mock' not in args.verspec:
-    maindir = args.basedir_in + '/' + args.survey + '/LSS/'
-    ldirspec = maindir + specrel + '/'
-    dirin = ldirspec + 'LSScats/' + version + '/'
+    maindir = args.basedir_in +'/'+args.survey+'/LSS/'
+
+    ldirspec = maindir+specrel+'/'
+
+    dirin = ldirspec+'LSScats/'+version+'/'
+    LSSdir = ldirspec+'LSScats/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
     randens = 2500.
     nzmd = 'data'
-elif 'Y1/mock' in args.verspec: # e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
-    dirin = args.basedir_in + '/' + args.survey + '/' + args.verspec + '/LSScats/' + version + '/'
-    dchi2 = None
-    tsnrcut = 0
+elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
+    dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+    LSSdir = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'
+    dchi2=None
+    tsnrcut=0
     randens = 10460.
     nzmd = 'mock'
+
 else:
-    sys.exit('verspec ' + args.verspec + ' not supported')
+    sys.exit('verspec '+args.verspec+' not supported')
 
 dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
 
