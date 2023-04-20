@@ -342,7 +342,7 @@ if args.dorecon == 'y':
 
     f, bias = rectools.get_f_bias(args.type)
 
-    Reconstruction = MultiGridReconstruction
+    Reconstruction = IterativeFFTReconstruction#MultiGridReconstruction
     
     setup_logging() 
 
@@ -352,8 +352,8 @@ if args.dorecon == 'y':
         catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
-        data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='data')
-        randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='MGrsd', name='randoms')
+        data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='data')
+        randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='randoms')
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
 
 if root and (args.rsdblind == 'y'):
@@ -363,7 +363,7 @@ if root and (args.rsdblind == 'y'):
     cl = gcl
     for reg in cl:
         fnd = dirout + type + notqso + reg + '_clustering.dat.fits'
-        fndr = dirout + type + notqso + reg + '_clustering.MGrsd.dat.fits'
+        fndr = dirout + type + notqso + reg + '_clustering.IFFTrsd.dat.fits'
         data = Table(fitsio.read(fnd))
         data_real = Table(fitsio.read(fndr))
 
