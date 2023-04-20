@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import os
 import sys
@@ -105,10 +106,12 @@ for tp in tps:
         rng=(80,200)
     
     zm = zmin
+    figs = []
     while zm < zmax:
         selz = df['Z_not4clus'] > zm
         selz &= df['Z_not4clus'] < zm+dz
         seln = df['PHOTSYS'] == 'N'
+        fig = plt.figure()
         normed_plot(df,selo&seln,selo&selgz&selz&seln,cl='r',ps='d',lab='N',col=tsnrcol,range=rng)
         normed_plot(df,selo&~seln,selo&selgz&selz&~seln,cl='b',ps='o',lab='S',col=tsnrcol,range=rng)
         plt.legend()
@@ -116,8 +119,13 @@ for tp in tps:
         plt.ylabel(tp+' relative z success')
         plt.xlabel(tsnrcol)
         plt.title(str(round(zm,3))+'<z<'+str(round(zm+dz,3)))
-        plt.savefig(outdir+tp+'_'+str(round(zm,3))+'ltzlt'+str(round(zm+dz,3))+'_relsuccess_tnsr.png')
-        plt.clf()
+        #plt.savefig(outdir+tp+'_'+str(round(zm,3))+'ltzlt'+str(round(zm+dz,3))+'_relsuccess_tnsr.png')
+        #plt.clf()
+        figs.append(fig)
         zm += dz
-
+    with PdfPages(outdir+tp+'_relsuccess_tnsr_zbins.pdf') as pdf:
+        for fig in figs:
+            pdf.savefig(fig)
+            plt.close()
+    print('done with '+tp)
 

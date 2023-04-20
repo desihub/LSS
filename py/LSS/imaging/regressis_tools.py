@@ -235,7 +235,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     print('about to make dataframe')
     dataframe = PhotometricDataFrame(survey, tracer, footprint, suffix_tracer, **dataframe_params)
     print('about to set feature')
-    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path)
+    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path,sel_columns=feature_names)
     print('about to set targets')
     dataframe.set_targets()
     print('about to build')

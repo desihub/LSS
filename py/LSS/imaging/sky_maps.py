@@ -57,37 +57,39 @@ mapdt = [
 #     EBV_SGF     - column names: ebv f4, mask: status i4 (masked area if status > 0)
 #     kappa       - values: index, real, imag;  mask :
 maparray = np.array([
-    ('HALPHA',       'Halpha',       'Halpha_fwhm06_0512.fits', 512, 'PIXMAP',  'TEMPERATURE',   '', False, True),
-    ('HALPHA_ERROR', 'Halpha', 'Halpha_error_fwhm06_0512.fits', 512, 'PIXMAP',  'ERROR',         '', False, True),
-    ('HALPHA_MASK',  'Halpha',  'Halpha_mask_fwhm06_0512.fits', 512, 'PIXMASK', 'MASK',       '> 1', False, True),
-    ('CALIB_G',      'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_R',      'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_Z',      'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMAP',  'NONE-IMAGE',    '', False, False),
-    ('CALIB_G_MASK', 'calibration', 'decam-ps1-0128-g.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_R_MASK', 'calibration', 'decam-ps1-0128-r.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('CALIB_Z_MASK', 'calibration', 'decam-ps1-0128-z.fits',    128, 'PIXMASK', 'NONE-IMAGE', '==0', False, False),
-    ('EBV_MPF_Mean_FW15',    'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
-    ('EBV_MPF_Mean_ZptCorr_FW15', 'EBV', 'recon_fw15_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
-    ('EBV_MPF_Var_FW15',     'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
-    ('EBV_MPF_VarCorr_FW15', 'EBV',     'recon_fw15_final_mult.fits',   2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
-    ('EBV_MPF_Mean_FW6P1',    'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
-    ('EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV', 'recon_fw6-1_final_mult.fits', 2048, 'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
-    ('EBV_MPF_Var_FW6P1',     'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
-    ('EBV_MPF_VarCorr_FW6P1', 'EBV',    'recon_fw6-1_final_mult.fits',  2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
-    ('EBV_SGF14',            'EBV', 'ps1-ebv-4.5kpc.fits',               512, 'PIXMAP',  'ebv',           '', False, True),
-    ('EBV_SGF14_MASK',       'EBV', 'ps1-ebv-4.5kpc.fits',               512, 'PIXMASK', 'status',     '< 0', False, True),
-    ('BETA_ML',  'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_ML',   '', True, True),
-    ('BETA_MEAN','EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_MEAN', '', True, True),
-    ('BETA_RMS', 'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',      256, 'PIXMAP', 'BETA_RMS',  '', True, True),
-    ('HI',       'NHI', 'NHI_HPX.fits.gz',                                1024, 'PIXIMG', 'NHI',  '', False, True),
-    ('KAPPA_PLANCK',       'kappa', 'dat_klm.fits',            2048, 'ALMMAP',  'NONE-3col',     '', False, True),
-    ('KAPPA_PLANCK_MASK',  'kappa', 'mask.fits.gz',            2048, 'PIXMASK', 'I',          '==0', False, True),
-    ('FRACAREA',  'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'FRACAREA',      '', True, False),
-    ('STARDENS',  'stardens',       'stardens.fits',            512, 'PIXMAP',  'STARDENS',      '', True, False),
-    ('ELG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'ELG',           '', True, False),
-    ('LRG',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'LRG',           '', True, False),
-    ('QSO',       'pixweight-dark', 'pixweight-1-dark.fits',    256, 'PIXMAP',  'QSO',           '', True, False),
-    ('BGS_ANY', 'pixweight-bright', 'pixweight-1-bright.fits',  256, 'PIXMAP',  'BGS_ANY',       '', True, False)
+    ('HALPHA',                  'Halpha',                    'Halpha_fwhm06_0512.fits',  512,  'PIXMAP', 'TEMPERATURE',        '',  True, True),
+    ('HALPHA_ERROR',            'Halpha',              'Halpha_error_fwhm06_0512.fits',  512,  'PIXMAP', 'ERROR',              '',  True, True),
+    ('HALPHA_MASK',             'Halpha',               'Halpha_mask_fwhm06_0512.fits',  512, 'PIXMASK', 'MASK',            '> 1',  True, True),
+    ('CALIB_G',            'calibration',                      'decam-ps1-0128-g.fits',  128,  'PIXMAP', 'NONE-IMAGE',         '', False, False),
+    ('CALIB_R',            'calibration',                      'decam-ps1-0128-r.fits',  128,  'PIXMAP', 'NONE-IMAGE',         '', False, False),
+    ('CALIB_Z',            'calibration',                      'decam-ps1-0128-z.fits',  128,  'PIXMAP', 'NONE-IMAGE',         '', False, False),
+    ('CALIB_G_MASK',       'calibration',                      'decam-ps1-0128-g.fits',  128, 'PIXMASK', 'NONE-IMAGE',      '==0', False, False),
+    ('CALIB_R_MASK',       'calibration',                      'decam-ps1-0128-r.fits',  128, 'PIXMASK', 'NONE-IMAGE',      '==0', False, False),
+    ('CALIB_Z_MASK',       'calibration',                      'decam-ps1-0128-z.fits',  128, 'PIXMASK', 'NONE-IMAGE',      '==0', False, False),
+    ('EBV_CHIANG_SFDcorr',         'EBV',    'Chiang23_SFD_corrected_hp2048_nest.fits', 2048,  'PIXMAP', 'T',                  '',  True, True),
+    ('EBV_CHIANG_LSS_MASK',        'EBV',             'Chiang23_mask_hp2048_nest.fits', 2048, 'PIXMASK', 'T',               '==0',  True, True),
+    ('EBV_MPF_Mean_FW15',          'EBV',                 'recon_fw15_final_mult.fits', 2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
+    ('EBV_MPF_Mean_ZptCorr_FW15',  'EBV',                 'recon_fw15_final_mult.fits', 2048,  'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
+    ('EBV_MPF_Var_FW15',           'EBV',                 'recon_fw15_final_mult.fits', 2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
+    ('EBV_MPF_VarCorr_FW15',       'EBV',                 'recon_fw15_final_mult.fits', 2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
+    ('EBV_MPF_Mean_FW6P1',         'EBV',                'recon_fw6-1_final_mult.fits', 2048,  'PIXMAP', 'Recon_Mean',         '', False, True),
+    ('EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV',                'recon_fw6-1_final_mult.fits', 2048,  'PIXMAP', 'Recon_Mean_ZptCorr', '', False, True),
+    ('EBV_MPF_Var_FW6P1',          'EBV',                'recon_fw6-1_final_mult.fits', 2048,  'PIXMAP', 'Recon_Variance',     '', False, True),
+    ('EBV_MPF_VarCorr_FW6P1',      'EBV',                'recon_fw6-1_final_mult.fits', 2048,  'PIXMAP', 'Recon_VarianceCorr', '', False, True),
+    ('EBV_SGF14',                  'EBV',                        'ps1-ebv-4.5kpc.fits',  512,  'PIXMAP', 'ebv',                '', False, True),
+    ('EBV_SGF14_MASK',             'EBV',                        'ps1-ebv-4.5kpc.fits',  512, 'PIXMASK', 'status',          '< 0', False, True),
+    ('BETA_ML',                    'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',  256,  'PIXMAP', 'BETA_ML',            '',  True, True),
+    ('BETA_MEAN',                  'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',  256,  'PIXMAP', 'BETA_MEAN',          '',  True, True),
+    ('BETA_RMS',                   'EBV', 'COM_CompMap_dust-commander_0256_R2.00.fits',  256,  'PIXMAP', 'BETA_RMS',           '',  True, True),
+    ('HI',                         'NHI',                            'NHI_HPX.fits.gz', 1024,  'PIXMAP', 'NHI',                '', False, True),
+    ('KAPPA_PLANCK',             'kappa',                               'dat_klm.fits', 2048,  'ALMMAP', 'NONE-3col',          '', False, True),
+    ('KAPPA_PLANCK_MASK',        'kappa',                               'mask.fits.gz', 2048, 'PIXMASK', 'I',               '==0', False, True),
+    ('FRACAREA',        'pixweight-dark',                      'pixweight-1-dark.fits',  256,  'PIXMAP', 'FRACAREA',           '',  True, False),
+    ('STARDENS',              'stardens',                              'stardens.fits',  512,  'PIXMAP', 'STARDENS',           '',  True, False),
+    ('ELG',             'pixweight-dark',                      'pixweight-1-dark.fits',  256,  'PIXMAP', 'ELG',                '',  True, False),
+    ('LRG',             'pixweight-dark',                      'pixweight-1-dark.fits',  256,  'PIXMAP', 'LRG',                '',  True, False),
+    ('QSO',             'pixweight-dark',                      'pixweight-1-dark.fits',  256,  'PIXMAP', 'QSO',                '',  True, False),
+    ('BGS_ANY',       'pixweight-bright',                    'pixweight-1-bright.fits',  256,  'PIXMAP', 'BGS_ANY',            '',  True, False)
     ], dtype=mapdt)
 
 
@@ -115,7 +117,7 @@ def sanity_check_map_array():
             raise ValueError(msg.format(mapname))
 
         # MMM perform a sanity check on options or maptype.
-        if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP', 'PIXIMG']:
+        if skymap['MAPTYPE'] not in ['PIXMAP', 'PIXMASK', 'ALMMAP']:
             msg = "There is NO acceptable value for MAPTYPE"
             log.critical(msg.format(mapname))
             raise ValueError(msg.format(mapname))
@@ -969,30 +971,25 @@ def read_sky_map(mapname, lssmapdir=None):
         mapdata = get_map_from_alms(alms, ellmin, ellmax,
                                     nside_out=nsidemap, nside_in=nsidemap)
 
-    # MMM piximg when the input is a 2d matrix to be read as a hp array
-    elif pixmap["MAPTYPE"] == "PIXIMG": 
-        dataFITS = fitsio.FITS(fn)
-        mapdata = dataFITS[1][pixmap["COLNAME"]][:]
-
+    # ADM these are the MAPTYPE cases of either PIXMAP or PIXMASK.
     else:
-        mapdata = fitsio.read(fn, columns=pixmap["COLNAME"])
+        mapdata = fitsio.read(fn, 1, columns=pixmap["COLNAME"])
         # ADM if we're dealing with a 2-D map, use hp.read_map.
         if len(mapdata.shape) > 1:
             colnames = fitsio.read(fn, rows=0).dtype.names
             w = np.where([pixmap["COLNAME"] in i for i in colnames])
             # MMM test what passes through this piece of code
             # mapdata = hp.read_map(fn, field=w[0][0])
-            # print("HELLO2", len(mapdata), pixmap["NSIDE"]) 
-            msg = "Non-regular field, specified column name ({}) HERE for (2-D) map {}?"
-            log.critical(msg.format(pixmap["COLNAME"], mapname))
+            # print("HELLO2", len(mapdata), pixmap["NSIDE"])
+            # msg = "Non-regular field, specified column name ({}) HERE for (2-D) map {}?"
+            # log.critical(msg.format(pixmap["COLNAME"], mapname))
             # ADM guard against a common incorrect-column-name error.
             if len(w) == 0:
                 msg = "is the specified column name ({}) wrong for (2-D) map {}?"
                 log.critical(msg.format(pixmap["COLNAME"], mapname))
                 raise ValueError(msg.format(pixmap["COLNAME"], mapname))
             else:
-                mapdata = hp.read_map(fn, field=w[0][0])
-
+                mapdata = hp.read_map(fn, field=w[0][0], nest=pixmap["NESTED"])
 
     return mapdata
 
@@ -1237,6 +1234,7 @@ def aux_test_mask():
         randomcatlist, fieldslist, masklist, nside_out=nside_out,
         lssmapdir=None, outfn=outfn, write=True)
 
+
 def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                           lssmapdir=None, outfn=None, write=True):
     """
@@ -1320,26 +1318,24 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # ADM and the directory from which we read the LSS maps.
     hdr["LSSMAPDIR"] = lssmapdir
 
+    # ------ get columns/dtypes for pixweight files
 
-    ###------ get columns/dtypes for pixweight files 
-
-    # Check which set of files to use 
+    # Check which set of files to use
     # ADM need chxhdr if I want to check random catalogs generated at same density.
     randomcat = randomcatlist[0]
     stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
     maskcol = ['SKYMAP_MASK']
- 
 
-    if 'SKYMAP_MASK' in stdfield.dtype.names :
+    if 'SKYMAP_MASK' in stdfield.dtype.names:
 
         # MMM ra, dec, all fields and masks should be in the same file
         # MMM for now won't check if they come from the same density ***
         randomswithallfields = True
-        skyfield = np.array([],dtype=[]) #dtype is needed
+        skyfield = np.array([], dtype=[])  # dtype is needed
 
-    else: 
-   
-       # MMM Reading just one line to get names of columns and header.
+    else:
+
+        # MMM Reading just one line to get names of columns and header.
         skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
         skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
 
@@ -1362,8 +1358,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     if not {"RA", "DEC"}.issubset(set(stdfield.dtype.names)):
         raise_myerror("RA or DEC field not found in randoms")
 
- 
-    #  ------------- pixweight counts and creation ----------
+    # ------------- pixweight counts and creation ----------
     # MMM create healpix rec arrays for output pixweight table.
     npix = hp.nside2npix(nside_out)
     counts = np.zeros(npix, dtype=[(field, '>i4') for field in fieldslist])
@@ -1374,7 +1369,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     # MMM loop over sets of files.
     for randomcat in randomcatlist:
-
 
         # MMM log file we are reading.
         log.info("Reading in random catalog {} and associated files...t = {:.1f}s"
@@ -1393,13 +1387,14 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         if skyfcol:
             skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
         else:
-            skymapvalues = [] 
+            skymapvalues = []
 
-        if not randomswithallfields: 
+        if not randomswithallfields:
             skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
         else:
-            skymapmask = np.zeros(len(ranvalues),dtype=[('SKYMAP_MASK','i8')]) 
-            skymapmask["SKYMAP_MASK"] = fitsio.read(randomcat, columns=['SKYMAP_MASK'])
+            skymapmask = np.zeros(len(ranvalues), dtype=[('SKYMAP_MASK', 'i8')])
+            skymapmask["SKYMAP_MASK"] = fitsio.read(randomcat,
+                                                    columns=['SKYMAP_MASK'])
 
         # ADM check all random catalogs were generated at same density.
         # MMM I can only do this if not reading from user made randoms
@@ -1409,7 +1404,6 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
                 raise_myerror("Random catalogs {} and {} made at different densities"
                               .format(randomcat, randomcatlist[0]))
 
-
         # MMM find nested HEALPixel in the passed nside for each random.
         theta, phi = np.radians(90-ranvalues['DEC']), np.radians(ranvalues['RA'])
         randpixnums = hp.ang2pix(nside_out, theta, phi, nest=True)
@@ -1418,10 +1412,11 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM mask-in (i.e., list selected) randoms.
         need2setmask = True
         if bitmasklist.count(bitmasklist[0]) == len(bitmasklist):
+            bitmask = bitmasklist[0]
             need2setmask = False
             maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-            uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
-                                      return_counts=True)
+            # uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
+            #                          return_counts=True)
 
         ############################
         # MMM ----- read all fields at once ----
@@ -1430,14 +1425,19 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
             if len(col) > 0:
                 # ADM limit to just the fields/bitmasks corresponding to col.
-                ii = np.array([fld in col for fld in fieldslist])
-                for field, bitmask in zip(fieldsarray[ii], bitmaskarray[ii]):
+                jj = np.array([fld in col for fld in fieldslist])
+                for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):
                     if need2setmask:
                         maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-                        uniq, ii, cnt = np.unique(
-                            randpixnums[maskin], return_inverse=True,
-                            return_counts=True)
-                    wcnt = np.bincount(ii, values[field][maskin])
+                    #    uniq, ii, cnt = np.unique(
+                    #        randpixnums[maskin], return_inverse=True,
+                    #        return_counts=True)
+                    masknan = values[field]*0 == 0
+                    maskhpun = values[field] != hp.UNSEEN
+                    uniq, ii, cnt = np.unique(
+                        randpixnums[maskin & masknan & maskhpun],
+                        return_inverse=True, return_counts=True)
+                    wcnt = np.bincount(ii, values[field][maskin & masknan & maskhpun])
                     counts[field][uniq] += cnt
                     wcounts[field][uniq] += wcnt
 
@@ -1445,213 +1445,34 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     # MMM compute weighted means.
     # MMM healpix unseen pixel value is -1.6375e+30.
     for field in fieldslist:
+
+        log.info("raw numbers {} {} {} {}".format(
+            field, np.sum(wcounts[field]), np.sum(counts[field]),
+            np.sum(wcounts[field])/np.sum(counts[field]))
+        )
+
         ii = counts[field] > 0
-        wcounts[ii][field] = wcounts[ii][field] / counts[ii][field]
+        wcounts[field][ii] = wcounts[field][ii]/counts[field][ii]
         wcounts[counts[field] == 0][field] = hp.UNSEEN
+
+        log.info("final numbers {} {} {}".format(
+            field, np.mean(wcounts[ii][field]), np.mean(counts[ii][field])))
+
+        # for ii in range(0,len(counts[field])):
+        #    if counts[ii][field] > 0:
+        #        wcounts[ii][field] = wcounts[ii][field]/counts[ii][field]
+        #    else:
+        #        wcounts[ii][field] =hp.UNSEEN
+        #
+        # ii = counts[field] > 0
+        # below was not actually dividing by counts for some reason
+        # print(field,np.sum(wcounts[ii][field]),np.sum(counts[ii][field]),np.sum(wcounts[ii][field])/np.sum(counts[ii][field]),np.mean(wcounts[ii][field]/counts[ii][field]))
 
     # MMM Write atomically (sanity check done before).
     if write:
         write_atomically(outfn, wcounts, extname='PIXWEIGHT', header=hdr)
 
     return wcounts
-
-
-
-def create_pixweight_file_old(randomcatlist, fieldslist, masklist, nside_out=512,
-                          lssmapdir=None, outfn=None, write=True):
-    """
-    Creates a pixweight file from randoms filtered by bitmasks.
-
-    Parameters
-    ----------
-    randomcatlist : :class:`list`
-        List of strings representing (full paths to) random catalogs.
-    fieldslist : :class:`list`
-        List of fields/columns to process.
-    masklist : :class:`list`
-        Masks associated with `fieldslist` fields/columns. Entries must
-        be either an integer or a list of mask names (strings), e.g.:
-        [131072, ['MASKBITS', 'ELG_GAIA'], ['KAPPA_PLANCK'], 4063232]
-    nside_out : :class:`int`, optional, defaults to 512
-        Resolution (HEALPix nside) at which to build the output (NESTED)
-        pixweight map.
-    lssmapdir : :class:`str`, optional, defaults to $LSS_MAP_DIR
-        Location of the directory that hosts all of the sky maps. If
-        `lssmapdir` is ``None`` (or not passed), $LSS_MAP_DIR is used.
-    outfn : :class:`str`, optional, defaults to ``None``
-        Output filename. If not passed, the output from
-        :func:`rancat_names_to_pixweight_name()` is used.
-    write : :class:`bool`, optional, defaults to ``True``
-        If ``True`` then also write the output to file.
-
-    Returns
-    -------
-    :class:`~numpy.ndarray`
-        Pixweight array of the requested masked fields. This is also
-        written to file if `write`=``True``.
-    """
-    # MMM formally grab $LSS_MAP_DIR in case lssmapdir=None was passed.
-    lssmapdir = get_lss_map_dir(lssmapdir=lssmapdir)
-
-    #  ---- format checks -----
-    # MMM check inputs are lists of correct length.
-    for listy, word in zip([randomcatlist, fieldslist, masklist],
-                           ["file(s)", "fields", "mask(s)"]):
-        if not isinstance(listy, list):
-            raise_myerror("the input {} is not a list".format(word))
-    if len(fieldslist) != len(masklist):
-        raise_myerror("number of masks and input fields do not match")
-
-    # MMM check passed catalog names and fields are strings.
-    for nom in randomcatlist + fieldslist:
-        if not isinstance(nom, str):
-            msg = "file and field names must be strings ({} is not)".format(nom)
-            raise_myerror(msg)
-
-    # MMM Check there are no repeated field names
-    repeats = set([x for x in fieldslist if fieldslist.count(x) > 1])
-    if repeats != set():
-        msg = "Please don't use repeated field names in field list. \n \
-        If you do need this feature contact the developers. \n \
-        You have repeated {} ".format(repeats)
-        raise raise_myerror(msg)
-
-    # MMM Determine output filename.
-    if write and not outfn:
-        outfn = rancat_names_to_pixweight_name(rancatlist, lssmapdir=lssmapdir)
-        log.warning("output filename not passed, defaulting to {}".format(outfn))
-
-    # ------------------
-    # MMM create bitmasklist from (and check) masklist.
-    try:
-        bitmasklist = [skymap_mask.mask("|".join(i)) if isinstance(i, list)
-                       else int(i) for i in masklist]
-    except (ValueError, TypeError, KeyError):
-        msg = "input maskbits list should comprise integers or lists of strings "
-        msg += "(and mask names must be strings), e.g.:\n"
-        msg += "[131072, ['MASKBITS', 'ELG_GAIA'], ['CALIB_R'], 4063232]"
-        raise_myerror(msg)
-
-    ##########
-    # MMM get columns/dtype from first file + associated skymap/skymask.
-    # MMM Reading just one line to get names of columns and header.
-    randomcat = randomcatlist[0]
-    skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
-    skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
-
-    # ADM need chxhdr to check random catalogs generated at same density.
-    stdfield, chxhdr = fitsio.read(randomcat, rows=[0], header=True)
-    skyfield = fitsio.read(skymapvaluescat, rows=[0])
-
-    # MMM check if there are no foreign or misspelled items in fieldlist.
-    foreign = [fieldslist[i] for i, x in enumerate(fieldslist) if x
-               not in list(stdfield.dtype.names) + list(skyfield.dtype.names)]
-
-    if foreign:
-        msg = "You have some wrong or misspelled items in the field list\n \
-        They are {} \n".format(foreign)
-        raise raise_myerror(msg)
-
-    # MMM select unique columns by matching to field list
-    # MMM (standard field, sky_image, and mask).
-    stdfcol = list(set(fieldslist).intersection(stdfield.dtype.names))
-    skyfcol = list(set(fieldslist).intersection(skyfield.dtype.names))
-    maskcol = ['SKYMAP_MASK']
-
-    # MMM sanity check on ra dec.
-    if not {"RA", "DEC"}.issubset(set(stdfield.dtype.names)):
-        raise_myerror("RA or DEC field not found in randoms")
-
-    ##########
-    # MMM create header for later.
-    hdr = {field: bitmask for field, bitmask in zip(fieldslist, bitmasklist)}
-    # ADM should document the input random catalogs...
-    hdr["INFILES"] = randomcatlist
-    # ADM ...and the directory from which we read the LSS maps.
-    hdr["LSSMAPDIR"] = lssmapdir
-
-    # MMM create healpix rec arrays for output pixweight table.
-    npix = hp.nside2npix(nside_out)
-    counts = np.zeros(npix, dtype=[(field, '>i4') for field in fieldslist])
-    wcounts = np.zeros(npix, dtype=[(field, '>f4') for field in fieldslist])
-
-    # ADM useful to cast lists as arrays to facilitate boolean indexing.
-    fieldsarray, bitmaskarray = np.array(fieldslist), np.array(bitmasklist)
-
-    # MMM loop over sets of files.
-    for randomcat in randomcatlist:
-        # MMM log file we are reading.
-        log.info("Reading in random catalog {} and associated files...t = {:.1f}s"
-                 .format(randomcat, time()-start))
-
-        # MMM names of the sky-map field and mask values.
-        skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
-        skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
-
-        # MMM read RA DEC and SKYMAP_MASK for each random.
-        # ADM read ALL needed columns from randomcat here as a speed-up.
-        ranvalues, ranhdr = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'],
-                                        header=True)
-
-        # MMM read field values; only if need be.
-        if skyfcol:
-            skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
-        else:
-            skymapvalues = []
-
-        skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
-
-        # ADM check all random catalogs were generated at same density.
-        if ranhdr["DENSITY"] != chxhdr["DENSITY"]:
-            raise_myerror("Random catalogs {} and {} made at different densities"
-                          .format(randomcat, randomcatlist[0]))
-
-        # MMM Don't check targetids match (they should by construction).
-        # MMM find nested HEALPixel in the passed nside for each random.
-        theta, phi = np.radians(90-ranvalues['DEC']), np.radians(ranvalues['RA'])
-        randpixnums = hp.ang2pix(nside_out, theta, phi, nest=True)
-
-        # MMM if all bitmasks are same, no need to set mask every time.
-        # MMM mask-in (i.e., list selected) randoms.
-        need2setmask = True
-        if bitmasklist.count(bitmasklist[0]) == len(bitmasklist):
-            need2setmask = False
-            maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-            uniq, ii, cnt = np.unique(randpixnums[maskin], return_inverse=True,
-                                      return_counts=True)
-
-        ############################
-        # MMM ----- read all fields at once ----
-        log.info("Determining counts for {}...t = {:.1f}s".format(
-            randomcat, time()-start))
-        for col, values in zip([stdfcol, skyfcol], [ranvalues, skymapvalues]):
-            if len(col) > 0:
-                # ADM limit to just the fields/bitmasks corresponding to col.
-                ii = np.array([fld in col for fld in fieldslist])
-                for field, bitmask in zip(fieldsarray[ii], bitmaskarray[ii]):
-                    if need2setmask:
-                        maskin = (skymapmask['SKYMAP_MASK'] & bitmask) == 0
-                        uniq, ii, cnt = np.unique(
-                            randpixnums[maskin], return_inverse=True,
-                            return_counts=True)
-                    wcnt = np.bincount(ii, values[field][maskin])
-                    counts[field][uniq] += cnt
-                    wcounts[field][uniq] += wcnt
-
-    ##########################
-    # MMM compute weighted means.
-    # MMM healpix unseen pixel value is -1.6375e+30.
-    for field in fieldslist:
-        ii = counts[field] > 0
-        wcounts[ii][field] = wcounts[ii][field] / counts[ii][field]
-        wcounts[counts[field] == 0][field] = hp.UNSEEN
-
-    # MMM Write atomically (sanity check done before).
-    if write:
-        write_atomically(outfn, wcounts, extname='PIXWEIGHT', header=hdr)
-
-    return wcounts
-
 
 
 def generate_map_values(rancatname, lssmapdir=None, outdir=None, write=True):
@@ -1693,10 +1514,9 @@ def generate_map_values(rancatname, lssmapdir=None, outdir=None, write=True):
     # ADM grab the output filename.
     outfn = rancat_name_to_map_name(rancatname, lssmapdir=outdir)
 
-    # MMM limit to maps that are not masks 
-    maps = maparray[(maparray["MAPTYPE"] == "PIXIMG") | 
-             (maparray["MAPTYPE"] == "PIXMAP") |
-             (maparray["MAPTYPE"] == "ALMMAP")]
+    # MMM limit to maps that are not masks.
+    maps = maparray[(maparray["MAPTYPE"] == "PIXMAP") |
+                    (maparray["MAPTYPE"] == "ALMMAP")]
 
     # ADM set up an initial output array. We'll modify the dtypes later.
     dt = [('TARGETID', '>i8')]

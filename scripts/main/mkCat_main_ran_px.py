@@ -328,7 +328,8 @@ def doran(ii):
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
@@ -473,7 +474,12 @@ def doran(ii):
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
                 #pf = Table.read(po)
-                pf = fitsio.read(po,columns=cols)
+                try:
+                    pf = fitsio.read(po,columns=cols)
+                except:
+                    print(po+' was corrupted')
+                    ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,po,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
+                    pf = fitsio.read(po,columns=cols)
                 pl.append(pf)
                 print(npx,len(hpxs))
                 #ptls = Table.read(po)

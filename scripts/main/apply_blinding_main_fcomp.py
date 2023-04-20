@@ -251,7 +251,7 @@ else:
 # Write out the blind parameter values
 to_write = [['w0', 'wa', 'f'],
             [f"{w0_blind}", f"{wa_blind}", f"{fgrowth_blind}"]]
-np.savetxt(dirout + "blinded_parameters.csv",
+np.savetxt(dirout + "blinded_parameters_"+type+".csv",
            to_write,
            delimiter=", ",
            fmt="%s")

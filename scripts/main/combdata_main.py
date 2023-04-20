@@ -45,6 +45,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
+parser.add_argument("--make_tile_file",help="whether or not to make a tile file",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
@@ -60,7 +61,7 @@ parser.add_argument("--redotarspec",help="re-join target and spec data even if n
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
 parser.add_argument("--tracer", help="tracer type",default='all')
-
+parser.add_argument("--notqso", help="tracer type",default='')
 
 
 
@@ -154,6 +155,9 @@ if not os.path.exists(ldirspec):
 if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
+
+if args.make_tile_file == 'y':
+    tiles4comb.write(maindir+'tiles-'+prog.upper()+'.fits',overwrite=True,format='fits')
 
 print('specrel is '+specrel)
 if specrel == 'daily':
@@ -299,7 +303,7 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         notqsos = ['',''] 
     for tp,notqso in zip(tps,notqsos):
 
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey,badfib=badfib) 
         outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
 
@@ -365,11 +369,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
-        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
-        notqsos = ['','','','','notqso']
+        if args.tracer == 'all':
+            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+            notqsos = ['','','','','notqso']
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
     if prog == 'bright':
-        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-        notqsos = ['',''] 
+        if args.tracer == 'all':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
+
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
         print('now doing '+tp+notqso)
@@ -471,20 +484,23 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #except:
             #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+            print('added TILELOCID, about to do joins')
+            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+
             #seems to run out of memory on join
-            tjl = []
-            selreg = tarfn['DEC'] > 0
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            print('1st join done')
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            print('2nd join done')
-            tj = vstack(tjl)
-            print('stacked now writing out')
+            #tjl = []
+            #selreg = tarfn['DEC'] > 0
+            #tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            #print('1st join done')
+            #tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            #print('2nd join done')
+            #tj = vstack(tjl)
+            #print('stacked now writing out')
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            #tj.write(outfs,format='fits', overwrite=True)
-            common.write_LSS(tj,outfs)
+            tj.write(outfs,format='fits', overwrite=True)
+            #common.write_LSS(tj,outfs)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
             print('joining spec info to target info')

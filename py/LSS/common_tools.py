@@ -283,6 +283,63 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus',reg=None):
+    '''
+    fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
+    fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
+    bs is the bin width for the n(z) calculation
+    zmin is the lower edge of the first bin
+    zmax is the upper edge of the last bin
+    returns array with n(z) values
+    '''
+    #cd = distance(om,1-om)
+    if reg is None:
+        ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+        area = ranf['NAXIS2']/randens
+    else:
+        ranf = fitsio.read(fcr,columns=["PHOTSYS"])
+        selreg = ranf['PHOTSYS'] == reg
+        area = len(ranf[selreg])/randens
+        del ranf
+        
+    print('area is '+str(area))
+
+    df = fitsio.read(fcd)
+    if md == 'data':
+        gz = goodz_infull(tp,df)
+    if md == 'mock':
+        gz = df['ZWARN'] == 0
+    df = df[gz]
+    wo = ''
+    if reg is not None:
+        selreg = df['PHOTSYS'] == reg
+        df = df[selreg]
+        wo = '_'+reg
+    nbin = int((zmax-zmin)/bs)
+    cols = list(df.dtype.names)
+    if 'WEIGHT_SYS' in cols:
+        wts = df['WEIGHT_SYS']/df['FRACZ_TILELOCID']
+    else:
+        print('no WEIGHT_SYS')
+        wts = 1./df['FRACZ_TILELOCID']
+    zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax),weights=wts)
+    zl = zhist[1][:-1]
+    zh = zhist[1][1:]
+    zm = (zl+zh)/2.
+    vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
+    nz = zhist[0]/vol
+    #print(nz)
+    if write == 'y':
+        fout = fcd.replace('.dat.fits','')+wo+'_nz.txt'
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+        outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+
+        for i in range(0,len(nz)):
+            outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
+    return nz
+
+
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
     fb is the root of the file name, including the path
@@ -356,6 +413,40 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ft.write(fn,format='fits',overwrite=True)
         print('done with random number '+str(rann))
     return True
+
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
+    '''
+    fb is the file name, including the path
+    nran is the number of random files to add the nz to
+    bs is the bin size of the nz file (read this from file in future)
+    zmin is the lower edge of the minimum bin (read this from file in future)
+    zmax is the upper edge of the maximum bin (read this from file in the future)
+    '''
+
+    fd = Table(fitsio.read(fb))
+    
+    zl = fd[zcol]
+    zind = ((zl-zmin)/bs).astype(int)
+    gz = fd['ZWARN'] != 999999
+    if md == 'data':
+        gz &= goodz_infull(tp,fd)
+    gz &= zl > zmin
+    gz &= zl < zmax
+    
+    print(np.min(fd[gz]['FRACZ_TILELOCID']),np.max(fd[gz]['FRACZ_TILELOCID']))
+    nl = np.zeros(len(fd))
+    nl[gz] = nz[zind[gz]]
+    mean_comp = len(fd[gz])/np.sum(1./fd[gz]['FRACZ_TILELOCID'])
+    print('mean completeness '+str(mean_comp))
+
+    fkpl = 1./(1+nl*P0*mean_comp)
+    #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+    if add_data:
+        fd['WEIGHT_FKP'] = fkpl
+        write_LSS(fd,fb)
+    return True
+
+
 
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
@@ -442,7 +533,7 @@ def join_etar(fn,tracer,tarver='1.1.1'):
     write_LSS(df,fn,comments)
 
 
-def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=False):
+def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=True):
     fid_fn = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
     new_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'

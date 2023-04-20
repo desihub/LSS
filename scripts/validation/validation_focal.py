@@ -1,6 +1,7 @@
 #plot map of success/predicted success over focal plane
 #uses "full" catalogs as inputs
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import os
 import sys
@@ -17,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 args = parser.parse_args()
 
@@ -49,7 +50,7 @@ if args.survey == 'SV3' and args.tracers == 'all':
         tps = ['QSO','LRG','ELG']
 for tp in tps:
     
-
+    figs = []
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
 
 
@@ -75,13 +76,15 @@ for tp in tps:
     nfail = cnts_tot-cnts_good
     err = np.sqrt(cnts_good*nfail/cnts_tot)/cnts_tot
     bs = bins[1]-bins[0]
+    fig = plt.figure()
     plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
     plt.grid()
     plt.xlabel('focal plane radius (mm)')
     plt.ylabel('relative z success (with zfail weight)')
     plt.title(tp+' all petals')
-    plt.savefig(outdir+tp+'_allpetals_focalr_relsuccess.png')
-    plt.clf()
+    figs.append(fig)
+    #plt.savefig(outdir+tp+'_allpetals_focalr_relsuccess.png')
+    #plt.clf()
 
     #plt.plot(bins[:-1]+bs/2,np.ones(len(fib_obs))*mean_gz,'r--')
 
@@ -96,12 +99,19 @@ for tp in tps:
         nfail = cnts_tot-cnts_good
         err = np.sqrt(cnts_good*nfail/cnts_tot)/cnts_tot
         bs = bins[1]-bins[0]
+        fig = plt.figure()
         plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
         plt.grid()
         plt.xlabel('focal plane radius (mm)')
         plt.ylabel('relative z success (with zfail weight)')
         plt.title(tp+' petal '+str(pt))
-        plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')
-        plt.clf()
+        figs.append(fig)
+        #plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')
+        #plt.clf()
 
+    with PdfPages(outdir+tp+'_focalr_relsuccess.pdf') as pdf:
+        for fig in figs:
+            pdf.savefig(fig)
+            plt.close()
+    print('done with '+tp)
 

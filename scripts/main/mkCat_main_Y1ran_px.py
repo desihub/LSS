@@ -192,7 +192,7 @@ if combhp or mkfullr:
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         
     print('loaded specf file '+specfo)
-    specfc = ct.cut_specdat(specf)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib)
     if combhp:
         ntls = len(np.unique(specf['TILEID']))
         if ntls != len(ta):
