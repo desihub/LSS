@@ -282,16 +282,6 @@ if root:
     common.write_LSS(fd, fcd_out)
 
 
-    if nzmd == 'mock':
-        print('min/max of weights for nz:')
-        print(np.min(wl), np.max(wl))
-        fdin = fitsio.read(fcd_in)
-        a = plt.hist(fdin['Z_not4clus'][gz], bins=100, range=(zmin,zmax), histtype='step', label='input')
-        b = plt.hist(fd['Z'][gz], bins=100, range=(zmin,zmax), histtype='step', label='blinded')
-        c = plt.hist(fd['Z'][gz], bins=100, range=(zmin,zmax), histtype='step', weights=fd['WEIGHT_SYS'][gz], label='blinded+reweight')
-        plt.legend()
-        plt.show()
-
     if args.visnz == 'y':
         print('min/max of weights for nz:')
         print(np.min(wl),np.max(wl))
