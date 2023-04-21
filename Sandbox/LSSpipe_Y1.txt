@@ -32,7 +32,7 @@ python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/de
 $LSSCODE/LSS/scripts/main/Y1_data_full.sh iron
 #or go through one by one
 for tp,notqso in zip(tps,notqsos):
-    python $LSSCODE/LSS/scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso notqso
+    python $LSSCODE/LSS/scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec iron --survey Y1 --notqso notqso
 
 
 #random
