@@ -2434,7 +2434,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     print('getting completenes')
     dz.sort('TILES')
     nts = len(np.unique(dz['TILES']))
-    tlsl = dz['TILES']
+    tlsl = np.array(dz['TILES'])
     tlslu = np.unique(tlsl)
     laa = dz['LOCATION_ASSIGNED']
 
@@ -2466,7 +2466,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         ti += 1
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
-    for tl in dz['TILES']:
+    for tl in np.array(dz['TILES']):
         fcompa.append(comp_dicta[tl])
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
