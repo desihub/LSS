@@ -2431,10 +2431,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     compa = []
     tll = []
     ti = 0
-    print('getting completenes')
+    print('getting completeness')
+    dz['TILES'] = dz['TILES'].filled('0')
     dz.sort('TILES')
-    nts = len(np.unique(dz['TILES']))
-    tlsl = np.array(dz['TILES'])
+    tlsl = dz['TILES']
+    #tlsl.sort()
+    nts = len(tlsl)
+    
     tlslu = np.unique(tlsl)
     laa = dz['LOCATION_ASSIGNED']
 
