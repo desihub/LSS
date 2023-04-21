@@ -71,9 +71,13 @@ if args.survey == 'Y1':
     datemax = 20220620
 
 wd = mt['SURVEY'] == 'main'
+print(np.sum(wd))
 wd &= mt['ZDONE'] == 'true'
+print(np.sum(wd))
 wd &= mt['FAPRGRM'] == pdir
+print(np.sum(wd))
 wd &= mt['LASTNIGHT'] <= datemax
+print(np.sum(wd))
     
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
