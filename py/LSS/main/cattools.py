@@ -2469,7 +2469,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         ti += 1
     comp_dicta = dict(zip(tll, compa))
     fcompa = []
-    for tl in np.array(dz['TILES']):
+    for tl in dz['TILES']:
         fcompa.append(comp_dicta[tl])
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
