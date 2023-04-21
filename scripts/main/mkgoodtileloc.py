@@ -53,7 +53,6 @@ parser.add_argument("--verspec",help="version for redshifts",default='iron')
 args = parser.parse_args()
 print(args)
 
-type = args.type
 basedir = args.basedir
 specrel = args.verspec
 
