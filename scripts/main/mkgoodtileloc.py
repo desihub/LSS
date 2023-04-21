@@ -61,7 +61,7 @@ pdir = args.prog
 
 pd = pdir
 
-mainp = main(type)
+mainp = main(args.prog)
 
 mt = mainp.mtld
 tiles = mainp.tiles
