@@ -61,7 +61,7 @@ pdir = args.prog
 
 pd = pdir
 
-mainp = main(args.prog)
+mainp = main('BBB') #tp argument should be irrelevant
 
 mt = mainp.mtld
 tiles = mainp.tiles
