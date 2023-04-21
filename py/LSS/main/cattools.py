@@ -2455,7 +2455,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         if ti%1000 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
 
-        cp = nai/nli#no/nt
+        if nli == 0:
+            print('no data for '+str(tlslu[ti]))
+            cp = 0
+        else:
+            cp = nai/nli#no/nt
         
         compa.append(cp)
         tll.append(tlslu[ti])
