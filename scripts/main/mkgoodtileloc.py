@@ -117,6 +117,11 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 	
 print('loaded specf file '+specfo)
+atl = np.unique(specf['TILELOCID'])
+fout = ldirspec + '/alltileloc_zcat_'+pdir+'.txt'
+np.savetxt(fout,atl)
+print('wrote to '+fout)
+
 specfc = common.cut_specdat(specf)
 gtl = np.unique(specfc['TILELOCID'])
 
