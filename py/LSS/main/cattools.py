@@ -2297,9 +2297,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz['GOODHARDLOC'][wg] = 1
     print('length after selecting type '+str(len(dz)))
 
-    dtl = Table.read(ftiles)
-    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
-    dz = join(dz,dtl,keys='TARGETID')
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
@@ -2339,6 +2336,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     print('length after cutting to unique targets '+str(len(dz)))
+    dtl = Table.read(ftiles)
+    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
+    dz = join(dz,dtl,keys='TARGETID',join_type='left')
     
     if ftar is not None:
         print('joining to full imaging')
