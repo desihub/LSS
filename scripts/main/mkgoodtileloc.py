@@ -64,6 +64,7 @@ pd = pdir
 mainp = main('BBB') #tp argument should be irrelevant
 
 mt = mainp.mtld
+print(len(mt))
 tiles = mainp.tiles
 
 if args.survey == 'Y1':
