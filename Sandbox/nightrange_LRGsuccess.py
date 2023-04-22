@@ -9,7 +9,7 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--min_night")#, help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--max_night")#, help="use this if you want to specify the night, rather than just use the last one",default=None)
-
+parser.add_argument("--plottsnr2",default='y')
 parser.add_argument("--plotnz",default='y')
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
