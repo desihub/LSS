@@ -9,7 +9,7 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='y')
-parser.add_argument("--plottnsr2",default='y')
+parser.add_argument("--plottsnr2",default='y')
 
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
@@ -143,7 +143,7 @@ if args.plotnz == 'y':
             plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
-if args.plottsn2 == 'y':
+if args.plottsnr2 == 'y':
     from matplotlib import pyplot as plt
     for pt in range(0,10):
         if len(tsnrlsg[pt]) > 0:
