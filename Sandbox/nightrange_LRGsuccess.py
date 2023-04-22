@@ -77,7 +77,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
         for pt in range(0,10):
         
             zmtlff = zdir+str(tid)+'/'+str(night)+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+str(night)+'.fits'
-            rrf = zdir+str(tid)+'/'+args.night+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+str(night)+'.fits'
+            rrf = zdir+str(tid)+'/'+str(night)+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+str(night)+'.fits'
 
             if os.path.isfile(zmtlff):
                 zmtlf = fitsio.read(zmtlff)
