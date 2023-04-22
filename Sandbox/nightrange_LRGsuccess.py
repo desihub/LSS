@@ -18,6 +18,9 @@ args = parser.parse_args()
 #one list for each petal for total targets
 gz = np.zeros(10)
 tz = np.zeros(10)
+tsnrlsg = {x: [] for x in range(0,10)}
+tsnrls = {x: [] for x in range(0,10)}
+
 nzls = {x: [] for x in range(0,10)}
 nzla = []
 
@@ -74,8 +77,11 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 		for pt in range(0,10):
 		
 			zmtlff = zdir+str(tid)+'/'+str(night)+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+str(night)+'.fits'
+            rrf = zdir+str(tid)+'/'+args.night+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
+
 			if os.path.isfile(zmtlff):
 				zmtlf = fitsio.read(zmtlff)
+                rr = fitsio.read(rrf,ext='TSNR2')
 				nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
 				num_nod = np.sum(nodata)
 				print('looking at petal '+str(pt)+' on tile '+str(tid))
@@ -107,6 +113,9 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
 					tz[pt] += len(zlrg)
 					nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
 					nzla.append(zmtlf[wzwarn&wlrg]['Z'])
+                    tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
+                    tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
+
 				else:
 					print('no good lrg data')  
 			else:
@@ -140,3 +149,20 @@ if args.plotnz == 'y':
             plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
+
+if args.plottsnr2 == 'y':
+    from matplotlib import pyplot as plt
+    for pt in range(0,10):
+        if len(tsnrlsg[pt]) > 0:
+            gz = np.concatenate(tsnrlsg[pt])
+            az = np.concatenate(tsnrls[pt])
+            a = np.histogram(gz)
+            b = np.histogram(az,bins=a[1])
+            bc = a[1][:-1]+(a[1][1]-a[1][0])/2.
+            plt.plot(bc,a[0]/b[0],label='petal '+str(pt))
+    plt.legend()
+    plt.xlabel('TSNR2_LRG')
+    plt.ylabel('redshift success rate')
+    plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_vstsnr2.png')
+    if args.vis == 'y':
+        plt.show()
