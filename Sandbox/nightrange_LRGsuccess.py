@@ -159,7 +159,8 @@ if args.plottsnr2 == 'y':
             a = np.histogram(gz)
             b = np.histogram(az,bins=a[1])
             bc = a[1][:-1]+(a[1][1]-a[1][0])/2.
-            plt.plot(bc,a[0]/b[0],label='petal '+str(pt))
+            err = np.sqrt(b[0]-a[0])/b[0]
+            plt.errorbar(bc,a[0]/b[0],err,label='petal '+str(pt))
     plt.legend()
     plt.xlabel('TSNR2_LRG')
     plt.ylabel('redshift success rate')
