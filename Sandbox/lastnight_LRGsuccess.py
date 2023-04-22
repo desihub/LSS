@@ -147,8 +147,8 @@ if args.plottsnr2 == 'y':
     from matplotlib import pyplot as plt
     for pt in range(0,10):
         if len(tsnrlsg[pt]) > 0:
-            a = np.hist(tsnrlsg[pt])
-            b = np.hist(tsnrls[pt],bins=a[1])
+            a = np.histogram(tsnrlsg[pt])
+            b = np.histogram(tsnrls[pt],bins=a[1])
             bc = a[1][:-1]+(a[1][1]-a[1][0])/2.
             plt.plot(bc,b/a,label='petal '+str(pt))
     plt.legend()
