@@ -73,8 +73,10 @@ for tid in tidl:
     for pt in range(0,10):
         
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
+        rrf = zdir+str(tid)+'/'+args.night+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
         if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
+            rr = fitsio.read(rrf)
             nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
             num_nod = np.sum(nodata)
             print('looking at petal '+str(pt)+' on tile '+str(tid))
@@ -105,8 +107,8 @@ for tid in tidl:
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
-                tsnrlsg[pt].append(zmtlf[wzwarn&wlrg]['TSNR2_LRG'])
-                tsnrls[pt].append(zmtlf[wfqa&wlrg]['TSNR2_LRG'])
+                tsnrlsg[pt].append(rrf[wzwarn&wlrg]['TSNR2_LRG'])
+                tsnrls[pt].append(rrf[wfqa&wlrg]['TSNR2_LRG'])
                 nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
