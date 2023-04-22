@@ -107,8 +107,8 @@ for tid in tidl:
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
-                tsnrlsg[pt].append(rrf[wzwarn&wlrg]['TSNR2_LRG'])
-                tsnrls[pt].append(rrf[wfqa&wlrg]['TSNR2_LRG'])
+                tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
+                tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
                 nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
