@@ -76,7 +76,7 @@ for tid in tidl:
         rrf = zdir+str(tid)+'/'+args.night+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
         if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
-            rr = fitsio.read(rrf)
+            rr = fitsio.read(rrf,ext='TSNR2')
             nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
             num_nod = np.sum(nodata)
             print('looking at petal '+str(pt)+' on tile '+str(tid))
