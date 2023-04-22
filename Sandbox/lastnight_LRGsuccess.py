@@ -9,6 +9,8 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='y')
+parser.add_argument("--plottnsr2",default='y')
+
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
 args = parser.parse_args()
@@ -64,6 +66,8 @@ tz = np.zeros(10)
 zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
+tsnrlsg = {x: [] for x in range(0,10)}
+tsnrls = {x: [] for x in range(0,10)}
 nzla = []
 for tid in tidl:
     for pt in range(0,10):
@@ -101,6 +105,8 @@ for tid in tidl:
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
+                tsnrlsg[pt].append(zmtlf[wzwarn&wlrg]['TSNR2_LRG'])
+                tsnrls[pt].append(zmtlf[wfqa&wlrg]['TSNR2_LRG'])
                 nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
@@ -135,3 +141,17 @@ if args.plotnz == 'y':
             plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
+if args.plottsn2 == 'y':
+    from matplotlib import pyplot as plt
+    for pt in range(0,10):
+        if len(tsnrlsg[pt]) > 0:
+            a = np.hist(tsnrlsg[pt])
+            b = np.hist(tsnrls[pt],bins=a[1])
+            bc = a[1][:-1]+(a[1][1]-a[1][0])/2.
+            plt.plot(bc,b/a,label='petal '+str(pt))
+    plt.legend()
+    plt.xlabel('TSNR2_LRG')
+    plt.ylabel('redshift success rate')
+    plt.savefig(args.outdir+'LRG'+args.night+'_vstsnr2.png')
+    if args.vis == 'y':
+        plt.show()
