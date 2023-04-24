@@ -115,7 +115,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                     tz[pt] += len(zlrg)
                     nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
                     nzla.append(zmtlf[wzwarn&wlrg]['Z'])
-                    tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
+                    tsnrlsg[pt].append(rr[wzwarn&wlrg&wfqa]['TSNR2_LRG'])
                     tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
 
                 else:
