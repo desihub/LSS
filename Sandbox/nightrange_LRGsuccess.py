@@ -6,6 +6,8 @@ import argparse
 import fitsio
 from desitarget.targetmask import zwarn_mask
 
+from matplotlib.backends.backend_pdf import PdfPages
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--min_night")#, help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--max_night")#, help="use this if you want to specify the night, rather than just use the last one",default=None)
