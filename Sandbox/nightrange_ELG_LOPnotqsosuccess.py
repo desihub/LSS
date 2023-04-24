@@ -95,7 +95,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                 print('number with bad qa '+str(num_badqa))
                 nomtl = nodata | badqa
                 wfqa = ~nomtl
-                wlrg = (zmtlf['DESI_TARGET'] & 0) > 0
+                wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
                 wlrg &= (zmtlf['DESI_TARGET'] & 4) == 0
                 zlrg = zmtlf[wfqa&wlrg]
                 if len(zlrg) > 0:
