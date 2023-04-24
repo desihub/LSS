@@ -115,7 +115,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                     o2c = np.log10(em['OII_FLUX'] * np.sqrt(em['OII_FLUX_IVAR']))+0.2*np.log10(zmtlf['DELTACHI2'])
                     wz = o2c > 0.9
                     wzwarn = wz#zmtlf['ZWARN'] == 0
-                    gzlrg = zmtlf[wzwarn&wlrg]
+                    gzlrg = zmtlf[wzwarn&wlrg&wfqa]
                     print('The fraction of good ELG_LOPnotqso is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                     gz[pt] += len(gzlrg)
                     tz[pt] += len(zlrg)

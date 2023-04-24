@@ -109,7 +109,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                     wz &= (~mask_bad)
 
                     wzwarn = wz#zmtlf['ZWARN'] == 0
-                    gzlrg = zmtlf[wzwarn&wlrg]
+                    gzlrg = zmtlf[wzwarn&wlrg&wfqa]
                     print('The fraction of good LRG is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                     gz[pt] += len(gzlrg)
                     tz[pt] += len(zlrg)
