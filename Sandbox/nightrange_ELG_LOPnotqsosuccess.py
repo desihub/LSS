@@ -110,7 +110,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                     #wz = zmtlf['ZWARN'] == 0
                     #wz &= zmtlf['Z']<1.5
                     #wz &= (~mask_bad)
-                    o2c = np.log10(em['OII_FLUX'] * np.sqrt(em['OII_FLUX_IVAR']))+0.2*np.log10(zmtl['DELTACHI2'])
+                    o2c = np.log10(em['OII_FLUX'] * np.sqrt(em['OII_FLUX_IVAR']))+0.2*np.log10(zmtlf['DELTACHI2'])
                     wz = o2c > 0.9
                     wzwarn = wz#zmtlf['ZWARN'] == 0
                     gzlrg = zmtlf[wzwarn&wlrg]
