@@ -49,6 +49,8 @@ selss = ss['LASTNIGHT'] == int(args.night)
 gt = ss[selss]['EFFTIME_SPEC'] > 850
 tss = ss[selss][gt]['TILEID']
 sel |= np.isin(tidl,tss)
+tls_2mask = [9889,2693,3647,5958]
+sel &= ~np.isin(tidl,tls_2mask)
 tidl = tidl[sel]
 
 print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
