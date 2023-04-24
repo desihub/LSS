@@ -4,7 +4,7 @@ import numpy as np
 import os
 import argparse
 import fitsio
-from desitarget.targetmask import zwarn_mask
+from desitarget.targetmask import zwarn_mask,desi_mask
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -34,7 +34,7 @@ sel &= nights <= int(args.max_night)
 
 nights = nights[sel]
 
-bit = targetmask.desi_mask['ELG_LOP']
+bit = desi_mask['ELG_LOP']
 
 for night in nights:# range(int(args.min_night),int(args.max_night)+1):
     month = str(night)[:6]
