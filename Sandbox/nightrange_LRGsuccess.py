@@ -130,6 +130,7 @@ print(tzs)
 
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
+    figs = []
     all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/LRG_full.dat.fits')
     sel = all['ZWARN'] == 0
     sel &= all['DELTACHI2'] > 15
@@ -139,21 +140,29 @@ if args.plotnz == 'y':
     for pt in range(0,10):
         plt.clf()
         if len(nzls[pt]) > 0:
+            fig = plt.figure()
             nzp = np.concatenate(nzls[pt])
-            a = plt.hist(nzp,range=(0.01,1.5),bins=28,density=True,label='petal '+str(pt),histtype='step')
+            a = plt.hist(nzp,range=(0.1,1.5),bins=70,density=True,label='petal '+str(pt),histtype='step')
             plt.hist(nza,bins=a[1],density=True,histtype='step',label='all petals for selected nights')
             plt.hist(all['Z_not4clus'],bins=a[1],density=True,histtype='step',label='all archived in daily',color='k')
             plt.title('LRG for nights '+args.min_night+' through '+args.max_night)
             plt.xlabel('Z')
             plt.legend(loc='lower center')
-            plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_'+str(pt)+'.png')
-            if args.vis == 'y':
-                plt.show()
+            figs.append(fig)
+            #plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_'+str(pt)+'.png')
+            #if args.vis == 'y':
+            #    plt.show()
+    with PdfPages(args.outdir+'LRG'+args.min_night+args.max_night+'_nzpetal.pdf') as pdf:
+        for fig in figs:
+            pdf.savefig(fig)
+            plt.close()
 
 if args.plottsnr2 == 'y':
     from matplotlib import pyplot as plt
+    
     for pt in range(0,10):
         if len(tsnrlsg[pt]) > 0:
+            
             gz = np.concatenate(tsnrlsg[pt])
             az = np.concatenate(tsnrls[pt])
             a = np.histogram(gz)
@@ -167,3 +176,7 @@ if args.plottsnr2 == 'y':
     plt.savefig(args.outdir+'LRG'+args.min_night+args.max_night+'_vstsnr2.png')
     if args.vis == 'y':
         plt.show()
+
+
+    
+
