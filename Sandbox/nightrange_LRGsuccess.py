@@ -140,7 +140,7 @@ if args.plotnz == 'y':
     all = all[sel]
     nza = np.concatenate(nzla)
     for pt in range(0,10):
-        plt.clf()
+        #plt.clf()
         if len(nzls[pt]) > 0:
             fig = plt.figure()
             nzp = np.concatenate(nzls[pt])
