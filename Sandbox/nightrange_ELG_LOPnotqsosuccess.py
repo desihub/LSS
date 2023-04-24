@@ -34,6 +34,8 @@ sel &= nights <= int(args.max_night)
 
 nights = nights[sel]
 
+bit = targetmask.desi_mask['ELG_LOP']
+
 for night in nights:# range(int(args.min_night),int(args.max_night)+1):
     month = str(night)[:6]
     #get the right tileids
@@ -95,8 +97,8 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                 print('number with bad qa '+str(num_badqa))
                 nomtl = nodata | badqa
                 wfqa = ~nomtl
-                wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
-                wlrg &= (zmtlf['DESI_TARGET'] & 4) == 0
+                wlrg = ((zmtlf['DESI_TARGET'] & bit) > 0)
+                wlrg &= ((zmtlf['DESI_TARGET'] & 4) == 0)
                 zlrg = zmtlf[wfqa&wlrg]
                 if len(zlrg) > 0:
                     #drz = (10**(3 - 3.5*zmtlf['Z']))
@@ -119,7 +121,7 @@ for night in nights:# range(int(args.min_night),int(args.max_night)+1):
                     tz[pt] += len(zlrg)
                     nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
                     nzla.append(zmtlf[wzwarn&wlrg]['Z'])
-                    tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_ELG'])
+                    tsnrlsg[pt].append(rr[wzwarn&wlrg&wfqa]['TSNR2_ELG'])
                     tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_ELG'])
 
                 else:
