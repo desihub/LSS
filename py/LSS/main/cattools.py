@@ -2733,7 +2733,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
         #print(min(wzf),max(wzf))
         #s = 1
     
-    ff = Table.read(indir+tp+'_full_noveto.dat.fits')
+    if tp == 'BGS_BRIGHT-21.5':
+        fullname = indir+tp+'_full.dat.fits'
+    else:
+        indir+tp+'_full_noveto.dat.fits'
+    ff = Table.read(fullname)
     wzf = np.ones(len(ff))
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
@@ -2764,16 +2768,17 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,indir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
-    ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-    ffc = Table.read(indir+tp+'_full.dat.fits')
-    cols = list(ffc.dtype.names)
-    if 'WEIGHT_ZFAIL' in cols:
-        ffc.remove_columns(['WEIGHT_ZFAIL'])
-    if 'mod_success_rate' in cols:
-        ffc.remove_columns(['mod_success_rate'])
-    ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS(ff,fullname,comments='added ZFAIL weight')
+    if tp != 'BGS_BRIGHT-21.5':
+        ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        ffc = Table.read(indir+tp+'_full.dat.fits')
+        cols = list(ffc.dtype.names)
+        if 'WEIGHT_ZFAIL' in cols:
+            ffc.remove_columns(['WEIGHT_ZFAIL'])
+        if 'mod_success_rate' in cols:
+            ffc.remove_columns(['mod_success_rate'])
+        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
         
     
 #     if dchi2 is not None:
