@@ -173,6 +173,9 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     #logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
 
     ranl = []
+    tran = tracer
+    if tracer == 'BGS_BRIGHT-21.5':
+        tran = 'BGS_BRIGHT'
     for i in range(0,nran):
         ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
