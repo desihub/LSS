@@ -333,7 +333,7 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
     ffull = dirout+type+notqso+'_full.dat.fits'
     if os.path.isfile(ffull) == False:
         fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
-        sel = fin['ABSMAG_R0P1'] < -21.5
+        sel = fin['ABSMAG_RP1'] < -21.5
         common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
