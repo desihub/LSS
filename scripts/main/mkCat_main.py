@@ -212,7 +212,7 @@ tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/res
 tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
-if os.path.isfile(tarf) and redotar == False:
+if os.path.isfile(tarf) and redotar == False or type == 'BGS_BRIGHT-21.5':
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
