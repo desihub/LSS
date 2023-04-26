@@ -177,7 +177,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     if tracer == 'BGS_BRIGHT-21.5':
         tran = 'BGS_BRIGHT'
     for i in range(0,nran):
-        ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
+        ran = read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
