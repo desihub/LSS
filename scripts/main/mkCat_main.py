@@ -329,6 +329,13 @@ wzm = ''
 if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
+if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
+    ffull = dirout+type+notqso+'_full.dat.fits'
+    if os.path.isfile(ffull) == False:
+        fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
+        sel = fin['ABSMAG_R'] < -21.5
+        common.write_LSS(fin[sel],ffull)
+
 tracer_clus = type+notqso+wzm
 # dchi2 = 9
 # tsnrcut = 0
@@ -374,6 +381,65 @@ if args.mkHPmaps == 'y':
     create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
                           lssmapdir=lssmapdir, outfn=outfn)    
 
+if args.add_ke == 'y':
+    if args.survey != 'DA02':
+        regl = ['']
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
+    for col in kecols:
+        rcols.append(col)
+
+    for reg in regl:
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+            zcol = 'Z'
+        else:
+            fn = fb+'_full.dat.fits'
+            zcol = 'Z_not4clus'
+        dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        from multiprocessing import Pool
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = i*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+        
+        def _wrapper(N):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            idx = np.arange(mini,maxi)
+            data = list[N]#Table()
+            data['idx'] = idx
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol=zcol)
+            return data
+
+        with Pool(processes=n_processes+1) as pool:
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
+
+        #if args.test == 'y':
+        #    dat = dat[:10]
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
+            #if args.test == 'n':
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
     
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
@@ -464,7 +530,10 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
-    pwf = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
+    tpstr = tracer_clus
+    if tracer_clus == 'BGS_BRIGHT-21.5':
+        tpstr = 'BGS_BRIGHT'
+    pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if args.survey == 'DA02':
@@ -559,65 +628,6 @@ if args.add_bitweight == 'y':
     common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
     
 
-if args.add_ke == 'y':
-    if args.survey != 'DA02':
-        regl = ['']
-    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
-    for col in kecols:
-        rcols.append(col)
-
-    for reg in regl:
-        fb = dirout+tracer_clus+reg
-        if args.survey == 'DA02':
-            fn = fb+'_clustering.dat.fits'
-            zcol = 'Z'
-        else:
-            fn = fb+'_full.dat.fits'
-            zcol = 'Z_not4clus'
-        dat = Table(fitsio.read(fn))
-        dat = common.add_dered_flux(dat,fcols)
-        n_processes = 100
-        from multiprocessing import Pool
-        chunk_size = len(dat)//n_processes
-        list = []
-        for i in range(0,n_processes):
-            mini = i*chunk_size
-            maxi = mini+chunk_size
-            if maxi > len(dat):
-                maxi = len(dat)
-            list.append(dat[mini:maxi])
-        
-        def _wrapper(N):
-            mini = N*chunk_size
-            maxi = mini+chunk_size
-            if maxi > len(dat):
-                maxi = len(dat)
-            idx = np.arange(mini,maxi)
-            data = list[N]#Table()
-            data['idx'] = idx
-            #list[N] = common.add_ke(data,zcol='Z_not4clus')
-            data = common.add_ke(data,zcol=zcol)
-            return data
-
-        with Pool(processes=n_processes+1) as pool:
-            res = pool.map(_wrapper, np.arange(n_processes))
-            #pool.map(_wrapper, np.arange(n_processes))
-
-        res = vstack(res)#vstack(list)#
-        res.sort('idx')
-        res.remove_column('idx')
-        print(len(res),len(dat))
-
-        #if args.test == 'y':
-        #    dat = dat[:10]
-        #cols = list(dat.dtype.names)
-        #if 'REST_GMR_0P1' in cols:
-        #    print('appears columns are already in '+fn)
-        #else:
-        #    dat = common.add_ke(dat,zcol='Z_not4clus')
-            #if args.test == 'n':
-        common.write_LSS(res,fn,comments=['added k+e corrections'])
 
 utlid = False
 if args.ran_utlid == 'y':
