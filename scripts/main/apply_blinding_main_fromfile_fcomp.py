@@ -193,7 +193,7 @@ if root:
     w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
     if args.get_par_mode == 'specified':
-        [w0_blind, wa_blind] = [args.specified_w0,args.specified_wa]
+        [w0_blind, wa_blind] = [float(args.specified_w0),float(args.specified_wa)]
         if w0_blind is None or wa_blind is None:
             sys.exit('you must provide arguments for --specified_w0 and --specified_wa in the specified get_par_mode')
     
@@ -392,13 +392,15 @@ if args.fnlblind == 'y':
     if root:
         f_blind = fgrowth_blind
         if args.get_par_mode == 'specified':
-            fnl_blind = args.specified_fnl
             if fnl_blind is None:
                 sys.exit('you must provide arguments for --specified_fnl  in the specified get_par_mode')
+            fnl_blind = float(args.specified_fnl)
+            print('fnl value is '+str(fnl_blind))
         else:
             # generate blinding value from the choosen index above
             np.random.seed(ind)
             fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
+        
     if not root:
         w0_blind, wa_blind, f_blind, fnl_blind = None, None, None, None
     w0_blind = mpicomm.bcast(w0_blind, root=0)
