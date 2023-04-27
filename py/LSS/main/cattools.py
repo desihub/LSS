@@ -2232,7 +2232,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2283,9 +2283,17 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #in the end, we can only use the data associated with an observation
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
+    #changing behavior back, load file that is spec info including zmtl
+    specdir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specver+'/'
+    prog = 'dark'
+    if tp[:3] == 'BGS':
+        prog = 'bright'
 
-    fs = common.cut_specdat(dz,badfib)
+    fs = fitsio.read(specdir+'datcomb_'+prog+'_spec_zdone.fits')
+    fs = common.cut_specdat(fs,badfib)
     gtl = np.unique(fs['TILELOCID'])
+    fs.keep_columns(['TILELOCID','PRIORITY'])
+    dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     del fs
 
     wg = np.isin(dz['TILELOCID'],gtl)
