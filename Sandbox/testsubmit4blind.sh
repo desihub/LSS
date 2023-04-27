@@ -2,8 +2,8 @@
 
 #SBATCH -A desi
 #SBATCH -C cpu
-#SBATCH --qos=interactive
-#SBATCH --time=04:00:00
+#SBATCH -p debug
+#SBATCH --time=00:30:00
 #SBATCH --nodes=1
 #SBATCH --output=JOB_OUT_%x_%j.txt
 #SBATCH --error=JOB_ERR_%x_%j.txt
