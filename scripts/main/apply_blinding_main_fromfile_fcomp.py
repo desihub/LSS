@@ -392,9 +392,10 @@ if args.fnlblind == 'y':
     if root:
         f_blind = fgrowth_blind
         if args.get_par_mode == 'specified':
+            fnl_blind = args.specified_fnl
             if fnl_blind is None:
                 sys.exit('you must provide arguments for --specified_fnl  in the specified get_par_mode')
-            fnl_blind = float(args.specified_fnl)
+            fnl_blind = float(fnl_blind )
             print('fnl value is '+str(fnl_blind))
         else:
             # generate blinding value from the choosen index above
