@@ -165,9 +165,20 @@ else:
 
 dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
 
-if root and (not os.path.exists(dirout)):
-    os.makedirs(dirout)
-    print('made ' + dirout)
+def mkdir(dirname):
+	"""Try to create ``dirname`` and catch :class:`OSError`."""
+	try:
+		os.makedirs(dirname)  # MPI...
+	except OSError:
+		return
+    
+mkdir(dirout)
+
+
+#if root and (not os.path.exists(dirout)):
+#    os.makedirs(dirout)
+#    print('made ' + dirout)
+
 
 tp2z = {'LRG': 0.8, 'ELG': 1.1, 'QSO': 1.6}
 tp2bias = {'LRG': 2., 'ELG': 1.3, 'QSO': 2.3}
