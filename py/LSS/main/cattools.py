@@ -2291,6 +2291,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     fs = fitsio.read(specdir+'datcomb_'+prog+'_spec_zdone.fits')
     fs = common.cut_specdat(fs,badfib)
+    fs = Table(fs)
+    fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
     fs.keep_columns(['TILELOCID','PRIORITY'])
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
