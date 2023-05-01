@@ -97,7 +97,7 @@ for tile in t['TILEID']:
     locsin = np.isin(forig['LOCATION'],locs)
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
-    print(np.sum(locsin),np.sum(idsin),np.sum(masked))
+    print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
     n += 1
     if n >= 1:
         break
