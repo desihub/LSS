@@ -82,14 +82,16 @@ for tile in t['TILEID']:
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
     ids = kl[1]
-    sel = np.isin(ids,ttids)
-    locs = locs[sel]
-    ids = ids[sel]
+    #sel = np.isin(ids,ttids)
+    #locs = locs[sel]
+    #ids = ids[sel]
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
     forig = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz',ext='POTENTIAL_ASSIGNMENTS')
     #print(coll)
+    selo = np.isin(forig['TARGETID'],ttids)
+    forig = forig[selo]
     locsin = np.isin(forig['LOCATION'],locs)
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
