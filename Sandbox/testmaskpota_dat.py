@@ -40,17 +40,9 @@ for tile in t['TILEID']:
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE'][:19]
     hw = load_hardware(rundate=dt, add_margins=margins)
-    pr = 'DARK'
-    t['OBSCONDITIONS'] = 516
-    t['IN_DESI'] = 1
-    t['MTLTIME'] = fbah['MTLTIME']
-    t['FA_RUN'] = fbah['FA_RUN']
-    t['PROGRAM'] = pr
-
-    t.write('tiles.fits', overwrite=True)
 
     tiles = load_tiles(
-        tiles_file='tiles.fits',
+        tiles_file= '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits',
         select=[tile])
 
     tids = tiles.id
