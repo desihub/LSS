@@ -61,6 +61,7 @@ for tile in t['TILEID']:
 
     # Load target files...
     load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')
+    ttids = fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']
     
 
     # Find targets within tiles, and project their RA,Dec positions
@@ -81,7 +82,7 @@ for tile in t['TILEID']:
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
     ids = kl[1]
-    sel = ids > 0
+    sel = np.isin(ids,ttids)
     locs = locs[sel]
     ids = ids[sel]
     #print('collisions:', coll)
