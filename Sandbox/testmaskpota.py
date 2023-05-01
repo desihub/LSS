@@ -89,7 +89,7 @@ for tile in t['TILEID']:
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
-    forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-%i.fits' % tile,ext='FAVAIL')
+    forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-%i.fits' % ts,ext='FAVAIL')
     print(coll)
     
     n += 1
