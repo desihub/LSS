@@ -81,7 +81,9 @@ for tile in t['TILEID']:
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
     ids = kl[1]
-
+    sel = ids > 0
+    locs = locs[sel]
+    ids = ids[sel]
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
