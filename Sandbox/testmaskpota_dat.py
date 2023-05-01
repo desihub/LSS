@@ -16,7 +16,7 @@ from fiberassign.utils import Logger
 import fitsio
 
 t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-DARK.fits')
-print('tiles:', t)
+#print('tiles:', t)
 
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -110,6 +110,6 @@ for tile in t['TILEID']:
         print('BAD, assigned id/location is in mask')
 
     n += 1
-    if n >= 1:
+    if n >= 10:
         break
 

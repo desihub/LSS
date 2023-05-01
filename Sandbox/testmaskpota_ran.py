@@ -16,7 +16,7 @@ from fiberassign.utils import Logger
 import fitsio
 
 t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-DARK.fits')
-print('tiles:', t)
+#print('tiles:', t)
 
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -93,12 +93,12 @@ for tile in t['TILEID']:
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
     forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
-    print(coll)
+    #print(coll)
     locsin = np.isin(forig['LOCATION'],locs)
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
     n += 1
-    if n >= 1:
+    if n >= 10:
         break
 
