@@ -145,22 +145,25 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
 #         return False
 
  
-def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
+def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='main'):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    indir = fht['OUTDIR']
-    if fht['DESIROOT'] == '/data/datasystems':
-        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
-        try:
-            f = fitsio.read(indir+ts+'-targ.fits')
-        except:
-        
-            date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+    if survey == 'SV3':
+		indir = fht['OUTDIR']
+		if fht['DESIROOT'] == '/data/datasystems':
+			indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
+			try:
+				f = fitsio.read(indir+ts+'-targ.fits')
+			except:
+		
+				date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+				indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+    else:
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/'+survey+'/'+ts[:3]+'/'
     tarf = indir+ts+'-targ.fits'
     try:
         fitsio.read(tarf)
@@ -194,7 +197,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     if too:
         print('will be using too file '+toof)
     if outdir is None:
-        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/'+survey+'rerun/orig/'
       
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
