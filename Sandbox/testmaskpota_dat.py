@@ -116,9 +116,9 @@ for tile in t['TILEID']:
         print('BAD, assigned id/location is in mask')
         #print(forig[masked])
         for i in range(0,len(forig[masked])):
-            loc = forig[i]['LOCATION']
-            id = forig[i]['TARGETID']
-            print(loc,id,coll[(id,loc)])
+            loc = forig[masked][i]['LOCATION']
+            id = forig[masked][i]['TARGETID']
+            print(loc,id,coll[(loc,id)])
 
     n += 1
     #else:
