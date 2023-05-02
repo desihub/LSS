@@ -38,7 +38,7 @@ for tile in t['TILEID']:
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    if fbah['FAVER'][0] == '5':
+    if fbah['FA_VER'][0] == '5':
         dt = fbah['RUNDATE'][:19]
         hw = load_hardware(rundate=dt, add_margins=margins)
         t = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits'))
@@ -118,7 +118,7 @@ for tile in t['TILEID']:
 
         n += 1
     else:
-        print(ts,fbah['FAVER'])
+        print(ts,fbah['FA_VER'])
     if n >= 10:
         break
 
