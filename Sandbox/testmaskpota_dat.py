@@ -118,7 +118,7 @@ for tile in t['TILEID']:
         for i in range(0,len(forig[masked])):
             loc = forig[i]['LOCATION']
             id = forig[i]['TARGETID']
-            print(loc,id,coll[(loc,id)])
+            print(loc,id,coll[(id,loc)])
 
     n += 1
     #else:
