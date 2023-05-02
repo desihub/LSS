@@ -94,7 +94,7 @@ for tile in t['TILEID']:
     #sel = np.isin(ids,ttids)
     #locs = locs[sel]
     #ids = ids[sel]
-    #print('collisions:', coll)
+    print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
     forig = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz',ext='POTENTIAL_ASSIGNMENTS')
@@ -118,11 +118,11 @@ for tile in t['TILEID']:
         for i in range(0,len(forig[masked])):
             loc = forig[masked][i]['LOCATION']
             id = forig[masked][i]['TARGETID']
-            print(loc,id,coll[(id,loc)])
+            print(loc,id,coll[(loc,id)])
 
     n += 1
     #else:
     #    print(ts,fbah['FA_VER'])
-    if n >= 10:
+    if n >= 1:
         break
 
