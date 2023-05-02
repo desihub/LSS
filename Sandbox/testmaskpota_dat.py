@@ -123,6 +123,6 @@ for tile in t['TILEID']:
     n += 1
     #else:
     #    print(ts,fbah['FA_VER'])
-    if n >= 1:
+    if n >= 2:
         break
 
