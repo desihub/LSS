@@ -88,22 +88,23 @@ for tile in t['TILEID']:
     asgn = Assignment(tgs, tgsavail, favail, stucksky)
 
     coll = asgn.check_avail_collisions(tile)
-    #kl = np.array(list(coll.keys())).transpose()
-    #locs = kl[0]
-    #ids = kl[1]
-    locs = []
-    ids = []
-    for key in coll.keys():
-        locs.append(key[0])
-        ids.append(key[1])
-    locs = np.array(locs)
-    ids = np.array(ids)
-    for loc,id in zip(locs,ids):
-        try:
-            bit = coll[(loc,id)]
-        except:
-            print(loc,id,'key error')
-            break    
+    kl = np.array(list(coll.keys())).transpose()
+    locs = kl[0]
+    ids = kl[1]
+    locids = ids*10000+locs
+    #locs = []
+    #ids = []
+    #for key in coll.keys():
+    #    locs.append(key[0])
+    #    ids.append(key[1])
+    #locs = np.array(locs)
+    #ids = np.array(ids)
+    #for loc,id in zip(locs,ids):
+    #    try:
+    #        bit = coll[(loc,id)]
+    #    except:
+    #        print(loc,id,'key error')
+    #        break    
     #sel = np.isin(ids,ttids)
     #locs = locs[sel]
     #ids = ids[sel]
@@ -114,16 +115,19 @@ for tile in t['TILEID']:
     #print(coll)
     selo = np.isin(forig['TARGETID'],ttids)
     forig = forig[selo]
-    locsin = np.isin(forig['LOCATION'],locs)
-    idsin = np.isin(forig['TARGETID'],ids)
-    masked = locsin&idsin
-    print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
+    locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
+    #locsin = np.isin(forig['LOCATION'],locs)
+    #idsin = np.isin(forig['TARGETID'],ids)
+    masked = locidsin#locsin&idsin
+    #print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
+    print(np.sum(masked),len(forig))
     print('checking actual assignments, should not find any are masked')
     forig = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz',ext='FIBERASSIGN')
     #print(coll)
-    locsin = np.isin(forig['LOCATION'],locs)
-    idsin = np.isin(forig['TARGETID'],ids)
-    masked = locsin&idsin
+    #locsin = np.isin(forig['LOCATION'],locs)
+    #idsin = np.isin(forig['TARGETID'],ids)
+    locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
+    masked = locidsin#locsin&idsin
     print(np.sum(masked))
     if np.sum(masked) != 0:
         print('BAD, assigned id/location is in mask')
