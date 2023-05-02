@@ -43,14 +43,14 @@ for tile in t['TILEID']:
     t = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits'))
     t['MTLTIME'] = fbah['MTLTIME']
     t['FA_RUN'] = fbah['FA_RUN']
-    t['HA'] = fbah['FA_HA']
-    t['FIELDROT'] = fbah['FIELDROT']
+    obsha = fbah['FA_HA']
+    obstheta = fbah['FIELDROT']
 
 
     t.write('tiles.fits', overwrite=True)
 
     tiles = load_tiles(
-        tiles_file='tiles.fits',
+        tiles_file='tiles.fits',obsha=obsha,obstheta=obstheta
         select=[tile])
 
     tids = tiles.id
