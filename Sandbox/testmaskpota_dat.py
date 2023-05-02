@@ -43,7 +43,7 @@ for tile in t['TILEID']:
     t = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits'))
     t['MTLTIME'] = fbah['MTLTIME']
     t['FA_RUN'] = fbah['FA_RUN']
-    t['FA_HA'] = fbah['FA_HA']
+    t['HA'] = fbah['FA_HA']
     t['FIELDROT'] = fbah['FIELDROT']
 
 
