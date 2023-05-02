@@ -674,7 +674,7 @@ if __name__ == '__main__':
         zlims = io.get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
         option = args.zlim[0]
-        zlims = get_zlims(tracer, tracer2=tracer2, option=option)
+        zlims = io.get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
 
