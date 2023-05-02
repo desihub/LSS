@@ -147,7 +147,7 @@ for tile in t['TILEID']:
     #else:
     #    print(ts,fbah['FA_VER'])
     print(n,badtot)
-    if n >= 100:
-        break
+    #if n >= 100:
+    #    break
 print('#the tileid, location, targetid, bits that were bad are ')
 print(badl)
