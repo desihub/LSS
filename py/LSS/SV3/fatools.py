@@ -153,15 +153,15 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     if survey == 'SV3':
-		indir = fht['OUTDIR']
-		if fht['DESIROOT'] == '/data/datasystems':
-			indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
-			try:
-				f = fitsio.read(indir+ts+'-targ.fits')
-			except:
-		
-				date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-				indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+        indir = fht['OUTDIR']
+        if fht['DESIROOT'] == '/data/datasystems':
+            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
+            try:
+                f = fitsio.read(indir+ts+'-targ.fits')
+            except:
+        
+                date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+                indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
     else:
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/'+survey+'/'+ts[:3]+'/'
     tarf = indir+ts+'-targ.fits'
