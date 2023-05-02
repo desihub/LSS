@@ -115,6 +115,7 @@ for tile in t['TILEID']:
     if np.sum(masked) != 0:
         print('BAD, assigned id/location is in mask')
         #print(forig[masked])
+        print(locsin[masked],idsin[masked])
         for i in range(0,len(forig[masked])):
             loc = forig[masked][i]['LOCATION']
             id = forig[masked][i]['TARGETID']
