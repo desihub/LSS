@@ -139,7 +139,7 @@ for tile in t['TILEID']:
             loc = forig[masked][i]['LOCATION']
             id = forig[masked][i]['TARGETID']
             print(loc,id,coll[(loc,id)])
-            badl.append(tile,loc,id,coll[(loc,id)])
+            badl.append((tile,loc,id,coll[(loc,id)]))
         badtot += np.sum(masked)
         
 
