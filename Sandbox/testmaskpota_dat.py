@@ -88,9 +88,16 @@ for tile in t['TILEID']:
     asgn = Assignment(tgs, tgsavail, favail, stucksky)
 
     coll = asgn.check_avail_collisions(tile)
-    kl = np.array(list(coll.keys())).transpose()
-    locs = kl[0]
-    ids = kl[1]
+    #kl = np.array(list(coll.keys())).transpose()
+    #locs = kl[0]
+    #ids = kl[1]
+    locs = []
+    ids = []
+    for key in coll.keys():
+        locs.append(key[0])
+        ids.append(key[1])
+    locs = np.array(locs)
+    ids = np.array(ids)    
     #sel = np.isin(ids,ttids)
     #locs = locs[sel]
     #ids = ids[sel]
