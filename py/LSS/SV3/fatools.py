@@ -235,6 +235,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
 
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
+    fo.write("which fba_run")
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
