@@ -226,8 +226,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     elif faver == 'current':
         faver = 5
         if faenvdir is not None:
-            fo.write('PATH='+faenvdir+'fiberassign/bin:$PATH')
-            fo.write('PYTHONPATH='+faenvdir+'/fiberassign/py:$PYTHONPATH')
+            fo.write('PATH='+faenvdir+'fiberassign/bin:$PATH\n')
+            fo.write('PYTHONPATH='+faenvdir+'/fiberassign/py:$PYTHONPATH\n')
             
     else:
         if 'main' in indir:
@@ -235,7 +235,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
 
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
-    fo.write("which fba_run")
+    fo.write("which fba_run\n")
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:
