@@ -145,7 +145,7 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
 #         return False
 
  
-def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='main'):
+def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='main',faenvdir=None):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
@@ -209,7 +209,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh main\n')
-    if faver == None:
+    if faver is None:
         faver = float(fht['FA_VER'][:3])
         if 'main' in indir:
             assert(faver > 3.0)
@@ -225,6 +225,10 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     elif faver == 'current':
         faver = 5
+        if faenvdir is not None:
+            fo.write('PATH='+faenvdir+'fiberassign/bin:$PATH')
+            fo.write('PYTHONPATH='+faenvdir+'/fiberassign/py:$PYTHONPATH')
+            
     else:
         if 'main' in indir:
             assert(faver > 3.0)
