@@ -46,6 +46,8 @@ for tile in t['TILEID']:
     t['MTLTIME'] = fbah['MTLTIME']
     t['FA_RUN'] = fbah['FA_RUN']
     t['PROGRAM'] = pr
+    t['FA_HA'] = fbah['FA_HA']
+    t['FIELDROT'] = fbah['FIELDROT']
 
     t.write('tiles.fits', overwrite=True)
 
