@@ -50,7 +50,7 @@ for tile in t['TILEID']:
     t.write('tiles.fits', overwrite=True)
 
     tiles = load_tiles(
-        tiles_file='tiles.fits',obsha=obsha,obstheta=obstheta
+        tiles_file='tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
