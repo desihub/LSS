@@ -223,6 +223,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         else:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+    elif faver == 'current':
+        faver = 5
     else:
         if 'main' in indir:
             assert(faver > 3.0)
