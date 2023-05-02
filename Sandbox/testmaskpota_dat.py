@@ -97,7 +97,13 @@ for tile in t['TILEID']:
         locs.append(key[0])
         ids.append(key[1])
     locs = np.array(locs)
-    ids = np.array(ids)    
+    ids = np.array(ids)
+    for loc,id in zip(locs,ids):
+        try:
+            bit = coll[(loc,id)]
+        except:
+            print(loc,id,'key error')
+            break    
     #sel = np.isin(ids,ttids)
     #locs = locs[sel]
     #ids = ids[sel]
