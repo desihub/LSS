@@ -105,6 +105,7 @@ for tile in t['TILEID']:
     print(np.sum(masked))
     if np.sum(masked) != 0:
         print('BAD, assigned id/location is in mask')
+        print(forig[masked])
 
     n += 1
     if n >= 10:
