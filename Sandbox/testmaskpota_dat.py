@@ -31,6 +31,8 @@ margins = dict(pos=0.05,
 log = Logger.get()
 
 n = 0
+badl = []
+badtot = 0
 for tile in t['TILEID']:    
 
 
@@ -137,10 +139,15 @@ for tile in t['TILEID']:
             loc = forig[masked][i]['LOCATION']
             id = forig[masked][i]['TARGETID']
             print(loc,id,coll[(loc,id)])
+            badl.append(tile,loc,id,coll[(loc,id))
+        badtot += np.sum(masked)
+        
 
     n += 1
     #else:
     #    print(ts,fbah['FA_VER'])
-    if n >= 10:
+    print(n,badtot)
+    if n >= 100:
         break
-
+print('#the tileid, location, targetid, bits that were bad are ')
+print(badl)
