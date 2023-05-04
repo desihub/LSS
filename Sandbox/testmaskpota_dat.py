@@ -33,8 +33,9 @@ log = Logger.get()
 n = 0
 badl = []
 badtot = 0
-for tile in t['TILEID']:    
-
+tls = [1100]
+#for tile in t['TILEID']:    
+for tile in tls:
 
     #tile = 1230
     ts = '%06i' % tile
@@ -72,6 +73,9 @@ for tile in t['TILEID']:
 
     # Load target files...
     load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits',rundate=dt)
+    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-scnd.fits',rundate=dt)
+    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-sky.fits',rundate=dt)
+
     ttids = fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']
 
 
