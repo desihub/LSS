@@ -297,6 +297,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
         ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
         area = ranf['NAXIS2']/randens
     else:
+        print(reg)
         ranf = fitsio.read(fcr,columns=["PHOTSYS"])
         selreg = ranf['PHOTSYS'] == reg
         area = len(ranf[selreg])/randens
