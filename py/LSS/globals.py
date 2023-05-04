@@ -82,7 +82,7 @@ class main:
             self.zmax = 0.5
             if survey == 'Y1':
                 self.zmax = 0.4
-            self.ebits = [11,12] 
+            self.ebits = [11] 
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
