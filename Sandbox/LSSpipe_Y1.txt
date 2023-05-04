@@ -87,10 +87,10 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIG
 Y1_regressis_zfail.sh iron
 
 #get regressis weights
-#for most up to date version, need to start clean in cosmodesi environment and install seaborn
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
-#pip install seaborn
 for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec himalayas --notqso notqso
     
+#get bitweights n(z) and fkp weights
+python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --add_bitweight y --FKPfull y --nzfull y
