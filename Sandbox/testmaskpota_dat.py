@@ -34,8 +34,8 @@ n = 0
 badl = []
 badtot = 0
 tls = [1100]
-#for tile in t['TILEID']:    
-for tile in tls:
+for tile in t['TILEID']:    
+#for tile in tls:
 
     #tile = 1230
     ts = '%06i' % tile
