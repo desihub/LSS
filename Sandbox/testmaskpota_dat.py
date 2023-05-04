@@ -41,7 +41,7 @@ for tile in t['TILEID']:
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     #if fbah['FA_VER'][0] == '5':
-    dt = fbah['RUNDATE'][:19]
+    dt = fbah['RUNDATE']#[:19]
     hw = load_hardware(rundate=dt, add_margins=margins)
     t = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits'))
     t['MTLTIME'] = fbah['MTLTIME']
@@ -71,7 +71,7 @@ for tile in t['TILEID']:
     tagalong = create_tagalong(plate_radec=plate_radec)
 
     # Load target files...
-    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')
+    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits',rundate=dt)
     ttids = fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']
 
 
