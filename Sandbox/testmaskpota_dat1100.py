@@ -9,7 +9,8 @@ from astropy.table import Table
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
-from fiberassign.assign import Assignment
+from fiberassign.assign import Assignment, write_assignment_fits,result_path, run
+from fiberassign.stucksky import stuck_on_sky
 
 from fiberassign.utils import Logger
 
@@ -44,6 +45,7 @@ hw = load_hardware(rundate=dt, add_margins=margins)
 obsha = fbah['FA_HA']
 obstheta = fbah['FIELDROT']
 
+#obstime is an option we're not using
 tiles = load_tiles(
 	tiles_file='/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits',obsha=obsha,obstheta=obstheta,
 	select=[tile])
@@ -63,7 +65,9 @@ plate_radec=True
 tagalong = create_tagalong(plate_radec=plate_radec)
 
 # Load target files...
-load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')
+load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits',rundate=dt)
+load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-scnd.fits',rundate=dt)
+load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-sky.fits',rundate=dt)
 ttids = fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']
 
 
@@ -72,14 +76,40 @@ ttids = fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'
 tile_targetids, tile_x, tile_y, tile_xy_cs5 = targets_in_tiles(hw, tgs, tiles, tagalong)
 # Compute the targets available to each fiber for each tile.
 tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
+# Free the target locations
+del tile_targetids, tile_x, tile_y
 # Compute the fibers on all tiles available for each target and sky
 favail = LocationsAvailable(tgsavail)
 
 # FAKE stucksky
-stucksky = {}
+#stucksky = {}
+stucksky = stuck_on_sky(hw, tiles, args.lookup_sky_source,
+                            rundate=dt)
 
 # Create assignment object
 asgn = Assignment(tgs, tgsavail, favail, stucksky)
+
+run(
+    asgn,
+    10,
+    40,
+    1,
+    redistribute=True,
+    use_zero_obsremain=True
+    )
+
+gfa_targets = None
+
+out_dir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/mainrerun_noswap/'
+
+# Write output
+write_assignment_fits(tiles, tagalong, asgn, out_dir=out_dir,
+                    out_prefix='fba-', split_dir=False,
+                    all_targets=False,
+                    gfa_targets=gfa_targets, overwrite=True,
+                    stucksky=stucksky, tile_xy_cs5=tile_xy_cs5)
+
+
 
 coll = asgn.check_avail_collisions(tile)
 kl = np.array(list(coll.keys())).transpose()
@@ -137,3 +167,24 @@ if np.sum(masked) != 0:
 
 print('#the tileid, location, targetid, bits that were bad are ')
 print(badl)
+
+print('now comparing assignment file')
+
+fa = fitsio.read('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz') 
+fn = fitsio.read(out_dir+'fba-'+ts+'.fits')
+w = fn['DEVICE_TYPE'] == 'POS'
+fn = fn[w]
+wn = fn['TARGETID'] >= 0
+fn = fn[wn]
+print(len(fn))
+wa = fa['TARGETID'] >= 0
+fa = fa[wa]
+print(len(fa))  
+ws = np.isin(fn['TARGETID'],fa['TARGETID'])
+print(np.sum(ws))   
+if np.sum(ws) == len(fa) and len(fa) == len(fn):
+	print('assignments reproduced')
+else:
+	print('assignments no reproduced')
+
+
