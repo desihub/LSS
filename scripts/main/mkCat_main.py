@@ -590,9 +590,10 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
+    reglr = regl
     if args.survey != 'DA02':
-        regl = ['']
-    for reg in regl:
+        reglr = ['']
+    for reg in reglr:
         fb = dirout+tracer_clus+reg
         if args.survey == 'DA02':
             fcd = fb+'_clustering.dat.fits'
