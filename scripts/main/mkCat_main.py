@@ -381,6 +381,13 @@ if args.mkHPmaps == 'y':
     create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
                           lssmapdir=lssmapdir, outfn=outfn)    
 
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+if type[:3] == 'BGS':
+    fcols = ['G','R','Z','W1','W2']
+    for col in fcols:
+        rcols.append('flux_'+col.lower()+'_dered')
+
+
 if args.add_ke == 'y':
     if args.survey != 'DA02':
         regl = ['']
@@ -442,11 +449,6 @@ if args.add_ke == 'y':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
     
 
-rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-if type[:3] == 'BGS':
-    fcols = ['G','R','Z','W1','W2']
-    for col in fcols:
-        rcols.append('flux_'+col.lower()+'_dered')
 
 
 if mkclusran and mkclusdat:
