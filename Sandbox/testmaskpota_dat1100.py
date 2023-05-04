@@ -40,7 +40,7 @@ ts = '%06i' % tile
 
 fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
 #if fbah['FA_VER'][0] == '5':
-dt = fbah['RUNDATE'][:19]
+dt = fbah['RUNDATE']#[:19]
 hw = load_hardware(rundate=dt, add_margins=margins)
 obsha = fbah['FA_HA']
 obstheta = fbah['FIELDROT']
