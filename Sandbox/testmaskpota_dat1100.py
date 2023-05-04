@@ -83,7 +83,7 @@ favail = LocationsAvailable(tgsavail)
 
 # FAKE stucksky
 #stucksky = {}
-stucksky = stuck_on_sky(hw, tiles, args.lookup_sky_source,
+stucksky = stuck_on_sky(hw, tiles, 'ls'',
                             rundate=dt)
 
 # Create assignment object
