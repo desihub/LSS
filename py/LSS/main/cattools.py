@@ -7,7 +7,7 @@ import os
 from random import random
 
 import astropy.io.fits as fits
-from astropy.table import Table,join,unique,vstack
+from astropy.table import Table,join,unique,vstack,setdiff
 
 import fitsio
 
