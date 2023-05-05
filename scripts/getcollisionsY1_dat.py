@@ -116,4 +116,4 @@ for tile in t['TILEID'][:10]:
 
 
 colltot = np.concatenate(colls)
-common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/collisions-'+arg.prog+'.fits')
+common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/collisions-'+args.prog+'.fits')
