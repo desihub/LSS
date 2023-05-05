@@ -37,10 +37,11 @@ log = Logger.get()
 n = 0
 colls = []
 
-for tile in t['TILEID']:    
+#for tile in t['TILEID']:    
 #for tile in tls:
 
     #tile = 1230
+def getcoll(tile):
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -104,16 +105,24 @@ for tile in t['TILEID']:
     locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
     colltab = Table(forig[locidsin])
     colltab['TILEID'] = tile
-    colls.append(colltab)
+    return colltab
+    #colls.append(colltab)
         
 
-    n += 1
+    #n += 1
     #else:
     #    print(ts,fbah['FA_VER'])
-    print(n,len(t))
+    #print(n,len(t))
     #if n >= 100:
     #    break
 
+#colltot = np.concatenate(colls)
 
-colltot = np.concatenate(colls)
-common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/collisions-'+args.prog+'.fits')
+if __name__ == '__main__':
+    from multiprocessing import Pool
+    tls = list(t['TILEID'][:10])
+    with Pool(processes=n_processes+1) as pool:
+        res = pool.map(getcoll, tls)
+    colltot = np.concatenate(res)
+    common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/collisions-'+args.prog+'.fits')
+
