@@ -3,7 +3,7 @@ This is a little demo script for the Assignment.check_avail_collisions() functio
 '''
 
 import numpy as np
-
+import argparse
 from astropy.table import Table
 
 from fiberassign.hardware import load_hardware
