@@ -267,7 +267,7 @@ if __name__ == '__main__':
             if window is not None:
                 fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
                 window.save(fn)
-                fn = wmatrix_fn(file_type='npy', region=region, **base_file_kwargs)
+                fn = wmatrix_fn(region=region, **base_file_kwargs)
                 wmatrix.save(fn)
 
         all_regions = regions.copy()
