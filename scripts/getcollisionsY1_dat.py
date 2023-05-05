@@ -121,7 +121,7 @@ def getcoll(tile):
 if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(t['TILEID'][:10])
-    with Pool(processes=n_processes+1) as pool:
+    with Pool(processes=128) as pool:
         res = pool.map(getcoll, tls)
     colltot = np.concatenate(res)
     common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/collisions-'+args.prog+'.fits')
