@@ -2232,7 +2232,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ',mask_coll=False):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2266,9 +2266,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
+        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+suvey+'/LSS/collisions-BRIGHT.fits'
     else:
         pd = 'dark'
         tscol = 'TSNR2_ELG'
+        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+suvey+'/LSS/collisions-DARK.fits'
 
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
@@ -2278,6 +2280,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
 
     print(len(dz[wtype]))
     dz = dz[wtype]
+
+    if mask_coll:
+        coll = Table(fitsio.read(collf))
+        print('length before masking collisions '+str(len(dz)))
+        dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
+        print('length after masking collisions '+str(len(dz)))
 
     #instead of full spec data, we are going to get type specific data and cut to unique entries
     #in the end, we can only use the data associated with an observation
