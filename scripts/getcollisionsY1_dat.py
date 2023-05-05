@@ -24,7 +24,7 @@ parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 args = parser.parse_args()
 
 
-t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+arg.prog+'.fits')
+t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
 #print('tiles:', t)
 
 margins = dict(pos=0.05,
