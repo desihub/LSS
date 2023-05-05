@@ -37,7 +37,7 @@ log = Logger.get()
 n = 0
 colls = []
 
-for tile in t['TILEID'][:10]:    
+for tile in t['TILEID']:    
 #for tile in tls:
 
     #tile = 1230
