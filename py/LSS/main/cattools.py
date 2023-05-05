@@ -2266,11 +2266,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+suvey+'/LSS/collisions-BRIGHT.fits'
+        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
     else:
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+suvey+'/LSS/collisions-DARK.fits'
+        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
 
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
