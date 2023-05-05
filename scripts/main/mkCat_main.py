@@ -389,14 +389,15 @@ if type[:3] == 'BGS':
 
 
 if args.add_ke == 'y':
+    reglke = regl
     if args.survey != 'DA02':
-        regl = ['']
+        reglke = ['']
     kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
     ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
     for col in kecols:
         rcols.append(col)
 
-    for reg in regl:
+    for reg in reglke:
         fb = dirout+tracer_clus+reg
         if args.survey == 'DA02':
             fn = fb+'_clustering.dat.fits'
@@ -408,7 +409,7 @@ if args.add_ke == 'y':
         dat = common.add_dered_flux(dat,fcols)
         n_processes = 100
         from multiprocessing import Pool
-        chunk_size = len(dat)//n_processes
+        chunk_size = (len(dat)+n_processes)//n_processes
         list = []
         for i in range(0,n_processes):
             mini = i*chunk_size
