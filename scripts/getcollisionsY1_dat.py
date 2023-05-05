@@ -120,7 +120,7 @@ def getcoll(tile):
 
 if __name__ == '__main__':
     from multiprocessing import Pool
-    tls = list(t['TILEID'][:10])
+    tls = list(t['TILEID'])#[:10])
     with Pool(processes=128) as pool:
         res = pool.map(getcoll, tls)
     colltot = np.concatenate(res)
