@@ -20,8 +20,13 @@ time_start = time.time()
 n_processes = 32
 
 parser = argparse.ArgumentParser()
-parser.add_argument( '--cat_type', default='obielg', choices=['obielg'],required=False)
+parser.add_argument( '--cat_type', default='obielg', choices=['obielg', 'abacus'],required=False)
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
+parser.add_argument('--abacus_fa_num', default = 0, required = False)
+parser.add_argument('--do_randoms', default = 'n', choices = ['n','y'], required = False)
+parser.add_argument('--random_tracer', default = 'LRG', required = False)
+parser.add_argument('--mock_number', default = 0, required = False)
+parser.add_argument('--outdir', default = '', required=False )
 
 args = parser.parse_args()
 
@@ -29,6 +34,31 @@ args = parser.parse_args()
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_masknobs.fits'
+    
+if args.cat_type == 'abacus':
+    if args.do_randoms == 'n':
+        fa_num = args.abacus_fa_num
+        str_fa_num = str(fa_num)
+        input_dir = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/"
+        input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/forFA' + str_fa_num + '.fits'
+        if args.outdir != '':
+            output_path = args.outdir + "/" + "forFA" + str_fa_num + "_matched_input_full_masknobs.fits"
+        elif args.outdir == '':
+            output_path = input_dir + "forFA" + str_fa_num + "_matched_input_full_masknobs.fits"
+            print(output_path)
+            
+    elif args.do_randoms == 'y':
+        ran_tr = args.random_tracer
+        mockno = args.mock_number
+        print("Running for Mock %s on Tracer %s"%(mockno, ran_tr))
+        input_dir = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/Y1/mock%s/LSScats/"%(mockno)
+        input_path = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit/Y1/mock%s/LSScats/%s_1_full_noveto.ran.fits"%(mockno, ran_tr)
+        if args.outdir != '':
+            output_path = args.outdir + "/" + ran_tr + "_1_full_matched_input_full_masknobs.ran.fits"
+            print("Output to " + output_path)
+        elif args.outdir == '':
+            output_path = input_dir + ran_tr + "_1_full_matched_input_full_masknobs.ran.fits"
+            print("Output to " + output_path)
     
 
 bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
@@ -96,7 +126,7 @@ def wrapper(bid_index):
     data['MASKBITS'] = bitmask
     data['NOBS_G'] = nobsg
     data['NOBS_R'] = nobsr
-    data['NOBS_Z'] = nobsr
+    data['NOBS_Z'] = nobsz
     data['TARGETID'] = tid
 
     return data

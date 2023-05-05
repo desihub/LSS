@@ -55,6 +55,8 @@ parser.add_argument("--clusran", help="make the random clustering files; these a
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
+parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
+
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
@@ -146,7 +148,7 @@ else:
 
 progl = prog.lower()
 
-mainp = main(args.type,args.verspec)
+mainp = main(args.type,args.verspec,survey=args.survey)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
 #mtld = mainp.mtld
@@ -210,7 +212,7 @@ tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/res
 tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
-if os.path.isfile(tarf) and redotar == False:
+if os.path.isfile(tarf) and redotar == False or type == 'BGS_BRIGHT-21.5':
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
@@ -259,7 +261,8 @@ if mkfulld:
         tlf = ldirspec+type+'_tilelocs.dat.fits'
         if type[:3] == 'ELG':
             #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
-            azf = ldirspec+'emlin_catalog.fits'
+            #azf = ldirspec+'emlin_catalog.fits'
+            azf = mainp.elgzf
         if type[:3] == 'QSO':
             #azf =ldirspec+'QSO_catalog.fits'
             azf = mainp.qsozf
@@ -326,6 +329,13 @@ wzm = ''
 if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
+if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
+    ffull = dirout+type+notqso+'_full.dat.fits'
+    if os.path.isfile(ffull) == False:
+        fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
+        sel = fin['ABSMAG_RP1'] < -21.5
+        common.write_LSS(fin[sel],ffull)
+
 tracer_clus = type+notqso+wzm
 # dchi2 = 9
 # tsnrcut = 0
@@ -371,13 +381,74 @@ if args.mkHPmaps == 'y':
     create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
                           lssmapdir=lssmapdir, outfn=outfn)    
 
-    
-
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
         rcols.append('flux_'+col.lower()+'_dered')
+
+
+if args.add_ke == 'y':
+    if args.survey != 'DA02':
+        regl = ['']
+    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
+    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
+    for col in kecols:
+        rcols.append(col)
+
+    for reg in regl:
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fn = fb+'_clustering.dat.fits'
+            zcol = 'Z'
+        else:
+            fn = fb+'_full.dat.fits'
+            zcol = 'Z_not4clus'
+        dat = Table(fitsio.read(fn))
+        dat = common.add_dered_flux(dat,fcols)
+        n_processes = 100
+        from multiprocessing import Pool
+        chunk_size = len(dat)//n_processes
+        list = []
+        for i in range(0,n_processes):
+            mini = i*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            list.append(dat[mini:maxi])
+        
+        def _wrapper(N):
+            mini = N*chunk_size
+            maxi = mini+chunk_size
+            if maxi > len(dat):
+                maxi = len(dat)
+            idx = np.arange(mini,maxi)
+            data = list[N]#Table()
+            data['idx'] = idx
+            #list[N] = common.add_ke(data,zcol='Z_not4clus')
+            data = common.add_ke(data,zcol=zcol)
+            return data
+
+        with Pool(processes=n_processes+1) as pool:
+            res = pool.map(_wrapper, np.arange(n_processes))
+            #pool.map(_wrapper, np.arange(n_processes))
+
+        res = vstack(res)#vstack(list)#
+        res.sort('idx')
+        res.remove_column('idx')
+        print(len(res),len(dat))
+
+        #if args.test == 'y':
+        #    dat = dat[:10]
+        #cols = list(dat.dtype.names)
+        #if 'REST_GMR_0P1' in cols:
+        #    print('appears columns are already in '+fn)
+        #else:
+        #    dat = common.add_ke(dat,zcol='Z_not4clus')
+            #if args.test == 'n':
+        common.write_LSS(res,fn,comments=['added k+e corrections'])
+    
+
 
 
 if mkclusran and mkclusdat:
@@ -461,7 +532,10 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
-    pwf = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
+    tpstr = tracer_clus
+    if tracer_clus == 'BGS_BRIGHT-21.5':
+        tpstr = 'BGS_BRIGHT'
+    pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if args.survey == 'DA02':
@@ -488,10 +562,25 @@ if args.regressis == 'y':
     cut_fracarea = False
     seed = 42
     fit_maps = None
-    if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
-        fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    '''
+    Map choices are:
+    'EBV_CHIANG_SFDcorr','STARDENS','HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z',
+    'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15',
+    'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1',
+    'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'
+    'EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1',
+    'PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'
+    '''
+    fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
+    #if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
+    #    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
     if tracer_clus[:3] == 'LRG':
-        fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        fit_maps.append('PSFDEPTH_W1')
+    #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    if tracer_clus[:3] == 'QSO':
+        fit_maps.append('PSFDEPTH_W1')
+        #fit_maps = ['STARDENS','HI','BETA_ML','PSFDEPTH_G', 'PSFDEPTH_R','PSFDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+
     print('computing RF regressis weight')
     rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
@@ -501,9 +590,10 @@ if args.add_regressis == 'y':
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
     #regl = ['_DN','_DS','','_N','_S']
+    reglr = regl
     if args.survey != 'DA02':
-        regl = ['']
-    for reg in regl:
+        reglr = ['']
+    for reg in reglr:
         fb = dirout+tracer_clus+reg
         if args.survey == 'DA02':
             fcd = fb+'_clustering.dat.fits'
@@ -541,65 +631,6 @@ if args.add_bitweight == 'y':
     common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
     
 
-if args.add_ke == 'y':
-    if args.survey != 'DA02':
-        regl = ['']
-    kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
-    ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
-    for col in kecols:
-        rcols.append(col)
-
-    for reg in regl:
-        fb = dirout+tracer_clus+reg
-        if args.survey == 'DA02':
-            fn = fb+'_clustering.dat.fits'
-            zcol = 'Z'
-        else:
-            fn = fb+'_full.dat.fits'
-            zcol = 'Z_not4clus'
-        dat = Table(fitsio.read(fn))
-        dat = common.add_dered_flux(dat,fcols)
-        n_processes = 100
-        from multiprocessing import Pool
-        chunk_size = len(dat)//n_processes
-        list = []
-        for i in range(0,n_processes):
-            mini = i*chunk_size
-            maxi = mini+chunk_size
-            if maxi > len(dat):
-                maxi = len(dat)
-            list.append(dat[mini:maxi])
-        
-        def _wrapper(N):
-            mini = N*chunk_size
-            maxi = mini+chunk_size
-            if maxi > len(dat):
-                maxi = len(dat)
-            idx = np.arange(mini,maxi)
-            data = list[N]#Table()
-            data['idx'] = idx
-            #list[N] = common.add_ke(data,zcol='Z_not4clus')
-            data = common.add_ke(data,zcol=zcol)
-            return data
-
-        with Pool(processes=n_processes+1) as pool:
-            res = pool.map(_wrapper, np.arange(n_processes))
-            #pool.map(_wrapper, np.arange(n_processes))
-
-        res = vstack(res)#vstack(list)#
-        res.sort('idx')
-        res.remove_column('idx')
-        print(len(res),len(dat))
-
-        #if args.test == 'y':
-        #    dat = dat[:10]
-        #cols = list(dat.dtype.names)
-        #if 'REST_GMR_0P1' in cols:
-        #    print('appears columns are already in '+fn)
-        #else:
-        #    dat = common.add_ke(dat,zcol='Z_not4clus')
-            #if args.test == 'n':
-        common.write_LSS(res,fn,comments=['added k+e corrections'])
 
 utlid = False
 if args.ran_utlid == 'y':
@@ -664,12 +695,32 @@ if args.nz == 'y':
 
 if args.FKPfull == 'y':
     
-	fb = dirout+tracer_clus
-	fcr = fb+'_0_full.ran.fits'
-	fcd = fb+'_full.dat.fits'
-	nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
-	common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
-    
+    fb = dirout+tracer_clus
+    fbr = fb
+    if type == 'BGS_BRIGHT-21.5':
+        fbr = dirout+'BGS_BRIGHT'
+
+    fcr = fbr+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
+    nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+    common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+if args.nzfull == 'y':
+    fb = dirout+tracer_clus
+    fbr = fb
+    if type == 'BGS_BRIGHT-21.5':
+        fbr = dirout+'BGS_BRIGHT'
+    fcr = fbr+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
+    zmax = 1.6
+    zmin = 0.01
+    bs = 0.01
+    if type[:3] == 'QSO':
+        zmax = 4
+        bs = 0.02
+    for reg in regl:
+        reg = reg.strip('_')
+        common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
 
 if args.addnbar_ran == 'y':
     utlid_sw = ''

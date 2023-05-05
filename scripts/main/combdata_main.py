@@ -45,6 +45,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
+parser.add_argument("--make_tile_file",help="whether or not to make a tile file",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
@@ -154,6 +155,9 @@ if not os.path.exists(ldirspec):
 if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
+
+if args.make_tile_file == 'y':
+    tiles4comb.write(maindir+'tiles-'+prog.upper()+'.fits',overwrite=True,format='fits')
 
 print('specrel is '+specrel)
 if specrel == 'daily':
@@ -299,7 +303,7 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         notqsos = ['',''] 
     for tp,notqso in zip(tps,notqsos):
 
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey,badfib=badfib) 
         outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
 

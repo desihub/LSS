@@ -1228,7 +1228,7 @@ def cut_specdat(dz):
 #     return fs[wfqa]
 
 
-def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None):
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -1257,7 +1257,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         ps = 'bright'
     if gtl is None:
         print('getting good tileloc')
-        fs = get_specdat(indir,ps,specrel)
+        fs = get_specdat(indir,ps,specrel,badfib=badfib)
 
         stlid = 10000*fs['TILEID'] +fs['LOCATION']
         gtl = np.unique(stlid)
@@ -2232,7 +2232,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ'):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2283,11 +2283,22 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     #in the end, we can only use the data associated with an observation
     #NOTE, this is not what we want to do for randoms, where instead we want to keep all of the
     #locations where it was possible a target could have been assigned
+    #changing behavior back, load file that is spec info including zmtl
+    specdir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specver+'/'
+    prog = 'dark'
+    if tp[:3] == 'BGS':
+        prog = 'bright'
 
-    fs = common.cut_specdat(dz,badfib)
+    fs = fitsio.read(specdir+'datcomb_'+prog+'_spec_zdone.fits')
+    fs = common.cut_specdat(fs,badfib)
+    fs = Table(fs)
+    fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
+    fs.keep_columns(['TILELOCID','PRIORITY'])
+    dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     del fs
-
+    dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
+    
     wg = np.isin(dz['TILELOCID'],gtl)
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
@@ -2297,9 +2308,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz['GOODHARDLOC'][wg] = 1
     print('length after selecting type '+str(len(dz)))
 
-    dtl = Table.read(ftiles)
-    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
-    dz = join(dz,dtl,keys='TARGETID')
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
@@ -2333,12 +2341,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         selnp = dz['LOCATION_ASSIGNED'] == 0
         pv = dz['PRIORITY']
         pv[selnp] = 0
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*(1+pv/3400)*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
     dz.sort('sort')
     print('sorted')
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     print('length after cutting to unique targets '+str(len(dz)))
+    dtl = Table.read(ftiles)
+    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
+    dz = join(dz,dtl,keys='TARGETID',join_type='left')
     
     if ftar is not None:
         print('joining to full imaging')
@@ -2431,10 +2442,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     compa = []
     tll = []
     ti = 0
-    print('getting completenes')
+    print('getting completeness')
+    dz['TILES'] = dz['TILES'].filled('0')
     dz.sort('TILES')
-    nts = len(np.unique(dz['TILES']))
     tlsl = dz['TILES']
+    #tlsl.sort()
+    nts = len(tlsl)
+    
     tlslu = np.unique(tlsl)
     laa = dz['LOCATION_ASSIGNED']
 
@@ -2455,7 +2469,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
         if ti%1000 == 0:
             print('at tiles '+str(ti)+' of '+str(nts))
 
-        cp = nai/nli#no/nt
+        if nli == 0:
+            print('no data for '+str(tlslu[ti]))
+            cp = 0
+        else:
+            cp = nai/nli#no/nt
         
         compa.append(cp)
         tll.append(tlslu[ti])
@@ -2726,7 +2744,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
         #print(min(wzf),max(wzf))
         #s = 1
     
-    ff = Table.read(indir+tp+'_full_noveto.dat.fits')
+    if tp == 'BGS_BRIGHT-21.5':
+        fullname = indir+tp+'_full.dat.fits'
+    else:
+        indir+tp+'_full_noveto.dat.fits'
+    ff = Table.read(fullname)
     wzf = np.ones(len(ff))
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
@@ -2757,16 +2779,17 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,indir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
-    ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-    ffc = Table.read(indir+tp+'_full.dat.fits')
-    cols = list(ffc.dtype.names)
-    if 'WEIGHT_ZFAIL' in cols:
-        ffc.remove_columns(['WEIGHT_ZFAIL'])
-    if 'mod_success_rate' in cols:
-        ffc.remove_columns(['mod_success_rate'])
-    ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS(ff,fullname,comments='added ZFAIL weight')
+    if tp != 'BGS_BRIGHT-21.5':
+        ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        ffc = Table.read(indir+tp+'_full.dat.fits')
+        cols = list(ffc.dtype.names)
+        if 'WEIGHT_ZFAIL' in cols:
+            ffc.remove_columns(['WEIGHT_ZFAIL'])
+        if 'mod_success_rate' in cols:
+            ffc.remove_columns(['mod_success_rate'])
+        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
         
     
 #     if dchi2 is not None:

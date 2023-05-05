@@ -80,7 +80,9 @@ class main:
             self.dchi2 = 40
             self.zmin = 0.1
             self.zmax = 0.5
-            self.ebits = [11,12] 
+            if survey == 'Y1':
+                self.zmax = 0.4
+            self.ebits = [11] 
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
@@ -136,7 +138,7 @@ class main:
         if specver == 'iron':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/QSO/'+specver+'/QSO_cat_iron_cumulative_v0.fits'
-            #self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/lrg+bgs_3sig_bad_fibers.txt')
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/unique_badfibers.txt')
         self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/dark_bitweights_v0.fits'
         self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/bright_bitweights_v0.fits'
         
