@@ -3,7 +3,7 @@ Find all of the collisions for Y1 randoms
 '''
 
 import numpy as np
-
+import os
 from astropy.table import Table
 import argparse
 from fiberassign.hardware import load_hardware
