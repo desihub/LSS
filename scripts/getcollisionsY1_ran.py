@@ -15,6 +15,8 @@ from fiberassign.utils import Logger
 
 import fitsio
 
+import LSS.common_tools as common
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 
