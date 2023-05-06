@@ -57,10 +57,10 @@ def getcoll(ind):
 
     hw = load_hardware(rundate=dt, add_margins=margins)
 
-    t.write('tiles.fits', overwrite=True)
+    t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)'-tiles.fits', overwrite=True)
 
     tiles = load_tiles(
-        tiles_file='tiles.fits',obsha=obsha,obstheta=obstheta,
+        tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
