@@ -47,7 +47,7 @@ def getcoll(ind):
     dt = fbah['RUNDATE']#[:19]
     hw = load_hardware(rundate=dt, add_margins=margins)
     pr = args.prog
-    t = tiletab[ind]
+    t = Table(tiletab[ind])
     t['OBSCONDITIONS'] = 516
     t['IN_DESI'] = 1
     t['MTLTIME'] = fbah['MTLTIME']
