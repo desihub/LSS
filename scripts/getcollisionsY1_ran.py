@@ -37,15 +37,17 @@ log = Logger.get()
 rann = 0
 n = 0
 #for tile in t['TILEID']:    
-def getcoll(tile):
+def getcoll(ind):
 
     #tile = 1230
+    tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE']#[:19]
     hw = load_hardware(rundate=dt, add_margins=margins)
     pr = args.prog
+    t = tiletab[ind]
     t['OBSCONDITIONS'] = 516
     t['IN_DESI'] = 1
     t['MTLTIME'] = fbah['MTLTIME']
@@ -110,9 +112,10 @@ def getcoll(tile):
 if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
+    inds = np.arange(len(tls))
     for rann in range(0,18):
         with Pool(processes=128) as pool:
-            res = pool.map(getcoll, tls)
+            res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/random'+str(rann)+'collisions-'+args.prog+'.fits')
 
