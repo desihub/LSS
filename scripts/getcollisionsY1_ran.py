@@ -45,7 +45,6 @@ def getcoll(ind):
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE']#[:19]
-    hw = load_hardware(rundate=dt, add_margins=margins)
     pr = args.prog
     t = Table(tiletab[ind])
     t['OBSCONDITIONS'] = 516
@@ -55,6 +54,8 @@ def getcoll(ind):
     t['PROGRAM'] = pr
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
+
+    hw = load_hardware(rundate=dt, add_margins=margins)
 
     t.write('tiles.fits', overwrite=True)
 
