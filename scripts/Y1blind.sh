@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # get environment
-source /global/common/software/desi/desi_environment.sh master
+source /global/common/software/desi/desi_environment.sh main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 module swap pyrecon/main pyrecon/mpi
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
