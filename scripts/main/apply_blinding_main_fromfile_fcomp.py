@@ -349,9 +349,9 @@ if root:
         with Pool(processes=nran+1) as pool:
             res = pool.map(_parfun, inds)
 
-    #if args.split_GC == 'y':
-    fb = dirout + args.type + notqso + '_'
-    ct.clusNStoGC(fb, args.maxr - args.minr)
+        #if args.split_GC == 'y':
+        fb = dirout + args.type + notqso + '_'
+        ct.clusNStoGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
