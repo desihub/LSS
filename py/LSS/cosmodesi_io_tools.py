@@ -130,6 +130,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
         return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
+    print(nrandoms)
     return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
