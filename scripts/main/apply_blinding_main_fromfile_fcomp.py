@@ -329,7 +329,7 @@ if root:
 
 
     if args.mkclusran == 'y':
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','TARGETID_DATA']
         tsnrcol = 'TSNR2_ELG'
         if args.type[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
