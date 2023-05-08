@@ -278,6 +278,7 @@ if root:
 
     if args.baoblind == 'y':
         data = Table(fitsio.read(dirin + type + notqso + '_full.dat.fits'))
+        data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
         blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
 
