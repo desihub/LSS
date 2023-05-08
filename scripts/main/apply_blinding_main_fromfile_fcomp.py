@@ -461,5 +461,5 @@ if args.fnlblind == 'y':
             common.write_LSS(data, data_fn)
 
 if root:
-    os.system('rm '+dirout+'_S_*')
-    os.system('rm '+dirout+'_N_*')
+    os.system('rm '+dirout+'*_S_*')
+    os.system('rm '+dirout+'*_N_*')
