@@ -2,7 +2,7 @@
 
 #SBATCH -A desi
 #SBATCH -C cpu
-#SBATCH -p debug
+#SBATCH -q debug
 #SBATCH --time=00:30:00
 #SBATCH --nodes=1
 #SBATCH --output=JOB_OUT_%x_%j.txt
