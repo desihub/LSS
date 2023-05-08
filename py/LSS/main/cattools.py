@@ -3101,7 +3101,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     else:
         fcdn = clus_arrays[0]
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES']
+    fcdn.rename_column('TARGETID', 'TARGETID_DATA')
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
@@ -3137,6 +3138,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
     else:
         fcds = clus_arrays[1]
+    fcds.rename_column('TARGETID', 'TARGETID_DATA')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
     dshuf = fcds[inds]
@@ -3144,7 +3146,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ffcs[col] = dshuf[col]
     ffcs.keep_columns(kc)
     if write_cat == 'y':
-        comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
+        comments = ["'clustering' LSS catalog for random number "+str(rann)+", DECaLS region","entries are only for data with good redshifts"]
         common.write_LSS(ffcs,outfs,comments)
     
     if return_cat == 'y':
