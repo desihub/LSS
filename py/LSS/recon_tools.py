@@ -42,7 +42,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
 
     recon.assign_data(data_positions, data_weights)
     if root:
-        logger.info('random files are',randoms_fn)
+        logger.info('random files are',str(randoms_fn))
 
     for fn in randoms_fn:
         if root:
