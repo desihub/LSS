@@ -239,7 +239,7 @@ if root:
     fgrowth_blind = f_shift
 
     fb_in = dirin + type + notqso
-    fbr_in = fbin
+    fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = 'BGS_BRIGHT'
     fcr_in = fbr_in + '_1_full.ran.fits'
