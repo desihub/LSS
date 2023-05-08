@@ -345,6 +345,7 @@ if root:
                     os.system('mv ' + ranf + ' ' + ranfm)
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
+        from multiprocessing import Pool
         with Pool(processes=nran+1) as pool:
             res = pool.map(_parfun, inds)
 
