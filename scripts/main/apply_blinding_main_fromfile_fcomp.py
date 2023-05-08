@@ -367,7 +367,7 @@ if args.dorecon == 'y':
     #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
     regions = ['NGC', 'SGC']
     for region in regions:
-        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(int(args.maxr) - int(args.minr))
+        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(int(args.maxr) - int(args.minr)))
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
         print(randoms_fn)
