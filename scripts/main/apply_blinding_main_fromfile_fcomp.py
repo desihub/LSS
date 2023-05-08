@@ -241,7 +241,7 @@ if root:
     fb_in = dirin + type + notqso
     fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
-        fbr_in = 'BGS_BRIGHT'
+        fbr_in = dirin +'BGS_BRIGHT'
     fcr_in = fbr_in + '_1_full.ran.fits'
     fcd_in = fb_in + '_full.dat.fits'
     nzf_in = dirin + type + notqso + '_full_nz.txt'
