@@ -333,7 +333,8 @@ if root:
         tsnrcol = 'TSNR2_ELG'
         if args.type[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        for rannum in range(args.minr, args.maxr):
+        #for rannum in range(args.minr, args.maxr):
+        def _parfun(rannum)
             ct.mkclusran(dirin + args.type + notqso + '_', dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
@@ -341,6 +342,10 @@ if root:
                     ranf = dirout + args.type + notqso + reg + '_' + str(rannum) + '_clustering.ran.fits'
                     ranfm = dirout + args.type + notqso + reg + '_' + str(rannum - 1) + '_clustering.ran.fits'
                     os.system('mv ' + ranf + ' ' + ranfm)
+        nran = args.maxr-args.minr
+        inds = np.arange(args.minr,args.maxr)
+        with Pool(processes=nran+1) as pool:
+            res = pool.map(_parfun, inds)
 
     #if args.split_GC == 'y':
     fb = dirout + args.type + notqso + '_'
