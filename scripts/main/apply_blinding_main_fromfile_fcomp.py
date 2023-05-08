@@ -459,3 +459,6 @@ if args.fnlblind == 'y':
         if root:
             data['WEIGHT'] = new_data_weights
             common.write_LSS(data, data_fn)
+
+os.sys('rm '+outdir+'_S_*')
+os.sys('rm '+outdir+'_N_*')
