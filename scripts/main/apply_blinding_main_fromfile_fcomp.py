@@ -370,7 +370,7 @@ if args.dorecon == 'y':
         catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(int(args.maxr) - int(args.minr)))
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
-        print(randoms_fn)
+        #print(randoms_fn)
         data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='data')
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='randoms')
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
