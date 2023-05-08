@@ -180,15 +180,15 @@ mkdir(dirout)
 #    print('made ' + dirout)
 
 
-tp2z = {'LRG': 0.8, 'ELG': 1.1, 'QSO': 1.6}
-tp2bias = {'LRG': 2., 'ELG': 1.3, 'QSO': 2.3}
+tp2z = {'LRG': 0.8, 'ELG': 1.1, 'QSO': 1.6,'BGS':0.25}
+tp2bias = {'LRG': 2., 'ELG': 1.3, 'QSO': 2.3,'BGS':1.8}
 
 regl = ['_S', '_N']
 gcl = ['_SGC', '_NGC']
 
 if root:
-    ztp = tp2z[args.type]
-    bias = tp2bias[args.type]
+    ztp = tp2z[args.type[:3]]
+    bias = tp2bias[args.type[:3]]
 
     w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
