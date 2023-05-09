@@ -1752,7 +1752,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
 
 def combran_wdupspec(rann,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,collf=''):
 
-    fgu = Table(fitio.read(outf))
+    fgu = Table(fitsio.read(outf))
     if mask_coll:
         coll = Table(fitsio.read(collf))
         print('length before masking collisions '+str(len(fgu)))
