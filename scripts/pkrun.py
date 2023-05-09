@@ -117,8 +117,9 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                mpicomm=mpicomm, mpiroot=mpiroot).poles)
-        window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
+
         if mpicomm.rank == mpiroot:
+            window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
             # Let us compute the wide-angle and window function matrix
             kout = result.k # output k-bins
             ellsout = [0, 2, 4] # output multipoles
