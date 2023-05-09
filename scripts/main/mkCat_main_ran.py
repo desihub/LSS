@@ -198,7 +198,7 @@ ta['DEC'] =tiles[selt]['DEC']
 if mkfullr or combr:
     specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
     print('loading specf file '+specfo)
-    specf = Table.read(specfo)
+    specf = Table(fitsio.read(specfo))
     sel = np.isin(specf['TILEID'],mtld['TILEID'])
     specf = specf[sel]
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -207,12 +207,6 @@ if mkfullr or combr:
     specfc = common.cut_specdat(specf,badfib=mainp.badfib)
     gtl = np.unique(specfc['TILELOCID'])
 
-    if type == 'BGS_BRIGHT':
-        bit = targetmask.bgs_mask[type]
-        desitarg='BGS_TARGET'
-    else:
-        bit = targetmask.desi_mask[type]    
-        desitarg='DESI_TARGET'
     del specf
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
@@ -223,6 +217,13 @@ if mkfullr or combr:
     if mkfullr:
         lznp = common.find_znotposs(specf)    
         print('finished finding znotposs')
+        if type == 'BGS_BRIGHT':
+            bit = targetmask.bgs_mask[type]
+            desitarg='BGS_TARGET'
+        else:
+            bit = targetmask.desi_mask[type]    
+            desitarg='DESI_TARGET'
+
     if combr == False:
         del specf
 
