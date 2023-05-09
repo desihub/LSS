@@ -2973,7 +2973,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
 
     #weights for imaging systematic go here
-    ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
+    if 'WEIGHT_SYS' not in cols:
+        ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
+    ff['WEIGHT'] *= ff['WEIGHT_SYS']
 #     if tp[:3] == 'ELG':
 #         zmin = 0.8
 #         zmax = 1.5
