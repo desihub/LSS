@@ -1698,29 +1698,31 @@ def countloc(aa):
     return nl,nla
 
 
-def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
+def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,collf=''):
 
     s = 0
     td = 0
     #tiles.sort('ZDATE')
     print(len(tiles))
-    delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
-    'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
-    outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
-
+    #delcols = ['DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','OBSCONDITIONS','PRIORITY_INIT',\
+    #'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
+    #outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
+    tldata = []
     if os.path.isfile(outf):
-        fgu = Table.read(outf)
+        fgu = Table(fitsio.read(outf))
         #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
         s = 1
         tdone = np.unique(fgu['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
+        tldata.append(fgu)
     else:
         tmask = np.ones(len(tiles)).astype('bool')
+    
     for tile in tiles[tmask]['TILEID']:
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
-            fa = Table.read(ffa,hdu='FAVAIL')
+            fa = Table(fitsio.read(ffa,hdu='FAVAIL'))
 
             ffna = Table.read(ffna)
             fgun = join(fa,ffna,keys=['TARGETID'])
@@ -1729,23 +1731,28 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,keepcols=[]):
             td += 1
             fgun['TILEID'] = int(tile)
             fgun.keep_columns(['RA','DEC','TARGETID','LOCATION','FIBER','TILEID'])
-            if s == 0:
-                fgu = fgun
-                s = 1
-            else:
-                fgu = vstack([fgu,fgun],metadata_conflicts='silent')
-            fgu.sort('TARGETID')
+            tldata.append(fgun)
+            #if s == 0:
+            #    fgu = fgun
+            #    s = 1
+            #else:
+            #    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
+            #fgu.sort('TARGETID')
             print(tile,td, len(tiles), len(fgun),len(fgu))
         else:
             print('did not find '+ffa)
 
+    fgu = vstack(tldata)
     if len(tiles[tmask]['TILEID']) > 0:
         fgu.write(outf,format='fits', overwrite=True)
         rv = True
     else:
         rv = False
-    #specf = Table.read(lspecdir+'datcomb_'+tp+'_spec_zdone.fits')
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    if mask_coll:
+        coll = Table(fitsio.read(collf))
+        print('length before masking collisions '+str(len(fgu)))
+        fgu = setdiff(fgu,coll,keys=['TARGETID','LOCATION','TILEID'])
+        print('length after masking collisions '+str(len(fgu)))
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
