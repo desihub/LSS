@@ -207,14 +207,14 @@ if mkfullr or combr:
     specfc = common.cut_specdat(specf,badfib=mainp.badfib)
     gtl = np.unique(specfc['TILELOCID'])
 
-    del specf
-    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
-    
-    wg = np.isin(specf['TILELOCID'],gtl)
-    specf = Table(specf[wg])
-    print('length after selecting type and good hardware '+str(len(specf)))
     if mkfullr:
+        print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+        specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    
+        wg = np.isin(specf['TILELOCID'],gtl)
+        specf = Table(specf[wg])
+        print('length after selecting type and good hardware '+str(len(specf)))
+
         lznp = common.find_znotposs(specf)    
         print('finished finding znotposs')
         if type == 'BGS_BRIGHT':
