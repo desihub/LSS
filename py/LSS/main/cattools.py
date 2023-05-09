@@ -1738,7 +1738,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=
             #else:
             #    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             #fgu.sort('TARGETID')
-            print(tile,td, len(tiles), len(fgun),len(fgu))
+            print(tile,td, len(tiles))#, len(fgun),len(fgu))
         else:
             print('did not find '+ffa)
 
