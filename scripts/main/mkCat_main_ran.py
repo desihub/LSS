@@ -306,7 +306,7 @@ def doran(ii):
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
             'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
             outf = maindir+'random'+str(ii)+'/rancomb_'+type+'wdup_Alltiles.fits'
-            new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,outf,keepcols=kc,collf=maindir+'random'+str(ii)+'collision-'+pr+'.fits')
+            new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,outf,keepcols=kc,collf=maindir+'random'+str(ii)+'collisions-'+pr+'.fits')
             if new or args.newspec == 'y':
                 tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
