@@ -1698,7 +1698,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,collf=''):
+def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
 
     s = 0
     td = 0
@@ -1748,6 +1748,11 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=
         rv = True
     else:
         rv = False
+    return rv
+
+def combran_wdupspec(rann,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,collf=''):
+
+    fgu = Table(fitio.read(outf))
     if mask_coll:
         coll = Table(fitsio.read(collf))
         print('length before masking collisions '+str(len(fgu)))
@@ -1760,7 +1765,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=
     outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print(outf)
     fgu.write(outf,format='fits', overwrite=True)
-    return rv
+    
 
 
 def combran_wdup_hp(hpx,tiles,rann,randir,tp,lspecdir,specf,keepcols=[],outf='',redos=False):
