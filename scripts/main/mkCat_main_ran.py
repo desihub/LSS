@@ -62,6 +62,8 @@ parser.add_argument("--newspec",help="if y, merge in redshift info even if no ne
 args = parser.parse_args()
 print(args)
 
+
+
 type = args.type
 basedir = args.basedir
 version = args.version
@@ -73,7 +75,9 @@ par = True
 if args.par == 'n':
     par = False
 
-
+if specrel == 'daily':
+    sys.exit('support for daily needs to be written back in')
+    
 mkranmtl = False
 if args.ranmtl == 'y':
     mkranmtl = True
@@ -124,6 +128,7 @@ pd = pdir
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
+randir = basedir +'/main/LSS/random'
 
 
 
@@ -138,12 +143,12 @@ if not os.path.exists(maindir+'/LSScats'):
 
 
 
-randir = maindir+'random'
+#randir = maindir+'random'
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
-for i in range(rm,rx):
-    if not os.path.exists(maindir+'random'+str(i)):
-        os.mkdir(maindir+'random'+str(i))
-        print('made '+str(i)+' random directory')
+#for i in range(rm,rx):
+#    if not os.path.exists(maindir+'random'+str(i)):
+#        os.mkdir(maindir+'random'+str(i))
+#        print('made '+str(i)+' random directory')
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -175,37 +180,8 @@ badfib = mainp.badfib
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
-if specrel != 'daily':
-    if specrel == 'everest' or specrel == 'guadalupe':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
-        #if args.combr == 'n':
-        del specf
-        if mkfullr:
-            specdat = ct.get_specdat(ldirspec,pdir,specrel,badfib)
-            gtl = np.unique(specdat['TILELOCID'])
-            zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-            dz = Table.read(zf) 
-            wg = np.isin(dz['TILELOCID'],gtl)
-
-            dz = dz[wg]
-            if type == 'BGS_BRIGHT':
-                bit = targetmask.bgs_mask[type]
-                desitarg='BGS_TARGET'
-            else:
-                bit = targetmask.desi_mask[type]    
-                desitarg='DESI_TARGET'
-            wtype = ((dz[desitarg] & bit) > 0)
-            if notqso == 'notqso':
-                wtype &= ((dz[desitarg] & 4) == 0)
-            dz = dz[wtype]
-            #lznp = common.find_znotposs(dz)
-            pthresh = 3000
-            if type[:3] == 'BGS':
-                pthresh = 2000
-            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
-            del specdat
-            del dz
+if args.survey == 'Y1':
+    wd &=mt['ZDATE'] < 20220900
 
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -218,64 +194,38 @@ ta['RA'] = tiles[selt]['RA']
 ta['DEC'] =tiles[selt]['DEC']
 
 
-# construct a table with the needed tile information
-# if len(mtld) > 0:
-#     tilel = []
-#     ral = []
-#     decl = []
-#     mtlt = []
-#     fal = []
-#     obsl = []
-#     pl = []
-#     fver = []
-#     fahal = []
-#     
-#     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-#     for tile in mtld['TILEID']:
-#         ts = str(tile).zfill(6)
-#         try:
-#             fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-#             tilel.append(tile)
-#             ral.append(fht['TILERA'])
-#             decl.append(fht['TILEDEC'])
-#             mtlt.append(fht['MTLTIME'])
-#             fal.append(fht['FA_RUN'])
-#             obsl.append(fht['OBSCON'])
-#             fav = fht['FA_VER']
-#             try:
-#                 if int(fav[:1]) >= 5:
-#                     fav = '5.0.0'
-#             except:
-#                 print(fav)        
-#             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-#                 fver.append('2.3.0')
-#             else:
-#                 fver.append(fav)    
-#             try:
-#                faha = fht['FA_HA']
-#             except:
-#                faha = 0
-#                print(tile,'no FA_HA in this tile header')        
-#             pl.append(pro)
-#             pl.append(pr)
-#         except:
-#             print('failed to find and/or get info for tile '+ts)    
-#     ta = Table()
-#     ta['TILEID'] = tilel
-#     ta['RA'] = ral
-#     ta['DEC'] = decl
-#     ta['MTLTIME'] = mtlt
-#     ta['FA_RUN'] = fal
-#     ta['OBSCON'] = obsl
-#     ta['PROGRAM'] = pl
-#     ta['FA_HA'] = fahal
-#     ta['FA_VER'] = fver
-#     print(np.unique(fver,return_counts=True))
-#     wfv = (np.array(fver) == faver)
-#     mtld =  mtld[wfv]
-#     ta = ta[wfv]
-# else:
-#     print('no done tiles in the MTL')
+
+if mkfullr or combr:
+    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+    specf = Table.read(specfo)
+    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+    specf = specf[sel]
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        
+    print('loaded specf file '+specfo)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+    gtl = np.unique(specfc['TILELOCID'])
+
+    if type == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[type]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[type]    
+        desitarg='DESI_TARGET'
+    del specf
+    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    
+    wg = np.isin(specf['TILELOCID'],gtl)
+    specf = Table(specf[wg])
+    print('length after selecting type and good hardware '+str(len(specf)))
+    if mkfullr:
+        lznp = common.find_znotposs(specf)    
+        print('finished finding znotposs')
+    if combr == False:
+        del specf
+
+
 
 print(len(ta))
 
@@ -347,30 +297,14 @@ def doran(ii):
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
 
-            if specrel == 'daily':
-                specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
-                specf = Table.read(specfo)
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
-            if specrel == 'everest' or specrel == 'guadalupe':    
-
-                #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                #wt = np.isin(mtld['TILEID'],specf['TILEID'])
-                #above two lines already done above
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-                specf = specf[wt]
-                print('number of TILEID in spec data being used:')
-                print(len(np.unique(specf['TILEID'])))
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-            
-            kc = ['PRIORITY','ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
             ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
             ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
             'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-
-            new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+            outf = maindir+'random'+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
+            new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,outf,keepcols=kc,collf=maindir+'random'+str(ii)+'collision-'+pr+'.fits')
             if new or args.newspec == 'y':
                 tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
