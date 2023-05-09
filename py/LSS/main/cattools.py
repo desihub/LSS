@@ -1724,7 +1724,7 @@ def combran_wdup(tiles,rann,randir,tp,lspecdir,specf,outf,keepcols=[],mask_coll=
         if os.path.isfile(ffa):
             fa = Table(fitsio.read(ffa,hdu='FAVAIL'))
 
-            ffna = Table.read(ffna)
+            ffna = Table(fitsio.read(ffna))
             fgun = join(fa,ffna,keys=['TARGETID'])
             #fgun.remove_columns(delcols)
 
