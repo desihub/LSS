@@ -197,6 +197,7 @@ ta['DEC'] =tiles[selt]['DEC']
 
 if mkfullr or combr:
     specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+    print('loading specf file '+specfo)
     specf = Table.read(specfo)
     sel = np.isin(specf['TILEID'],mtld['TILEID'])
     specf = specf[sel]
