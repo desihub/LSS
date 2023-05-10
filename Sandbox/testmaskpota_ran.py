@@ -4,7 +4,7 @@ This is a little demo script for the Assignment.check_avail_collisions() functio
 
 import numpy as np
 
-from astropy.table import Table,join
+from astropy.table import Table,join,setdiff
 
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
@@ -120,7 +120,7 @@ for tile in t['TILEID']:
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
-    jt = join(fdata,forig,keys=['TARGETID','FIBER','LOCATION'],join_type='inner')
+    jt = setdiff(fdata,forig,keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
     print(len(jt),len(forig),len(fdata))
     n += 1
     if n >= 1:
