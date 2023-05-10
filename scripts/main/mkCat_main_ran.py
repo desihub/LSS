@@ -337,7 +337,7 @@ def doran(ii):
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
