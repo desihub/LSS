@@ -1698,7 +1698,7 @@ def countloc(aa):
     return nl,nla
 
 
-def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
+def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
 
     s = 0
     td = 0
@@ -1708,7 +1708,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
     #'NUMOBS_INIT','SCND_TARGET','NUMOBS_MORE','NUMOBS','Z','ZWARN','TARGET_STATE','TIMESTAMP','VERSION','PRIORITY']
     #outf = randir+str(rann)+'/rancomb_'+tp+'wdup_Alltiles.fits'
     tldata = []
-    if os.path.isfile(outf):
+    if os.path.isfile(outf) and redo == False:
         fgu = Table(fitsio.read(outf))
         #tarsn.keep_columns(['RA','DEC','TARGETID''LOCATION','FIBER','TILEID'])
         s = 1
@@ -1718,6 +1718,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
     else:
         tmask = np.ones(len(tiles)).astype('bool')
     
+    tot = 0
     for tile in tiles[tmask]['TILEID']:
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
@@ -1738,11 +1739,14 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[]):
             #else:
             #    fgu = vstack([fgu,fgun],metadata_conflicts='silent')
             #fgu.sort('TARGETID')
-            print(tile,td, len(tiles))#, len(fgun),len(fgu))
+            tot += len(fgun)
+            print(tile,td, len(tiles),len(fgun),tot)#, len(fgun),len(fgu))
+            
         else:
             print('did not find '+ffa)
 
     fgu = vstack(tldata)
+    print(len(fgu),tot)
     if len(tiles[tmask]['TILEID']) > 0:
         fgu.write(outf,format='fits', overwrite=True)
         rv = True
