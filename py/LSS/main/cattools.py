@@ -1807,8 +1807,8 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     fgu = Table(fitsio.read(infile))
     if mask_coll:
         print('length before masking collisions '+str(len(fgu)))
-        if 'COLLISIONS' in list(fgu.dtype.names):
-            sel = fgu['COLLISIONS'] == 0
+        if 'COLLISION' in list(fgu.dtype.names):
+            sel = fgu['COLLISION'] == 0
             fgu = fgu[sel]
         else:
             coll = Table(fitsio.read(collf))
