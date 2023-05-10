@@ -120,7 +120,7 @@ for tile in t['TILEID']:
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
-    jt = join(fdata,forig,keys=['TARGETID','FIBER','LOCATION'])
+    jt = join(fdata,forig,keys=['TARGETID','FIBER','LOCATION'],jointype='inner')
     print(len(jt),len(forig),len(fdata))
     n += 1
     if n >= 1:
