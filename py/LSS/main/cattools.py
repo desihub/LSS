@@ -1723,7 +1723,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
         ffa = randir+str(rann)+'/fba-'+str(tile).zfill(6)+'.fits'
         ffna = randir+str(rann)+'/tilenofa-'+str(tile)+'.fits'
         if os.path.isfile(ffa):
-            fa = Table(fitsio.read(ffa,hdu='FAVAIL'))
+            fa = Table(fitsio.read(ffa,ext='FAVAIL'))
 
             ffna = Table(fitsio.read(ffna))
             fgun = join(fa,ffna,keys=['TARGETID'],join_type='left')
