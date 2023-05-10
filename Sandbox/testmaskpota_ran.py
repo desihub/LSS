@@ -120,10 +120,11 @@ for tile in t['TILEID']:
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
-    #forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
+    forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
     #print(coll)
     locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-    print(np.sum(locidsin),len(fdata))
+    locidsino = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
+    print(np.sum(locidsin),np.sum(locidsino),len(fdata))
     #jt = setdiff(fdata,Table(forig),keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
     #jto = setdiff(Table(forig),fdata,keys=['TARGETID','FIBER','LOCATION'])
     #print(len(jt),len(jto),len(forig),len(fdata))
