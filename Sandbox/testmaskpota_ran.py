@@ -29,7 +29,7 @@ margins = dict(pos=0.05,
     # getfatiles()
     # return
 log = Logger.get()
-
+rann=0
 n = 0
 for tile in t['TILEID']:    
 
