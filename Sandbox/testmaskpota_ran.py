@@ -121,7 +121,8 @@ for tile in t['TILEID']:
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
     jt = setdiff(fdata,Table(forig),keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
-    print(len(jt),len(forig),len(fdata))
+    jto = setdiff(Table(forig),fdata,keys=['TARGETID','FIBER','LOCATION'])
+    print(len(jt),len(jto),len(forig),len(fdata))
     n += 1
     if n >= 1:
         break
