@@ -1806,9 +1806,13 @@ def combran_wdupspec(rann,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,coll
 
     fgu = Table(fitsio.read(outf))
     if mask_coll:
-        coll = Table(fitsio.read(collf))
         print('length before masking collisions '+str(len(fgu)))
-        fgu = setdiff(fgu,coll,keys=['TARGETID','LOCATION','TILEID'])
+        if 'COLLISIONS' in list(fgu.dtype.names):
+            sel = fgu['COLLISIONS'] == 0
+            fgu = fgu[sel]
+        else:
+            coll = Table(fitsio.read(collf))
+            fgu = setdiff(fgu,coll,keys=['TARGETID','LOCATION','TILEID'])
         print('length after masking collisions '+str(len(fgu)))
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
