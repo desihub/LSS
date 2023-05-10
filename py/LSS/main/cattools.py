@@ -1726,7 +1726,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
             fa = Table(fitsio.read(ffa,hdu='FAVAIL'))
 
             ffna = Table(fitsio.read(ffna))
-            fgun = join(fa,ffna,keys=['TARGETID'])
+            fgun = join(fa,ffna,keys=['TARGETID'],join_type='left')
             #fgun.remove_columns(delcols)
 
             td += 1
