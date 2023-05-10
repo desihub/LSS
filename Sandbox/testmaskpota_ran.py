@@ -110,7 +110,7 @@ for tile in t['TILEID']:
         off += len(tg)
     #print(avail.keys())
     print(len(fdata))
-    #fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
+    fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
     print(len(fdata))
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
