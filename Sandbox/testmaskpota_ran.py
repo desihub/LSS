@@ -88,6 +88,7 @@ for tile in t['TILEID']:
     tgsavail = asgn.targets_avail()
     avail = tgsavail.tile_data(tile)
     navail = np.sum([len(avail[x]) for x in avail.keys()])
+    fibers = dict(hw.loc_fiber)
     fdata = Table()
     fdata['LOCATION'] = np.zeros(navail)
     fdata['FIBER'] = np.zeros(navail)
