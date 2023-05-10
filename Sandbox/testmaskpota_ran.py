@@ -79,12 +79,15 @@ for tile in t['TILEID']:
     tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
     # Compute the fibers on all tiles available for each target and sky
     favail = LocationsAvailable(tgsavail)
-    print(favail.keys())
+    
     # FAKE stucksky
     stucksky = {}
 
     # Create assignment object
     asgn = Assignment(tgs, tgsavail, favail, stucksky)
+    tgsavail = asgn.targets_avail()
+    avail = tgsavail.tile_data(tile)
+    print(avail.keys())
 
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
