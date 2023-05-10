@@ -87,7 +87,23 @@ for tile in t['TILEID']:
     asgn = Assignment(tgs, tgsavail, favail, stucksky)
     tgsavail = asgn.targets_avail()
     avail = tgsavail.tile_data(tile)
-    print(avail.keys())
+    navail = np.sum([len(avail[x]) for x in avail.keys()])
+    fdata = Table()
+    fdata['LOCATION'] = np.zeros(navail)
+    fdata['FIBER'] = np.zeros(navail)
+    fdata['TARGETID'] = np.zeros(navail)
+    
+    off = 0
+    # The "FAVAIL" (available targets) HDU is sorted first by LOCATION,
+    # then by TARGETID.
+    for lid in sorted(avail.keys()):
+        # lid (location id) is a scalar, tg (target ids) is an array
+        tg = avail[lid]
+        fdata['LOCATION'][off:off+len(tg)] = lid
+        fdata['FIBER']   [off:off+len(tg)] = fibers[lid]
+        fdata['TARGETID'][off:off+len(tg)] = sorted(tg)
+        off += len(tg)
+    #print(avail.keys())
 
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
@@ -103,6 +119,8 @@ for tile in t['TILEID']:
     idsin = np.isin(forig['TARGETID'],ids)
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
+    jt = join(fdata,forig,keys=['TARGETID','FIBER','LOCATION'])
+    print(len(jt),len(forig),len(fdata))
     n += 1
     if n >= 1:
         break
