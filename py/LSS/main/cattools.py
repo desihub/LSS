@@ -1802,9 +1802,9 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
         rv = False
     return rv
 
-def combran_wdupspec(rann,tp,lspecdir,specf,outf,keepcols=[],mask_coll=True,collf=''):
+def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf=''):
 
-    fgu = Table(fitsio.read(outf))
+    fgu = Table(fitsio.read(infile))
     if mask_coll:
         print('length before masking collisions '+str(len(fgu)))
         if 'COLLISIONS' in list(fgu.dtype.names):
