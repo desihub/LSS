@@ -210,9 +210,9 @@ gtl = np.unique(specfc['TILELOCID'])
 
 if mkfullr:
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
-    wg = np.isin(specf['TILELOCID'],gtl)
+    wg = np.isin(specft['TILELOCID'],gtl)
     specft = Table(specft[wg])
     print('length after selecting type and good hardware '+str(len(specf)))
 
