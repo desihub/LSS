@@ -2115,11 +2115,11 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz = Table.read(zf)
     
 
-    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
-    dzpd = Table.read(zfpd)
+    #zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    #dzpd = Table.read(zfpd)
     
-    dz = join(dz,dzpd,keys=['TARGETID'])
-    print('length including duplicates '+str(len(dz)))
+    #dz = join(dz,dzpd,keys=['TARGETID'])
+    #print('length including duplicates '+str(len(dz)))
 
     cols = list(dz.dtype.names)
     if tscol not in cols:
@@ -2140,10 +2140,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
-    dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
-    if tlid_full is not None:
-        wf = np.isin(dz['TILELOCID'],tlid_full)
-        dz['LOCFULL'][wf] = 1
+    dzpd = count_tiles_input(dz[wg])
+
+    #dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
+    #if tlid_full is not None:
+    #    wf = np.isin(dz['TILELOCID'],tlid_full)
+    #    dz['LOCFULL'][wf] = 1
 
     if len(imbits) > 0:
         print('joining with original randoms to get mask properties')
@@ -2168,7 +2170,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
     sel = dz[tscol] > min_tsnr2
     dz['GOODTSNR'][sel] = 1
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1-0.5*dz['LOCFULL']#*(1+dz[tsnr])
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
 
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
 
@@ -2176,6 +2178,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
+    dz = join(dz,dzpd,keys=['TARGETID'])
     print(np.unique(dz['NTILE']))
 
     if 'PHOTSYS' not in cols:
@@ -2267,7 +2270,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
                 dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
                 sel = dz[tscol] > min_tsnr2
                 dz['GOODTSNR'][sel] = 1
-                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1-0.5*dz['LOCFULL']#*(1+dz[tsnr])
+                dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
 
                 #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
 

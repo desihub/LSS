@@ -196,37 +196,37 @@ ta['DEC'] =tiles[selt]['DEC']
 
 
 
-if mkfullr or combr:
-    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-    print('loading specf file '+specfo)
-    specf = Table(fitsio.read(specfo))
-    sel = np.isin(specf['TILEID'],mtld['TILEID'])
-    specf = specf[sel]
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-        
-    print('loaded specf file '+specfo)
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib)
-    gtl = np.unique(specfc['TILELOCID'])
+#if mkfullr or combr:
+specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+print('loading specf file '+specfo)
+specf = Table(fitsio.read(specfo))
+sel = np.isin(specf['TILEID'],mtld['TILEID'])
+specf = specf[sel]
+specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+	
+print('loaded specf file '+specfo)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+gtl = np.unique(specfc['TILELOCID'])
 
-    if mkfullr:
-        print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-        specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
-    
-        wg = np.isin(specf['TILELOCID'],gtl)
-        specf = Table(specf[wg])
-        print('length after selecting type and good hardware '+str(len(specf)))
+if mkfullr:
+	print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+	specf = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
-        lznp = common.find_znotposs(specf)    
-        print('finished finding znotposs')
-        if type == 'BGS_BRIGHT':
-            bit = targetmask.bgs_mask[type]
-            desitarg='BGS_TARGET'
-        else:
-            bit = targetmask.desi_mask[type]    
-            desitarg='DESI_TARGET'
+	wg = np.isin(specf['TILELOCID'],gtl)
+	specft = Table(specft[wg])
+	print('length after selecting type and good hardware '+str(len(specf)))
 
-    if combr == False:
-        del specf
+	lznp = common.find_znotposs(specft)    
+	print('finished finding znotposs')
+	if type == 'BGS_BRIGHT':
+		bit = targetmask.bgs_mask[type]
+		desitarg='BGS_TARGET'
+	else:
+		bit = targetmask.desi_mask[type]    
+		desitarg='DESI_TARGET'
+
+
+    del specft
 
 
 
