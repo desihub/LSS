@@ -102,9 +102,9 @@ def getcoll(ind):
     navail = np.sum([len(avail[x]) for x in avail.keys()])
     fibers = dict(hw.loc_fiber)
     fdata = Table()
-    fdata['LOCATION'] = np.zeros(navail)
-    fdata['FIBER'] = np.zeros(navail)
-    fdata['TARGETID'] = np.zeros(navail)
+    fdata['LOCATION'] = np.zeros(navail,dtype=int)
+    fdata['FIBER'] = np.zeros(navail,dtype=int)
+    fdata['TARGETID'] = np.zeros(navail,dtype=int)
     
     off = 0
     # The "FAVAIL" (available targets) HDU is sorted first by LOCATION,
@@ -128,7 +128,7 @@ def getcoll(ind):
     #forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/fba-'+ts+'.fits',ext='FAVAIL')
     #print(coll)
     locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-    print('N collisions original:',np.sum(locidsin))
+    print('N collisions original:',np.sum(locidsin),len(fdata))
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
     fdata['COLLISION'] = locidsin
