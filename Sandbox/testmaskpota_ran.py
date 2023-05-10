@@ -94,9 +94,9 @@ for tile in t['TILEID']:
     navail = np.sum([len(avail[x]) for x in avail.keys()])
     fibers = dict(hw.loc_fiber)
     fdata = Table()
-    fdata['LOCATION'] = np.zeros(navail)
-    fdata['FIBER'] = np.zeros(navail)
-    fdata['TARGETID'] = np.zeros(navail)
+    fdata['LOCATION'] = np.zeros(navail,dtype=int)
+    fdata['FIBER'] = np.zeros(navail,dtype=int)
+    fdata['TARGETID'] = np.zeros(navail,dtype=int)
     
     off = 0
     # The "FAVAIL" (available targets) HDU is sorted first by LOCATION,
