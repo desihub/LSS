@@ -4,7 +4,7 @@ This is a little demo script for the Assignment.check_avail_collisions() functio
 
 import numpy as np
 
-from astropy.table import Table
+from astropy.table import Table,join
 
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
