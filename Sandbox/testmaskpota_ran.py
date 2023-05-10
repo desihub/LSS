@@ -79,7 +79,7 @@ for tile in t['TILEID']:
     tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
     # Compute the fibers on all tiles available for each target and sky
     favail = LocationsAvailable(tgsavail)
-
+    print(favail.keys())
     # FAKE stucksky
     stucksky = {}
 
@@ -101,6 +101,6 @@ for tile in t['TILEID']:
     masked = locsin&idsin
     print(np.sum(locsin),np.sum(idsin),np.sum(masked),len(forig))
     n += 1
-    if n >= 10:
+    if n >= 1:
         break
 
