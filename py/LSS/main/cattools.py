@@ -1228,6 +1228,54 @@ def cut_specdat(dz):
 #     return fs[wfqa]
 
 
+def count_tiles_input(fjg):
+    '''
+    take input array with require columns TARGETID TILEID TILELOCID
+    return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
+    '''
+
+
+    fjg = fjg[np.argsort(fjg['TARGETID'])]
+
+    tids = np.unique(fjg['TARGETID'])
+    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
+    nt = []
+    tl = []
+    tli = []
+    ti = 0
+    i = 0
+    while i < len(fjg):
+        tls  = []
+        tlis = []
+        nli = 0
+
+        while fjg[i]['TARGETID'] == tids[ti]:
+            nli += 1
+            tls.append(fjg[i]['TILEID'])
+            tlis.append(fjg[i]['TILELOCID'])
+            i += 1
+            if i == len(fjg):
+                break
+        nloc.append(nli)
+        tlsu = np.unique(tls)
+        tlisu = np.unique(tlis)
+        nt.append(len(tlsu))
+        tl.append("-".join(tlsu.astype(str)))
+        tli.append("-".join(tlisu.astype(str)))
+
+        if ti%100000 == 0:
+            print(ti)
+        ti += 1
+    tc = Table()
+    tc['TARGETID'] = tids
+    tc['NTILE'] = nt
+    tc['TILES'] = tl
+    tc['TILELOCIDS'] = tli
+
+    return tc
+
+
 def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
@@ -2327,6 +2375,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
 
+    dtl = count_tiles_input(dz[wg])
+
     print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
@@ -2371,7 +2421,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,azf='',azfm='cumul',desitarg='DE
     dz = unique(dz,keys=['TARGETID'],keep='last')
 
     print('length after cutting to unique targets '+str(len(dz)))
-    dtl = Table.read(ftiles)
+    #dtl = Table.read(ftiles)
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     
