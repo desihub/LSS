@@ -73,6 +73,8 @@ for tile in t['TILEID']:
 
     # Load target files...
     load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/tilenofa-%i.fits' % tile)
+    #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
+    tar_tab = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -107,7 +109,9 @@ for tile in t['TILEID']:
         fdata['TARGETID'][off:off+len(tg)] = sorted(tg)
         off += len(tg)
     #print(avail.keys())
-
+    print(len(fdata))
+    fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
+    print(len(fdata))
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
@@ -116,13 +120,13 @@ for tile in t['TILEID']:
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
-    forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
+    #forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
     #print(coll)
-    locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
-    print(np.sum(locidsin),len(forig))
-    jt = setdiff(fdata,Table(forig),keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
-    jto = setdiff(Table(forig),fdata,keys=['TARGETID','FIBER','LOCATION'])
-    print(len(jt),len(jto),len(forig),len(fdata))
+    locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
+    print(np.sum(locidsin),len(fdata))
+    #jt = setdiff(fdata,Table(forig),keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
+    #jto = setdiff(Table(forig),fdata,keys=['TARGETID','FIBER','LOCATION'])
+    #print(len(jt),len(jto),len(forig),len(fdata))
     n += 1
     if n >= 1:
         break
