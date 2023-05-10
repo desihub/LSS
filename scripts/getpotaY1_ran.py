@@ -142,5 +142,6 @@ if __name__ == '__main__':
         with Pool(processes=128) as pool:
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
+        print(len(colltot),np.sum(colltot['COLLISION']))
         common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
 
