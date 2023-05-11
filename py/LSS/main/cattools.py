@@ -2190,7 +2190,8 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dz['PHOTSYS'][sel] = 'S'
 
 
-    dz.write(outf,format='fits', overwrite=True)
+    common.write_LSS(dz,outf)
+    #dz.write(outf,format='fits', overwrite=True)
     print('wrote to '+outf)
     del dz
 
