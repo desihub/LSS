@@ -322,7 +322,8 @@ def doran(ii):
     
     if args.counttiles == 'y':    
         tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
-        tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+        common.write_LSS(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
+        #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
     if mkfullr:
