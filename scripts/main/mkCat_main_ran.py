@@ -321,7 +321,7 @@ def doran(ii):
         ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=True)
     
     if args.counttiles == 'y':    
-        tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
+        tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
         tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
