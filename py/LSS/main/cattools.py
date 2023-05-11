@@ -2380,7 +2380,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     selp = dz['PRIORITY_ASSIGNED'] <= maxp
-    selp |=  dz['PRIORITY_ASSIGNED'] == 999999:
+    selp |=  dz['PRIORITY_ASSIGNED'] == 999999
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
