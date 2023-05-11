@@ -237,6 +237,12 @@ if mketar: #concatenate target files for given type, with column selection hardc
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
 
+maxp = 3400
+if type[:3] == 'LRG' or notqso == 'notqso':
+	maxp = 3200
+if type[:3] == 'BGS':
+	maxp = 2100
+
        
 if mkfulld:
     azf=''
@@ -284,7 +290,7 @@ if mkfulld:
     maskcoll = False
     if args.survey == 'Y1':
         maskcoll = True
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
@@ -311,11 +317,6 @@ if args.fillran == 'y':
 
 if args.apply_veto == 'y':
     print('applying vetos')
-    maxp = 3400
-    if type[:3] == 'LRG' or notqso == 'notqso':
-        maxp = 3200
-    if type[:3] == 'BGS':
-        maxp = 2100
     if args.ranonly != 'y':
         fin = dirout+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
