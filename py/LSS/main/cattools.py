@@ -2115,8 +2115,8 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz = Table.read(zf)
     
 
-    #zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
-    #dzpd = Table.read(zfpd)
+    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    dzpd = Table.read(zfpd)
     
     #dz = join(dz,dzpd,keys=['TARGETID'])
     #print('length including duplicates '+str(len(dz)))
@@ -2140,7 +2140,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
 
-    dzpd = count_tiles_input(dz[wg])
+    #dzpd = count_tiles_input(np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID']))
 
     #dz['LOCFULL'] = np.zeros(len(dz)).astype('bool')
     #if tlid_full is not None:
