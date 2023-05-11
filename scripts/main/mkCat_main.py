@@ -293,7 +293,7 @@ if mkfulld:
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
 if args.add_bitweight == 'y':
-    ff = fitsio.read(dirout+tracer_clus+'_full_noveto.dat.fits')
+    ff = fitsio.read(dirout+type+notqso+'_full_noveto.dat.fits')
     if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
     else:
