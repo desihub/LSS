@@ -45,6 +45,8 @@ parser.add_argument("--ranmtl", help="make a random mtl file for the tile",defau
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combwspec", help="combine the random potential assignment info with spec info",default='n')
+parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
+
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--fillran", help="add columns",default='n')
@@ -317,6 +319,10 @@ def doran(ii):
 
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
         ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=True)
+    
+    if args.counttiles == 'y':    
+        tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
+        tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
     if mkfullr:
