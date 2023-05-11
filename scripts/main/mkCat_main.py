@@ -292,6 +292,16 @@ if mkfulld:
         maskcoll = True
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
+if args.add_bitweight == 'y':
+    ff = fitsio.read(dirout+tracer_clus+'_full_noveto.dat.fits')
+    if type[:3] != 'BGS':
+        bitf = fitsio.read(mainp.darkbitweightfile)
+    else:
+        bitf = fitsio.read(mainp.brightbitweightfile)
+    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
+    common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
+
+
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
@@ -626,14 +636,6 @@ if args.add_weight_zfail == 'y':
     else:
         ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
-if args.add_bitweight == 'y':
-    ff = fitsio.read(dirout+tracer_clus+'_full.dat.fits')
-    if type[:3] != 'BGS':
-        bitf = fitsio.read(mainp.darkbitweightfile)
-    else:
-        bitf = fitsio.read(mainp.brightbitweightfile)
-    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
     
 
 
