@@ -2425,7 +2425,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     
     
     #if tp[:3] != 'QSO':
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI'] # + dz['GOODHARDLOC'] + dz['GOODPRI']#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1 # + dz['GOODHARDLOC'] + dz['GOODPRI']#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
     #else:
     #    selnp = dz['LOCATION_ASSIGNED'] == 0
     #    pv = dz['PRIORITY']
@@ -2434,6 +2434,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz.sort('sort')
     print('sorted')
     dz = unique(dz,keys=['TARGETID'],keep='last')
+
+    print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
+    print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
+    print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
+
 
     print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
