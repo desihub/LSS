@@ -2425,7 +2425,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     
     
     #if tp[:3] != 'QSO':
-    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    if tp[:3] == 'QSO':
+        selnp = dz['LOCATION_ASSIGNED'] == 0
+        pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
+        pv[selnp] = 0
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    else:
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    
     #else:
     #    selnp = dz['LOCATION_ASSIGNED'] == 0
     #    pv = dz['PRIORITY']
