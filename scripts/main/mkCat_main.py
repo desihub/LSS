@@ -293,13 +293,14 @@ if mkfulld:
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
 if args.add_bitweight == 'y':
-    ff = fitsio.read(dirout+type+notqso+'_full_noveto.dat.fits')
+    fn = dirout+type+notqso+'_full_noveto.dat.fits'
+    ff = fitsio.read(fn)
     if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
     else:
         bitf = fitsio.read(mainp.brightbitweightfile)
     ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
+    common.write_LSS(ff,fn,comments='Added alt MTL info')
 
 
 if args.add_veto == 'y':
