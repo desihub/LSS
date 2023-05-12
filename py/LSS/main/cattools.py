@@ -2167,7 +2167,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
-    dz = join(dz,dzpd,keys=['TARGETID'])
+    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     print('length after joining to tiles info '+str(len(dz)))
     print(np.unique(dz['NTILE']))
 
