@@ -71,13 +71,12 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=subcomm, mpiroot=0, **kwargs)
         barrier_idle(mpicomm)
         wang = mpicomm.bcast(wang, root=0)
-        exit()
 
     data_positions1, data_weights1, data_positions2, data_weights2 = None, None, None, None
     randoms_positions1, randoms_weights1, randoms_positions2, randoms_weights2 = None, None, None, None
     shifted_positions1, shifted_weights1, shifted_positions2, shifted_weights2 = None, None, None, None
 
-    if mpicomm is None or mpicomm.rank == mpiroot:
+    if mpicomm.rank == mpiroot:
 
         data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
         if with_shifted:
@@ -98,6 +97,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
     kwargs = {}
     kwargs.update(wang or {})
+    with_direct = wang or mpicomm.bcast(len(data_weights1) > 1 if mpicomm.rank == mpiroot else None)
 
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
                              data_positions2=data_positions2, data_weights2=data_weights2,
@@ -106,9 +106,9 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
-                             position_type='rdd', dtype=dtype, direct_limits=(0., 1.), direct_limit_type='degree', # direct_limits, (0, 1) degree
+                             position_type='rdd', dtype=dtype, direct_selection_attrs={'theta': (0., 1.)} if with_direct else None, # direct_limits, (0, 1) degree
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
-    wawm = None
+    window = wmatrix = None
     if dowin:
         windows = []
         boxsizes = [scale * boxsize for scale in [20., 5., 1.]]
@@ -117,27 +117,26 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                mpicomm=mpicomm, mpiroot=mpiroot).poles)
-        window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
-        wawm = window
-        # if mpicomm.rank == mpiroot:
-        #     # Let us compute the wide-angle and window function matrix
-        #     kout = result.k # output k-bins
-        #     ellsout = [0, 2, 4] # output multipoles
-        #     ellsin = [0, 2, 4] # input (theory) multipoles
-        #     wa_orders = 1 # wide-angle order
-        #     sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
-        #     kin_rebin = 4 # rebin input theory to save memory
-        #     kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
-        #     # Input projections for window function matrix:
-        #     # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
-        #     projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
-        #     # Window matrix
-        #     wm = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
-        #     # We resum over theory odd-wide angle
-        #     wawm = wm.copy()
-        #     wawm.resum_input_odd_wide_angle()
 
-    return result, wang, wawm
+        if mpicomm.rank == mpiroot:
+            window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
+            # Let us compute the wide-angle and window function matrix
+            kout = result.k # output k-bins
+            ellsout = [0, 2, 4] # output multipoles
+            ellsin = [0, 2, 4] # input (theory) multipoles
+            wa_orders = 1 # wide-angle order
+            sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
+            kin_rebin = 4 # rebin input theory to save memory
+            kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
+            # Input projections for window function matrix:
+            # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
+            projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
+            # Window matrix
+            wmatrix = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
+            # We resum over theory odd-wide angle
+            wmatrix.resum_input_odd_wide_angle()
+
+    return result, wang, window, wmatrix
 
 
 def get_edges():
@@ -162,6 +161,14 @@ def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zm
     if file_type == 'npy':
         return os.path.join(out_dir, 'window_smooth_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
+
+
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+    if tracer2: tracer += '_' + tracer2
+    if rec_type: tracer += '_' + rec_type
+    if region: tracer += '_' + region
+    root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    return os.path.join(out_dir, 'wmatrix_smooth_{}.npy'.format(root))
 
 
 if __name__ == '__main__':
@@ -255,12 +262,14 @@ if __name__ == '__main__':
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
             if window is not None:
                 fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
                 window.save(fn)
+                fn = wmatrix_fn(region=region, **base_file_kwargs)
+                wmatrix.save(fn)
 
         all_regions = regions.copy()
         if mpicomm.rank == mpiroot:

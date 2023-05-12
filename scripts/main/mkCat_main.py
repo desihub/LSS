@@ -237,6 +237,12 @@ if mketar: #concatenate target files for given type, with column selection hardc
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,etardir,etarf,tarver,'main',progl)
 
+maxp = 3400
+if type[:3] == 'LRG' or notqso == 'notqso':
+	maxp = 3200
+if type[:3] == 'BGS':
+	maxp = 2100
+
        
 if mkfulld:
     azf=''
@@ -281,7 +287,21 @@ if mkfulld:
         bit = targetmask.desi_mask[type]
         desitarg='DESI_TARGET'
     
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib)
+    maskcoll = False
+    if args.survey == 'Y1':
+        maskcoll = True
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
+
+if args.add_bitweight == 'y':
+    fn = dirout+type+notqso+'_full_noveto.dat.fits'
+    ff = fitsio.read(fn)
+    if type[:3] != 'BGS':
+        bitf = fitsio.read(mainp.darkbitweightfile)
+    else:
+        bitf = fitsio.read(mainp.brightbitweightfile)
+    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
+    common.write_LSS(ff,fn,comments='Added alt MTL info')
+
 
 if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
@@ -308,11 +328,6 @@ if args.fillran == 'y':
 
 if args.apply_veto == 'y':
     print('applying vetos')
-    maxp = 3400
-    if type[:3] == 'LRG' or notqso == 'notqso':
-        maxp = 3200
-    if type[:3] == 'BGS':
-        maxp = 2100
     if args.ranonly != 'y':
         fin = dirout+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
@@ -389,14 +404,15 @@ if type[:3] == 'BGS':
 
 
 if args.add_ke == 'y':
+    reglke = regl
     if args.survey != 'DA02':
-        regl = ['']
+        reglke = ['']
     kecols = ['REST_GMR_0P1','KCORR_R0P1','KCORR_G0P1','KCORR_R0P0','KCORR_G0P0','REST_GMR_0P0','EQ_ALL_0P0'\
     ,'EQ_ALL_0P1','REST_GMR_0P1','ABSMAG_RP0','ABSMAG_RP1'] 
     for col in kecols:
         rcols.append(col)
 
-    for reg in regl:
+    for reg in reglke:
         fb = dirout+tracer_clus+reg
         if args.survey == 'DA02':
             fn = fb+'_clustering.dat.fits'
@@ -408,7 +424,7 @@ if args.add_ke == 'y':
         dat = common.add_dered_flux(dat,fcols)
         n_processes = 100
         from multiprocessing import Pool
-        chunk_size = len(dat)//n_processes
+        chunk_size = (len(dat)+n_processes)//n_processes
         list = []
         for i in range(0,n_processes):
             mini = i*chunk_size
@@ -621,14 +637,6 @@ if args.add_weight_zfail == 'y':
     else:
         ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
-if args.add_bitweight == 'y':
-    ff = fitsio.read(dirout+tracer_clus+'_full.dat.fits')
-    if type[:3] != 'BGS':
-        bitf = fitsio.read(mainp.darkbitweightfile)
-    else:
-        bitf = fitsio.read(mainp.brightbitweightfile)
-    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ff,dirout+tracer_clus+'_full.dat.fits',comments='Added alt MTL info')
     
 
 

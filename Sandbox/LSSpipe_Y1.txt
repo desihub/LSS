@@ -12,15 +12,16 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #data, run separately for dark and bright time
 #this script will merge the target info (already compiled from fiberassign files) with the spectroscopic info
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --survey Y1
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog bright --survey Y1
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --survey Y1
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog bright --survey Y1
 
 
 #combine quasars:
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --doqso y --dospec n --combpix n --survey Y1
+#this got replaced by quasar only script, needs to be updated
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --doqso y --dospec n --combpix n --survey Y1
 
 #to combine the emission line files:
-python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --prog dark --mkemlin y --dospec n --combpix n --survey Y1
+python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --mkemlin y --dospec n --combpix n --survey Y1
 
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
@@ -36,12 +37,17 @@ for tp,notqso in zip(tps,notqsos):
 
 
 #random
+#this process is much slower than new process (details to be added), but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
 #first, we go through bright and dark, making the mtl files per tile that fiberassign uses, then running fiberassign (to get potential assignments, which is the FAVAIL HDU in the fba files)
 #after fiberassign is run, the potential assignments are combined per healpix
 #does 18 randoms in parallel
 #total amount of time is ~linear in the number of tiles to run
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type dark 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type bright 
+
+#to combine with spec info and count tiles
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type dark --combwspec y --counttiles y --survey Y1 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type bright --combwspec y --counttiles y --survey Y1 
 
 #if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
@@ -56,7 +62,11 @@ for tp,notqso in zip(tps,notqsos):
     #or run all
     ./daily_main_randoms_all_2nodes_noveto.sh
     #on perlmutter, enough memory so one node fine?
-    #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y 
+    #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y
+    
+#updated to not go through by healpix:
+for tp,notqso in zip(tps,notqsos):
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type LRG --combwspec n --fullr y --survey Y1 
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now

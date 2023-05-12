@@ -526,11 +526,11 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
-        if uptileloc:
-            print('counting tiles')
-            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
-            print('writing tile counts')
-            tc.write(outtc,format='fits', overwrite=True)
+        #if uptileloc:
+        #    print('counting tiles')
+        #    tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
+        #    print('writing tile counts')
+        #    tc.write(outtc,format='fits', overwrite=True)
 
 
 if args.get_petalsky == 'y':
@@ -598,10 +598,10 @@ if specrel != 'daily' and args.dospec == 'y':
             #del specf
             print('joined tar and spec, now writing')
             tj.write(outfs,format='fits', overwrite=True)
-            print('wrote, now counting tiles')
-            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
-            outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
-            tc.write(outtc,format='fits', overwrite=True)
+            #print('wrote, now counting tiles')
+            #tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+            #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+            #tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)

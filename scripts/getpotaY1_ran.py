@@ -1,11 +1,11 @@
 '''
-This is a little demo script for the Assignment.check_avail_collisions() function.
+Find all of the collisions for Y1 randoms
 '''
 
 import numpy as np
-
-from astropy.table import Table,join,setdiff
-
+import os
+from astropy.table import Table, join
+import argparse
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
@@ -15,8 +15,15 @@ from fiberassign.utils import Logger
 
 import fitsio
 
-t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-DARK.fits')
-#print('tiles:', t)
+import LSS.common_tools as common
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--prog", choices=['DARK','BRIGHT'])
+
+args = parser.parse_args()
+
+
+tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
 
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -29,32 +36,33 @@ margins = dict(pos=0.05,
     # getfatiles()
     # return
 log = Logger.get()
-rann=0
+rann = 0
 n = 0
-for tile in t['TILEID']:    
-
+#for tile in t['TILEID']:    
+def getcoll(ind):
 
     #tile = 1230
+    tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE']#[:19]
-    hw = load_hardware(rundate=dt, add_margins=margins)
-    pr = 'DARK'
+    pr = args.prog
+    t = Table(tiletab[ind])
     t['OBSCONDITIONS'] = 516
     t['IN_DESI'] = 1
     t['MTLTIME'] = fbah['MTLTIME']
     t['FA_RUN'] = fbah['FA_RUN']
     t['PROGRAM'] = pr
-    #t['FA_HA'] = fbah['FA_HA']
-    #t['FIELDROT'] = fbah['FIELDROT']
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
-    t.write('tiles.fits', overwrite=True)
+    hw = load_hardware(rundate=dt, add_margins=margins)
+
+    t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
 
     tiles = load_tiles(
-        tiles_file='tiles.fits',
+        tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
@@ -72,7 +80,7 @@ for tile in t['TILEID']:
     tagalong = create_tagalong(plate_radec=plate_radec)
 
     # Load target files...
-    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/tilenofa-%i.fits' % tile)
+    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile)
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
     tar_tab = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
 
@@ -83,7 +91,7 @@ for tile in t['TILEID']:
     tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
     # Compute the fibers on all tiles available for each target and sky
     favail = LocationsAvailable(tgsavail)
-    
+
     # FAKE stucksky
     stucksky = {}
 
@@ -108,10 +116,7 @@ for tile in t['TILEID']:
         fdata['FIBER']   [off:off+len(tg)] = fibers[lid]
         fdata['TARGETID'][off:off+len(tg)] = sorted(tg)
         off += len(tg)
-    #print(avail.keys())
-    print(len(fdata))
     fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
-    print(len(fdata))
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
@@ -120,15 +125,23 @@ for tile in t['TILEID']:
     #print('collisions:', coll)
     print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
-    forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random0/fba-'+ts+'.fits',ext='FAVAIL')
+    #forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/fba-'+ts+'.fits',ext='FAVAIL')
     #print(coll)
     locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-    locidsino = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
-    print(np.sum(locidsin),np.sum(locidsino),len(fdata))
-    #jt = setdiff(fdata,Table(forig),keys=['TARGETID','FIBER','LOCATION'])#,join_type='inner')
-    #jto = setdiff(Table(forig),fdata,keys=['TARGETID','FIBER','LOCATION'])
-    #print(len(jt),len(jto),len(forig),len(fdata))
-    n += 1
-    if n >= 1:
-        break
+    print('N collisions original:',np.sum(locidsin),len(fdata))
+    #colltab = Table(forig[locidsin])
+    fdata['TILEID'] = tile
+    fdata['COLLISION'] = locidsin
+    return fdata
+    
+if __name__ == '__main__':
+    from multiprocessing import Pool
+    tls = list(tiletab['TILEID'])#[:10])
+    inds = np.arange(len(tls))
+    for rann in range(0,18):
+        with Pool(processes=128) as pool:
+            res = pool.map(getcoll, inds)
+        colltot = np.concatenate(res)
+        print(len(colltot),np.sum(colltot['COLLISION']))
+        common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
 

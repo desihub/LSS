@@ -110,12 +110,12 @@ args = parser.parse_args()
 
 mpicomm = None
 if args.useMPI == 'y':
-	try:
-		mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
-	except AttributeError:
-		mpicomm = None  # non-MPI version
-		print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
-		#sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
+    try:
+        mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+    except AttributeError:
+        mpicomm = None  # non-MPI version
+        print('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
+        #sys.exit('The following script need to be run with the MPI version of pyrecon. Please use module swap pyrecon:mpi')
 
 if mpicomm is None:
     print('NOT using MPI. If you specified a number of processes, e.g. "srun ... -n 32", greater than 1, things will not work well')
@@ -166,11 +166,11 @@ else:
 dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
 
 def mkdir(dirname):
-	"""Try to create ``dirname`` and catch :class:`OSError`."""
-	try:
-		os.makedirs(dirname)  # MPI...
-	except OSError:
-		return
+    """Try to create ``dirname`` and catch :class:`OSError`."""
+    try:
+        os.makedirs(dirname)  # MPI...
+    except OSError:
+        return
     
 mkdir(dirout)
 
@@ -180,15 +180,15 @@ mkdir(dirout)
 #    print('made ' + dirout)
 
 
-tp2z = {'LRG': 0.8, 'ELG': 1.1, 'QSO': 1.6}
-tp2bias = {'LRG': 2., 'ELG': 1.3, 'QSO': 2.3}
+tp2z = {'LRG': 0.8, 'ELG': 1.1, 'QSO': 1.6,'BGS':0.25}
+tp2bias = {'LRG': 2., 'ELG': 1.3, 'QSO': 2.3,'BGS':1.8}
 
 regl = ['_S', '_N']
 gcl = ['_SGC', '_NGC']
 
 if root:
-    ztp = tp2z[args.type]
-    bias = tp2bias[args.type]
+    ztp = tp2z[args.type[:3]]
+    bias = tp2bias[args.type[:3]]
 
     w0wa = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/w0wa_initvalues_zeffcombined_1000realisations.txt')
 
@@ -239,7 +239,10 @@ if root:
     fgrowth_blind = f_shift
 
     fb_in = dirin + type + notqso
-    fcr_in = fb_in + '_1_full.ran.fits'
+    fbr_in = fb_in
+    if type == 'BGS_BRIGHT-21.5':
+        fbr_in = dirin +'BGS_BRIGHT'
+    fcr_in = fbr_in + '_1_full.ran.fits'
     fcd_in = fb_in + '_full.dat.fits'
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
@@ -278,29 +281,30 @@ if root:
 
     if args.baoblind == 'y':
         data = Table(fitsio.read(dirin + type + notqso + '_full.dat.fits'))
+        data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
         blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
 
-    fb_out = dirout + type + notqso
-    fcd_out = fb_out + '_full.dat.fits'
-    nz_out = common.mknz_full(fcd_out, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
+        fb_out = dirout + type + notqso
+        fcd_out = fb_out + '_full.dat.fits'
+        nz_out = common.mknz_full(fcd_out, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
 
-    ratio_nz = nz_in / nz_out
+        ratio_nz = nz_in / nz_out
 
-    fd = Table(fitsio.read(fcd_out))
-    cols = list(fd.dtype.names)
-    if 'WEIGHT_SYS' not in cols:
-        fd['WEIGHT_SYS'] = np.ones(len(fd))
-    zl = fd['Z']
-    zind = ((zl - zmin) / dz).astype(int)
-    gz = fd['ZWARN'] != 999999
-    zr = zl > zmin
-    zr &= zl < zmax
+        fd = Table(fitsio.read(fcd_out))
+        cols = list(fd.dtype.names)
+        if 'WEIGHT_SYS' not in cols:
+            fd['WEIGHT_SYS'] = np.ones(len(fd))
+        zl = fd['Z']
+        zind = ((zl - zmin) / dz).astype(int)
+        gz = fd['ZWARN'] != 999999
+        zr = zl > zmin
+        zr &= zl < zmax
 
-    wl = np.ones(len(fd))
-    wl[gz&zr] = nz_in[zind[gz&zr]] / nz_out[zind[gz&zr]]
-    fd['WEIGHT_SYS'] *= wl
-    common.write_LSS(fd, fcd_out)
+        wl = np.ones(len(fd))
+        wl[gz&zr] = nz_in[zind[gz&zr]] / nz_out[zind[gz&zr]]
+        fd['WEIGHT_SYS'] *= wl
+        common.write_LSS(fd, fcd_out)
 
 
     if args.visnz == 'y':
@@ -329,22 +333,31 @@ if root:
 
 
     if args.mkclusran == 'y':
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
         tsnrcol = 'TSNR2_ELG'
         if args.type[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        for rannum in range(args.minr, args.maxr):
-            ct.mkclusran(dirin + args.type + notqso + '_', dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
+        #for rannum in range(args.minr, args.maxr):
+        ranin = dirin + args.type + notqso + '_'
+        if args.type == 'BGS_BRIGHT-21.5':
+            ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
+        def _parfun(rannum):
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
                     ranf = dirout + args.type + notqso + reg + '_' + str(rannum) + '_clustering.ran.fits'
                     ranfm = dirout + args.type + notqso + reg + '_' + str(rannum - 1) + '_clustering.ran.fits'
                     os.system('mv ' + ranf + ' ' + ranfm)
+        nran = args.maxr-args.minr
+        inds = np.arange(args.minr,args.maxr)
+        from multiprocessing import Pool
+        with Pool(processes=nran+1) as pool:
+            res = pool.map(_parfun, inds)
 
-    #if args.split_GC == 'y':
-    fb = dirout + args.type + notqso + '_'
-    ct.clusNStoGC(fb, args.maxr - args.minr)
+        #if args.split_GC == 'y':
+        fb = dirout + args.type + notqso + '_'
+        ct.clusNStoGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
@@ -360,9 +373,10 @@ if args.dorecon == 'y':
     #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
     regions = ['NGC', 'SGC']
     for region in regions:
-        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
+        catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(int(args.maxr) - int(args.minr)))
         data_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
         randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='randoms')
+        #print(randoms_fn)
         data_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='data')
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='randoms')
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
@@ -410,8 +424,8 @@ if args.fnlblind == 'y':
     fnl_blind = mpicomm.bcast(fnl_blind, root=0)
 
     # collect effective redshift and bias for the considered tracer
-    zeff = tp2z[args.type]
-    bias = tp2bias[args.type]
+    zeff = tp2z[args.type[:3]]
+    bias = tp2bias[args.type[:3]]
 
     # build blinding cosmology
     cosmo_blind = get_cosmo_blind('DESI', z=zeff)
@@ -451,3 +465,7 @@ if args.fnlblind == 'y':
         if root:
             data['WEIGHT'] = new_data_weights
             common.write_LSS(data, data_fn)
+
+if root:
+    os.system('rm '+dirout+args.type+'*_S_*')
+    os.system('rm '+dirout+args.type+'*_N_*')

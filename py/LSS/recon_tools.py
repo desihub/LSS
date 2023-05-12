@@ -41,6 +41,9 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
     recon = Reconstruction(f=f, bias=bias, boxsize=boxsize, nmesh=nmesh, cellsize=cellsize, los='local', positions=data_positions, dtype=dtype, **rec_kwargs)
 
     recon.assign_data(data_positions, data_weights)
+    #if root:
+    #    logger.info('random files are',str(randoms_fn))
+
     for fn in randoms_fn:
         if root:
             logger.info('Loading {}.'.format(fn))
