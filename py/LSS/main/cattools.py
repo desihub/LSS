@@ -2390,11 +2390,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
+    print(len(dz[wg]))
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
-
-    dtl = count_tiles_input(dz[wg])
-
+    print(len(dz[wg]))
     print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
@@ -2406,7 +2405,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['LOCATION_ASSIGNED'][wz] = 1
     print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
     print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
-    print('number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
+    print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
@@ -2429,6 +2428,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         sel = dz[tscol] > min_tsnr2
         dz['GOODTSNR'][sel] = 1
     
+    if tlf is None:
+        dtl = count_tiles_input(dz[wg])
+    else:
+        dtl = Table.read(ftiles)
     
     #if tp[:3] != 'QSO':
     if tp[:3] == 'QSO':
@@ -2455,6 +2458,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
+
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
