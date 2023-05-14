@@ -2375,7 +2375,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if tp[:3] == 'BGS':
         prog = 'bright'
 
-    specf = specdir+'datcomb_'+prog+'_spec_zdone.fits''
+    specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
     print(specf)
     fs = fitsio.read(specf)
     fs = common.cut_specdat(fs,badfib)
