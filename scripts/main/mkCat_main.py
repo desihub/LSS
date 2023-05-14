@@ -274,7 +274,8 @@ if mkfulld:
             azf = mainp.qsozf
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
-
+    if args.survey == 'Y1':
+        tlf = None
 
  
     ftar = fitsio.read(tarf)   
