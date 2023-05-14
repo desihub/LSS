@@ -2428,7 +2428,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         sel = dz[tscol] > min_tsnr2
         dz['GOODTSNR'][sel] = 1
     
-    if tlf is None:
+    if ftiles is None:
         dtl = count_tiles_input(dz[wg])
     else:
         dtl = Table.read(ftiles)
