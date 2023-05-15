@@ -234,27 +234,35 @@ print(len(ta))
 
 
 def doran(ii):
-    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
+    #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
+    dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        if par:
-            nti = int(len(ta)/rx)+1
-            print(nti,len(ta),ii)
-            for jj in range(rm,rx):
-                print(jj)
-                rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-                print('read random file '+str(jj))
-                tim = nti*ii
-                tix = nti*(ii+1)
-                if tix < len(ta):
-                    tiles = ta[tim:tix]
-                else:
-                    tiles = ta[tim:]
-                print('writing randoms to '+str(len(tiles))+' tiles')
-                ct.randomtiles_main_fromran(tiles,rt )
-        else:
-            ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
+
+
+#     if mkranmtl:
+#         print('making random mtl files for each tile')
+#         if par:
+#             nti = int(len(ta)/rx)+1
+#             print(nti,len(ta),ii)
+#             for jj in range(rm,rx):
+#                 print(jj)
+#                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
+#                 print('read random file '+str(jj))
+#                 tim = nti*ii
+#                 tix = nti*(ii+1)
+#                 if tix < len(ta):
+#                     tiles = ta[tim:tix]
+#                 else:
+#                     tiles = ta[tim:]
+#                 print('writing randoms to '+str(len(tiles))+' tiles')
+#                 ct.randomtiles_main_fromran(tiles,rt )
+#         else:
+#             ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
@@ -318,7 +326,10 @@ def doran(ii):
         kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
 
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
-        ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=True)
+        mask_coll = False
+        if args.survey == 'Y1':
+            mask_coll = True
+        ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
     
     if args.counttiles == 'y':    
         tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
