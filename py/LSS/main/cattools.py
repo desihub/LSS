@@ -1803,7 +1803,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
     return rv
 
 def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf=''):
-
+    from LSS.common_tools import write_LSS
     fgu = Table(fitsio.read(infile))
     if mask_coll:
         print('length before masking collisions '+str(len(fgu)))
@@ -1821,7 +1821,7 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     #fgu.sort('TARGETID')
     outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print('writing to '+outf)
-    common.write_LSS(fgu,outf)
+    write_LSS(fgu,outf)
     #fgu.write(outf,format='fits', overwrite=True)
     
 

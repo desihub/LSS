@@ -209,6 +209,7 @@ specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 print('loaded specf file '+specfo)
 specfc = common.cut_specdat(specf,badfib=mainp.badfib)
 gtl = np.unique(specfc['TILELOCID'])
+del specfc
 
 if mkfullr:
     print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
@@ -228,6 +229,8 @@ if mkfullr:
         desitarg='DESI_TARGET'
     del specft
 
+kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+specf.keep_columns(kc)
 
 
 print(len(ta))
@@ -308,11 +311,11 @@ def doran(ii):
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
             
-            kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
-            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+            #kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            #,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            #,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            #'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            #'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
             outf = maindir+'random'+str(ii)+'/rancomb_'+type+'wdup_Alltiles.fits'
             new = ct.combran_wdup(mtld,ii,randir,outf,keepcols=kc)
             #tiles,rann,randir,outf,keepcols=[]
@@ -323,7 +326,6 @@ def doran(ii):
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     if args.combwspec == 'y':
-        kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
 
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
         mask_coll = False
