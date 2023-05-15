@@ -167,7 +167,7 @@ def getcoll(ind):
     
 if __name__ == '__main__':
     from multiprocessing import Pool
-    tls = list(tiletab['TILEID'])#[:10])
+    tls = list(ta['TILEID'])#[:10])
     inds = np.arange(len(tls))
     for rann in range(0,18):
         with Pool(processes=128) as pool:
