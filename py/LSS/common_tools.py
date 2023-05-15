@@ -339,6 +339,13 @@ def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     return data
 
 def add_ke(dat):
+
+    #THERE IS A BUG IN THE CALCULATION OF EQ_ALL_0P1 and ABSMAG_R FOR EDR. You should run the script
+    #scripts/SV3/fix_v1tov2_toEDR.py in the final directory of your BGS sample to have it correct
+
+    print('WARNING: You are running the function add_ke. This function has a bug calculating the e-correction for EDR')
+    print('WARNING: You can correct the column EQ_ALL_0P1 and remove the e-correction from the ABSMAG_R column by running the script: scripts/SV3/fix_v1tov2_toEDR.py')
+
     #dat should be table with flux_g_dered and flux_r_dered
     #from kcorr package https://github.com/SgmAstro/DESI, needs to be added to path
     #
