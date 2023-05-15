@@ -78,8 +78,8 @@ par = True
 if args.par == 'n':
     par = False
 
-if specrel == 'daily':
-    sys.exit('support for daily needs to be written back in')
+#if specrel == 'daily':
+#    sys.exit('support for daily needs to be written back in')
     
 mkranmtl = False
 if args.ranmtl == 'y':
