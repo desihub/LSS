@@ -151,15 +151,15 @@ def getcoll(ind):
         off += len(tg)
     fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
     if args.getcoll == 'y':
-		coll = asgn.check_avail_collisions(tile)
-		kl = np.array(list(coll.keys())).transpose()
-		locs = kl[0]
-		ids = kl[1]
-		locids = ids*10000+locs
-		print('N collisions:', len(coll))
-		locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-		print('N collisions original:',np.sum(locidsin),len(fdata))
-		fdata['COLLISION'] = locidsin
+        coll = asgn.check_avail_collisions(tile)
+        kl = np.array(list(coll.keys())).transpose()
+        locs = kl[0]
+        ids = kl[1]
+        locids = ids*10000+locs
+        print('N collisions:', len(coll))
+        locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
+        print('N collisions original:',np.sum(locidsin),len(fdata))
+        fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
     
