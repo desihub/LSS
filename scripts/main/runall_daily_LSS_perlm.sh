@@ -3,7 +3,7 @@
 set -e
 
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
-module swap fiberassign/5.0.0
+#module swap fiberassign/5.0.0
 
 python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark 
 python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright 
@@ -15,8 +15,13 @@ python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/de
 
 $LSSCODE/LSS/scripts/main/daily_main_data_full.sh
 
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_daily_ran.py --prog DARK
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --combwspec y --counttiles y 
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_daily_ran.py --prog BRIGHT
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --combwspec y --counttiles y 
 
 $LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto.sh
 
