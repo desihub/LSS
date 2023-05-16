@@ -713,6 +713,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fcompa)
+        print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
