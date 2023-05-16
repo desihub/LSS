@@ -628,11 +628,12 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     seld = ff['GOODHARDLOC'] == 1
     print('length after cutting to good locations '+str(len(ff[seld])))
     if '.dat' in fin:
-        seld &= ff['PRIORITY_INIT'] <= maxp
+        #seld &= ff['PRIORITY_INIT'] <= maxp
+        seld &= ff['PRIORITY_ASSIGNED'] <= maxp
         print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
     if '.ran' in fin:
-        seld &= ff['ZPOSSLOC'] == 1
-        print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
+        #seld &= ff['ZPOSSLOC'] == 1
+        #print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
         seld &= ff['PRIORITY'] <= maxp
         print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
 
@@ -665,6 +666,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         ff['Z'].name = 'Z_not4clus'
         print('updating completeness')
         compa = []
+        fractl = []
         tll = []
         ti = 0
         ff.sort('TILES')
@@ -672,6 +674,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         tlsl = ff['TILES']
         tlslu = np.unique(tlsl)
         laa = ff['LOCATION_ASSIGNED']
+        lta = ff['TILELOCID_ASSIGNED']
         print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True))
 
         # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
@@ -679,12 +682,14 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         while i < len(ff):
             tls = []
             tlis = []
-            nli = 0
-            nai = 0
+            nli = 0 #initialize total available per tile group
+            nai = 0 #initialize total assigned
+            nti = 0 #initialize total at location where something of the same type was assigned
 
             while tlsl[i] == tlslu[ti]:
                 nli += 1
-                nai += laa[i]
+                nai += laa[i] #laa is true/false assigned
+                nti += lta[i] #lta is true/false something of the same type was assigned
                 i += 1
                 if i == len(ff):
                     break
@@ -692,21 +697,27 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             if ti % 1000 == 0:
                 print('at tiles ' + str(ti) + ' of ' + str(nts))
 
-            cp = nai / nli #no/nt
+            cp = nai / nli #
+            fract = nti/nli
             # print(tls,cp,no,nt)
             compa.append(cp)
+            fractl.append(fract)
             tll.append(tlslu[ti])
             ti += 1
         comp_dicta = dict(zip(tll, compa))
+        fract_dicta = dict(zip(tll, fractl))
         fcompa = []
+        fracta = []
         for tl in ff['TILES']:
             fcompa.append(comp_dicta[tl])
+            fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
+        ff['FRAC_TLOBS_TILES'] = np.array(fcompa)
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
-        print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
-        print(np.sum(1. / ff[wz]['FRACZ_TILELOCID']), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
+        print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
+        print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
 
     if '.ran' in fin:
         print('area is ' + str(len(ff) / 2500))
