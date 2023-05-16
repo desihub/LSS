@@ -67,7 +67,7 @@ for tp in tps:
 
     if tp[:3] == 'BGS':
         wg = dt['DELTACHI2'] > 40
-    comp = len(dt[wz])/np.sum(1/dt['FRAC_TILELOCID'][wz])
+    comp = len(dt[wz])/np.sum(1/dt['FRACZ_TILELOCID'][wz])
     print('area: '+str(area))
     print('# of good z: '+str(len(dt[wz&wg])))
     #print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
