@@ -66,11 +66,13 @@ for tp in tps:
 
     if tp[:3] == 'BGS':
         wg = dt['DELTACHI2'] > 40
-    
+    comp = len(dt[wz])/np.sum(1/dt[wz])
     print('area: '+str(area))
     print('# of good z: '+str(len(dt[wz&wg])))
-    print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
+    #print('completeness: '+str(round(len(dt[wz])/len(dt),3)))
+    print('completeness: '+str(round(comp,3)))
     fo.write(tp+':\n')
     fo.write('area: '+str(area)+'\n')
     fo.write('# of good z: '+str(len(dt[wz&wg]))+'\n')
-    fo.write('completeness: '+str(round(len(dt[wz])/len(dt),3))+'\n')
+    #fo.write('completeness: '+str(round(len(dt[wz])/len(dt),3))+'\n')
+    fo.write('completeness: '+str(round(comp,3))+'\n')
