@@ -679,6 +679,9 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 
         # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
+        tot = 0
+        atot = 0
+        tltot = 0
         while i < len(ff):
             tls = []
             tlis = []
@@ -694,9 +697,12 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
                 if i == len(ff):
                     break
 
-            if ti % 1000 == 0:
+            if ti % 10000 == 0:
                 print('at tiles ' + str(ti) + ' of ' + str(nts))
 
+            tot += nli
+            atot += nai
+            tltot += nti
             cp = nai / nli #
             fract = nti/nli
             # print(tls,cp,no,nt)
@@ -704,6 +710,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             fractl.append(fract)
             tll.append(tlslu[ti])
             ti += 1
+        print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
         fract_dicta = dict(zip(tll, fractl))
         fcompa = []
