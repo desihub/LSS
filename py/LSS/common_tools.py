@@ -710,7 +710,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             fractl.append(fract)
             tll.append(tlslu[ti])
             ti += 1
-        print(tot,atot,tltot)
+        #print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
         fract_dicta = dict(zip(tll, fractl))
         fcompa = []
@@ -719,8 +719,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
             fcompa.append(comp_dicta[tl])
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
-        ff['FRAC_TLOBS_TILES'] = np.array(fcompa)
-        print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
+        ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
