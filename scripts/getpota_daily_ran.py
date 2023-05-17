@@ -1,5 +1,5 @@
 '''
-Find all of the collisions for Y1 randoms
+Find all of the potential assignments for randoms in all archived tiles
 '''
 
 import numpy as np
