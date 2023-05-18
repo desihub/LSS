@@ -323,6 +323,9 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     else:
         print('no WEIGHT_SYS')
         wts = 1./df['FRACZ_TILELOCID']
+    selnan = wts*0 != 0
+    print('number of nans in weights '+str(np.sum(selnan)))
+    wts[selnan] = 1.
     zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax),weights=wts)
     zl = zhist[1][:-1]
     zh = zhist[1][1:]
