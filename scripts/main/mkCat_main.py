@@ -739,7 +739,7 @@ if args.nzfull == 'y':
     for reg in regl:
         reg = reg.strip('_')
         common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
-        nzf = np.loadtxt(dirout+type+'_full_'+reg+'_nz.txt').transpose()
+        nzf = np.loadtxt(fb+'_full_'+reg+'_nz.txt').transpose()
         plt.plot(nzf[0],nzf[3],label=reg)
     plt.xlabel('redshift')
     plt.ylabel('n(z) (h/Mpc)^3')
@@ -754,7 +754,7 @@ if args.nzfull == 'y':
     if tp == 'BGS_BRIGHT-21.5':
         plt.xlim(0,0.5)
     plt.title(type)
-    plt.savefig(dirout+'plots/'+tp+'_nz.png')
+    plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
 
 if args.addnbar_ran == 'y':
     utlid_sw = ''
