@@ -606,6 +606,15 @@ if args.add_regressis == 'y':
     fnreg = dirout+'/regressis_data/main_'+tracer_clus+'_256/RF/main_'+tracer_clus+'_imaging_weight_256.npy'
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
+    maskreg = rfw.item()['mask_region']
+    regl_reg = list(maskreg.keys())
+    for reg in regl_reg:
+        mr = maskreg[reg]
+        norm = np.mean(rfpw[mr])
+        print(reg,norm)
+        rfpw[mr] /= norm
+
+
     #regl = ['_DN','_DS','','_N','_S']
     reglr = regl
     if args.survey != 'DA02':
