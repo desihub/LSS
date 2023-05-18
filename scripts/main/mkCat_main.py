@@ -753,7 +753,7 @@ if args.nzfull == 'y':
         plt.ylim(1e-5,0.15)
     if tracer_clus == 'BGS_BRIGHT-21.5':
         plt.xlim(0,0.5)
-    plt.title(type)
+    plt.title(tracer_clus)
     plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
 
 if args.addnbar_ran == 'y':
