@@ -745,13 +745,13 @@ if args.nzfull == 'y':
     plt.ylabel('n(z) (h/Mpc)^3')
     plt.legend()
     plt.grid()
-    if tp == 'ELG_LOPnotqso':
+    if tracer_clus == 'ELG_LOPnotqso':
         plt.ylim(0,0.001)
-    if tp == 'BGS_BRIGHT':
+    if tracer_clus == 'BGS_BRIGHT':
         plt.yscale('log')
         plt.xlim(0,0.6)
         plt.ylim(1e-5,0.15)
-    if tp == 'BGS_BRIGHT-21.5':
+    if tracer_clus == 'BGS_BRIGHT-21.5':
         plt.xlim(0,0.5)
     plt.title(type)
     plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
