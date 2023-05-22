@@ -3080,6 +3080,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols:
+            ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
+
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
 
 #    if 'WEIGHT_SYS' not in cols:
