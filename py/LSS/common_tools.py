@@ -318,11 +318,11 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
         wo = '_'+reg
     nbin = int((zmax-zmin)/bs)
     cols = list(df.dtype.names)
+    wts = 1/df['FRACZ_TILELOCID']
+    if 'FRAC_TLOBS_TILES' in cols:
+        wt *= 1/df['FRAC_TLOBS_TILES']
     if 'WEIGHT_SYS' in cols:
-        wts = df['WEIGHT_SYS']/df['FRACZ_TILELOCID']
-    else:
-        print('no WEIGHT_SYS')
-        wts = 1./df['FRACZ_TILELOCID']
+        wts *= df['WEIGHT_SYS']
     selnan = wts*0 != 0
     print('number of nans in weights '+str(np.sum(selnan)))
     wts[selnan] = 1.
