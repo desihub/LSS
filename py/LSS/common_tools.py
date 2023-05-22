@@ -320,7 +320,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     cols = list(df.dtype.names)
     wts = 1/df['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in cols:
-        wt *= 1/df['FRAC_TLOBS_TILES']
+        wts *= 1/df['FRAC_TLOBS_TILES']
     if 'WEIGHT_SYS' in cols:
         wts *= df['WEIGHT_SYS']
     selnan = wts*0 != 0
