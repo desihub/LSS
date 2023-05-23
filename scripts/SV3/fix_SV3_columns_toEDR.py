@@ -8,7 +8,7 @@ import glob
 #Therefore, be careful. Suggestion is to work on a copy of the original files.
 
 #This is the directory where we make the modifications. 
-dir_ = '/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/fuji/sv3/v1'
+dir_ = '/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/'
 
 #Here it reads all the directory tree structure
 directories = [x[0] for x in os.walk(dir_)]
@@ -116,21 +116,40 @@ if change_names:
 if change_types:
     print('Changing types in files')
 
-    sv3_column_type_to_change = {'LOCATION_ASSIGNED':bool, 'ROSETTE_NUMBER':'int32'}
+    #sv3_column_type_to_change = {'ROSETTE_NUMBER':['int32','J']}
+    sv3_column_type_to_change = {'LOCATION_ASSIGNED': [bool, 'L'], 'ROSETTE_NUMBER':[np.int32, 'J']}
+    print(sv3_column_type_to_change)
     count=0
+    print(dir_)
+    #stop = False
     for root, dirs, files in os.walk(dir_):
         for file in files:
             if file.endswith(".fits"):
                 filename = os.path.join(root,file)
-                hdul = fits.open(filename,mode='update')
+                hdul = fits.open(filename)
+                cols_to_change = []
                 for i in range(len(hdul)-1):
                     hindex = i+1
                     data_to_read = hdul[hindex]
+                    
                     for sv3_old in sv3_column_type_to_change.keys():
-                        if sv3_old in data_to_read.columns.names and data_to_read.data[sv3_old].dtype != sv3_column_type_to_change[sv3_old]:
-                            count += 1
-                            data_to_read.data[sv3_old] = data_to_read.data[sv3_old].astype(sv3_column_type_to_change[sv3_old])
+                        if sv3_old in data_to_read.columns.names and data_to_read.data[sv3_old].dtype != sv3_column_type_to_change[sv3_old][0]:
+                            cols_to_change.append(sv3_old)
                 hdul.close()
+                if len(cols_to_change) != 0:
+                    count+=1
+                    hdul = fits.open(filename, mode='update')
+                    for i in range(len(hdul)-1):
+                        hindex = i+1
+                        data_to_read = hdul[hindex]
+                        colsgood = []
+                        for colname, colformat, colunits in zip(data_to_read.columns.names, data_to_read.columns.formats, data_to_read.columns.units):
+                            if colname in cols_to_change:
+                                colsgood.append(fits.Column(name=colname, array=data_to_read.data[colname].astype(sv3_column_type_to_change[colname][0]), format=sv3_column_type_to_change[colname][1], unit=colunits))
+                            else:
+                                colsgood.append(fits.Column(name=colname, array=data_to_read.data[colname], format=colformat, unit=colunits))
+                        hdul[hindex] = fits.BinTableHDU.from_columns(colsgood)
+                    hdul.close()
             else:
                 pass
     if count==0:
@@ -241,7 +260,7 @@ if remove_specific_columns:
     isDir = True
     
 
-    columns_to_remove = {'/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/LSScats/full': ['REF_EPOCH','PARALLAX','PMRA','PMDEC','OBSCONDITIONS','NUMOBS_INIT','NUMOBS_MORE','NUMOBS','ZTILEID','VERSION']}
+    columns_to_remove = {'/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/LSScats/full': ['REF_EPOCH','PARALLAX','PMRA','PMDEC','OBSCONDITIONS','NUMOBS_INIT','NUMOBS_MORE','NUMOBS','ZTILEID','VERSION'], '/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/potential_assignments/data/':['ZTILEID', 'PARALLAX', 'PMRA', 'PMDEC', 'Z', 'REF_EPOCH', 'NUMOBS_INIT', 'NUMOBS', 'NUMOBS_MORE', 'VERSION', 'OBSCONDITIONS']}
     count=0
     if isDir:
         for dir_check in columns_to_remove:
@@ -357,14 +376,22 @@ if define_extname:
     print('Setting extension name to files')
 
     extname_files = {'rancomb_bright_Alltilelocinfo.fits':[1,'TILELOC'], 'rancomb_dark_Alltilelocinfo.fits':[1,'TILELOC']}
+
     d=glob.glob('/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/LSScats/full/*')
     for dd in d:
-        extname_files[dd.split('/')[-1]] = [1,'LSS']
+        if dd.endswith('.fits'):
+            extname_files[dd.split('/')[-1]] = [1,'LSS']
+
+    d=glob.glob('/global/cfs/cdirs/desi/survey/catalogs/edr_prepfor_public/LSScats/clustering/*')
+    for dd in d:
+        if dd.endswith('.fits'):
+            extname_files[dd.split('/')[-1]] = [1,'LSS']
 
     for root, dirs, files in os.walk(dir_):
         for file in files:
             if file in extname_files.keys(): 
                 filename = os.path.join(root,file)
+                print(filename)
                 fits.setval(filename, 'EXTNAME', value=extname_files[file][1], ext=extname_files[file][0])
                 print(filename, ' EXTNAME changed')
 
