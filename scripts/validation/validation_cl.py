@@ -107,7 +107,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
     
     sel = ranp > thresh
     if maskreg is None:
-        mnr = np.mean(datp[sel]/ranp[sel])
+        mnr = np.sum(datp[sel])/np.sum(ranp[sel])
         print(mnr)
         delta = (datp/ranp/mnr -1)
     elif len(maskreg)==len(datp):
@@ -115,7 +115,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
             maskreg = hp.reorder(maskreg,n2r=True)
 
         sel &= maskreg
-        mnr = np.mean(datp[sel]/ranp[sel])
+        mnr = np.sum(datp[sel])/np.sum(ranp[sel])
         delta = (datp/ranp/mnr -1)
         
     else:
@@ -126,7 +126,7 @@ def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=
             if nest == False:
                 mr = hp.reorder(mr,n2r=True)
 
-            mnr = np.mean(datp[sel&mr]/ranp[sel&mr])
+            mnr = np.sum(datp[sel&mr])/np.sum(ranp[sel&mr]) 
             print(reg,mnr)
             delta[mr] = (datp[mr]/ranp[mr]/mnr -1)
     #if ranpall is not None:

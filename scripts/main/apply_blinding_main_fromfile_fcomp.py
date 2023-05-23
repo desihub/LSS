@@ -87,6 +87,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1", def
 parser.add_argument("--dorecon", help="if y, run the recon needed for RSD blinding", default='n')
 parser.add_argument("--rsdblind", help="if y, do the RSD blinding shift", default='n')
 parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
+parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
 
@@ -467,5 +468,36 @@ if args.fnlblind == 'y':
             common.write_LSS(data, data_fn)
 
 if root:
+    if type[:3] == 'QSO':
+        dz = 0.02
+        zmin = 0.8
+        zmax = 3.5
+        P0 = 6000
+
+    if type[:3] == 'LRG':
+        P0 = 10000
+        zmin = 0.4
+        zmax = 1.1
+    if type[:3] == 'ELG':
+        P0 = 4000
+        zmin = 0.8
+        zmax = 1.6
+    if type[:3] == 'BGS':
+        P0 = 7000
+        zmin = 0.1
+        zmax = 0.4
+
+    if args.getFKP == 'y':
+        for reg in gcl:
+            fb = dirout+tracer_clus+reg
+            fcr = fb+'_0_clustering.ran.fits'
+            fcd = fb+'_clustering.dat.fits'
+            fout = fb+'_nz.txt'
+            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=args.maxr)
+
+
+
+
     os.system('rm '+dirout+args.type+'*_S_*')
     os.system('rm '+dirout+args.type+'*_N_*')

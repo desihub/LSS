@@ -274,7 +274,8 @@ if mkfulld:
             azf = mainp.qsozf
     #if specrel == 'daily':
         #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
-
+    if args.survey == 'Y1':
+        tlf = None
 
  
     ftar = fitsio.read(tarf)   
@@ -290,7 +291,7 @@ if mkfulld:
     maskcoll = False
     if args.survey == 'Y1':
         maskcoll = True
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
 if args.add_bitweight == 'y':
     fn = dirout+type+notqso+'_full_noveto.dat.fits'
@@ -605,6 +606,15 @@ if args.add_regressis == 'y':
     fnreg = dirout+'/regressis_data/main_'+tracer_clus+'_256/RF/main_'+tracer_clus+'_imaging_weight_256.npy'
     rfw = np.load(fnreg,allow_pickle=True)
     rfpw = rfw.item()['map']
+    maskreg = rfw.item()['mask_region']
+    regl_reg = list(maskreg.keys())
+    for reg in regl_reg:
+        mr = maskreg[reg]
+        norm = np.mean(rfpw[mr])
+        print(reg,norm)
+        rfpw[mr] /= norm
+
+
     #regl = ['_DN','_DS','','_N','_S']
     reglr = regl
     if args.survey != 'DA02':
@@ -729,6 +739,22 @@ if args.nzfull == 'y':
     for reg in regl:
         reg = reg.strip('_')
         common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
+        nzf = np.loadtxt(fb+'_full_'+reg+'_nz.txt').transpose()
+        plt.plot(nzf[0],nzf[3],label=reg)
+    plt.xlabel('redshift')
+    plt.ylabel('n(z) (h/Mpc)^3')
+    plt.legend()
+    plt.grid()
+    if tracer_clus == 'ELG_LOPnotqso':
+        plt.ylim(0,0.001)
+    if tracer_clus == 'BGS_BRIGHT':
+        plt.yscale('log')
+        plt.xlim(0,0.6)
+        plt.ylim(1e-5,0.15)
+    if tracer_clus == 'BGS_BRIGHT-21.5':
+        plt.xlim(0,0.5)
+    plt.title(tracer_clus)
+    plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
 
 if args.addnbar_ran == 'y':
     utlid_sw = ''

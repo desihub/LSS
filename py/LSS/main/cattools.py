@@ -1803,7 +1803,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
     return rv
 
 def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf=''):
-
+    from LSS.common_tools import write_LSS
     fgu = Table(fitsio.read(infile))
     if mask_coll:
         print('length before masking collisions '+str(len(fgu)))
@@ -1816,11 +1816,13 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
         print('length after masking collisions '+str(len(fgu)))
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+    print('joining to spec data')
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
-    fgu.sort('TARGETID')
+    #fgu.sort('TARGETID')
     outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
-    print(outf)
-    fgu.write(outf,format='fits', overwrite=True)
+    print('writing to '+outf)
+    write_LSS(fgu,outf)
+    #fgu.write(outf,format='fits', overwrite=True)
     
 
 
@@ -2147,17 +2149,6 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     #    wf = np.isin(dz['TILELOCID'],tlid_full)
     #    dz['LOCFULL'][wf] = 1
 
-    if len(imbits) > 0:
-        print('joining with original randoms to get mask properties')
-        dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-        tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
-        #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
-        #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
-        dz = join(dz,tarf,keys=['TARGETID'])
-        del tarf
-        dz = common.cutphotmask(dz,imbits)
-        print('length after cutting to based on imaging veto mask '+str(len(dz)))
 
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
@@ -2178,8 +2169,25 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
     print('length after cutting to unique TARGETID '+str(len(dz)))
-    dz = join(dz,dzpd,keys=['TARGETID'])
+    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
+    dz['NTILE'][~tin] = 0
+
+    print('length after joining to tiles info '+str(len(dz)))
     print(np.unique(dz['NTILE']))
+
+    if len(imbits) > 0:
+        print('joining with original randoms to get mask properties')
+        dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+        #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+        #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        dz = join(dz,tarf,keys=['TARGETID'])
+        del tarf
+        dz = common.cutphotmask(dz,imbits)
+        print('length after cutting to based on imaging veto mask '+str(len(dz)))
+
 
     if 'PHOTSYS' not in cols:
         dz['PHOTSYS'] = 'N'
@@ -2369,11 +2377,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if tp[:3] == 'BGS':
         prog = 'bright'
 
-    fs = fitsio.read(specdir+'datcomb_'+prog+'_spec_zdone.fits')
+    specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+    print(specf)
+    fs = fitsio.read(specf)
     fs = common.cut_specdat(fs,badfib)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
+    print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     del fs
@@ -2384,12 +2395,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
+    print(len(dz[wg]))
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
-
-    dtl = count_tiles_input(dz[wg])
-
     print(len(dz[wg]))
+    #print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
     print('length after selecting type '+str(len(dz)))
@@ -2399,8 +2409,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-    print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
-    print('number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
+    print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
+    print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
@@ -2423,6 +2433,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         sel = dz[tscol] > min_tsnr2
         dz['GOODTSNR'][sel] = 1
     
+    if ftiles is None:
+        dtl = count_tiles_input(dz[wg])
+    else:
+        dtl = Table.read(ftiles)
     
     #if tp[:3] != 'QSO':
     if tp[:3] == 'QSO':
@@ -2449,9 +2463,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
+
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
-    
+    tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
+    dz['NTILE'][~tin] = 0
+    print(np.unique(dz['NTILE']))
     if ftar is not None:
         print('joining to full imaging')
         remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
@@ -3063,6 +3080,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols:
+            ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
+
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
 
 #    if 'WEIGHT_SYS' not in cols:
