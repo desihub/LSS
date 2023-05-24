@@ -489,7 +489,7 @@ if root:
 
     if args.getFKP == 'y':
         for reg in gcl:
-            fb = dirout+tracer_clus+reg
+            fb = dirout+args.type+reg
             fcr = fb+'_0_clustering.ran.fits'
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
