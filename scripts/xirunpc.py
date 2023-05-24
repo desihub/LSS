@@ -726,6 +726,12 @@ if __name__ == '__main__':
                                   corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in ['N', 'S']])
                     result.save(corr_fn(file_type='npy', region='NScomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
                     all_regions.append('NScomb')
+                if 'NGC' in regions and 'SGC' in regions:  # let's combine
+                    result = sum([TwoPointCorrelationFunction.load(
+                                  corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in ['NGC', 'SGC']])
+                    result.save(corr_fn(file_type='npy', region='GCcomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+                    all_regions.append('GCcomb')
+
                 if args.rebinning:
                     for region in all_regions:
                         txt_kwargs = base_file_kwargs.copy()
