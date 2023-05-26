@@ -747,7 +747,7 @@ if __name__ == '__main__':
                                 fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
                                 rebinned.save_txt(fn_txt)
                                 fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
-                                rebinned.save_txt(fn_txt, ells=(0, 2, 4))
+                                rebinned.save_txt(fn_txt, ells=(0, 2, 4), ignore_nan=True)
                                 fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
                                 rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
                             elif corr_type == 'rppi':
