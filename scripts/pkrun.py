@@ -293,7 +293,7 @@ if __name__ == '__main__':
                 if args.calc_win:
                     result = sum([PowerSpectrumSmoothWindow.load(window_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
                     result.save(window_fn(file_type='npy', region='NScomb', **base_file_kwargs))
-                    result = sum([BaseMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['N', 'S']])
+                    result = sum([PowerSpectrumSmoothWindowMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['N', 'S']])
                     result.save(wmatrix_fn(region='NScomb', **base_file_kwargs))
                 all_regions.append('NScomb')
             if 'NGC' in regions and 'SGC' in regions:  # let's combine
@@ -302,7 +302,7 @@ if __name__ == '__main__':
                 if args.calc_win:
                     result = sum([PowerSpectrumSmoothWindow.load(window_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
                     result.save(window_fn(file_type='npy', region='GCcomb', **base_file_kwargs))
-                    result = sum([BaseMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
+                    result = sum([PowerSpectrumSmoothWindowMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
                     result.save(wmatrix_fn(region='GCcomb', **base_file_kwargs))
                 all_regions.append('GCcomb')
             if args.rebinning:
