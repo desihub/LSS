@@ -416,7 +416,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -471,6 +471,8 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     kwargs = {}
     kwargs.update(wang or {})
+    selection_attrs = None
+    if rpcut is not None: selection_attrs = {'rp': (rpcut, np.inf)}
     randoms_kwargs = dict(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1, randoms_samples1=randoms_samples1,
                           randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2, randoms_samples2=randoms_samples2,
                           shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1, shifted_samples1=shifted_samples1,
@@ -515,7 +517,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
-                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot)
+                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs)
             D1D2 = tmp.D1D2
             result += tmp
         results.append(result)
@@ -544,7 +546,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
     return edges
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None, rpcut=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
@@ -553,12 +555,11 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
     wang = '{}_'.format(wang) if wang is not None else ''
     root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
+    if rpcut is not None:
+        root += '_rpcut{}'.format(rpcut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
-
-
-
 
 
 if __name__ == '__main__':
@@ -592,6 +593,7 @@ if __name__ == '__main__':
     parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
 
     setup_logging()
     args = parser.parse_args()
@@ -693,13 +695,13 @@ if __name__ == '__main__':
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut)
         for region in regions:
             if args.use_arrays == 'y':
                 if region == "N":
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[0], ran_cat = randoms_[0])
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[0], ran_cat=randoms_[0])
                 if region == "S":
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read = 'Y', dat_cat = data_[1], ran_cat = randoms_[1])
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[1], ran_cat=randoms_[1])
                 
             wang = None
             for corr_type in args.corr_type:
@@ -707,7 +709,7 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))

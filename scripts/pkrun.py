@@ -52,7 +52,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -97,7 +97,12 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
     kwargs = {}
     kwargs.update(wang or {})
-    with_direct = wang or mpicomm.bcast(len(data_weights1) > 1 if mpicomm.rank == mpiroot else None)
+    direct_edges = win_direct_selection_attrs = direct_selection_attrs = None
+    if wang or mpicomm.bcast(len(data_weights1) > 1 if mpicomm.rank == mpiroot else None):
+        direct_selection_attrs = {'theta': (0., 1.)}
+    elif rpcut is not None:
+        win_direct_selection_attrs = direct_selection_attrs = {'rp': (0., rpcut)}
+        direct_edges = {'min': 0., 'step': 0.1}
 
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
                              data_positions2=data_positions2, data_weights2=data_weights2,
@@ -106,16 +111,18 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
-                             position_type='rdd', dtype=dtype, direct_selection_attrs={'theta': (0., 1.)} if with_direct else None, # direct_limits, (0, 1) degree
+                             position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = wmatrix = None
     if dowin:
         windows = []
         boxsizes = [scale * boxsize for scale in [20., 5., 1.]]
         edges = {'step': 2. * np.pi / boxsizes[0]}
-        for boxsize in boxsizes:
+        for iboxsize, boxsize in enumerate(boxsizes):
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
+                                               direct_selection_attrs=win_direct_selection_attrs if iboxsize == 0 else None,
+                                               direct_edges=direct_edges if iboxsize == 0 else None,
                                                mpicomm=mpicomm, mpiroot=mpiroot).poles)
 
         if mpicomm.rank == mpiroot:
@@ -143,31 +150,37 @@ def get_edges():
     return {'min':0., 'step':0.001}
 
 
-def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    if rpcut is not None:
+        root += '_rpcut{}'.format(rpcut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'pkpoles_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    if rpcut is not None:
+        root += '_rpcut{}'.format(rpcut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'window_smooth_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', out_dir='.'):
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
+    if rpcut is not None:
+        root += '_rpcut{}'.format(rpcut)
     return os.path.join(out_dir, 'wmatrix_smooth_{}.npy'.format(root))
 
 
@@ -176,11 +189,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main','Y1'], default='SV3')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main', 'Y1'], default='SV3')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS', 'NGC', 'SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
@@ -190,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', default='n')
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the pk or just keep the original .npy file', default='n')
+    parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -234,7 +248,7 @@ if __name__ == '__main__':
             raise ValueError('Provide <= 2 tracers!')
     if tracer2 == tracer:
         tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type,ran_sw=args.ran_sw) # survey required for zdone
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type, ran_sw=args.ran_sw) # survey required for zdone
     distance = TabulatedDESI().comoving_radial_distance
 
     regions = args.region
@@ -256,13 +270,13 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'))
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut)
         for region in regions:
             if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, rpcut=args.rpcut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
             result.save(fn)
             if window is not None:
@@ -276,7 +290,21 @@ if __name__ == '__main__':
             if 'N' in regions and 'S' in regions:  # let's combine
                 result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
                 result.save(power_fn(file_type='npy', region='NScomb', **base_file_kwargs))
+                if args.calc_win:
+                    result = sum([PowerSpectrumSmoothWindow.load(window_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['N', 'S']])
+                    result.save(window_fn(file_type='npy', region='NScomb', **base_file_kwargs))
+                    result = sum([BaseMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['N', 'S']])
+                    result.save(wmatrix_fn(region='NScomb', **base_file_kwargs))
                 all_regions.append('NScomb')
+            if 'NGC' in regions and 'SGC' in regions:  # let's combine
+                result = sum([PowerSpectrumStatistics.load(power_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
+                result.save(power_fn(file_type='npy', region='GCcomb', **base_file_kwargs))
+                if args.calc_win:
+                    result = sum([PowerSpectrumSmoothWindow.load(window_fn(file_type='npy', region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
+                    result.save(window_fn(file_type='npy', region='GCcomb', **base_file_kwargs))
+                    result = sum([BaseMatrix.load(wmatrix_fn(region=region, **base_file_kwargs)) for region in ['NGC', 'SGC']])
+                    result.save(wmatrix_fn(region='GCcomb', **base_file_kwargs))
+                all_regions.append('GCcomb')
             if args.rebinning:
                 for region in all_regions:
                     txt_kwargs = base_file_kwargs.copy()
