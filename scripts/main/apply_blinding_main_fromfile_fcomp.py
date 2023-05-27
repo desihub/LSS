@@ -403,7 +403,7 @@ if args.fnlblind == 'y':
     if mpicomm is None:
         sys.exit('fNL blinding requires MPI, exiting')
     from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
-
+    logger = logging.getLogger('recon')
     if root:
         f_blind = fgrowth_blind
         if args.get_par_mode == 'specified':
@@ -449,11 +449,11 @@ if args.fnlblind == 'y':
         data_positions, data_weights = None, None
         randoms_positions, randoms_weights = None, None
         if root:
-            print('Loading {}.'.format(data_fn))
+            logger.info('Loading {}.'.format(data_fn))
             data = Table.read(data_fn)
             data_positions, data_weights = [np.array(data['RA'], dtype='float64'), np.array(data['DEC'], dtype='float64'), np.array(data['Z'], dtype='float64')], data['WEIGHT']
 
-            print('Loading {}'.format(randoms_fn))
+            logger.info('Loading {}'.format(randoms_fn))
             randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
             randoms_positions, randoms_weights = [np.array(randoms['RA'], dtype='float64'), np.array(randoms['DEC'], dtype='float64'), np.array(randoms['Z'], dtype='float64')], randoms['WEIGHT']
 
