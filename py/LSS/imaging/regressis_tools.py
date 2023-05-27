@@ -109,7 +109,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
 
     zcol = 'Z_not4clus'
     
-    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES']
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES','WEIGHT_ZFAIL']
     if tracer[:3] == 'ELG':
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
