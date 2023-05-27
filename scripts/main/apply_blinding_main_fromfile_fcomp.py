@@ -454,7 +454,7 @@ if args.fnlblind == 'y':
             data_positions, data_weights = [np.array(data['RA'], dtype='float64'), np.array(data['DEC'], dtype='float64'), np.array(data['Z'], dtype='float64')], data['WEIGHT']
 
             print('Loading {}'.format(randoms_fn))
-            randoms = vstack([Table.read(fn) for fn in randoms_fn])
+            randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
             randoms_positions, randoms_weights = [np.array(randoms['RA'], dtype='float64'), np.array(randoms['DEC'], dtype='float64'), np.array(randoms['Z'], dtype='float64')], randoms['WEIGHT']
 
         # add fnl blinding weight to the data weight
