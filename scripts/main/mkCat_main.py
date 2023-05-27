@@ -493,6 +493,16 @@ if mkclusran and mkclusdat:
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
+if args.add_weight_zfail == 'y':
+    readpars = False
+    if args.readpars == 'y':
+        readpars = True
+    if type[:3] == 'QSO':
+        ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars) 
+    else:
+        ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
+
+
 if args.imsys == 'y':
     from LSS.imaging import densvar
     #regl = ['_DN','_DS','','_N','_S']
@@ -559,7 +569,7 @@ if args.regressis == 'y':
        pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits' 
        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint)
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=rx)
     
 
     suffix_tracer = ''
@@ -638,14 +648,6 @@ if args.add_regressis == 'y':
 
         common.write_LSS(dd,fcd,comments)
 
-if args.add_weight_zfail == 'y':
-    readpars = False
-    if args.readpars == 'y':
-        readpars = True
-    if type[:3] == 'QSO':
-        ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars) 
-    else:
-        ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
     
 
