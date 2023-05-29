@@ -485,17 +485,17 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             print('added TILELOCID, about to do joins')
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
             #seems to run out of memory on join
-            #tjl = []
-            #selreg = tarfn['DEC'] > 0
-            #tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            #print('1st join done')
-            #tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
-            #print('2nd join done')
-            #tj = vstack(tjl)
-            #print('stacked now writing out')
+            tjl = []
+            selreg = tarfn['DEC'] > 0
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print('2nd join done')
+            tj = vstack(tjl)
+            print('stacked now writing out')
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
