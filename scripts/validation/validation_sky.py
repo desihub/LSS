@@ -113,11 +113,15 @@ for tp in tps:
         odl = []
         odl_oc = []
         dt = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
+        cols = list(dt.dtype.names)
         sel_gz = common.goodz_infull(tp[:3],dt)
         sel_obs = dt['ZWARN'] != 999999
         dt = dt[sel_obs&sel_gz]
         dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
-        dt['WEIGHT'] = 1./dt['FRACZ_TILELOCID']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
+        if 'FRAC_TLOBS_TILES' in cols:
+            dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
+
+        dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
         sel_nan = dt['WEIGHT']*0 != 0
         if len(dt[sel_nan]) != 0:
             print(str(len(dt[sel_nan]))+ ' nan weights')

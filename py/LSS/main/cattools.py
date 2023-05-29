@@ -2865,7 +2865,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     if tp == 'BGS_BRIGHT-21.5':
         fullname = indir+tp+'_full.dat.fits'
     else:
-        indir+tp+'_full_noveto.dat.fits'
+        fullname = indir+tp+'_full_noveto.dat.fits'
     ff = Table.read(fullname)
     wzf = np.ones(len(ff))
     msr = np.ones(len(ff))

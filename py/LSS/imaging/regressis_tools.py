@@ -109,7 +109,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
 
     zcol = 'Z_not4clus'
     
-    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2']
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES','WEIGHT_ZFAIL']
     if tracer[:3] == 'ELG':
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
@@ -156,7 +156,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
-    wts = 1./data['FRACZ_TILELOCID'].values#*data['WEIGHT_ZFAIL'].values
+    wts = 1./data['FRACZ_TILELOCID'].values*1./data['FRAC_TLOBS_TILES'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:

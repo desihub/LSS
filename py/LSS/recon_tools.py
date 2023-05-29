@@ -8,6 +8,7 @@ import logging
 
 import numpy as np
 from astropy.table import Table, vstack
+import fitsio
 
 import pyrecon
 from pyrecon import MultiGridReconstruction, IterativeFFTReconstruction, IterativeFFTParticleReconstruction, utils, setup_logging
@@ -44,12 +45,13 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
     #if root:
     #    logger.info('random files are',str(randoms_fn))
 
-    for fn in randoms_fn:
-        if root:
-            logger.info('Loading {}.'.format(fn))
-            (ra, dec, dist), randoms_weights = get_clustering_positions_weights(Table.read(fn), distance, name='randoms', **kwargs)
-            randoms_positions = utils.sky_to_cartesian(dist, ra, dec, dtype=dtype)
-        recon.assign_randoms(randoms_positions, randoms_weights)
+    #for fn in randoms_fn:
+    if root:
+        logger.info('Loading {}.'.format(randoms_fn))
+        randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
+        (ra, dec, dist), randoms_weights = get_clustering_positions_weights(randoms, distance, name='randoms', **kwargs)
+        randoms_positions = utils.sky_to_cartesian(dist, ra, dec, dtype=dtype)
+    recon.assign_randoms(randoms_positions, randoms_weights)
 
     recon.set_density_contrast(smoothing_radius=smoothing_radius)
     recon.run()
