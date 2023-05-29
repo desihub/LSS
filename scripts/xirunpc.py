@@ -437,7 +437,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
         if (with_shifted) & (cat_read == None):
             shifted = randoms  # above returned shifted randoms
-            randoms = io.read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
+            randoms = io.read_clustering_positions_weights(distance, name='randoms', rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
         (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = io.concatenate_data_randoms(data, randoms, **catalog_kwargs)
         if with_shifted:
             shifted_positions1, shifted_weights1 = io.concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
