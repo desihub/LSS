@@ -356,7 +356,7 @@ def doran(ii):
 #             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        
+        print('about to make full ran '+str(ii))
         ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
