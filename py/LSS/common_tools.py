@@ -727,7 +727,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
-        comp = ff[wz]/len(ff)
+        comp = len(ff[wz])/len(ff)
         print('assignment completeness is '+str(comp))
         print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
