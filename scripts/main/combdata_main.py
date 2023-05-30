@@ -494,16 +494,18 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             print(len(tarfn[selreg]))
             specf.remove_columns(['LOCATION','TILEID'])
             tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
             print('1st join done')
             tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
             print('2nd join done')
             tj = vstack(tjl)
             print('stacked now writing out')
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outfs,format='fits', overwrite=True)
-            #common.write_LSS(tj,outfs)
+            #tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS(tj,outfs)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
             print('joining spec info to target info')
@@ -516,19 +518,19 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tjl = []
             selreg = tarfn['DEC'] > 0
             tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            #tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
             print('1st join done')
             tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            #tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
             print('2nd join done')
             tj = vstack(tjl)
             del tarfn
             #tj = np.concatenate(tjl)
-            #print('stacked now writing out')
+            print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             #print(np.unique(tj['ZWARN'],return_counts=True))
-            #common.write_LSS(tj,outfs)
-            tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS(tj,outfs)
+            #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
         #if uptileloc:
