@@ -2114,6 +2114,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
 
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    print('about to load '+zf)
     dz = Table.read(zf)
     print(dz.dtype.names)
 
