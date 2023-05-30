@@ -522,6 +522,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
             print('2nd join done')
             tj = vstack(tjl)
+            del tarfn
             #tj = np.concatenate(tjl)
             #print('stacked now writing out')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
