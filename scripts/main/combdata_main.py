@@ -499,6 +499,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
             print('2nd join done')
+            del tarfn
             tj = vstack(tjl)
             print('stacked now writing out')
             #for reg in regl:                
