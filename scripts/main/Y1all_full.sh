@@ -3,7 +3,6 @@
 #provide the version, e.g. Y1all_full.sh 0.1
 source /global/common/software/desi/desi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
 
 #python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --survey Y1 --counts_only y --dospec n
@@ -21,6 +20,8 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --fillran y --apply_veto y --verspec iron --notqso y --survey Y1 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --fillran y --apply_veto y --verspec iron --survey Y1 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --add_veto y --fillran y --apply_veto y --verspec iron --survey Y1 --version $1
+
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y   --apply_veto y --mkHPmaps y --verspec iron --survey Y1 --maxr 0 --regressis y --add_regressis y --add_weight_zfail y --version $1
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n   --verspec iron --survey Y1 --maxr 0 --regressis y --add_regressis y --version $1
