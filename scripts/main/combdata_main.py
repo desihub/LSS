@@ -492,7 +492,12 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             print(tarfn.dtype.names)
             selreg = tarfn['DEC'] > 0
             print(len(tarfn[selreg]))
-            specf.remove_columns(['LOCATION','TILEID'])
+            remcol = ['LOCATION','TILEID']
+            for col in remcol:
+                try:
+                    specf.remove_columns([col])
+                except:
+                    print('column '+col +' was not in stacked spec table') 
             tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
             print('1st join done')
@@ -513,7 +518,12 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            specf.remove_columns(['LOCATION','TILEID'])
+            remcol = ['LOCATION','TILEID']
+            for col in remcol:
+                try:
+                    specf.remove_columns([col])
+                except:
+                    print('column '+col +' was not in stacked spec table') 
             print('added TILELOCID, about to do joins')
             #tj = join(tarfn,specf,keys=['TARGETID','TILELOCID'],join_type='left')
             tjl = []
