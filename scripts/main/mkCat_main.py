@@ -569,7 +569,7 @@ if args.regressis == 'y':
        pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits' 
        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
     else:
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=rx)
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
     
 
     suffix_tracer = ''
