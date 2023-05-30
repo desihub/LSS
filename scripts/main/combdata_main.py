@@ -489,10 +489,13 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 
             #seems to run out of memory on join
             tjl = []
+            print(tarfn.dtype.names)
             selreg = tarfn['DEC'] > 0
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            print(len(tarfn[selreg]))
+            specf.remove_columns(['LOCATION','TILEID'])
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             print('1st join done')
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left'))
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             print('2nd join done')
             tj = vstack(tjl)
             print('stacked now writing out')
