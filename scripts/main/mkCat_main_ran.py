@@ -234,9 +234,10 @@ specf.keep_columns(kc)
 
 
 print(len(ta))
-
+print('done with preliminaries')
 
 def doran(ii):
+    print('doing random '+str(ii))
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
     dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
@@ -326,7 +327,7 @@ def doran(ii):
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     if args.combwspec == 'y':
-
+        print('combining with spec info')
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
         mask_coll = False
         if args.survey == 'Y1':
@@ -334,6 +335,7 @@ def doran(ii):
         ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
     
     if args.counttiles == 'y':    
+        print('counting tiles')
         tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
         common.write_LSS(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
@@ -356,7 +358,7 @@ def doran(ii):
 #             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        print('about to make full ran '+str(ii))
+        print('about to make full ran '+outf)
         ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
