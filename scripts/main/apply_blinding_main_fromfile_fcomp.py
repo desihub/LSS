@@ -136,7 +136,7 @@ if root: print('blinding catalogs for tracer type ' + type + notqso)
 prog = 'BRIGHT' if (type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY') else 'DARK'
 progl = prog.lower()
 
-mainp = main(args.type)
+mainp = main(args.type,survey='Y1')
 zmin = mainp.zmin
 zmax = mainp.zmax
 tsnrcol = mainp.tsnrcol
