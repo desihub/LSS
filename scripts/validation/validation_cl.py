@@ -156,6 +156,9 @@ for tp in tps:
     sel_obs = dtf['ZWARN'] != 999999
     dtfoz = dtf[sel_obs&sel_gz]
     wt = 1./dtfoz['FRACZ_TILELOCID']*dtfoz['WEIGHT_ZFAIL']*dtfoz['WEIGHT_SYS']
+    if 'FRAC_TLOBS_TILES' in list(dtfoz.dtype.names):
+        print('using FRAC_TLOBS_TILES')
+        wt *= 1/dtfoz['FRAC_TLOBS_TILES']
     
     sel_nan = wt*0 != 0
     wt[sel_nan] = 1.
