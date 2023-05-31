@@ -40,7 +40,7 @@ nran = 18
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','BGS_BRIGHT','QSO','LRG']
+    tps = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
     
 
 zdw = ''#'zdone'
