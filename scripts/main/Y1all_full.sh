@@ -16,9 +16,9 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 #srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --type QSO  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --combhp n --combfull y --fullr y  --version $1
 #srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --type BGS_BRIGHT  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --combhp n --combfull y --fullr y  --version $1
 
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --verspec iron --notqso n --survey Y1 --version $1
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --maxr 9 --version $1
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --minr 9 --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --verspec iron --notqso n --survey Y1 --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --maxr 9 --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --minr 9 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --verspec iron --notqso y --survey Y1 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso y --survey Y1 --maxr 9 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso y --survey Y1 --minr 9 --version $1
@@ -26,8 +26,8 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type BGS_BRIGHT  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --maxr 9 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type BGS_BRIGHT  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --minr 9 --version $1
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr y --verspec iron --notqso n --survey Y1 --version $1
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --maxr 9 --version $1
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --apply_veto y --verspec iron --notqso n --survey Y1 --minr 9 --version $1
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --add_veto y --apply_veto y --verspec iron --notqso n --survey Y1 --maxr 9 --version $1
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fullr n --fillran y --add_veto y --apply_veto y --verspec iron --notqso n --survey Y1 --minr 9 --version $1
 
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
