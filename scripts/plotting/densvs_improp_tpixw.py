@@ -128,7 +128,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     normw = sum(rh)/sum(dhw)
     svw = dhw/rh*normw
 
-    meancomp = np.mean(dcomp)#np.mean(dt_reg['FRACZ_TILELOCID'])
+    meancomp = np.mean(1/dcomp)#np.mean(dt_reg['FRACZ_TILELOCID'])
     ep = np.sqrt(dh/meancomp)/rh*norm #put in mean completeness factor to account for completeness weighting
     
     chi2 = np.sum((svw-1)**2./ep**2.)
