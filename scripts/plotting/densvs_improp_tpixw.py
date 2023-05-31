@@ -106,7 +106,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     dcomp = 1/dt_reg['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
         print('using FRAC_TLOBS_TILES')
-        dcomp *= 1/dt_reg[ii]['FRAC_TLOBS_TILES']
+        dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
         pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
         pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT_SYS']*dcomp[ii]
