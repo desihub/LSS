@@ -40,7 +40,7 @@ nran = 18
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','QSO','LRG','BGS_BRIGHT']
+    tps = ['LRG','ELG_LOPnotqso','QSO','BGS_BRIGHT']
     
 
 zdw = ''#'zdone'
@@ -103,9 +103,13 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
 
     pixlg = np.zeros(nside*nside*12)
     pixlgw = np.zeros(nside*nside*12)
+    dcomp = 1/dt_reg[ii]['FRACZ_TILELOCID']
+    if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+        print('using FRAC_TLOBS_TILES')
+        dcomp *= 1/dt_reg[ii]['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
-        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']/dt_reg[ii]['FRACZ_TILELOCID']
-        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT_SYS']/dt_reg[ii]['FRACZ_TILELOCID']
+        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
+        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT_SYS']*dcomp[ii]
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
         pixlr[rpix[ii]] += 1.
@@ -124,7 +128,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     normw = sum(rh)/sum(dhw)
     svw = dhw/rh*normw
 
-    meancomp = np.mean(dt_reg['FRACZ_TILELOCID'])
+    meancomp = np.mean(dcomp)#np.mean(dt_reg['FRACZ_TILELOCID'])
     ep = np.sqrt(dh/meancomp)/rh*norm #put in mean completeness factor to account for completeness weighting
     
     chi2 = np.sum((svw-1)**2./ep**2.)
