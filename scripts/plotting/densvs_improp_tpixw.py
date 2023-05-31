@@ -103,7 +103,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
 
     pixlg = np.zeros(nside*nside*12)
     pixlgw = np.zeros(nside*nside*12)
-    dcomp = 1/dt_reg[ii]['FRACZ_TILELOCID']
+    dcomp = 1/dt_reg['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
         print('using FRAC_TLOBS_TILES')
         dcomp *= 1/dt_reg[ii]['FRAC_TLOBS_TILES']
