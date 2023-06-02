@@ -3032,54 +3032,56 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     if 'WEIGHT_ZFAIL' not in cols:
         ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
-    if dchi2 is not None and 'WEIGHT_ZFAIL' not in cols:
-        if tp[:3] == 'LRG':
-            lrg = ssr_tools.LRG_ssr()
-            ff = lrg.add_modpre(ff)
-            ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
-
-        if tp == 'BGS_BRIGHT':
-            bgs = ssr_tools.BGS_ssr()
-            ff = bgs.add_modpre(ff,fl)
-            ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
-
-
-        if tp == 'ELG_LOP':
-            elg = ssr_tools.ELG_ssr()
-            ff = elg.add_modpre(ff)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
-
-        if tp == 'QSO':
-            qso = ssr_tools.QSO_ssr()
-            ff = qso.add_modpre(ff,fl)
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
-            print('min/max of zfail weights:')
-            print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
-            print('checking sum of zfail weights compared to length of good z')
-            print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
-            ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']    
+#     if dchi2 is not None and 'WEIGHT_ZFAIL' not in cols:
+#         if tp[:3] == 'LRG':
+#             lrg = ssr_tools.LRG_ssr()
+#             ff = lrg.add_modpre(ff)
+#             ff['WEIGHT_ZFAIL'] = 1./ff['mod_success_rate']
+#             print('min/max of zfail weights:')
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+# 
+#             print('checking sum of zfail weights compared to length of good z')
+#             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+# 
+#         if tp == 'BGS_BRIGHT':
+#             bgs = ssr_tools.BGS_ssr()
+#             ff = bgs.add_modpre(ff,fl)
+#             ff['WEIGHT_ZFAIL'] = np.clip(1./ff['mod_success_rate'],1,1.2)
+#             print('min/max of zfail weights:')
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+#             print('checking sum of zfail weights compared to length of good z')
+#             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+# 
+# 
+#         if tp == 'ELG_LOP':
+#             elg = ssr_tools.ELG_ssr()
+#             ff = elg.add_modpre(ff)
+#             print('min/max of zfail weights:')
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+# 
+#             print('checking sum of zfail weights compared to length of good z')
+#             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+# 
+#         if tp == 'QSO':
+#             qso = ssr_tools.QSO_ssr()
+#             ff = qso.add_modpre(ff,fl)
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT_ZFAIL'] = np.clip(ff['WEIGHT_ZFAIL'],1,2)
+#             print('min/max of zfail weights:')
+#             print(np.min(ff['WEIGHT_ZFAIL']),np.max(ff['WEIGHT_ZFAIL']))
+#             print('checking sum of zfail weights compared to length of good z')
+#             print(len(ff),np.sum(ff['WEIGHT_ZFAIL']))
+#             ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
 
         
+    
     #if tp[:3] == 'ELG':
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
-    #    ff['WEIGHT'] *= ff['WEIGHT_ZFAIL']
+    
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
         if 'FRAC_TLOBS_TILES' in cols:
