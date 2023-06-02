@@ -272,15 +272,17 @@ if root:
         #zmin = 0.1
         #zmax = 0.5
 
-    nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
-
-    fin = fitsio.read(fcd_in)
-    cols = list(fin.dtype.names)
-    if 'WEIGHT_FKP' not in cols:
-        common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
 
 
     if args.baoblind == 'y':
+        
+
+        fin = fitsio.read(fcd_in)
+        cols = list(fin.dtype.names)
+        if 'WEIGHT_FKP' not in cols:
+            nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
+            common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
+
         data = Table(fitsio.read(dirin + type + notqso + '_full.dat.fits'))
         data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
