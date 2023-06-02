@@ -473,6 +473,19 @@ if args.fnlblind == 'y':
             common.write_LSS(data, data_fn)
 
 if root:
+    regions = ['NGC', 'SGC']
+    rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
+    for reg in regions:
+        flin = dirout + args.type + notqso + '_'+reg    
+        def _parfun(rannum):
+            ct.clusran_resamp(flin,rann,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
+        nran = args.maxr-args.minr
+        inds = np.arange(args.minr,args.maxr)
+        from multiprocessing import Pool
+        with Pool(processes=nran+1) as pool:
+            res = pool.map(_parfun, inds)
+
+    
     if type[:3] == 'QSO':
         dz = 0.02
         zmin = 0.8
