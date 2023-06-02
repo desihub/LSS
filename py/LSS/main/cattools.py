@@ -3296,6 +3296,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
+    for col in rcols:
+        kc.append(col)
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
@@ -3305,11 +3307,29 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
 
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
     
-    inds = np.random.choice(len(fcdn),len(ffr))
-    dshuf = fcdn[inds]
-    for col in rcols:
-        ffr[col] = dshuf[col]
-        kc.append(col)
+    if 'NGC' in flin:
+        #need to split N/S when sampling
+        selregr = ffr['DEC'] > 32.375
+        selregd = fcdn['DEC'] > 32.375
+        tabsr = []
+        ffrn = ffr[selregr]
+        ffrs = ffr[~selregr]
+        fcdnn = fcdn[selregd]
+        fcdns = fcdn[~selregd]
+        tabsr = [ffrn,ffrs]
+        tabsd = [fcdnn,fcdns]
+        for i in range(0,len(tabsr)):
+            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+            dshuf = tabsd[i][inds]
+            for col in rcols:
+                tabsr[i][col] =  dshuf[col]
+        ffr = vstack(tabsr)        
+    else:
+        inds = np.random.choice(len(fcdn),len(ffr))
+        dshuf = fcdn[inds]
+        for col in rcols:
+            ffr[col] = dshuf[col]
+        #kc.append(col)
     ffr.keep_columns(kc)
     
     if write_cat == 'y':
