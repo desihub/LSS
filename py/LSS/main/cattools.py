@@ -3314,7 +3314,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
     
     if write_cat == 'y':
         #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
-        common.write_LSS(ffr,outfn,comments)
+        common.write_LSS(ffr,outfn)
 
 
 
