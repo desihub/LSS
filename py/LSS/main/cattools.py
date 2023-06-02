@@ -3307,7 +3307,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
 
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
     
-    len_o = len(ffr))
+    len_o = len(ffr)
     if 'NGC' in flin:
         #need to split N/S when sampling
         selregr = ffr['DEC'] > 32.375
