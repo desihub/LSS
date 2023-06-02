@@ -3287,6 +3287,37 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 #         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffss,outfn,comments)
 
+def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
+    #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
+    import LSS.common_tools as common
+    ffr = Table.read(flin+'_'+str(rann)+'_clustering.ran.fits')
+    ffr.remove_columns(rcols)
+
+    fcdn = Table.read(flin+'_clustering.dat.fits')
+    fcdn.rename_column('TARGETID', 'TARGETID_DATA')
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(fcdn.dtype.names))
+    rcols = rcols[wc]
+    print('columns sampled from data are:')
+    print(rcols)
+
+
+    outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
+    
+    inds = np.random.choice(len(fcdn),len(ffr))
+    dshuf = fcdn[inds]
+    for col in rcols:
+        ffr[col] = dshuf[col]
+        kc.append(col)
+    ffr.keep_columns(kc)
+    
+    if write_cat == 'y':
+        #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+        common.write_LSS(ffr,outfn,comments)
+
+
+
 
 def clusNStoGC(flroot,nran=1):
     import LSS.common_tools as common
