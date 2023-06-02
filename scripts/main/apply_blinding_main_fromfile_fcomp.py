@@ -464,7 +464,9 @@ if args.fnlblind == 'y':
 
         # overwrite the data!
         if root:
+            fnl_blind_weights = new_data_weights / data['WEIGHT']
             data['WEIGHT'] = new_data_weights
+            data['WEIGHT_COMP'] = data['WEIGHT_COMP'] * fnl_blind_weights
             common.write_LSS(data, data_fn)
 
 if root:
