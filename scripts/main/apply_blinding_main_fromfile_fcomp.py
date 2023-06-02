@@ -478,7 +478,7 @@ if root:
     for reg in regions:
         flin = dirout + args.type + notqso + '_'+reg    
         def _parfun(rannum):
-            ct.clusran_resamp(flin,rann,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
+            ct.clusran_resamp(flin,rannum,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
         from multiprocessing import Pool
