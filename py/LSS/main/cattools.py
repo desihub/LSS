@@ -3319,11 +3319,17 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
         fcdns = fcdn[~selregd]
         tabsr = [ffrn,ffrs]
         tabsd = [fcdnn,fcdns]
+        rdl =[]
         for i in range(0,len(tabsr)):
             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
             dshuf = tabsd[i][inds]
             for col in rcols:
                 tabsr[i][col] =  dshuf[col]
+            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+            rdl.append(rd)
+        rdr = rdl[0]/rdl[1]
+        tabsr[1]['WEIGHT'] *= rdr
+        print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
         ffr = vstack(tabsr)   
         print(len(ffr),len_o)     
     else:
