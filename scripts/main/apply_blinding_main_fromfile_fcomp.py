@@ -473,6 +473,7 @@ if args.fnlblind == 'y':
             common.write_LSS(data, data_fn)
 
 if root:
+    #re-sample redshift dependent columns from data
     regions = ['NGC', 'SGC']
     rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
     for reg in regions:
