@@ -3307,6 +3307,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
 
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
     
+    print(len(ffr))
     if 'NGC' in flin:
         #need to split N/S when sampling
         selregr = ffr['DEC'] > 32.375
@@ -3323,7 +3324,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
             dshuf = tabsd[i][inds]
             for col in rcols:
                 tabsr[i][col] =  dshuf[col]
-        ffr = vstack(tabsr)        
+        ffr = vstack(tabsr)   
+        print(len(ffr))     
     else:
         inds = np.random.choice(len(fcdn),len(ffr))
         dshuf = fcdn[inds]
