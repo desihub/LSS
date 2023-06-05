@@ -33,11 +33,11 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 args = parser.parse_args()
 
 if args.mock == 'ab1stgen':
-    infn = arg.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
+    infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     tars = fitsio.read(infn)
 
-tileoutdir = arg.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-paoutdir = arg.base_output+'FirstGenMocks/AbacusSummit/Y1/mock'+args.realization+'/'
+tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/Y1/mock'+args.realization+'/'
 if not os.path.exists(tileoutdir):
     os.mkdir(tileoutdir)
     print('made '+tileoutdir )
