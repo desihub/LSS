@@ -61,7 +61,7 @@ def write_tile_targ(inds ):
     #print(len(rt[wdec]))
     inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
     print('got indexes')
-    rtw = rtall[wdec][inds]
+    rtw = tars[wdec][inds]
     rmtl = Table(rtw)
     print('made table for '+fname)
     del rtw
