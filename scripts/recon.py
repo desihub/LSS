@@ -58,7 +58,7 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         rec_kwargs = {'mpicomm': mpicomm, 'mpiroot': 0}
     else:
         rec_kwargs = {'fft_engine': 'fftw', 'nthreads': nthreads}
-    recon = Reconstruction(f=f, bias=bias, boxsize=boxsize, nmesh=nmesh, cellsize=cellsize, los='local', positions=data_positions, dtype=dtype, **rec_kwargs)
+    recon = Reconstruction(f=f, bias=bias, boxsize=boxsize, nmesh=nmesh, cellsize=cellsize, los='local', positions=data_positions, boxpad=1.2, dtype=dtype, **rec_kwargs)
 
     recon.assign_data(data_positions, data_weights)
     for fn in randoms_fn:
@@ -104,14 +104,16 @@ def run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_f
         
         
 def get_f_bias(tracer='ELG'):
-    if tracer.startswith('ELG') or tracer.startswith('QSO'):
-        return 0.9, 1.3
+    if tracer.startswith('ELG'):
+        return 0.9, 1.2
+    if tracer.startswith('QSO'):
+        return 0.928, 2.07
     if tracer.startswith('LRG'):
-        return 0.8, 2.
+        return 0.834, 1.99
     if tracer.startswith('BGS'):
-        return 0.67, 1.5
+        return 0.682, 1.5
 
-    return 0.8, 1.2
+    return 0.9, 1.2
 
 
 if __name__ == '__main__':
