@@ -36,6 +36,8 @@ if args.mock == 'ab1stgen':
     infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     tars = fitsio.read(infn)
 
+print(tars.dtype.names)
+
 tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
 paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/Y1/mock'+args.realization+'/'
 if not os.path.exists(tileoutdir):
