@@ -32,7 +32,7 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 
 args = parser.parse_args()
 
-if arg.mock == 'ab1stgen':
+if args.mock == 'ab1stgen':
     infn = arg.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     tars = fitsio.read(infn)
 
