@@ -184,7 +184,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
     inds = np.arange(len(tls))
-    #write_tile_targ(inds[0])
+    write_tile_targ(inds[0])
     with Pool(processes=128) as pool:
         res = pool.map(write_tile_targ, inds)
 
