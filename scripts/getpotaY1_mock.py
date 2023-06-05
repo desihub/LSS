@@ -48,34 +48,34 @@ tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args
 
 def write_tile_targ(inds ):
     tiles = tiletab[inds]
-    for i in range(0,len(tiles)):
-        fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
-        print('creating '+fname)
-        tdec = tiles['DEC'][i]
-        decmin = tdec - trad
-        decmax = tdec + trad
-        wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
-        #print(len(rt[wdec]))
-        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
-        print('got indexes')
-        rtw = rtall[wdec][inds]
-        rmtl = Table(rtw)
-        print('made table for '+fname)
-        del rtw
-        #rmtl['TARGETID'] = np.arange(len(rmtl))
-        #print(len(rmtl['TARGETID'])) #checking this column is there
-        rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-        rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
-        rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
-        rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-        rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
-        rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-        print('added columns for '+fname)
-        rmtl.write(fname,format='fits', overwrite=True)
-        del rmtl
-        print('added columns, wrote to '+fname)
-        #nd += 1
-        #print(str(nd),len(tiles))
+    #for i in range(0,len(tiles)):
+    fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
+    print('creating '+fname)
+    tdec = tiles['DEC']
+    decmin = tdec - trad
+    decmax = tdec + trad
+    wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
+    #print(len(rt[wdec]))
+    inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
+    print('got indexes')
+    rtw = rtall[wdec][inds]
+    rmtl = Table(rtw)
+    print('made table for '+fname)
+    del rtw
+    #rmtl['TARGETID'] = np.arange(len(rmtl))
+    #print(len(rmtl['TARGETID'])) #checking this column is there
+    rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+    rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+    rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+    rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+    rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+    rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+    print('added columns for '+fname)
+    rmtl.write(fname,format='fits', overwrite=True)
+    del rmtl
+    print('added columns, wrote to '+fname)
+    #nd += 1
+    #print(str(nd),len(tiles))
 
 
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
     inds = np.arange(len(tls))
-    write_tile_targ(inds[0])
+    #write_tile_targ(inds[0])
     with Pool(processes=128) as pool:
         res = pool.map(write_tile_targ, inds)
 
