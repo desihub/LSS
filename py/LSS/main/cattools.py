@@ -3291,8 +3291,11 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
     import LSS.common_tools as common
     ffr = Table.read(flin+'_'+str(rann)+'_clustering.ran.fits')
-    ffr.remove_columns(rcols)
-
+    for col in rcols:
+        try:
+            ffr.remove_columns([col])
+        except:
+            print(col+' not in original randoms')
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
