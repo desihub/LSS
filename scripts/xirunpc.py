@@ -666,7 +666,7 @@ if __name__ == '__main__':
                 raise ValueError('Provide <= 2 tracers!')
         if tracer2 == tracer:
             tracer2 = None # otherwise counting of self-pairs
-        catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type) # survey required for zdone
+        catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, recon_dir=args.recon_dir,rec_type=args.rec_type) # survey required for zdone
         
     distance = TabulatedDESI().comoving_radial_distance
 
