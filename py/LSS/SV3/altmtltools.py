@@ -55,11 +55,11 @@ def processTileFile(infile, outfile, startDate, endDate):
         return 0
     
         
-    if startDate is None:
+    if (startDate is None) or (startDate == ''):
         startDate = 0
     else:
         startDate = int(startDate.split('T')[0].replace('-', ''))       
-    if endDate is None:
+    if (endDate is None) or (endDate == ''):
         endDate = 9999999999
     else:
         endDate = int(endDate.split('T')[0].replace('-', ''))
@@ -159,7 +159,9 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
     TIDAlt = FAAlt['TARGETID']
     FibReal = FAReal['FIBER']
     FibAlt = FAAlt['FIBER']
+
     if not (changeFiberOpt is None):
+        raise NotImplementedError('changeFiberOpt is not implemented yet.')
         assert(not(TargAlt is None))
         jTargs = join(FAAlt, TargAlt, keys = "TARGETID")
     
@@ -200,6 +202,7 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
             Alt2Real[ta] = trMatch[0]
         elif changeFiberOpt == 'AllTwins':
             #if jTargs['SV3_']
+            assert(0)
             pass
 
     
@@ -222,30 +225,32 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = F
         cond = (n == zcatids)
         if debug and (n < 0):
             negativeIDs +=1   
-        #try:
         altid = real2AltMap[n]
+
         altZCat['TARGETID'][i] = altid
     if debug:
-        print('negIDs')
-        print(negativeIDs)
-        print('failures')
-        print(failures)
-        print('testctr')
+        log.info('negIDs')
+        log.info(negativeIDs)
+        log.info('failures')
+        log.info(failures)
+        log.info('testctr')
     d =  Counter(altZCat['TARGETID'])  
     res = [ k for k, v in d.items() if v > 1]
-    print(res)
+    if debug:
+        log.info('res')
+        log.info(res)
     if len(res):
-        print('how many pre dup cuts')
-        print(zcatids.shape)
+        log.info('how many pre dup cuts')
+        log.info(zcatids.shape)
         cond2 = np.ones(zcatids.shape, dtype=bool)
         for i in res:
-            print('test')
-            print(np.sum(zcatids == i))
+            log.info('test')
+            log.info(np.sum(zcatids == i))
             cond2 = cond2 & (altcatids != i)
-        print("how many post dup cuts")
-        print(np.sum(cond2))
+        log.info("how many post dup cuts")
+        log.info(np.sum(cond2))
     else:
-        print("supposedly, no duplicates")
+        log.info("supposedly, no duplicates")
     return altZCat
 
 def checkMTLChanged(MTLFile1, MTLFile2):
@@ -321,7 +326,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         raise ValueError('usetmp set to True but output directory not in tmp. Output directory is {0}'.format(outputMTL))
 
         
-
+    if debug:
+        log.info('initMTL')
+        log.info(initMTL)
     ztilefn = ztilefile.split('/')[-1]
     fn = initMTL.split('/')[-1]
     log.info('reading initial MTL(s)')
@@ -585,7 +592,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
                 secondary=False, singletile = None, singleDate = None, debugOrig = False, 
                     getosubp = False, quickRestart = False, redoFA = False,
-                    multiproc = False, nproc = None, testDoubleDate = False, changeFiberOpt = None,
+                    multiproc = False, nproc = None, testDoubleDate = False, 
+                    changeFiberOpt = None, targets = None, mock = False,
                     debug = False, verbose = False):
     """Execute full MTL loop, including reading files, updating ledgers.
 
@@ -651,6 +659,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
+
+    if mock:
+        if targets is None:
+            raise ValueError('If processing mocks, you MUST specify a target file')
     if debug:
         log.info('getosubp value: {0}'.format(getosubp))
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
@@ -768,7 +780,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL stripping out the time of fiber assignment to leave only the date
                 #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
                 fadate = ''.join(fadate.split('T')[0].split('-'))
-
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
                 if getosubp:
                     #JL When we are trying to reproduce a prior survey and/or debug, create a separate
@@ -776,6 +787,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
                     fbadir = fbadirbase + '/orig/'
                 else:
+
                     #JL For normal "alternate" operations, store the fiber assignmens
                     #JL in the fbadirbase directory. 
 
@@ -786,7 +798,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL This command removes those temp files to prevent endless crashes. 
                 if os.path.exists(FAAltName + '.tmp'):
                     os.remove(FAAltName + '.tmp')
-
                 #JL If the alternate fiberassignment was already performed, don't repeat it
                 #JL Unless the 'redoFA' flag is set to true
                 if  redoFA or (not os.path.exists(FAAltName)):
@@ -797,13 +808,13 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     if verbose:
                         log.info(ts)
                         log.info(altmtldir + survey.lower())
-                        log.info(fbadirbase)
+                        log.info(fbadir)
                         log.info(getosubp)
                         log.info(redoFA)
                     if getosubp and verbose:
                         log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
-                        log.info(glob.glob(fbadirbase + '/*' ))
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose)
+                        log.info(glob.glob(fbadir + '/*' ))
+                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
                     if verbose:
                         log.info('fa command_run')
@@ -840,6 +851,14 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             R2AMap = {}
             for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
                 if changeFiberOpt is None:
+                    #if debug:
+                    #    tempsortofa = np.sort(ofa, order = 'FIBER')
+                    #    tempsortafa = np.sort(afa, order = 'FIBER')
+                    #    
+                    # 
+                    #    tempsortofa = np.sort(ofa, order = 'TARGETID')
+                    #    tempsortafa = np.sort(afa, order = 'TARGETID')
+                        
                     A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
                 else:
                     raise NotImplementedError('changeFiberOpt has not yet been implemented')
@@ -861,9 +880,21 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
 
+            
+
             # ADM update the appropriate ledger.
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+            if mock:
+                if targets is None:
+                    raise ValueError('If processing mocks, you MUST specify a target file')
+                
+                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                          numobs_from_ledger=numobs_from_ledger, targets = targets)
+            elif targets is None:
+                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
+            else:
+                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                          numobs_from_ledger=numobs_from_ledger, targets = targets)
             if verbose or debug:
                 log.info('if main, should sleep 1 second')
             if survey == "main":
@@ -876,7 +907,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
             if verbose or debug:
                 log.info('has written to mtl_tile_file')
-            
             if singleDate:
                 #return 1
                 return althpdirname, altmtltilefn, ztilefn, tiles
@@ -1075,7 +1105,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
             try:
                 ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
             except:
-
+                log.info('hplist[0] = {0:d}'.format(hplist[0]))
                 log.info('This message should only appear once for the first realization.')
                 ObsFlagList = MTL['NUMOBS'] > 0.5
         if debug or verbose:
@@ -1176,8 +1206,12 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         for hp in hplist:
             hpstring += str(hp)
     fn = outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'
-    
-    if (not overwrite) and os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'):
+    #    outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'
+    if (not overwrite) and os.path.exists(fn):
+        print('overwrite')
+        print(overwrite)
+        print('fn')
+        print(fn)
         return None
     
     if not (splitNChunks is None):
