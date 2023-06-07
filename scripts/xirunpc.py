@@ -421,6 +421,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
+    catalog_kwargs['recon_dir'] = recon_dir
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
