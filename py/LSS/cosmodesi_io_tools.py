@@ -203,7 +203,7 @@ def _concatenate(arrays):
 
 
 def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None, weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
-    
+    print(kwargs)
     if 'GC' in region:
         region = [region]
     
