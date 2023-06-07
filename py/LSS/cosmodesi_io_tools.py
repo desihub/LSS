@@ -128,7 +128,8 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         tracer = 'LRG'
     if region: region = '_' + region
     if rec_type:
-        if recon_dir is not 'n':
+        recon_dir = kwargs['recon_dir']
+        if recon_dir != 'n':
             tracer = recon_dir+'/'+tracer
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
