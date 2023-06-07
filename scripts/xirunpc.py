@@ -553,6 +553,8 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     if region: tracer += '_' + region
     if option:
         zmax = str(zmax) + option
+    if recon_dir != 'n':
+        out_dir += recon_dir+'/'
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
     wang = '{}_'.format(wang) if wang is not None else ''
     root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
