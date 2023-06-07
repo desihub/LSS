@@ -113,6 +113,7 @@ def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/g
 
 
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
+    print(kwargs)
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
     #if survey in ['main', 'DA02']:
@@ -203,7 +204,7 @@ def _concatenate(arrays):
 
 
 def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None, weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
-    print(kwargs)
+    #print(kwargs)
     if 'GC' in region:
         region = [region]
     
