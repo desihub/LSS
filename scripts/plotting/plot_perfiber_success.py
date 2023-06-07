@@ -22,8 +22,9 @@ parser = argparse.ArgumentParser()
 #parser.add_argument("--type", help="tracer type to be selected")
 basedir='/global/cfs/cdirs/desi/survey/catalogs'
 parser.add_argument("--basedir", help="base directory for input/output",default=basedir)
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
+parser.add_argument("--version",help="version for catalogs",default='test')
 
 args = parser.parse_args()
 basedir = args.basedir
@@ -32,6 +33,10 @@ specver = args.verspec
 
 
 tracers = ['QSO','LRG','ELG','BGS_ANY']
+
+#bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
+#bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
+bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/unique_badfibers.txt")
 
 
 def plot_all_petal(petal):
@@ -53,12 +58,12 @@ def plot_all_petal(petal):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-        bfib = pars.badfib
         sel_bfib = np.isin(fibl[sel],bfib)
+        print(str(petal)+' '+str(np.sum(n_g[sel][sel_bfib]))+' "good" redshifts on masked fibers for tracer type '+tp)
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
         if tp == 'ELG':
             plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
@@ -97,7 +102,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         fmax = (petal+1)*500
         sel = fibl >= fmin
         sel &= fibl < fmax
-        bfib = pars.badfib
+        #bfib = pars.badfib
         sel_bfib = np.isin(fibl[sel],bfib)
         sel_low = f_succ[sel] < ymin
         f_succ[sel][sel_low] = ymin+0.01
@@ -105,7 +110,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',label='true value below min ',zorder=100)
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label='masked',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
         if tp == 'BGS_ANY':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',zorder=100)
@@ -121,5 +126,5 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
 
 
 for i in range(0,10):
-    #plot_all_petal(i)
+    plot_all_petal(i)
     plot_LRGBGS_petal(i)

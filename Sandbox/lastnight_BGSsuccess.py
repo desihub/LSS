@@ -9,6 +9,7 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='y')
+parser.add_argument("--redux",default='daily')
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
 args = parser.parse_args()
@@ -56,7 +57,7 @@ print(tidl)
 gz = np.zeros(10)
 tz = np.zeros(10)
 
-zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
+zdir = '/global/cfs/cdirs/desi/spectro/redux/'+args.redux+'/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
 nzla = []

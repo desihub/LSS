@@ -11,10 +11,10 @@ import healpy as hp
 from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--version", help="catalog version",default='EDAbeta')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
+parser.add_argument("--version", help="catalog version",default='test')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 args = parser.parse_args()
 
@@ -47,16 +47,16 @@ if args.survey == 'SV3' and args.tracers == 'all':
 for tp in tps:
     
 
-    dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
+    df = fitsio.read(indir+tp+zdw+'_full.dat.fits')
 
 
-    dcl = []
-    for reg in regl:
-        dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
-        dcl.append(dtc)
-    dc = np.concatenate(dcl)
-    df = join(dtf,dc,keys=['TARGETID'],join_type='left')
-    selgz = df['Z'].mask == False
+    #dcl = []
+    #for reg in regl:
+    #    dtc = fitsio.read(indir+tp+zdw+reg+'_clustering.dat.fits')
+    #    dcl.append(dtc)
+    #dc = np.concatenate(dcl)
+    #df = join(dtf,dc,keys=['TARGETID'],join_type='left')
+    selgz = common.goodz_infull(tp[:3],df)#df['Z'].mask == False
     selo = df['ZWARN'] != 999999
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')

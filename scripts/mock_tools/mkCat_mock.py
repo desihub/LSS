@@ -42,7 +42,7 @@ parser.add_argument("--mockmin", help="number for the realization",default=1,typ
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
-#parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
+parser.add_argument("--specdata", help="mountain range for spec prod",default='himalayas')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
 parser.add_argument("--combdr", help="combine the random tiles info together with the assignment info",default='n')
@@ -53,6 +53,7 @@ parser.add_argument("--add_gtl", help="whether to get the list of good tileloc f
 
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
+parser.add_argument("--apply_veto_ran", help="apply vetos to the full files",default='n')
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
@@ -122,12 +123,13 @@ tiles = fitsio.read(tile_fn)
 
 gtl = None
 if args.add_gtl == 'y':
-    
+    datarel = args.specdata
     if args.survey == 'DA02':
         datarel = 'guadalupe'
     datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'    
     specdat = ct.get_specdat(datadir,pdir,datarel)
-    gtl = np.unique(specdat['TILELOCID'])
+    tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
+    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
 
 def docat(mocknum,rannum):
 
@@ -196,9 +198,11 @@ def docat(mocknum,rannum):
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
         tj.write(outfs,format='fits', overwrite=True)
+        print('wrote '+outfs)
         tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir,gtl=gtl) 
         outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
+        print('wrote '+outtc)
     
     if args.combdr == 'y':
         fbadir_data = maindir+'fba'+str(mocknum)
@@ -208,29 +212,37 @@ def docat(mocknum,rannum):
             fbadir_ran = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
 
         specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
-        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
         specf.remove_columns(['TARGETID'])
         fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
         print(len(fgu))
         fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
+        fgu['TILELOCID'] = 10000*fgu['TILEID'] +fgu['LOCATION']
         del specf
         print(len(fgu))
         print(fgu.dtype.names)
         fgu.sort('TARGETID')
         outf = lssdir+'/rancomb_'+str(rannum)+pdir+'wdupspec_zdone.fits'
-        print(outf)
+        
         fgu.write(outf,format='fits', overwrite=True)
+        print('wrote '+outf)
         del fgu
      
     if args.countran == 'y':
-        tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
-        print('got counts')
-        print(len(tc))
-        print(tc.dtype.names)
-        print(np.max(tc['NTILE']))
-        tc.keep_columns(['TARGETID','NTILE','TILES'])
-        #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
-        tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+        if mocknum == 0:
+            tc = ct.count_tiles_better('ran',pdir,rannum,specrel='',survey=args.survey,indir=lssdir,gtl=gtl)
+            print('got counts')
+            print(len(tc))
+            print(tc.dtype.names)
+            print(np.max(tc['NTILE']))
+            tc.keep_columns(['TARGETID','NTILE','TILES'])
+            #common.write_LSS(tc,lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits')
+            tc.write(lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits',format='fits', overwrite=True)
+            print('wrote random counts')
+        else:
+            fn0 = maindir+'mock0/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
+            fn = lssdir+'/rancomb_'+str(rannum)+pdir+'_Alltilelocinfo.fits'
+            os.system('cp '+fn0+' '+fn)
+            print('copied '+fn0+' to '+fn)
 
     specver = 'mock'    
     imbits = []    
@@ -292,12 +304,19 @@ def docat(mocknum,rannum):
         fin = dirout+args.tracer+notqso+'_full_noveto.dat.fits'
         fout = dirout+args.tracer+notqso+'_full.dat.fits'
         common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+
         print('applying vetos to random '+str(rannum))
         fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
         fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
 
         #print('random veto '+str(ii)+' done')
+    if args.apply_veto_ran == 'y':
+        print('applying vetos to random '+str(rannum))
+        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
+        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
+        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+
 
     regl = ['_N','_S']    
     
@@ -318,6 +337,8 @@ def docat(mocknum,rannum):
         
 
     if args.mkclusran == 'y':
+        if len(nztl) == 0:
+            nztl.append('')
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
@@ -331,9 +352,10 @@ def docat(mocknum,rannum):
 
     
     if args.mkclusdat_allpot == 'y':
-        fbadir = maindir+'fba'+str(mocknum)
-        tarf = fbadir+'/targs.fits'
-
+        #fbadir = maindir+'fba'+str(mocknum)
+        #tarf = fbadir+'/targs.fits'
+        #'/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit
+        tarf = args.base_output +mockdir+'/forFA'+str(mocknum)+'.fits'
         ztab = Table(fitsio.read(tarf,columns=['TARGETID','RSDZ']))
         ztab.rename_column('RSDZ', 'Z')
         mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,ztab,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
@@ -431,16 +453,33 @@ if __name__ == '__main__':
 # 
 #         #p.map(doran,inds)
 #     else:
-    for mn in range(mockmin,mockmax):
-        for i in range(rm,rx):
-            print('processing mock '+str(mn)+' and random '+str(i))
-            docat(mn,i)
-        if args.split_GC == 'y':
-            nztl = ['','_complete']
-            lssdir = maindir+'mock'+str(mn)+'/'
+    for i in range(rm,rx):
+        if args.par == 'y':
+            from multiprocessing import Pool
+            from itertools import repeat
+            from desitarget.internal import sharedmem
+            N = mockmax-mockmin+1       
+            inds = []
+            for mn in range(mockmin,mockmax):
+                 inds.append((mn,i))
+            #pool = sharedmem.MapReduce(np=N)
+            #with pool:
+            with Pool(processes=N) as pool:
+                #def reduce( r):
+                #    print('mock done')
+                #    return r
+                pool.starmap(docat,inds)#,reduce=reduce)
+        for mn in range(mockmin,mockmax):
+        
+            if args.par != 'y':
+                print('processing mock '+str(mn)+' and random '+str(i))
+                docat(mn,i)
+            if args.split_GC == 'y':
+                nztl = ['','_complete']
+                lssdir = maindir+'mock'+str(mn)+'/'
 
-            dirout = lssdir+'LSScats/'
+                dirout = lssdir+'LSScats/'
             
-            for zt in nztl:
-                fb = dirout+args.tracer+notqso+zt+'_'                
-                ct.clusNStoGC(fb,rx-rm)
+                for zt in nztl:
+                    fb = dirout+args.tracer+notqso+zt+'_'                
+                    ct.clusNStoGC(fb,rx-rm)

@@ -145,22 +145,25 @@ def comp_neworig_fba(tileid,dirn =  '/global/cfs/cdirs/desi/survey/catalogs/test
 #         return False
 
  
-def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
+def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='main',faenvdir=None):
     '''
     simply try to reproduce fiberassign from the files in the fiberassign directory
     '''
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    indir = fht['OUTDIR']
-    if fht['DESIROOT'] == '/data/datasystems':
-        indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
-        try:
-            f = fitsio.read(indir+ts+'-targ.fits')
-        except:
+    if survey == 'SV3':
+        indir = fht['OUTDIR']
+        if fht['DESIROOT'] == '/data/datasystems':
+            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
+            try:
+                f = fitsio.read(indir+ts+'-targ.fits')
+            except:
         
-            date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
-            indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+                date = int(fht['PMTIME'][:10].translate({ord('-'): None}))-1
+                indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/'+str(date)+'/'
+    else:
+        indir = '/global/cfs/cdirs/desi/survey/fiberassign/'+survey+'/'+ts[:3]+'/'
     tarf = indir+ts+'-targ.fits'
     try:
         fitsio.read(tarf)
@@ -194,7 +197,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     if too:
         print('will be using too file '+toof)
     if outdir is None:
-        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/SV3rerun/orig/'
+        outdir = '/global/cfs/cdirs/desi/survey/catalogs/testfiberassign/'+survey+'rerun/orig/'
       
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
@@ -206,7 +209,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh main\n')
-    if faver == None:
+    if faver is None:
         faver = float(fht['FA_VER'][:3])
         if 'main' in indir:
             assert(faver > 3.0)
@@ -223,6 +226,12 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
         else:
             assert(faver < 5.0)
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
+    elif faver == 'current':
+        faver = 5
+        if faenvdir is not None:
+            fo.write('PATH='+faenvdir+'fiberassign/bin:$PATH\n')
+            fo.write('PYTHONPATH='+faenvdir+'/fiberassign/py:$PYTHONPATH\n')
+            
     else:
         faver = float(faver[:3])
         if 'main' in indir:
@@ -232,7 +241,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False):
         else:
             assert(faver < 5.0)
             fo.write("module swap fiberassign/"+str(faver)+"\n")
-        
+       
     fo.write("fba_run")
     fo.write(" --targets "+tarf)
     if scnd:

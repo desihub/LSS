@@ -44,8 +44,12 @@ parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
 parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
 parser.add_argument("--combr", help="combine the random tiles together",default='n')
+parser.add_argument("--combwspec", help="combine the random potential assignment info with spec info",default='n')
+parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
+
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
+parser.add_argument("--fillran", help="add columns",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -61,6 +65,8 @@ parser.add_argument("--newspec",help="if y, merge in redshift info even if no ne
 args = parser.parse_args()
 print(args)
 
+
+
 type = args.type
 basedir = args.basedir
 version = args.version
@@ -72,7 +78,9 @@ par = True
 if args.par == 'n':
     par = False
 
-
+#if specrel == 'daily':
+#    sys.exit('support for daily needs to be written back in')
+    
 mkranmtl = False
 if args.ranmtl == 'y':
     mkranmtl = True
@@ -123,6 +131,7 @@ pd = pdir
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
+randir = basedir +'/main/LSS/random'
 
 
 
@@ -137,12 +146,12 @@ if not os.path.exists(maindir+'/LSScats'):
 
 
 
-randir = maindir+'random'
+#randir = maindir+'random'
 #logf.write('using random files '+str(rm)+ ' through '+str(rx)+' (this is python, so max is not inclusive)\n')
-for i in range(rm,rx):
-    if not os.path.exists(maindir+'random'+str(i)):
-        os.mkdir(maindir+'random'+str(i))
-        print('made '+str(i)+' random directory')
+#for i in range(rm,rx):
+#    if not os.path.exists(maindir+'random'+str(i)):
+#        os.mkdir(maindir+'random'+str(i))
+#        print('made '+str(i)+' random directory')
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -174,37 +183,8 @@ badfib = mainp.badfib
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
-if specrel != 'daily':
-    if specrel == 'everest' or specrel == 'guadalupe':
-        specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-        wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
-        #if args.combr == 'n':
-        del specf
-        if mkfullr:
-            specdat = ct.get_specdat(ldirspec,pdir,specrel,badfib)
-            gtl = np.unique(specdat['TILELOCID'])
-            zf = ldirspec+'/datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-            dz = Table.read(zf) 
-            wg = np.isin(dz['TILELOCID'],gtl)
-
-            dz = dz[wg]
-            if type == 'BGS_BRIGHT':
-                bit = targetmask.bgs_mask[type]
-                desitarg='BGS_TARGET'
-            else:
-                bit = targetmask.desi_mask[type]    
-                desitarg='DESI_TARGET'
-            wtype = ((dz[desitarg] & bit) > 0)
-            if notqso == 'notqso':
-                wtype &= ((dz[desitarg] & 4) == 0)
-            dz = dz[wtype]
-            #lznp = common.find_znotposs(dz)
-            pthresh = 3000
-            if type[:3] == 'BGS':
-                pthresh = 2000
-            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
-            del specdat
-            del dz
+if args.survey == 'Y1':
+    wd &=mt['ZDATE'] < 20220900
 
 mtld = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -217,90 +197,76 @@ ta['RA'] = tiles[selt]['RA']
 ta['DEC'] =tiles[selt]['DEC']
 
 
-# construct a table with the needed tile information
-# if len(mtld) > 0:
-#     tilel = []
-#     ral = []
-#     decl = []
-#     mtlt = []
-#     fal = []
-#     obsl = []
-#     pl = []
-#     fver = []
-#     fahal = []
-#     
-#     for tile,pro in zip(mtld['TILEID'],mtld['PROGRAM']):
-#     for tile in mtld['TILEID']:
-#         ts = str(tile).zfill(6)
-#         try:
-#             fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-#             tilel.append(tile)
-#             ral.append(fht['TILERA'])
-#             decl.append(fht['TILEDEC'])
-#             mtlt.append(fht['MTLTIME'])
-#             fal.append(fht['FA_RUN'])
-#             obsl.append(fht['OBSCON'])
-#             fav = fht['FA_VER']
-#             try:
-#                 if int(fav[:1]) >= 5:
-#                     fav = '5.0.0'
-#             except:
-#                 print(fav)        
-#             if np.isin(fav,['2.2.0.dev2811','2.3.0','2.3.0.dev2838']):#2.3.0 confirmed to work for these
-#                 fver.append('2.3.0')
-#             else:
-#                 fver.append(fav)    
-#             try:
-#                faha = fht['FA_HA']
-#             except:
-#                faha = 0
-#                print(tile,'no FA_HA in this tile header')        
-#             pl.append(pro)
-#             pl.append(pr)
-#         except:
-#             print('failed to find and/or get info for tile '+ts)    
-#     ta = Table()
-#     ta['TILEID'] = tilel
-#     ta['RA'] = ral
-#     ta['DEC'] = decl
-#     ta['MTLTIME'] = mtlt
-#     ta['FA_RUN'] = fal
-#     ta['OBSCON'] = obsl
-#     ta['PROGRAM'] = pl
-#     ta['FA_HA'] = fahal
-#     ta['FA_VER'] = fver
-#     print(np.unique(fver,return_counts=True))
-#     wfv = (np.array(fver) == faver)
-#     mtld =  mtld[wfv]
-#     ta = ta[wfv]
-# else:
-#     print('no done tiles in the MTL')
+
+#if mkfullr or combr:
+specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+print('loading specf file '+specfo)
+specf = Table(fitsio.read(specfo))
+sel = np.isin(specf['TILEID'],mtld['TILEID'])
+specf = specf[sel]
+specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    
+print('loaded specf file '+specfo)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+gtl = np.unique(specfc['TILELOCID'])
+del specfc
+
+if mkfullr:
+    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+    specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+
+    wg = np.isin(specft['TILELOCID'],gtl)
+    specft = Table(specft[wg])
+    print('length after selecting type and good hardware '+str(len(specf)))
+
+    lznp = common.find_znotposs(specft)    
+    print('finished finding znotposs')
+    if type == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[type]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[type]    
+        desitarg='DESI_TARGET'
+    del specft
+
+kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+specf.keep_columns(kc)
+
 
 print(len(ta))
-
+print('done with preliminaries')
 
 def doran(ii):
-    dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'   
+    print('doing random '+str(ii))
+    #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
+    dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        if par:
-            nti = int(len(ta)/rx)+1
-            print(nti,len(ta),ii)
-            for jj in range(rm,rx):
-                print(jj)
-                rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-                print('read random file '+str(jj))
-                tim = nti*ii
-                tix = nti*(ii+1)
-                if tix < len(ta):
-                    tiles = ta[tim:tix]
-                else:
-                    tiles = ta[tim:]
-                print('writing randoms to '+str(len(tiles))+' tiles')
-                ct.randomtiles_main_fromran(tiles,rt )
-        else:
-            ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
+        #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
+
+
+#     if mkranmtl:
+#         print('making random mtl files for each tile')
+#         if par:
+#             nti = int(len(ta)/rx)+1
+#             print(nti,len(ta),ii)
+#             for jj in range(rm,rx):
+#                 print(jj)
+#                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
+#                 print('read random file '+str(jj))
+#                 tim = nti*ii
+#                 tix = nti*(ii+1)
+#                 if tix < len(ta):
+#                     tiles = ta[tim:tix]
+#                 else:
+#                     tiles = ta[tim:]
+#                 print('writing randoms to '+str(len(tiles))+' tiles')
+#                 ct.randomtiles_main_fromran(tiles,rt )
+#         else:
+#             ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
@@ -345,37 +311,34 @@ def doran(ii):
         print(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
-
-            if specrel == 'daily':
-                specfo = ldirspec+'datcomb_'+type+'_spec_zdone.fits'
-                specf = Table.read(specfo)
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
             
-            if specrel == 'everest' or specrel == 'guadalupe':    
-
-                #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                #wt = np.isin(mtld['TILEID'],specf['TILEID'])
-                #above two lines already done above
-                specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+type+'-cumulative.fits')
-                wt = np.isin(specf['TILEID'],mtld['TILEID']) #cut spec file to dark or bright time tiles
-                specf = specf[wt]
-                print('number of TILEID in spec data being used:')
-                print(len(np.unique(specf['TILEID'])))
-                specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-            
-            kc = ['PRIORITY','ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-            ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
-            ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
-            'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-            'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']
-
-            new = ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,keepcols=kc)
+            #kc = ['ZWARN','LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+            #,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
+            #,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
+            #'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
+            #'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+            outf = maindir+'random'+str(ii)+'/rancomb_'+type+'wdup_Alltiles.fits'
+            new = ct.combran_wdup(mtld,ii,randir,outf,keepcols=kc)
+            #tiles,rann,randir,outf,keepcols=[]
+            #ct.combran_wdup(mtld,ii,randir,type,ldirspec,specf,outf,keepcols=kc,collf=maindir+'random'+str(ii)+'collisions-'+pr+'.fits')
             if new or args.newspec == 'y':
+                ct.combran_wdupspec(ii,type,ldirspec,specf,outf,keepcols=kc,mask_coll=True,collf=maindir+'random'+str(ii)+'collisions-'+pr+'.fits')
                 tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey)
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
-
-
+    if args.combwspec == 'y':
+        print('combining with spec info')
+        infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
+        mask_coll = False
+        if args.survey == 'Y1':
+            mask_coll = True
+        ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
+    
+    if args.counttiles == 'y':    
+        print('counting tiles')
+        tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
+        common.write_LSS(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
+        #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
     if mkfullr:
@@ -395,14 +358,23 @@ def doran(ii):
 #             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut,tlid_full=tlid_full,badfib=badfib)
+        print('about to make full ran '+outf)
+        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
     #print('ran mkfullran\n')
     if args.add_veto == 'y':
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii)
+
+    if args.fillran == 'y':
+        print('filling randoms with imaging properties')
+        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        #ct.addcol_ran(fn,ii)
+        new_cols=mainp.new_cols
+        fid_cols=mainp.fid_cols
+        common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
+        print('done with '+str(ii))
 
 
     if args.apply_veto == 'y':

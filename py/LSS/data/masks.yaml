@@ -1,0 +1,34 @@
+# ELG mask from https://desi.lbl.gov/trac/wiki/keyprojects/y1kp3/ImagingSys/ELGMask
+elg_mask:
+    - [MASKBITS,      0, "Veto mask in DESI target selection: DR9 MASKBITS 1, 12 and 13 (BRIGHT, GALAXY and CLUSTER)."]
+    - [ARTIFACTS,     1, "Custom mask for all tracers: large galaxies and imaging artifacts that are not in any DR9 mask (or not sufficiently masked in DR9)."]
+    - [GAIA,          2, "Circular mask based on Gaia stars with G<18; this replaces the DR9 MEDIUM mask. Magnitude-radius relation is specific to ELGs."]
+    - [EXCESS,        3, "Custom mask for ELGs: masks around bright star ghosts and Milky Way satellite galaxies where there are excess ELG targets."]
+
+# LRG mask from https://desi.lbl.gov/trac/wiki/keyprojects/y1kp3/ImagingSys/LRGMask
+lrg_mask:
+    - [MASKBITS,      0, "Veto mask in DESI target selection: DR9 MASKBITS 1, 12 and 13 (BRIGHT, GALAXY and CLUSTER)."]
+    - [UNWISE,        1, "DR9 unWISE WISEMASK W1 bits 0, 1, 2, 3, 4, 6, 7, i.e., all bits except bit 5 'HALO' (AllWISE-like circular halo)."]
+    - [ARTIFACTS,     2, "Custom mask for all tracers: large galaxies and imaging artifacts that are not in any DR9 mask (or not sufficiently masked in DR9)."]
+    - [GAIA,          3, "Circular mask based on Gaia stars with G<18; this replaces the DR9 MEDIUM mask. Magnitude-radius relation is specific to LRGs."]
+    - [ALLWISE,       4, "Circular masks based on AllWISE stars with W1_AB<10.0; this replaces the DR9 unWISE HALO mask (and removes substantially less area)."]
+
+# ADM combined mask to inform HEALPix sky maps of systematics.
+# ADM first set are the Legacy Surveys masks derived from elg_mask and lrg_mask.
+skymap_mask:
+    - [MASKBITS,      0, "Veto mask in DESI target selection: DR9 MASKBITS 1, 12 and 13 (BRIGHT, GALAXY and CLUSTER)."]
+    - [ARTIFACTS,     1, "Custom mask for all tracers: large galaxies and imaging artifacts that are not in any DR9 mask (or not sufficiently masked in DR9)."]
+    - [ELG_GAIA,      2, "Circular mask based on Gaia stars with G<18; this replaces the DR9 MEDIUM mask. Magnitude-radius relation is specific to ELGs."]
+    - [LRG_GAIA,      3, "Circular mask based on Gaia stars with G<18; this replaces the DR9 MEDIUM mask. Magnitude-radius relation is specific to LRGs."]
+    - [ELG_EXCESS,    4, "Custom mask for ELGs: masks around bright star ghosts and Milky Way satellite galaxies where there are excess ELG targets."]
+    - [LRG_UNWISE,    5, "DR9 unWISE WISEMASK W1 bits 0, 1, 2, 3, 4, 6, 7, i.e., all bits except bit 5 'HALO' (AllWISE-like circular halo)."]
+    - [LRG_ALLWISE,   6, "Circular masks based on AllWISE stars with W1_AB<10.0; this replaces the DR9 unWISE HALO mask (and removes substantially less area)."]
+
+# ADM leave a gap in mask numbers in case we have additional Legacy Surveys masks.
+    - [HALPHA,       17, "Masks for H-alpha map."]
+    - [CALIB_G,      18, "Mask for g-band calibration residuals map (constructed by comparing LS to stars from PS1)."]
+    - [CALIB_R,      19, "Mask for r-band calibration residuals map (constructed by comparing LS to stars from PS1)."]
+    - [CALIB_Z,      20, "Mask for z-band calibration residuals map (constructed by comparing LS to stars from PS1)."]
+    - [EBV_SGF14,    21, "Mask for Schlafly, Green & Finkbeiner (2014) map."]
+    - [KAPPA_PLANCK, 22, "Mask for Planck lensing convergence map."]
+    - [EBV_CHIANG_LSS, 23, "Mask for Chiang's 2023 lss mask for EBV corrected values."]

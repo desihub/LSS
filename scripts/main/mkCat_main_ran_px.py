@@ -50,8 +50,8 @@ parser.add_argument("--basedir", help="base directory for output, default is SCR
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--ranmtl", help="make a random mtl file for the tile",default='n')
-parser.add_argument("--rfa", help="run randoms through fiberassign",default='y')
-parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='y')
+parser.add_argument("--rfa", help="run randoms through fiberassign",default='n')
+parser.add_argument("--combhp", help="combine the random tiles together but in separate  healpix",default='n')
 parser.add_argument("--combr", help="combine the random healpix files together",default='n')
 parser.add_argument("--fullr", help="make the random files with full info, divided into healpix",default='n')
 parser.add_argument("--refullr", help="make the full files from scratch rather than only updating pixels with new tiles",default='n')
@@ -328,7 +328,8 @@ def doran(ii):
 
     if mkranmtl:
         print('making random mtl files for each tile')
-        ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
+        ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
@@ -432,6 +433,7 @@ def doran(ii):
             maxp = 2100
 
         npx = 0
+        uhpxs = []
         if args.refullr == 'y':
             uhpxs = hpxs
         else:
@@ -448,7 +450,8 @@ def doran(ii):
                 otls = np.unique(tls['TILEID'])
                 print('got tileids currently in '+dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits')
                 selt = ~np.isin(ta['TILEID'].astype(int),otls.astype(int))
-                uhpxs = foot.tiles2pix(8, tiles=ta[selt])
+                if len(ta[selt]) > 0:
+                    uhpxs = foot.tiles2pix(8, tiles=ta[selt])
         for px in uhpxs:
             outf = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             print(outf,npx,len(uhpxs))
@@ -465,13 +468,18 @@ def doran(ii):
         npx =0 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         print('now combining to make '+outf)
-        cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
+        cols = ['GOODHARDLOC','ZPOSSLOC','PRIORITY','LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'ZWARN', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TILELOCID', 'NTILE', 'TILES','NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS', 'PHOTSYS']
         pl = []
         for px in hpxs:
             po = ldirspec+'/healpix/'+type+notqso+'zdone_px'+str(px)+'_'+str(ii)+'_full.ran.fits'
             if os.path.isfile(po):
                 #pf = Table.read(po)
-                pf = fitsio.read(po,columns=cols)
+                try:
+                    pf = fitsio.read(po,columns=cols)
+                except:
+                    print(po+' was corrupted')
+                    ct.mkfullran_px(ldirspec+'/healpix/',ii,imbits,po,type,pdir,gtl,lznp,px,dirrt+'randoms-1-'+str(ii),maxp=maxp,min_tsnr2=tsnrcut)
+                    pf = fitsio.read(po,columns=cols)
                 pl.append(pf)
                 print(npx,len(hpxs))
                 #ptls = Table.read(po)

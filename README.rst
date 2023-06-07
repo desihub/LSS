@@ -1,9 +1,26 @@
 # LSS
 
+|Actions Status| |Coveralls Status| |Documentation Status|
+
+.. |Actions Status| image:: https://github.com/desihub/LSS/workflows/CI/badge.svg
+    :target: https://github.com/desihub/LSS/actions
+    :alt: GitHub Actions CI Status
+
+.. |Coveralls Status| image:: https://coveralls.io/repos/desihub/LSS/badge.svg
+    :target: https://coveralls.io/github/desihub/LSS
+    :alt: Test Coverage Status
+
+.. |Documentation Status| image:: https://readthedocs.org/projects/lss/badge/?version=latest
+    :target: https://LSS.readthedocs.io/en/latest/
+    :alt: Documentation Status
+
+
 Introduction
 ------------
 
 This package contains codes to create LSS catalogs and randoms.
+
+The code for k+e corrections was originally copied from Sam Moore's github (https://github.com/SgmAstro/DESI)
 
 Installation
 ------------

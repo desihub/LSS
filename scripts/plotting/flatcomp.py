@@ -9,21 +9,24 @@ from astropy.table import join,Table
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected",default='all')
+parser.add_argument("--version", help="catalog version",default='test')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
+parser.add_argument("--verspec",help="version for redshifts",default='daily')
 
 args = parser.parse_args()
 
 
 
-outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/plots/'
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.version+'/plots/'
 qt = 'COMP_TILE'
 
 if args.type == 'all':
-    tps = ['QSO','ELG','ELG_LOP','LRG','BGS_ANY','BGS_BRIGHT']
+    tps = ['LRG','BGS_ANY','BGS_BRIGHT','QSO','ELG','ELG_LOP']
 else:
     tps = args.type.split(',')    
 for tp in tps:
     tars = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tp+'targetsDR9v1.1.1.fits',columns=['TARGETID','RA','DEC'])
-    dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',columns=['TARGETID',qt])
+    dat = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/test/'+tp+'_full_noveto.dat.fits',columns=['TARGETID',qt])
     dat = join(tars,dat,keys=['TARGETID'],join_type='left')
     mrows = dat['COMP_TILE'].mask
     dat['OBS'] = np.zeros(len(dat))

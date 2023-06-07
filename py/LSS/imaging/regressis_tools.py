@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import healpy as hp
 
-from regressis import PhotometricDataFrame, Regression, DR9Footprint, setup_logging
+from regressis import PhotometricDataFrame, Regression, footprint, setup_logging
 from regressis.utils import mkdir, setup_mplstyle, read_fits_to_pandas, build_healpix_map
 
 from LSS import ssr_tools
@@ -46,7 +46,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
-    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()
+    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
     #logger.info("Number of pixels observed in each region:")
     #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
@@ -80,7 +80,7 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
 
-def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
+def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fracthresh=5.,foot=None):
     """
     
     From clustering and randoms catalog build and save the healpix distribution of considered observed objects and the corresponding fracarea. 
@@ -98,12 +98,18 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
         Resolution of the healpix distribution map of the objects.
     dir_out : str
         Path where the ouputs will be saved.
+    zlim : list
+    	contains minimum,maximum redshifts to apply
+    nran : int
+        number of random files to use
+    fracthresh : float
+    	inverse of fraction coverage of healpix pixel maximum to be considered for building weights    
     """
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
     zcol = 'Z_not4clus'
     
-    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2']
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES','WEIGHT_ZFAIL']
     if tracer[:3] == 'ELG':
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
@@ -150,19 +156,28 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
     wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
-    wts = 1./data['FRACZ_TILELOCID'].values#*data['WEIGHT_ZFAIL'].values
+    wts = 1./data['FRACZ_TILELOCID'].values*1./data['FRAC_TLOBS_TILES'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
-    north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=True, cut_desi=False).get_imaging_surveys()
+    #north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
+    if foot is None:
+        foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    if tracer == 'QSO':
+        north, south, des = foot.get_imaging_surveys()
+    else:
+        north, south_ngc, south_sgc = foot.update_map(foot.data['ISNORTH']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISNGC']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISSGC'])
     #logger.info("Number of pixels observed in each region:")
     #logger.info(f"        * North: {np.sum(map_data[north] > 0)} ({np.sum(map_data[north] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * South: {np.sum(map_data[south] > 0)} ({np.sum(map_data[south] > 0)/np.sum(map_data > 0):2.2%})")
     #logger.info(f"        * Des:   {np.sum(map_data[des] > 0)}  ({np.sum(map_data[des] > 0)/np.sum(map_data > 0):2.2%})")
 
     ranl = []
+    tran = tracer
+    if tracer == 'BGS_BRIGHT-21.5':
+        tran = 'BGS_BRIGHT'
     for i in range(0,nran):
-        ran = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
+        ran = read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
@@ -180,11 +195,13 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18):
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
     filename_data = os.path.join(dir_out, f'{survey}_{tracer}_{nside}.npy')
+    print('saved data to '+filename_data )
     #logger.info(f'Save data: {filename_data}')
     np.save(filename_data, map_data)
     filename_fracarea = os.path.join(dir_out, f'{survey}_{tracer}_fracarea_{nside}.npy')
     #logger.info(f'Save corresponding fracarea: {filename_fracarea}\n')
     np.save(filename_fracarea, fracarea)
+    print('saved fracarea to '+filename_fracarea )
 
 
 def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, sgr_stream_path=None,feature_names=None):
@@ -218,10 +235,19 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     feature_names: list of str
         If not None use this list of feature during the regression otherwise use the default one.
     """
+    print('about to make dataframe')
     dataframe = PhotometricDataFrame(survey, tracer, footprint, suffix_tracer, **dataframe_params)
-    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path)
+    print('about to set feature')
+    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path,sel_columns=feature_names)
+    print('about to set targets')
     dataframe.set_targets()
+    print('about to build')
+    output_dir = dataframe.output_dataframe_dir 
+    dataframe.output_dataframe_dir = None
     dataframe.build(cut_fracarea=cut_fracarea)
+    dataframe.output_dataframe_dir = output_dir
+    print('about to do regression')
     regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
+    print('about to get weight')
     _ = regression.get_weight(save=True)
-    regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
+    #regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)

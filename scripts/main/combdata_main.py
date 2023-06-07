@@ -27,6 +27,7 @@ from desitarget import targetmask
 #from this package
 #try:
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
@@ -44,18 +45,23 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--prog", help="dark or bright is supported",default='dark')
 parser.add_argument("--verspec",help="version for redshifts",default='daily')
 parser.add_argument("--check_date_only",help="whether or not to stop after maximum night is found",default='n')
+parser.add_argument("--make_tile_file",help="whether or not to make a tile file",default='n')
 parser.add_argument("--doqso",help="whether or not to combine qso data",default='n')
 parser.add_argument("--redoqso",help="whether or not to combine qso data, starting over",default='n')
 parser.add_argument("--mkemlin",help="whether or not to make emission line files",default='n')
 parser.add_argument("--dospec",help="whether or not to combine spec data",default='y')
+parser.add_argument("--dotarspec",help="whether or not to combine spec and tar data per type, for non-daily data",default='y')
 parser.add_argument("--redospec",help="whether or not to combine spec data from beginning",default='n')
 parser.add_argument("--counts_only",help="skip to just counting overlaps",default='n')
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
+parser.add_argument("--get_petalsky",help="if y, combine info across tiles to get dispersion in sky fibers",default='n')
+parser.add_argument("--comb_petalqa",help="if y, combine petal qa info across tiles ",default='n')
+
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
 parser.add_argument("--tracer", help="tracer type",default='all')
-
+parser.add_argument("--notqso", help="tracer type",default='')
 
 
 
@@ -150,6 +156,9 @@ if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
     print('made '+ldirspec+'healpix')
 
+if args.make_tile_file == 'y':
+    tiles4comb.write(maindir+'tiles-'+prog.upper()+'.fits',overwrite=True,format='fits')
+
 print('specrel is '+specrel)
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
@@ -160,9 +169,10 @@ if specrel == 'daily':
         specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
-    spec_cols_4tar = ['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
-    ,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-    ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    #spec_cols_4tar = ['TARGETID','Z','ZERR','ZWARN','ZWARN_MTL','SPECTYPE','DELTACHI2'\
+    #,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
+    #,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    spec_cols_4tar = ['TARGETID','ZWARN','ZWARN_MTL','LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
     print(spec_cols_4tar)
     if args.subguad == 'y':
         dz = Table(fitsio.read(specfo))
@@ -177,6 +187,8 @@ if specrel == 'daily':
         print(ng.dtype.names)
         ng.write(specfo,format='fits',overwrite=True)
     del specf
+
+regl = ['N','S']
 
 # speccols = ['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE', 'NCOEFF',\
 # 'DELTACHI2', 'PETAL_LOC','DEVICE_LOC','LOCATION','FIBER','TARGET_RA','TARGET_DEC','PMRA','PMDEC',\
@@ -291,7 +303,7 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         notqsos = ['',''] 
     for tp,notqso in zip(tps,notqsos):
 
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey,badfib=badfib) 
         outtc = ldirspec+tp+notqso+'_tilelocs.dat.fits'
         tc.write(outtc,format='fits', overwrite=True)
 
@@ -357,11 +369,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
     if prog == 'dark':
-        tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
-        notqsos = ['','','','','notqso']
+        if args.tracer == 'all':
+            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
+            notqsos = ['','','','','notqso']
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
     if prog == 'bright':
-        tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-        notqsos = ['',''] 
+        if args.tracer == 'all':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
+
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
         print('now doing '+tp+notqso)
@@ -388,7 +409,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 #print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
                 print(len(tiles4comb[tidc]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
-
+            del fo
         if os.path.isfile(outfs):
             fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             stids = np.unique(fo['TILEID'])
@@ -463,21 +484,80 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #except:
             #    print('column PRIORITY was not in spec table')  
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outfs,format='fits', overwrite=True)
+            print('added TILELOCID, about to do joins')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+
+            #seems to run out of memory on join
+            tjl = []
+            print(tarfn.dtype.names)
+            selreg = tarfn['DEC'] > 0
+            print(len(tarfn[selreg]))
+            remcol = ['LOCATION','TILEID']
+            for col in remcol:
+                try:
+                    specf.remove_columns([col])
+                except:
+                    print('column '+col +' was not in stacked spec table') 
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            print('2nd join done')
+            del tarfn
+            tj = vstack(tjl)
+            print('stacked now writing out')
+            #for reg in regl:                
+            #    sel = tarfn['PHOTSYS'] == reg
+            #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            #tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS(tj,outfs)
             print('joined to spec data and wrote out to '+outfs)
         elif redotarspec or dotarspec:
+            print('joining spec info to target info')
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            tj.write(outfs,format='fits', overwrite=True)
+            remcol = ['LOCATION','TILEID']
+            for col in remcol:
+                try:
+                    specf.remove_columns([col])
+                except:
+                    print('column '+col +' was not in stacked spec table') 
+            print('added TILELOCID, about to do joins')
+            #tj = join(tarfn,specf,keys=['TARGETID','TILELOCID'],join_type='left')
+            tjl = []
+            selreg = tarfn['DEC'] > 0
+            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            print('1st join done')
+            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            print('2nd join done')
+            tj = vstack(tjl)
+            del tarfn
+            #tj = np.concatenate(tjl)
+            print('stacked now writing out')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+            #print(np.unique(tj['ZWARN'],return_counts=True))
+            common.write_LSS(tj,outfs)
+            #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
-        if uptileloc:
-            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
-            tc.write(outtc,format='fits', overwrite=True)
+        #if uptileloc:
+        #    print('counting tiles')
+        #    tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
+        #    print('writing tile counts')
+        #    tc.write(outtc,format='fits', overwrite=True)
 
+
+if args.get_petalsky == 'y':
+    petalsky_fn = ldirspec+'tile_petal_skydisp_'+prog+'.fits'
+    ct.combtile_skystd(tiles4comb,petalsky_fn,specver=specrel,clip=3)
+
+if args.comb_petalqa == 'y':
+    petalqa_fn = ldirspec+'tile_petal_qa_'+prog+'.fits'
+    ct.combtile_petalqa(tiles4comb,petalqa_fn,specver=specrel)
 
 if specrel != 'daily' and args.dospec == 'y':
     specf.keep_columns(['TARGETID','CHI2','COEFF','Z','ZERR','ZWARN','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
@@ -485,14 +565,14 @@ if specrel != 'daily' and args.dospec == 'y':
     ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B'\
     ,'TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B',\
     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
-    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY'])
+    'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY','DESI_TARGET','BGS_TARGET','TARGET_RA','TARGET_DEC','LASTNIGHT'])
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
     fzmtl = fitsio.read(specfo)
     specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     specf.write(outfs,format='fits', overwrite=True)
-    
+    specf.remove_columns(['DESI_TARGET','BGS_TARGET','TARGET_RA','TARGET_DEC']) #remove these columns because they are in the targets already
     if specrel == 'everest' or specrel =='guadalupe':
         #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
         tps = [prog]
@@ -511,34 +591,35 @@ if specrel != 'daily' and args.dospec == 'y':
         if prog == 'bright':
             tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
             notqsos = ['',''] 
-    for tp,notqso in zip(tps,notqsos):
-        #first test to see if we need to update any
-        print('now doing '+tp+notqso)
-        print(len(tiles4comb['TILEID']))
-        tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
-        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
-        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+    if args.dotarspec == 'y':
+        for tp,notqso in zip(tps,notqsos):
+            #first test to see if we need to update any
+            print('now doing '+tp+notqso)
+            print(len(tiles4comb['TILEID']))
+            tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+            outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+            outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
-        tarf = Table.read(tarfo)
-        remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
-        for col in remcol:
-            try:
-                tarf.remove_columns([col] )#we get this where relevant from spec file
-            except:
-                print('column '+col +' was not in stacked tarwdup table')    
+            tarf = Table.read(tarfo)
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+            for col in remcol:
+                try:
+                    tarf.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    print('column '+col +' was not in stacked tarwdup table')    
 
-        #tarf.remove_columns(['ZWARN_MTL'])
-        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-        #specf.remove_columns(['PRIORITY'])
-        tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
-        del tarf
-        del specf
-        print('joined tar and spec, now writing')
-        tj.write(outfs,format='fits', overwrite=True)
-        print('wrote, now counting tiles')
-        tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
-        outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
-        tc.write(outtc,format='fits', overwrite=True)
+            #tarf.remove_columns(['ZWARN_MTL'])
+            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            #specf.remove_columns(['PRIORITY'])
+            tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            del tarf
+            #del specf
+            print('joined tar and spec, now writing')
+            tj.write(outfs,format='fits', overwrite=True)
+            #print('wrote, now counting tiles')
+            #tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
+            #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+            #tc.write(outtc,format='fits', overwrite=True)
 
 
 #tj.write(ldirspec+'datcomb_'+prog+'_tarspecwdup_zdone.fits',format='fits', overwrite=True)

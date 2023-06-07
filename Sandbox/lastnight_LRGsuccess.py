@@ -9,6 +9,9 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='y')
+parser.add_argument("--plottsnr2",default='y')
+parser.add_argument("--redux",default='daily')
+
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
 args = parser.parse_args()
@@ -41,6 +44,13 @@ for ii in range(0, len(tidl)):
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
 sel = exptl > 850
+ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
+selss = ss['LASTNIGHT'] == int(args.night)
+gt = ss[selss]['EFFTIME_SPEC'] > 850
+tss = ss[selss][gt]['TILEID']
+sel |= np.isin(tidl,tss)
+tls_2mask = [9889,2693,3647,5958]
+sel &= ~np.isin(tidl,tls_2mask)
 tidl = tidl[sel]
 
 print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
@@ -56,16 +66,20 @@ print(tidl)
 gz = np.zeros(10)
 tz = np.zeros(10)
 
-zdir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/'
+zdir = '/global/cfs/cdirs/desi/spectro/redux/'+args.redux+'/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
+tsnrlsg = {x: [] for x in range(0,10)}
+tsnrls = {x: [] for x in range(0,10)}
 nzla = []
 for tid in tidl:
     for pt in range(0,10):
         
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
+        rrf = zdir+str(tid)+'/'+args.night+'/redrock-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
         if os.path.isfile(zmtlff):
             zmtlf = fitsio.read(zmtlff)
+            rr = fitsio.read(rrf,ext='TSNR2')
             nodata = zmtlf["ZWARN"] & zwarn_mask["NODATA"] != 0
             num_nod = np.sum(nodata)
             print('looking at petal '+str(pt)+' on tile '+str(tid))
@@ -96,6 +110,8 @@ for tid in tidl:
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
+                tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
+                tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
                 nzla.append(zmtlf[wzwarn&wlrg]['Z'])
             else:
                 print('no good lrg data')  
@@ -130,3 +146,19 @@ if args.plotnz == 'y':
             plt.savefig(args.outdir+'LRG'+args.night+'_'+str(pt)+'.png')
             if args.vis == 'y':
                 plt.show()
+if args.plottsnr2 == 'y':
+    from matplotlib import pyplot as plt
+    for pt in range(0,10):
+        if len(tsnrlsg[pt]) > 0:
+            gz = np.concatenate(tsnrlsg[pt])
+            az = np.concatenate(tsnrls[pt])
+            a = np.histogram(gz)
+            b = np.histogram(az,bins=a[1])
+            bc = a[1][:-1]+(a[1][1]-a[1][0])/2.
+            plt.plot(bc,a[0]/b[0],label='petal '+str(pt))
+    plt.legend()
+    plt.xlabel('TSNR2_LRG')
+    plt.ylabel('redshift success rate')
+    plt.savefig(args.outdir+'LRG'+args.night+'_vstsnr2.png')
+    if args.vis == 'y':
+        plt.show()

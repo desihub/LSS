@@ -5,7 +5,7 @@ import datetime
 import os
 import sys
 
-from desitarget.targetmask import obsmask, obsconditions, zwarn_mask
+
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -21,6 +21,7 @@ def dm(z):
 #functions that shouldn't have any dependence on survey go here
 
 def cut_specdat(dz,badfib=None):
+    from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
     fs = dz[selz]
@@ -40,6 +41,27 @@ def cut_specdat(dz,badfib=None):
         print('number at bad fibers '+str(sum(bad)))
         wfqa &= ~bad
     return fs[wfqa]
+
+def goodz_infull(tp,dz,zcol='Z_not4clus'):
+    if tp == 'LRG':
+        z_suc= dz['ZWARN']==0
+        z_suc &= dz['DELTACHI2']>15
+        z_suc &= dz[zcol]<1.5
+
+    if tp == 'ELG':
+        z_suc = dz['o2c'] > 0.9
+
+    if tp == 'QSO':
+        z_suc = dz[zcol]*0 == 0
+        z_suc &= dz[zcol] != 999999
+        z_suc &= dz[zcol] != 1.e20
+
+
+    if tp == 'BGS':    
+        z_suc = dz['ZWARN']==0
+        z_suc &= dz['DELTACHI2']>40
+    
+    return z_suc
 
 
 def cutphotmask(aa,bits):
@@ -261,6 +283,67 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
 
+def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus',reg=None):
+    '''
+    fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
+    fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
+    bs is the bin width for the n(z) calculation
+    zmin is the lower edge of the first bin
+    zmax is the upper edge of the last bin
+    returns array with n(z) values
+    '''
+    #cd = distance(om,1-om)
+    if reg is None:
+        ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+        area = ranf['NAXIS2']/randens
+    else:
+        print(reg)
+        ranf = fitsio.read(fcr,columns=["PHOTSYS"])
+        selreg = ranf['PHOTSYS'] == reg
+        area = len(ranf[selreg])/randens
+        del ranf
+        
+    print('area is '+str(area))
+
+    df = fitsio.read(fcd)
+    if md == 'data':
+        gz = goodz_infull(tp,df)
+    if md == 'mock':
+        gz = df['ZWARN'] == 0
+    df = df[gz]
+    wo = ''
+    if reg is not None:
+        selreg = df['PHOTSYS'] == reg
+        df = df[selreg]
+        wo = '_'+reg
+    nbin = int((zmax-zmin)/bs)
+    cols = list(df.dtype.names)
+    wts = 1/df['FRACZ_TILELOCID']
+    if 'FRAC_TLOBS_TILES' in cols:
+        wts *= 1/df['FRAC_TLOBS_TILES']
+    if 'WEIGHT_SYS' in cols:
+        wts *= df['WEIGHT_SYS']
+    selnan = wts*0 != 0
+    print('number of nans in weights '+str(np.sum(selnan)))
+    wts[selnan] = 1.
+    zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax),weights=wts)
+    zl = zhist[1][:-1]
+    zh = zhist[1][1:]
+    zm = (zl+zh)/2.
+    vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
+    nz = zhist[0]/vol
+    #print(nz)
+    if write == 'y':
+        fout = fcd.replace('.dat.fits','')+wo+'_nz.txt'
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+        outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
+
+        for i in range(0,len(nz)):
+            outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
+    return nz
+
+
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
     fb is the root of the file name, including the path
@@ -334,6 +417,40 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ft.write(fn,format='fits',overwrite=True)
         print('done with random number '+str(rann))
     return True
+
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
+    '''
+    fb is the file name, including the path
+    nran is the number of random files to add the nz to
+    bs is the bin size of the nz file (read this from file in future)
+    zmin is the lower edge of the minimum bin (read this from file in future)
+    zmax is the upper edge of the maximum bin (read this from file in the future)
+    '''
+
+    fd = Table(fitsio.read(fb))
+    
+    zl = fd[zcol]
+    zind = ((zl-zmin)/bs).astype(int)
+    gz = fd['ZWARN'] != 999999
+    if md == 'data':
+        gz &= goodz_infull(tp,fd)
+    gz &= zl > zmin
+    gz &= zl < zmax
+    
+    print(np.min(fd[gz]['FRACZ_TILELOCID']),np.max(fd[gz]['FRACZ_TILELOCID']))
+    nl = np.zeros(len(fd))
+    nl[gz] = nz[zind[gz]]
+    mean_comp = len(fd[gz])/np.sum(1./fd[gz]['FRACZ_TILELOCID'])
+    print('mean completeness '+str(mean_comp))
+
+    fkpl = 1./(1+nl*P0*mean_comp)
+    #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
+    if add_data:
+        fd['WEIGHT_FKP'] = fkpl
+        write_LSS(fd,fb)
+    return True
+
+
 
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
@@ -420,6 +537,65 @@ def join_etar(fn,tracer,tarver='1.1.1'):
     write_LSS(df,fn,comments)
 
 
+def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=True):
+    fid_fn = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
+    new_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
+    mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'
+   
+    df = Table(fitsio.read(fn))
+    
+    col = 'SKYMAP_MASK'
+    domask = True
+    if np.isin(col,list(df.dtype.names)):
+        print(col+' already in '+fn)
+        if redo:
+            df.remove_columns([col])
+            print('will replace '+col) 
+        else:
+            print('not replacing '+col)
+            domask = False
+    if domask:
+        mask = fitsio.read(mask_fn)
+        df = join(df,mask,keys=['TARGETID'])
+        del mask
+        
+    cols2read_new = ['TARGETID']
+    for col in new_cols:
+        if np.isin(col,list(df.dtype.names)):
+            print(col+' already in '+fn)
+            if redo:
+                df.remove_columns([col])
+                print('will replace '+col)
+                cols2read_new.append(col)
+            else:
+                print('not replacing '+col)
+        else:
+            cols2read_new.append(col)
+
+    rannew = fitsio.read(new_fn,columns=cols2read_new)
+    df = join(df,rannew,keys=['TARGETID'])
+    del rannew
+    cols2read_fid = ['TARGETID']
+    for col in fid_cols:
+        if np.isin(col,list(df.dtype.names)):
+            print(col+' already in '+fn)
+            if redo:
+                df.remove_columns([col])
+                print('will replace '+col)
+                cols2read_fid.append(col)
+            else:
+                print('not replacing '+col)
+        else:
+            cols2read_fid.append(col)
+
+    ranfid = fitsio.read(fid_fn,columns=cols2read_fid)
+    df = join(df,ranfid,keys=['TARGETID'])
+
+    print(len(df))
+    comments = ['Adding map columns']
+    write_LSS(df,fn,comments)
+
+
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
@@ -455,11 +631,12 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     seld = ff['GOODHARDLOC'] == 1
     print('length after cutting to good locations '+str(len(ff[seld])))
     if '.dat' in fin:
-        seld &= ff['PRIORITY_INIT'] <= maxp
+        #seld &= ff['PRIORITY_INIT'] <= maxp
+        seld &= ff['PRIORITY_ASSIGNED'] <= maxp
         print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
     if '.ran' in fin:
-        seld &= ff['ZPOSSLOC'] == 1
-        print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
+        #seld &= ff['ZPOSSLOC'] == 1
+        #print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
         seld &= ff['PRIORITY'] <= maxp
         print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
 
@@ -492,6 +669,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         ff['Z'].name = 'Z_not4clus'
         print('updating completeness')
         compa = []
+        fractl = []
         tll = []
         ti = 0
         ff.sort('TILES')
@@ -499,41 +677,60 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         tlsl = ff['TILES']
         tlslu = np.unique(tlsl)
         laa = ff['LOCATION_ASSIGNED']
-        print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True))
+        lta = ff['TILELOCID_ASSIGNED']
+        print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
 
         # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
+        tot = 0
+        atot = 0
+        tltot = 0
         while i < len(ff):
             tls = []
             tlis = []
-            nli = 0
-            nai = 0
+            nli = 0 #initialize total available per tile group
+            nai = 0 #initialize total assigned
+            nti = 0 #initialize total at location where something of the same type was assigned
 
             while tlsl[i] == tlslu[ti]:
                 nli += 1
-                nai += laa[i]
+                nai += laa[i] #laa is true/false assigned
+                nti += lta[i] #lta is true/false something of the same type was assigned
                 i += 1
                 if i == len(ff):
                     break
 
-            if ti % 1000 == 0:
+            if ti % 10000 == 0:
                 print('at tiles ' + str(ti) + ' of ' + str(nts))
 
-            cp = nai / nli #no/nt
+            tot += nli
+            atot += nai
+            tltot += nti
+            cp = nai / nli #
+            fract = nti/nli
             # print(tls,cp,no,nt)
             compa.append(cp)
+            fractl.append(fract)
             tll.append(tlslu[ti])
             ti += 1
+        #print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
+        fract_dicta = dict(zip(tll, fractl))
         fcompa = []
+        fracta = []
         for tl in ff['TILES']:
             fcompa.append(comp_dicta[tl])
+            fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
+        ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
-        print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; should approximately match')
-        print(np.sum(1. / ff[wz]['FRACZ_TILELOCID']), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
+        comp = len(ff[wz])/len(ff)
+        print('assignment completeness is '+str(comp))
+        print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
+        print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
 
     if '.ran' in fin:
         print('area is ' + str(len(ff) / 2500))
@@ -551,7 +748,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
     #ff.write(fout,overwrite=True,format='fits')
 
 
-def write_LSS(ff, outf, comments=None):
+def write_LSS(ff, outf, comments=None,extname='LSS'):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
@@ -561,11 +758,11 @@ def write_LSS(ff, outf, comments=None):
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff), extname='LSS')
+    fd.write(np.array(ff), extname=extname)
     if comments is not None:
         for comment in comments:
-            fd['LSS'].write_comment(comment)
-    fd['LSS'].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+            fd[extname].write_comment(comment)
+    fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     print('closed fits file')
     os.system('mv ' + tmpfn + ' ' + outf)
@@ -715,7 +912,7 @@ def addNS(tab):
     wra = (tab['RA'] > 100-tab['DEC'])
     wra &= (tab['RA'] < 280 +tab['DEC'])
     tab['PHOTSYS'] = 'S'
-    seln = dec > 32.375
+    seln = tab['DEC'] > 32.375
     seln &= wra
     tab['PHOTSYS'][seln] = 'N'
     return tab

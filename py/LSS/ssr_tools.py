@@ -637,12 +637,15 @@ class BGS_ssr:
 
 
 class ELG_ssr:
-    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe']):
+    def __init__(self,specrel='fuji',efftime_min=450,efftime_max=1500,surveys=['DA02'],versions=['test'],specrels=['guadalupe'],reg=None):
         #self.cat = get_ELG_data_full('ELG_LOPnotqso')#,surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
         self.cat = get_data_full('ELG_LOPnotqso',surveys=surveys,versions=versions,specrels=specrels)#get_ELG_data(specrel)
 
         mask = self.cat['EFFTIME_ELG']>efftime_min
         mask &= self.cat['EFFTIME_ELG']<efftime_max
+        self.reg = reg
+        if reg is not None:
+            mask &= self.cat['PHOTSYS'] == reg
         self.cat = self.cat[mask]
         self.selgz = self.cat['q'] == 1
         ha,bine = np.histogram(self.cat['EFFTIME_ELG'])
@@ -657,6 +660,7 @@ class ELG_ssr:
         self.bc = np.array(bc)
         self.bine = bine
         self.vis_5hist = False
+        self.outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+surveys[0]+'/LSS/'+specrels[0]+'/LSScats/'+versions[0]+'/'
         
         
         
@@ -720,6 +724,11 @@ class ELG_ssr:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
                 plt.plot(self.bc,np.ones(len(self.bc))*consl[i],'k:')
+            plt.ylabel('ELG_LOPnotqso Z failure rate, in fiber bins')
+            plt.xlabel('ELG EFFECTIVE exp time')
+            plt.legend()
+            plt.savefig(self.outdir+'ELG_LOPnotqso_gfibbin_failratefit.png')        
+
             plt.show()
         return costt    
         
@@ -730,13 +739,22 @@ class ELG_ssr:
         pars = res.x
         chi2 = self.wrapper_hist(pars)
         print(pars,chi2)
+        rw = ''
+        if self.reg is not None:
+            rw = self.reg
+        fo = open(self.outdir+'ELG_LOPnotqso_'+rw+'pars.txt','w')
+        fo.write('#overall fit\n')
+        fo.write('#a b c chi2\n')
+        for par in pars:
+            fo.write(str(par)+' ')
+        fo.write(str(chi2)+'\n')
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
         plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
         plt.ylabel('ELG_LOPnotqso Z failure rate')
         plt.xlabel('ELG EFFECTIVE exp time')
         plt.legend()
-        #plt.savefig(fn_root+'overall_failratefit.png')        
+        plt.savefig(self.outdir+'ELG_LOPnotqso_'+rw+'overall_failratefit.png')        
         plt.show()
         plt.clf()
 
@@ -776,7 +794,14 @@ class ELG_ssr:
                #method='Powell', tol=1e-6)
         fcoeff = rest.x
         self.vis_5hist = True
-        print(fcoeff,self.hist_norm(fcoeff))#,self.hist_norm(0.),self.hist_norm(1.)) 
+        chi2 = self.hist_norm(fcoeff)
+        print(fcoeff,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
+        fo.write('#gflux fit\n')
+        fo.write('#fcoeff chi2\n')
+        
+        fo.write(str(fcoeff)+' ')
+        fo.write(str(chi2)+'\n')
+        fo.close()
         wtf = (fcoeff*(self.mft-dflux)/self.mft+1)*(1/drelssr-1)+1
         sel = wtf < 1
         wtf[sel] = 1
