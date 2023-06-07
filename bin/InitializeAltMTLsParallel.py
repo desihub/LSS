@@ -34,9 +34,11 @@ parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, he
 
 parser.add_argument('--version', action='version', version='There are no version numbers.', help = 'There are no version numbers.')
 parser.add_argument('-sbp', '--shuffleBrightPriorities', action='store_true', dest='shuffleBrightPriorities', default=False, help = 'Pass this flag to shuffle top level PRIORITIES in BRIGHT survey Alt MTLs. If this argument is true, should also be setting PromoteFracBGSFaint.', required = False)
+parser.add_argument('-sep', '--shuffleELGPriorities', action='store_true', dest='shuffleELGPriorities', default=False, help = 'Pass this flag to shuffle top level ELG PRIORITIES in DARK survey Alt MTLs. If this argument is true, should also be setting PromoteFracELG.', required = False)
 parser.add_argument('-dssp', '--dontShuffleSubpriorities', action='store_false', dest='shuffleSubpriorities', default=True, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to NOT shuffle subpriorities. This option must be used in conjunction with --reproducing.', required = False)
 parser.add_argument('-rep', '--reproducing', action='store_true', dest='reproducing', default=False, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to confirm to the alt mtl code that you are trying to reproduce real MTLs. This option should (must?) be used in conjunction with --shuffleSubpriorities.', required = False)
-parser.add_argument('-pfbf', '--promoteFracBGSFaint', dest='promoteFracBGSFaint', default=0.2, help = 'What (decimal) percentage of BGS_FAINT targets to promote to BGS_FAINT_HIP. This argument is only used if shuffleBrightPriorities is passed and if obscon = BRIGHT.', required = False, type = float)
+parser.add_argument('-pfbf', '--PromoteFracBGSFaint', dest='PromoteFracBGSFaint', default=0.2, help = 'What (decimal) percentage of BGS_FAINT targets to promote to BGS_FAINT_HIP. This argument is only used if shuffleBrightPriorities is passed and if obscon = BRIGHT.', required = False, type = float)
+parser.add_argument('-pfe', '--PromoteFracELG', dest='PromoteFracELG', default=0.05, help = 'What (decimal) percentage of ELG_LOP targets to promote to ELG_HIP. This argument is only used if shuffleELGPriorities is passed and if obscon = DARK.', required = False, type = float)
 parser.add_argument('-elb', '--exampleLedgerBase', dest='exampleLedgerBase', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-p2L', '--path2LSS', dest='path2LSS', default='~/.local/desicode/LSS/', help = 'location where LSS repository is cloned.', required = False, type = str)
 
@@ -93,10 +95,16 @@ if args.debug or args.verbose:
 # If folder doesn't exist, then create it.
 if not os.path.isdir(args.outputMTLDirBase):
     os.makedirs(args.outputMTLDirBase)
-if not os.path.isdir(args.finalDir):
-    os.makedirs(args.finalDir)
-if os.path.exists(args.finalDir + 'SeedFile'):
-    temp = open(args.finalDir + 'SeedFile', 'r')
+    
+if args.usetmp:
+    testdir = args.finalDir
+else:
+    testdir = args.outputMTLDirBase
+
+if not os.path.isdir(testdir):
+    os.makedirs(testdir)
+if os.path.exists(testdir + 'SeedFile'):
+    temp = open(testdir + 'SeedFile', 'r')
     tempseed = int(temp.readlines()[0].split()[0])
     log.info('Seed file already exists with seed {0:d}'.format(tempseed))
 
@@ -153,7 +161,9 @@ def procFunc(nproc):
             log.info(args.finalDir)
         log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
         log.info('reproducing: {0}'.format(args.reproducing))
-        initializeAlternateMTLs(exampleLedger, outputMTLDir, genSubset = nproc, seed = args.seed, obscon = args.obscon, survey = args.survey, saveBackup = args.saveBackup, hpnum = hpnum, overwrite = args.overwrite, reproducing = args.reproducing, shuffleSubpriorities = args.shuffleSubpriorities, startDate=args.startDate, endDate=args.endDate, profile = args.profile, usetmp=args.usetmp, finalDir=args.finalDir, debug = args.debug, verbose = args.verbose)
+        initializeAlternateMTLs(exampleLedger, outputMTLDir, genSubset = nproc, seed = args.seed, obscon = args.obscon, survey = args.survey, saveBackup = args.saveBackup, hpnum = hpnum, overwrite = args.overwrite, reproducing = args.reproducing, shuffleSubpriorities = args.shuffleSubpriorities, startDate=args.startDate, endDate=args.endDate, profile = args.profile, usetmp=args.usetmp, finalDir=args.finalDir, debug = args.debug, verbose = args.verbose,
+            shuffleBrightPriorities = args.shuffleBrightPriorities, shuffleELGPriorities = args.shuffleELGPriorities, PromoteFracBGSFaint = args.PromoteFracBGSFaint
+            , PromoteFracELG = args.PromoteFracELG)
     return 0
 inds = []
 start = int(NodeID*NProc/SlurmNProcs)

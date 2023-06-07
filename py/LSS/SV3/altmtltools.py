@@ -55,11 +55,11 @@ def processTileFile(infile, outfile, startDate, endDate):
         return 0
     
         
-    if startDate is None:
+    if (startDate is None) or (startDate == ''):
         startDate = 0
     else:
         startDate = int(startDate.split('T')[0].replace('-', ''))       
-    if endDate is None:
+    if (endDate is None) or (endDate == ''):
         endDate = 9999999999
     else:
         endDate = int(endDate.split('T')[0].replace('-', ''))
