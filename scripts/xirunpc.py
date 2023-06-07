@@ -416,7 +416,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None,rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -433,7 +433,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
 
     if mpicomm is None or mpicomm.rank == mpiroot:
 
-        data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, cat_read=cat_read, dat_cat=dat_cat, ran_cat=ran_cat, **catalog_kwargs)
+        data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir,rec_type=rec_type, tracer=tracer, option=option, cat_read=cat_read, dat_cat=dat_cat, ran_cat=ran_cat, **catalog_kwargs)
 
         if (with_shifted) & (cat_read == None):
             shifted = randoms  # above returned shifted randoms
@@ -593,6 +593,8 @@ if __name__ == '__main__':
     parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default=None)
+
     parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
 
     setup_logging()
@@ -695,13 +697,13 @@ if __name__ == '__main__':
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir,rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut)
         for region in regions:
             if args.use_arrays == 'y':
                 if region == "N":
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[0], ran_cat=randoms_[0])
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[0], ran_cat=randoms_[0])
                 if region == "S":
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[1], ran_cat=randoms_[1])
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[1], ran_cat=randoms_[1])
                 
             wang = None
             for corr_type in args.corr_type:
