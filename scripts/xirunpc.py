@@ -594,7 +594,7 @@ if __name__ == '__main__':
     parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
-    parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default=None)
+    parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
 
     parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
 
