@@ -26,14 +26,14 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
     weights = np.ones_like(data[zcolumn])
 
 
-	if wtmd == 'fracz':
-		print('using 1/FRACZ_TILELOCID based completeness weights')
-		wts = 1/data['FRACZ_TILELOCID']
-		if 'FRAC_TLOBS_TILES' in cols:
-			wts *= 1/data['FRAC_TLOBS_TILES']
-	if 'WEIGHT_ZFAIL' in cols:
-		wts *= data['WEIGHT_ZFAIL']
-	# only do true for data ???
+    if wtmd == 'fracz':
+        print('using 1/FRACZ_TILELOCID based completeness weights')
+        wts = 1/data['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols:
+            wts *= 1/data['FRAC_TLOBS_TILES']
+    if 'WEIGHT_ZFAIL' in cols:
+        wts *= data['WEIGHT_ZFAIL']
+    # only do true for data ???
 
         weights *= weights
     if use_obiwan:
