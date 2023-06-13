@@ -19,9 +19,9 @@ bands = ['R','G','Z']
 maps_dr9 = ['EBV','STARDENS'] + [f'GALDEPTH_{b}' for b in bands] + [f'PSFSIZE_{b}' for b in bands]
 
 def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran_exp=None,
-                nside=256, nest=False, use_obiwan=False, columns=maps_dr9,wtmd='fracz'):
+                nside=256, nest=False, use_obiwan=False, columns=maps_dr9,wtmd='fracz',tp='ELG'):
     logger = logging.getLogger('prep4sysnet')
-    data = do_zcut(data, zmin, zmax, zcolumn)
+    data = do_zcut(data, zmin, zmax, zcolumn,tp=tp)
     cols = list(data.dtype.names)
     weights = np.ones_like(data[zcolumn])
 
