@@ -81,7 +81,7 @@ def hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=None, frac_min=
 
 def do_zcut(data, zmin, zmax, zcolumn,tp='ELG'):
     zgood = (data[zcolumn] > zmin) & (data[zcolumn] < zmax)
-    zgood &= goodz_infull(tp,data,zcolumn)
+    zgood &= common.goodz_infull(tp,data,zcolumn)
     zgood &= data['ZWARN'] != 999999
     print(f"# removed from quality and zcut {zmin}<{zmax}: {data[zcolumn].size - zgood.sum()}, {100 * (data[zcolumn].size - zgood.sum()) / data[zcolumn].size:.2f}%")
     return data[zgood]
