@@ -551,6 +551,7 @@ if tracer_clus[:3] == 'QSO':
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
 	tpstr = 'BGS_BRIGHT'
+nside = 256
 pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
 
@@ -571,7 +572,7 @@ if args.prepsysnet == 'y':
         seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
         prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], pwf, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                nside=256, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+                nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
         fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
         prep_table.write(fnout,overwrite=True,format='fits')
 
@@ -581,7 +582,7 @@ if args.regressis == 'y':
 
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
-    nside = 256
+    
 #     if type[:3] == 'ELG':
 #         zl = (0.8,1.5)
 #     if type[:3] == 'QSO':
