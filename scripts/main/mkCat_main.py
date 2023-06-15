@@ -555,6 +555,10 @@ pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
 
 if args.prepsysnet == 'y':
+    if not os.path.exists(dirout+'/sysnet'):
+        os.mkdir(dirout+'/sysnet')
+        print('made '+dirout+'/sysnet')    
+
     from LSS.imaging import sysnet_tools
     dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full.dat.fits'))
     ranl = []
