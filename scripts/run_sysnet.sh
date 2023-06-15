@@ -19,8 +19,8 @@ run=$1 # north or south
 tracer=$2
 if [ "$tracer" = "ELG_LOPnotqso" ]
 then
-    zmin = 0.8
-    zmax = 1.6
+    zmin=0.8
+    zmax=1.6
 fi
 
 do_LRfinder=$3 #false #for running the learning rate finder
