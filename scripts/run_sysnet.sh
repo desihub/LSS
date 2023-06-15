@@ -1,7 +1,7 @@
 #source /global/common/software/desi/desi_environment.sh main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
-module load pytorch/1.10.0
+#module load pytorch/1.10.0
 
 run_sysnet=$HOME/desicode/sysnetdev/scripts/app.py
 
