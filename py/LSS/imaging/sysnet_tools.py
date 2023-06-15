@@ -19,7 +19,7 @@ bands = ['R','G','Z']
 maps_dr9 = ['EBV','STARDENS'] + [f'GALDEPTH_{b}' for b in bands] + [f'PSFSIZE_{b}' for b in bands]
 
 def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran_exp=None,
-                nside=256, nest=False, use_obiwan=False, columns=maps_dr9,wtmd='fracz',tp='ELG'):
+                nside=256, nest=True, use_obiwan=False, columns=maps_dr9,wtmd='fracz',tp='ELG'):
     logger = logging.getLogger('prep4sysnet')
     data = do_zcut(data, zmin, zmax, zcolumn,tp=tp)
     cols = list(data.dtype.names)
@@ -30,6 +30,7 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
         print('using 1/FRACZ_TILELOCID based completeness weights')
         wts = 1/data['FRACZ_TILELOCID']
         if 'FRAC_TLOBS_TILES' in cols:
+            print('using FRAC_TLOBS_TILES')
             wts *= 1/data['FRAC_TLOBS_TILES']
     if 'WEIGHT_ZFAIL' in cols:
         wts *= data['WEIGHT_ZFAIL']
