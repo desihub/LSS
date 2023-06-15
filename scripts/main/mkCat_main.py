@@ -63,6 +63,9 @@ parser.add_argument("--add_ke", help="add k+e corrections for BGS data to cluste
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
+parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
+
+
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 
@@ -538,6 +541,36 @@ if args.imsys == 'y':
             dd.write(fcd,overwrite=True,format='fits')
 
 zl = (zmin,zmax)
+fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
+if tracer_clus[:3] == 'LRG':
+	fit_maps.append('PSFDEPTH_W1')
+#    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+if tracer_clus[:3] == 'QSO':
+	fit_maps.append('PSFDEPTH_W1')
+
+tpstr = tracer_clus
+if tracer_clus == 'BGS_BRIGHT-21.5':
+	tpstr = 'BGS_BRIGHT'
+pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
+
+
+if args.prepsysnet == 'y':
+    from LSS.imaging import sysnet_tools
+    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full.dat.fits'))
+    ranl = []
+    for i in range(0,18):
+        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ranl.append(ran)
+    rands = np.concatenate(ranl)
+    regl = ['N','S']
+    for reg in regl:
+        seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
+        prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], pwf, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
+                nside=256, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+        fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
+        prep_table.write(fnout,overwrite=True,format='fits')
+
 if args.regressis == 'y':
     #from regressis, must be installed
     from regressis import DR9Footprint
@@ -559,10 +592,6 @@ if args.regressis == 'y':
         os.mkdir(dirreg)
         print('made '+dirreg)   
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
-    tpstr = tracer_clus
-    if tracer_clus == 'BGS_BRIGHT-21.5':
-        tpstr = 'BGS_BRIGHT'
-    pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     if args.survey == 'DA02':
@@ -598,14 +627,8 @@ if args.regressis == 'y':
     'EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1',
     'PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'
     '''
-    fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
     #if tracer_clus[:3] == 'BGS':# or tracer_clus[:3] == 'ELG':
     #    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    if tracer_clus[:3] == 'LRG':
-        fit_maps.append('PSFDEPTH_W1')
-    #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    if tracer_clus[:3] == 'QSO':
-        fit_maps.append('PSFDEPTH_W1')
         #fit_maps = ['STARDENS','HI','BETA_ML','PSFDEPTH_G', 'PSFDEPTH_R','PSFDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 
     print('computing RF regressis weight')
