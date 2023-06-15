@@ -574,7 +574,7 @@ if args.prepsysnet == 'y':
         prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], fitsio.read(pwf), zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
                 nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
         fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
-        prep_table.write(fnout,overwrite=True,format='fits')
+        common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
     #from regressis, must be installed
