@@ -1,6 +1,6 @@
 #source /global/common/software/desi/desi_environment.sh main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the LSS repo is installed
 module load cudatoolkit/11.4
 module load pytorch/1.10.0
 
