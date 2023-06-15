@@ -32,7 +32,8 @@ input_data=/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$ver
 echo using $input_data and saving to $output_nn
 
 # nn parameters
-axes="all"#(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14) 
+axes="all"
+#(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14) 
 # ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI', 'PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z', 'PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z', 'GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
 #(0 1 8) EBV, STARDENS, EBV_DIFF
 # (0 1 2 3 4 5 6 7 8)['EBV','STARDENS','GALDEPTH_R_extcorr','GALDEPTH_G_extcorr','GALDEPTH_Z_extcorr','PSFSIZE_R','PSFSIZE_G','PSFSIZE_Z'] + ['EBV_DIFF']
