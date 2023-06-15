@@ -4,7 +4,7 @@ module load pytorch/1.10.0
 
 run_sysnet=$HOME/desicode/sysnetdev/scripts/app.py
 
-export PYTHONPATH=$HOME/sysnetdev/:$PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$HOME/desicode/sysnetdev/
 
 #!/bin/bash
 # example to run as bash script 
