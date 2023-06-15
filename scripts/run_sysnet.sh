@@ -2,14 +2,18 @@ source /global/common/software/desi/desi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 module load pytorch/1.10.0
 
+run_sysnet=$HOME/desicode/sysnetdev/scripts/app.py
+
+export PYTHONPATH=$HOME/sysnetdev/:$PYTHONPATH
+
 #!/bin/bash
 # example to run as bash script 
 # dnnp with pnll, linp with pnll or lin with mse
-# bash run_sysnet.sh north ELG_LOPnotqso true false 1024 0.003 dnnp pnll true v0
+# bash run_sysnet.sh N ELG_LOPnotqso true false 1024 0.003 dnnp pnll true v0
 
 # below is code for reading data and where output is
 run=$1 # north or south
-tracer = $2
+tracer=$2
 if ["$tracer" = "ELG_LOPnotqso"]
 then
     zmin = 0.8
