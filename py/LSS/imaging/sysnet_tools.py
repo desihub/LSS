@@ -36,7 +36,7 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
         wts *= data['WEIGHT_ZFAIL']
     # only do true for data ???
 
-        weights *= weights
+    weights *= wts
     if use_obiwan:
         weights *= data['OBI_WEIGHT']#ut.get_nn_weights(data, run, zmin, zmax, nside, hpix=None, version=version)
         
