@@ -513,7 +513,7 @@ if root:
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=args.maxr)
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
 
 
 
