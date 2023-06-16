@@ -37,6 +37,9 @@ for tp,notqso in zip(tps,notqsos):
 
 
 #random
+#new process
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog BRIGHT
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog DARK
 #this process is much slower than new process (details to be added), but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
 #first, we go through bright and dark, making the mtl files per tile that fiberassign uses, then running fiberassign (to get potential assignments, which is the FAVAIL HDU in the fba files)
 #after fiberassign is run, the potential assignments are combined per healpix
