@@ -27,7 +27,7 @@ model=$7
 loss=$8
 
 version=${9} #catalog version
-basedir=$10
+basedir=${10}
 output_nn=$basedir/$version/sysnet/${tracer}_${run}
 #/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/${tracer}_${run}
 input_data=$basedir/$version/sysnet/prep_${tracer}_${run}.fits
