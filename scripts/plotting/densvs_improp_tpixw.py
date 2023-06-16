@@ -12,6 +12,7 @@ import healpy as hp
 from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--basedir", help="base directory for catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
@@ -25,7 +26,7 @@ args = parser.parse_args()
 nside,nest = 256,True
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/imaging/'
 
 if args.data == 'LSS':
