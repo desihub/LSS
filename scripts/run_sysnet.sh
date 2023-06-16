@@ -27,8 +27,11 @@ model=$7
 loss=$8
 
 version=${9} #catalog version
-output_nn=/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/${tracer}_${run}
-input_data=/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/prep_${tracer}_${run}.fits
+basedir=$10
+output_nn=$basedir/$version/sysnet/${tracer}_${run}
+#/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/${tracer}_${run}
+input_data=$basedir/$version/sysnet/prep_${tracer}_${run}.fits
+#/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/prep_${tracer}_${run}.fits
 echo using $input_data and saving to $output_nn
 
 # nn parameters
