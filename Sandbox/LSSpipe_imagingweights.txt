@@ -1,0 +1,63 @@
+This file is meant to provide instructions for how to create and test your own imaging weights. These instructions should work on NERSC and could guide how to, e.g., run on your laptop.
+
+1) First, copy the LSS full catalogs to your own directory structure. For instance, from the command line (">" below just to indicate command line)
+
+>mkdir $SCRATCH/DESI_LSS
+>mkdir $SCRATCH/DESI_LSS/Y1
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/hpmaps
+>cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.2.1/*full* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/
+>cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.2.1/hpmaps/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/hpmaps/
+
+For more tests, you might want to copy these full catalogs into different directories, e.g.,
+
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/test
+>cp $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/test/
+
+Then, when running, the --version argument will be the final subdirectory name
+
+2) Clone the github repo and set environment variables, e.g.,
+
+>source /global/common/software/desi/desi_environment.sh main
+>cd code_directory
+>git clone https://github.com/desihub/LSS.git
+>export LSSCODE=$HOME/code_directory #assuming $HOME/code_directory is the full path
+>PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+>export LSSBASE=$SCRATCH/DESI_LSS
+
+That should set up the environment for running the LSS code
+
+3) Run sysnet, examples are all for LRG for version v0.2.1
+
+a) Run the LSS script to prepare data for sysnet
+
+>python $LSSCODE/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --prepsysnet y --fulld n --survey Y1 --verspec iron --version v0.2.1
+
+b) Run the sysnet script to get the learning rate, for both N and S regions
+
+Variable names:
+>$LSSCODE/LSS/scripts/run_sysnet.sh region tracer do_learning_rate run_regression batch_size learning_rate model loss_function catalog_version basedirNN
+region can be N or S
+tracer can be LRG, ELG_LOPnotqso, QSO, BGS_BRIGHT-21.5
+do_learning_rate is true or false; use true when running for learning rate and false for when running regression
+run_regression is converse of do_learning_rate
+batch_size we just set to 1024, ask Mehdi for details
+learning_rate we find the best value for this by running the first step, but 0.003 is a good fiducial choice
+model use dnnp for the actual NN
+loss_function use pnll for Poisson log-likelihood (most appropriate for galaxy counts)
+basedirNN the base directory for the NN, should be $LSSBASE with more subdirectories added on
+
+Example:
+>$LSSCODE/LSS/scripts/run_sysnet.sh N LRG true false 1024 0.003 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+
+c) Inspect the plot that the terminal says was created (should be in basedirNN/sysnet/tracer_reg/loss_vs_lr_0.png), choose value on x-axis with maximum slope and run NN
+
+>$LSSCODE/LSS/scripts/run_sysnet.sh N LRG false true 1024 0.01 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+
+
+
+
+
