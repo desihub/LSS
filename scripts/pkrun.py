@@ -52,7 +52,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -78,7 +78,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
     if mpicomm.rank == mpiroot:
 
-        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
+        data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir, rec_type=rec_type, tracer=tracer, option=option, **catalog_kwargs)
         if with_shifted:
             shifted = randoms  # above returned shifted randoms
             randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
@@ -150,10 +150,12 @@ def get_edges():
     return {'min':0., 'step':0.001}
 
 
-def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if recon_dir != 'n':
+        out_dir = out_dir[:-2] + recon_dir+'/pk/'
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -204,7 +206,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the pk or just keep the original .npy file', default='n')
     parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
-
+    parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
 
@@ -248,7 +250,7 @@ if __name__ == '__main__':
             raise ValueError('Provide <= 2 tracers!')
     if tracer2 == tracer:
         tracer2 = None # otherwise counting of self-pairs
-    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, rec_type=args.rec_type, ran_sw=args.ran_sw) # survey required for zdone
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, recon_dir=args.recon_dir, rec_type=args.rec_type, ran_sw=args.ran_sw) # survey required for zdone
     distance = TabulatedDESI().comoving_radial_distance
 
     regions = args.region
@@ -270,7 +272,7 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut)
         for region in regions:
             if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
