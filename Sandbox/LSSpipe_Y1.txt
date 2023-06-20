@@ -97,6 +97,7 @@ for tp,notqso in zip(tps,notqsos):
 srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
 
 #to get regressis and zfail weights
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec iron --version v0.2.1 --add_weight_zfail y --survey Y1
 #script to do all needs editing Y1_regressis_zfail.sh iron
 
