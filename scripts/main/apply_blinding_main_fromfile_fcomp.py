@@ -521,3 +521,4 @@ if root:
     os.system('rm '+dirout+args.type+'*_S_*')
     os.system('rm '+dirout+args.type+'*_N_*')
     os.system('rm '+dirout+args.type+'*IFFT*')
+    os.system('rm '+dirout+args.type+'*full*')
