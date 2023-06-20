@@ -23,7 +23,7 @@ from desimodel.footprint import is_point_in_desi
 #try:
 import LSS.main.cattools as ct
 import LSS.common_tools as common
-import LSS.mkCat_singletile.fa4lsscat as fa
+#import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
