@@ -301,8 +301,9 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
     ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
-    hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleSubpriorities = True, 
-    reproducing = False, usetmp = False, finalDir = None, profile = False, debug = False, verbose = False):
+    hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleELGPriorities = False, 
+    PromoteFracELG = 0.05, shuffleSubpriorities = True, reproducing = False, usetmp = False, 
+    finalDir = None, profile = False, debug = False, verbose = False):
     if profile:
         pr.enable()
     if verbose or debug:
@@ -350,7 +351,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     origmtldir = os.path.dirname(initMTL).split(survey)[0]
     #zcatdir = os.path.dirname(ztilefile)
 
-    if startDate is None:
+    if (startDate is None) or (startDate == ''):
 
         firstTS = allentries[0]["TIMESTAMP"] 
         initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
@@ -475,7 +476,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         
 
         
-        if (obscon.lower() == 'bright') and (shuffleBrightPriorities):
+        if (survey.lower() == 'sv3') and (obscon.lower() == 'bright') and (shuffleBrightPriorities):
 
             BGSBits = initialentries['SV3_BGS_TARGET']
             BGSFaintHIP = ((BGSBits & 8) == 8)
@@ -497,6 +498,34 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
             initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
+
+        elif (survey.lower() == 'sv3') and (obscon.lower() == 'dark') and (shuffleELGPriorities):
+
+            ELGHIPBit = 6
+            ELGBit = 1
+            ELGOrigPriority = 103000
+            ELGPromotedPriority = 103100
+
+            ELGBits = initialentries['SV3_DESI_TARGET']
+            ELGHIP = ((ELGBits & ELGHIPBit) == ELGHIPBit)
+            ELGAll = ((ELGBits & ELGBit) == ELGBit) | ELGHIP
+
+            #Set all BGS_FAINT_HIP to BGS_FAINT
+
+            initialentries['SV3_DESI_TARGET'][ELGHIP] = (ELGBits[ELGFaintHIP] & ~ELGHIPBit)
+            initialentries['PRIORITY'][ELGHIP] = ELGOrigPriority*np.ones(np.sum(ELGHIP))
+
+            NewELGBits = initialentries['SV3_DESI_TARGET']
+            NewELGHIP = ((ELGBits & ELGHIPBit) == ELGHIPBit)
+            NewELGAll = ((ELGBits & ELGBit) == ELGBit) | NewELGHIP
+            NewELGPriors = initialentries['PRIORITY']
+
+            #Select 20% of BGS_FAINT to promote using function from desitarget
+            ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGAll)
+            #Promote them
+
+            initialentries['SV3_DESI_TARGET'][ELGNewHIP] = (ELGBits[ELGNewHIP] | ELGHIPBit)
+            initialentries['PRIORITY'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
         if verbose or debug:
             log.info('meta passed to write_mtl')
             log.info(meta)
