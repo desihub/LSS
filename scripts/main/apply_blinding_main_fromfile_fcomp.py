@@ -481,7 +481,7 @@ if root:
         def _parfun(rannum):
             ct.clusran_resamp(flin,rannum,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
         nran = args.maxr-args.minr
-        inds = np.arange(1)
+        inds = np.arange(nran)
         from multiprocessing import Pool
         with Pool(processes=nran+1) as pool:
             res = pool.map(_parfun, inds)
