@@ -36,12 +36,12 @@ That should set up the environment for running the LSS code
 
 a) Run the LSS script to prepare data for sysnet
 
->python $LSSCODE/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --prepsysnet y --fulld n --survey Y1 --verspec iron --version v0.2.1
+>python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --prepsysnet y --fulld n --survey Y1 --verspec iron --version v0.2.1
 
 b) Run the sysnet script to get the learning rate, for both N and S regions
 
 Variable names:
->$LSSCODE/LSS/scripts/run_sysnet.sh region tracer do_learning_rate run_regression batch_size learning_rate model loss_function catalog_version basedirNN
+>$LSSDIR/LSS/scripts/run_sysnet.sh region tracer do_learning_rate run_regression batch_size learning_rate model loss_function catalog_version basedirNN
 region can be N or S
 tracer can be LRG, ELG_LOPnotqso, QSO, BGS_BRIGHT-21.5
 do_learning_rate is true or false; use true when running for learning rate and false for when running regression
@@ -53,11 +53,11 @@ loss_function use pnll for Poisson log-likelihood (most appropriate for galaxy c
 basedirNN the base directory for the NN, should be $LSSBASE with more subdirectories added on
 
 Example:
->$LSSCODE/LSS/scripts/run_sysnet.sh N LRG true false 1024 0.003 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+>$LSSDIR/LSS/scripts/run_sysnet.sh N LRG true false 1024 0.003 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
 
 c) Inspect the plot that the terminal says was created (should be in basedirNN/sysnet/tracer_reg/loss_vs_lr_0.png), choose value on x-axis with maximum slope and run NN
 
->$LSSCODE/LSS/scripts/run_sysnet.sh N LRG false true 1024 0.01 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+>$LSSDIR/LSS/scripts/run_sysnet.sh N LRG false true 1024 0.01 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
 
 
 
