@@ -123,7 +123,7 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     origFS = origFiberList['FIBERSTATUS']
 
 
-
+    '''
     BGSBits = initialentries['SV3_BGS_TARGET']
     BGSFaintHIP = ((BGSBits & 8) == 8)
     BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
@@ -143,7 +143,7 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
 
     initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
     initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
-
+    '''
 
 
 def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False, verbose = False):
@@ -475,57 +475,79 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         initialentries['SUBPRIORITY'] = newSubpriors
         
 
-        
-        if (survey.lower() == 'sv3') and (obscon.lower() == 'bright') and (shuffleBrightPriorities):
+        # add main priority values
 
-            BGSBits = initialentries['SV3_BGS_TARGET']
-            BGSFaintHIP = ((BGSBits & 8) == 8)
-            BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
+
+        if  (obscon.lower() == 'bright') and (shuffleBrightPriorities):
+            if (survey.lower() == 'sv3'):
+                BGSHIPBit = 2**3
+                BGSBit = 2**0
+                BGSPriorityInit = 102000
+                BGSHIPPriority = 102100
+
+                BGSBits = initialentries['SV3_BGS_TARGET']
+            elif (survey.lower() == 'main'):
+                BGSHIPBit = 2**3
+                BGSBit = 2**0
+                BGSPriorityInit = 2000
+                BGSHIPPriority = 2100
+                BGSBits = initialentries['BGS_TARGET']
+            else:
+                raise ValueError('Survey.lower should be `sv3` or `main` but is instead {0:s}'.format(survey.lower()))
+            BGSFaintHIP = ((BGSBits & BGSHIPBit) == BGSHIPBit)
+            BGSFaintAll = ((BGSBits & BGSBit) == BGSBit) | BGSFaintHIP
 
             #Set all BGS_FAINT_HIP to BGS_FAINT
 
-            initialentries['SV3_BGS_TARGET'][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~8)
-            initialentries['PRIORITY'][BGSFaintHIP] = 102000*np.ones(np.sum(BGSFaintHIP))
-
-            NewBGSBits = initialentries['SV3_BGS_TARGET']
-            NewBGSFaintHIP = ((BGSBits & 8) == 8)
-            NewBGSFaintAll = ((BGSBits & 1) == 1) | NewBGSFaintHIP
-            NewBGSPriors = initialentries['PRIORITY']
+            initialentries['SV3_BGS_TARGET'][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~BGSHIPBit)
+            initialentries['PRIORITY'][BGSFaintHIP] = BGSPriorityInit*np.ones(np.sum(BGSFaintHIP))
+            initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), BGSFaintHIP.shape)
 
             #Select 20% of BGS_FAINT to promote using function from desitarget
             BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
             #Promote them
 
-            initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
-            initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
+            initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | BGSHIPBit)
+            initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), BGSFaintNewHIP.shape)
+            initialentries['PRIORITY'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
+            initialentries['PRIORITY_INIT'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
 
-        elif (survey.lower() == 'sv3') and (obscon.lower() == 'dark') and (shuffleELGPriorities):
+        elif (survey.lower() == 'main') and (obscon.lower() == 'dark') and (shuffleELGPriorities):
 
-            ELGHIPBit = 6
-            ELGBit = 1
-            ELGOrigPriority = 103000
-            ELGPromotedPriority = 103100
+            ELGHIPBit = 2**6
+            ELGLOPBit = 2**5
+            ELGVLOBit = 2**7
+            ELGBit = 2**0
+            ELGOrigLOPPriority = 3100
+            ELGOrigVLOPriority = 3000
+            ELGPromotedPriority = 3200
 
-            ELGBits = initialentries['SV3_DESI_TARGET']
+            ELGBits = initialentries['DESI_TARGET']
             ELGHIP = ((ELGBits & ELGHIPBit) == ELGHIPBit)
+            ELGLOP = ((ELGBits & ELGLOPBit) == ELGLOPBit)
+            ELGVLO = ((ELGBits & ELGVLOBit) == ELGVLOBit)
             ELGAll = ((ELGBits & ELGBit) == ELGBit) | ELGHIP
 
-            #Set all BGS_FAINT_HIP to BGS_FAINT
+            #Set all ELG_HIP to ELG_VLO
 
             initialentries['SV3_DESI_TARGET'][ELGHIP] = (ELGBits[ELGFaintHIP] & ~ELGHIPBit)
-            initialentries['PRIORITY'][ELGHIP] = ELGOrigPriority*np.ones(np.sum(ELGHIP))
+            initialentries['PRIORITY'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
+            initialentries['PRIORITY'][ELGHIP & ELGLOP] = ELGOrigLOPPriority*np.ones(np.sum(ELGHIP & ELGLOP))
+            initialentries['PRIORITY_INIT'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
+            initialentries['PRIORITY_INIT'][ELGHIP & ELGLOP] = ELGOrigLOPPriority*np.ones(np.sum(ELGHIP & ELGLOP))
+            initialentries['TARGET_STATE'][ELGHIP & ELGVLO] = np.broadcast_to(np.array(['ELG_VLO|UNOBS']), np.sum(ELGHIP & ELGVLO))
+            initialentries['TARGET_STATE'][ELGHIP & ELGLOP] = np.broadcast_to(np.array(['ELG_LOP|UNOBS']), np.sum(ELGHIP & ELGLOP))
 
-            NewELGBits = initialentries['SV3_DESI_TARGET']
-            NewELGHIP = ((ELGBits & ELGHIPBit) == ELGHIPBit)
-            NewELGAll = ((ELGBits & ELGBit) == ELGBit) | NewELGHIP
-            NewELGPriors = initialentries['PRIORITY']
+            allPriorities = initialentries['PRIORITY']
 
-            #Select 20% of BGS_FAINT to promote using function from desitarget
-            ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGAll)
+            #Select PromoteFracELG% of all ELGs with prioriti to promote using function from desitarget
+            ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGAll )
             #Promote them
 
             initialentries['SV3_DESI_TARGET'][ELGNewHIP] = (ELGBits[ELGNewHIP] | ELGHIPBit)
             initialentries['PRIORITY'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
+            initialentries['PRIORITY_INIT'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
+            initialentries['TARGET_STATE'][ELGNewHIP] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), ELGNewHIP.shape)
         if verbose or debug:
             log.info('meta passed to write_mtl')
             log.info(meta)
