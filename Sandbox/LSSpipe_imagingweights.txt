@@ -24,8 +24,10 @@ Then, when running, the --version argument will be the final subdirectory name
 >source /global/common/software/desi/desi_environment.sh main
 >cd code_directory
 >git clone https://github.com/desihub/LSS.git
->export LSSCODE=$HOME/code_directory #assuming $HOME/code_directory is the full path
->PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+>export LSSDIR=$HOME/code_directory #assuming $HOME/code_directory is the full path
+>git clone https://github.com/mehdirezaie/sysnetdev/LSS.git 
+>export SYSNETDIR=$HOME/code_directory #assuming $HOME/code_directory is the full path
+>PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
 >export LSSBASE=$SCRATCH/DESI_LSS
 
 That should set up the environment for running the LSS code
