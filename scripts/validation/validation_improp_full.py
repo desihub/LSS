@@ -222,7 +222,7 @@ for tp in tps:
         cl = clrs[1]        
         sel_reg_d = dtf['PHOTSYS'] == reg
         sel_reg_r = rt['PHOTSYS'] == reg
-        dt_reg = dtf[sel_reg_d]
+        dt_reg = dtf[sel_reg_d&selz]
         rt_reg = rt[sel_reg_r]
         fig = plt.figure()
         plot_reldens(parv,dt_reg,rt_reg,cl,reg)
@@ -245,7 +245,7 @@ for tp in tps:
             map = 'g_sky_res'
             for reg,cl in zip(regl,clrs):
                 
-                sel_reg_d = dtf['PHOTSYS'] == reg
+                sel_reg_d = dtf['PHOTSYS'&selz] == reg
                 sel_reg_r = rt['PHOTSYS'] == reg
                 dt_reg = dtf[sel_reg_d]
                 rt_reg = rt[sel_reg_r]
@@ -271,7 +271,7 @@ for tp in tps:
             print(map)
             for reg,cl in zip(regl,clrs):
                 if reg == 'S' or map[:5] != 'CALIB':
-                    sel_reg_d = dtf['PHOTSYS'] == reg
+                    sel_reg_d = dtf['PHOTSYS'&selz] == reg
                     sel_reg_r = rt['PHOTSYS'] == reg
                     dt_reg = dtf[sel_reg_d]
                     rt_reg = rt[sel_reg_r]
@@ -297,7 +297,7 @@ for tp in tps:
             parv[sel] = hp.UNSEEN
             map = map_pair[0]+' - '+map_pair[1]
             for reg,cl in zip(regl,clrs):
-                sel_reg_d = dtf['PHOTSYS'] == reg
+                sel_reg_d = dtf['PHOTSYS'&selz] == reg
                 sel_reg_r = rt['PHOTSYS'] == reg
                 dt_reg = dtf[sel_reg_d]
                 rt_reg = rt[sel_reg_r]
@@ -325,7 +325,7 @@ for tp in tps:
         parv = debv
         fig = plt.figure()
         for reg,cl in zip(regl,clrs):
-            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_d = dtf['PHOTSYS'&selz] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
             rt_reg = rt[sel_reg_r]
