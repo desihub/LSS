@@ -269,14 +269,9 @@ if mkfulld:
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
         tlf = ldirspec+type+'_tilelocs.dat.fits'
         if type[:3] == 'ELG':
-            #azf = '/global/cfs/cdirs/desi/users/raichoor/spectro/daily/main-elg-daily-tiles-cumulative.fits'
-            #azf = ldirspec+'emlin_catalog.fits'
             azf = mainp.elgzf
         if type[:3] == 'QSO':
-            #azf =ldirspec+'QSO_catalog.fits'
             azf = mainp.qsozf
-    #if specrel == 'daily':
-        #specf = Table.read(ldirspec+'datcomb_'+progl+'_spec_zdone.fits')
     if args.survey == 'Y1':
         tlf = None
 
@@ -356,27 +351,6 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
         common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
-# dchi2 = 9
-# tsnrcut = 0
-# if type[:3] == 'ELG':
-#     dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-#     tsnrcut = 80
-#     zmin = 0.8
-#     zmax = 1.6
-# if type == 'LRG':
-#     dchi2 = 16  
-#     tsnrcut = 80
-#     zmin = 0.4
-#     zmax = 1.1  
-# if type[:3] == 'BGS':
-#     dchi2 = 40
-#     tsnrcut = 1000
-#     zmin = 0.1
-#     zmax = 0.5
-# if type == 'QSO':
-#     zmin = 0.8
-#     zmax = 3.5
-        
 
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
@@ -473,25 +447,6 @@ if args.add_ke == 'y':
 
 if mkclusran and mkclusdat:
     print('doing clustering randoms')
-#     tsnrcol = 'TSNR2_ELG'
-#     tsnrcut = 0
-#    
-#     if type[:3] == 'ELG':
-#         #dchi2 = 0.9 #This is actually the OII cut criteria for ELGs
-#         tsnrcut = 80
-#     if type == 'LRG':
-#         #dchi2 = 16  
-#         tsnrcut = 80  
-#     if type[:3] == 'BGS':
-#         tsnrcol = 'TSNR2_BGS'
-#         dchi2 = 40
-#         tsnrcut = 1000
-#     rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF'
-#     if type[:3] == 'BGS':
-#         fcols = ['G','R','Z','W1','W2']
-#         for col in fcols:
-#             rcols.append('flux_'+col.lower()+'_dered')
-
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
@@ -546,7 +501,7 @@ if tracer_clus[:3] == 'LRG':
 	fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-	fit_maps.append('PSFDEPTH_W1')
+	fit_maps.append('PSFDEPTH_W1','PSFDEPTH_W2')
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
