@@ -94,12 +94,12 @@ for tp in tps:
         tpr = 'BGS_BRIGHT'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+tpr+zdw+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
         print(tpr+' full no veto number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full.dat.fits',ext=1)
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+tpr+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
         print(tpr+' full (with veto) number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
 #     dtf = fitsio.read(indir+tp+zdw+'_clustering.dat.fits')
