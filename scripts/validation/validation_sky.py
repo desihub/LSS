@@ -42,7 +42,7 @@ nran = 18
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','LRG','QSO','BGS_BRIGHT']
+    tps = ['ELG_LOPnotqso','LRG','QSO','BGS_BRIGHT-21.5']
 
 zdw = ''#'zdone'
 
@@ -89,16 +89,18 @@ if args.survey == 'SV3' and args.tracers == 'all':
     if args.data != 'LSS':
         tps = ['QSO','LRG','ELG']
 for tp in tps:
-    
-    dtfh = fitsio.read_header(indir+tp+zdw+'_full_noveto.dat.fits',ext=1)
+    tpr = tp
+    if tp == 'BGS_BRIGHT-21.5':
+        tpr = 'BGS_BRIGHT'
+    dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
-        print(tp+' full no veto number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
+        print(tpr+' full no veto number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
-    dtfh = fitsio.read_header(indir+tp+zdw+'_full.dat.fits',ext=1)
+    dtfh = fitsio.read_header(indir+tpr+zdw+'_full.dat.fits',ext=1)
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+tp+zdw+'_'+str(nr)+'_full.ran.fits',ext=1)   
-        print(tp+' full (with veto) number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
+        print(tpr+' full (with veto) number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
 #     dtf = fitsio.read(indir+tp+zdw+'_clustering.dat.fits')
 #     nc = np.sum(dtf['WEIGHT'])
@@ -130,7 +132,7 @@ for tp in tps:
         rada[wr] -=360
 
  
-        rf = indir+tp+zdw+'_0_full.ran.fits'
+        rf = indir+tpr+zdw+'_0_full.ran.fits'
         rta = fitsio.read(rf)
 
         rara = rta['RA']
