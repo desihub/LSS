@@ -105,7 +105,7 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
     dval = parv[dpix]
     rval = parv[rpix]
     perbs = 100/nsplit
-    print(np.min(rval) ' make sure this minimum value is not null'
+    print(str(np.min(rval))+ ' make sure this minimum value is not null'
     minvl = [np.min(rval)]
     for i in range(1,nsplit):
         minvl.append(np.percentile(rval,i*bs))
