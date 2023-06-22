@@ -145,7 +145,7 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     
 
 for tp in tps:
-    nside,nest = 256,True
+    
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     seld = dtf['ZWARN'] != 999999
@@ -208,6 +208,8 @@ for tp in tps:
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
+        
+        nside,nest = 256,True
         figs = []
         zmin = zb[0]
         zmax = zb[1]
