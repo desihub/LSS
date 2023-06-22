@@ -182,140 +182,140 @@ for tp in tps:
     rt = fitsio.read(rf)
     
         
-	nside,nest = 256,True
-	figs = []
-	zmin = zb[0]
-	zmax = zb[1]
-	sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-	parv = sag
-	map = 'sagstream'
-	#for reg,cl in zip(regl,clrs):
-	reg = 'S'
-	cl = clrs[1]        
-	sel_reg_d = dtf['PHOTSYS'] == reg
-	sel_reg_r = rt['PHOTSYS'] == reg
-	dt_reg = dtf[sel_reg_d]
-	rt_reg = rt[sel_reg_r]
-	fig = plt.figure()
-	
-	plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
-	plt.legend()
-	plt.xlabel('redshift')
-	plt.ylabel('counts per deg2 ')
+    nside,nest = 256,True
+    figs = []
+    zmin = zb[0]
+    zmax = zb[1]
+    sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
+    parv = sag
+    map = 'sagstream'
+    #for reg,cl in zip(regl,clrs):
+    reg = 'S'
+    cl = clrs[1]        
+    sel_reg_d = dtf['PHOTSYS'] == reg
+    sel_reg_r = rt['PHOTSYS'] == reg
+    dt_reg = dtf[sel_reg_d]
+    rt_reg = rt[sel_reg_r]
+    fig = plt.figure()
+    
+    plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+    plt.legend()
+    plt.xlabel('redshift')
+    plt.ylabel('counts per deg2 ')
 
-	plt.title(args.survey+' '+tp+' '+map)
-	plt.grid()
-	figs.append(fig)
-	#plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-	#plt.clf()
-
-
-
-	if sky_g is not None:
-		fig = plt.figure()
-		parv = sky_g
-		map = 'g_sky_res'
-		for reg,cl in zip(regl,clrs):
-			
-			sel_reg_d = dtf['PHOTSYS'] == reg
-			sel_reg_r = rt['PHOTSYS'] == reg
-			dt_reg = dtf[sel_reg_d]
-			rt_reg = rt[sel_reg_r]
-			plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
-
-		    plt.legend()
-	        plt.xlabel('redshift')
-	        plt.ylabel('counts per deg2 ')
-
-	        plt.title(args.survey+' '+tp+' '+map+' '+reg)
-		    plt.grid()
-		    figs.append(fig)
-		#plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-		#plt.clf()
+    plt.title(args.survey+' '+tp+' '+map)
+    plt.grid()
+    figs.append(fig)
+    #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+    #plt.clf()
 
 
 
-	mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
-	for map in maps:
-		fig = plt.figure()
-		parv = mf[map]
-		print(map)
-		for reg,cl in zip(regl,clrs):
-			if reg == 'S' or map[:5] != 'CALIB':
-				sel_reg_d = dtf['PHOTSYS'] == reg
-				sel_reg_r = rt['PHOTSYS'] == reg
-				dt_reg = dtf[sel_reg_d]
-				rt_reg = rt[sel_reg_r]
-			    plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+    if sky_g is not None:
+        fig = plt.figure()
+        parv = sky_g
+        map = 'g_sky_res'
+        for reg,cl in zip(regl,clrs):
+            
+            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_r = rt['PHOTSYS'] == reg
+            dt_reg = dtf[sel_reg_d]
+            rt_reg = rt[sel_reg_r]
+            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-		        plt.legend()
-	            plt.xlabel('redshift')
-	            plt.ylabel('counts per deg2 ')
+            plt.legend()
+            plt.xlabel('redshift')
+            plt.ylabel('counts per deg2 ')
 
-	            plt.title(args.survey+' '+tp+' '+map+' '+reg)
-		        plt.grid()
-        		figs.append(fig)
-		#plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-		#plt.clf()
+            plt.title(args.survey+' '+tp+' '+map+' '+reg)
+            plt.grid()
+            figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
 
-	for map_pair in dmaps:
-		fig = plt.figure()
-		m1 = mf[map_pair[0]]
-		m2 = mf[map_pair[1]]
-		sel = (m1 == hp.UNSEEN)
-		sel |= (m2 == hp.UNSEEN)
-		parv = m1-m2
-		parv[sel] = hp.UNSEEN
-		map = map_pair[0]+' - '+map_pair[1]
-		for reg,cl in zip(regl,clrs):
-			sel_reg_d = dtf['PHOTSYS'] == reg
-			sel_reg_r = rt['PHOTSYS'] == reg
-			dt_reg = dtf[sel_reg_d]
-			rt_reg = rt[sel_reg_r]
-			plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-		    plt.legend()
-	        plt.xlabel('redshift')
-	        plt.ylabel('counts per deg2 ')
 
-	        plt.title(args.survey+' '+tp+' '+map+' '+reg)
-		    plt.grid()
-        	figs.append(fig)
-		#plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-		#plt.clf()
+    mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
+    for map in maps:
+        fig = plt.figure()
+        parv = mf[map]
+        print(map)
+        for reg,cl in zip(regl,clrs):
+            if reg == 'S' or map[:5] != 'CALIB':
+                sel_reg_d = dtf['PHOTSYS'] == reg
+                sel_reg_r = rt['PHOTSYS'] == reg
+                dt_reg = dtf[sel_reg_d]
+                rt_reg = rt[sel_reg_r]
+                plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-	ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
-	nside = 64
-	nest = False
-	debv = np.zeros(nside*nside*12)
-	for i in range(0,len(ebvn)):
-		pix = ebvn[i]['HPXPIXEL']
-		sfdv = ebvn[i]['EBV_SFD']
-		nv = ebvn[i]['EBV_NEW'] 
-		debv[pix] = nv-sfdv
-	parv = debv
-	fig = plt.figure()
-	for reg,cl in zip(regl,clrs):
-		sel_reg_d = dtf['PHOTSYS'] == reg
-		sel_reg_r = rt['PHOTSYS'] == reg
-		dt_reg = dtf[sel_reg_d]
-		rt_reg = rt[sel_reg_r]
-		plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('counts per deg2 ')
 
-		plt.legend()
-	    plt.xlabel('redshift')
-	    plt.ylabel('counts per deg2 ')
-	    plt.title(args.survey+' '+tp+' EBV_RZ - EBV_SFD '+reg)
-	    plt.legend()
-    	plt.grid()
-	    figs.append(fig)
+                plt.title(args.survey+' '+tp+' '+map+' '+reg)
+                plt.grid()
+                figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
+
+    for map_pair in dmaps:
+        fig = plt.figure()
+        m1 = mf[map_pair[0]]
+        m2 = mf[map_pair[1]]
+        sel = (m1 == hp.UNSEEN)
+        sel |= (m2 == hp.UNSEEN)
+        parv = m1-m2
+        parv[sel] = hp.UNSEEN
+        map = map_pair[0]+' - '+map_pair[1]
+        for reg,cl in zip(regl,clrs):
+            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_r = rt['PHOTSYS'] == reg
+            dt_reg = dtf[sel_reg_d]
+            rt_reg = rt[sel_reg_r]
+            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+
+            plt.legend()
+            plt.xlabel('redshift')
+            plt.ylabel('counts per deg2 ')
+
+            plt.title(args.survey+' '+tp+' '+map+' '+reg)
+            plt.grid()
+            figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
+
+    ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
+    nside = 64
+    nest = False
+    debv = np.zeros(nside*nside*12)
+    for i in range(0,len(ebvn)):
+        pix = ebvn[i]['HPXPIXEL']
+        sfdv = ebvn[i]['EBV_SFD']
+        nv = ebvn[i]['EBV_NEW'] 
+        debv[pix] = nv-sfdv
+    parv = debv
+    fig = plt.figure()
+    for reg,cl in zip(regl,clrs):
+        sel_reg_d = dtf['PHOTSYS'] == reg
+        sel_reg_r = rt['PHOTSYS'] == reg
+        dt_reg = dtf[sel_reg_d]
+        rt_reg = rt[sel_reg_r]
+        plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+
+        plt.legend()
+        plt.xlabel('redshift')
+        plt.ylabel('counts per deg2 ')
+        plt.title(args.survey+' '+tp+' EBV_RZ - EBV_SFD '+reg)
+        plt.legend()
+        plt.grid()
+        figs.append(fig)
 
    
-	tw = ''
-	if args.test == 'y':
-		tw = '_test'
-	with PdfPages(outdir+tp+'_nzsplit'+str(args.nplit)+tw+'.pdf') as pdf:
-		for fig in figs:
-			pdf.savefig(fig)
-			plt.close()
+    tw = ''
+    if args.test == 'y':
+        tw = '_test'
+    with PdfPages(outdir+tp+'_nzsplit'+str(args.nplit)+tw+'.pdf') as pdf:
+        for fig in figs:
+            pdf.savefig(fig)
+            plt.close()
     print('done with '+tp)
