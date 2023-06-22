@@ -184,8 +184,6 @@ for tp in tps:
         
     nside,nest = 256,True
     figs = []
-    zmin = zb[0]
-    zmax = zb[1]
     sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
     parv = sag
     map = 'sagstream'
