@@ -215,11 +215,11 @@ for tp in tps:
 
 
     if sky_g is not None:
-        fig = plt.figure()
+        
         parv = sky_g
         map = 'g_sky_res'
         for reg,cl in zip(regl,clrs):
-            
+            fig = plt.figure()
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
@@ -240,11 +240,12 @@ for tp in tps:
 
     mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
     for map in maps:
-        fig = plt.figure()
+        
         parv = mf[map]
         print(map)
         for reg,cl in zip(regl,clrs):
             if reg == 'S' or map[:5] != 'CALIB':
+                fig = plt.figure()
                 sel_reg_d = dtf['PHOTSYS'] == reg
                 sel_reg_r = rt['PHOTSYS'] == reg
                 dt_reg = dtf[sel_reg_d]
@@ -262,7 +263,7 @@ for tp in tps:
         #plt.clf()
 
     for map_pair in dmaps:
-        fig = plt.figure()
+        
         m1 = mf[map_pair[0]]
         m2 = mf[map_pair[1]]
         sel = (m1 == hp.UNSEEN)
@@ -271,6 +272,7 @@ for tp in tps:
         parv[sel] = hp.UNSEEN
         map = map_pair[0]+' - '+map_pair[1]
         for reg,cl in zip(regl,clrs):
+            fig = plt.figure()
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
@@ -297,8 +299,9 @@ for tp in tps:
         nv = ebvn[i]['EBV_NEW'] 
         debv[pix] = nv-sfdv
     parv = debv
-    fig = plt.figure()
+    
     for reg,cl in zip(regl,clrs):
+        fig = plt.figure()
         sel_reg_d = dtf['PHOTSYS'] == reg
         sel_reg_r = rt['PHOTSYS'] == reg
         dt_reg = dtf[sel_reg_d]
