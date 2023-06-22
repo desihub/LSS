@@ -530,7 +530,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             #Set all ELG_HIP to ELG_VLO
 
-            initialentries['SV3_DESI_TARGET'][ELGHIP] = (ELGBits[ELGFaintHIP] & ~ELGHIPBit)
+            initialentries['DESI_TARGET'][ELGHIP] = (ELGBits[ELGHIP] & ~ELGHIPBit)
             initialentries['PRIORITY'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
             initialentries['PRIORITY'][ELGHIP & ELGLOP] = ELGOrigLOPPriority*np.ones(np.sum(ELGHIP & ELGLOP))
             initialentries['PRIORITY_INIT'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
@@ -541,13 +541,17 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             allPriorities = initialentries['PRIORITY']
 
             #Select PromoteFracELG% of all ELGs with prioriti to promote using function from desitarget
-            ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGAll )
+            ELGNewHIP_FromLOP = random_fraction_of_trues(PromoteFracELG, ELGLOP )
+            ELGNewHIP_FromVLO = random_fraction_of_trues(PromoteFracELG, ELGVLO )
+
+            ELGNewHIP = ELGNewHIP_FromVLO | ELGNewHIP_FromLOP
             #Promote them
 
-            initialentries['SV3_DESI_TARGET'][ELGNewHIP] = (ELGBits[ELGNewHIP] | ELGHIPBit)
+            initialentries['DESI_TARGET'][ELGNewHIP] = (ELGBits[ELGNewHIP] | ELGHIPBit)
             initialentries['PRIORITY'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
             initialentries['PRIORITY_INIT'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
-            initialentries['TARGET_STATE'][ELGNewHIP] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), ELGNewHIP.shape)
+            print(np.sum(ELGNewHIP))
+            initialentries['TARGET_STATE'][ELGNewHIP] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP) )
         if verbose or debug:
             log.info('meta passed to write_mtl')
             log.info(meta)
