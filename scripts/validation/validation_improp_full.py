@@ -266,7 +266,7 @@ for tp in tps:
 
 
 
-        mf = fitsio.read(indir+'hpmaps/'+tp+zdw+'_mapprops_healpix_nested_nside256.fits')
+        mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
         for map in maps:
             fig = plt.figure()
             parv = mf[map]
