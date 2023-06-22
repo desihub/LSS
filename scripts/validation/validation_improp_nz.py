@@ -128,6 +128,10 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
   
 
 for tp in tps:
+    tw = ''
+    if args.test == 'y':
+        tw = '_test'
+
     outfn = outdir+tp+'_nzsplit'+str(args.nsplit)+tw+'.pdf'  
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
@@ -310,9 +314,6 @@ for tp in tps:
         figs.append(fig)
 
    
-    tw = ''
-    if args.test == 'y':
-        tw = '_test'
     with PdfPages(outfn) as pdf:
         for fig in figs:
             pdf.savefig(fig)
