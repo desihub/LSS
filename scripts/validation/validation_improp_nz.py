@@ -125,10 +125,10 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
         area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
         plt.hist(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld]/area,label='percentile bin '+str(i+1),histtype='step')
 
-outfn = outdir+tp+'_nzsplit'+str(args.nsplit)+tw+'.pdf'    
+  
 
 for tp in tps:
-    
+    outfn = outdir+tp+'_nzsplit'+str(args.nsplit)+tw+'.pdf'  
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     seld = dtf['ZWARN'] != 999999
