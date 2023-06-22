@@ -110,7 +110,7 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
     for i in range(1,nsplit):
         minvl.append(np.percentile(rval,i*perbs))
     minvl.append(np.max(rval))
-    nzbin = ((1.+zbinsize/10.)*(zmax-zmin))//zbinsize
+    nzbin = int(((1.+zbinsize/10.)*(zmax-zmin))//zbinsize)
     print(nzbin)
     dcomp = 1/dt_reg['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
