@@ -19,6 +19,7 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--nsplit",help="number of percentile bins to split into",default=2,type=int)
+parser.add_argument("--mode",help="nz or ratio of nz to unsplit",default='ratio')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -125,13 +126,45 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
         area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
         plt.hist(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld]/area,label='percentile bin '+str(i+1),histtype='step')
 
+def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
+    dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
+    rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+    dval = parv[dpix]
+    rval = parv[rpix]
+    perbs = 100/nsplit
+    print(str(np.min(rval))+ ' make sure this minimum value is not null')
+    minvl = [np.min(rval)]
+    for i in range(1,nsplit):
+        minvl.append(np.percentile(rval,i*perbs))
+    minvl.append(np.max(rval))
+    nzbin = int(((1.+zbinsize/10.)*(zmax-zmin))/zbinsize)
+    zl = np.arange(zmin+zbinsize/2,zmax,zbinsize)
+    #print(nzbin)
+    dcomp = 1/dt_reg['FRACZ_TILELOCID']
+    if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+        #print('using FRAC_TLOBS_TILES')
+        dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
+    dwt = dcomp*dt_reg['WEIGHT_SYS']*dt_reg['WEIGHT_ZFAIL']
+    nzall = np.histogram(dt_reg['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt)
+    nzs = []
+    for i in range(0,nsplit):
+        seld = dval > minvl[i]
+        seld &= dval < minvl[i+1]
+        selr = rval > minvl[i]
+        selr &= rval < minvl[i+1]
+        area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
+        nzp = np.histogram(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld])
+        norm = np.sum(nzall[0])/np.sum(nzp[0])
+        plt.plot(zl,nzp/nzall*norm,label='percentile bin '+str(i+1))
+
   
 
 for tp in tps:
     tw = ''
     if args.test == 'y':
         tw = '_test'
-
+    if args.mode == 'ratio':
+        tw += '_ratio'
     outfn = outdir+tp+'_nzsplit'+str(args.nsplit)+tw+'.pdf'  
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
@@ -146,7 +179,7 @@ for tp in tps:
         zcol = 'Z_not4clus'
 
     
-    zbinsize = 0.01
+    zbinsize = 0.05
     if tp == 'LRG':
         z_suc= dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>15
@@ -165,7 +198,7 @@ for tp in tps:
         z_suc &= dtf[zcol] != 1.e20
         zmax = 2.1
         zmin = 0.8
-        zbinsize = 0.02
+        zbinsize = 0.1
         #zr = ' 0.8 < z < 2.1 '
 
 
@@ -201,11 +234,17 @@ for tp in tps:
     rt_reg = rt[sel_reg_r]
     fig = plt.figure()
     
-    plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
-    plt.legend()
-    plt.xlabel('redshift')
-    plt.ylabel('counts per deg2 ')
-
+    if args.mode == 'nz':
+        plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+        plt.legend()
+        plt.xlabel('redshift')
+        plt.ylabel('counts per deg2 ')
+    else:
+        plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+        plt.legend()
+        plt.xlabel('redshift')
+        plt.ylabel('dN/dz ratio to full sample ')
+    
     plt.title(args.survey+' '+tp+' '+map)
     plt.grid()
     figs.append(fig)
@@ -224,11 +263,17 @@ for tp in tps:
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
             rt_reg = rt[sel_reg_r]
-            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+            if args.mode == 'nz':
+                plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-            plt.legend()
-            plt.xlabel('redshift')
-            plt.ylabel('counts per deg2 ')
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('counts per deg2 ')
+            else:
+                plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('dN/dz ratio to full sample ')
 
             plt.title(args.survey+' '+tp+' '+map+' '+reg)
             plt.grid()
@@ -250,11 +295,17 @@ for tp in tps:
                 sel_reg_r = rt['PHOTSYS'] == reg
                 dt_reg = dtf[sel_reg_d]
                 rt_reg = rt[sel_reg_r]
-                plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                if args.mode == 'nz':
+                    plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-                plt.legend()
-                plt.xlabel('redshift')
-                plt.ylabel('counts per deg2 ')
+                    plt.legend()
+                    plt.xlabel('redshift')
+                    plt.ylabel('counts per deg2 ')
+                else:
+                    plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                    plt.legend()
+                    plt.xlabel('redshift')
+                    plt.ylabel('dN/dz ratio to full sample ')
 
                 plt.title(args.survey+' '+tp+' '+map+' '+reg)
                 plt.grid()
@@ -277,11 +328,17 @@ for tp in tps:
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d]
             rt_reg = rt[sel_reg_r]
-            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+            if args.mode == 'nz':
+                plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-            plt.legend()
-            plt.xlabel('redshift')
-            plt.ylabel('counts per deg2 ')
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('counts per deg2 ')
+            else:
+                plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('dN/dz ratio to full sample ')
 
             plt.title(args.survey+' '+tp+' '+map+' '+reg)
             plt.grid()
@@ -306,11 +363,18 @@ for tp in tps:
         sel_reg_r = rt['PHOTSYS'] == reg
         dt_reg = dtf[sel_reg_d]
         rt_reg = rt[sel_reg_r]
-        plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+        if args.mode == 'nz':
+            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-        plt.legend()
-        plt.xlabel('redshift')
-        plt.ylabel('counts per deg2 ')
+            plt.legend()
+            plt.xlabel('redshift')
+            plt.ylabel('counts per deg2 ')
+        else:
+            plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+            plt.legend()
+            plt.xlabel('redshift')
+            plt.ylabel('dN/dz ratio to full sample ')
+
         plt.title(args.survey+' '+tp+' EBV_RZ - EBV_SFD '+reg)
         plt.legend()
         plt.grid()
