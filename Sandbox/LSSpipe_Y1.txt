@@ -87,8 +87,9 @@ for tp,notqso in zip(tps,notqsos):
 	python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --mkHPmaps y
 
 #this applies vetos to data 
+#also, add bitweights at this stage
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso --maxr 0
+    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --notqso notqso --maxr 0 --add_bitweight y --version v#
 #--maxr 0 stops the code from running any randoms
 
 
