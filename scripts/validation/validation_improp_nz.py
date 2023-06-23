@@ -126,7 +126,7 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
         area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
         plt.hist(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld]/area,label='percentile bin '+str(i+1),histtype='step')
 
-def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
+def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01,ylim=(0.95,1.05)):
     dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
     rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
     dval = parv[dpix]
@@ -144,10 +144,10 @@ def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
         #print('using FRAC_TLOBS_TILES')
         dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
-    dwt = dcomp*dt_reg['WEIGHT_SYS']*dt_reg['WEIGHT_ZFAIL']
+    dwt = dcomp*dt_reg['WEIGHT_SYS']*dt_reg['WEIGHT_ZFAIL']*dt_reg['WEIGHT_FKP']
     nzall = np.histogram(dt_reg['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt)
     nzs = []
-    for i in range(0,nsplit):
+    for i in range(0,int(nsplit/2)):
         seld = dval > minvl[i]
         seld &= dval < minvl[i+1]
         selr = rval > minvl[i]
@@ -155,7 +155,8 @@ def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
         area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
         nzp = np.histogram(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld])
         norm = np.sum(nzall[0])/np.sum(nzp[0])
-        plt.plot(zl,nzp[0]/nzall[0]*norm,label='percentile bin '+str(i+1))
+        plt.errorbar(zl,nzp[0]/nzall[0]*norm,,np.sqrt(nzp[0])/nzall[0]*norm,label=str(round((i+1)*perbs,2))+ ' percentile ')
+    plt.ylim(ylim[0],ylim[1])
 
   
 
