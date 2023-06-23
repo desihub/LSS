@@ -204,7 +204,7 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     print('saved fracarea to '+filename_fracarea )
 
 
-def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, sgr_stream_path=None,feature_names=None):
+def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, dataframe_params, max_plot_cart,pixweight_path=None, sgr_stream_path=None,feature_names=None,pixmap_external=None):
     """
 
     Compute weight for a given tracer with a given parametrization
@@ -238,7 +238,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     print('about to make dataframe')
     dataframe = PhotometricDataFrame(survey, tracer, footprint, suffix_tracer, **dataframe_params)
     print('about to set feature')
-    dataframe.set_features(pixmap=pixweight_path,sgr_stream=sgr_stream_path,sel_columns=feature_names)
+    dataframe.set_features(pixmap=pixweight_path,pixmap_external=pixmap_external,sgr_stream=sgr_stream_path,sel_columns=feature_names)
     print('about to set targets')
     dataframe.set_targets()
     print('about to build')
