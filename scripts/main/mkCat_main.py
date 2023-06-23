@@ -187,9 +187,9 @@ if type[:3] == 'MWS':
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
-if not os.path.exists(maindir+'/logs'):
-    os.mkdir(maindir+'/logs')
-    print('made '+maindir+'/logs')
+#if not os.path.exists(maindir+'/logs'):
+#    os.mkdir(maindir+'/logs')
+#    print('made '+maindir+'/logs')
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
@@ -201,6 +201,11 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
+logfn = dirout+'log.txt'
+if os.path.isfile(logfn):
+    logf = open(logfn,'a')
+else:
+    logf = open(logfn,'w')
 dirin = dirout
 if args.blinded == 'y':
     dirout = args.basedir_blind+'/LSScats/'+version+'/blinded/'
@@ -248,6 +253,7 @@ if type[:3] == 'BGS':
 
        
 if mkfulld:
+    logf.write('creating full data catalogs for '+tp+' '+str(datetime.now()))
     azf=''
     azfm = 'cumul'        
     if args.survey == 'DA02':
@@ -292,6 +298,7 @@ if mkfulld:
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
 if args.add_bitweight == 'y':
+    logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
     fn = dirout+type+notqso+'_full_noveto.dat.fits'
     ff = fitsio.read(fn)
     if type[:3] != 'BGS':
@@ -303,6 +310,7 @@ if args.add_bitweight == 'y':
 
 
 if args.add_veto == 'y':
+    logf.write('added veto columns to data catalogs for '+tp+' '+str(datetime.now()))
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
     for rn in range(rm,rx):
@@ -310,6 +318,7 @@ if args.add_veto == 'y':
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
         
 if args.join_etar == 'y':
+    logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
     common.join_etar(fin,type)
 
@@ -317,6 +326,7 @@ new_cols=mainp.new_cols#['STARDENS','HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_
 fid_cols=mainp.fid_cols#['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 allmapcols = new_cols+fid_cols
 if args.fillran == 'y':
+    logf.write('filled randoms with imaging properties for '+tp+' '+str(datetime.now()))
     print('filling randoms with imaging properties')
     for ii in range(rm,rx):
         fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
@@ -327,6 +337,7 @@ if args.fillran == 'y':
 
 if args.apply_veto == 'y':
     print('applying vetos')
+    logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
     if args.ranonly != 'y':
         fin = dirout+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
@@ -346,6 +357,7 @@ if ccut is not None:
 if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
     ffull = dirout+type+notqso+'_full.dat.fits'
     if os.path.isfile(ffull) == False:
+        logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
         sel = fin['ABSMAG_RP1'] < -21.5
         common.write_LSS(fin[sel],ffull)
@@ -360,7 +372,7 @@ if mkclusdat:
 lssmapdirout = dirout+'/hpmaps/'
 if args.mkHPmaps == 'y':
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
-    
+    logf.write('made healpix property maps for '+tp+' '+str(datetime.now()))
     if not os.path.exists(lssmapdirout):
         os.mkdir(lssmapdirout)
         print('made '+lssmapdirout)
@@ -382,6 +394,7 @@ if type[:3] == 'BGS':
 
 
 if args.add_ke == 'y':
+    logf.write('adding k+e columns '+tp+' '+str(datetime.now()))
     reglke = regl
     if args.survey != 'DA02':
         reglke = ['']
@@ -452,6 +465,7 @@ if mkclusran and mkclusdat:
 
 
 if args.add_weight_zfail == 'y':
+    logf.write('regressing and adding WEIGHT_ZFAIL to data catalogs for '+tp+' '+str(datetime.now()))
     readpars = False
     if args.readpars == 'y':
         readpars = True
@@ -509,8 +523,31 @@ if tracer_clus == 'BGS_BRIGHT-21.5':
 nside = 256
 pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
+if args.prepsysnet == 'y' or args.regressis == 'y':
+	
+	def make_hp(value, hpix, nside, fill_with=np.nan):
+		""" A Function to create a HEALPix map
+		"""
+		m_ = np.zeros(12*nside*nside)
+		m_[:] = fill_with
+		m_[hpix] = value
+	
+		return m_
+
+    import healpy as hp
+    ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
+    ebvn = fitsio.read(ebvn_fn)
+    debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
+    debv64 = make_hp(debv, ebvn['HPXPIXEL'], nside=64, fill_with=hp.UNSEEN)
+    debv256 = hp.ud_grade(debv64, 256)
+    debv256_nest = hp.reorder(debv256,r2n=True)
+    debv = Table()
+    debv['EBV_DIFFRZ'] = debv256_nest
+
+
 
 if args.prepsysnet == 'y':
+    logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
         print('made '+dirout+'/sysnet')    
@@ -532,6 +569,7 @@ if args.prepsysnet == 'y':
         common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
+    logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     #from regressis, must be installed
     from regressis import DR9Footprint
 
@@ -577,7 +615,7 @@ if args.regressis == 'y':
 
     cut_fracarea = False
     seed = 42
-    fit_maps = None
+    #fit_maps = None
     '''
     Map choices are:
     'EBV_CHIANG_SFDcorr','STARDENS','HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z',
@@ -591,6 +629,7 @@ if args.regressis == 'y':
     #    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
         #fit_maps = ['STARDENS','HI','BETA_ML','PSFDEPTH_G', 'PSFDEPTH_R','PSFDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 
+    logf.write('using fit maps '+str(fitmaps)+'\n')
     print('computing RF regressis weight')
     rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
