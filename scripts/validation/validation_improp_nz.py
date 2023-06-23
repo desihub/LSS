@@ -155,7 +155,7 @@ def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01,y
         area = len(rval[selr])/2500 #area per deg2 if 1 random file being used
         nzp = np.histogram(dt_reg[seld]['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt[seld])
         norm = np.sum(nzall[0])/np.sum(nzp[0])
-        plt.errorbar(zl,nzp[0]/nzall[0]*norm,,np.sqrt(nzp[0])/nzall[0]*norm,label=str(round((i+1)*perbs,2))+ ' percentile ')
+        plt.errorbar(zl,nzp[0]/nzall[0]*norm,np.sqrt(nzp[0])/nzall[0]*norm,label=str(round((i+1)*perbs,2))+ ' percentile ')
     plt.ylim(ylim[0],ylim[1])
 
   
