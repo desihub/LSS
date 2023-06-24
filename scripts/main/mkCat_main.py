@@ -90,6 +90,7 @@ args = parser.parse_args()
 print(args)
 
 type = args.type
+tp = type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
