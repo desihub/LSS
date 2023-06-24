@@ -247,9 +247,9 @@ if mketar: #concatenate target files for given type, with column selection hardc
 
 maxp = 3400
 if type[:3] == 'LRG' or notqso == 'notqso':
-	maxp = 3200
+    maxp = 3200
 if type[:3] == 'BGS':
-	maxp = 2100
+    maxp = 2100
 
        
 if mkfulld:
@@ -512,27 +512,27 @@ if args.imsys == 'y':
 zl = (zmin,zmax)
 fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
 if tracer_clus[:3] == 'LRG':
-	fit_maps.append('PSFDEPTH_W1')
+    fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-	fit_maps.append('PSFDEPTH_W1','PSFDEPTH_W2')
+    fit_maps.append('PSFDEPTH_W1','PSFDEPTH_W2')
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
-	tpstr = 'BGS_BRIGHT'
+    tpstr = 'BGS_BRIGHT'
 nside = 256
 pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
 if args.prepsysnet == 'y' or args.regressis == 'y':
-	
-	def make_hp(value, hpix, nside, fill_with=np.nan):
-		""" A Function to create a HEALPix map
-		"""
-		m_ = np.zeros(12*nside*nside)
-		m_[:] = fill_with
-		m_[hpix] = value
-	
-		return m_
+    
+    def make_hp(value, hpix, nside, fill_with=np.nan):
+        """ A Function to create a HEALPix map
+        """
+        m_ = np.zeros(12*nside*nside)
+        m_[:] = fill_with
+        m_[hpix] = value
+    
+        return m_
 
     import healpy as hp
     ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
