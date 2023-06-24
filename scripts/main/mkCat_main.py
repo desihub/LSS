@@ -635,7 +635,15 @@ if args.regressis == 'y':
 
     logf.write('using fit maps '+str(fit_maps)+'\n')
     print('computing RF regressis weight')
-    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps)
+    feature_names_ext=None
+    if 'EBV_DIFFRZ' in fit_maps: 
+        fit_maps.remove('EBV_DIFFRZ')
+        feature_names_ext = ['EBV_DIFFRZ']
+    use_sgr=False
+    if 'SGR' in fit_maps:
+        use_sgr = True
+        fit_maps.remove('SGR')
+    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
