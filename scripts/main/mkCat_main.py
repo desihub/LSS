@@ -511,11 +511,13 @@ if args.imsys == 'y':
             dd.write(fcd,overwrite=True,format='fits')
 
 zl = (zmin,zmax)
-fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
+#fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
+fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFFRZ']
 if tracer_clus[:3] == 'LRG':
     fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
+    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
     fit_maps.append('PSFDEPTH_W1')
     fit_maps.append('PSFDEPTH_W2')
 
@@ -633,7 +635,7 @@ if args.regressis == 'y':
 
     logf.write('using fit maps '+str(fit_maps)+'\n')
     print('computing RF regressis weight')
-    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
+    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
