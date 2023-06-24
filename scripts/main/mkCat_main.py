@@ -630,7 +630,7 @@ if args.regressis == 'y':
     #    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
         #fit_maps = ['STARDENS','HI','BETA_ML','PSFDEPTH_G', 'PSFDEPTH_R','PSFDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 
-    logf.write('using fit maps '+str(fitmaps)+'\n')
+    logf.write('using fit maps '+str(fit_maps)+'\n')
     print('computing RF regressis weight')
     rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,sgr_stream_path=sgf,feature_names=fit_maps)
 
