@@ -565,10 +565,14 @@ if args.prepsysnet == 'y':
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
+    sys_tab = Table.read(pwf)
+    if 'EBV_DIFFRZ' in fit_maps:
+        sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
     for reg in regl:
         seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
-        prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], fitsio.read(pwf), zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
+        
+        prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], , zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
                 nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
         fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
         common.write_LSS(prep_table,fnout)
