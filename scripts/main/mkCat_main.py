@@ -701,8 +701,13 @@ if args.add_sysnet == 'y':
         sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+'_'+reg+'/nn-weights.fits')
         pred_counts = np.mean(sn_weights['weight'],axis=1)
         pix_weight = np.mean(pred_counts)/pred_counts
+        sn_pix = sn_weights['hpix']
+        hpmap = np.ones(12*256*256)
+        for pix,wt in zip(sn_pix,pix_weight):
+            hpmap[pix] = wt
+        
         sel = dd['PHOTSYS'] == reg
-        dd[sel]['WEIGHT_SYS'] = pix_weight[dpix[sel]]
+        dd[sel]['WEIGHT_SYS'] = hpmap[dpix[sel]]
 
     comments.append("Using sysnet for WEIGHT_SYS")
 

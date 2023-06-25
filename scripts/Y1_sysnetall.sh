@@ -14,7 +14,7 @@ $LSSDIR/LSS/scripts/run_sysnet.sh S ELG_LOPnotqso true false 1024 0.003 dnnp pnl
 $LSSDIR/LSS/scripts/run_sysnet.sh N ELG_LOPnotqso false true 1024 0.004 dnnp pnll $1 $LSSBASE/Y1/LSS/iron/LSScats/
 $LSSDIR/LSS/scripts/run_sysnet.sh S ELG_LOPnotqso false true 1024 0.004 dnnp pnll $1 $LSSBASE/Y1/LSS/iron/LSScats/
 
-python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOPnotqso --add_sysnet y --fulld n --survey Y1 --verspec iron --version $1
+python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_sysnet y --fulld n --survey Y1 --verspec iron --version $1
 
 python scripts/validation/validation_sky.py --tracer ELG_LOPnotqso --version $1
 
