@@ -689,7 +689,7 @@ if args.add_regressis == 'y':
 
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
-    #from LSS.imaging import densvar
+    from LSS.imaging import densvar
     import healpy as hp
     fn_full = dirout+tracer_clus+'_full.dat.fits'
     dd = Table.read(fn_full)
