@@ -709,6 +709,7 @@ if args.add_sysnet == 'y':
         sel = dd['PHOTSYS'] == reg
         dd[sel]['WEIGHT_SYS'] = hpmap[dpix[sel]]
 
+    comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
 
     common.write_LSS(dd,fn_full,comments)
