@@ -64,6 +64,7 @@ parser.add_argument("--add_ke", help="add k+e corrections for BGS data to cluste
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
+parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
 
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
@@ -682,6 +683,63 @@ if args.add_regressis == 'y':
 
         common.write_LSS(dd,fcd,comments)
 
+if args.add_sysnet == 'y':
+    logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    from LSS.imaging import densvar
+    fn_full = dirout+tracer_clus+'_full.dat.fits'
+    dd = Table.read(fn_full)
+    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+    dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+
+    regl_sysnet = ['N','S']
+    for reg in regl_sysnet:
+        sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+'_'+reg+'/nn-weights.fits')
+        pred_counts = np.mean(sn_weights['weight'],axis=1)
+        pix_weight = np.mean(pred_counts)/pred_counts
+        sel = dd['PHOTSYS'] == reg
+        dd[sel]['WEIGHT_SYS'] = pix_weight[dpix[sel]]
+
+    comments.append("Using sysnet for WEIGHT_SYS")
+
+    common.write_LSS(dd,fn_full,comments)
+        
+fs = fitsio.read('/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.2.1/sysnet/ELG_LOPnotqso_S/nn-weights.fits')    
+    from LSS.imaging import densvar
+    fnreg = dirout+'/regressis_data/main_'+tracer_clus+'_256/RF/main_'+tracer_clus+'_imaging_weight_256.npy'
+    rfw = np.load(fnreg,allow_pickle=True)
+    rfpw = rfw.item()['map']
+    maskreg = rfw.item()['mask_region']
+    regl_reg = list(maskreg.keys())
+    for reg in regl_reg:
+        mr = maskreg[reg]
+        norm = np.mean(rfpw[mr])
+        print(reg,norm)
+        rfpw[mr] /= norm
+
+
+    #regl = ['_DN','_DS','','_N','_S']
+    reglr = regl
+    if args.survey != 'DA02':
+        reglr = ['']
+    for reg in reglr:
+        fb = dirout+tracer_clus+reg
+        if args.survey == 'DA02':
+            fcd = fb+'_clustering.dat.fits'
+        else:
+            fcd = fb+'_full.dat.fits'
+        dd = Table.read(fcd)
+        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        drfw = rfpw[dpix]
+        dd['WEIGHT_SYS'] = drfw
+        comments = []
+        if args.survey == 'DA02':
+            dd['WEIGHT'] *= dd['WEIGHT_SYS']
+            comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
+        comments.append("Using regressis for WEIGHT_SYS")
+
+        common.write_LSS(dd,fcd,comments)
 
     
 
