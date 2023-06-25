@@ -689,12 +689,13 @@ if args.add_regressis == 'y':
 
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
-    from LSS.imaging import densvar
+    #from LSS.imaging import densvar
+    import healpy as hp
     fn_full = dirout+tracer_clus+'_full.dat.fits'
     dd = Table.read(fn_full)
     dd['WEIGHT_SYS'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-    dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+    dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
     for reg in regl_sysnet:
@@ -708,7 +709,7 @@ if args.add_sysnet == 'y':
         
         sel = dd['PHOTSYS'] == reg
         dd[sel]['WEIGHT_SYS'] = hpmap[dpix[sel]]
-
+    print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
 
