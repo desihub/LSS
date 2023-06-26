@@ -641,14 +641,19 @@ if args.regressis == 'y':
     logf.write('using fit maps '+str(fit_maps)+'\n')
     print('computing RF regressis weight')
     feature_names_ext=None
+    pixweight_data = Table.read(pwf)
     if 'EBV_DIFFRZ' in fit_maps: 
-        fit_maps.remove('EBV_DIFFRZ')
-        feature_names_ext = ['EBV_DIFFRZ']
+        pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
+        #fit_maps.remove('EBV_DIFFRZ')
+        #feature_names_ext = ['EBV_DIFFRZ']
     use_sgr=False
     if 'SGR' in fit_maps:
         use_sgr = True
         fit_maps.remove('SGR')
-    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pwf,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+    pw_out_fn = dirout+'/regressis_data/'+tracer_clus+'feature_data.fits'
+    print(pw_out_fn)
+    pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
+    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
@@ -708,9 +713,9 @@ if args.add_sysnet == 'y':
             hpmap[pix] = wt
         
         sel = dd['PHOTSYS'] == reg
-        print(np.sum(sel))
+        #print(np.sum(sel))
         dd['WEIGHT_SYS'][sel] = hpmap[dpix[sel]]
-    print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
+    #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
 
