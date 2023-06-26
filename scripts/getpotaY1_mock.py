@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--mock", default='ab1stgen')
 parser.add_argument("--realization")
-parser.add_argument("--getcoll",default='n')
+parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
 
 args = parser.parse_args()
