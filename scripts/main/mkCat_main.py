@@ -708,7 +708,8 @@ if args.add_sysnet == 'y':
             hpmap[pix] = wt
         
         sel = dd['PHOTSYS'] == reg
-        dd[sel]['WEIGHT_SYS'] = hpmap[dpix[sel]]
+        print(np.sum(sel))
+        dd['WEIGHT_SYS'][sel] = hpmap[dpix[sel]]
     print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
