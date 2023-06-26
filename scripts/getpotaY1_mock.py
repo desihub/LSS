@@ -1,5 +1,5 @@
 '''
-Find all of the collisions for Y1 randoms
+Find all potential assignment and counts tiles for Y1 mocks
 '''
 
 import numpy as np
