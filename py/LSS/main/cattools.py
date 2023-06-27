@@ -3197,24 +3197,34 @@ def add_tlobs_ran(fl,rann):
     ranf = Table(fitsio.read(fl+str(rann)+'_full.ran.fits'))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
-    tlarray = np.zeros(len(ranf))
+    #tlarray = np.zeros(len(ranf))
+    tlarray = []
     nt = 0
     utls = np.unique(ranf['TILES'])
     gtls = np.isin(utls,tlf['TILES'])
-    for gd,tls in zip(gtls,utls):
-        sel = ranf['TILES'] == tls
-        if gd:
-            fr = tldic[tls]
-            tlarray[sel] = fr
-        nt += 1
-        if nt%1000 == 0:
-            print(nt,len(utls))
+    #for gd,tls in zip(gtls,utls):
+    #    sel = ranf['TILES'] == tls
+    #    if gd:
+    #        fr = tldic[tls]
+    #        tlarray[sel] = fr
+    #    nt += 1
+    #    if nt%1000 == 0:
+    #        print(nt,len(utls))
     
     #for i in range(0,len(ranf)):
+    for tls in ranf['TILES']:
     #    tls = ranf['TILES'][i]
     #    if tls in tlf['TILES']:
-    #        fr = tldic[tls]
+        try:    
+            fr = tldic[tls]
+        except:
+            print(tls ' not found')
+            fr = 0
+        tlarray.append(fr)
+        if nt%100000 == 0:
+           print(nt,len(ranf))    
     #        tlarray[i] = fr
+    tlarray = np.array(tlarray)
     sel = tlarray == 0
     print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
