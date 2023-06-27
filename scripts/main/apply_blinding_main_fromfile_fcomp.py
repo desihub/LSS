@@ -80,6 +80,8 @@ parser.add_argument("--notqso", help="if y, do not include any qso targets", def
 parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file','specified'],default='from_file')
 
 parser.add_argument("--baoblind", help="if y, do the bao blinding shift", default='n')
+parser.add_argument("--compmd", help="whether the extra completeness gets added to data or random", choices=['dat','ran'],default='ran')
+
 parser.add_argument("--mkclusdat", help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)", default='n')
 parser.add_argument("--mkclusran", help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)", default='n')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)# use 1 for abacus mocks
@@ -333,7 +335,7 @@ if root:
 
 
     if args.mkclusdat == 'y':
-        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax)
+        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax,compmd=args.compmd)
 
 
     if args.mkclusran == 'y':
@@ -479,7 +481,7 @@ if root:
     for reg in regions:
         flin = dirout + args.type + notqso + '_'+reg    
         def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
+            ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
         nran = args.maxr-args.minr
         inds = np.arange(nran)
         from multiprocessing import Pool

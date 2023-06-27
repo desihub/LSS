@@ -3327,7 +3327,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 #         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffss,outfn,comments)
 
-def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
+def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
     import LSS.common_tools as common
     ffr = Table.read(flin+'_'+str(rann)+'_clustering.ran.fits')
@@ -3338,7 +3338,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
             print(col+' not in original randoms')
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','FRAC_TLOBS_TILES']
     for col in rcols:
         kc.append(col)
     rcols = np.array(rcols)
@@ -3368,6 +3368,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
             dshuf = tabsd[i][inds]
             for col in rcols:
                 tabsr[i][col] =  dshuf[col]
+            if compmd == 'ran':
+                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
@@ -3380,6 +3382,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y'):
         dshuf = fcdn[inds]
         for col in rcols:
             ffr[col] = dshuf[col]
+        if compmd == 'ran':
+            ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES']
         #kc.append(col)
     ffr.keep_columns(kc)
     
