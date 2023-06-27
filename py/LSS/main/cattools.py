@@ -3222,7 +3222,8 @@ def add_tlobs_ran(fl,rann):
             fr = 0
         tlarray.append(fr)
         if nt%100000 == 0:
-           print(nt,len(ranf))    
+           print(nt,len(ranf))  
+        nt += 1  
     #        tlarray[i] = fr
     tlarray = np.array(tlarray)
     sel = tlarray == 0
