@@ -716,6 +716,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         #print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
         fract_dicta = dict(zip(tll, fractl))
+        tlobs_fn = fout.replace('full.dat.fits','frac_tlobs.fits')
+        tlobs = Table()
+        tlobs['TILES'] = tll
+        tlobs['FRAC_TLOBS_TILES'] = fractl
+        write_LSS(tlobs,tlobsfn)
         fcompa = []
         fracta = []
         for tl in ff['TILES']:
