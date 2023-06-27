@@ -720,7 +720,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
-        write_LSS(tlobs,tlobsfn)
+        write_LSS(tlobs,tlobs_fn)
         fcompa = []
         fracta = []
         for tl in ff['TILES']:
