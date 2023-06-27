@@ -3218,7 +3218,7 @@ def add_tlobs_ran(fl,rann):
         try:    
             fr = tldic[tls]
         except:
-            print(tls ' not found')
+            print(tls +' not found')
             fr = 0
         tlarray.append(fr)
         if nt%100000 == 0:
