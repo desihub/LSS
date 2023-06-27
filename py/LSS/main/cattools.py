@@ -3198,11 +3198,23 @@ def add_tlobs_ran(fl,rann):
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     tlarray = np.zeros(len(ranf))
-    for i in range(0,len(ranf)):
-        tls = ranf['TILES'][i]
-        if tls in tlf['TILES']:
+    nt = 0
+    utls = np.unique(ranf['TILES'])
+    gtls = np.isin(utls,tlf['TILES'])
+    for gd,tls in zip(gtls,utls):
+        sel = ranf['TILES'] == tls
+        if gd:
             fr = tldic[tls]
-            tlarray[i] = fr
+            tlarray[sel] = fr
+        nt += 1
+        if nt%1000 == 0:
+            print(nt,len(utls))
+    
+    #for i in range(0,len(ranf)):
+    #    tls = ranf['TILES'][i]
+    #    if tls in tlf['TILES']:
+    #        fr = tldic[tls]
+    #        tlarray[i] = fr
     sel = tlarray == 0
     print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
