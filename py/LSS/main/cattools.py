@@ -2944,7 +2944,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',return_cat='n'):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',return_cat='n',compmd='ran'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3084,7 +3084,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     
     if weighttileloc == True:
         ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols:
+        if 'FRAC_TLOBS_TILES' in cols and compmd == 'dat':
             ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
@@ -3193,6 +3193,19 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
+def add_tlobs_ran(fl,rann):
+    ranf = Table(fitsio.read(fl+str(rann)+'_full.ran.fits')
+    tlf = fitsio.read(fl+'frac_tlobs.fits')
+    tldic = zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES'])
+    tlarray = np.zeros(len(ranf))
+    for i in range(0,len(ranf)):
+        tls = ranf['TILES'][i]
+        fr = tldic[tls]
+        tlarray[i] = fr
+    ranf['FRAC_TLOBS_TILES'] = tlarray
+    outf = fl+str(rann)+'_full.ran.fits'
+    common.write_LSS(ranf,outf)
+    
 def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n',clus_arrays=None):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -3225,7 +3238,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     else:
         fcdn = clus_arrays[0]
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE']#,'TILES']
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
