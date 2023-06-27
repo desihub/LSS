@@ -3194,6 +3194,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         common.write_LSS(ffs[sel],outfn,comments)
 
 def add_tlobs_ran(fl,rann):
+    import LSS.common_tools as common
     ranf = Table(fitsio.read(fl+str(rann)+'_full.ran.fits'))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
@@ -3218,7 +3219,7 @@ def add_tlobs_ran(fl,rann):
         try:    
             fr = tldic[tls]
         except:
-            print(tls +' not found')
+            #print(tls +' not found')
             fr = 0
         tlarray.append(fr)
         if nt%100000 == 0:
