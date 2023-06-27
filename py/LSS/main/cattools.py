@@ -3196,12 +3196,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 def add_tlobs_ran(fl,rann):
     ranf = Table(fitsio.read(fl+str(rann)+'_full.ran.fits'))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
-    tldic = zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES'])
+    tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     tlarray = np.zeros(len(ranf))
     for i in range(0,len(ranf)):
         tls = ranf['TILES'][i]
-        fr = tldic[tls]
-        tlarray[i] = fr
+        if tls in tlf['FRAC_TLOBS_TILES']:
+            fr = tldic[tls]
+            tlarray[i] = fr
+    sel = tlarray == 0
+    print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
     outf = fl+str(rann)+'_full.ran.fits'
     common.write_LSS(ranf,outf)
