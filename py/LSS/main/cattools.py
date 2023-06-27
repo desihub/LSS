@@ -3200,7 +3200,7 @@ def add_tlobs_ran(fl,rann):
     tlarray = np.zeros(len(ranf))
     for i in range(0,len(ranf)):
         tls = ranf['TILES'][i]
-        if tls in tlf['FRAC_TLOBS_TILES']:
+        if tls in tlf['TILES']:
             fr = tldic[tls]
             tlarray[i] = fr
     sel = tlarray == 0
