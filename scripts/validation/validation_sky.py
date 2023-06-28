@@ -18,6 +18,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--compmd",help="extra completeness on data or random",default='ran')
 parser.add_argument("--ps",help="point size for density map",default=.1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -120,7 +121,7 @@ for tp in tps:
         sel_obs = dt['ZWARN'] != 999999
         dt = dt[sel_obs&sel_gz]
         dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols:
+        if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'ran':
             dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
 
         dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
@@ -213,7 +214,10 @@ for tp in tps:
 
             dtf = dtf[wg]
             #print(reg,len(dtf))
-            rpix = gethpmap(rt)
+            if args.compmd == 'dat':
+                rpix = gethpmap(rt)
+            else:
+                rpix = gethpmap(rt,weights=rt['FRAC_TLOBS_TILES'])
             dpix = gethpmap(dtf,weights='WEIGHT')
             dpix_oc = gethpmap(dtf,weights='WEIGHT_COMP')
             wp = (rpix > 0) 
