@@ -121,7 +121,7 @@ for tp in tps:
         sel_obs = dt['ZWARN'] != 999999
         dt = dt[sel_obs&sel_gz]
         dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'ran':
+        if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
             dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
 
         dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
