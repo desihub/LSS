@@ -253,7 +253,7 @@ def comp_tileloc(dz):
     return loco,fzo
 
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -266,13 +266,18 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.):
     ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
     area = ranf['NAXIS2']/randens
     print('area is '+str(area))
+    outf = open(fout,'w')
+    outf.write('#area is '+str(area)+'square degrees\n')
+    
+    if compmd == 'ran':
+        ranf = fitsio.read(fcr)
+        area = np.sum(fcr['FRAC_TLOBS_TILES'])
+        outf.write('#effective area is '+str(area)+'square degrees\n')
 
     df = fitsio.read(fcd)
 
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
-    outf = open(fout,'w')
-    outf.write('#area is '+str(area)+'square degrees\n')
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
     for i in range(0,nbin):
         zl = zhist[1][i]
