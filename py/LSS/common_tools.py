@@ -758,6 +758,65 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
 
+def get_tlcomp(fin):
+    '''
+    fin is the full path of the catalog to use 
+    '''
+    ff = Table(fitsio.read(fin))#+'full_noveto.'+dr+'.fits')
+	print('getting completeness')
+	compa = []
+	fractl = []
+	tll = []
+	ti = 0
+	ff.sort('TILES')
+	nts = len(np.unique(ff['TILES']))
+	tlsl = ff['TILES']
+	tlslu = np.unique(tlsl)
+	laa = ff['LOCATION_ASSIGNED']
+	lta = ff['TILELOCID_ASSIGNED']
+	print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+
+	# for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+	i = 0
+	tot = 0
+	atot = 0
+	tltot = 0
+	while i < len(ff):
+		tls = []
+		tlis = []
+		nli = 0 #initialize total available per tile group
+		nai = 0 #initialize total assigned
+		nti = 0 #initialize total at location where something of the same type was assigned
+
+		while tlsl[i] == tlslu[ti]:
+			nli += 1
+			nai += laa[i] #laa is true/false assigned
+			nti += lta[i] #lta is true/false something of the same type was assigned
+			i += 1
+			if i == len(ff):
+				break
+
+		if ti % 10000 == 0:
+			print('at tiles ' + str(ti) + ' of ' + str(nts))
+
+		tot += nli
+		atot += nai
+		tltot += nti
+		cp = nai / nli #
+		fract = nti/nli
+		# print(tls,cp,no,nt)
+		compa.append(cp)
+		fractl.append(fract)
+		tll.append(tlslu[ti])
+		ti += 1
+	#print(tot,atot,tltot)
+	comp_dicta = dict(zip(tll, compa))
+	fract_dicta = dict(zip(tll, fractl))
+	tlobs_fn = fin.replace('full.dat.fits','frac_tlobs.fits')
+	tlobs = Table()
+	tlobs['TILES'] = tll
+	tlobs['FRAC_TLOBS_TILES'] = fractl
+	write_LSS(tlobs,tlobs_fn)
 
 
 
