@@ -82,6 +82,8 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
 	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --fillran y --apply_veto y
 
+
+
 #make healpix maps based on randoms
 for tp,notqso in zip(tps,notqsos):
 	python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --mkHPmaps y
@@ -92,6 +94,9 @@ for tp,notqso in zip(tps,notqsos):
     python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --notqso notqso --maxr 0 --add_bitweight y --version v#
 #--maxr 0 stops the code from running any randoms
 
+#add completeness info per tiles group to randoms
+for tp,notqso in zip(tps,notqsos):
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y
 
 
 #get k+e
