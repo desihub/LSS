@@ -315,7 +315,7 @@ if root:
         wl = np.ones(len(fd))
         wl[gz&zr] = nz_in[zind[gz&zr]] / nz_out[zind[gz&zr]]
         fd['WEIGHT_SYS'] *= wl
-        common.write_LSS(fd, fcd_out)
+        common.write_LSS(fd, outf)
 
 
     if args.visnz == 'y':
