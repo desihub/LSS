@@ -623,7 +623,7 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     comments = ['Adding imaging mask column']
     write_LSS(df,fn,comments)
 
-def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -741,7 +741,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
         print('assignment completeness is '+str(comp))
         print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
-
+        if comp_only:
+            return True
     if '.ran' in fin:
         print('area is ' + str(len(ff) / 2500))
     comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
@@ -756,6 +757,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400):
 #     fd.close()
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
+
+
 
 
 def write_LSS(ff, outf, comments=None,extname='LSS'):
