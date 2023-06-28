@@ -217,7 +217,7 @@ for tp in tps:
             if args.compmd == 'dat':
                 rpix = gethpmap(rt)
             else:
-                rpix = gethpmap(rt,weights=rt['FRAC_TLOBS_TILES'])
+                rpix = gethpmap(rt,weights='FRAC_TLOBS_TILES')
             dpix = gethpmap(dtf,weights='WEIGHT')
             dpix_oc = gethpmap(dtf,weights='WEIGHT_COMP')
             wp = (rpix > 0) 
