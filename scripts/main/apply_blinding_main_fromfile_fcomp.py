@@ -247,6 +247,7 @@ if root:
         fbr_in = dirin +'BGS_BRIGHT'
     fcr_in = fbr_in + '_1_full.ran.fits'
     fcd_in = fb_in + '_full.dat.fits'
+    print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
     if os.path.isfile(nzf_in):
@@ -284,22 +285,26 @@ if root:
         nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
 
         if 'WEIGHT_FKP' not in cols:
+            print('adding FKP weights')
             common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
 
-        data = Table(fitsio.read(dirin + type + notqso + '_full.dat.fits'))
+        
+        data = Table(fitsio.read(fcd_in))
         data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
+        print('output going to '+outf)
         blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
 
-        fb_out = dirout + type + notqso
-        fcd_out = fb_out + '_full.dat.fits'
-        nz_out = common.mknz_full(fcd_out, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
+        #fb_out = dirout + type + notqso
+        #fcd_out = fb_out + '_full.dat.fits'
+        nz_out = common.mknz_full(outf, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
 
         ratio_nz = nz_in / nz_out
 
-        fd = Table(fitsio.read(fcd_out))
+        fd = Table(fitsio.read(outf))
         cols = list(fd.dtype.names)
         if 'WEIGHT_SYS' not in cols:
+            print('did not find WEIGHT_SYS, putting it in as all 1')
             fd['WEIGHT_SYS'] = np.ones(len(fd))
         zl = fd['Z']
         zind = ((zl - zmin) / dz).astype(int)
