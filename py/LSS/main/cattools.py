@@ -3338,7 +3338,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
             print(col+' not in original randoms')
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','FRAC_TLOBS_TILES']
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
     for col in rcols:
         kc.append(col)
     rcols = np.array(rcols)
