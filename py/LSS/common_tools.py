@@ -373,6 +373,14 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
             nl[ii] = nzd[zind]
     mean_comp = len(fd)/np.sum(fd['WEIGHT'])
     print('mean completeness '+str(mean_comp))
+    ntl = np.unique(fd['NTILE'])
+    comp_ntl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = fd['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(fd['WEIGHT'][sel])
+        comp_ntl[i] = 1/mean_ntweight
+    print('completeness per ntile:')
+    print(comp_ntl)
     #del fd
     #ft = Table.read(fn)
     #ft['NZ'] = nl
@@ -380,7 +388,8 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
 
-    fkpl = 1./(1+nl*P0*mean_comp)
+    #fkpl = 1./(1+nl*P0*mean_comp)
+    fkpl = comp_ntl[fd['NTILE']]/(1+nl*P0*comp_ntl[fd['NTILE']])
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
@@ -410,7 +419,8 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ft['NZ'] = nl
         #ff['LSS'].insert_column('NZ',nl)
         fd['NZ'] = nl
-        fkpl = 1./(1+nl*P0*mean_comp)
+        #fkpl = 1./(1+nl*P0*mean_comp)
+        fkpl = comp_ntl[fd['NTILE']]/(1+nl*P0*comp_ntl[fd['NTILE']])
         fd['WEIGHT_FKP'] = fkpl
         write_LSS(fd,fn)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
