@@ -51,7 +51,7 @@ parser.add_argument("--fullr", help="make the random files associated with the f
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--fillran", help="add columns",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
-parser.add_argument("--add_tl", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
+parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
