@@ -271,7 +271,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
     
     if compmd == 'ran':
         ranf = fitsio.read(fcr)
-        area = np.sum(fcr['FRAC_TLOBS_TILES'])
+        area = np.sum(ranf['FRAC_TLOBS_TILES'])
         outf.write('#effective area is '+str(area)+'square degrees\n')
 
     df = fitsio.read(fcd)
