@@ -389,7 +389,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     print(np.min(nl),np.max(nl))
 
     #fkpl = 1./(1+nl*P0*mean_comp)
-    fkpl = comp_ntl[fd['NTILE']]/(1+nl*P0*comp_ntl[fd['NTILE']])
+    fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
@@ -420,7 +420,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].insert_column('NZ',nl)
         fd['NZ'] = nl
         #fkpl = 1./(1+nl*P0*mean_comp)
-        fkpl = comp_ntl[fd['NTILE']]/(1+nl*P0*comp_ntl[fd['NTILE']])
+        fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fd['WEIGHT_FKP'] = fkpl
         write_LSS(fd,fn)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
