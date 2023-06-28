@@ -111,6 +111,8 @@ for tp,notqso in zip(tps,notqsos):
 #get bitweights n(z) and fkp weights
 python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --add_bitweight y --FKPfull y --nzfull y
 
+Make sure to re-sample randoms via cattools clusran_resamp
+
 #apply blinding and get blinded clustering catalogs
 module swap pyrecon/main pyrecon/mpi
 srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y
