@@ -3372,10 +3372,11 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
+        print('norm factor is '+str(rdr))
         tabsr[1]['WEIGHT'] *= rdr
-        print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
         ffr = vstack(tabsr)   
-        print(len(ffr),len_o)     
+        #print(len(ffr),len_o)     
         return ffr
 
     if 'NGC' in flin:

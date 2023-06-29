@@ -528,6 +528,16 @@ if tracer_clus == 'BGS_BRIGHT-21.5':
 nside = 256
 pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
+if type[:3] == 'ELG':
+    zrl = [(0.8,1.1),(1.1,1.6)]
+if type[:3] == 'QSO':
+    zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)]    
+if type[:3] == 'LRG':
+    zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
+if type[:3] == 'BGS':
+    zrl = [(0.1,0.4)]    
+
+
 if args.prepsysnet == 'y' or args.regressis == 'y':
     
     def make_hp(value, hpix, nside, fill_with=np.nan):
@@ -601,13 +611,6 @@ if args.regressis == 'y':
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
-    if args.survey == 'DA02':
-        pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits' 
-        rt.save_desi_data(dirout, 'main', tracer_clus, nside, dirreg, zl,regl=regl) 
-    else:
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
-    
-
     suffix_tracer = ''
     suffix_regressor = ''
 
@@ -639,7 +642,6 @@ if args.regressis == 'y':
         #fit_maps = ['STARDENS','HI','BETA_ML','PSFDEPTH_G', 'PSFDEPTH_R','PSFDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 
     logf.write('using fit maps '+str(fit_maps)+'\n')
-    print('computing RF regressis weight')
     feature_names_ext=None
     pixweight_data = Table.read(pwf)
     if 'EBV_DIFFRZ' in fit_maps: 
@@ -653,42 +655,45 @@ if args.regressis == 'y':
     pw_out_fn = dirout+'/regressis_data/'+tracer_clus+'feature_data.fits'
     print(pw_out_fn)
     pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
-    rt._compute_weight('main', tracer_clus, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+
+    for zl in zrl:    
+        zw = str(zl[0])+' '+str(zl[1])
+        rt.save_desi_data_full(dirout, 'main', tracer_clus+zw, nside, dirreg, zl,foot=dr9_footprint,nran=18)
+    
+        print('computing RF regressis weight for '+tracer_clus+zw)
+        logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
+        rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
-    fnreg = dirout+'/regressis_data/main_'+tracer_clus+'_256/RF/main_'+tracer_clus+'_imaging_weight_256.npy'
-    rfw = np.load(fnreg,allow_pickle=True)
-    rfpw = rfw.item()['map']
-    maskreg = rfw.item()['mask_region']
-    regl_reg = list(maskreg.keys())
-    for reg in regl_reg:
-        mr = maskreg[reg]
-        norm = np.mean(rfpw[mr])
-        print(reg,norm)
-        rfpw[mr] /= norm
+    for zl in zrl:    
+        zw = str(zl[0])+' '+str(zl[1])
 
+        fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
+        rfw = np.load(fnreg,allow_pickle=True)
+        rfpw = rfw.item()['map']
+        maskreg = rfw.item()['mask_region']
+        regl_reg = list(maskreg.keys())
+        for reg in regl_reg:
+            mr = maskreg[reg]
+            norm = np.mean(rfpw[mr])
+            print(reg,norm)
+            rfpw[mr] /= norm
 
-    #regl = ['_DN','_DS','','_N','_S']
-    reglr = regl
-    if args.survey != 'DA02':
-        reglr = ['']
-    for reg in reglr:
-        fb = dirout+tracer_clus+reg
-        if args.survey == 'DA02':
-            fcd = fb+'_clustering.dat.fits'
-        else:
-            fcd = fb+'_full.dat.fits'
+        fb = dirout+tracer_clus
+        fcd = fb+'_full.dat.fits'
         dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
-        dd['WEIGHT_SYS'] = drfw
+        dd['WEIGHT_SYS'] = np.ones(len(dd))
+        selz = dd['Z_not4clus'] > zl[0]
+        selz &= dd['Z_not4clus'] <= zl[1]
+        dd['WEIGHT_SYS'][selz] = drfw[selz]
+        print(np.mean(dd['WEIGHT_SYS'][selz]))
         comments = []
-        if args.survey == 'DA02':
-            dd['WEIGHT'] *= dd['WEIGHT_SYS']
-            comments.append( "DA02 'clustering' LSS catalog for data, "+reg+" entries are only for data with good redshifts with "+str(zmin)+'<z<'+str(zmax))
         comments.append("Using regressis for WEIGHT_SYS")
+        logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
         common.write_LSS(dd,fcd,comments)
 
