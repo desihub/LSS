@@ -3353,7 +3353,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
     
     len_o = len(ffr)
-    def _resamp(selregr,selregd):
+    def _resamp(selregr,selregd,ffr,fcdn):
         tabsr = []
         ffrn = ffr[selregr]
         ffrs = ffr[~selregr]
@@ -3382,7 +3382,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         #need to split N/S when sampling
         selregr = ffr['DEC'] > 32.375
         selregd = fcdn['DEC'] > 32.375
-        ffr = _resamp(selregr,selregd)
+        ffr = _resamp(selregr,selregd,ffr,fcdn)
     elif 'SGC' in flin and 'QSO' in flin:
         print('resampling in DES region')
         from regressis import footprint
@@ -3394,7 +3394,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         selregr = des[pixr]
         pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
         selregd = des[pixd]
-        ffr = _resamp(selregr,selregd)
+        ffr = _resamp(selregr,selregd,ffr,fcdn)
     else:
         inds = np.random.choice(len(fcdn),len(ffr))
         dshuf = fcdn[inds]
