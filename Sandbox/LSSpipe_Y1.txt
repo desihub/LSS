@@ -97,6 +97,8 @@ for tp,notqso in zip(tps,notqsos):
 #add completeness info per tiles group to randoms
 for tp,notqso in zip(tps,notqsos):
 	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y
+	#i/o goes slow on node sometimes and this computing is fast, so the following might work better:
+	python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
 
 
 #get k+e
