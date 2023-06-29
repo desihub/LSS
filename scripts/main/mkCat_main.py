@@ -657,8 +657,8 @@ if args.regressis == 'y':
     pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
 
     for zl in zrl:    
-        zw = str(zl[0])+' '+str(zl[1])
-        rt.save_desi_data_full(dirout, 'main', tracer_clus+zw, nside, dirreg, zl,foot=dr9_footprint,nran=18)
+        zw = str(zl[0])+'_'+str(zl[1])
+        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
     
         print('computing RF regressis weight for '+tracer_clus+zw)
         logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
@@ -667,7 +667,7 @@ if args.regressis == 'y':
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
     for zl in zrl:    
-        zw = str(zl[0])+' '+str(zl[1])
+        zw = str(zl[0])+'_'+str(zl[1])
 
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
         rfw = np.load(fnreg,allow_pickle=True)
