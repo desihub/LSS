@@ -194,6 +194,8 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
+    zw = str(z_lim[0])+'_'+str(z_lim[1])
+    tracer += zw
     filename_data = os.path.join(dir_out, f'{survey}_{tracer}_{nside}.npy')
     print('saved data to '+filename_data )
     #logger.info(f'Save data: {filename_data}')
