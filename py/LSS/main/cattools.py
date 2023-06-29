@@ -3353,10 +3353,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'
     
     len_o = len(ffr)
-    if 'NGC' in flin:
-        #need to split N/S when sampling
-        selregr = ffr['DEC'] > 32.375
-        selregd = fcdn['DEC'] > 32.375
+    def _resamp(selregr,selregd):
         tabsr = []
         ffrn = ffr[selregr]
         ffrs = ffr[~selregr]
@@ -3379,6 +3376,24 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
         ffr = vstack(tabsr)   
         print(len(ffr),len_o)     
+        return ffr
+
+    if 'NGC' in flin:
+        #need to split N/S when sampling
+        selregr = ffr['DEC'] > 32.375
+        selregd = fcdn['DEC'] > 32.375
+        ffr = _resamp(selregr,selregd)
+    elif 'SGC' in flin and 'QSO' in flin:
+        from regressis import footprint
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        north, south, des = foot.get_imaging_surveys()
+        th_ran,phi_ran = (-ffr['DEC']+90.)*np.pi/180.,ffr['RA']*np.pi/180.
+        th_dat,phi_dat = (-fcdn['DEC']+90.)*np.pi/180.,fcdn['RA']*np.pi/180.
+        pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
+        selregr = des[pixr]
+        pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
+        selregd = des[pixd]
+        ffr = _resamp(selregr,selregd)
     else:
         inds = np.random.choice(len(fcdn),len(ffr))
         dshuf = fcdn[inds]
