@@ -3384,6 +3384,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         selregd = fcdn['DEC'] > 32.375
         ffr = _resamp(selregr,selregd)
     elif 'SGC' in flin and 'QSO' in flin:
+        print('resampling in DES region')
         from regressis import footprint
         foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
         north, south, des = foot.get_imaging_surveys()
