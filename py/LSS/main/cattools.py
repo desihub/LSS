@@ -3232,6 +3232,8 @@ def add_tlobs_ran(fl,rann):
     ranf['FRAC_TLOBS_TILES'] = tlarray
     outf = fl+str(rann)+'_full.ran.fits'
     common.write_LSS(ranf,outf)
+    del ranf
+    return True
     
 def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n',clus_arrays=None):
     import LSS.common_tools as common
