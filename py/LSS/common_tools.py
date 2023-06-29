@@ -844,10 +844,11 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     if comments is not None:
         for comment in comments:
             fd[extname].write_comment(comment)
-    fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     print('closed fits file')
-    os.system('mv ' + tmpfn + ' ' + outf)
+    os.rename(outf+'.tmp', outf)
+    #os.system('mv ' + tmpfn + ' ' + outf)
     print('moved output to ' + outf)
 
 
