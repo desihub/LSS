@@ -25,6 +25,7 @@ from desitarget import __version__ as desitarget_version
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
+from desiutil import brick
 
 # ADM general bitmasks for LSS
 from LSS.masks import lrg_mask, elg_mask, skymap_mask
@@ -1676,6 +1677,107 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     done[uniq] = randmeans
 
     return done
+
+
+def healpix_brickname_look_up(nside=8192, outfile=None):
+    """Write a (nested) HEALPixel->brickname look-up table to file.
+
+    Parameters
+    ----------
+    nside : :class:`int`, optional, defaults to nside=8192
+        Resolution (HEALPix nside) at which to build the (NESTED) map.
+    outfile : :class:`str`, optional
+        Full path to the file to which to write the look-up table.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A numpy structured array containing the columns RA, DEC and
+        BRICKNAME. The HEALPixel number corresponds to the row in the
+        array. The output array is also written to the `outfile` if
+        it is passed.
+
+    Notes
+    -----
+    - If outfile is passed, any existing file will be overwritten.
+    """
+    start = time()
+    log.info(f"Starting...t={time()-start:.1f}s")
+
+    # ADM recover all the nested HEALPixel centers at the passed nside.
+    npix = hp.nside2npix(nside)
+    ras, decs = hp.pix2ang(nside, np.arange(npix), nest=True, lonlat=True)
+
+    # ADM build the Legacy Surveys bricks object.
+    bricks = brick.Bricks(bricksize=0.25)
+
+    # ADM recover all the brick names at the HEALPixel centers.
+    bricknames = bricks.brickname(ras, decs)
+
+    # ADM set up the output array.
+    done = np.zeros(npix,
+                    dtype=[('RA', '>f8'), ('DEC', '>f8'), ('BRICKNAME', 'U8')])
+
+    done["RA"] = ras
+    done["DEC"] = decs
+    done["BRICKNAME"] = bricknames
+
+    if outfile is not None:
+        log.info(f"Writing to file {outfile}...t={time()-start:.1f}s")
+        fitsio.write(outfile, done, clobber=True)
+
+    log.info(f"Done...t={time()-start:.1f}s")
+
+    return done
+
+
+def pure_healpix_map(drdir, nside=8192, lookup=None):
+    """Build a skymap at HEALPixel centers (in nested scheme).
+
+    Parameters
+    ----------
+    drdir : :class:`str`
+       The root directory pointing to a Legacy Surveys Data Release
+       e.g. /global/cfs/cdirs/cosmo/work/legacysurvey/dr9.
+    nside : :class:`int`, optional, defaults to nside=8192
+        Resolution (HEALPix nside) at which to build the (NESTED) map.
+    lookup : :class:`str`, optional
+        Full path to a FITS file that contains a look-up table made by
+        :func:`healpix_brickname_look_up()`. If passed, this file is used
+        instead of generating RAs/DECs/BRICKNAMEs on the fly (as a
+        speed-up) and `nside` is ignored.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A numpy structured array of (some) values from the Legacy Survey
+        stacks and the `maparray` at the start of this module. Values
+        are looked up at the HEALPixel centers at the passed `nside`.
+
+    Notes
+    -----
+    - Splits across bricks, so is better optimized for large `nside`.
+    """
+    start = time()
+
+    if lookup is None:
+        radecs = healpix_brickname_look_up(nside=nside)
+    else:
+        # ADM quickly check the file format.
+        log.info(f"Using look-up table from {lookup}...t={time()-start:.1f}s")
+        msg = f"passed lookup file {lookup} is incorrectly formatted"
+        try:
+            radecs = fitsio.read(lookup)
+            npix = len(radecs)
+            nside = hp.npix2nside(npix)
+            hpx = hp.ang2pix(nside, radecs["RA"], radecs["DEC"],
+                             lonlat=True, nest=True)
+            assert np.arange(npix) == hpx
+        except(AssertionError, ValueError, OSError):
+            log.error(msg)
+        log.info(f"Finished reading look-up table...t={time()-start:.1f}s")
+
+    return radecs
 
 
 # ADM always start by running sanity checks on maparray.
