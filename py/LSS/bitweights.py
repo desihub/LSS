@@ -89,10 +89,10 @@ def setup_fba(mtl, sky, tiles, hw,faver='5.0.0'):
         asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
     if mver >= 5:
         from fiberassign.targets import targets_in_tiles
-        tile_targetids, tile_x, tile_y = targets_in_tiles(hw, tgs, tiles,tagalong)
+        tile_targetids, tile_x, tile_y, tile_xy_cs5 = targets_in_tiles(hw, tgs, tiles,tagalong)
         tgsavail = TargetsAvailable(hw, tiles, tile_targetids, tile_x, tile_y)
         favail = LocationsAvailable(tgsavail)
-        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?)
+        asgn = Assignment(tgs, tgsavail, favail,{}) #this is needed for fiberassign 2.4 and higher(?) to fake stucksky
 
     return asgn
 
