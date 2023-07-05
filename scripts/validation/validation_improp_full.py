@@ -91,7 +91,7 @@ for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g[pix] = f['sky_median_g'][i]
 
-mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
+
 sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
 
 if args.mapmd == 'all':
@@ -223,7 +223,7 @@ for tp in tps:
         tpr = 'BGS_BRIGHT'
     rf = indir+tpr+zdw+'_0_full.ran.fits'
     rt = fitsio.read(rf)
-    
+    mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
