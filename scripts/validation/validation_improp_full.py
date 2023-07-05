@@ -120,7 +120,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     pixlgw = np.zeros(nside*nside*12)
     dcomp = 1/dt_reg['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
-        print('using FRAC_TLOBS_TILES')
+        #print('using FRAC_TLOBS_TILES')
         dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
         pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
@@ -131,13 +131,13 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     wp = pixlr > 0
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
-    print(len(parv[wp]))
+    #print(len(parv[wp]))
     rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
     dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
     dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
-    print((np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
-    print(rh)
-    print(dh)
+    #print((np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+    #print(rh)
+    #print(dh)
     norm = sum(rh)/sum(dh)
     sv = dh/rh*norm
     normw = sum(rh)/sum(dhw)
@@ -337,5 +337,5 @@ for tp in tps:
                     plt.close()
             
             print('results for '+tp+zr+' '+reg)
-            print('total chi2 is '+str(chi2)+' for '+str(nmaptot)+ ' maps')
+            print('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps')
     print('done with '+tp)
