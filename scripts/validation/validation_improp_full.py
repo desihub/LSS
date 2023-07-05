@@ -180,6 +180,7 @@ for tp in tps:
         dosky_g = 'n'
         do_ebvnew_diff = 'n'
         print('doing validation for '+tp)
+        fo = open(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'_chi2.txt','w')
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
         maps.remove('PSFDEPTH_W1')
         maps.remove('PSFDEPTH_W2')
@@ -304,6 +305,8 @@ for tp in tps:
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
+                    if args.mapmd == 'validate':
+                        fo.write(str(mp)+' '+str(chi2)+'\n')
                 #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
                 #plt.clf()
     
@@ -349,6 +352,8 @@ for tp in tps:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
+            if args.mapmd == 'validate':
+                fo.close()
             
             print('results for '+tp+zr+' '+reg)
             print('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps')
