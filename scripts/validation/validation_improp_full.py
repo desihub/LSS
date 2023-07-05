@@ -112,7 +112,7 @@ nbin = 10
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
-def plot_reldens(parv,dt_reg,rt_reg,reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
+def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
     rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
 
@@ -255,7 +255,7 @@ for tp in tps:
                 parv = sag
                 mp = 'sagstream'
                 fig = plt.figure()
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl)
                 chi2tot += chi2
                 nmaptot += 1
                 figs.append(fig)
@@ -269,7 +269,7 @@ for tp in tps:
                 parv = sky_g
                 mp = 'g_sky_res'
                 
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -286,7 +286,7 @@ for tp in tps:
                 print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
-                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
@@ -302,7 +302,7 @@ for tp in tps:
                 parv = m1-m2
                 parv[sel] = hp.UNSEEN
                 mp = map_pair[0]+' - '+map_pair[1]
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
                 chi2tot += chi2
                 nmaptot += 1
 
@@ -322,7 +322,7 @@ for tp in tps:
                     debv[pix] = nv-sfdv
                 parv = debv
                 fig = plt.figure()
-                plot_reldens(parv,dt_reg,rt_reg,cl,reg,xlab='EBV_RZ - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_RZ - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
