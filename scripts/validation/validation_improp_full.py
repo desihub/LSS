@@ -169,7 +169,16 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     
 
 for tp in tps:
-    
+    depthmd = 'GAL'
+    if tp == 'QSO':
+        depthmd = 'PSF'
+    if args.mapmd == 'validate':
+        maps = ['STARDENS','EBV_CHIANG_SFDcorr','HI',depthmd+'DEPTH_G'depthmd+'DEPTH_R',depthmd+'DEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        dmaps = []
+        dosag = 'n'
+        dosky_g = 'n'
+        do_ebvnew_diff = 'n'
+
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
     seld = dtf['ZWARN'] != 999999
@@ -331,7 +340,7 @@ for tp in tps:
             tw = ''
             if args.test == 'y':
                 tw = '_test'
-            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'.pdf') as pdf:
+            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'.pdf') as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
