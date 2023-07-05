@@ -180,7 +180,7 @@ for tp in tps:
         dosky_g = 'n'
         do_ebvnew_diff = 'n'
         print('doing validation for '+tp)
-        fo = open(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'_chi2.txt','w')
+        
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
         maps.remove('PSFDEPTH_W1')
         maps.remove('PSFDEPTH_W2')
@@ -254,6 +254,8 @@ for tp in tps:
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
+            if args.mapmd = 'validation':
+                fo = open(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'_chi2.txt','w')
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
