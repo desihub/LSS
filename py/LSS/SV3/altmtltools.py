@@ -26,6 +26,8 @@ import cProfile, pstats
 import io as ProfileIO
 from pstats import SortKey
 import glob
+
+
 pr = cProfile.Profile()
 
 log = get_logger()
@@ -46,6 +48,51 @@ mtltilefiledm = np.array([], dtype = [
     ('TILEID', '>i4'), ('TIMESTAMP', '<U25'),
     ('VERSION', '<U14'), ('PROGRAM', '<U6'), 
     ('ZDATE', '>i8'), ('ARCHIVEDATE', '>i8')])
+
+
+
+def evaluateMask(bits, mask, evalMultipleBits = False):
+    if evalMultipleBits:
+        return (bits & mask) == mask 
+    return (bits & mask) > 0
+
+
+
+def flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
+    #only works on single bits
+    assert( np.abs( np.log2(bit2Flip) - int(np.log2(bit2Flip)) ) < 0.001  )
+
+    if cond is None:
+        if mode.lower() == 'on':
+            cond = np.invert(evaluateMask(cat[fieldName], bit2Flip))
+        elif mode.lower() == 'off':
+            cond = evaluateMask(cat[fieldName], bit2Flip)
+        #elif mode.lower() == 'both':
+        #    cond = np.ones(cat.shape[0], dtype = bool)
+        else:
+            #raise ValueError('`mode` must be `on` `off` or `both`')
+            raise ValueError('`mode` must be `on` or `off`')
+
+    assert( len(cond) ==  len(cat))
+
+    if np.sum(cond) == 0:
+        log.warning('This call to flipBit does not flip any bits.')
+        return cat
+
+
+    if mode == 'on':
+        cat[fieldName][cond] = cat[fieldName][cond] | bit2Flip
+    elif mode == 'off':
+        cond = cond & ((cat[fieldName] & bit2Flip) == bit2Flip)
+        cat[fieldName][cond] = cat[fieldName][cond] ^ bit2Flip
+    #elif mode == 'both':
+    #    cat[fieldName][cond] = cat[fieldName][cond] ^ bit2Flip
+    else:
+        #raise ValueError('`mode` must be `on` `off` or `both`')
+        raise ValueError('`mode` must be `on` or `off`')
+
+    return cat
+
 def processTileFile(infile, outfile, startDate, endDate):
     #ztilefile, outputMTLDir + ztilefn, startDate, endDate
     if (startDate is None) and (endDate is None):
@@ -364,48 +411,8 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
         origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
-        startDateShort = int(startDate.split('T')[0].replace('-', ''))       
-        '''
-        raise NotImplementedError('not currently debugging this feature, bye.')
-        log.warning('Initializing MTLs from a non-zero start date feature is in Beta mode')
-        initialentries = allentries[allentries["TIMESTAMP"] < startDate]
-        subpriorsInit = initialentries["SUBPRIORITY"]
-
-        #JL TRIPLE CHECK THIS IS THE RIGHT FILE
-        origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
-        altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
         startDateShort = int(startDate.split('T')[0].replace('-', ''))
-        if verbose or debug:
-            log.info('startDateShort')
-            log.info(startDateShort)
-            log.info('altmtltilefn')
-            log.info(altmtltilefn)
-            log.info('ztilefile')
-            log.info(ztilefile)
-        ztiles = Table.read(origmtltilefn)
-        if verbose or debug:
-            log.info('ztiles dtype')
-            log.info(ztiles.dtype)
-        tilesTemp = ztiles[ztiles['ARCHIVEDATE'].astype(int) < startDateShort]
-        sortedDatesTemp = np.sort(ztiles['ARCHIVEDATE'])
-        if verbose or debug:
-            log.info('first and last archivedates')
-            log.info(sortedDatesTemp[0])
-            log.info(sortedDatesTemp[-1])
-            log.info('tilesTemp[0:2]')
-            log.info(tilesTemp[0:2])
-            log.info('tilesTemp.as_array[0:2]')
-            log.info(tilesTemp.as_array()[0:2])
-            log.info('mtltimefiledm.dtype')
-            log.info(mtltilefiledm.dtype)
-            log.info('tilesTemp.as_array().dtype')
-            log.info(tilesTemp.as_array().dtype)
-            io.write_mtl_tile_file(altmtltilefn,tilesTemp.as_array().astype(mtltilefiledm.dtype))
 
-            log.info('initialentries timestamp 0: {0}'.format(np.sort(initialentries['TIMESTAMP'])[0]))
-
-            log.info('initialentries timestamp -1: {0}'.format(np.sort(initialentries['TIMESTAMP'])[-1]))
-    '''
     if verbose or debug:
         log.info('generate subset? {0}'.format(genSubset))
     if not genSubset is None:
@@ -514,48 +521,67 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
         elif (survey.lower() == 'main') and (obscon.lower() == 'dark') and (shuffleELGPriorities):
 
-            ELGHIPBit = 2**6
-            ELGLOPBit = 2**5
-            ELGVLOBit = 2**7
-            ELGBit = 2**0
-            ELGOrigLOPPriority = 3100
-            ELGOrigVLOPriority = 3000
-            ELGPromotedPriority = 3200
+            #desi_mask
+
+            #evaluateMask(bit, mask, evalMultipleBits = False):
+            #flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
 
             ELGBits = initialentries['DESI_TARGET']
-            ELGHIP = ((ELGBits & ELGHIPBit) == ELGHIPBit)
-            ELGLOP = ((ELGBits & ELGLOPBit) == ELGLOPBit)
-            ELGVLO = ((ELGBits & ELGVLOBit) == ELGVLOBit)
-            ELGAll = ((ELGBits & ELGBit) == ELGBit) | ELGHIP
 
-            #Set all ELG_HIP to ELG_VLO
+            #Set up condition arrays to select each type of target class
+            LRGs    = evaluateMask(ELGBits, desi_mask['LRG'])
+            ELGs    = evaluateMask(ELGBits, desi_mask['ELG'])
+            QSOs    = evaluateMask(ELGBits, desi_mask['QSO'])
+            ELGHIPs = evaluateMask(ELGBits, desi_mask['ELG_HIP'])
+            ELGLOPs = evaluateMask(ELGBits, desi_mask['ELG_LOP'])
+            ELGVLOs = evaluateMask(ELGBits, desi_mask['ELG_VLO'])
 
-            initialentries['DESI_TARGET'][ELGHIP] = (ELGBits[ELGHIP] & ~ELGHIPBit)
-            initialentries['PRIORITY'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
-            initialentries['PRIORITY'][ELGHIP & ELGLOP] = ELGOrigLOPPriority*np.ones(np.sum(ELGHIP & ELGLOP))
-            initialentries['PRIORITY_INIT'][ELGHIP & ELGVLO] = ELGOrigVLOPriority*np.ones(np.sum(ELGHIP & ELGVLO))
-            initialentries['PRIORITY_INIT'][ELGHIP & ELGLOP] = ELGOrigLOPPriority*np.ones(np.sum(ELGHIP & ELGLOP))
-            initialentries['TARGET_STATE'][ELGHIP & ELGVLO] = np.broadcast_to(np.array(['ELG_VLO|UNOBS']), np.sum(ELGHIP & ELGVLO))
-            initialentries['TARGET_STATE'][ELGHIP & ELGLOP] = np.broadcast_to(np.array(['ELG_LOP|UNOBS']), np.sum(ELGHIP & ELGLOP))
+            #turn off the ELG_HIP bit
+            initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGHIPs, mode = 'off', fieldName = 'DESI_TARGET')
 
-            allPriorities = initialentries['PRIORITY']
+            #reset object priority, priority_init, and numobs_init based on new target bits. 
+            outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
+            initialentries['PRIORITY'] = outpriority
+            initialentries['PRIORITY_INIT'] = outpriority
+            initialentries['NUMOBS_INIT'] = outnumobs
 
-            #Select PromoteFracELG% of all ELGs with prioriti to promote using function from desitarget
-            ELGNewHIP_FromLOP = random_fraction_of_trues(PromoteFracELG, ELGLOP )
-            ELGNewHIP_FromVLO = random_fraction_of_trues(PromoteFracELG, ELGVLO )
 
-            ELGNewHIP = ELGNewHIP_FromVLO | ELGNewHIP_FromLOP
-            #Promote them
+            #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
+            initialentries['TARGET_STATE'][ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_VLO|UNOBS']), np.sum(ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs) ) )
 
-            initialentries['DESI_TARGET'][ELGNewHIP] = (ELGBits[ELGNewHIP] | ELGHIPBit)
-            initialentries['PRIORITY'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
-            initialentries['PRIORITY_INIT'][ELGNewHIP] = ELGPromotedPriority*np.ones(np.sum(ELGNewHIP)).astype(int)
-            print(np.sum(ELGNewHIP))
-            initialentries['TARGET_STATE'][ELGNewHIP] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP) )
-        if verbose or debug:
-            log.info('meta passed to write_mtl')
-            log.info(meta)
-            log.info('--')
+            initialentries['TARGET_STATE'][ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_LOP|UNOBS']), np.sum(ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs) ) )
+
+            initialentries['TARGET_STATE'][ELGHIPs & LRGs] = np.broadcast_to(np.array(['LRG|UNOBS']), np.sum(ELGHIPs & LRGs) )
+
+
+            #Determine which 10% of ELGLOP and ELGVLO will be promoted to ELGHIP. These are done separately.
+
+            #ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGLOPs)
+
+            #ELGNewHIP = ELGNewHIP | random_fraction_of_trues(PromoteFracELG, ELGVLOs)
+
+            chosenLOP = rand.random(len(ELGLOPs)) < 0.1
+            ELGnewHIP_FromLOP = ELGLOPs & chosenLOP 
+
+            chosenVLO = rand.random(len(ELGVLOs)) < 0.1
+            ELGnewHIP_FromVLO = ELGVLOs & chosenVLO
+
+            ELGNewHIP = ELGnewHIP_FromLOP | ELGnewHIP_FromVLO
+
+            #promote the just-determined 10% of ELG_LOP/ELG_VLO
+            initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGNewHIP, mode = 'on', fieldName = 'DESI_TARGET')
+
+
+            #reset object priority, priority_init, and numobs_init based on new target bits. 
+            outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
+            initialentries['PRIORITY'] = outpriority
+            initialentries['PRIORITY_INIT'] = outpriority
+            initialentries['NUMOBS_INIT'] = outnumobs
+
+            #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
+            initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
+
+            
         io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
         log.info('wrote MTLs')
         if saveBackup and (not usetmp):
