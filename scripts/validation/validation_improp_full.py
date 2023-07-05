@@ -16,6 +16,7 @@ parser.add_argument("--basedir", help="base directory for catalogs",default='/gl
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
+parser.add_argument("--mapmd", help="set of maps to use",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
@@ -49,7 +50,7 @@ zdw = ''#'zdone'
 regl = ['N','S']
 clrs = ['r','b']
 
-maps = ['CALIB_G',
+all_maps = ['CALIB_G',
  'CALIB_R',
  'CALIB_Z',
  'STARDENS',
@@ -72,11 +73,9 @@ maps = ['CALIB_G',
  'PSFSIZE_R',
  'PSFSIZE_Z']
 
-if args.test == 'y':
-    maps = [maps[0]] 
-    #print(maps)
+
  
-dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
+all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 
 sky_g = np.zeros(256*256*12)
 f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
@@ -92,13 +91,28 @@ for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g[pix] = f['sky_median_g'][i]
 
+mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
+sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
+
+if args.mapmd == 'all':
+    maps = all_maps
+    dmaps = all_dmaps
+    dosag = 'y'
+    dosky_g = 'y'
+    do_ebvnew_diff = 'y'
+    
+
+if args.test == 'y':
+    maps = [maps[0]] 
+    #print(maps)
+
 
 nbin = 10
 
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
-def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
+def plot_reldens(parv,dt_reg,rt_reg,reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
     rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
 
@@ -137,10 +151,20 @@ def plot_reldens(parv,dt_reg,rt_reg,cl,reg):
     bc = []
     for i in range(0,len(bn)-1):
         bc.append((bn[i]+bn[i+1])/2.)
-    lab = reg+r', full, no imsys weights, $\chi^2$='+str(round(chi2nw,3))
-    print(lab)    
-    plt.errorbar(bc,sv,ep,fmt='o',label=lab,color=cl)
-    plt.plot(bc,svw,'-',color=cl,label=r'with imsys weights, $\chi^2$='+str(round(chi2,3)))
+    labnw = r' no imsys weights, $\chi^2$='+str(round(chi2nw,3))
+    labw = r'with imsys weights, $\chi^2$='+str(round(chi2,3))
+    #print(lab)    
+    plt.errorbar(bc,svw,ep,fmt='o',label=labw,color=cl)
+    plt.plot(bc,sv,'-',color=cl,label=labnw)
+    plt.legend()
+    plt.xlabel(xlab)
+    plt.ylabel('Ngal/<Ngal> ')
+
+    plt.title(titl)
+    plt.grid()
+    plt.ylim(yl[0],yl[1])
+    return chi2
+        
 
     
 
@@ -160,7 +184,7 @@ for tp in tps:
 
     
 
-    yl = (0.8,1.1)
+    yl = (0.8,1.1)    
     if tp == 'LRG':
         z_suc= dtf['ZWARN']==0
         z_suc &= dtf['DELTACHI2']>15
@@ -208,146 +232,110 @@ for tp in tps:
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
-        
-        nside,nest = 256,True
-        figs = []
         zmin = zb[0]
         zmax = zb[1]
         selz = dtf['Z_not4clus'] > zmin
         selz &= dtf['Z_not4clus'] < zmax
         zr = str(zmin)+'<z<'+str(zmax)       
-        sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-        parv = sag
-        map = 'sagstream'
-        #for reg,cl in zip(regl,clrs):
-        reg = 'S'
-        cl = clrs[1]        
-        sel_reg_d = dtf['PHOTSYS'] == reg
-        sel_reg_r = rt['PHOTSYS'] == reg
-        dt_reg = dtf[sel_reg_d&selz]
-        rt_reg = rt[sel_reg_r]
-        fig = plt.figure()
-        plot_reldens(parv,dt_reg,rt_reg,cl,reg)
-        plt.legend()
-        plt.xlabel(map)
-        plt.ylabel('Ngal/<Ngal> ')
 
-        plt.title(args.survey+' '+tp+zr)
-        plt.grid()
-        plt.ylim(yl[0],yl[1])
-        figs.append(fig)
-        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-        #plt.clf()
-    
-
-
-        if sky_g is not None:
-            fig = plt.figure()
-            parv = sky_g
-            map = 'g_sky_res'
-            for reg,cl in zip(regl,clrs):
-                
-                sel_reg_d = dtf['PHOTSYS'] == reg
-                sel_reg_r = rt['PHOTSYS'] == reg
-                dt_reg = dtf[sel_reg_d&selz]
-                rt_reg = rt[sel_reg_r]
-                plot_reldens(parv,dt_reg,rt_reg,cl,reg)
-
-            plt.legend()
-            plt.xlabel(map)
-            plt.ylabel('Ngal/<Ngal> ')
-    
-            plt.title(args.survey+' '+tp+zr)
-            plt.grid()
-            plt.ylim(yl[0],yl[1])
-            figs.append(fig)
-            #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-            #plt.clf()
-
-
-
-        mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
-        for map in maps:
-            fig = plt.figure()
-            parv = mf[map]
-            print(map)
-            for reg,cl in zip(regl,clrs):
-                if reg == 'S' or map[:5] != 'CALIB':
-                    sel_reg_d = dtf['PHOTSYS'] == reg
-                    sel_reg_r = rt['PHOTSYS'] == reg
-                    dt_reg = dtf[sel_reg_d&selz]
-                    rt_reg = rt[sel_reg_r]
-                    plot_reldens(parv,dt_reg,rt_reg,cl,reg)
-            plt.legend()
-            plt.xlabel(map)
-            plt.ylabel('Ngal/<Ngal> ')
-    
-            plt.title(args.survey+' '+tp+zr)
-            plt.grid()
-            plt.ylim(yl[0],yl[1])
-            figs.append(fig)
-            #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-            #plt.clf()
-    
-        for map_pair in dmaps:
-            fig = plt.figure()
-            m1 = mf[map_pair[0]]
-            m2 = mf[map_pair[1]]
-            sel = (m1 == hp.UNSEEN)
-            sel |= (m2 == hp.UNSEEN)
-            parv = m1-m2
-            parv[sel] = hp.UNSEEN
-            map = map_pair[0]+' - '+map_pair[1]
-            for reg,cl in zip(regl,clrs):
-                sel_reg_d = dtf['PHOTSYS'] == reg
-                sel_reg_r = rt['PHOTSYS'] == reg
-                dt_reg = dtf[sel_reg_d&selz]
-                rt_reg = rt[sel_reg_r]
-                plot_reldens(parv,dt_reg,rt_reg,cl,reg)
-            plt.legend()
-            plt.xlabel(map)
-            plt.ylabel('Ngal/<Ngal> ')
-    
-            plt.title(args.survey+' '+tp+zr)
-            plt.grid()
-            plt.ylim(yl[0],yl[1])
-            figs.append(fig)
-            #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-            #plt.clf()
-    
-        ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
-        nside = 64
-        nest = False
-        debv = np.zeros(nside*nside*12)
-        for i in range(0,len(ebvn)):
-            pix = ebvn[i]['HPXPIXEL']
-            sfdv = ebvn[i]['EBV_SFD']
-            nv = ebvn[i]['EBV_NEW'] 
-            debv[pix] = nv-sfdv
-        parv = debv
-        fig = plt.figure()
         for reg,cl in zip(regl,clrs):
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
             rt_reg = rt[sel_reg_r]
-            plot_reldens(parv,dt_reg,rt_reg,cl,reg)
-        plt.legend()
-        plt.xlabel('EBV_RZ - EBV_SFD')
-        plt.ylabel('Ngal/<Ngal> ')
+            
+            #reset for every loop through the maps        
+            nside,nest = 256,True
+            figs = []
+            chi2tot = 0
+            nmaptot = 0
+            
+            if dosag == 'y' and reg == 'S':
+        
+                parv = sag
+                mp = 'sagstream'
+                fig = plt.figure()
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl)
+                chi2tot += chi2
+                nmaptot += 1
+                figs.append(fig)
+        #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+        #plt.clf()
+    
 
-        plt.title(args.survey+' '+tp+zr)
-        plt.grid()
-        plt.ylim(yl[0],yl[1])
-        figs.append(fig)
+
+            if dosky_g == 'y':
+                fig = plt.figure()
+                parv = sky_g
+                mp = 'g_sky_res'
+                
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
+
+                #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+                #plt.clf()
+
+
+
+        
+            for mp in maps:
+                fig = plt.figure()
+                parv = mf[mp]
+                print(mp)
+                
+                if reg == 'S' or mp[:5] != 'CALIB':
+                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2tot += chi2
+                    nmaptot += 1
+                    figs.append(fig)
+                #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+                #plt.clf()
+    
+            for map_pair in dmaps:
+                fig = plt.figure()
+                m1 = mf[map_pair[0]]
+                m2 = mf[map_pair[1]]
+                sel = (m1 == hp.UNSEEN)
+                sel |= (m2 == hp.UNSEEN)
+                parv = m1-m2
+                parv[sel] = hp.UNSEEN
+                mp = map_pair[0]+' - '+map_pair[1]
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl,reg,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2tot += chi2
+                nmaptot += 1
+
+                figs.append(fig)
+                #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+                #plt.clf()
+    
+            if do_ebvnew_diff == 'y':
+                ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
+                nside = 64
+                nest = False
+                debv = np.zeros(nside*nside*12)
+                for i in range(0,len(ebvn)):
+                    pix = ebvn[i]['HPXPIXEL']
+                    sfdv = ebvn[i]['EBV_SFD']
+                    nv = ebvn[i]['EBV_NEW'] 
+                    debv[pix] = nv-sfdv
+                parv = debv
+                fig = plt.figure()
+                plot_reldens(parv,dt_reg,rt_reg,cl,reg,xlab='EBV_RZ - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
     
        
-        tw = ''
-        if args.test == 'y':
-            tw = '_test'
-        with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'.pdf') as pdf:
-            for fig in figs:
-                pdf.savefig(fig)
-                plt.close()
-        print('done with '+tp+zr)
+            tw = ''
+            if args.test == 'y':
+                tw = '_test'
+            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'.pdf') as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)
+                    plt.close()
+            
+            print('results for '+tp+zr+' '+reg)
+            print('total chi2 is '+str(chi2)+' for '+str(nmaptot)+ ' maps')
     print('done with '+tp)
