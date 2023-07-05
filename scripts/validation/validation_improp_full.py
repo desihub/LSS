@@ -163,6 +163,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     plt.title(titl)
     plt.grid()
     plt.ylim(yl[0],yl[1])
+    print(xlab,chi2)
     return chi2
         
 
@@ -293,7 +294,7 @@ for tp in tps:
             for mp in maps:
                 fig = plt.figure()
                 parv = mf[mp]
-                print(mp)
+                #print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
                     chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
