@@ -254,7 +254,7 @@ for tp in tps:
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
-            if args.mapmd = 'validation':
+            if args.mapmd == 'validation':
                 fo = open(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'_chi2.txt','w')
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
