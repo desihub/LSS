@@ -180,6 +180,9 @@ for tp in tps:
         dosky_g = 'n'
         do_ebvnew_diff = 'n'
         print('doing validation for '+tp)
+    if tp[:3] == 'ELG' or tp[:3] == 'BGS':
+        maps.remove('PSFDEPTH_W1')
+        maps.remove('PSFDEPTH_W2')
 
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
