@@ -255,7 +255,7 @@ for tp in tps:
 
         for reg,cl in zip(regl,clrs):
             if args.mapmd == 'validate':
-                fo = open(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'_chi2.txt','w')
+                fo = open(outdir+tp+zr+'_densfullvsall'+'_'+reg+'_'+args.mapmd+'_chi2.txt','w')
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
@@ -350,7 +350,7 @@ for tp in tps:
             tw = ''
             if args.test == 'y':
                 tw = '_test'
-            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+' '+reg+'_'+args.mapmd+'.pdf') as pdf:
+            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'_'+reg+'_'+args.mapmd+'.pdf') as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
