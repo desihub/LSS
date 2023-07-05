@@ -173,11 +173,12 @@ for tp in tps:
     if tp == 'QSO':
         depthmd = 'PSF'
     if args.mapmd == 'validate':
-        maps = ['STARDENS','EBV_CHIANG_SFDcorr','HI',depthmd+'DEPTH_G'depthmd+'DEPTH_R',depthmd+'DEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+        maps = ['STARDENS','EBV_CHIANG_SFDcorr','HI',depthmd+'DEPTH_G',depthmd+'DEPTH_R',depthmd+'DEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
         dmaps = []
         dosag = 'n'
         dosky_g = 'n'
         do_ebvnew_diff = 'n'
+        print('doing validation for '+tp)
 
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
