@@ -391,7 +391,7 @@ def doran(ii):
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
         #print('random veto '+str(ii)+' done')
 
-    if args.add_tlcomp:
+    if args.add_tlcomp == 'y':
         fl = dirout+type+notqso+'_'
         ct.add_tlobs_ran(fl,ii)
 
