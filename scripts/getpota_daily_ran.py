@@ -21,6 +21,8 @@ from LSS.globals import main
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--getcoll", choices=['n','y'],default='y')
+parser.add_argument("--minr",default=0,type=int)
+parser.add_argument("--maxr",default=18,type=int)
 
 args = parser.parse_args()
 
@@ -169,7 +171,7 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(ta['TILEID'])#[:10])
     inds = np.arange(len(tls))
-    for rann in range(0,18):
+    for rann in range(args.minr,args.maxr):
         with Pool(processes=128) as pool:
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
