@@ -20,7 +20,7 @@ from LSS.globals import main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--getcoll", choices=['n','y'],default='n')
+parser.add_argument("--getcoll", choices=['n','y'],default='y')
 
 args = parser.parse_args()
 
