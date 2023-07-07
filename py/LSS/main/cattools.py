@@ -2105,6 +2105,9 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
 def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None,badfib=None):
     import LSS.common_tools as common
+    import logging
+    logger = logging.getLogger('LSSran')
+
     if pd == 'bright':
         tscol = 'TSNR2_BGS'
     else:
@@ -2114,9 +2117,9 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
 
     zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
-    print('about to load '+zf)
+    logger.info('about to load '+zf)
     dz = Table.read(zf)
-    print(dz.dtype.names)
+    logger.info(dz.dtype.names)
 
     zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
@@ -2136,7 +2139,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     wg = np.isin(dz['TILELOCID'],gtl)
     if badfib is not None:
         bad = np.isin(dz['FIBER'],badfib)
-        print('number at bad fibers '+str(sum(bad)))
+        logger.info('number at bad fibers '+str(sum(bad)))
         wg &= ~bad
 
 
@@ -2165,18 +2168,18 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
 
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
-    print(dz.dtype.names)
-    print('about to do sort')
+    logger.info(dz.dtype.names)
+    logger.info('about to do sort')
 
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
-    print('length after cutting to unique TARGETID '+str(len(dz)))
+    logger.info('length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
 
-    print('length after joining to tiles info '+str(len(dz)))
-    print(np.unique(dz['NTILE']))
+    logger.info('length after joining to tiles info '+str(len(dz)))
+    logger.info(np.unique(dz['NTILE']))
 
     if len(imbits) > 0:
         print('joining with original randoms to get mask properties')
@@ -2188,7 +2191,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dz = join(dz,tarf,keys=['TARGETID'])
         del tarf
         dz = common.cutphotmask(dz,imbits)
-        print('length after cutting to based on imaging veto mask '+str(len(dz)))
+        logger.info('length after cutting to based on imaging veto mask '+str(len(dz)))
 
 
     if 'PHOTSYS' not in cols:
@@ -2202,7 +2205,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     common.write_LSS(dz,outf)
     #dz.write(outf,format='fits', overwrite=True)
-    print('wrote to '+outf)
+    logger.info('wrote to '+outf)
     del dz
 
 def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_tsnr2=0,tlid_full=None):
