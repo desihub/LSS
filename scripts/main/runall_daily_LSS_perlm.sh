@@ -23,7 +23,7 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_daily_ran.py --prog BRIGHT
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --combwspec y --counttiles y 
 
-$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto.sh
+$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto_notpix.sh
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --maxr 1
 
