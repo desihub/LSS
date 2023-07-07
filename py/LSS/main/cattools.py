@@ -2180,17 +2180,17 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
     logger.info(dz.dtype.names)
-    logger.info('about to do sort')
+    logger.info(str(rann)+' about to do sort')
 
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
-    logger.info('length after cutting to unique TARGETID '+str(len(dz)))
+    logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
 
-    logger.info('length after joining to tiles info '+str(len(dz)))
-    logger.info(np.unique(dz['NTILE']))
+    logger.info(str(rann)+' length after joining to tiles info '+str(len(dz)))
+    logger.info(str(rann)+' '+str(np.unique(dz['NTILE'])))
 
     if len(imbits) > 0:
         print('joining with original randoms to get mask properties')
@@ -2202,7 +2202,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dz = join(dz,tarf,keys=['TARGETID'])
         del tarf
         dz = common.cutphotmask(dz,imbits)
-        logger.info('length after cutting to based on imaging veto mask '+str(len(dz)))
+        logger.info(str(rann)+' length after cutting to based on imaging veto mask '+str(len(dz)))
 
 
     if 'PHOTSYS' not in cols:
