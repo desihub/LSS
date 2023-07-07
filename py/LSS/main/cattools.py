@@ -2193,13 +2193,14 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     logger.info(str(rann)+' '+str(np.unique(dz['NTILE'])))
 
     if len(imbits) > 0:
-        print('joining with original randoms to get mask properties')
-        dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        logger.info(str(rann)+' joining with original randoms to get mask properties')
+        dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
         tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
         #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
         #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
         tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
         dz = join(dz,tarf,keys=['TARGETID'])
+        logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf
         dz = common.cutphotmask(dz,imbits)
         logger.info(str(rann)+' length after cutting to based on imaging veto mask '+str(len(dz)))
