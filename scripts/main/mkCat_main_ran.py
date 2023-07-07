@@ -19,8 +19,23 @@ from desimodel.footprint import is_point_in_desi
 
 import logging
 
+# create logger
 logger = logging.getLogger('LSSran')
-logger.setLevel(level=logging.INFO)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
 
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
