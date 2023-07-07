@@ -452,10 +452,10 @@ if __name__ == '__main__':
         pool = sharedmem.MapReduce(np=N)
         with pool:
         
-            def reduce(ii, r):
-                logger.info('chunk done '+str(ii))
-                return r
-            pool.map(doran,inds,reduce=reduce)
+            #def reduce(ii, r):
+            #    logger.info('chunk done '+str(ii))
+            #    return r
+            pool.map(doran,inds)#,reduce=reduce)
 
         #p.map(doran,inds)
     else:

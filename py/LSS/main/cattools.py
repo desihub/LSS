@@ -1314,9 +1314,11 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         gtl = np.unique(stlid)
 
     if dr == 'dat':
+        logger = None
         fj = fitsio.read(indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits'
     if dr == 'ran':
+        logger = logging.getLogger('LSSran')
         if px:
             fj = fitsio.read(indir+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         else:
@@ -1329,7 +1331,10 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
     tids = np.unique(fjg['TARGETID'])
-    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    if logger is None:
+        print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    else:
+        logger.info('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
     nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
     nt = []
     tl = []
@@ -1356,7 +1361,10 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         tli.append("-".join(tlisu.astype(str)))
 
         if ti%100000 == 0:
-            print(ti)
+            if logger is None:
+                print(ti)
+            else:
+                logging.info(ti)
         ti += 1
     tc = Table()
     tc['TARGETID'] = tids

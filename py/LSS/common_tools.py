@@ -183,7 +183,7 @@ def find_znotposs(dz,logname=None):
     wtbtlid = np.isin(tlidnoz,tidsb)
     tlidnoz = np.array(tlidnoz)
     lznposs = tlidnoz[wtbtlid]
-    message = 'number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
+    message = 'number of locations where assignment was not possible because of priorities '+str(len(lznposs))
     if logname is None:
         print(message)
     else:
