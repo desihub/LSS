@@ -17,13 +17,13 @@ $LSSCODE/LSS/scripts/main/daily_main_data_full.sh
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --ranmtl y 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_daily_ran.py --prog DARK
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --combwspec y --counttiles y 
+python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --combwspec y --counttiles y --maxr 1
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --ranmtl y 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_daily_ran.py --prog BRIGHT
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --combwspec y --counttiles y 
+python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --combwspec y --counttiles y  --maxr 1
 
-$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto_notpix.sh
+$LSSCODE/LSS/scripts/main/daily_main_randoms_all_noveto_notpix0.sh
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_veto y --verspec daily --maxr 1
 
