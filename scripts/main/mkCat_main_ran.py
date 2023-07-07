@@ -427,12 +427,12 @@ if __name__ == '__main__':
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        #with sharedmem.MapReduce() as pool:
-        pool = sharedmem.MapReduce(np=N)
-        with pool:
+        with sharedmem.MapReduce() as pool:
+        #pool = sharedmem.MapReduce(np=N)
+        #with pool:
         
-            def reduce( r):
-                print('chunk done')
+            def reduce(ii, r):
+                print('chunk done '+str(ii))
                 return r
             pool.map(doran,inds,reduce=reduce)
 
