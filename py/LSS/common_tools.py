@@ -4,6 +4,7 @@ from astropy.table import Table,join,vstack
 import datetime
 import os
 import sys
+import logging
 
 
 
@@ -106,15 +107,19 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
     return ualt,uflt
 
 
-def find_znotposs(dz):
+def find_znotposs(dz,logname=None):
 
     dz.sort('TARGETID')
     tidnoz = []
     tids = np.unique(dz['TARGETID'])
     ti = 0
     i = 0
-
-    print('finding targetids that were not observed')
+    message = 'finding targetids that were not observed'
+    if logname is None:
+        print(message)
+    else:
+        logger = logging.getLogger(logname)
+        logger.info(message)
     while i < len(dz):
         za = 0
 
@@ -129,7 +134,11 @@ def find_znotposs(dz):
             tidnoz.append(tids[ti])
 
         if ti%30000 == 0:
-            print(ti)
+            if logname is None:
+                print(ti)
+            else:
+                logger.info('at index '+str(ti))
+                
         ti += 1
 
 
@@ -138,7 +147,11 @@ def find_znotposs(dz):
     #dz = dz[selnoz]
     dz.sort('TILELOCID')
     tids = np.unique(dz['TILELOCID'])
-    print('number of targetids with no obs '+str(len(tidnoz)))
+    message = 'number of targetids with no obs '+str(len(tidnoz))
+    if logname is None:
+        print(message)
+    else:
+        log.info(message)
     tlidnoz = []
     lznposs = []
 
@@ -161,13 +174,20 @@ def find_znotposs(dz):
             #    lznposs.append(tids[ti])
 
         if ti%30000 == 0:
-            print(ti,len(tids))
+            if logname is None:
+                print(ti,len(tids))
+            else:
+                log.info(ti,len(tids))
         ti += 1
     #the ones to veto are now the join of the two
     wtbtlid = np.isin(tlidnoz,tidsb)
     tlidnoz = np.array(tlidnoz)
     lznposs = tlidnoz[wtbtlid]
-    print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
+    message = 'number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
+    if logname is None:
+        print(message)
+    else:
+        log.info(message)
     return lznposs
 
 def comp_tile(dz):

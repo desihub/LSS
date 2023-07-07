@@ -20,7 +20,8 @@ from desimodel.footprint import is_point_in_desi
 import logging
 
 # create logger
-logger = logging.getLogger('LSSran')
+logname = 'LSSran'
+logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
 
 # create console handler and set level to debug
@@ -241,7 +242,7 @@ if mkfullr:
     specft = Table(specft[wg])
     logger.info('length after selecting type and good hardware '+str(len(specf)))
 
-    lznp = common.find_znotposs(specft)    
+    lznp = common.find_znotposs(specft,logname=logname)    
     logger.info('finished finding znotposs')
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
@@ -442,14 +443,14 @@ if __name__ == '__main__':
         import sys
         #N = int(sys.argv[2])
         #N = 32
-        N = rx-rm+1
+        N = rx-rm#+1
         #p = Pool(N)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
-        with sharedmem.MapReduce() as pool:
-        #pool = sharedmem.MapReduce(np=N)
-        #with pool:
+        #with sharedmem.MapReduce() as pool:
+        pool = sharedmem.MapReduce(np=N)
+        with pool:
         
             def reduce(ii, r):
                 logger.info('chunk done '+str(ii))
