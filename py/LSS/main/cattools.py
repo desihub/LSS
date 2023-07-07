@@ -1364,7 +1364,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
             if logger is None:
                 print(ti)
             else:
-                logging.info(ti)
+                logging.info('at unique id '+str(ti))
         ti += 1
     tc = Table()
     tc['TARGETID'] = tids

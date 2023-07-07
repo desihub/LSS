@@ -151,7 +151,7 @@ def find_znotposs(dz,logname=None):
     if logname is None:
         print(message)
     else:
-        log.info(message)
+        logger.info(message)
     tlidnoz = []
     lznposs = []
 
