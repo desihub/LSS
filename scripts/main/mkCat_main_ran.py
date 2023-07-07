@@ -449,7 +449,7 @@ if __name__ == '__main__':
         for i in range(rm,rx):
             inds.append(i)
         #with sharedmem.MapReduce() as pool:
-        pool = sharedmem.MapReduce(np=N)
+        pool = sharedmem.MapReduce(np=N*2)
         with pool:
         
             #def reduce(ii, r):

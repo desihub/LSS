@@ -177,7 +177,7 @@ def find_znotposs(dz,logname=None):
             if logname is None:
                 print(ti,len(tids))
             else:
-                logger.info(ti,len(tids))
+                logger.info(str(ti)+' '+str(len(tids)))
         ti += 1
     #the ones to veto are now the join of the two
     wtbtlid = np.isin(tlidnoz,tidsb)
