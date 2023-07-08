@@ -578,14 +578,16 @@ if args.prepsysnet == 'y':
     sys_tab = Table.read(pwf)
     if 'EBV_DIFFRZ' in fit_maps:
         sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for reg in regl:
-        seld = dat['PHOTSYS'] == reg
-        selr = rands['PHOTSYS'] == reg
+    for zl in zrl:
+        zw = str(zl[0])+'_'+str(zl[1])
+        for reg in regl:
+            seld = dat['PHOTSYS'] == reg
+            selr = rands['PHOTSYS'] == reg
         
-        prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
-        fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
-        common.write_LSS(prep_table,fnout)
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
+                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+            fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
+            common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
     logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
@@ -714,17 +716,22 @@ if args.add_sysnet == 'y':
 
     regl_sysnet = ['N','S']
     for reg in regl_sysnet:
-        sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+'_'+reg+'/nn-weights.fits')
-        pred_counts = np.mean(sn_weights['weight'],axis=1)
-        pix_weight = np.mean(pred_counts)/pred_counts
-        sn_pix = sn_weights['hpix']
-        hpmap = np.ones(12*256*256)
-        for pix,wt in zip(sn_pix,pix_weight):
-            hpmap[pix] = wt
+        for zl in zrl:
+            zw = str(zl[0])+'_'+str(zl[1])
+            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
+            pred_counts = np.mean(sn_weights['weight'],axis=1)
+            pix_weight = np.mean(pred_counts)/pred_counts
+            sn_pix = sn_weights['hpix']
+            hpmap = np.ones(12*256*256)
+            for pix,wt in zip(sn_pix,pix_weight):
+                hpmap[pix] = wt
         
-        sel = dd['PHOTSYS'] == reg
-        #print(np.sum(sel))
-        dd['WEIGHT_SYS'][sel] = hpmap[dpix[sel]]
+            sel = dd['PHOTSYS'] == reg
+            selz = dd['Z_not4clus'] > zl[0]
+            selz &= dd['Z_not4clus'] <= zl[1]
+
+            #print(np.sum(sel))
+            dd['WEIGHT_SYS'][sel&selz] = hpmap[dpix[sel&selz]]
     #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
