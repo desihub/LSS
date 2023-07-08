@@ -363,7 +363,7 @@ if root:
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
         from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
+        with Pool(processes=nran*2) as pool:
             res = pool.map(_parfun, inds)
 
         #if args.split_GC == 'y':
@@ -490,7 +490,7 @@ if root:
         nran = args.maxr-args.minr
         inds = np.arange(nran)
         from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
+        with Pool(processes=nran*2) as pool:
             res = pool.map(_parfun, inds)
 
     
