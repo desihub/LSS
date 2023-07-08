@@ -666,6 +666,11 @@ if args.regressis == 'y':
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
+    fb = dirout+tracer_clus
+    fcd = fb+'_full.dat.fits'
+    dd = Table.read(fcd)
+    dd['WEIGHT_SYS'] = np.ones(len(dd))
+
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
 
@@ -680,22 +685,19 @@ if args.add_regressis == 'y':
             print(reg,norm)
             rfpw[mr] /= norm
 
-        fb = dirout+tracer_clus
-        fcd = fb+'_full.dat.fits'
-        dd = Table.read(fcd)
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
-        dd['WEIGHT_SYS'] = np.ones(len(dd))
+        
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
         dd['WEIGHT_SYS'][selz] = drfw[selz]
         print(np.mean(dd['WEIGHT_SYS'][selz]))
-        comments = []
-        comments.append("Using regressis for WEIGHT_SYS")
-        logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
+    comments = []
+    comments.append("Using regressis for WEIGHT_SYS")
+    logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
-        common.write_LSS(dd,fcd,comments)
+    common.write_LSS(dd,fcd,comments)
 
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
