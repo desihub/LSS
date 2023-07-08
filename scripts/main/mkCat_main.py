@@ -694,7 +694,7 @@ if args.add_regressis == 'y':
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
         dd['WEIGHT_SYS'][selz] = drfw[selz]
-        norm = 
+        #norm = 
         print(np.mean(dd['WEIGHT_SYS'][selz]))
     comments = []
     comments.append("Using regressis for WEIGHT_SYS")
