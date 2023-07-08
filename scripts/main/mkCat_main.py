@@ -686,7 +686,7 @@ if args.add_regressis == 'y':
             norm = np.mean(rfpw[mr&selarea])
             print(reg,norm)
             rfpw[mr] /= norm
-        print(np.mean(rfpw))
+        #print(np.mean(rfpw))
         dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
         dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
         drfw = rfpw[dpix]
