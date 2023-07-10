@@ -19,9 +19,11 @@ from astropy import units as u
 from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header, find_target_files, read_targets_in_box
-from desitarget.geomask import match
+from desitarget.geomask import match, nside2nside
 from desitarget.gaiamatch import get_gaia_dir, gaia_psflike
+from desitarget.randoms import dr8_quantities_at_positions_in_a_brick
 from desitarget import __version__ as desitarget_version
+from desitarget.internal import sharedmem
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
@@ -1076,7 +1078,7 @@ def make_stardens(nside=512, gaiadir=None, dr="dr2", outdir=None, write=True):
         if nfile % 1000 == 0 and nfile > 0:
             elapsed = time() - t0
             rate = nfile / elapsed
-            log.info('{}/{} files; {:.1f} files/sec; {:.1f} total mins elapsed'
+            log.info("{}/{} files; {:.1f} files/sec; {:.1f} total mins elapsed"
                      .format(nfile, nfiles, rate, elapsed/60.))
 
         # ADM save memory, speed up by only reading a subset of columns.
@@ -1679,59 +1681,7 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     return done
 
 
-def healpix_brickname_look_up(nside=8192, outfile=None):
-    """Write a (nested) HEALPixel->brickname look-up table to file.
-
-    Parameters
-    ----------
-    nside : :class:`int`, optional, defaults to nside=8192
-        Resolution (HEALPix nside) at which to build the (NESTED) map.
-    outfile : :class:`str`, optional
-        Full path to the file to which to write the look-up table.
-
-    Returns
-    -------
-    :class:`~numpy.ndarray`
-        A numpy structured array containing the columns RA, DEC and
-        BRICKNAME. The HEALPixel number corresponds to the row in the
-        array. The output array is also written to the `outfile` if
-        it is passed.
-
-    Notes
-    -----
-    - If outfile is passed, any existing file will be overwritten.
-    """
-    start = time()
-    log.info(f"Starting...t={time()-start:.1f}s")
-
-    # ADM recover all the nested HEALPixel centers at the passed nside.
-    npix = hp.nside2npix(nside)
-    ras, decs = hp.pix2ang(nside, np.arange(npix), nest=True, lonlat=True)
-
-    # ADM build the Legacy Surveys bricks object.
-    bricks = brick.Bricks(bricksize=0.25)
-
-    # ADM recover all the brick names at the HEALPixel centers.
-    bricknames = bricks.brickname(ras, decs)
-
-    # ADM set up the output array.
-    done = np.zeros(npix,
-                    dtype=[('RA', '>f8'), ('DEC', '>f8'), ('BRICKNAME', 'U8')])
-
-    done["RA"] = ras
-    done["DEC"] = decs
-    done["BRICKNAME"] = bricknames
-
-    if outfile is not None:
-        log.info(f"Writing to file {outfile}...t={time()-start:.1f}s")
-        fitsio.write(outfile, done, clobber=True)
-
-    log.info(f"Done...t={time()-start:.1f}s")
-
-    return done
-
-
-def pure_healpix_map(drdir, nside=8192, lookup=None):
+def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
     """Build a skymap at HEALPixel centers (in nested scheme).
 
     Parameters
@@ -1739,45 +1689,121 @@ def pure_healpix_map(drdir, nside=8192, lookup=None):
     drdir : :class:`str`
        The root directory pointing to a Legacy Surveys Data Release
        e.g. /global/cfs/cdirs/cosmo/work/legacysurvey/dr9.
+    nsideproc : :class:`int`
+        Resolution (nested HEALPix nside) at which to process the map.
+        To facilitate parallelization, results will only be calculated
+        for HEALPixel `hpxproc` at nside `nsideproc`.
+    hpxproc : :class:`int`
+        Pixel number (nested HEALPixel) for which to process the map.
+        To facilitate parallelization, results will only be calculated
+        for HEALPixel `hpxproc` at nside `nsideproc`.
     nside : :class:`int`, optional, defaults to nside=8192
-        Resolution (HEALPix nside) at which to build the (NESTED) map.
-    lookup : :class:`str`, optional
-        Full path to a FITS file that contains a look-up table made by
-        :func:`healpix_brickname_look_up()`. If passed, this file is used
-        instead of generating RAs/DECs/BRICKNAMEs on the fly (as a
-        speed-up) and `nside` is ignored.
+        Resolution (HEALPix nside) at which to build the (nested) map.
+    numproc : :class:`int`, optional, defaults to 1
+        The number of processes over which to parallelize.
 
     Returns
     -------
     :class:`~numpy.ndarray`
         A numpy structured array of (some) values from the Legacy Survey
         stacks and the `maparray` at the start of this module. Values
-        are looked up at the HEALPixel centers at the passed `nside`.
+        are looked up at the HEALPixel centers at the passed `nside` and
+        returned within the boundaries of the (nested) HEALPixel that
+        corresponds to `nsideproc` and `hpxproc`.
 
     Notes
     -----
-    - Splits across bricks, so is better optimized for large `nside`.
+    - `nsideproc` cannot be larger than `nside` as it doesn't make sense
+      to parallelize by grouping larger pixels into smaller pixels.
     """
     start = time()
+    log.info(f"Starting...t={time()-start:.1f}s")
 
-    if lookup is None:
-        radecs = healpix_brickname_look_up(nside=nside)
+    # ADM see Notes.
+    if nsideproc > nside:
+        msg = f"nsideproc (={nsideproc}) cannot be larger than nside (={nside})"
+        raise ValueError(msg)
+        log.critical(msg)
+
+    # ADM recover all the nested HEALPixel centers at the passed nside.
+    # ADM first calculate all the HEALPixel numbers at the passed nside.
+    npix = hp.nside2npix(nside)
+    hpx = np.arange(npix)
+    # ADM now calculate the HEALPixel numbers at the processing nside.
+    fac = (nside//nsideproc)**2
+    largerhpx = hpx//fac
+    # ADM reduce to just HEALPixels within the processing nside.
+    ii = largerhpx == hpxproc
+    hpx = hpx[ii]
+    # ADM finally, recover the locations of the centers.
+    ras, decs = hp.pix2ang(nside, hpx, nest=True, lonlat=True)
+    log.info(f"Found locations of {len(hpx)} HEALPixels at nside={nside} within"
+    f" processing pixel={hpxproc} at nside={nsideproc}...t={time()-start:.1f}s")
+
+    # ADM build the Legacy Surveys bricks object.
+    bricks = brick.Bricks(bricksize=0.25)
+
+    # ADM recover all the brick names at the HEALPixel centers.
+    bricknames = bricks.brickname(ras, decs)
+
+    # ADM group the locations (dic values) by brick (dic keys).
+    dbrick = {bn:[] for bn in bricknames}
+    for bn, ra, dec in zip(bricknames, ras, decs):
+        dbrick[bn].append([ra, dec])
+
+    nbricks = len(dbrick)
+    log.info(f"HEALPixels spread over {nbricks} bricks...t={time()-start:.1f}s")
+
+    # ADM calculate quantities in a brick, parallelizing by brick names.
+    # ADM the critical function to run on every brick.
+    def _get_quantities(brickname):
+        """wrap dr8_quantities_at_positions_a_brick() for a brick name"""
+        # ADM extract the brick locations from the brick dictionary.
+        ras, decs = np.array(dbrick[brickname]).T
+        randoms = dr8_quantities_at_positions_in_a_brick(ras, decs, brickname, drdir)
+        return randoms
+
+    # ADM this is just to count bricks in _update_status.
+    nbrick = np.zeros((), dtype='i8')
+    t0 = time()
+    # ADM write a total of 25 output messages during processing.
+    interval = nbricks // 25
+    # ADM catch the case of very small numbers of bricks.
+    if interval == 0:
+        interval = 1
+
+    def _update_status(result):
+        """wrapper function for the critical reduction operation,
+           that occurs on the main parallel process"""
+        if nbrick % interval == 0:
+            elapsed = time() - t0
+            rate = (nbrick + 1) / elapsed
+            log.info(f"Processed {nbrick+1}/{nbricks} bricks; {rate:.1f} "
+                     f"bricks/sec; {elapsed/60.:.1f} total mins elapsed")
+            # ADM warn the user if code might exceed 4 hours.
+            if nbricks/rate > 4*3600.:
+                msg = "May take > 4 hours to run and fail on interactive nodes."
+                log.warning(msg)
+
+        nbrick[...] += 1    # this is an in-place modification.
+        return result
+
+    # - Parallel process input files.
+    if numproc > 1:
+        pool = sharedmem.MapReduce(np=numproc)
+        with pool:
+            qinfo = pool.map(_get_quantities, bricknames, reduce=_update_status)
     else:
-        # ADM quickly check the file format.
-        log.info(f"Using look-up table from {lookup}...t={time()-start:.1f}s")
-        msg = f"passed lookup file {lookup} is incorrectly formatted"
-        try:
-            radecs = fitsio.read(lookup)
-            npix = len(radecs)
-            nside = hp.npix2nside(npix)
-            hpx = hp.ang2pix(nside, radecs["RA"], radecs["DEC"],
-                             lonlat=True, nest=True)
-            assert np.arange(npix) == hpx
-        except(AssertionError, ValueError, OSError):
-            log.error(msg)
-        log.info(f"Finished reading look-up table...t={time()-start:.1f}s")
+        qinfo = list()
+        for brickname in bricknames:
+            qinfo.append(_update_status(_get_quantities(brickname)))
 
-    return radecs
+    import pdb; pdb.set_trace()
+    qinfo = np.concatenate(qinfo)
+
+    log.info(f"Done...t={time()-start:.1f}s")
+
+    return qinfo
 
 
 # ADM always start by running sanity checks on maparray.
