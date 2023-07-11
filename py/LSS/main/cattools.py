@@ -3276,7 +3276,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
     if return_cat == 'y' and nosplit=='y':
-        ffc.keep_columns(['RA','DEC','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES'])
+        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES'])
         return ffc
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
