@@ -694,7 +694,7 @@ if args.add_regressis == 'y':
         regl_reg = list(maskreg.keys())
         for reg in regl_reg:
             mr = maskreg[reg]
-            norm = np.mean(rfpw[mr]&selarea])
+            norm = np.mean(rfpw[mr&selarea])
             print(reg,norm)
             rfpw[mr] /= norm
         #rfpw = PhotoWeight.load(fnreg)
