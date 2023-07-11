@@ -316,6 +316,9 @@ if __name__ == '__main__':
 
     if args.use_arrays == 'y':
         print("Using arrays")
+        from LSS.globals import main
+        mainp = main(args.type,survey='Y1')
+        dchi2 = mainp.dchi2
         tracer2 = None
         tracer = args.tracer[0]
         #outaa = args.outdir
@@ -336,7 +339,7 @@ if __name__ == '__main__':
             zminr = 0.8
             zmaxr = 3.5
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP']
-        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=None,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y')
+        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y')
         print('data columns',data_.dtype.names)
         ranl =[]
         for rann in range(0,args.nran):
