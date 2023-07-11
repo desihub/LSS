@@ -275,6 +275,10 @@ if __name__ == '__main__':
     # arguments relevant for when running directly from full catalogs.
     parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'y')
 
+    #only relevant for reconstruction
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
+
     parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
 
     setup_logging()
