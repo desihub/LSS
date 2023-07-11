@@ -25,6 +25,7 @@ from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsamp
 from LSS.tabulated_cosmo import TabulatedDESI
 import LSS.cosmodesi_io_tools as io
 import LSS.main.cattools as ct
+import LSS.common_tools as common
 
 
 
@@ -390,8 +391,8 @@ if __name__ == '__main__':
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir,rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut)
         for region in regions:
             if args.use_arrays == 'y':
-                sel_ngc_dat = splitGC(data_)
-                sel_ngc_ran = splitGC(random_)
+                sel_ngc_dat = common.splitGC(data_)
+                sel_ngc_ran = common.splitGC(random_)
                 
                 if region == 'NGC':
                     ffr = random_[sel_ngc_ran]
