@@ -74,6 +74,20 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
+def splitGC(input_array):
+    import LSS.common_tools as common
+    '''
+    given and input array with RA, DEC
+    return selection for NGC
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(input_array['RA']* u.deg,input_array['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    return sel_ngc
+
+
 def find_znotposs_tloc(dz,priority_thresh=10000):
     #dz should contain the potential targets of a given type, after cutting bad fibers
     #priority_thresh cuts repeat observations (so, e.g., 3000 work for dark time main survey)

@@ -2959,7 +2959,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',return_cat='n',compmd='ran'):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3201,7 +3201,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ffs = ff[~wn]
         common.write_LSS(ffs,outfn,comments)
     if return_cat == 'y':
-        return ff[wn],ff[~wn]
+        if splitNS == 'y':
+            return ff[wn],ff[~wn]
+        else:
+            return ff
 #     for reg,com in zip(['DS','DN'],[' SGC ',' NGC ']): #split DECaLS NGC/SGC
 #         outfn = fl+wzm+reg+'_clustering.dat.fits'
 #         sel = densvar.sel_reg(ffs['RA'],ffs['DEC'],reg)
@@ -3250,7 +3253,7 @@ def add_tlobs_ran(fl,rann):
     del ranf
     return True
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',return_cat='n',clus_arrays=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',clus_arrays=None):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
@@ -3272,6 +3275,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ffc = ffr[wz]
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
+    if return_cat == 'y' and nosplit=='y':
+        ffc.keep_columns(['RA','DEC','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES'])
+        return ffc
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
         print('length after cutting to unique tilelocid '+str(len(ffc)))
@@ -3425,6 +3431,85 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
         common.write_LSS(ffr,outfn)
 
+def clusran_resamp_arrays(ffr,fcdn,reg,tracer,rcols=['Z','WEIGHT'],compmd='ran'):
+    #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
+    import LSS.common_tools as common
+    
+    
+    for col in rcols:
+        try:
+            ffr.remove_columns([col])
+        except:
+            print(col+' not in original randoms')
+    fcdn.rename_column('TARGETID', 'TARGETID_DATA')
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
+    for col in rcols:
+        kc.append(col)
+    rcols = np.array(rcols)
+    wc = np.isin(rcols,list(fcdn.dtype.names))
+    rcols = rcols[wc]
+    print('columns sampled from data are:')
+    print(rcols)
+
+
+    
+    len_o = len(ffr)
+    def _resamp(selregr,selregd,ffr,fcdn):
+        tabsr = []
+        ffrn = ffr[selregr]
+        ffrs = ffr[~selregr]
+        fcdnn = fcdn[selregd]
+        fcdns = fcdn[~selregd]
+        tabsr = [ffrn,ffrs]
+        tabsd = [fcdnn,fcdns]
+        rdl =[]
+        for i in range(0,len(tabsr)):
+            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+            dshuf = tabsd[i][inds]
+            for col in rcols:
+                tabsr[i][col] =  dshuf[col]
+            if compmd == 'ran':
+                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
+            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+            rdl.append(rd)
+        rdr = rdl[0]/rdl[1]
+        print('norm factor is '+str(rdr))
+        tabsr[1]['WEIGHT'] *= rdr
+        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+        ffr = vstack(tabsr)   
+        #print(len(ffr),len_o)     
+        return ffr
+
+    if reg == 'NGC':
+        #need to split N/S when sampling
+        selregr = ffr['DEC'] > 32.375
+        selregd = fcdn['DEC'] > 32.375
+        ffr = _resamp(selregr,selregd,ffr,fcdn)
+        
+    elif reg == 'SGC' and tracer == 'QSO':
+        print('resampling in DES region')
+        from regressis import footprint
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        north, south, des = foot.get_imaging_surveys()
+        th_ran,phi_ran = (-ffr['DEC']+90.)*np.pi/180.,ffr['RA']*np.pi/180.
+        th_dat,phi_dat = (-fcdn['DEC']+90.)*np.pi/180.,fcdn['RA']*np.pi/180.
+        pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
+        selregr = des[pixr]
+        pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
+        selregd = des[pixd]
+        ffr = _resamp(selregr,selregd,ffr,fcdn)
+        
+    else:
+        inds = np.random.choice(len(fcdn),len(ffr))
+        dshuf = fcdn[inds]
+        for col in rcols:
+            ffr[col] = dshuf[col]
+        if compmd == 'ran':
+            ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES']
+        #kc.append(col)
+    ffr.keep_columns(kc)
+    return ffr
+
 
 
 
@@ -3477,6 +3562,8 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
+
+
 
 
 def random_mtl(rd,outf ):
