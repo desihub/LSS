@@ -4,7 +4,7 @@ Find all potential assignment and counts tiles for Y1 mocks
 
 import numpy as np
 import os
-from astropy.table import Table, join
+from astropy.table import Table, join, vstack
 import argparse
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
@@ -22,6 +22,9 @@ trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in 
 import fitsio
 
 import LSS.common_tools as common
+from LSS.main.cattools import count_tiles_better
+from LSS.globals import main
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
@@ -29,21 +32,47 @@ parser.add_argument("--mock", default='ab1stgen')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
+parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default='LRG')
+parser.add_argument("--counttiles", default = 'n')
 
 args = parser.parse_args()
-
 if args.mock == 'ab1stgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     tars = fitsio.read(infn)
+elif args.mock == 'ezmocks6':
+    tr = args.tracer
+    rz = args.realization
+    print("Doing %s"%tr)
+
+    if  tr == "LRG":
+        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
+        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
+    elif tr == "ELG":
+        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
+        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
+    elif tr == "QSO":
+        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
+        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
+   # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
+   # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
+    tars1 = Table.read(infn1)#fitsio.read(infn1)
+    tars2 = Table.read(infn2)#fitsio.read(infn2)
+    tars1["GALCAP"] = "N"
+    tars2["GALCAP"] = "S"
+    tars = vstack([tars1, tars2])
+    tars['TARGETID'] = np.arange(len(tars))
 
 print(tars.dtype.names)
 
 tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
 paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/Y1/mock'+args.realization+'/'
 if not os.path.exists(tileoutdir):
-    os.mkdir(tileoutdir)
-    print('made '+tileoutdir )
+    os.makedirs(tileoutdir)
+    print('made '+tileoutdir)
+if not os.path.exists(paoutdir):
+    os.makedirs(paoutdir)
+    print('made '+paoutdir)
 
 
 tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
@@ -65,6 +94,8 @@ def write_tile_targ(inds ):
     rmtl = Table(rtw)
     print('made table for '+fname)
     del rtw
+    #n=len(rmtl)
+    #rmtl['TARGETID'] = np.arange(1,n+1)+10*n*rannum 
     #rmtl['TARGETID'] = np.arange(len(rmtl))
     #print(len(rmtl['TARGETID'])) #checking this column is there
     rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
@@ -90,13 +121,14 @@ margins = dict(pos=0.05,
 log = Logger.get()
 rann = 0
 n = 0
-   
+
+
 def getpa(ind):
 
     #tile = 1230
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
-
+    
     fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
@@ -112,7 +144,7 @@ def getpa(ind):
     hw = load_hardware(rundate=dt, add_margins=margins)
 
     t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
-
+    
     tiles = load_tiles(
         tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
@@ -130,11 +162,12 @@ def getpa(ind):
     # Create structure for carrying along auxiliary target data not needed by C++.
     plate_radec=True
     tagalong = create_tagalong(plate_radec=plate_radec)
-
+    
+    print(tile)
     # Load target files...
     load_target_file(tgs, tagalong, tileoutdir+'/tilenofa-%i.fits' % tile)
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
+    tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ'])
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -196,5 +229,7 @@ if __name__ == '__main__':
     colltot = np.concatenate(res)
     if args.getcoll == 'y':
         print(len(colltot),np.sum(colltot['COLLISION']))
+    
     common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
-
+        
+    
