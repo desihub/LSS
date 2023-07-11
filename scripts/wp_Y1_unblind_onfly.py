@@ -318,10 +318,11 @@ if __name__ == '__main__':
         print("Using arrays")
         from LSS.globals import main
         
-        dchi2 = mainp.dchi2
+        
         tracer2 = None
         tracer = args.tracer[0]
         mainp = main(tracer,survey='Y1')
+        dchi2 = mainp.dchi2
         #outaa = args.outdir
         #flaa = args.basedir
         #outaa = outaa + "/" + tracer
