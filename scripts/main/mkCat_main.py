@@ -521,7 +521,7 @@ if tracer_clus[:3] == 'QSO':
     #fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
     #fit_maps.append('PSFDEPTH_W1')
     #fit_maps.append('PSFDEPTH_W2')
-    fit_maps = ['EBV', 'STARDENS'
+    fit_maps = ['EBV', 'STARDENS',
                  'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
                  'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
