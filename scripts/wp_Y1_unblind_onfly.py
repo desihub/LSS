@@ -279,7 +279,7 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
-    write_arrays = args.write_arrays
+    
     
     if args.rebinning == 'n':
         args.rebinning = False
@@ -333,6 +333,10 @@ if __name__ == '__main__':
         if tracer[:3] == "ELG":
             zminr = 0.8
             zmaxr = 1.6
+        if tracer[:3] == "BGS":
+            zminr = 0.1
+            zmaxr = 0.4
+
         if tracer == "QSO":
             zminr = 0.8
             zmaxr = 3.5
