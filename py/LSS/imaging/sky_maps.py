@@ -21,7 +21,8 @@ from astropy.wcs import WCS
 from desitarget.io import read_targets_header, find_target_files, read_targets_in_box
 from desitarget.geomask import match, nside2nside
 from desitarget.gaiamatch import get_gaia_dir, gaia_psflike
-from desitarget.randoms import dr8_quantities_at_positions_in_a_brick
+from desitarget.randoms import dr8_quantities_at_positions_in_a_brick, get_dust
+from desitarget.targets import resolve
 from desitarget import __version__ as desitarget_version
 from desitarget.internal import sharedmem
 
@@ -1681,14 +1682,95 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     return done
 
 
+def get_quantities_in_a_brick(ras, decs, brickname, drdir, dustdir=None):
+    """Per-band quantities at locations in a Legacy Surveys brick.
+
+    Parameters
+    ----------
+    ras : :class:`~numpy.ndarray`
+        Array of Right Ascensions (degrees).
+    decs : :class:`~numpy.ndarray`
+        Array of Declinations (degrees).
+    brickname : :class:`~numpy.array`
+        Name of a brick in which to look up the RA/Dec locations, e.g.,
+        '1351p320'. For any RA/Dec locations not in the brick, values
+        of zero will be returned for all quntities.
+    drdir : :class:`str`
+        The root directory pointing to a Legacy Surveys Data Release
+        e.g. /global/cfs/cdirs/cosmo/data/legacysurvey/dr9.
+    dustdir : :class:`str`, optional, defaults to $DUST_DIR+'/maps'
+        The root directory pointing to SFD dust maps. If not
+        sent the code will try to use $DUST_DIR+'/maps' before failing.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A structured array with columns of Legacy Surveys quantities at
+        the passed RA/Dec locations looked up in the passed brick.
+
+    Notes
+    -----
+    - Based on :func:`desitarget.randoms.get_quantities_in_a_brick()`.
+      More information is included in the docstring for that function.
+    """
+    # ADM only intended to work on one brick, so die for larger arrays.
+    if not isinstance(brickname, str):
+        log.fatal("Only one brick can be passed at a time!")
+        raise ValueError
+
+    # ADM retrieve the dictionary of quantities at each location.
+    # ADM aprad=0 is a speed-up to skip calculating aperture fluxes.
+    qdict = dr8_quantities_at_positions_in_a_brick(ras, decs, brickname, drdir,
+                                                   aprad=0.)
+
+    # ADM catch where a coadd directory is completely missing.
+    if len(qdict) > 0:
+        # ADM if 2 different camera combinations overlapped a brick
+        # ADM then we also need to duplicate the ras, decs.
+        if len(qdict['photsys']) == 2*len(ras):
+            ras = np.concatenate([ras, ras])
+            decs = np.concatenate([decs, decs])
+
+    # ADM the structured array to output.
+    dt = [('RELEASE', '>i2'), ('BRICKNAME', 'S8'), ('RA', '>f8'), ('DEC', 'f8'),
+          ('NOBS_G', 'i2'), ('NOBS_R', 'i2'), ('NOBS_Z', 'i2'),
+          ('GALDEPTH_G', 'f4'), ('GALDEPTH_R', 'f4'), ('GALDEPTH_Z', 'f4'),
+          ('PSFDEPTH_G', 'f4'), ('PSFDEPTH_R', 'f4'), ('PSFDEPTH_Z', 'f4'),
+          ('PSFDEPTH_W1', 'f4'), ('PSFDEPTH_W2', 'f4'),
+          ('PSFSIZE_G', 'f4'), ('PSFSIZE_R', 'f4'), ('PSFSIZE_Z', 'f4'),
+          ('EBV', 'f4'), ('PHOTSYS', '|S1')]
+    qinfo = np.zeros(len(ras), dtype=dt)
+
+    # ADM retrieve the E(B-V) values for each random point.
+    ebv = get_dust(ras, decs, dustdir=dustdir)
+
+    # ADM catch the case where a coadd directory was missing.
+    if len(qdict) > 0:
+        # ADM store each quantity of interest in the structured array
+        # ADM remembering that the dictionary keys are lower-case text.
+        cols = qdict.keys()
+        for col in cols:
+            if col.upper() in qinfo.dtype.names:
+                qinfo[col.upper()] = qdict[col]
+
+    # ADM add the RAs/Decs, SFD dust values, and brick name.
+    qinfo["RA"] = ras
+    qinfo["DEC"] = decs
+    qinfo["EBV"] = ebv
+    qinfo["BRICKNAME"] = brickname
+
+    # ADM don't forget to resolve north/south bricks before returning.
+    return resolve(qinfo)
+
+
 def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
     """Build a skymap at HEALPixel centers (in nested scheme).
 
     Parameters
     ----------
     drdir : :class:`str`
-       The root directory pointing to a Legacy Surveys Data Release
-       e.g. /global/cfs/cdirs/cosmo/work/legacysurvey/dr9.
+        The root directory pointing to a Legacy Surveys Data Release
+        e.g. /global/cfs/cdirs/cosmo/data/legacysurvey/dr9.
     nsideproc : :class:`int`
         Resolution (nested HEALPix nside) at which to process the map.
         To facilitate parallelization, results will only be calculated
@@ -1737,8 +1819,8 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
     hpx = hpx[ii]
     # ADM finally, recover the locations of the centers.
     ras, decs = hp.pix2ang(nside, hpx, nest=True, lonlat=True)
-    log.info(f"Found locations of {len(hpx)} HEALPixels at nside={nside} within"
-    f" processing pixel={hpxproc} at nside={nsideproc}...t={time()-start:.1f}s")
+    log.info(f"Found {len(hpx)} HEALPixels at nside={nside} within processing"
+             f" pixel={hpxproc} at nside={nsideproc}...t={time()-start:.1f}s")
 
     # ADM build the Legacy Surveys bricks object.
     bricks = brick.Bricks(bricksize=0.25)
@@ -1747,7 +1829,7 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
     bricknames = bricks.brickname(ras, decs)
 
     # ADM group the locations (dic values) by brick (dic keys).
-    dbrick = {bn:[] for bn in bricknames}
+    dbrick = {bn: [] for bn in bricknames}
     for bn, ra, dec in zip(bricknames, ras, decs):
         dbrick[bn].append([ra, dec])
 
@@ -1760,7 +1842,7 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
         """wrap dr8_quantities_at_positions_a_brick() for a brick name"""
         # ADM extract the brick locations from the brick dictionary.
         ras, decs = np.array(dbrick[brickname]).T
-        randoms = dr8_quantities_at_positions_in_a_brick(ras, decs, brickname, drdir)
+        randoms = get_quantities_in_a_brick(ras, decs, brickname, drdir)
         return randoms
 
     # ADM this is just to count bricks in _update_status.
@@ -1781,8 +1863,8 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
             log.info(f"Processed {nbrick+1}/{nbricks} bricks; {rate:.1f} "
                      f"bricks/sec; {elapsed/60.:.1f} total mins elapsed")
             # ADM warn the user if code might exceed 4 hours.
-            if nbricks/rate > 4*3600.:
-                msg = "May take > 4 hours to run and fail on interactive nodes."
+            if nbrick > 0 and nbricks/rate > 4*3600.:
+                msg = "May take > 4 hours to run, so fail on interactive nodes."
                 log.warning(msg)
 
         nbrick[...] += 1    # this is an in-place modification.
@@ -1798,7 +1880,6 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
         for brickname in bricknames:
             qinfo.append(_update_status(_get_quantities(brickname)))
 
-    import pdb; pdb.set_trace()
     qinfo = np.concatenate(qinfo)
 
     log.info(f"Done...t={time()-start:.1f}s")
