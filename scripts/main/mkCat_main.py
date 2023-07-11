@@ -673,6 +673,7 @@ if args.regressis == 'y':
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
+    from regressis import PhotoWeight
     fb = dirout+tracer_clus
     fcd = fb+'_full.dat.fits'
     dd = Table.read(fcd)
@@ -682,25 +683,26 @@ if args.add_regressis == 'y':
         zw = str(zl[0])+'_'+str(zl[1])
 
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
-        fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
-        selarea = fracarea*0 == 0
-        rfw = np.load(fnreg,allow_pickle=True)
-        rfpw = rfw.item()['map']
-        maskreg = rfw.item()['mask_region']
-        regl_reg = list(maskreg.keys())
-        for reg in regl_reg:
-            mr = maskreg[reg]
-            norm = np.mean(rfpw[mr&selarea])
-            print(reg,norm)
-            rfpw[mr] /= norm
+        #fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
+        #selarea = fracarea*0 == 0
+        #rfw = np.load(fnreg,allow_pickle=True)
+        #rfpw = rfw.item()['map']
+        #maskreg = rfw.item()['mask_region']
+        #regl_reg = list(maskreg.keys())
+        #for reg in regl_reg:
+        #    mr = maskreg[reg]
+        #    norm = np.mean(rfpw[mr&selarea])
+        #    print(reg,norm)
+        #    rfpw[mr] /= norm
+        rfpw = PhotoWeight.load(fnreg)
         #print(np.mean(rfpw))
-        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
-        drfw = rfpw[dpix]
+        #dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        #dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        #drfw = rfpw[dpix]
         
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
-        dd['WEIGHT_SYS'][selz] = drfw[selz]
+        dd['WEIGHT_SYS'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
         #norm = 
         print(np.mean(dd['WEIGHT_SYS'][selz]))
     comments = []
