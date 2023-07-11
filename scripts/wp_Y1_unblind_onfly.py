@@ -324,6 +324,8 @@ if __name__ == '__main__':
         #outaa = outaa + "/" + tracer
         flaa = cat_dir + "/" + tracer
         flinr = cat_dir + "/" + tracer + "_"
+        if tracer == 'BGS_BRIGHT-21.5':
+            flinr = cat_dir + "/BGS_BRIGHT_"
 
         #rann = 1
 
