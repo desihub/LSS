@@ -392,10 +392,10 @@ if __name__ == '__main__':
         for region in regions:
             if args.use_arrays == 'y':
                 sel_ngc_dat = common.splitGC(data_)
-                sel_ngc_ran = common.splitGC(random_)
+                sel_ngc_ran = common.splitGC(randoms_)
                 
                 if region == 'NGC':
-                    ffr = random_[sel_ngc_ran]
+                    ffr = randoms_[sel_ngc_ran]
                     fcdn = data_[sel_ngc_dat]
                     randoms_gc = clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
                     catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=fcdn, ran_cat=randoms_gc)
