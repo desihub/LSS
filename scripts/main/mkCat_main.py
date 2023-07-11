@@ -518,9 +518,12 @@ if tracer_clus[:3] == 'LRG':
     fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
-    fit_maps.append('PSFDEPTH_W1')
-    fit_maps.append('PSFDEPTH_W2')
+    #fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
+    #fit_maps.append('PSFDEPTH_W1')
+    #fit_maps.append('PSFDEPTH_W2')
+    fit_maps = ['EBV', 'STARDENS'
+                 'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
+                 'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
@@ -683,15 +686,15 @@ if args.add_regressis == 'y':
         zw = str(zl[0])+'_'+str(zl[1])
 
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
-        #fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
-        #selarea = fracarea*0 == 0
+        fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
+        selarea = fracarea*0 == 0
         rfw = np.load(fnreg,allow_pickle=True)
         rfpw = rfw.item()['map']
         maskreg = rfw.item()['mask_region']
         regl_reg = list(maskreg.keys())
         for reg in regl_reg:
             mr = maskreg[reg]
-            norm = np.mean(rfpw[mr])#&selarea])
+            norm = np.mean(rfpw[mr]&selarea])
             print(reg,norm)
             rfpw[mr] /= norm
         #rfpw = PhotoWeight.load(fnreg)
