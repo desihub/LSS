@@ -316,7 +316,7 @@ if __name__ == '__main__':
     if args.use_arrays == 'y':
         print("Using arrays")
         tracer2 = None
-        tracer = args.tracer#[0]
+        tracer = args.tracer[0]
         #outaa = args.outdir
         #flaa = args.basedir
         #outaa = outaa + "/" + tracer
