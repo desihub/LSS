@@ -685,24 +685,24 @@ if args.add_regressis == 'y':
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
         #fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
         #selarea = fracarea*0 == 0
-        #rfw = np.load(fnreg,allow_pickle=True)
-        #rfpw = rfw.item()['map']
-        #maskreg = rfw.item()['mask_region']
-        #regl_reg = list(maskreg.keys())
-        #for reg in regl_reg:
-        #    mr = maskreg[reg]
-        #    norm = np.mean(rfpw[mr&selarea])
-        #    print(reg,norm)
-        #    rfpw[mr] /= norm
-        rfpw = PhotoWeight.load(fnreg)
-        #print(np.mean(rfpw))
-        #dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-        #dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
-        #drfw = rfpw[dpix]
+        rfw = np.load(fnreg,allow_pickle=True)
+        rfpw = rfw.item()['map']
+        maskreg = rfw.item()['mask_region']
+        regl_reg = list(maskreg.keys())
+        for reg in regl_reg:
+            mr = maskreg[reg]
+            norm = np.mean(rfpw[mr])#&selarea])
+            print(reg,norm)
+            rfpw[mr] /= norm
+        #rfpw = PhotoWeight.load(fnreg)
+        print(np.mean(rfpw))
+        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        drfw = rfpw[dpix]
         
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
-        dd['WEIGHT_SYS'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
+        dd['WEIGHT_SYS'][selz] = drfw[selz]#rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#
         #norm = 
         print(np.mean(dd['WEIGHT_SYS'][selz]))
     comments = []
