@@ -621,6 +621,24 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
+	if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+		cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+	elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+		cat_dir = args.basedir
+		args.region = ['']
+	else:
+		cat_dir = args.basedir
+	if mpicomm is None or mpicomm.rank == mpiroot:
+		logger.info('Catalog directory is {}.'.format(cat_dir))
+
+	if args.outdir is None:
+		out_dir = os.path.join(io.get_scratch_dir(), args.survey)
+	else:
+		out_dir = args.outdir
+	if mpicomm is None or mpicomm.rank == mpiroot:
+		logger.info('Output directory is {}.'.format(out_dir))
+
+
     if args.use_arrays == 'y':
         print("Using arrays")
         tracer2 = None
@@ -631,7 +649,7 @@ if __name__ == '__main__':
         flaa = flaa + "/" + tracer
         flinr = args.basedir + "/" + tracer + "_"
 
-        rann = 1
+        #rann = 1
 
         if tracer == "LRG":
             zminr = 0.4
@@ -650,27 +668,11 @@ if __name__ == '__main__':
             rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
             ranl.append(np.array(rani))
         randoms_ = np.concatenate(ranl)
-        out_dir = args.outdir
+        #out_dir = args.outdir
 
     
     elif args.use_arrays == 'n':
         print("use_arrays set to false")
-        if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-            cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-        elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-            cat_dir = args.basedir
-            args.region = ['']
-        else:
-            cat_dir = args.basedir
-        if mpicomm is None or mpicomm.rank == mpiroot:
-            logger.info('Catalog directory is {}.'.format(cat_dir))
-
-        if args.outdir is None:
-            out_dir = os.path.join(io.get_scratch_dir(), args.survey)
-        else:
-            out_dir = args.outdir
-        if mpicomm is None or mpicomm.rank == mpiroot:
-            logger.info('Output directory is {}.'.format(out_dir))
 
         tracer, tracer2 = args.tracer[0], None
         if len(args.tracer) > 1:
