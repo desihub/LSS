@@ -489,3 +489,6 @@ if __name__ == '__main__':
                                 if tracer2 is not None: tracers += ' x ' + tracer2
                                 plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
                                 plt.show()
+
+            os.system('rm '+os.path.join(out_dir, corr_type)+'/xirp*')
+            os.system('rm '+os.path.join(out_dir, corr_type)+'/allcounts*')
