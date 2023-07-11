@@ -6,7 +6,7 @@ Note
 ----
 The script can be called with multiple processes as (e.g. on 2 nodes, 64 threads for each):
 ```
-srun -n 2 python xirunpc.py --nthreads 64 ...
+srun -n 2 python wp_Y1_unblind_onfly.py --nthreads 64 ...
 ```
 Privilege nthreads over MPI processes.
 """
