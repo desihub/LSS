@@ -3435,7 +3435,7 @@ def clusran_resamp_arrays(ffr,fcdn,reg,tracer,rcols=['Z','WEIGHT'],compmd='ran')
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
     import LSS.common_tools as common
     
-    
+    ffr = Table(ffr)
     for col in rcols:
         try:
             ffr.remove_columns([col])
@@ -3466,6 +3466,7 @@ def clusran_resamp_arrays(ffr,fcdn,reg,tracer,rcols=['Z','WEIGHT'],compmd='ran')
         for i in range(0,len(tabsr)):
             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
             dshuf = tabsd[i][inds]
+            #print(dshuf.dtype.names)
             for col in rcols:
                 tabsr[i][col] =  dshuf[col]
             if compmd == 'ran':
