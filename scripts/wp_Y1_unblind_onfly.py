@@ -397,12 +397,12 @@ if __name__ == '__main__':
                 if region == 'NGC':
                     ffr = randoms_[sel_ngc_ran]
                     fcdn = data_[sel_ngc_dat]
-                    randoms_gc = clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
+                    randoms_gc = ct.clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
                     catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=fcdn, ran_cat=randoms_gc)
                 if region == 'SGC':
                     ffr = random_[~sel_ngc_ran]
                     fcdn = data_[~sel_ngc_dat]
-                    randoms_gc = clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
+                    randoms_gc = ct.clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
                     catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=fcdn, ran_cat=randoms_gc)
 
                 #if region == "N":
