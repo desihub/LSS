@@ -1278,7 +1278,6 @@ def count_tiles_input(fjg):
 
     return tc
 
-
 def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
@@ -1314,15 +1313,16 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         gtl = np.unique(stlid)
 
     if dr == 'dat':
-        logger = None
         fj = fitsio.read(indir+'/datcomb_'+pd+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/datcomb_'+pd+'ntileinfo.fits'
     if dr == 'ran':
-        logger = logging.getLogger('LSSran')
         if px:
             fj = fitsio.read(indir+'/healpix/rancomb_'+str(rann)+pd+'_'+str(px)+'_wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
         else:
             fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
+    
+    if (dr == 'mock'):
+        fj = fitsio.read(indir+'combdarkwdupspec_zdone.fits', columns = ['TARGETID', 'TILEID', 'TILELOCID'])
 
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)
@@ -1331,10 +1331,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
     tids = np.unique(fjg['TARGETID'])
-    if logger is None:
-        print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
-    else:
-        logger.info('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
     nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
     nt = []
     tl = []
@@ -1361,10 +1358,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
         tli.append("-".join(tlisu.astype(str)))
 
         if ti%100000 == 0:
-            if logger is None:
-                print(ti)
-            else:
-                logging.info('at unique id '+str(ti))
+            print(ti)
         ti += 1
     tc = Table()
     tc['TARGETID'] = tids
@@ -1373,6 +1367,8 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
     tc['TILELOCIDS'] = tli
 
     return tc
+
+
 
 def count_tiles_better_px(dr,pd,gtl,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=None,survey='main'):
     '''
@@ -1813,7 +1809,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
         rv = False
     return rv
 
-def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf=''):
+def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG'):
     from LSS.common_tools import write_LSS
     fgu = Table(fitsio.read(infile))
     if mask_coll:
@@ -1830,7 +1826,17 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     print('joining to spec data')
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
     #fgu.sort('TARGETID')
-    outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
+    if alt_out != None:
+        outf = alt_out + '/comb' + tp + 'wdupspec_zdone.fits'
+        if mock_priority_mask == 'y':
+            if mock_tr == 'QSO':
+                maxp = 3400
+            else:
+                maxp = 3200
+            pr_mask = fgu["PRIORITY"] <= maxp
+            fgu = fgu[pr_mask]
+    else:
+        outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print('writing to '+outf)
     write_LSS(fgu,outf)
     #fgu.write(outf,format='fits', overwrite=True)
