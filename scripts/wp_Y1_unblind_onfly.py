@@ -329,7 +329,7 @@ if __name__ == '__main__':
         if tracer == "LRG":
             zminr = 0.4
             zmaxr = 1.1
-        if tracer == "ELG":
+        if tracer[:3] == "ELG":
             zminr = 0.8
             zmaxr = 1.6
         if tracer == "QSO":
