@@ -592,7 +592,7 @@ if args.prepsysnet == 'y':
 if args.regressis == 'y':
     logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     #from regressis, must be installed
-    from regressis import DR9Footprint
+    from regressis import DESIFootprint,DR9Footprint
 
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
@@ -613,6 +613,7 @@ if args.regressis == 'y':
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    desi_footprint = DESIFootprint(nside)
     suffix_tracer = ''
     suffix_regressor = ''
 
@@ -625,7 +626,7 @@ if args.regressis == 'y':
         param['regions'] = ['North', 'South', 'Des']
     else:
         param['regions'] = ['North', 'South_mid_ngc', 'South_mid_sgc']
-    max_plot_cart = 1000
+    max_plot_cart = 300
 
     cut_fracarea = False
     seed = 42
@@ -660,11 +661,15 @@ if args.regressis == 'y':
 
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
+        #rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
     
         print('computing RF regressis weight for '+tracer_clus+zw)
         logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
-        rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+        rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
+        suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
+         max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,\
+         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+        #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
