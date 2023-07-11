@@ -337,7 +337,7 @@ if __name__ == '__main__':
             zmaxr = 3.5
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP']
         data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=None,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y')
-
+        print('data columns',data.dtype.names)
         ranl =[]
         for rann in range(0,args.nran):
             rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat=write_arrays,return_cat='y', clus_arrays = data_)
