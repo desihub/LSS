@@ -621,22 +621,22 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-	if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-		cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-	elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-		cat_dir = args.basedir
-		args.region = ['']
-	else:
-		cat_dir = args.basedir
-	if mpicomm is None or mpicomm.rank == mpiroot:
-		logger.info('Catalog directory is {}.'.format(cat_dir))
+    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+        cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+        cat_dir = args.basedir
+        args.region = ['']
+    else:
+        cat_dir = args.basedir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Catalog directory is {}.'.format(cat_dir))
 
-	if args.outdir is None:
-		out_dir = os.path.join(io.get_scratch_dir(), args.survey)
-	else:
-		out_dir = args.outdir
-	if mpicomm is None or mpicomm.rank == mpiroot:
-		logger.info('Output directory is {}.'.format(out_dir))
+    if args.outdir is None:
+        out_dir = os.path.join(io.get_scratch_dir(), args.survey)
+    else:
+        out_dir = args.outdir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Output directory is {}.'.format(out_dir))
 
 
     if args.use_arrays == 'y':
