@@ -1753,14 +1753,13 @@ def get_quantities_in_a_brick(ras, decs, brickname, drdir, dustdir=None):
             if col.upper() in qinfo.dtype.names:
                 qinfo[col.upper()] = qdict[col]
 
-    # ADM add the RAs/Decs, SFD dust values, and brick name.
+    # ADM add the RAs/Decs, SFD dust values and brick name.
     qinfo["RA"] = ras
     qinfo["DEC"] = decs
     qinfo["EBV"] = ebv
     qinfo["BRICKNAME"] = brickname
 
-    # ADM don't forget to resolve north/south bricks before returning.
-    return resolve(qinfo)
+    return qinfo
 
 
 def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
@@ -1826,15 +1825,18 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
     bricks = brick.Bricks(bricksize=0.25)
 
     # ADM recover all the brick names at the HEALPixel centers.
-    bricknames = bricks.brickname(ras, decs)
+    allbricknames = bricks.brickname(ras, decs)
 
     # ADM group the locations (dic values) by brick (dic keys).
-    dbrick = {bn: [] for bn in bricknames}
-    for bn, ra, dec in zip(bricknames, ras, decs):
+    dbrick = {bn: [] for bn in allbricknames}
+    for bn, ra, dec in zip(allbricknames, ras, decs):
         dbrick[bn].append([ra, dec])
 
-    nbricks = len(dbrick)
-    log.info(f"HEALPixels spread over {nbricks} bricks...t={time()-start:.1f}s")
+    # ADM just the unique brick names.
+    bricknames = list(dbrick.keys())
+    nbricks = len(bricknames)
+    log.info(f"{len(hpx)} HEALPixels are spread over {nbricks}"
+             f" unique bricks...t={time()-start:.1f}s")
 
     # ADM calculate quantities in a brick, parallelizing by brick names.
     # ADM the critical function to run on every brick.
@@ -1882,9 +1884,28 @@ def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
 
     qinfo = np.concatenate(qinfo)
 
+    # ADM resolve north/south bricks, first removing bricks that are
+    # ADM outside of the imaging footprint.
+    inside = qinfo["RELEASE"] != 0
+    resolved = np.concatenate([qinfo[~inside], resolve(qinfo[inside])])
+
+    # ADM build the output array.
+    donedt = [('HPXNUM', '>i8')] + resolved.dtype.descr
+    done = np.zeros(len(resolved), dtype=donedt)
+    for col in resolved.dtype.names:
+        done[col] = resolved[col]
+
+    # ADM add the HEALPixel number to the output array.
+    done["HPXNUM"] = hp.ang2pix(nside, done["RA"], done["DEC"],
+                                nest=True, lonlat=True)
+
+    # ADM sort on HEALPixel before returning.
+    ii = np.argsort(done["HPXNUM"])
+    done = done[ii]
+
     log.info(f"Done...t={time()-start:.1f}s")
 
-    return qinfo
+    return done
 
 
 # ADM always start by running sanity checks on maparray.
