@@ -733,7 +733,9 @@ if args.add_regressis_ext == 'y':
 
     sel_low_z = dd['Z_not4clus'] <= 1.3
     dd['WEIGHT_SYS'][sel_low_z] = wsys_low_z(dd['RA'][sel_low_z], dd['DEC'][sel_low_z], normalize_map=True)
+    print(np.mean(dd['WEIGHT_SYS'][sel_low_z]))
     dd['WEIGHT_SYS'][~sel_low_z] = wsys_high_z(dd['RA'][~sel_low_z], dd['DEC'][~sel_low_z], normalize_map=True)
+    print(np.mean(dd['WEIGHT_SYS'][~sel_low_z]))
     logf.write('added RF regressis weights that Edmond calculated for '+tracer_clus+'\n')    
     common.write_LSS(dd,fcd)
  
