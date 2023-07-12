@@ -67,7 +67,7 @@ logging.getLogger("jax._src.lib.xla_bridge").addFilter(logging.Filter("No GPU/TP
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--basedir_out", help="base directory for output, default is C(P)SCRATCH", default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
@@ -352,8 +352,11 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
+        clus_arrays = []
+        for reg in ['N','S']
+            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
