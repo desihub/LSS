@@ -354,7 +354,7 @@ if root:
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
         clus_arrays = []
         for reg in ['N','S']:
-            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+            clus_arrays.append(Table(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits')))
         def _parfun(rannum):
             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
