@@ -372,6 +372,7 @@ if root:
         else:
             for ii in inds:
                 ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
+                print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         ct.clusNStoGC(fb, args.maxr - args.minr)
