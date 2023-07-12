@@ -362,10 +362,13 @@ if root:
                     os.system('mv ' + ranf + ' ' + ranfm)
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
-        from multiprocessing import Pool
-        with Pool(processes=nran*2) as pool:
-            res = pool.map(_parfun, inds)
-
+        if args.useMPI == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for ii in inds:
+                _parfun(ii)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         ct.clusNStoGC(fb, args.maxr - args.minr)
