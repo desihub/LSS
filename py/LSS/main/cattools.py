@@ -3329,7 +3329,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     if clus_arrays is None:
         fcds = Table.read(fl+wzm+'S_clustering.dat.fits')
     else:
-        fcds = clus_arrays[1]
+        fcds = Table(np.copy(clus_arrays[1]))
     fcds.rename_column('TARGETID', 'TARGETID_DATA')
     ffcs = ffc[~wn]
     inds = np.random.choice(len(fcds),len(ffcs))
