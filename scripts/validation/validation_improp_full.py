@@ -354,9 +354,11 @@ for tp in tps:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
-            if args.mapmd == 'validate':
-                fo.close()
             
             print('results for '+tp+zr+' '+reg)
             print('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps')
+            if args.mapmd == 'validate':
+                fo.write('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps\n')
+                fo.close()
+
     print('done with '+tp)
