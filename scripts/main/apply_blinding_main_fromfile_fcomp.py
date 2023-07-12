@@ -371,7 +371,7 @@ if root:
                 res = pool.map(_parfun, inds)
         else:
             for ii in inds:
-                _parfun(ii)
+                ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         ct.clusNStoGC(fb, args.maxr - args.minr)
