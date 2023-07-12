@@ -731,8 +731,8 @@ if args.add_regressis_ext == 'y':
     wsys_high_z = PhotoWeight.load('/global/homes/e/edmondc/CFS/Imaging_weight/Y1/Y1_QSO_high_z_128/RF/Y1_QSO_high_z_imaging_weight_128.npy')
 
     sel_low_z = dd['Z_not4clus'] <= 1.3
-    dd['WEIGHT_SYS_NEW'][sel_low_z] = wsys_low_z(dd['RA'][sel_low_z], dd['DEC'][sel_low_z], normalize_map=True)
-    dd['WEIGHT_SYS_NEW'][~sel_low_z] = wsys_high_z(dd['RA'][~sel_low_z], dd['DEC'][~sel_low_z], normalize_map=True)
+    dd['WEIGHT_SYS'][sel_low_z] = wsys_low_z(dd['RA'][sel_low_z], dd['DEC'][sel_low_z], normalize_map=True)
+    dd['WEIGHT_SYS'][~sel_low_z] = wsys_high_z(dd['RA'][~sel_low_z], dd['DEC'][~sel_low_z], normalize_map=True)
     logf.write('added RF regressis weights that Edmond calculated for '+tracer_clus+zw+'\n')    
     common.write_LSS(dd,fcd)
  
