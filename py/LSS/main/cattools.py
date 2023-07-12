@@ -3292,7 +3292,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     if clus_arrays is None:
         fcdn = Table.read(fl+wzm+'N_clustering.dat.fits')
     else:
-        fcdn = clus_arrays[0]
+        fcdn = Table(np.copy(clus_arrays[0]))
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
     rcols = np.array(rcols)
