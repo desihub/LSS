@@ -69,6 +69,9 @@ parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systemat
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
+parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
+parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
+
 
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
@@ -713,6 +716,26 @@ if args.add_regressis == 'y':
     logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
     common.write_LSS(dd,fcd,comments)
+
+if args.add_regressis_ext == 'y':
+    if tracer_clus != 'QSO':
+        sys.exit('only QSO supported for using weights Edmond calculated!')
+    from LSS.imaging import densvar
+    from regressis import PhotoWeight
+    fb = dirout+tracer_clus
+    fcd = fb+'_full.dat.fits'
+    dd = Table.read(fcd)
+    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    
+    wsys_low_z = PhotoWeight.load('/global/homes/e/edmondc/CFS/Imaging_weight/Y1/Y1_QSO_low_z_128/RF/Y1_QSO_low_z_imaging_weight_128.npy')
+    wsys_high_z = PhotoWeight.load('/global/homes/e/edmondc/CFS/Imaging_weight/Y1/Y1_QSO_high_z_128/RF/Y1_QSO_high_z_imaging_weight_128.npy')
+
+    sel_low_z = dd['Z_not4clus'] <= 1.3
+    dd['WEIGHT_SYS_NEW'][sel_low_z] = wsys_low_z(dd['RA'][sel_low_z], dd['DEC'][sel_low_z], normalize_map=True)
+    dd['WEIGHT_SYS_NEW'][~sel_low_z] = wsys_high_z(dd['RA'][~sel_low_z], dd['DEC'][~sel_low_z], normalize_map=True)
+    logf.write('added RF regressis weights that Edmond calculated for '+tracer_clus+zw+'\n')    
+    common.write_LSS(dd,fcd)
+ 
 
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
