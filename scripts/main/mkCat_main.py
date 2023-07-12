@@ -686,6 +686,7 @@ if args.add_regressis == 'y':
     dd['WEIGHT_SYS'] = np.ones(len(dd))
 
     for zl in zrl:    
+        print(zl)
         zw = str(zl[0])+'_'+str(zl[1])
 
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
