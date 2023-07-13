@@ -65,6 +65,8 @@ parser.add_argument("--blinded", help="are we running on the blinded full catalo
 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
+parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='n')
+
 
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
@@ -535,11 +537,20 @@ nside = 256
 pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
 
 if type[:3] == 'ELG':
-    zrl = [(0.8,1.1),(1.1,1.6)]
+    if args.imsys_zbin == 'y':
+        zrl = [(0.8,1.1),(1.1,1.6)]
+    else:
+        zrl = [(0.8,1.6)]
 if type[:3] == 'QSO':
-    zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)]    
+    if args.imsys_zbin == 'y':
+        zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)] 
+    else:
+        zrl = [(0.8,3.5)]   
 if type[:3] == 'LRG':
-    zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
+    if args.imsys_zbin == 'y':
+        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+    else:
+        zrl = [(0.4,1.1)]  
 if type[:3] == 'BGS':
     zrl = [(0.1,0.4)]    
 
@@ -585,7 +596,9 @@ if args.prepsysnet == 'y':
     if 'EBV_DIFFRZ' in fit_maps:
         sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
     for zl in zrl:
-        zw = str(zl[0])+'_'+str(zl[1])
+        zw = ''
+        if args.imsys_zbin == 'y':
+            zw = str(zl[0])+'_'+str(zl[1])
         for reg in regl:
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
@@ -753,7 +766,9 @@ if args.add_sysnet == 'y':
     regl_sysnet = ['N','S']
     for reg in regl_sysnet:
         for zl in zrl:
-            zw = str(zl[0])+'_'+str(zl[1])
+            zw = ''
+            if args.imsys_zbin == 'y':
+                zw = str(zl[0])+'_'+str(zl[1])
             sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             pix_weight = np.mean(pred_counts)/pred_counts
