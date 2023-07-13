@@ -568,16 +568,16 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
+    parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['LRG'])
     # Set basedir to the actual location of catalogs when starting with full (not clustering) catalogs for mocks. No need to set survey, verspec, version then.
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
+    parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='Y1')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
-    parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
+    parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     # Need to add support for fkp weights for use_arrays option
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
@@ -585,8 +585,8 @@ if __name__ == '__main__':
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
-    parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
+    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=0)
+    parser.add_argument('--nthreads', help='number of threads', type=int, default=128)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
