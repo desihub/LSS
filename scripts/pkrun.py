@@ -120,6 +120,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         edges = {'step': 2. * np.pi / boxsizes[0]}
         for iboxsize, boxsize in enumerate(boxsizes):
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                                               randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                direct_selection_attrs=win_direct_selection_attrs if iboxsize == 0 else None,
                                                direct_edges=direct_edges if iboxsize == 0 else None,
