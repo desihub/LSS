@@ -1682,6 +1682,28 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     return done
 
 
+def pure_healpix_map_filename(outdir, nsideproc, hpxproc):
+    """Standardize name to write output maps made by pure_healpix_map()
+
+    Parameters
+    ----------
+    outdir : :class:`str`
+        The root output directory, e.g. $SCRATCH.
+    nsideproc : :class:`int`
+        Resolution (nested HEALPix nside) at which map was made.
+    hpxproc : :class:`int`
+        Pixel number in which maps was made.
+
+    Returns
+    -------
+    :class:`str`
+        A standardized filename built from the input parameters.
+    """
+    outfile = f"skymap-nside-{nsideproc}-pixel-{hpxproc}.fits"
+
+    return os.path.join(outdir, outfile)
+
+
 def get_quantities_in_a_brick(ras, decs, brickname, drdir, dustdir=None):
     """Per-band quantities at locations in a Legacy Surveys brick.
 
