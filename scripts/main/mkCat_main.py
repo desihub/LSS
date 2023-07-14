@@ -607,7 +607,7 @@ if args.prepsysnet == 'y':
     sys_tab = Table.read(pwf)
     #if 'EBV_DIFFRZ' in fit_maps:
     #    sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for ec in ['GR','RZ']
+    for ec in ['GR','RZ']:
         if 'EBV_DIFF_'+ec in fit_maps: 
             sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
 
@@ -684,7 +684,7 @@ if args.regressis == 'y':
     pixweight_data = Table.read(pwf)
     #if 'EBV_DIFFRZ' in fit_maps: 
     #    pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for ec in ['GR','RZ']
+    for ec in ['GR','RZ']:
         if 'EBV_DIFF_'+ec in fit_maps: 
             pixweight_data['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
         
