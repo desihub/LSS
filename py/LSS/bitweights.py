@@ -177,7 +177,7 @@ def write_output(outdir, outfilename, overwrite, fileformat, targets, bitvectors
             output['{}'.format(desi_target_key)] = targets['{}'.format(desi_target_key)]
         output['RA'] = targets['RA']
         output['DEC'] = targets['DEC']
-        output['Z'] = targets['Z']
+        output['Z'] = targets['RSDZ']
         for i in range(bitvectors.shape[1]):
             output['BITWEIGHT{}'.format(i)] = bitvectors[:,i]
         output.write(outfile, overwrite=overwrite)
