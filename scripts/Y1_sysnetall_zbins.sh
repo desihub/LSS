@@ -23,7 +23,7 @@ $LSSDIR/LSS/scripts/run_sysnet.sh S ELG_LOPnotqso1.1_1.6 false true 1024 0.004 d
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $1
 
-python scripts/validation/validation_sky.py --tracer ELG_LOPnotqso --version $1
+python scripts/validation/validation_improp_full.py --tracer ELG_LOPnotqso --version $1
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type LRG --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $1
 

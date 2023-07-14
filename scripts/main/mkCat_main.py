@@ -518,17 +518,17 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 #fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
-fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFFRZ']
+fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ']
 if tracer_clus[:3] == 'LRG':
     fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-    #fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
-    #fit_maps.append('PSFDEPTH_W1')
-    #fit_maps.append('PSFDEPTH_W2')
-    fit_maps = ['EBV', 'STARDENS',
-                 'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
-                 'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
+    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ']
+    fit_maps.append('PSFDEPTH_W1')
+    fit_maps.append('PSFDEPTH_W2')
+    #fit_maps = ['EBV', 'STARDENS',
+    #             'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
+    #             'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
@@ -567,14 +567,26 @@ if args.prepsysnet == 'y' or args.regressis == 'y':
         return m_
 
     import healpy as hp
-    ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
-    ebvn = fitsio.read(ebvn_fn)
-    debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
-    debv64 = make_hp(debv, ebvn['HPXPIXEL'], nside=64, fill_with=hp.UNSEEN)
-    debv256 = hp.ud_grade(debv64, 256)
-    debv256_nest = hp.reorder(debv256,r2n=True)
+
+    dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    nside = 256#64
+    nest = False
+    eclrs = ['gr','rz']
     debv = Table()
-    debv['EBV_DIFFRZ'] = debv256_nest
+    for ec in eclrs:
+        ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+        debv_a = hp.reorder(debv_a,r2n=True)
+        debv['EBV_DIFF_'+ec.upper()] = debv_a
+
+    #ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
+    #ebvn = fitsio.read(ebvn_fn)
+    #debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
+    #debv64 = make_hp(debv, ebvn['HPXPIXEL'], nside=64, fill_with=hp.UNSEEN)
+    #debv256 = hp.ud_grade(debv64, 256)
+    #debv256_nest = hp.reorder(debv256,r2n=True)
+    #debv = Table()
+    #debv['EBV_DIFFRZ'] = debv256_nest
 
 
 
@@ -593,8 +605,12 @@ if args.prepsysnet == 'y':
     rands = np.concatenate(ranl)
     regl = ['N','S']
     sys_tab = Table.read(pwf)
-    if 'EBV_DIFFRZ' in fit_maps:
-        sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
+    #if 'EBV_DIFFRZ' in fit_maps:
+    #    sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
+    for ec in ['GR','RZ']
+        if 'EBV_DIFF_'+ec in fit_maps: 
+            sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+
     for zl in zrl:
         zw = ''
         if args.imsys_zbin == 'y':
@@ -666,10 +682,12 @@ if args.regressis == 'y':
     logf.write('using fit maps '+str(fit_maps)+'\n')
     feature_names_ext=None
     pixweight_data = Table.read(pwf)
-    if 'EBV_DIFFRZ' in fit_maps: 
-        pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-        #fit_maps.remove('EBV_DIFFRZ')
-        #feature_names_ext = ['EBV_DIFFRZ']
+    #if 'EBV_DIFFRZ' in fit_maps: 
+    #    pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
+    for ec in ['GR','RZ']
+        if 'EBV_DIFF_'+ec in fit_maps: 
+            pixweight_data['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        
     use_sgr=False
     if 'SGR' in fit_maps:
         use_sgr = True
