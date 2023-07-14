@@ -186,7 +186,7 @@ def main(args):
                 outmtl['{}'.format(desi_target_key)] = mtl['{}'.format(desi_target_key)]
             outmtl['RA'] = mtl['RA']
             outmtl['DEC'] = mtl['DEC']
-            outmtl['Z'] = mtl['Z']
+            outmtl['Z'] = np.empty(len(mtl))
             outsky = Table()
             outsky['TARGETID'] = sky['TARGETID']
             if desi_target_key:
