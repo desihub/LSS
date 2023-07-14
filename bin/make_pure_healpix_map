@@ -2,6 +2,7 @@
 
 import argparse
 import fitsio
+import healpy as hp
 from LSS.imaging.sky_maps import pure_healpix_map, pure_healpix_map_filename, \
     write_atomically
 
@@ -27,20 +28,39 @@ ap.add_argument("--nside", type=int, default=mapnside,
 ap.add_argument("--numproc", type=int, default=1,
                 help=("The number of processes over which to parallelize"
                       " (optional, defaults to [1])."))
+ap.add_argument("--slurm", action='store_true',
+                help=("Don't run the code; print a script to parallelize over"
+                "pixels at nsideproc (hpxproc is then expected but ignored)."))
 
 ns = ap.parse_args()
 
-# ADM make the output sky map.
-outmap = pure_healpix_map(ns.drdir, ns.nsideproc, ns.hpxproc,
-                          nside=ns.nside, numproc=ns.numproc)
+if ns.slurm:
+    npix = hp.nside2npix(ns.nsideproc)
+    # ADM some example preamble
+    print("#################################")
+    print("Example preamble; may need edited")
+    print("#################################")
+    print("#!/bin/bash")
+    print("#SBATCH -q regular")
+    print("#SBATCH -N 16")
+    print("#SBATCH -t 04:00:00")
+    print("#SBATCH -C cpu")
+    print('')
+    for pix in range(npix):
+        print(f"srun -N 1 make_pure_healpix_map {ns.drdir} {ns.outdir} "
+              f"{ns.nsideproc} {pix} --nside {ns.nside} --numproc {ns.numproc}")
+else:
+    # ADM make the output sky map.
+    outmap = pure_healpix_map(ns.drdir, ns.nsideproc, ns.hpxproc,
+                              nside=ns.nside, numproc=ns.numproc)
 
-# ADM build the output filename.
-outfn = pure_healpix_map_filename(ns.outdir, ns.nsideproc, ns.hpxproc)
+    # ADM build the output filename.
+    outfn = pure_healpix_map_filename(ns.outdir, ns.nsideproc, ns.hpxproc)
 
-# ADM write the file.
-hdr = fitsio.FITSHDR()
-hdr["FILENSID"] = ns.nsideproc
-hdr["FILENEST"] = True
-hdr["FILEHPX"] = ns.hpxproc
-hdr["MAPNSIDE"] = ns.nside
-write_atomically(outfn, outmap, extname='PHEALMAP', header=hdr)
+    # ADM write the file.
+    hdr = fitsio.FITSHDR()
+    hdr["FILENSID"] = ns.nsideproc
+    hdr["FILENEST"] = True
+    hdr["FILEHPX"] = ns.hpxproc
+    hdr["MAPNSIDE"] = ns.nside
+    write_atomically(outfn, outmap, extname='PHEALMAP', header=hdr)
