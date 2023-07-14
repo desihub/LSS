@@ -330,21 +330,19 @@ for tp in tps:
                 #plt.clf()
     
             if do_ebvnew_diff == 'y':
-                ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
-                nside = 64
+                dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+                nside = 256#64
                 nest = False
-                debv = np.zeros(nside*nside*12)
-                for i in range(0,len(ebvn)):
-                    pix = ebvn[i]['HPXPIXEL']
-                    sfdv = ebvn[i]['EBV_SFD']
-                    nv = ebvn[i]['EBV_NEW'] 
-                    debv[pix] = nv-sfdv
-                parv = debv
-                fig = plt.figure()
-                plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_RZ - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
-                figs.append(fig)
-                chi2tot += chi2
-                nmaptot += 1
+                eclrs = ['gr','zr']
+                for ec in eclrs:
+                    ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+str(nside)+'.fits')
+                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+                    parv = debv
+                    fig = plt.figure()
+                    plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                    figs.append(fig)
+                    chi2tot += chi2
+                    nmaptot += 1
     
        
             tw = ''
