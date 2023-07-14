@@ -333,7 +333,7 @@ for tp in tps:
                 dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
                 nside = 256#64
                 nest = False
-                eclrs = ['gr','zr']
+                eclrs = ['gr','rz']
                 for ec in eclrs:
                     ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
