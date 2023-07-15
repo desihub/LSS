@@ -182,8 +182,10 @@ for tp in tps:
         print('doing validation for '+tp)
         
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
-        maps.remove('PSFDEPTH_W1')
-        maps.remove('PSFDEPTH_W2')
+        if 'PSFDEPTH_W1' in maps:
+            maps.remove('PSFDEPTH_W1')
+        if 'PSFDEPTH_W2' in maps:
+            maps.remove('PSFDEPTH_W2')
 
 
     dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
