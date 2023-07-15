@@ -790,6 +790,7 @@ if args.add_sysnet == 'y':
             sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             pix_weight = np.mean(pred_counts)/pred_counts
+            pix_weight = np.clip(pix_weight,0.5,2.)
             sn_pix = sn_weights['hpix']
             hpmap = np.ones(12*256*256)
             for pix,wt in zip(sn_pix,pix_weight):
