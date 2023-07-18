@@ -577,6 +577,7 @@ if __name__ == '__main__':
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
+    parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
     parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     # Need to add support for fkp weights for use_arrays option
@@ -676,10 +677,12 @@ if __name__ == '__main__':
     if regions is None:
         regions = io.get_regions(args.survey, rec=bool(args.rec_type))
 
-    option = None
+    option = args.option#None
     if args.zlim is None:
         zlims = io.get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
+        if option is not None:
+            sys.exit('conflicting options, need to fix code if both are needed')
         option = args.zlim[0]
         zlims = io.get_zlims(tracer, tracer2=tracer2, option=option)
     else:
