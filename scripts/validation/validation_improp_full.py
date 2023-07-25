@@ -132,7 +132,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
     #print(len(parv[wp]))
-    rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
+    rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],.1),np.percentile(parv[wp],99.9)))
     dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
     dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
     #print((np.percentile(parv[wp],1),np.percentile(parv[wp],99)))
