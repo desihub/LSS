@@ -3348,7 +3348,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             if compmd == 'ran':
                 ffcn['WEIGHT'] *= ffcn['FRAC_TLOBS_TILES']
 
-        for col in rcols
+        for col in rcols:
             kc.append(col)
 
         ffcn.keep_columns(kc)
