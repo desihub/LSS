@@ -94,7 +94,7 @@ else:
 
 progl = prog.lower()
 
-mainp = main(args.type,args.verspec,survey=args.survey)
+mainp = main(args.tracer,args.verspec,survey=args.survey)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
 #mtld = mainp.mtld
