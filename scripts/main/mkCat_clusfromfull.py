@@ -162,7 +162,7 @@ if type[:3] == 'BGS':
 if mkclusran:
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
-    tsnrcol = 'TSNR2_BGS'
+        tsnrcol = 'TSNR2_BGS'
     ranin = dirin + args.tracer + '_'
     if args.tracer == 'BGS_BRIGHT-21.5':
         ranin = dirin + 'BGS_BRIGHT_'
