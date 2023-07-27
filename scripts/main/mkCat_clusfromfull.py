@@ -153,7 +153,7 @@ if tp[:3] == 'BGS':
         rcols.append('flux_'+col.lower()+'_dered')
     if args.kemd == 'phot':
         restcols = ['REST_GMR_0P1','REST_GMR_0P0','ABSMAG_RP0','ABSMAG_RP1']
-    if args.kem == 'spec':
+    if args.kemd == 'spec':
         sys.exit('need to add connection to fastspecfit')
     for col in restcols:
         rcols.append(col)
