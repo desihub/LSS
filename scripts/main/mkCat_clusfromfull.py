@@ -209,7 +209,7 @@ if tp[:3] == 'BGS':
 randens = 2500    
 
 if args.nz == 'y':
-    
+    nran = args.maxr - args.minr
     gcl = ['_NGC','_SGC']
     for reg in gcl:
         fb = dirout+args.tracer+reg
