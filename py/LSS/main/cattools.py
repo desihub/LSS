@@ -2965,7 +2965,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran'):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd=''):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3117,7 +3117,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
     sel = ff['WEIGHT_SYS']*0 != 0
     print(str(len(ff[sel]))+ ' with nan weight_sys being give a value of 1')
-    ff[sel]['WEIGHT_SYS'] = 1
+    ff['WEIGHT_SYS'][se] = 1
+    print('weightsys bounds',min(ff['WEIGHT_SYS']),max(ff['WEIGHT_SYS']))
     ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
     #weights for imaging systematic go here
@@ -3179,6 +3180,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         for col in fcols:
             kl.append('flux_'+col.lower()+'_dered')
         print(kl)
+        if kemd == 'phot':
+            restcols = ['REST_GMR_0P1','REST_GMR_0P0','ABSMAG_RP0','ABSMAG_RP1']
+            for col in restcols:
+                kl.append(col)
+
         if ccut == '-21.5':
             from LSS.tabulated_cosmo import TabulatedDESI
             cosmo = TabulatedDESI()
