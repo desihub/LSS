@@ -3115,6 +3115,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #    ff['WEIGHT'] *= ff['WEIGHT_SYS']
     if 'WEIGHT_SYS' not in cols:
         ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
+    sel = ff['WEIGHT_SYS']*0 != 0
+    print(str(len(ff[sel]))+ ' with nan weight_sys being give a value of 1')
+    ff[sel]['WEIGHT_SYS'] = 1
     ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
     #weights for imaging systematic go here
