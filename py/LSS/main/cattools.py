@@ -3575,7 +3575,7 @@ def clusNStoGC(flroot,nran=1):
     nn = np.sum(fn['WEIGHT'])
     fs = Table(fitsio.read(flroot+'S_clustering.dat.fits'))
     ns = np.sum(fs['WEIGHT'])
-    if 'QSO' in flin:
+    if 'QSO' in flroot:
         print('getting data numbers in DES region')
         from regressis import footprint
         foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
@@ -3600,7 +3600,7 @@ def clusNStoGC(flroot,nran=1):
         fn = Table(fitsio.read(flroot+'N_'+str(rann)+'_clustering.ran.fits'))
         nnr = np.sum(fn['WEIGHT'])
         fs = Table(fitsio.read(flroot+'S_'+str(rann)+'_clustering.ran.fits'))
-        if 'QSO' in flin:
+        if 'QSO' in flroot:
             print('resampling in DES region')
             th_ran,phi_ran = (-fs['DEC']+90.)*np.pi/180.,fs['RA']*np.pi/180.
             pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
