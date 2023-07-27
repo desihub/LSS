@@ -86,7 +86,7 @@ if mkclusran:
 
     
 
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+if tp[:3] == 'BGS' or tp == 'bright' or tp == 'MWS_ANY':
     prog = 'BRIGHT'
 
 else:
@@ -147,7 +147,7 @@ if mkclusdat:
 
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
-if type[:3] == 'BGS':
+if tp[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
         rcols.append('flux_'+col.lower()+'_dered')
@@ -184,7 +184,7 @@ if mkclusran:
     fb = dirout + args.tracer + '_'
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
-if type == 'QSO':
+if tp == 'QSO':
     #zmin = 0.6
     #zmax = 4.5
     dz = 0.02
@@ -195,11 +195,11 @@ else:
     #zmin = 0.01
     #zmax = 1.61
 
-if type[:3] == 'LRG':
+if tp[:3] == 'LRG':
     P0 = 10000
-if type[:3] == 'ELG':
+if tp[:3] == 'ELG':
     P0 = 4000
-if type[:3] == 'BGS':
+if tp[:3] == 'BGS':
     P0 = 7000
     
 
