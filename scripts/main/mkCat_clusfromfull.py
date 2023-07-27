@@ -182,9 +182,10 @@ if mkclusran:
         for ii in inds:
             ct.mkclusran(ranin, dirout + args.tracer + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
             print(ii,clus_arrays[0].dtype.names)
-    fb = dirout + args.tracer + '_'
+    
 
 if args.splitGC == 'y':    
+    fb = dirout + args.tracer + '_'
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
 if tp == 'QSO':
