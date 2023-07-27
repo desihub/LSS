@@ -44,6 +44,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--splitGC", help="split into NGC/SGC catalogs",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -182,6 +183,8 @@ if mkclusran:
             ct.mkclusran(ranin, dirout + args.tracer + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
             print(ii,clus_arrays[0].dtype.names)
     fb = dirout + args.tracer + '_'
+
+if splitGC == 'y':    
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
 if tp == 'QSO':
