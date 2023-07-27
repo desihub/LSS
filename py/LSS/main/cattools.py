@@ -3117,7 +3117,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
     sel = ff['WEIGHT_SYS']*0 != 0
     print(str(len(ff[sel]))+ ' with nan weight_sys being give a value of 1')
-    ff['WEIGHT_SYS'][se] = 1
+    ff['WEIGHT_SYS'][sel] = 1
     print('weightsys bounds',min(ff['WEIGHT_SYS']),max(ff['WEIGHT_SYS']))
     ff['WEIGHT'] *= ff['WEIGHT_SYS']
 
