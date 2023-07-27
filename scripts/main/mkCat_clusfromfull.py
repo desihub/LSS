@@ -184,7 +184,7 @@ if mkclusran:
             print(ii,clus_arrays[0].dtype.names)
     fb = dirout + args.tracer + '_'
 
-if splitGC == 'y':    
+if args.splitGC == 'y':    
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
 if tp == 'QSO':
