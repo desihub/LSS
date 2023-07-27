@@ -205,7 +205,8 @@ if tp[:3] == 'ELG':
     P0 = 4000
 if tp[:3] == 'BGS':
     P0 = 7000
-    
+
+randens = 2500    
 
 if args.nz == 'y':
     
