@@ -210,7 +210,7 @@ randens = 2500
 
 if args.nz == 'y':
     
-    gcl = ['NGC','SGC']
+    gcl = ['_NGC','_SGC']
     for reg in gcl:
         fb = dirout+args.tracer+reg
         fcr = fb+'_0_clustering.ran.fits'
