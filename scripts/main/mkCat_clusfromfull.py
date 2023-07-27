@@ -143,7 +143,7 @@ tracer_clus = tracer #legacy of previous script
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
 if mkclusdat:
-    ct.mkclusdat(dirout+tracer,tp=tracer,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,compmd=args.compmd)#,ntilecut=ntile)
+    ct.mkclusdat(dirout+tracer,tp=tracer,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,compmd=args.compmd,kemd=args.kemd)#,ntilecut=ntile)
 
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
