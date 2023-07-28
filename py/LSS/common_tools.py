@@ -405,14 +405,14 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         zind = int((z-zmin)/bs)
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
-    mean_comp = len(fd)/np.sum(fd['WEIGHT'])
+    mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
     print('mean completeness '+str(mean_comp))
     ntl = np.unique(fd['NTILE'])
     comp_ntl = np.zeros(len(ntl))
     weight_ntl = np.zeros(len(ntl))
     for i in range(0,len(ntl)):
         sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT'][sel])        
+        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
     fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
@@ -430,7 +430,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft['NZ'] = nl
     #fd['NZ'] = nl
     fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-    fd['WEIGHT'] *= 1/weight_ntl[fd['NTILE']-1]
+    fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
     #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
 
@@ -467,7 +467,10 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].insert_column('NZ',nl)
         #fd['NZ'] = nl
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-        fd['WEIGHT'] *= 1/weight_ntl[fd['NTILE']-1]
+        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
+        wtfac = fd['WEIGHT']/wt
+        print(np.mean(wtfac))
+        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
         #fkpl = 1./(1+nl*P0*mean_comp)
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)
