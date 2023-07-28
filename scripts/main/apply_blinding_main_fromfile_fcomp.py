@@ -489,7 +489,7 @@ if args.fnlblind == 'y':
 
 if root:
     #re-sample redshift dependent columns from data
-    if args.resamp == 'y'
+    if args.resamp == 'y':
         regions = ['NGC', 'SGC']
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
         for reg in regions:
