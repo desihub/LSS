@@ -468,7 +468,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #fd['NZ'] = nl
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
         wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']*fd['FRAC_TLOBS_TILES']
-        wtfac = fd['WEIGHT']/wt
+        wtfac = np.ones(len(fd))
+        sel = wt > 0
+        wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
         print(np.mean(wtfac))
         fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
         #fkpl = 1./(1+nl*P0*mean_comp)
