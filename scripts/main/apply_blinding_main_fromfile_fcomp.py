@@ -89,6 +89,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1", def
 parser.add_argument("--dorecon", help="if y, run the recon needed for RSD blinding", default='n')
 parser.add_argument("--rsdblind", help="if y, do the RSD blinding shift", default='n')
 parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
+parser.add_argument("--resamp", help="resample the randoms to make sure all is consistent with how weights changed", default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
