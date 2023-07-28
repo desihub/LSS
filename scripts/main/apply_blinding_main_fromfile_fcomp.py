@@ -489,6 +489,7 @@ if args.fnlblind == 'y':
 
 if root:
     #re-sample redshift dependent columns from data
+    nran = args.maxr-args.minr
     if args.resamp == 'y':
         regions = ['NGC', 'SGC']
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
@@ -496,7 +497,7 @@ if root:
             flin = dirout + args.type + notqso + '_'+reg    
             def _parfun(rannum):
                 ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-            nran = args.maxr-args.minr
+            
             inds = np.arange(nran)
             from multiprocessing import Pool
             with Pool(processes=nran*2) as pool:
