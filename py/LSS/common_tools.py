@@ -697,7 +697,6 @@ def parse_circandrec_mask(custom_mask_fn):
     Returns:
         circ_mask and rect_mask: circular and rectangular masks in astropy table format
     '''
-​
     with open(custom_mask_fn, 'r') as f:
         lines = list(map(str.strip, f.readlines()))
 ​
