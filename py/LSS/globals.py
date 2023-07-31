@@ -78,10 +78,15 @@ class main:
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
-            self.zmin = 0.1
+            self.zmin = 0.01
             self.zmax = 0.5
-            if survey == 'Y1':
+            if tp == 'BGS_BRIGHT-21.5':
+                self.zmin = 0.1
                 self.zmax = 0.4
+            #self.zmin = 0.1
+            #self.zmax = 0.5
+            #if survey == 'Y1':
+            #    self.zmax = 0.4
             self.ebits = [11] 
         else:
             self.imbits = [1,12,13]
