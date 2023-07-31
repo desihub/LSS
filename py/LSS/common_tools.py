@@ -715,24 +715,52 @@ def parse_circandrec_mask(custom_mask_fn):
     circ_mask_arr = np.array(circ_mask_arr)
     rect_mask_arr = np.array(rect_mask_arr)
     
-    circ_mask = Table(circ_mask_arr, names=['ra', 'dec', 'radius'])
+    circ_mask = Table(circ_mask_arr, names=['RA', 'DEC', 'radius'])
     rect_mask = Table(rect_mask_arr, names=['ramin', 'ramax', 'decmin', 'decmax'])
     
     return circ_mask, rect_mask
 
-def maskcircandrec(indata,mask):
+def maskcircandrec(indata,maskfn):
     '''
     indata should have RA,DEC columns
     mask should be path to text file with entries for circular and rectangular masks
     outputs indices to mask
     '''
-    circ_mask,rect_mask = parse_circandrec_mask(mask)
+    circ_mask,rect_mask = parse_circandrec_mask(maskfn)
     mask_rect = np.zeros(len(indata),dtype='bool')
     for radec in rect_mask:
         ramin, ramax, decmin, decmax = radec
         mask_rect |= (indata['RA']>ramin) & (indata['RA']<ramax) & (indata['DEC']>decmin) & (indata['DEC']<decmax)
     print('comparison of data removed by rectangular mask:')
     print(len(indata),len(indata[mask_rect]))
+    
+    dat_cx = np.cos(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
+    dat_cy = np.sin(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
+    dat_cz = np.sin(np.radians(indata['DEC']))
+
+    mask_cx = np.cos(np.radians(circ_mask['RA']))*np.cos(np.radians(circ_mask['DEC']))
+    mask_cy = np.sin(np.radians(circ_mask['RA']))*np.cos(np.radians(circ_mask['DEC']))
+    mask_cz = np.sin(np.radians(circ_mask['DEC']))
+    
+    mat1 = np.array([dat_cx, dat_cy, dat_cz]).T
+    mat2 = np.array([mask_cx, mask_cy, mask_cz])
+    
+    dist = np.dot(mat1, mat2)
+    
+    mask = np.any(dist>np.cos(np.radians(circ_mask['radius']/3600.)), axis=1)
+    
+    print('comparison of data removed by circular mask:')
+    print(len(indata),len(indata[mask]))
+    
+    mask |= mask_rect
+    
+    print('comparison of data removed by both rectangular and circular mask:')
+    print(len(indata),len(indata[mask]))
+    
+    return mask
+    
+    
+    
 
 def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
     '''
