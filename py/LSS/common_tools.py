@@ -698,11 +698,9 @@ def parse_circandrec_mask(custom_mask_fn):
         circ_mask and rect_mask: circular and rectangular masks in astropy table format
     '''
     with open(custom_mask_fn, 'r') as f:
-        lines = list(map(str.strip, f.readlines()))
-​
+        lines = list(map(str.strip, f.readlines()))​
     circ_mask_arr = []
     rect_mask_arr = []
-​
     for line in lines:
         if line!='' and line[0]!='#':
             line = line[:line.find('#')]
@@ -713,13 +711,13 @@ def parse_circandrec_mask(custom_mask_fn):
                 rect_mask_arr.append(line)
             else:
                 raise ValueError
-​
+    
     circ_mask_arr = np.array(circ_mask_arr)
     rect_mask_arr = np.array(rect_mask_arr)
-​
+    
     circ_mask = Table(circ_mask_arr, names=['ra', 'dec', 'radius'])
     rect_mask = Table(rect_mask_arr, names=['ramin', 'ramax', 'decmin', 'decmax'])
-​
+    
     return circ_mask, rect_mask
 
 def maskcircandrec(indata,mask):
