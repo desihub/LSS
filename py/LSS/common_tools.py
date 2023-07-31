@@ -728,7 +728,7 @@ def maskcircandrec(indata,mask):
     '''
     circ_mask,rect_mask = parse_circandrec_mask(mask)
     mask_rect = np.zeros(len(indata),dtype='bool')
-    for radec in rect_mask_data:
+    for radec in rect_mask:
         ramin, ramax, decmin, decmax = radec
         mask_rect |= (indata['RA']>ramin) & (indata['RA']<ramax) & (indata['DEC']>decmin) & (indata['DEC']<decmax)
     print('comparison of data removed by rectangular mask:')
