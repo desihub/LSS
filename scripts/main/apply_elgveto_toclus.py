@@ -134,7 +134,7 @@ def _parfun(rannum):
     regl = ['NGC','SGC']
     for reg in regl:
         fn = dirout + args.blinded + tracer +'_'+reg+'_'+str(rannum)+'_clustering.ran.fits'
-        fno = dirout + args.blinded + tracer+'elgmask_'+args.maskbits +'_'+str(rannum)+'_clustering.ran.fits'
+        fno = dirout + args.blinded + tracer+'elgmask_'+args.maskbits +'_'+reg+'_'+str(rannum)+'_clustering.ran.fits'
         clusin = fitsio.read(fn)
         masked = np.isin(clusin['TARGETID'],mask_tids)
         print(reg,len(clusin),len(clusin[~masked]))
