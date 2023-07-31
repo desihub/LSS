@@ -688,6 +688,55 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     comments = ['Adding imaging mask column']
     write_LSS(df,fn,comments)
 
+def parse_circandrec_mask(custom_mask_fn):
+    '''
+    Parse the custom mask file and return astropy tables.
+​
+    Args:
+        custom_mask_fn: full path to the custom mask file
+    Returns:
+        circ_mask and rect_mask: circular and rectangular masks in astropy table format
+    '''
+​
+    with open(custom_mask_fn, 'r') as f:
+        lines = list(map(str.strip, f.readlines()))
+​
+    circ_mask_arr = []
+    rect_mask_arr = []
+​
+    for line in lines:
+        if line!='' and line[0]!='#':
+            line = line[:line.find('#')]
+            line = list(map(float, line.split(',')))
+            if len(line)==3:
+                circ_mask_arr.append(line)
+            elif len(line)==4:
+                rect_mask_arr.append(line)
+            else:
+                raise ValueError
+​
+    circ_mask_arr = np.array(circ_mask_arr)
+    rect_mask_arr = np.array(rect_mask_arr)
+​
+    circ_mask = Table(circ_mask_arr, names=['ra', 'dec', 'radius'])
+    rect_mask = Table(rect_mask_arr, names=['ramin', 'ramax', 'decmin', 'decmax'])
+​
+    return circ_mask, rect_mask
+
+def maskcircandrec(indata,mask):
+    '''
+    indata should have RA,DEC columns
+    mask should be path to text file with entries for circular and rectangular masks
+    outputs indices to mask
+    '''
+    circ_mask,rect_mask = parse_circandrec_mask(mask)
+    mask_rect = np.zeros(len(indata),dtype='bool')
+    for radec in rect_mask_data:
+        ramin, ramax, decmin, decmax = radec
+        mask_rect |= (indata['RA']>ramin) & (indata['RA']<ramax) & (indata['DEC']>decmin) & (indata['DEC']<decmax)
+    print('comparison of data removed by rectangular mask:')
+    print(len(indata),len(indata[mask_rect]))
+
 def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
     '''
     fl is a string with the path to the file name to load
