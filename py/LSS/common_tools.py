@@ -762,7 +762,7 @@ def maskcircandrec(indata,maskfn):
     
     
 
-def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -786,7 +786,12 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
 
 
     ff = ff[seld]
-
+    
+    if reccircmasks is not None:
+        for maskfn in reccircmasks:
+            mask = maskcircandrec(ff,maskfn)
+            ff = ff[~mask]
+    
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
         if ebits == 'lrg_mask':
