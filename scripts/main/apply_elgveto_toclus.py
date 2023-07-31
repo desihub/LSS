@@ -115,10 +115,11 @@ datin = fitsio.read(dirout + tracer+'_full_noveto.dat.fits',columns=['TARGETID',
 if args.maskbits == 'all':
     inmask = datin['elg_mask'] > 0
     mask_tids = np.unique(datin[inmask]['TARGETID'])
+print('got masked targetids')
 regl = ['NGC','SGC']
 for reg in regl:
-    fn = dirout + blinded + tracer +'_'+reg+'_clustering.dat.fits'
-    fno = dirout + blinded + tracer+'elgmask_'+args.maskbits +'_'+reg+'_clustering.dat.fits'
+    fn = dirout + args.blinded + tracer +'_'+reg+'_clustering.dat.fits'
+    fno = dirout + args.blinded + tracer+'elgmask_'+args.maskbits +'_'+reg+'_clustering.dat.fits'
     clusin = fitsio.read(fn)
     masked = np.isin(clusin['TARGETID'],mask_tids)
     print(reg,len(clusin),len(clusin[~masked]))
@@ -129,10 +130,11 @@ def _parfun(rannum):
     if args.maskbits == 'all':
         inmask = datin['elg_mask'] > 0
         mask_tids = np.unique(datin[inmask]['TARGETID'])
+    print(rannum,'got masked targetids')
     regl = ['NGC','SGC']
     for reg in regl:
-        fn = dirout + blinded + tracer +'_'+reg+'_'+str(rannum)+'_clustering.ran.fits'
-        fno = dirout + blinded + tracer+'elgmask_'+args.maskbits +'_'+str(rannum)+'_clustering.ran.fits'
+        fn = dirout + args.blinded + tracer +'_'+reg+'_'+str(rannum)+'_clustering.ran.fits'
+        fno = dirout + args.blinded + tracer+'elgmask_'+args.maskbits +'_'+str(rannum)+'_clustering.ran.fits'
         clusin = fitsio.read(fn)
         masked = np.isin(clusin['TARGETID'],mask_tids)
         print(reg,len(clusin),len(clusin[~masked]))
