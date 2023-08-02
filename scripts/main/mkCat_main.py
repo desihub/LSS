@@ -410,7 +410,7 @@ if args.add_fs == 'y':
     fsver = 'v1.0'
     fsrel = 'dr1'
     fsspecver = args.verspec
-    logf.write('adding columns from fastspecfit version ' +fsver+' '+ref+' '+str(datetime.now()))
+    logf.write('adding columns from fastspecfit version ' +fsver+' '+fsrel+' '+str(datetime.now()))
     if 'global' in dirout:
         diro = copy(dirout)
         inroot = '/dvs_ro/cfs/cdirs/'
