@@ -371,7 +371,8 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
         if args.absmagmd == 'phot':
             sel = fin['ABSMAG_RP1'] < -21.5
         if args.absmagmd == 'spec':
-            sys.exit('need to code up using fastspecfit for abs mag selection!')
+            sel = fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095
+            #sys.exit('need to code up using fastspecfit for abs mag selection!')
         common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
