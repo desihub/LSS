@@ -533,7 +533,7 @@ outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specrel='iron',prog='brigh
     for col in fscols:
         if col != 'TARGETID':
             if col in dcols:
-                indata.remove([col])
+                indata.remove_column(col)
                 print('removed '+col+' from input data')
                 
     jt = join(indata,Table(fastspecdata),keys=['TARGETID'],join_type='left')
