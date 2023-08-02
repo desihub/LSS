@@ -42,7 +42,7 @@ parser.add_argument("--basedir", help="base directory for output, default is SCR
 parser.add_argument("--basedir_blind", help="base directory for output for blinded catalogs, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
@@ -415,7 +415,7 @@ if args.add_fs == 'y':
         #diro = copy(dirout)
         inroot = '/dvs_ro/cfs/cdirs/'
         outroot = '/global/cfs/cdirs/'
-        infn = dirout.replace(inroot,'')+type+notqso+'_full.dat.fits'
+        infn = dirout.replace(outroot,'')+type+notqso+'_full.dat.fits'
         print(dirout)
     else:
         inroot = ''
