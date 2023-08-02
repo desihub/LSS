@@ -521,7 +521,7 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
     return True
 
 def join_with_fastspec(infn,fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R'],inroot='/dvs_ro/cfs/cdirs/',\
-outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specver='iron',prog='bright'):
+outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specrel='iron',prog='bright'):
 
     indata = fitsio.read(inroot+infn)
     print(len(indata))
