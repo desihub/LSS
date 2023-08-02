@@ -422,7 +422,7 @@ if args.add_fs == 'y':
         outroot = ''
         infn = dirout+type+notqso+'_full.dat.fits'
     common.join_with_fastspec(infn,fscols,inroot=inroot,\
-    outroot=outroot,fsver=fsver,fsrel=fsrel,specver=fsspecver,prog=progl)
+    outroot=outroot,fsver=fsver,fsrel=fsrel,specrel=fsspecver,prog=progl)
 
 
 if args.add_ke == 'y':
