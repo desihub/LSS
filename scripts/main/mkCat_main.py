@@ -60,6 +60,8 @@ parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+parser.add_argument("--add_fs", help="add rest frame info from fastspecfit",default='n')
+parser.add_argument("--absmagmd", help="whether to use purely photometry+z based rest frame info or fastspecfit",choices=['spec','phot'],default='spec')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
@@ -366,7 +368,10 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
     if os.path.isfile(ffull) == False:
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
-        sel = fin['ABSMAG_RP1'] < -21.5
+        if args.absmagmd == 'phot':
+            sel = fin['ABSMAG_RP1'] < -21.5
+        if args.absmagmd == 'spec':
+            sys.exit('need to code up using fastspecfit for abs mag selection!')
         common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
@@ -398,6 +403,25 @@ if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
         rcols.append('flux_'+col.lower()+'_dered')
+
+
+if args.add_fs == 'y':
+    fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R']
+    fsver = 'v1.0'
+    fsrel = 'dr1'
+    fsspecver = args.verspec
+    logf.write('adding columns from fastspecfit version ' fsver+' '+ref+' '+str(datetime.now()))
+    if 'global' in dirout:
+        diro = copy(dirout)
+        inroot = '/dvs_ro/cfs/cdirs/'
+        outroot = '/global/cfs/cdirs/'
+        infn = diro.replace(inroot,'')+type+notqso+'_full.dat.fits'
+    else:
+        inroot = ''
+        outroot = ''
+        infn = dirout+type+notqso+'_full.dat.fits'
+    common.join_with_fastspec(infn,fscols,inroot=inroot,\
+    outroot=outroot,fsver=fsver,fsrel=fsrel,specver=fsspecver,prog=progl)
 
 
 if args.add_ke == 'y':
