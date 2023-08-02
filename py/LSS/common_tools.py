@@ -529,6 +529,10 @@ outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specrel='iron',prog='brigh
     fastspecdata = fitsio.read(fsfn,columns=fscols)
     jt = join(indata,fastspecdata,keys=['TARGETID'],join_type='left')
     print(len(jt),'length of joined table, should agree with above')
+    for col in fscols:
+        jt[col] = jt[col].filled(999999)
+        sel = jt[col] == 999999
+        print(col,len(jt[sel]),'number with 999999')
     outfn = outroot+infn
     write_LSS(jt,outfn)
 
