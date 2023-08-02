@@ -371,7 +371,7 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
         if args.absmagmd == 'phot':
             sel = fin['ABSMAG_RP1'] < -21.5
         if args.absmagmd == 'spec':
-            sel = fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095
+            sel = (fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
             #sys.exit('need to code up using fastspecfit for abs mag selection!')
         common.write_LSS(fin[sel],ffull)
 
