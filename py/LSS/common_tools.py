@@ -374,6 +374,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     #print(nz)
     if write == 'y':
         fout = fcd.replace('.dat.fits','')+wo+'_nz.txt'
+        fout = fout.replace('dvs_ro','global')
         outf = open(fout,'w')
         outf.write('#area is '+str(area)+'square degrees\n')
         outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
@@ -517,7 +518,7 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fb)
+        write_LSS(fd,fb.replace('dvs_ro','global'))
     return True
 
 def join_with_fastspec(infn,fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R'],inroot='/dvs_ro/cfs/cdirs/',\
