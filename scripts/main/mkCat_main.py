@@ -395,9 +395,10 @@ if args.mkHPmaps == 'y':
     fieldslist = allmapcols
     masklist = list(np.zeros(len(fieldslist),dtype=int))
     nside = 256
-    outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
-    create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
-                          lssmapdir=lssmapdir, outfn=outfn)    
+    for reg in ['N','S']:
+        outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
+                          lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
