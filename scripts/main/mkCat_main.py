@@ -347,16 +347,25 @@ if args.fillran == 'y':
 if args.apply_veto == 'y':
     print('applying vetos')
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
+
     if args.ranonly != 'y':
-        fin = dirout+type+notqso+'_full_noveto.dat.fits'
+        fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks)
     print('data veto done, now doing randoms')
-    for rn in range(rm,rx):
-        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+    def _parfun(rn):
+        fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks)
         print('random veto '+str(rn)+' done')
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            _parfun(rn)
+    else:
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        with Pool(processes=nran*2) as pool:
+            res = pool.map(_parfun, inds)
 
 
 wzm = ''

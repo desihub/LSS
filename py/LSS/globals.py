@@ -73,6 +73,7 @@ class main:
         self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
+        reccircmasks=None
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
@@ -96,6 +97,7 @@ class main:
             self.dchi2 = 0
             self.zmin = 0.8
             self.zmax = 3.5
+            self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.ebits = 'lrg_mask'
@@ -108,6 +110,8 @@ class main:
             self.dchi2 = 0.9
             self.zmin = 0.8
             self.zmax = 1.6
+            self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt','/global/cfs/cdirs/desi/users/rongpu/desi_mask/elg_custom_mask_v1.1_draft.txt']
+
         if tp[:3] == 'ELG':# or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
