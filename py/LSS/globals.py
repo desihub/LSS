@@ -73,7 +73,7 @@ class main:
         self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
-        reccircmasks=None
+        self.reccircmasks=None
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
