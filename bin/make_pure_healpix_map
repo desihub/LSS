@@ -6,6 +6,10 @@ import healpy as hp
 from LSS.imaging.sky_maps import pure_healpix_map, pure_healpix_map_filename, \
     write_atomically
 
+# ADM default is to parallelize over this number of processors.
+import multiprocessing
+nproc = multiprocessing.cpu_count() // 2
+
 # ADM a default HEALPixel size for output maps.
 mapnside = 8192
 
@@ -25,9 +29,9 @@ ap.add_argument("hpxproc", type=int,
 ap.add_argument("--nside", type=int, default=mapnside,
                 help=("Underlying resolution (HEALPixel nside) of output map"
                       " (optional, defaults to [{}]).".format(mapnside)))
-ap.add_argument("--numproc", type=int, default=1,
+ap.add_argument("--numproc", type=int, default=nproc,
                 help=("The number of processes over which to parallelize"
-                      " (optional, defaults to [1])."))
+                      " (optional, defaults to [{}]).".format(nproc)))
 ap.add_argument("--slurm", action='store_true',
                 help=("Don't run the code; print a script to parallelize over"
                 "pixels at nsideproc (hpxproc is then expected but ignored)."))
@@ -49,6 +53,7 @@ if ns.slurm:
     for pix in range(npix):
         print(f"srun -N 1 make_pure_healpix_map {ns.drdir} {ns.outdir} "
               f"{ns.nsideproc} {pix} --nside {ns.nside} --numproc {ns.numproc} &")
+    print("wait")
 else:
     # ADM make the output sky map.
     outmap = pure_healpix_map(ns.drdir, ns.nsideproc, ns.hpxproc,
