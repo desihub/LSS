@@ -1236,7 +1236,7 @@ def aux_test_mask():
 
 
 def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
-                          lssmapdir=None, outfn=None, write=True):
+                          lssmapdir=None, outfn=None, write=True, reg=None):
     """
     Creates a pixweight file from randoms filtered by bitmasks.
 
@@ -1261,6 +1261,9 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         :func:`rancat_names_to_pixweight_name()` is used.
     write : :class:`bool`, optional, defaults to ``True``
         If ``True`` then also write the output to file.
+    reg : :class:`str`, optional, defaults to ``None``
+        If 'N' or 'S' are chosen and PHOTSYS is in the randoms, the
+        randoms are cut to PHOTSYS==reg
 
     Returns
     -------
@@ -1389,6 +1392,16 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         else:
             skymapvalues = []
 
+        if reg is not None:
+            if skymapvalues != []:
+                print('for region selection, all fields must be in the randoms, code exiting!!!')
+                print('fields that were loaded with randoms are '+str(ranvalues.dtype.names))
+                return 'ERROR'
+            regcol = fitsio.read(randomcat,columns=['PHOTSYS'])
+            regsel = regcol['PHOTSYS'] == reg
+            oldlength = len(ranvalues)
+            ranvalues = ranvalues[regsel]
+            print('cut randoms to selected region, kept '+str(len(ranvalues))+' out of '+str(oldlength)) 
         if not randomswithallfields:
             skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
         else:
