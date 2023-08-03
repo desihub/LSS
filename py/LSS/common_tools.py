@@ -914,8 +914,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
             return True
     if '.ran' in fin:
         print('area is ' + str(len(ff) / 2500))
-    comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-    write_LSS(ff, fout, comments)
+    #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    write_LSS(ff, fout)#, comments)
 
 #     tmpfn = fout+'.tmp'
 #     if os.path.isfile(tmpfn):
