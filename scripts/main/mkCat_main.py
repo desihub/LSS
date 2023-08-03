@@ -82,6 +82,9 @@ parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
+
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 parser.add_argument("--ranonly",help="if y, only operate on randoms when applying vetos",default='n')
