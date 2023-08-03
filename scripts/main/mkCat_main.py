@@ -367,7 +367,7 @@ if args.apply_veto == 'y':
     else:
         inds = np.arange(rm,rx)
         from multiprocessing import Pool
-        with Pool(processes=nran*2) as pool:
+        with Pool(processes=(rx-rm)*2) as pool:
             res = pool.map(_parfun, inds)
 
 
