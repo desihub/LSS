@@ -948,14 +948,15 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
         if 'DEPTH' in mp:
             bnd = mp.split('_')[-1]
             mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[seln]])
-            mvals[~seln] = mapn[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[~seln]])
+            mvals[~seln] = maps[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*maps['EBV'][pix[~seln]])
             mask &= mvals > mapcuts[mp]
             print(mp,len(din[mask]),len(din[mask])/inlen)
             
         else:
             mvals[seln] = mapn[mp][pix[seln]]
-            mvals[~seln] = mapn[mp][pix[~seln]]
-            print(np.min(mvals),np.max(mvals))
+            print(np.min(mvals[seln]),np.max(mvals[seln]))
+            mvals[~seln] = maps[mp][pix[~seln]]
+            print(np.min(mvals[~seln]),np.max(mvals[~seln]))
             if mp == 'STARDENS':
                 mvals = np.log10(mvals)
             mask &= mvals < mapcuts[mp]   
