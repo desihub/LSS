@@ -947,8 +947,8 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
         mvals = np.zeros(len(din))
         if 'DEPTH' in mp:
             bnd = mp.split('_')[-1]
-            mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*extcoeff[bnd]*mapn['EBV'][pix[seln]])
-            mvals[~seln] = mapn[mp][pix[~seln]]*10**(-0.4*extcoeff[bnd]*mapn['EBV'][pix[~seln]])
+            mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[seln]])
+            mvals[~seln] = mapn[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[~seln]])
             mask &= mvals > mapcuts[mp]
             print(mp,len(din[mask]),len(din[mask])/inlen)
             
