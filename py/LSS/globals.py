@@ -74,6 +74,7 @@ class main:
         self.zmin = 0
         self.zmax = 4.5
         self.reccircmasks=None
+        self.mapcuts = {'EBV':0.15,'STARDENS':4.4,'PSFSIZE_G':2.4,'PSFSIZE_R':2.3,'PSFSIZE_Z':2,'GALDEPTH_G':250,'GALDEPTH_R':80,'GALDEPTH_Z':30,'PSFDEPTH_W1':2}
         if tp[:3] == 'BGS':
             self.imbits = [1,13]
             self.tsnrcut = 1000
