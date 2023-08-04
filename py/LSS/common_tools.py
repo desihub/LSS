@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-
+ext_coeff = {'G':3.214, 'R':2.165,'Z':1.211,'W1':0.184,'W2':0.113}
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -17,6 +17,12 @@ def dl(z):   # Luminosity distance from now to z
 
 def dm(z):
     return 5.*np.log10(dl(z)) + 25.
+
+def radec2thphi(ra,dec):
+    return (-dec+90.)*np.pi/180.,ra*np.pi/180.
+    
+def thphi2radec(theta,phi):
+    return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
 #functions that shouldn't have any dependence on survey go here
@@ -926,6 +932,36 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
 #     fd.close()
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
+
+def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
+    din = fitsio.read(fin)
+    mask = np.ones(len(din),dtype='bool')
+    seln = din['PHOTSYS'] == 'N'
+    import healpy as hp
+    th,phi = radec2thphi(din['RA'],din['DEC'])
+    pix = hp.ang2pix(nside,th,phi,nest=True)
+    maps2cut = list(mapcuts.keys())
+    inlen = len(din)
+    print('initial',inlen)
+    for mp in maps2cut:
+        mvals = np.zeros(len(din))
+        if 'DEPTH' in mp:
+            bnd = mp.split('_')[-1]
+            mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*extcoeff[bnd]*mapn['EBV'][pix[seln]])
+            mvals[~seln] = mapn[mp][pix[~seln]]*10**(-0.4*extcoeff[bnd]*mapn['EBV'][pix[~seln]])
+            mask &= mvals > mapcuts[mp]
+            print(mp,len(din[mask]),len(din[mask])/inlen)
+            
+        else:
+            mvals[seln] = mapn[mp][pix[seln]]
+            mvals[~seln] = mapn[mp][pix[~seln]]
+            print(np.min(mvals),np.max(mvals))
+            if mp == 'STARDENS':
+                mvals = np.log10(mvals)
+            mask &= mvals < mapcuts[mp]   
+            print(mp,len(din[mask]),len(din[mask])/inlen)
+    write_LSS(din[mask],fout) 
+            
 
 def get_tlcomp(fin):
     '''

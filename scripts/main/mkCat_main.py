@@ -49,6 +49,8 @@ parser.add_argument("--add_veto", help="add veto column for given type, matching
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
+parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
+
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
@@ -393,10 +395,11 @@ tracer_clus = type+notqso+wzm
 
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
-if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
+#if mkclusdat:
+#    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 lssmapdirout = dirout+'/hpmaps/'
+nside = 256
 if args.mkHPmaps == 'y':
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
     logf.write('made healpix property maps for '+tp+' '+str(datetime.now()))
@@ -408,11 +411,47 @@ if args.mkHPmaps == 'y':
     rancatlist = sorted(glob.glob(rancatname))
     fieldslist = allmapcols
     masklist = list(np.zeros(len(fieldslist),dtype=int))
-    nside = 256
+    
     for reg in ['N','S']:
         outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
                           lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
+
+
+if args.apply_map_veto == 'y':
+    import healpy as hp
+    
+    mapn = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+    mapcuts = mainp.mapcuts
+
+    if args.ranonly != 'y':
+        fout = dirout+type+notqso+'_full.dat.fits'
+        fin = fout.replace('global','dvs_ro')  
+        fout = fout.replace('_full','_full_HPmapcut')      
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+    print('data veto done, now doing randoms')
+    def _parfun(rn):
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
+        fin = fin = fout.replace('global','dvs_ro')   
+        fout = fout.replace('_full','_full_HPmapcut')          
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+        print('random veto '+str(rn)+' done')
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            _parfun(rn)
+    else:
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        (rx-rm)*2
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
+
+
+    
+    
+    
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
