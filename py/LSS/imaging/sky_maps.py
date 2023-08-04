@@ -1392,6 +1392,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         else:
             skymapvalues = []
 
+        regsel = np.ones(len(ranvalues),dtype='bool')
         if reg is not None:
             if skymapvalues != []:
                 print('for region selection, all fields must be in the randoms, code exiting!!!')
@@ -1407,7 +1408,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         else:
             skymapmask = np.zeros(len(ranvalues), dtype=[('SKYMAP_MASK', 'i8')])
             skymapmask["SKYMAP_MASK"] = fitsio.read(randomcat,
-                                                    columns=['SKYMAP_MASK'])
+                                                    columns=['SKYMAP_MASK'])[regsel]
 
         # ADM check all random catalogs were generated at same density.
         # MMM I can only do this if not reading from user made randoms
