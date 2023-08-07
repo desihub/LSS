@@ -178,6 +178,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
         if 'nofail' in weight_type:
             weights /= catalog['WEIGHT_ZFAIL'][mask]
+        if 'fluxfail' in weight_type:
+            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
     if name == 'randoms':
         if 'default' in weight_type:
             weights *= catalog['WEIGHT'][mask]
@@ -193,6 +195,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights *= catalog['WEIGHT_FKP'][mask]
         if 'nofail' in weight_type:
             weights /= catalog['WEIGHT_ZFAIL'][mask]
+        if 'fluxfail' in weight_type:
+            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
 
     if return_mask:
         return positions, weights, mask
