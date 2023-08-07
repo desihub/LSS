@@ -50,6 +50,8 @@ parser.add_argument("--join_etar", help="whether or not to join to the target fi
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
+parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='')
+
 
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
@@ -677,10 +679,11 @@ if args.prepsysnet == 'y':
         print('made '+dirout+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
-    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full.dat.fits'))
+    #_HPmapcut'
+    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
     for i in range(0,18):
-        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
@@ -785,16 +788,16 @@ if args.regressis == 'y':
         rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
         suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
          max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,\
-         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=args.use_map_veto)
         #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
     from regressis import PhotoWeight
     fb = dirout+tracer_clus
-    fcd = fb+'_full.dat.fits'
+    fcd = fb+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fcd)
-    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    dd['WEIGHT_RF'] = np.ones(len(dd))
 
     for zl in zrl:    
         print(zl)
@@ -820,14 +823,14 @@ if args.add_regressis == 'y':
         
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
-        dd['WEIGHT_SYS'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
+        dd['WEIGHT_RF'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
         #norm = 
-        print(np.mean(dd['WEIGHT_SYS'][selz]))
-    comments = []
-    comments.append("Using regressis for WEIGHT_SYS")
+        print(np.mean(dd['WEIGHT_RF'][selz]))
+    #comments = []
+    #comments.append("Using regressis for WEIGHT_SYS")
     logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
-    common.write_LSS(dd,fcd,comments)
+    common.write_LSS(dd,fcd)#,comments)
 
 if args.add_regressis_ext == 'y':
     if tracer_clus != 'QSO':
@@ -855,9 +858,9 @@ if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
     import healpy as hp
-    fn_full = dirout+tracer_clus+'_full.dat.fits'
+    fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fn_full)
-    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    dd['WEIGHT_SN'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
     dpix = hp.ang2pix(256,dth,dphi)
 
@@ -881,7 +884,7 @@ if args.add_sysnet == 'y':
             selz &= dd['Z_not4clus'] <= zl[1]
 
             #print(np.sum(sel))
-            dd['WEIGHT_SYS'][sel&selz] = hpmap[dpix[sel&selz]]
+            dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
     #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")

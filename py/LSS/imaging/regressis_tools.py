@@ -257,7 +257,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
 def get_desi_data_full_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,\
 fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
 max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
-feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False):
+feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto=''):
     """
     
     Combine steps above with no in between write-out
@@ -290,7 +290,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False):
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
-    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'),columns=cols)
+    data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full'+use_map_veto+'.dat.fits'),columns=cols)
     if tracer == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = data[zcol]*0 == 0
@@ -353,7 +353,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False):
     if tracer == 'BGS_BRIGHT-21.5':
         tran = 'BGS_BRIGHT'
     for i in range(0,nran):
-        ran = read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC']) 
+        ran = read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
