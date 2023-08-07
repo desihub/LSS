@@ -616,7 +616,7 @@ tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
     tpstr = 'BGS_BRIGHT'
 nside = 256
-pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
+
 
 if type[:3] == 'ELG':
     if args.imsys_zbin == 'y':
@@ -687,18 +687,23 @@ if args.prepsysnet == 'y':
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
-    sys_tab = Table.read(pwf)
-    #if 'EBV_DIFFRZ' in fit_maps:
-    #    sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for ec in ['GR','RZ']:
-        if 'EBV_DIFF_'+ec in fit_maps: 
-            sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
-
+    
     for zl in zrl:
         zw = ''
         if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
         for reg in regl:
+            pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            sys_tab = Table.read(pwf)
+            cols = list(sys_tab.dtype.names)
+            for col in cols:
+                if 'DEPTH' in col:
+                    bnd = col.split('_')[-1]
+                    sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+            for ec in ['GR','RZ']:
+                if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
         
