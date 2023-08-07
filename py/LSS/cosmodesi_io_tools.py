@@ -154,6 +154,18 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
+    if option:
+       if 'ntile' in option:
+           if '=' in option:
+               opsp = option.split('=')
+               nt = int(opsp[1])
+               mask &= catalog['NTILE'] == nt
+           if '>' in option:
+               opsp = option.split('>')
+               nt = int(opsp[1])
+               mask &= catalog['NTILE'] >= nt
+               
+         
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])

@@ -67,7 +67,7 @@ logging.getLogger("jax._src.lib.xla_bridge").addFilter(logging.Filter("No GPU/TP
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--basedir_out", help="base directory for output, default is C(P)SCRATCH", default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
@@ -89,6 +89,7 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1", def
 parser.add_argument("--dorecon", help="if y, run the recon needed for RSD blinding", default='n')
 parser.add_argument("--rsdblind", help="if y, do the RSD blinding shift", default='n')
 parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
+parser.add_argument("--resamp", help="resample the randoms to make sure all is consistent with how weights changed", default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
@@ -352,8 +353,11 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
+        clus_arrays = []
+        for reg in ['N','S']:
+            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
@@ -362,10 +366,14 @@ if root:
                     os.system('mv ' + ranf + ' ' + ranfm)
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
-        from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
-            res = pool.map(_parfun, inds)
-
+        if args.useMPI == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for ii in inds:
+                ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
+                print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         ct.clusNStoGC(fb, args.maxr - args.minr)
@@ -481,17 +489,19 @@ if args.fnlblind == 'y':
 
 if root:
     #re-sample redshift dependent columns from data
-    regions = ['NGC', 'SGC']
-    rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
-    for reg in regions:
-        flin = dirout + args.type + notqso + '_'+reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-        nran = args.maxr-args.minr
-        inds = np.arange(nran)
-        from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
-            res = pool.map(_parfun, inds)
+    nran = args.maxr-args.minr
+    if args.resamp == 'y':
+        regions = ['NGC', 'SGC']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
+        for reg in regions:
+            flin = dirout + args.type + notqso + '_'+reg    
+            def _parfun(rannum):
+                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+            
+            inds = np.arange(nran)
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
 
     
     if type[:3] == 'QSO':

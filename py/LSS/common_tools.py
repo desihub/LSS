@@ -4,8 +4,9 @@ from astropy.table import Table,join,vstack
 import datetime
 import os
 import sys
+import logging
 
-
+ext_coeff = {'G':3.214, 'R':2.165,'Z':1.211,'W1':0.184,'W2':0.113}
 
 from LSS.tabulated_cosmo import TabulatedDESI
 cosmo = TabulatedDESI()
@@ -16,6 +17,12 @@ def dl(z):   # Luminosity distance from now to z
 
 def dm(z):
     return 5.*np.log10(dl(z)) + 25.
+
+def radec2thphi(ra,dec):
+    return (-dec+90.)*np.pi/180.,ra*np.pi/180.
+    
+def thphi2radec(theta,phi):
+    return 180./np.pi*phi,-(180./np.pi*theta-90)
 
 
 #functions that shouldn't have any dependence on survey go here
@@ -73,6 +80,20 @@ def cutphotmask(aa,bits):
     print(str(len(aa)) +' after imaging veto' )
     return aa
 
+def splitGC(input_array):
+    import LSS.common_tools as common
+    '''
+    given and input array with RA, DEC
+    return selection for NGC
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(input_array['RA']* u.deg,input_array['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    return sel_ngc
+
+
 def find_znotposs_tloc(dz,priority_thresh=10000):
     #dz should contain the potential targets of a given type, after cutting bad fibers
     #priority_thresh cuts repeat observations (so, e.g., 3000 work for dark time main survey)
@@ -106,15 +127,19 @@ def find_znotposs_tloc(dz,priority_thresh=10000):
     return ualt,uflt
 
 
-def find_znotposs(dz):
+def find_znotposs(dz,logname=None):
 
     dz.sort('TARGETID')
     tidnoz = []
     tids = np.unique(dz['TARGETID'])
     ti = 0
     i = 0
-
-    print('finding targetids that were not observed')
+    message = 'finding targetids that were not observed'
+    if logname is None:
+        print(message)
+    else:
+        logger = logging.getLogger(logname)
+        logger.info(message)
     while i < len(dz):
         za = 0
 
@@ -129,7 +154,11 @@ def find_znotposs(dz):
             tidnoz.append(tids[ti])
 
         if ti%30000 == 0:
-            print(ti)
+            if logname is None:
+                print(ti)
+            else:
+                logger.info('at index '+str(ti))
+                
         ti += 1
 
 
@@ -138,7 +167,11 @@ def find_znotposs(dz):
     #dz = dz[selnoz]
     dz.sort('TILELOCID')
     tids = np.unique(dz['TILELOCID'])
-    print('number of targetids with no obs '+str(len(tidnoz)))
+    message = 'number of targetids with no obs '+str(len(tidnoz))
+    if logname is None:
+        print(message)
+    else:
+        logger.info(message)
     tlidnoz = []
     lznposs = []
 
@@ -161,13 +194,20 @@ def find_znotposs(dz):
             #    lznposs.append(tids[ti])
 
         if ti%30000 == 0:
-            print(ti,len(tids))
+            if logname is None:
+                print(ti,len(tids))
+            else:
+                logger.info(str(ti)+' '+str(len(tids)))
         ti += 1
     #the ones to veto are now the join of the two
     wtbtlid = np.isin(tlidnoz,tidsb)
     tlidnoz = np.array(tlidnoz)
     lznposs = tlidnoz[wtbtlid]
-    print('number of locations where assignment was not possible because of priorities '+str(len(lznposs)))
+    message = 'number of locations where assignment was not possible because of priorities '+str(len(lznposs))
+    if logname is None:
+        print(message)
+    else:
+        logger.info(message)
     return lznposs
 
 def comp_tile(dz):
@@ -340,6 +380,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     #print(nz)
     if write == 'y':
         fout = fcd.replace('.dat.fits','')+wo+'_nz.txt'
+        fout = fout.replace('dvs_ro','global')
         outf = open(fout,'w')
         outf.write('#area is '+str(area)+'square degrees\n')
         outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
@@ -371,25 +412,38 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         zind = int((z-zmin)/bs)
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
-    mean_comp = len(fd)/np.sum(fd['WEIGHT'])
+    mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
     print('mean completeness '+str(mean_comp))
     ntl = np.unique(fd['NTILE'])
     comp_ntl = np.zeros(len(ntl))
+    weight_ntl = np.zeros(len(ntl))
     for i in range(0,len(ntl)):
         sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT'][sel])
-        comp_ntl[i] = 1/mean_ntweight
+        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+        weight_ntl[i] = mean_ntweight
+        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+    fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+    fttl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)): 
+        sel = fran['NTILE'] == ntl[i]
+        mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+        fttl[i] = mean_fracobs_tiles
+    print(comp_ntl,fttl)
+    comp_ntl = comp_ntl*fttl
     print('completeness per ntile:')
     print(comp_ntl)
     #del fd
     #ft = Table.read(fn)
     #ft['NZ'] = nl
-    fd['NZ'] = nl
+    #fd['NZ'] = nl
+    fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
+    fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
     #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
 
     #fkpl = 1./(1+nl*P0*mean_comp)
-    fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
+    #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
+    fkpl = 1/(1+fd['NX']*P0)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
@@ -418,9 +472,17 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ft = Table.read(fn)
         #ft['NZ'] = nl
         #ff['LSS'].insert_column('NZ',nl)
-        fd['NZ'] = nl
+        #fd['NZ'] = nl
+        fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
+        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']*fd['FRAC_TLOBS_TILES']
+        wtfac = np.ones(len(fd))
+        sel = wt > 0
+        wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
+        print(np.mean(wtfac))
+        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
         #fkpl = 1./(1+nl*P0*mean_comp)
-        fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
+        #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
+        fkpl = 1/(1+fd['NX']*P0)
         fd['WEIGHT_FKP'] = fkpl
         write_LSS(fd,fn)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
@@ -462,10 +524,34 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fb)
+        write_LSS(fd,fb.replace('dvs_ro','global'))
     return True
 
+def join_with_fastspec(infn,fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R'],inroot='/dvs_ro/cfs/cdirs/',\
+outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specrel='iron',prog='bright'):
 
+    indata = fitsio.read(inroot+infn)
+    print(len(indata))
+    fsfn = '/dvs_ro/cfs/cdirs/desi/public/'+fsrel+'/vac/'+fsrel+'/fastspecfit/'+specrel+'/'+fsver+'/catalogs/fastspec-'+specrel+'-main-'+prog+'.fits'
+    fastspecdata = fitsio.read(fsfn,columns=fscols)
+    dcols = list(indata.dtype.names)
+    indata = Table(indata)
+    
+    for col in fscols:
+        if col != 'TARGETID':
+            if col in dcols:
+                indata.remove_column(col)
+                print('removed '+col+' from input data')
+                
+    jt = join(indata,Table(fastspecdata),keys=['TARGETID'],join_type='left')
+    jt = Table(jt, masked=True, copy=False)
+    print(len(jt),'length of joined table, should agree with above')
+    for col in fscols:
+        jt[col] = jt[col].filled(999999)
+        sel = jt[col] == 999999
+        print(col,len(jt[sel]),'number with 999999')
+    outfn = outroot+infn
+    write_LSS(jt,outfn)
 
 def add_dered_flux(data,fcols=['G','R','Z','W1','W2']):
     #data should be table with fcols flux columns existing
@@ -541,7 +627,7 @@ def join_etar(fn,tracer,tarver='1.1.1'):
     tr = tracer
     if tr == 'BGS_BRIGHT':
         tr = 'BGS_ANY'
-    etar_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targets_pixelDR9v'+tarver+'.fits'
+    etar_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tr+'targets_pixelDR9v'+tarver+'.fits'
     ef = Table(fitsio.read(etar_fn))
     ef.remove_columns(['BRICKNAME','RA','DEC','PHOTSYS','DESI_TARGET'])
     df = fitsio.read(fn)
@@ -553,7 +639,7 @@ def join_etar(fn,tracer,tarver='1.1.1'):
 
 
 def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=True):
-    fid_fn = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
+    fid_fn = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
     new_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
     mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'
    
@@ -612,9 +698,9 @@ def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R
 
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
-    mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
+    mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
-        mask_fn = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
+        mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
     df = fitsio.read(fn)
     if np.isin(tracer_mask+'_mask',list(df.dtype.names)):
@@ -633,7 +719,81 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     comments = ['Adding imaging mask column']
     write_LSS(df,fn,comments)
 
-def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
+def parse_circandrec_mask(custom_mask_fn):
+    '''
+    Parse the custom mask file and return astropy tables.
+​
+    Args:
+        custom_mask_fn: full path to the custom mask file
+    Returns:
+        circ_mask and rect_mask: circular and rectangular masks in astropy table format
+    '''
+    with open(custom_mask_fn, 'r') as f:
+        lines = list(map(str.strip, f.readlines()))
+    circ_mask_arr = []
+    rect_mask_arr = []
+    for line in lines:
+        if line!='' and line[0]!='#':
+            line = line[:line.find('#')]
+            line = list(map(float, line.split(',')))
+            if len(line)==3:
+                circ_mask_arr.append(line)
+            elif len(line)==4:
+                rect_mask_arr.append(line)
+            else:
+                raise ValueError
+    
+    circ_mask_arr = np.array(circ_mask_arr)
+    rect_mask_arr = np.array(rect_mask_arr)
+    
+    circ_mask = Table(circ_mask_arr, names=['RA', 'DEC', 'radius'])
+    rect_mask = Table(rect_mask_arr, names=['ramin', 'ramax', 'decmin', 'decmax'])
+    
+    return circ_mask, rect_mask
+
+def maskcircandrec(indata,maskfn):
+    '''
+    indata should have RA,DEC columns
+    mask should be path to text file with entries for circular and rectangular masks
+    outputs indices to mask
+    '''
+    circ_mask,rect_mask = parse_circandrec_mask(maskfn)
+    mask_rect = np.zeros(len(indata),dtype='bool')
+    for radec in rect_mask:
+        ramin, ramax, decmin, decmax = radec
+        mask_rect |= (indata['RA']>ramin) & (indata['RA']<ramax) & (indata['DEC']>decmin) & (indata['DEC']<decmax)
+    print('comparison of data removed by rectangular mask:')
+    print(len(indata),len(indata[mask_rect]))
+    
+    dat_cx = np.cos(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
+    dat_cy = np.sin(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
+    dat_cz = np.sin(np.radians(indata['DEC']))
+
+    mask_cx = np.cos(np.radians(circ_mask['RA']))*np.cos(np.radians(circ_mask['DEC']))
+    mask_cy = np.sin(np.radians(circ_mask['RA']))*np.cos(np.radians(circ_mask['DEC']))
+    mask_cz = np.sin(np.radians(circ_mask['DEC']))
+    
+    mat1 = np.array([dat_cx, dat_cy, dat_cz]).T
+    mat2 = np.array([mask_cx, mask_cy, mask_cz])
+    
+    dist = np.dot(mat1, mat2)
+    
+    mask = np.any(dist>np.cos(np.radians(circ_mask['radius']/3600.)), axis=1)
+    
+    print('comparison of data removed by circular mask:')
+    print(len(indata),len(indata[mask]))
+    
+    mask |= mask_rect
+    
+    print('comparison of data removed by both rectangular and circular mask:')
+    print(len(indata),len(indata[mask]))
+    
+    return mask
+    
+    
+    
+
+def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -657,7 +817,12 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
 
 
     ff = ff[seld]
-
+    
+    if reccircmasks is not None:
+        for maskfn in reccircmasks:
+            mask = maskcircandrec(ff,maskfn)
+            ff = ff[~mask]
+    
     if ebits is not None:
         print('number before imaging mask '+str(len(ff)))
         if ebits == 'lrg_mask':
@@ -755,8 +920,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
             return True
     if '.ran' in fin:
         print('area is ' + str(len(ff) / 2500))
-    comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-    write_LSS(ff, fout, comments)
+    #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    write_LSS(ff, fout)#, comments)
 
 #     tmpfn = fout+'.tmp'
 #     if os.path.isfile(tmpfn):
@@ -767,6 +932,37 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False):
 #     fd.close()
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
+
+def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
+    din = fitsio.read(fin)
+    mask = np.ones(len(din),dtype='bool')
+    seln = din['PHOTSYS'] == 'N'
+    import healpy as hp
+    th,phi = radec2thphi(din['RA'],din['DEC'])
+    pix = hp.ang2pix(nside,th,phi,nest=True)
+    maps2cut = list(mapcuts.keys())
+    inlen = len(din)
+    print('initial',inlen)
+    for mp in maps2cut:
+        mvals = np.zeros(len(din))
+        if 'DEPTH' in mp:
+            bnd = mp.split('_')[-1]
+            mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[seln]])
+            mvals[~seln] = maps[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*maps['EBV'][pix[~seln]])
+            mask &= mvals > mapcuts[mp]
+            print(mp,len(din[mask]),len(din[mask])/inlen)
+            
+        else:
+            mvals[seln] = mapn[mp][pix[seln]]
+            print(np.min(mvals[seln]),np.max(mvals[seln]))
+            mvals[~seln] = maps[mp][pix[~seln]]
+            print(np.min(mvals[~seln]),np.max(mvals[~seln]))
+            if mp == 'STARDENS':
+                mvals = np.log10(mvals)
+            mask &= mvals < mapcuts[mp]   
+            print(mp,len(din[mask]),len(din[mask])/inlen)
+    write_LSS(din[mask],fout) 
+            
 
 def get_tlcomp(fin):
     '''

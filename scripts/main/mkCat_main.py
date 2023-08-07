@@ -42,13 +42,17 @@ parser.add_argument("--basedir", help="base directory for output, default is SCR
 parser.add_argument("--basedir_blind", help="base directory for output for blinded catalogs, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='guadalupe')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
+parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
+parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='')
+
+
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
@@ -60,21 +64,31 @@ parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
+parser.add_argument("--add_fs", help="add rest frame info from fastspecfit",default='n')
+parser.add_argument("--absmagmd", help="whether to use purely photometry+z based rest frame info or fastspecfit",choices=['spec','phot'],default='spec')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
+parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='n')
+
 
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
+parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
+parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
+
 
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
+
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
+
 parser.add_argument("--ntile",help="add any constraint on the number of overlapping tiles",default=0,type=int)
 parser.add_argument("--ccut",help="add some extra cut based on target info; should be string that tells cattools what to ",default=None)
 parser.add_argument("--ranonly",help="if y, only operate on randoms when applying vetos",default='n')
@@ -340,16 +354,27 @@ if args.fillran == 'y':
 if args.apply_veto == 'y':
     print('applying vetos')
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
+
     if args.ranonly != 'y':
-        fin = dirout+type+notqso+'_full_noveto.dat.fits'
+        fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks)
     print('data veto done, now doing randoms')
-    for rn in range(rm,rx):
-        fin = dirout+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+    def _parfun(rn):
+        fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks)
         print('random veto '+str(rn)+' done')
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            _parfun(rn)
+    else:
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        (rx-rm)*2
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
 
 
 wzm = ''
@@ -361,17 +386,22 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
     if os.path.isfile(ffull) == False:
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
-        sel = fin['ABSMAG_RP1'] < -21.5
+        if args.absmagmd == 'phot':
+            sel = fin['ABSMAG_RP1'] < -21.5
+        if args.absmagmd == 'spec':
+            sel = (fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
+            #sys.exit('need to code up using fastspecfit for abs mag selection!')
         common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
 
 regl = ['_N','_S']    
 #needs to happen before randoms so randoms can get z and weights
-if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
+#if mkclusdat:
+#    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 lssmapdirout = dirout+'/hpmaps/'
+nside = 256
 if args.mkHPmaps == 'y':
     from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
     logf.write('made healpix property maps for '+tp+' '+str(datetime.now()))
@@ -383,16 +413,73 @@ if args.mkHPmaps == 'y':
     rancatlist = sorted(glob.glob(rancatname))
     fieldslist = allmapcols
     masklist = list(np.zeros(len(fieldslist),dtype=int))
-    nside = 256
-    outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
-    create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
-                          lssmapdir=lssmapdir, outfn=outfn)    
+    
+    for reg in ['N','S']:
+        outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
+                          lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
+
+
+if args.apply_map_veto == 'y':
+    import healpy as hp
+    
+    mapn = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+    mapcuts = mainp.mapcuts
+
+    if args.ranonly != 'y':
+        fout = dirout+type+notqso+'_full.dat.fits'
+        fin = fout.replace('global','dvs_ro')  
+        fout = fout.replace('_full','_full_HPmapcut')      
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+    print('data veto done, now doing randoms')
+    def _parfun(rn):
+        fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
+        fin = fin = fout.replace('global','dvs_ro')   
+        fout = fout.replace('_full','_full_HPmapcut')          
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+        print('random veto '+str(rn)+' done')
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            _parfun(rn)
+    else:
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        (rx-rm)*2
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
+
+
+    
+    
+    
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
         rcols.append('flux_'+col.lower()+'_dered')
+
+
+if args.add_fs == 'y':
+    fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R']
+    fsver = 'v1.0'
+    fsrel = 'dr1'
+    fsspecver = args.verspec
+    logf.write('adding columns from fastspecfit version ' +fsver+' '+fsrel+' '+str(datetime.now()))
+    if 'global' in dirout:
+        #diro = copy(dirout)
+        inroot = '/dvs_ro/cfs/cdirs/'
+        outroot = '/global/cfs/cdirs/'
+        infn = dirout.replace(outroot,'')+type+notqso+'_full.dat.fits'
+        print(dirout)
+    else:
+        inroot = ''
+        outroot = ''
+        infn = dirout+type+notqso+'_full.dat.fits'
+    common.join_with_fastspec(infn,fscols,inroot=inroot,\
+    outroot=outroot,fsver=fsver,fsrel=fsrel,specrel=fsspecver,prog=progl)
 
 
 if args.add_ke == 'y':
@@ -513,27 +600,39 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 #fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
-fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFFRZ']
+fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
 if tracer_clus[:3] == 'LRG':
     fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFFRZ']
+    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
     fit_maps.append('PSFDEPTH_W1')
     fit_maps.append('PSFDEPTH_W2')
+    #fit_maps = ['EBV', 'STARDENS',
+    #             'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
+    #             'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
     tpstr = 'BGS_BRIGHT'
 nside = 256
-pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'.fits'
+
 
 if type[:3] == 'ELG':
-    zrl = [(0.8,1.1),(1.1,1.6)]
+    if args.imsys_zbin == 'y':
+        zrl = [(0.8,1.1),(1.1,1.6)]
+    else:
+        zrl = [(0.8,1.6)]
 if type[:3] == 'QSO':
-    zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)]    
+    if args.imsys_zbin == 'y':
+        zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)] 
+    else:
+        zrl = [(0.8,3.5)]   
 if type[:3] == 'LRG':
-    zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
+    if args.imsys_zbin == 'y':
+        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+    else:
+        zrl = [(0.4,1.1)]  
 if type[:3] == 'BGS':
     zrl = [(0.1,0.4)]    
 
@@ -550,14 +649,26 @@ if args.prepsysnet == 'y' or args.regressis == 'y':
         return m_
 
     import healpy as hp
-    ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
-    ebvn = fitsio.read(ebvn_fn)
-    debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
-    debv64 = make_hp(debv, ebvn['HPXPIXEL'], nside=64, fill_with=hp.UNSEEN)
-    debv256 = hp.ud_grade(debv64, 256)
-    debv256_nest = hp.reorder(debv256,r2n=True)
+
+    dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    nside = 256#64
+    nest = False
+    eclrs = ['gr','rz']
     debv = Table()
-    debv['EBV_DIFFRZ'] = debv256_nest
+    for ec in eclrs:
+        ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+        debv_a = hp.reorder(debv_a,r2n=True)
+        debv['EBV_DIFF_'+ec.upper()] = debv_a
+
+    #ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
+    #ebvn = fitsio.read(ebvn_fn)
+    #debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
+    #debv64 = make_hp(debv, ebvn['HPXPIXEL'], nside=64, fill_with=hp.UNSEEN)
+    #debv256 = hp.ud_grade(debv64, 256)
+    #debv256_nest = hp.reorder(debv256,r2n=True)
+    #debv = Table()
+    #debv['EBV_DIFFRZ'] = debv256_nest
 
 
 
@@ -568,29 +679,43 @@ if args.prepsysnet == 'y':
         print('made '+dirout+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
-    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full.dat.fits'))
+    #_HPmapcut'
+    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
     for i in range(0,18):
-        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
-    sys_tab = Table.read(pwf)
-    if 'EBV_DIFFRZ' in fit_maps:
-        sys_tab['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for reg in regl:
-        seld = dat['PHOTSYS'] == reg
-        selr = rands['PHOTSYS'] == reg
+    
+    for zl in zrl:
+        zw = ''
+        if args.imsys_zbin == 'y':
+            zw = str(zl[0])+'_'+str(zl[1])
+        for reg in regl:
+            pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            sys_tab = Table.read(pwf)
+            cols = list(sys_tab.dtype.names)
+            for col in cols:
+                if 'DEPTH' in col:
+                    bnd = col.split('_')[-1]
+                    sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+            for ec in ['GR','RZ']:
+                if 'EBV_DIFF_'+ec in fit_maps: 
+                    sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+
+            seld = dat['PHOTSYS'] == reg
+            selr = rands['PHOTSYS'] == reg
         
-        prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
-        fnout = dirout+'/sysnet/prep_'+tracer_clus+'_'+reg+'.fits'
-        common.write_LSS(prep_table,fnout)
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
+                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+            fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
+            common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
     logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     #from regressis, must be installed
-    from regressis import DR9Footprint
+    from regressis import DESIFootprint,DR9Footprint
 
     from LSS.imaging import regressis_tools as rt
     dirreg = dirout+'/regressis_data'
@@ -611,6 +736,7 @@ if args.regressis == 'y':
     #pwf = '/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight-1-dark.fits'   
     sgf = '/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_'+str(nside)+'.npy' 
     dr9_footprint = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    desi_footprint = DESIFootprint(nside)
     suffix_tracer = ''
     suffix_regressor = ''
 
@@ -623,7 +749,7 @@ if args.regressis == 'y':
         param['regions'] = ['North', 'South', 'Des']
     else:
         param['regions'] = ['North', 'South_mid_ngc', 'South_mid_sgc']
-    max_plot_cart = 1000
+    max_plot_cart = 300
 
     cut_fracarea = False
     seed = 42
@@ -644,10 +770,12 @@ if args.regressis == 'y':
     logf.write('using fit maps '+str(fit_maps)+'\n')
     feature_names_ext=None
     pixweight_data = Table.read(pwf)
-    if 'EBV_DIFFRZ' in fit_maps: 
-        pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-        #fit_maps.remove('EBV_DIFFRZ')
-        #feature_names_ext = ['EBV_DIFFRZ']
+    #if 'EBV_DIFFRZ' in fit_maps: 
+    #    pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
+    for ec in ['GR','RZ']:
+        if 'EBV_DIFF_'+ec in fit_maps: 
+            pixweight_data['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        
     use_sgr=False
     if 'SGR' in fit_maps:
         use_sgr = True
@@ -658,68 +786,110 @@ if args.regressis == 'y':
 
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
-        rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
+        #rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
     
         print('computing RF regressis weight for '+tracer_clus+zw)
         logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
-        rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, param, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+        rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
+        suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
+         max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,\
+         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=args.use_map_veto)
+        #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
+    from regressis import PhotoWeight
+    fb = dirout+tracer_clus
+    fcd = fb+'_full'+args.use_map_veto+'.dat.fits'
+    dd = Table.read(fcd)
+    dd['WEIGHT_RF'] = np.ones(len(dd))
+
     for zl in zrl:    
+        print(zl)
         zw = str(zl[0])+'_'+str(zl[1])
 
         fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
-        rfw = np.load(fnreg,allow_pickle=True)
-        rfpw = rfw.item()['map']
-        maskreg = rfw.item()['mask_region']
-        regl_reg = list(maskreg.keys())
-        for reg in regl_reg:
-            mr = maskreg[reg]
-            norm = np.mean(rfpw[mr])
-            print(reg,norm)
-            rfpw[mr] /= norm
-
-        fb = dirout+tracer_clus
-        fcd = fb+'_full.dat.fits'
-        dd = Table.read(fcd)
-        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-        dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
-        drfw = rfpw[dpix]
-        dd['WEIGHT_SYS'] = np.ones(len(dd))
+        #fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
+        #selarea = fracarea*0 == 0
+        #rfw = np.load(fnreg,allow_pickle=True)
+        #rfpw = rfw.item()['map']
+        #maskreg = rfw.item()['mask_region']
+        #regl_reg = list(maskreg.keys())
+        #for reg in regl_reg:
+        #    mr = maskreg[reg]
+        #    norm = np.mean(rfpw[mr&selarea])
+        #    print(reg,norm)
+        #    rfpw[mr] /= norm
+        rfpw = PhotoWeight.load(fnreg)
+        #print(np.mean(rfpw))
+        #dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        #dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+        #drfw = rfpw[dpix]
+        
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
-        dd['WEIGHT_SYS'][selz] = drfw[selz]
-        print(np.mean(dd['WEIGHT_SYS'][selz]))
-        comments = []
-        comments.append("Using regressis for WEIGHT_SYS")
-        logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
+        dd['WEIGHT_RF'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
+        #norm = 
+        print(np.mean(dd['WEIGHT_RF'][selz]))
+    #comments = []
+    #comments.append("Using regressis for WEIGHT_SYS")
+    logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
-        common.write_LSS(dd,fcd,comments)
+    common.write_LSS(dd,fcd)#,comments)
+
+if args.add_regressis_ext == 'y':
+    if tracer_clus != 'QSO':
+        sys.exit('only QSO supported for using weights Edmond calculated!')
+    from LSS.imaging import densvar
+    from regressis import PhotoWeight
+    fb = dirout+tracer_clus
+    fcd = fb+'_full.dat.fits'
+    dd = Table.read(fcd)
+    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    
+    wsys_low_z = PhotoWeight.load('/global/homes/e/edmondc/CFS/Imaging_weight/Y1/Y1_QSO_low_z_128/RF/Y1_QSO_low_z_imaging_weight_128.npy')
+    wsys_high_z = PhotoWeight.load('/global/homes/e/edmondc/CFS/Imaging_weight/Y1/Y1_QSO_high_z_128/RF/Y1_QSO_high_z_imaging_weight_128.npy')
+
+    sel_low_z = dd['Z_not4clus'] <= 1.3
+    dd['WEIGHT_SYS'][sel_low_z] = wsys_low_z(dd['RA'][sel_low_z], dd['DEC'][sel_low_z], normalize_map=True)
+    print(np.mean(dd['WEIGHT_SYS'][sel_low_z]))
+    dd['WEIGHT_SYS'][~sel_low_z] = wsys_high_z(dd['RA'][~sel_low_z], dd['DEC'][~sel_low_z], normalize_map=True)
+    print(np.mean(dd['WEIGHT_SYS'][~sel_low_z]))
+    logf.write('added RF regressis weights that Edmond calculated for '+tracer_clus+'\n')    
+    common.write_LSS(dd,fcd)
+ 
 
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
     import healpy as hp
-    fn_full = dirout+tracer_clus+'_full.dat.fits'
+    fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fn_full)
-    dd['WEIGHT_SYS'] = np.ones(len(dd))
+    dd['WEIGHT_SN'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
     for reg in regl_sysnet:
-        sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+'_'+reg+'/nn-weights.fits')
-        pred_counts = np.mean(sn_weights['weight'],axis=1)
-        pix_weight = np.mean(pred_counts)/pred_counts
-        sn_pix = sn_weights['hpix']
-        hpmap = np.ones(12*256*256)
-        for pix,wt in zip(sn_pix,pix_weight):
-            hpmap[pix] = wt
+        for zl in zrl:
+            zw = ''
+            if args.imsys_zbin == 'y':
+                zw = str(zl[0])+'_'+str(zl[1])
+            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
+            pred_counts = np.mean(sn_weights['weight'],axis=1)
+            pix_weight = np.mean(pred_counts)/pred_counts
+            pix_weight = np.clip(pix_weight,0.5,2.)
+            sn_pix = sn_weights['hpix']
+            hpmap = np.ones(12*256*256)
+            for pix,wt in zip(sn_pix,pix_weight):
+                hpmap[pix] = wt
         
-        sel = dd['PHOTSYS'] == reg
-        #print(np.sum(sel))
-        dd['WEIGHT_SYS'][sel] = hpmap[dpix[sel]]
+            sel = dd['PHOTSYS'] == reg
+            selz = dd['Z_not4clus'] > zl[0]
+            selz &= dd['Z_not4clus'] <= zl[1]
+
+            #print(np.sum(sel))
+            dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
     #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")

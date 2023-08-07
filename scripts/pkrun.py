@@ -120,6 +120,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         edges = {'step': 2. * np.pi / boxsizes[0]}
         for iboxsize, boxsize in enumerate(boxsizes):
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                                               randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                direct_selection_attrs=win_direct_selection_attrs if iboxsize == 0 else None,
                                                direct_edges=direct_edges if iboxsize == 0 else None,
@@ -164,10 +165,12 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if recon_dir != 'n':
+        out_dir = out_dir[:-2] + recon_dir+'/pk/'
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -176,10 +179,12 @@ def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zm
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if recon_dir != 'n':
+        out_dir = out_dir[:-2] + recon_dir+'/pk/'
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
