@@ -85,7 +85,7 @@ randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
 ran_lrgmask = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
 th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
-ranpix = hp.ang2pix(256,th,phi)
+ranpix = hp.ang2pix(256,th,phi,nest=True)
 for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
     ranmap[pix] += 1
     if mvalue > 1:
