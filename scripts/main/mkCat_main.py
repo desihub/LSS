@@ -702,7 +702,7 @@ if args.prepsysnet == 'y':
                     sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
             for ec in ['GR','RZ']:
                 if 'EBV_DIFF_'+ec in fit_maps: 
-                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+                    sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
 
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
