@@ -79,19 +79,19 @@ all_maps = ['CALIB_G',
 all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 
 lrg_mask_frac = np.zeros(256*256*12)
-ran = np.zeros(256*256*12)
-ran_lmask = np.zeros(256*256*12)
+ranmap = np.zeros(256*256*12)
+ranmap_lmask = np.zeros(256*256*12)
 randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
 ran_lrgmask = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
 th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
 ranpix = hp.ang2pix(256,th,phi)
 for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
-    ran[pix] += 1
+    ranmap[pix] += 1
     if mvalue > 1:
-        ran_lmask[pix] += 1
-sel = ran > 0
-lrg_mask_frac[sel] = ran_lmask[sel]/ran[sel]
+        ranmap_lmask[pix] += 1
+sel = ranmap > 0
+lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
 sky_g = np.zeros(256*256*12)
 f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
