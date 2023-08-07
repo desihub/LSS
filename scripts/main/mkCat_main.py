@@ -605,7 +605,7 @@ if tracer_clus[:3] == 'LRG':
     fit_maps.append('PSFDEPTH_W1')
 #    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 if tracer_clus[:3] == 'QSO':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ']
+    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
     fit_maps.append('PSFDEPTH_W1')
     fit_maps.append('PSFDEPTH_W2')
     #fit_maps = ['EBV', 'STARDENS',
