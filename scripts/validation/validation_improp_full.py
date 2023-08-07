@@ -10,6 +10,7 @@ from astropy.table import join,Table
 import healpy as hp
 
 from LSS.imaging import densvar
+from LSS import common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
