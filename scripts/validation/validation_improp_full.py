@@ -298,7 +298,7 @@ for tp in tps:
         #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         #plt.clf()
     
-            if dolrg_mask == 'y':
+            if do_lrgmask == 'y':
                 fig = plt.figure()
                 parv = lrg_mask_frac
                 mp = 'fraction of area in LRG mask'
