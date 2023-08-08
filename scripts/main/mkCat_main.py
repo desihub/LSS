@@ -454,7 +454,7 @@ if args.apply_map_veto == 'y':
 
 if args.add_tlcomp == 'y':
     fl = dirout+tp+notqso+'_'
-    def _parfun(ii)
+    def _parfun(ii):
         ct.add_tlobs_ran(fl,ii,args.use_map_veto)
     if args.par == 'n':
         for rn in range(rm,rx):
