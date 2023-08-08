@@ -17,6 +17,8 @@ parser.add_argument("--basedir", help="base directory for catalogs",default='/gl
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SYS')
 parser.add_argument("--mapmd", help="set of maps to use",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
@@ -141,7 +143,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
         dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
         pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
-        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT_SYS']*dcomp[ii]
+        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
         pixlr[rpix[ii]] += 1.
@@ -177,7 +179,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     plt.xlabel(xlab)
     plt.ylabel('Ngal/<Ngal> ')
 
-    plt.title(titl)
+    plt.title(titl+' '+args.weight_col)
     plt.grid()
     plt.ylim(yl[0],yl[1])
     print(xlab,chi2)
@@ -195,7 +197,7 @@ for tp in tps:
         dmaps = []
         dosag = 'n'
         dosky_g = 'n'
-        do_ebvnew_diff = 'n'
+        do_ebvnew_diff = 'y'
         print('doing validation for '+tp)
         
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
@@ -205,7 +207,7 @@ for tp in tps:
             maps.remove('PSFDEPTH_W2')
 
 
-    dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
+    dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
     seld = dtf['ZWARN'] != 999999
     seld &= dtf['ZWARN']*0 == 0
 
@@ -255,7 +257,7 @@ for tp in tps:
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
-    rf = indir+tpr+zdw+'_0_full.ran.fits'
+    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
     rt = fitsio.read(rf)
     mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
@@ -376,12 +378,12 @@ for tp in tps:
             tw = ''
             if args.test == 'y':
                 tw = '_test'
-            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'_'+reg+'_'+args.mapmd+'.pdf') as pdf:
+            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'_'+reg+'_'+args.mapmd+args.weight_col+'.pdf') as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
             
-            print('results for '+tp+zr+' '+reg)
+            print('results for '+tp+zr+' '+reg +' using '+args.weight_col+' weights')
             print('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps')
             if args.mapmd == 'validate':
                 fo.write('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps\n')
