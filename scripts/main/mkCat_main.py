@@ -51,6 +51,8 @@ parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, a
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
 parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='')
+parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
+
 
 
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
@@ -450,6 +452,20 @@ if args.apply_map_veto == 'y':
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun, inds)
 
+if args.add_tlcomp == 'y':
+    fl = dirout+tp+notqso+'_'
+    def _parfun(ii)
+        ct.add_tlobs_ran(fl,ii,args.use_map_veto)
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            _parfun(rn)
+    else:
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        (rx-rm)*2
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
 
     
     

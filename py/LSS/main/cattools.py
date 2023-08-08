@@ -3171,6 +3171,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
 
     kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_FKP']
+    if 'WEIGHT_SN' in cols:
+        kl.append('WEIGHT_SN')
+    if 'WEIGHT_RF' in cols:
+        kl.append('WEIGHT_RF')
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')
@@ -3226,9 +3230,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def add_tlobs_ran(fl,rann):
+def add_tlobs_ran(fl,rann,hpmapcut=''):
     import LSS.common_tools as common
-    ranf = Table(fitsio.read(fl+str(rann)+'_full.ran.fits'))
+    rf_name = fl+str(rann)+'_full'+hpmapcut+''.ran.fits'
+    ranf = Table(fitsio.read())
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     #tlarray = np.zeros(len(ranf))
@@ -3263,7 +3268,7 @@ def add_tlobs_ran(fl,rann):
     sel = tlarray == 0
     print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
-    outf = fl+str(rann)+'_full.ran.fits'
+    outf = rf_name#fl+str(rann)+'_full.ran.fits'
     common.write_LSS(ranf,outf)
     del ranf
     return True
