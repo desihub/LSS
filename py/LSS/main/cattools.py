@@ -3273,7 +3273,7 @@ def add_tlobs_ran(fl,rann,hpmapcut=''):
     del ranf
     return True
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto=''):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
@@ -3282,7 +3282,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ws = ''
     if utlid:
         ws = 'utlid_'
-    ffr = Table.read(flin+str(rann)+'_full.ran.fits')
+    ffr = Table.read(flin+str(rann)+'_full'+use_map_veto+'.ran.fits')
 
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]

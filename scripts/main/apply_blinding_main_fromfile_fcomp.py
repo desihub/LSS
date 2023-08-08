@@ -73,6 +73,7 @@ parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 #parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='GC')
 
 #parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
@@ -246,8 +247,8 @@ if root:
     fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = dirin +'BGS_BRIGHT'
-    fcr_in = fbr_in + '_1_full.ran.fits'
-    fcd_in = fb_in + '_full.dat.fits'
+    fcr_in = fbr_in + '_1_full'+args.use_map_veto+'.ran.fits'
+    fcd_in = fb_in + '_full'+args.use_map_veto+'.dat.fits'
     print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
@@ -357,7 +358,7 @@ if root:
         for reg in ['N','S']:
             clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
@@ -372,7 +373,8 @@ if root:
                 res = pool.map(_parfun, inds)
         else:
             for ii in inds:
-                ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
+                _parfun(ii)
+                #ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
                 print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
