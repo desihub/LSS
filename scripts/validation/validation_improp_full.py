@@ -138,15 +138,15 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     pixlg = np.zeros(nside*nside*12)
     pixlgw = np.zeros(nside*nside*12)
     dcomp = 1/dt_reg['FRACZ_TILELOCID']
-    if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
-        #print('using FRAC_TLOBS_TILES')
-        dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
+    #if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+    #    #print('using FRAC_TLOBS_TILES')
+    #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
         pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
         pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
-        pixlr[rpix[ii]] += 1.
+        pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg['FRAC_TLOBS_TILES']
     wp = pixlr > 0
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
@@ -206,8 +206,13 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
+    fcd = indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits'
+    tpr = tp
+    if tp == 'BGS_BRIGHT-21.5':
+        tpr = 'BGS_BRIGHT'
 
-    dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
+    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
+    dtf = fitsio.read(fcd)
     seld = dtf['ZWARN'] != 999999
     seld &= dtf['ZWARN']*0 == 0
 
@@ -219,6 +224,9 @@ for tp in tps:
         zcol = 'Z_not4clus'
 
     
+    zmax = 1.6
+    zmin = 0.01
+    bs = 0.01
 
     yl = (0.8,1.1)    
     if tp == 'LRG':
@@ -226,6 +234,8 @@ for tp in tps:
         z_suc &= dtf['DELTACHI2']>15
         z_suc &= dtf[zcol]<1.1
         z_suc &= dtf[zcol] > 0.4
+        P0 = 10000
+        nbar = 0.0004
         #zr = ' 0.4 < z < 1.1'
 
     if tp[:3] == 'ELG':
@@ -234,6 +244,8 @@ for tp in tps:
         z_suc &= dtf[zcol]>0.8
         zr = ' 0.8 < z < 1.6'
         yl = (0.7,1.1)
+        P0 = 4000
+        nbar = 0.0008
 
     if tp == 'QSO':
         z_suc = dtf[zcol]*0 == 0
@@ -242,6 +254,10 @@ for tp in tps:
         z_suc &= dtf[zcol]<2.1
         z_suc &= dtf[zcol]>0.8
         #zr = ' 0.8 < z < 2.1 '
+        zmax = 4
+        bs = 0.02
+        P0 = 6000
+        nbar = 0.00002
 
 
     if tp[:3] == 'BGS':    
@@ -250,15 +266,48 @@ for tp in tps:
         z_suc &= dtf[zcol]<0.4
         z_suc &= dtf[zcol]>0.1
         #zr = ' 0.1 < z < 0.4 '
+        P0 = 7000
+        nbar = 0.0005
 
+    #nz = common.mknz_full(fcd,rf,tp,bs=bs,zmin=zmin,zmax=zmax)
+    
     seld &= z_suc
 
     dtf = dtf[seld]
-    tpr = tp
-    if tp == 'BGS_BRIGHT-21.5':
-        tpr = 'BGS_BRIGHT'
-    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
+    #zl = dtf[zcol]
+    #nl = np.zeros(len(zl))
+    #for ii in range(0,len(zl)):
+    #    z = zl[ii]
+    #    zind = int((z-zmin)/bs)
+    #    if z > zmin and z < zmax:
+    #        nl[ii] = nz[zind]
+
+    ntl = np.unique(dtf['NTILE'])
+    comp_ntl = np.zeros(len(ntl))
+    weight_ntl = np.zeros(len(ntl))
+    fttl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = dtf['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(1/dtf[sel]['FRACZ_TILELOCID'])        
+        weight_ntl[i] = mean_ntweight
+        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+        mean_fracobs_tiles = np.mean(dtf[sel]['FRAC_TLOBS_TILES'])
+        fttl[i] = mean_fracobs_tiles
+    print(comp_ntl,fttl)
+    comp_ntl = comp_ntl*fttl
+    print('completeness per ntile:')
+    print(comp_ntl)
+    nx = nbar*comp_ntl[dtf['NTILE']-1]
+    fkpl = 1/(1+nx*P0) #this is just the effect of the completeness varying on the fkp weight, no actual z dependence
+    dtf = Table(dtf)
+    dtf['WEIGHT_FKP'] = 1/weight_ntl[dtf['NTILE']-1]*fkpl
+    
     rt = fitsio.read(rf)
+    nx = nbar*comp_ntl[rt['NTILE']-1]
+    fkpl = 1/(1+nx*P0)
+    rt = Table(rt)
+    rt['WEIGHT_FKP'] = 1/weight_ntl[rt['NTILE']-1]*fkpl #randoms should now have weight that varies with completeness in same way as data
+    
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
