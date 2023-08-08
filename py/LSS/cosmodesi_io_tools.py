@@ -173,42 +173,56 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'completeness_only' in weight_type and 'bitwise' in weight_type:
         raise ValueError('inconsistent choices were put into weight_type')
 
-    if name == 'data':
-        if 'zfail' in weight_type:
-            weights *= catalog['WEIGHT_ZFAIL'][mask]
-        if 'default' in weight_type and 'bitwise' not in weight_type:
-            weights *= catalog['WEIGHT'][mask]
-        if 'RF' in weight_type:
-            weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
-        if 'completeness_only' in weight_type:
-            weights = catalog['WEIGHT_COMP'][mask]
-        if 'EB' in weight_type:
-            weights *=  catalog['WEIGHT_SYSEB'][mask]*catalog['WEIGHT_COMP'][mask]   
-        if 'FKP' in weight_type:
-            weights *= catalog['WEIGHT_FKP'][mask]
-        if 'bitwise' in weight_type:
-            weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
-        if 'nofail' in weight_type:
-            weights /= catalog['WEIGHT_ZFAIL'][mask]
-        if 'fluxfail' in weight_type:
-            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
-    if name == 'randoms':
-        if 'default' in weight_type:
-            weights *= catalog['WEIGHT'][mask]
-        if 'RF' in weight_type:
-            weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
-        if 'zfail' in weight_type:
-            weights *= catalog['WEIGHT_ZFAIL'][mask]
-        if 'completeness_only' in weight_type:
-            weights = catalog['WEIGHT_COMP'][mask]
-        if 'EB' in weight_type:
-            weights *=  catalog['WEIGHT_SYSEB'][mask]*catalog['WEIGHT_COMP'][mask]   
-        if 'FKP' in weight_type:
-            weights *= catalog['WEIGHT_FKP'][mask]
-        if 'nofail' in weight_type:
-            weights /= catalog['WEIGHT_ZFAIL'][mask]
-        if 'fluxfail' in weight_type:
-            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
+    #if name == 'data':
+    if 'zfail' in weight_type:
+        weights *= catalog['WEIGHT_ZFAIL'][mask]
+        print('multiplying weights by WEIGHT_ZFAIL')
+    if 'default' in weight_type and 'bitwise' not in weight_type:
+        weights *= catalog['WEIGHT'][mask]
+        print('multiplying weights by WEIGHT')
+    if 'RF' in weight_type:
+        weights *= catalog['WEIGHT_RF'][mask]
+        print('multiplying weights by WEIGHT_RF')
+    if 'SN' in weight_type:
+        weights *= catalog['WEIGHT_SN'][mask]
+        print('multiplying weights by WEIGHT_SN')
+
+    if 'completeness_only' in weight_type:
+        weights = catalog['WEIGHT_COMP'][mask]
+        print('weights set to WEIGHT_COMP')
+    if 'EB' in weight_type:
+        weights *=  catalog['WEIGHT_SYSEB'][mask]
+        print('multiplying weights by WEIGHT_SYSEB')
+    if 'FKP' in weight_type:
+        weights *= catalog['WEIGHT_FKP'][mask]
+        print('multiplying weights by WEIGHT_FKP')
+    if 'nofail' in weight_type:
+        weights /= catalog['WEIGHT_ZFAIL'][mask]
+        print('dividing weights by WEIGHT_FKP')
+    if 'fluxfail' in weight_type:
+        weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
+    if name == 'data' and 'bitwise' in weight_type:
+        weights /= catalog['WEIGHT_COMP'][mask]
+        print('dividing weights by WEIGHT_COMP')
+        weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
+
+#     if name == 'randoms':
+#         if 'default' in weight_type:
+#             weights *= catalog['WEIGHT'][mask]
+#         if 'RF' in weight_type:
+#             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
+#         if 'zfail' in weight_type:
+#             weights *= catalog['WEIGHT_ZFAIL'][mask]
+#         if 'completeness_only' in weight_type:
+#             weights = catalog['WEIGHT_COMP'][mask]
+#         if 'EB' in weight_type:
+#             weights *=  catalog['WEIGHT_SYSEB'][mask]*catalog['WEIGHT_COMP'][mask]   
+#         if 'FKP' in weight_type:
+#             weights *= catalog['WEIGHT_FKP'][mask]
+#         if 'nofail' in weight_type:
+#             weights /= catalog['WEIGHT_ZFAIL'][mask]
+#         if 'fluxfail' in weight_type:
+#             weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
 
     if return_mask:
         return positions, weights, mask
