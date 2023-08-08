@@ -374,6 +374,22 @@ for tp in tps:
                 #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
                 #plt.clf()
 
+            for map_pair in dmaps:
+                fig = plt.figure()
+                m1 = mf[reg][map_pair[0]]
+                m2 = mf[reg][map_pair[1]]
+                sel = (m1 == hp.UNSEEN)
+                sel |= (m2 == hp.UNSEEN)
+                parv = m1-m2
+                parv[sel] = hp.UNSEEN
+                mp = map_pair[0]+' - '+map_pair[1]
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2tot += chi2
+                nmaptot += 1
+
+                figs.append(fig)
+                #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
+                #plt.clf()
 
 
         
@@ -392,22 +408,6 @@ for tp in tps:
                 #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
                 #plt.clf()
     
-            for map_pair in dmaps:
-                fig = plt.figure()
-                m1 = mf[map_pair[0]]
-                m2 = mf[map_pair[1]]
-                sel = (m1 == hp.UNSEEN)
-                sel |= (m2 == hp.UNSEEN)
-                parv = m1-m2
-                parv[sel] = hp.UNSEEN
-                mp = map_pair[0]+' - '+map_pair[1]
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
-                chi2tot += chi2
-                nmaptot += 1
-
-                figs.append(fig)
-                #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
-                #plt.clf()
     
             if do_ebvnew_diff == 'y':
                 dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
