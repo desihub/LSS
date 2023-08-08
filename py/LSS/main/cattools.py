@@ -3232,7 +3232,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
 def add_tlobs_ran(fl,rann,hpmapcut=''):
     import LSS.common_tools as common
-    rf_name = fl+str(rann)+'_full'+hpmapcut+''.ran.fits'
+    rf_name = fl+str(rann)+'_full'+hpmapcut+'.ran.fits'
     ranf = Table(fitsio.read())
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
