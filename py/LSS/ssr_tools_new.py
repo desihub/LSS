@@ -246,10 +246,13 @@ class model_ssr:
         print(self.nzf)
         self.nzfe = np.sqrt(hf)/ha
         bc = []
+        median_bins = []
         bs = bine[1]-bine[0]
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
+            median_bins.append(np.median(self.cat['TSNR2_'+tracer][(self.cat['TSNR2_'+tracer] >= bine[i]) & (self.cat['TSNR2_'+tracer] < bine[i+1])]))
         self.bc = np.array(bc)
+        self.median_bins = np.array(median_bins)
         self.bine = bine
         self.vis_5hist = False
         self.outdir = outdir
@@ -417,7 +420,7 @@ class model_ssr:
         return cost
     
     def wrapper_hist(self,params):
-        h_predict = self.failure_rate_eff(self.bc, *params)
+        h_predict = self.failure_rate_eff(self.median_bins, *params)
         diff = self.nzf-h_predict
         cost = np.sum((diff/self.nzfe)**2.)
         return cost
