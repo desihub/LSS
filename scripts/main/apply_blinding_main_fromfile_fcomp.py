@@ -346,7 +346,7 @@ if root:
 
 
     if args.mkclusran == 'y':
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
         tsnrcol = 'TSNR2_ELG'
         if args.type[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
@@ -494,7 +494,7 @@ if root:
     nran = args.maxr-args.minr
     if args.resamp == 'y':
         regions = ['NGC', 'SGC']
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
         for reg in regions:
             flin = dirout + args.type + notqso + '_'+reg    
             def _parfun(rannum):
