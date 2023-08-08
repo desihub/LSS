@@ -146,7 +146,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
         pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
-        pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg['FRAC_TLOBS_TILES']
+        pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
     wp = pixlr > 0
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
