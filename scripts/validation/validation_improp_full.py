@@ -259,7 +259,8 @@ for tp in tps:
         tpr = 'BGS_BRIGHT'
     rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
     rt = fitsio.read(rf)
-    mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
+    mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
+    'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
@@ -329,7 +330,7 @@ for tp in tps:
         
             for mp in maps:
                 fig = plt.figure()
-                parv = mf[mp]
+                parv = mf[reg][mp]
                 #print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
