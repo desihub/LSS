@@ -55,7 +55,7 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
-        zlims = [1.5,1.6]#[0.8, 1.1, 1.6]
+        zlims = [0.8, 1.1, 1.6] #[1.5,1.6]
         if option:
             if option == 'safez':
                 zlims = [0.9, 1.48]
@@ -190,6 +190,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
         if 'nofail' in weight_type:
             weights /= catalog['WEIGHT_ZFAIL'][mask]
+        if 'fluxfail' in weight_type:
+            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
     if name == 'randoms':
         if 'default' in weight_type:
             weights *= catalog['WEIGHT'][mask]
@@ -205,6 +207,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights *= catalog['WEIGHT_FKP'][mask]
         if 'nofail' in weight_type:
             weights /= catalog['WEIGHT_ZFAIL'][mask]
+        if 'fluxfail' in weight_type:
+            weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
 
     if return_mask:
         return positions, weights, mask
