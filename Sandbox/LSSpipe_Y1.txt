@@ -82,23 +82,27 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
 	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --fillran y --apply_veto y
 
-
-
 #make healpix maps based on randoms
 for tp,notqso in zip(tps,notqsos):
 	python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --mkHPmaps y
 
-#this applies vetos to data 
-#also, add bitweights at this stage
-for tp,notqso in zip(tps,notqsos):
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --notqso notqso --maxr 0 --add_bitweight y --version v#
-#--maxr 0 stops the code from running any randoms
+#add bitweights to data before applying vetos
+python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --notqso notqso --version v#
 
-#add completeness info per tiles group to randoms
+#this applies vetos to data and randoms (no need for interactive node and use --maxr 0 if you don't want to run randoms
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --notqso notqso --version v#
+
+#add completeness info per tiles group to randoms, needs to be done after vetos applied to data
 for tp,notqso in zip(tps,notqsos):
 	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y
 	#i/o goes slow on node sometimes and this computing is fast, so the following might work better:
 	python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
+
+#apply map based veto to data and random; if applying this, make sure to subsequently use --use_map_veto _HPmapcut as an option below
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
+
 
 
 #get k+e
@@ -106,17 +110,17 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIG
 
 #to get regressis and zfail weights
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec iron --version v0.2.1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec iron --version v0.6 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
 #script to do all needs editing Y1_regressis_zfail.sh iron
 
 #get regressis weights
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec himalayas --notqso notqso
+	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --notqso notqso
     
-#get bitweights n(z) and fkp weights
-python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --add_bitweight y --FKPfull y --nzfull y
+#get n(z) and fkp weights (not really necessary)
+python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --FKPfull y --nzfull y
 
 Make sure to re-sample randoms via cattools clusran_resamp
 
