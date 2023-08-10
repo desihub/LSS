@@ -2920,7 +2920,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
     plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,fullname,comments='added ZFAIL weight')
+    common.write_LSS(ff,fullname)#,comments='added ZFAIL weight')
     if tp != 'BGS_BRIGHT-21.5':
         ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
         ffc = Table.read(indir+tp+'_full.dat.fits')
@@ -2930,8 +2930,19 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
         ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-        common.write_LSS(ffc,indir+tp+'_full.dat.fits',comments='added ZFAIL weight')
-        
+        common.write_LSS(ffc,indir+tp+'_full.dat.fits')#,comments='added ZFAIL weight')
+    fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
+    if os.path.isfile(fname_mapveto):
+        ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        ffc = Table.read(fname_mapveto)
+        cols = list(ffc.dtype.names)
+        if 'WEIGHT_ZFAIL' in cols:
+            ffc.remove_columns(['WEIGHT_ZFAIL'])
+        if 'mod_success_rate' in cols:
+            ffc.remove_columns(['mod_success_rate'])
+        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
+    
     
 #     if dchi2 is not None:
 #         if tp[:3] == 'LRG':
