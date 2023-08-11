@@ -27,6 +27,7 @@ parser.add_argument('--do_randoms', default = 'n', choices = ['n','y'], required
 parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
+parser.add_argument('--overwrite', default = 'n', required=False )
 
 args = parser.parse_args()
 
@@ -67,7 +68,10 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
 
 if os.path.isfile(output_path):
-    raise ValueError(output_path+' already exists!')
+    if args.overwrite == 'n':
+        raise ValueError(output_path+' already exists!')
+    if args.overwrite == 'y':
+        print('will overwrite '+output_path)
 
 
 def bitmask_radec(brickid, ra, dec):
