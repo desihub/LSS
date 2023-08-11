@@ -1,4 +1,7 @@
 #!/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/conda/bin/python -u
+from desiutil.iers import freeze_iers
+freeze_iers()
+
 import multiprocessing as mp
 from multiprocessing import Pool
 import logging
