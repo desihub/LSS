@@ -17,7 +17,7 @@ import argparse
 
 time_start = time.time()
 
-n_processes = 32
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument( '--cat_type', default='obielg', choices=['obielg', 'abacus'],required=False)
@@ -32,6 +32,7 @@ parser.add_argument('--n_processes', default = 32, required=False ,type=int)
 
 args = parser.parse_args()
 
+n_processes = args.n_processes
 
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
