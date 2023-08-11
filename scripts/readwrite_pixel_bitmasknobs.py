@@ -28,6 +28,7 @@ parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
 parser.add_argument('--overwrite', default = 'n', required=False )
+parser.add_argument('--n_processes', default = 32, required=False ,type=int)
 
 args = parser.parse_args()
 
