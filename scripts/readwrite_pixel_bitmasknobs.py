@@ -183,7 +183,7 @@ res.sort('idx')
 res.remove_column('idx')
 
 #if output_path.endswith('.fits'):
-res.write(output_path)
+res.write(output_path,overwrite=True)
 #else:
 #    np.write(output_path, np.array(res['masknobs']))
 
