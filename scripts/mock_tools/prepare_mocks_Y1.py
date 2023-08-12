@@ -33,11 +33,9 @@ parser.add_argument("--mockfile", help="formattable name of mock file(s). e.g. c
 #parser.add_argument("--realization", help="number for the realization",default=1,type=int)
 parser.add_argument("--realmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--realmax", help="number for the realization",default=2,type=int)
-parser.add_argument("--survey", help="points to set of tiles",default='DA02')
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
-parser.add_argument("--runfa", help="run fiberassign",default='n')
 parser.add_argument("--par", help="running in parallel?",default='n')
 
 args = parser.parse_args()
@@ -107,7 +105,7 @@ for real in range(args.realmin,args.realmax):
         targets = vstack(datat)
         print(len(targets)+' in Y5 area')
         del datat
-        selY1 = is_point_in_desi(tiletab,targets['RA'],targets['DEC']
+        selY1 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
         targets = targets[selY1]
         print(len(targets)+' in Y1 area')
 
