@@ -63,15 +63,15 @@ def bitmask_radec(brickid, ra, dec):
     return bitmask,nobsl[0],nobsl[1],nobsl[2]
 
 def get_nobsandmask(cat,nproc=128):
-	#cat should be an astropy table
-	#returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
+    #cat should be an astropy table
+    #returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
     for col in cat.colnames:
         cat.rename_column(col, col.upper())
 
-	if 'TARGETID' not in cat.colnames:
-		cat['TARGETID'] = np.arange(len(cat))
+    if 'TARGETID' not in cat.colnames:
+        cat['TARGETID'] = np.arange(len(cat))
 
-	if 'TARGET_RA' in cat.colnames:
+    if 'TARGET_RA' in cat.colnames:
         cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
     
     if 'INPUT_RA' in cat.colnames:
@@ -86,25 +86,25 @@ def get_nobsandmask(cat,nproc=128):
     bidcnts = np.cumsum(bidcnts)
     bidorder = np.argsort(cat['BRICKID'])
 
-	print('adding nobs and mask values to '+str(len(cat))+' rows')
-	def _wrapper(bid_index):
+    print('adding nobs and mask values to '+str(len(cat))+' rows')
+    def _wrapper(bid_index):
 
-		idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-		brickid = bid_unique[bid_index]
+        idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
+        brickid = bid_unique[bid_index]
 
-		ra, dec = cat['RA'][idx], cat['DEC'][idx]
-		tid = cat['TARGETID'][idx]
-		bitmask,nobsg,nobsr,nobsz = bitmask_radec(brickid, ra, dec)
+        ra, dec = cat['RA'][idx], cat['DEC'][idx]
+        tid = cat['TARGETID'][idx]
+        bitmask,nobsg,nobsr,nobsz = bitmask_radec(brickid, ra, dec)
 
-		data = Table()
-		data['idx'] = idx
-		data['MASKBITS'] = bitmask
-		data['NOBS_G'] = nobsg
-		data['NOBS_R'] = nobsr
-		data['NOBS_Z'] = nobsz
-		data['TARGETID'] = tid
+        data = Table()
+        data['idx'] = idx
+        data['MASKBITS'] = bitmask
+        data['NOBS_G'] = nobsg
+        data['NOBS_R'] = nobsr
+        data['NOBS_Z'] = nobsz
+        data['TARGETID'] = tid
 
-		return data
+        return data
 
     # start multiple worker processes
     with Pool(processes=n_processes) as pool:
