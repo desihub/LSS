@@ -12,7 +12,7 @@ from desitarget.targetmask import obsconditions
 from desimodel.footprint import is_point_in_desi
 
 import LSS.common_tools as common
-from LSS.imaging import get_nobsandmask
+from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
@@ -111,7 +111,7 @@ for real in range(args.realmin,args.realmax):
 
     if args.apply_mask == 'y':
         print('getting nobs and mask bits')
-        maskv = get_nobsandmask(targets)
+        maskv = bitmask.get_nobsandmask(targets)
         maskcols = ['NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
         for col in maskcols:
             targets[col] = maskv[col]
