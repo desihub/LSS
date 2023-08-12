@@ -107,7 +107,7 @@ def get_nobsandmask(cat,nproc=128):
         return data
 
     # start multiple worker processes
-    with Pool(processes=n_processes) as pool:
+    with Pool(processes=nproc) as pool:
         res = pool.map(wrapper, np.arange(len(bid_unique)))
 
     res = vstack(res)
