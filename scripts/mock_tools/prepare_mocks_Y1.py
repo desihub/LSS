@@ -93,9 +93,9 @@ for real in range(args.realmin,args.realmax):
             print(type_,len(data))
             status = data['STATUS'][()]
             idx = np.arange(len(status))
-            mask_main = mask(main=0, nz=1, Y5=1, sv3=0)
+            mask_main = mask(main=0, nz=1, Y5=0, sv3=0) #no longer cutting to Y5 footprint because it doesn't actually cover Y1
             if type_ == 'LRG':
-                mask_main = mask(main=1, nz=1, Y5=1, sv3=0)
+                mask_main = mask(main=1, nz=1, Y5=0, sv3=0)
             idx_main = idx[(status & (mask_main))==mask_main]
             data = data[idx_main]
             print(len(data))
