@@ -63,33 +63,33 @@ def bitmask_radec(brickid, ra, dec):
     return bitmask,nobsl[0],nobsl[1],nobsl[2]
 
 class get_nobsandmask:
-  #doesn't seem like a class should be necessary but couldn't figure out multiprocessing otherwise
-  def __init__(self,cat,nproc=128):
-    #cat should be an astropy table
-    #returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
-    for col in cat.colnames:
-        cat.rename_column(col, col.upper())
+    #doesn't seem like a class should be necessary but couldn't figure out multiprocessing otherwise
+    def __init__(self,cat,nproc=128):
+        #cat should be an astropy table
+        #returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
+        for col in cat.colnames:
+            cat.rename_column(col, col.upper())
 
-    if 'TARGETID' not in cat.colnames:
-        cat['TARGETID'] = np.arange(len(cat))
+        if 'TARGETID' not in cat.colnames:
+            cat['TARGETID'] = np.arange(len(cat))
 
-    if 'TARGET_RA' in cat.colnames:
-        cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
-    
-    if 'INPUT_RA' in cat.colnames:
-        cat.rename_columns(['input_ra', 'input_dec'], ['RA', 'DEC'])
-    if 'BRICKID' not in cat.colnames:
-        from desiutil import brick
-        tmp = brick.Bricks(bricksize=0.25)
-        cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
-    # Just some tricks to speed up things up
-    self.bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
-    self.bidcnts = np.insert(bidcnts, 0, 0)
-    self.bidcnts = np.cumsum(bidcnts)
-    self.bidorder = np.argsort(cat['BRICKID'])
-    self.cat = cat
+        if 'TARGET_RA' in cat.colnames:
+            cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
 
-    print('adding nobs and mask values to '+str(len(cat))+' rows')
+        if 'INPUT_RA' in cat.colnames:
+            cat.rename_columns(['input_ra', 'input_dec'], ['RA', 'DEC'])
+        if 'BRICKID' not in cat.colnames:
+            from desiutil import brick
+            tmp = brick.Bricks(bricksize=0.25)
+            cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
+        # Just some tricks to speed up things up
+        self.bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
+        self.bidcnts = np.insert(bidcnts, 0, 0)
+        self.bidcnts = np.cumsum(bidcnts)
+        self.bidorder = np.argsort(cat['BRICKID'])
+        self.cat = cat
+
+        print('adding nobs and mask values to '+str(len(cat))+' rows')
     def wrapper(self,bid_index):
 
         idx = self.bidorder[self.bidcnts[bid_index]:self.bidcnts[bid_index+1]]
