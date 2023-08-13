@@ -85,7 +85,7 @@ class get_nobsandmask:
         # Just some tricks to speed up things up
         self.bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
         self.bidcnts = np.insert(bidcnts, 0, 0)
-        self.bidcnts = np.cumsum(bidcnts)
+        self.bidcnts = np.cumsum(self.bidcnts)
         self.bidorder = np.argsort(cat['BRICKID'])
         self.cat = cat
 
