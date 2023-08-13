@@ -62,7 +62,9 @@ def bitmask_radec(brickid, ra, dec):
         nobsl.append(nobs)
     return bitmask,nobsl[0],nobsl[1],nobsl[2]
 
-def get_nobsandmask(cat,nproc=128):
+class get_nobsandmask:
+  #doesn't seem like a class should be necessary but couldn't figure out multiprocessing otherwise
+  def __init__(self,cat,nproc=128):
     #cat should be an astropy table
     #returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
     for col in cat.colnames:
@@ -81,19 +83,20 @@ def get_nobsandmask(cat,nproc=128):
         tmp = brick.Bricks(bricksize=0.25)
         cat['BRICKID'] = tmp.brickid(cat['RA'], cat['DEC'])
     # Just some tricks to speed up things up
-    bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
-    bidcnts = np.insert(bidcnts, 0, 0)
-    bidcnts = np.cumsum(bidcnts)
-    bidorder = np.argsort(cat['BRICKID'])
+    self.bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
+    self.bidcnts = np.insert(bidcnts, 0, 0)
+    self.bidcnts = np.cumsum(bidcnts)
+    self.bidorder = np.argsort(cat['BRICKID'])
+    self.cat = cat
 
     print('adding nobs and mask values to '+str(len(cat))+' rows')
-    def _wrapper(bid_index):
+    def wrapper(self,bid_index):
 
-        idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-        brickid = bid_unique[bid_index]
+        idx = self.bidorder[self.bidcnts[bid_index]:self.bidcnts[bid_index+1]]
+        brickid = self.bid_unique[bid_index]
 
-        ra, dec = cat['RA'][idx], cat['DEC'][idx]
-        tid = cat['TARGETID'][idx]
+        ra, dec = self.cat['RA'][idx], self.cat['DEC'][idx]
+        tid = self.cat['TARGETID'][idx]
         bitmask,nobsg,nobsr,nobsz = bitmask_radec(brickid, ra, dec)
 
         data = Table()
@@ -107,11 +110,12 @@ def get_nobsandmask(cat,nproc=128):
         return data
 
     # start multiple worker processes
-    with Pool(processes=nproc) as pool:
-        res = pool.map(_wrapper, np.arange(len(bid_unique)))
+    def get_nobsandmask(self):
+        with Pool(processes=nproc) as pool:
+            res = pool.map(self.wrapper, np.arange(len(self.bid_unique)))
 
-    res = vstack(res)
-    res.sort('idx')
-    res.remove_column('idx')
-    return res
+        res = vstack(res)
+        res.sort('idx')
+        res.remove_column('idx')
+        return res
 
