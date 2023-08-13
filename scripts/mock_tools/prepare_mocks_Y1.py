@@ -47,6 +47,7 @@ if args.prog == 'dark':
     types = ['ELG', 'LRG', 'QSO']
     desitar = {'ELG':34,'LRG':1,'QSO':4}
     priority = {'ELG':3000,'LRG':3200,'QSO':3400}
+    mainp = main(tp='QSO',specver='iron')
 
 for real in range(args.realmin,args.realmax):
     if not (args.mockver is None):
@@ -118,7 +119,7 @@ for real in range(args.realmin,args.realmax):
         for col in maskcols:
             targets[col] = maskv[col]
         del maskv
-        targets = common.cutphotmask(targets,bits=main.imbits)
+        targets = common.cutphotmask(targets,bits=mainp.imbits)
         
 
     if args.prep == 'y':
