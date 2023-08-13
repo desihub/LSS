@@ -110,7 +110,7 @@ class get_nobsandmask:
         return data
 
     # start multiple worker processes
-    def get_nobsandmask(self):
+    def get_nobsandmask(self,nproc=128):
         with Pool(processes=nproc) as pool:
             res = pool.map(self.wrapper, np.arange(len(self.bid_unique)))
 
