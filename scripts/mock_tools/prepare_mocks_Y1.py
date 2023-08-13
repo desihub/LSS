@@ -112,7 +112,8 @@ for real in range(args.realmin,args.realmax):
 
     if args.apply_mask == 'y':
         print('getting nobs and mask bits')
-        maskv = bitmask.get_nobsandmask(targets)
+        mask = bitmask.get_nobsandmask(targets)
+        maskv = mask.get_nobsandmask()
         maskcols = ['NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
         for col in maskcols:
             targets[col] = maskv[col]
