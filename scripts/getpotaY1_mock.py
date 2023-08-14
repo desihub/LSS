@@ -69,7 +69,7 @@ elif args.mock == 'ezmocks6':
 print(tars.dtype.names)
 
 tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/Y1/mock'+args.realization+'/'
+paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/mock'+args.realization+'/'
 if args.tracer is not None:
     tileoutdir += args.tracer+'/'
     paoutdir += args.tracer+'/'
