@@ -22,7 +22,7 @@ trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in 
 import fitsio
 
 import LSS.common_tools as common
-from LSS.imaging import get_nobsandmask
+#from LSS.imaging import get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
