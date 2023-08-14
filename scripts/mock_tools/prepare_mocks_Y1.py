@@ -25,7 +25,6 @@ else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--mockver", help="type of mock to use",default=None)
 parser.add_argument("--mockpath", help="Location of mock file(s)",default='/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/')
@@ -63,6 +62,14 @@ for real in range(args.realmin,args.realmax):
                 os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
                 print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
             mockdir = args.base_output+'/FirstGenMocks/AbacusSummit/'
+        
+        if args.mockver == 'ezmocks6':
+            out_file_name = args.base_output + '/EZMocks_6Gpc/EZMocks_6Gpc_' + str(real) + '.fits'
+            if not os.path.exists(args.base_output + '/EZMocks_6Gpc'):
+                os.makedirs(args.base_output + '/EZMocks_6Gpc')
+                print('made ' + args.base_output + '/EZMocks_6Gpc')
+            mockdir = args.base_output + '/EZMocks_6Gpc/'
+
         else:
             raise ValueError(args.mockver+' not supported with legacy mockver argument. Use mockpath/mockfilename arguments instead.')
     else:
@@ -84,11 +91,31 @@ for real in range(args.realmin,args.realmax):
     if args.prep == 'y':
         datat = []
         for type_ in types:
-            thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
+            if args.mockver == 'ab_firstgen':
+                thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
+                print('thepath')
+                print(thepath)
+                data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
+            elif args.mockver == 'ezmocks6':
+                    if  type_ == "LRG":
+                        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%real
+                        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%real
+                    elif type_ == "ELG":
+                        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%real
+                        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%real
+                    elif type_ == "QSO":
+                        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%real
+                        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%real
+                # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
+                # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
+                    tars1 = Table.read(infn1)#fitsio.read(infn1)
+                    tars2 = Table.read(infn2)#fitsio.read(infn2)
+                    tars1["GALCAP"] = "N"
+                    tars2["GALCAP"] = "S"
+                    tars = vstack([tars1, tars2])
+                    data = tars
+                    #tars['TARGETID'] = np.arange(len(tars))
             #f = fits.open(thepath)
-            print('thepath')
-            print(thepath)
-            data = fitsio.read(thepath,columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
             print(data.dtype.names)
             print(type_,len(data))
             status = data['STATUS'][()]
