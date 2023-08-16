@@ -168,7 +168,7 @@ qf = add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
-#build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='bright', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
+build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='bright', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load the bright time healpix zcatalog, to be used for getting extra columns
 #zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-bright.fits',columns=columns))
 #zcat.keep_columns(kc)
