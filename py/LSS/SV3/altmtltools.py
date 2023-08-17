@@ -1,3 +1,6 @@
+from desiutil.iers import freeze_iers
+freeze_iers()
+
 from astropy.table import Table,join
 import astropy.io.fits as pf
 import desitarget
@@ -119,6 +122,17 @@ def processTileFile(infile, outfile, startDate, endDate):
 
     origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
     return 0
+
+def uniqueArchiveDateZDatePairs(tileList):
+    output = []
+    for t in tileList: 
+        datepair = (t['ZDATE'], t['ARCHIVEDATE'])
+        if datepair in  output:
+            continue
+        else:
+            output.append(datepair)
+
+    return output
 
 def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     log.critical('this function isn\'t ready yet. Goodbye')
@@ -349,7 +363,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
     ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
     hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleELGPriorities = False, 
-    PromoteFracELG = 0.05, shuffleSubpriorities = True, reproducing = False, usetmp = False, 
+    PromoteFracELG = 0.1, shuffleSubpriorities = True, reproducing = False, usetmp = False, 
     finalDir = None, profile = False, debug = False, verbose = False):
     if profile:
         pr.enable()
@@ -450,10 +464,22 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
                 if verbose or debug:
                     log.info('continuing')
                 continue
-
-        if type(hpnum) == int:
+        if type(hpnum) == str:
+            try: 
+                hpnum = int(hpnum)
+            except:
+                log.info('hpnum is string but not integer. Value is {0}'.format(hpnum))
+                raise ValueError('hpnum is string but not integer. Value is {0}'.format(hpnum))
             rand.seed(seed + hpnum + n)
+        elif isinstance(hpnum, int) or isinstance(hpnum, np.int64):
+            rand.seed(seed + hpnum + n)
+        elif isinstance(hpnum, float) or isinstance(hpnum, np.float64):
+            assert(np.abs(hpnum - int(hpnum)) < 0.01)
+            rand.seed(seed + int(hpnum) + n)
         else:
+            log.info('hpnum = {0}'.format(hpnum))
+            log.info('type(hpnum) = {0}'.format(type(hpnum)))
+            assert(0)
             rand.seed(seed + n)
         if verbose or debug:
             log.info('pre creating output dir')
@@ -535,15 +561,32 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             ELGHIPs = evaluateMask(ELGBits, desi_mask['ELG_HIP'])
             ELGLOPs = evaluateMask(ELGBits, desi_mask['ELG_LOP'])
             ELGVLOs = evaluateMask(ELGBits, desi_mask['ELG_VLO'])
+            log.info('ELGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGs)))
+            log.info('LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGs)))
+            log.info('QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOs)))
+            log.info('ELGHIPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs)))
+            log.info('ELGLOPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs)))
+            log.info('ELGVLOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs)))
+
+
+            log.info('ELGHIPs&ELGLOPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&ELGLOPs)))
+            log.info('ELGHIPs&ELGVLOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&ELGVLOs)))
+            log.info('ELGHIPs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&LRGs)))
+            log.info('ELGHIPs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&QSOs)))
+            log.info('ELGLOPs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs&LRGs)))
+            log.info('ELGLOPs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs&QSOs)))
+            log.info('ELGVLOs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs&LRGs)))
+            log.info('ELGVLOs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs&QSOs)))
+
 
             #turn off the ELG_HIP bit
             initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGHIPs, mode = 'off', fieldName = 'DESI_TARGET')
 
             #reset object priority, priority_init, and numobs_init based on new target bits. 
             outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
-            initialentries['PRIORITY'] = outpriority
-            initialentries['PRIORITY_INIT'] = outpriority
-            initialentries['NUMOBS_INIT'] = outnumobs
+            initialentries['PRIORITY'][ELGHIPs] = outpriority[ELGHIPs]
+            initialentries['PRIORITY_INIT'][ELGHIPs] = outpriority[ELGHIPs]
+            initialentries['NUMOBS_INIT'][ELGHIPs] = outnumobs[ELGHIPs]
 
 
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
@@ -554,6 +597,33 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             initialentries['TARGET_STATE'][ELGHIPs & LRGs] = np.broadcast_to(np.array(['LRG|UNOBS']), np.sum(ELGHIPs & LRGs) )
 
 
+            #For Debug. New Target bit flags after demoting all ELG_HIPs
+            ELGBitsMid = initialentries['DESI_TARGET']
+            LRGsMid    = evaluateMask(ELGBitsMid, desi_mask['LRG'])
+            ELGsMid    = evaluateMask(ELGBitsMid, desi_mask['ELG'])
+            QSOsMid    = evaluateMask(ELGBitsMid, desi_mask['QSO'])
+            ELGHIPsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_HIP'])
+            ELGLOPsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_LOP'])
+            ELGVLOsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_VLO'])
+            log.info('ELGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGsMid)))
+            log.info('LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGsMid)))
+            log.info('QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOsMid)))
+            log.info('ELGHIPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid)))
+            log.info('ELGLOPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid)))
+            log.info('ELGVLOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid)))
+
+
+            log.info('ELGHIPsMid&ELGLOPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&ELGLOPsMid)))
+            log.info('ELGHIPsMid&ELGVLOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&ELGVLOsMid)))
+            log.info('ELGHIPsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&LRGsMid)))
+            log.info('ELGHIPsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&QSOsMid)))
+            log.info('ELGLOPsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid&LRGsMid)))
+            log.info('ELGLOPsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid&QSOsMid)))
+            log.info('ELGVLOsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid&LRGsMid)))
+            log.info('ELGVLOsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid&QSOsMid)))
+
+
+
             #Determine which 10% of ELGLOP and ELGVLO will be promoted to ELGHIP. These are done separately.
 
             #ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGLOPs)
@@ -561,22 +631,53 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             #ELGNewHIP = ELGNewHIP | random_fraction_of_trues(PromoteFracELG, ELGVLOs)
 
             chosenLOP = rand.random(len(ELGLOPs)) < 0.1
-            ELGnewHIP_FromLOP = ELGLOPs & chosenLOP 
+            ELGNewHIP_FromLOP = ELGLOPs & chosenLOP 
 
             chosenVLO = rand.random(len(ELGVLOs)) < 0.1
-            ELGnewHIP_FromVLO = ELGVLOs & chosenVLO
+            ELGNewHIP_FromVLO = ELGVLOs & chosenVLO
 
-            ELGNewHIP = ELGnewHIP_FromLOP | ELGnewHIP_FromVLO
+            ELGNewHIP = ELGNewHIP_FromLOP | ELGNewHIP_FromVLO
+
+            log.info('ELGNewHIP_FromVLO:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP_FromVLO)))
+            log.info('ELGNewHIP_FromLOP:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP_FromLOP)))
+            log.info('ELGNewHIP:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP)))
 
             #promote the just-determined 10% of ELG_LOP/ELG_VLO
             initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGNewHIP, mode = 'on', fieldName = 'DESI_TARGET')
 
 
+            #For Debug. New Target bit flags after promoting 10% of ELGs to HIP
+            ELGBitsFinal = initialentries['DESI_TARGET']
+            LRGsFinal    = evaluateMask(ELGBitsFinal, desi_mask['LRG'])
+            ELGsFinal    = evaluateMask(ELGBitsFinal, desi_mask['ELG'])
+            QSOsFinal    = evaluateMask(ELGBitsFinal, desi_mask['QSO'])
+            ELGHIPsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_HIP'])
+            ELGLOPsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_LOP'])
+            ELGVLOsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_VLO'])
+            log.info('ELGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGsFinal)))
+            log.info('LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGsFinal)))
+            log.info('QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOsFinal)))
+            log.info('ELGHIPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal)))
+            log.info('ELGLOPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal)))
+            log.info('ELGVLOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal)))
+
+
+            log.info('ELGHIPsFinal&ELGLOPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&ELGLOPsFinal)))
+            log.info('ELGHIPsFinal&ELGVLOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&ELGVLOsFinal)))
+            log.info('ELGHIPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&LRGsFinal)))
+            log.info('ELGHIPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&QSOsFinal)))
+            log.info('ELGLOPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal&LRGsFinal)))
+            log.info('ELGLOPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal&QSOsFinal)))
+            log.info('ELGVLOsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal&LRGsFinal)))
+            log.info('ELGVLOsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal&QSOsFinal)))
+
+
+
             #reset object priority, priority_init, and numobs_init based on new target bits. 
             outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
-            initialentries['PRIORITY'] = outpriority
-            initialentries['PRIORITY_INIT'] = outpriority
-            initialentries['NUMOBS_INIT'] = outnumobs
+            initialentries['PRIORITY'][ELGNewHIP] = outpriority[ELGNewHIP]
+            initialentries['PRIORITY_INIT'][ELGNewHIP] = outpriority[ELGNewHIP]
+            initialentries['NUMOBS_INIT'][ELGNewHIP] = outnumobs[ELGNewHIP]
 
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
@@ -814,8 +915,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             log.warn('sorting tiles on ARCHIVEDATE failed.')
             log.warn('currently we are aborting, but this may')
             log.warn('change in the future to switching to order by ZDATE')
-            log.critical('goodbye')
-            assert(0)
+            raise NotImplementedError('This pipeline does not currently handle tile lists with an unsortable ARCHIVEDATE or without any ARCHIVEDATE whatsoever. Exiting.')
             #sorttiles = np.sort(tiles, order = 'ZDATE')
         if testDoubleDate:
             log.info('Testing Rosette with Doubled Date only')
@@ -824,21 +924,27 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             log.info(tiles[tiles['TILEID' ] == 314])
             log.info(tiles[tiles['TILEID' ] == 315])
             tiles = tiles[cond1 | cond2 ]
-        
-        dates = np.sort(np.unique(sorttiles['ARCHIVEDATE']))
+        datepairs = uniqueArchiveDateZDatePairs(sorttiles)
+
+        #if singleDate:
+        #    dates = np.sort(np.unique(sorttiles['ARCHIVEDATE']))
         if debug:
-            log.info('first and last 10 hopefully archivedates hopefully in order')
-            log.info(dates[0:10])
-            log.info(dates[-10:-1])
+            log.info('first and last 10 hopefully datepairs hopefully in order')
+            log.info(datepairs[0:10])
+            log.info(datepairs[-10:-1])
             log.info('first and last 10 hopefully zdates hopefully not in order')
             log.info(sorttiles['ZDATE'][0:10])
             log.info(sorttiles['ZDATE'][-10:-1])
+        #else: 
 
-        
-        for date in dates:
-            dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == date]
-            zdates = np.sort(np.unique(dateTiles['ZDATE']))
-            dateTiles = dateTiles[dateTiles['ZDATE'] == zdates[0]]
+        for zd,ad in datepairs:
+            dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == ad]
+            #zdates = np.sort(np.unique(dateTiles['ZDATE']))
+            dateTiles = dateTiles[dateTiles['ZDATE'] == zd]
+            if debug:
+                log.info('inside dateLoop. ZDate is  {0}'.format(zd))
+                log.info('inside dateLoop. archiveDate is  {0}'.format(ad))
+                log.info('singleDate = {0}'.format(singleDate))
             assert(len(np.unique(dateTiles['ARCHIVEDATE'])) == 1)
             assert(len(np.unique(dateTiles['ZDATE'])) == 1)
             OrigFAs = []
@@ -982,7 +1088,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 sleep(1)
                 if verbose or debug:
                     log.info('has slept one second')
-                tiles["TIMESTAMP"] = get_utc_date(survey=survey)
+                dateTiles["TIMESTAMP"] = get_utc_date(survey=survey)
             if verbose or debug:
                 log.info('now writing to mtl_tile_file')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)

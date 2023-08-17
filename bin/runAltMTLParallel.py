@@ -41,6 +41,7 @@ parser.add_argument('-nfl', '--NumObsNotFromLedger', dest = 'numobs_from_ledger'
 parser.add_argument('-redoFA', '--redoFA', dest = 'redoFA', default=False, action='store_true', help = 'pass this flag to regenerate already existing fiber assignment files.')
 
 parser.add_argument('-getosubp', '--getosubp', action='store_true', dest='getosubp', default=False, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING AND NEVER FOR MOCKS. Pass this flag to grab subpriorities directly from the real survey MTLs for fiberassignment.', required = False)
+parser.add_argument('-md', '--multiDate', action='store_true', dest='multiDate', default=False, help = 'Currently this flag is being debugged. In the future, it will switch between interactive submission of each date as a separate job (True) and of all nights to be looped through until a single job`s time runs out. ', required = False)
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
@@ -48,6 +49,13 @@ parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cd
 print(argv)
 
 args = parser.parse_args()
+
+if args.profile:
+    pr = cProfile.Profile()
+    pr.enable()
+
+
+
 log = get_logger()
 
 if args.mock:
@@ -90,7 +98,7 @@ log.info('NNodes = {0:d}'.format(NNodes))
 
 ndirs = None
 multiproc = True
-singleDate = True
+singleDate = not(args.multiDate)
 
 
 def procFunc(nproc):
@@ -116,7 +124,8 @@ def procFunc(nproc):
             log.debug('retval')
             log.debug(retval)
         if retval == 151:
-            raise ValueError('No more data. Ending script.')
+            log.info('No more data. Ending script.')
+            return 151
         return retval
     elif args.verbose:
         print('retval')
@@ -146,3 +155,18 @@ assert(len(inds))
 p = Pool(NProc)
 atexit.register(p.close)
 result = p.map(procFunc,inds)
+
+
+if args.profile:
+    pr.disable()
+    s = io.StringIO()
+    sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    for i in range(1000):
+        outFN = args.altMTLBaseDir + '/runAltMTLParallel_{0:d}.prof'.format(int(i))
+        if os.isFile(outFN):
+            continue
+        else:
+            ps.dump_stats(outFN)
+    print(s.getvalue())
