@@ -125,7 +125,7 @@ shuffleBrightPriorities=''
 shuffleELGPriorities='--shuffleELGPriorities'
 
 PromoteFracBGSFaint=0.2
-PromoteFracELG=0.05
+PromoteFracELG=0.1
 
 # location of original MTLs to shuffle.
 # Default directory is a read only mount of the CFS filesystem
