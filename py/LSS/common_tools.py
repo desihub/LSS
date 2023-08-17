@@ -702,7 +702,7 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
-    df = fitsio.read(fn)
+    df = fitsio.read(fn.replace('global','dvs_ro'))
     if np.isin(tracer_mask+'_mask',list(df.dtype.names)):
         print('mask column already in '+fn)
         if redo:
