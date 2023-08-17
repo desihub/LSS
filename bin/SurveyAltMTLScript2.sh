@@ -2,10 +2,10 @@
 start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName=CHANGEME
+simName=JL_ELGShuffle
 
 #Location where you have cloned the LSS Repo
-path2LSS=CHANGEME #~/.local/desicode/LSS/bin/
+path2LSS=~/.local/desicode/LSS/bin/
 
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
@@ -117,15 +117,10 @@ hpListFile="$path2LSS/SV3HPList.txt"
 #Second option indicates what fraction/percent
 #of BGS_FAINT to promote to BGS_FAINT_HIP. Default is 20%, same as SV3
 
-#shuffleBrightPriorities='--shuffleBrightPriorities'
-shuffleBrightPriorities=''
-
-
-#shuffleELGPriorities=''
-shuffleELGPriorities='--shuffleELGPriorities'
+shuffleBrightPriorities='--shuffleBrightPriorities'
+#shuffleBrightPriorities=''
 
 PromoteFracBGSFaint=0.2
-PromoteFracELG=0.1
 
 # location of original MTLs to shuffle.
 # Default directory is a read only mount of the CFS filesystem
@@ -147,7 +142,7 @@ qR=''
 
 #Number of observation dates to loop through
 #Defaults to 40 dates for SV3
-NObsDates=365
+NObsDates=40
 
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
@@ -251,8 +246,8 @@ fi
 
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
-echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
+echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --promoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
+srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --promoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
 if [ $? -ne 0 ]; then
     exit 1234
     endInit=`date +%s.%N`
