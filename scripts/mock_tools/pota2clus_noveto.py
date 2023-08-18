@@ -56,6 +56,7 @@ if tracer == 'LRG':
     zmin = 0.4
     zmax = 1.1
 
+print(args.mockdir,'pota_',tracer,'.fits')
 in_data_fn = args.mockdir+'pota_'+tracer+'.fits'
 out_data_fn = args.base_output+tracer+'_complete_noveto_clustering.dat.fits'
 mock_data = fitsio.read(in_data_fn)
