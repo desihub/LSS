@@ -80,7 +80,7 @@ def ran_col_assign(randoms,data,sample_columns):
 
 for rann in range(rm,rx):
     in_ran_fn = args.random_dir+tracer+'_'+str(rann)+'_full_noveto.ran.fits'
-    out_ran_fn = args.base_output+tracer++'_complete_noveto_'+str(rann)+'clustering.ran.fits'
+    out_ran_fn = args.base_output+tracer+'_complete_noveto_'+str(rann)+'clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC']))
     ran = ran_col_assign(ran,mock_data,ran_samp_cols)
     common.write_LSS(ran,out_ran_fn)
