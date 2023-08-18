@@ -74,13 +74,14 @@ def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    fn = Table(fitsio.read(flroot+'clustering'+datran+'.fits'))
-    c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
-    gc = c.transform_to('galactic')
-    sel_ngc = gc.b > 0
     app = '_clustering'+datran+'.fits'
     if datran == '.ran':
         app = '_'+str(rann)+'_clustering'+datran+'.fits'
+
+    fn = Table(fitsio.read(flroot+app))
+    c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
     outf_ngc = flroot+'NGC'+app
     common.write_LSS(fn[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC'+app
