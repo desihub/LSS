@@ -37,8 +37,8 @@ parser.add_argument("--mockdir", help="directory when pota mock data is",default
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/test/')
 parser.add_argument("--random_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/')
 
-parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2,type=int) 
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
 
 args = parser.parse_args()
 print(args)
@@ -70,7 +70,7 @@ common.write_LSS(mock_data,out_data_fn)
 
 ran_samp_cols = ['Z','WEIGHT']
 
-def ran_col_assign(randoms,data,sample_columns)
+def ran_col_assign(randoms,data,sample_columns):
     inds = np.random.choice(len(data),len(randoms))
     dshuf = data[inds]
     for col in sample_columns:
