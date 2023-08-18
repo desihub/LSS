@@ -74,7 +74,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = '_clustering'+datran+'.fits'
+    app = 'clustering'+datran+'.fits'
     if datran == '.ran':
         app = '_'+str(rann)+'_clustering'+datran+'.fits'
 
@@ -82,9 +82,9 @@ def splitGC(flroot,datran='.dat',rann=0):
     c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     gc = c.transform_to('galactic')
     sel_ngc = gc.b > 0
-    outf_ngc = flroot+'NGC'+app
+    outf_ngc = flroot+'NGC_'+app
     common.write_LSS(fn[sel_ngc],outf_ngc)
-    outf_sgc = flroot+'SGC'+app
+    outf_sgc = flroot+'SGC_'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
 splitGC(out_data_froot,'.dat')
