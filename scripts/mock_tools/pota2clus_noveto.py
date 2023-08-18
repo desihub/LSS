@@ -76,7 +76,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     import astropy.units as u
     app = 'clustering'+datran+'.fits'
     if datran == '.ran':
-        app = '_'+str(rann)+'_clustering'+datran+'.fits'
+        app = str(rann)+'_clustering'+datran+'.fits'
 
     fn = Table(fitsio.read(flroot+app))
     c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
