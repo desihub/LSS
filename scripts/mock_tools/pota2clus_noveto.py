@@ -79,9 +79,9 @@ def splitGC(flroot,datran='.dat'):
     gc = c.transform_to('galactic')
     sel_ngc = gc.b > 0
     outf_ngc = flroot+'NGC_clustering'+datran+'.fits'
-    common.write_LSS(fc[sel_ngc],outf_ngc)
+    common.write_LSS(fn[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_clustering'+datran+'.fits'
-    common.write_LSS(fc[~sel_ngc],outf_sgc)
+    common.write_LSS(fn[~sel_ngc],outf_sgc)
 
 splitGC(out_data_froot,'.dat')
 
