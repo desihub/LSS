@@ -70,7 +70,7 @@ mock_data = Table(mock_data)
 mock_data.rename_column('RSDZ', 'Z')
 common.write_LSS(mock_data,out_data_fn)
 
-def splitGC(flroot,datran='.dat'):
+def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
@@ -78,9 +78,12 @@ def splitGC(flroot,datran='.dat'):
     c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     gc = c.transform_to('galactic')
     sel_ngc = gc.b > 0
-    outf_ngc = flroot+'NGC_clustering'+datran+'.fits'
+    app = '_clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = '_'+str(rann)+'_clustering'+datran+'.fits'
+    outf_ngc = flroot+'NGC'+app
     common.write_LSS(fn[sel_ngc],outf_ngc)
-    outf_sgc = flroot+'SGC_clustering'+datran+'.fits'
+    outf_sgc = flroot+'SGC'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
 splitGC(out_data_froot,'.dat')
@@ -100,7 +103,7 @@ for rann in range(rm,rx):
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC']))
     ran = ran_col_assign(ran,mock_data,ran_samp_cols)
     common.write_LSS(ran,out_ran_fn)
-    splitGC(out_data_froot+str(rann)+'_','.ran')
+    splitGC(out_data_froot,'.ran',rann)
 
 
 
