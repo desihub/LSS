@@ -19,12 +19,16 @@ from astropy import units as u
 from astropy.wcs import WCS
 
 from desitarget.io import read_targets_header, find_target_files, read_targets_in_box
-from desitarget.geomask import match
+from desitarget.geomask import match, nside2nside
 from desitarget.gaiamatch import get_gaia_dir, gaia_psflike
+from desitarget.randoms import dr8_quantities_at_positions_in_a_brick, get_dust
+from desitarget.targets import resolve
 from desitarget import __version__ as desitarget_version
+from desitarget.internal import sharedmem
 
 # ADM the DESI default logger.
 from desiutil.log import get_logger
+from desiutil import brick
 
 # ADM general bitmasks for LSS
 from LSS.masks import lrg_mask, elg_mask, skymap_mask
@@ -1075,7 +1079,7 @@ def make_stardens(nside=512, gaiadir=None, dr="dr2", outdir=None, write=True):
         if nfile % 1000 == 0 and nfile > 0:
             elapsed = time() - t0
             rate = nfile / elapsed
-            log.info('{}/{} files; {:.1f} files/sec; {:.1f} total mins elapsed'
+            log.info("{}/{} files; {:.1f} files/sec; {:.1f} total mins elapsed"
                      .format(nfile, nfiles, rate, elapsed/60.))
 
         # ADM save memory, speed up by only reading a subset of columns.
@@ -1688,6 +1692,254 @@ def sample_map(mapname, randoms, lssmapdir=None, nside=512):
     # ADM The method to find the means will skip any missing pixels, so
     # ADM populate on uniq indices to retain the missing pixels as zeros.
     done[uniq] = randmeans
+
+    return done
+
+
+def pure_healpix_map_filename(outdir, nsideproc, hpxproc):
+    """Standardize name to write output maps made by pure_healpix_map()
+
+    Parameters
+    ----------
+    outdir : :class:`str`
+        The root output directory, e.g. $SCRATCH.
+    nsideproc : :class:`int`
+        Resolution (nested HEALPix nside) at which map was made.
+    hpxproc : :class:`int`
+        Pixel number in which maps was made.
+
+    Returns
+    -------
+    :class:`str`
+        A standardized filename built from the input parameters.
+    """
+    outfile = f"skymap-nside-{nsideproc}-pixel-{hpxproc}.fits"
+
+    return os.path.join(outdir, outfile)
+
+
+def get_quantities_in_a_brick(ras, decs, brickname, drdir, dustdir=None):
+    """Per-band quantities at locations in a Legacy Surveys brick.
+
+    Parameters
+    ----------
+    ras : :class:`~numpy.ndarray`
+        Array of Right Ascensions (degrees).
+    decs : :class:`~numpy.ndarray`
+        Array of Declinations (degrees).
+    brickname : :class:`~numpy.array`
+        Name of a brick in which to look up the RA/Dec locations, e.g.,
+        '1351p320'. For any RA/Dec locations not in the brick, values
+        of zero will be returned for all quntities.
+    drdir : :class:`str`
+        The root directory pointing to a Legacy Surveys Data Release
+        e.g. /global/cfs/cdirs/cosmo/data/legacysurvey/dr9.
+    dustdir : :class:`str`, optional, defaults to $DUST_DIR+'/maps'
+        The root directory pointing to SFD dust maps. If not
+        sent the code will try to use $DUST_DIR+'/maps' before failing.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A structured array with columns of Legacy Surveys quantities at
+        the passed RA/Dec locations looked up in the passed brick.
+
+    Notes
+    -----
+    - Based on :func:`desitarget.randoms.get_quantities_in_a_brick()`.
+      More information is included in the docstring for that function.
+    """
+    # ADM only intended to work on one brick, so die for larger arrays.
+    if not isinstance(brickname, str):
+        log.fatal("Only one brick can be passed at a time!")
+        raise ValueError
+
+    # ADM retrieve the dictionary of quantities at each location.
+    # ADM aprad=0 is a speed-up to skip calculating aperture fluxes.
+    qdict = dr8_quantities_at_positions_in_a_brick(ras, decs, brickname, drdir,
+                                                   aprad=0.)
+
+    # ADM catch where a coadd directory is completely missing.
+    if len(qdict) > 0:
+        # ADM if 2 different camera combinations overlapped a brick
+        # ADM then we also need to duplicate the ras, decs.
+        if len(qdict['photsys']) == 2*len(ras):
+            ras = np.concatenate([ras, ras])
+            decs = np.concatenate([decs, decs])
+
+    # ADM the structured array to output.
+    dt = [('RELEASE', '>i2'), ('BRICKNAME', 'S8'), ('RA', '>f8'), ('DEC', 'f8'),
+          ('NOBS_G', 'i2'), ('NOBS_R', 'i2'), ('NOBS_Z', 'i2'),
+          ('GALDEPTH_G', 'f4'), ('GALDEPTH_R', 'f4'), ('GALDEPTH_Z', 'f4'),
+          ('PSFDEPTH_G', 'f4'), ('PSFDEPTH_R', 'f4'), ('PSFDEPTH_Z', 'f4'),
+          ('PSFDEPTH_W1', 'f4'), ('PSFDEPTH_W2', 'f4'),
+          ('PSFSIZE_G', 'f4'), ('PSFSIZE_R', 'f4'), ('PSFSIZE_Z', 'f4'),
+          ('EBV', 'f4'), ('PHOTSYS', '|S1')]
+    qinfo = np.zeros(len(ras), dtype=dt)
+
+    # ADM retrieve the E(B-V) values for each random point.
+    ebv = get_dust(ras, decs, dustdir=dustdir)
+
+    # ADM catch the case where a coadd directory was missing.
+    if len(qdict) > 0:
+        # ADM store each quantity of interest in the structured array
+        # ADM remembering that the dictionary keys are lower-case text.
+        cols = qdict.keys()
+        for col in cols:
+            if col.upper() in qinfo.dtype.names:
+                qinfo[col.upper()] = qdict[col]
+
+    # ADM add the RAs/Decs, SFD dust values and brick name.
+    qinfo["RA"] = ras
+    qinfo["DEC"] = decs
+    qinfo["EBV"] = ebv
+    qinfo["BRICKNAME"] = brickname
+
+    return qinfo
+
+
+def pure_healpix_map(drdir, nsideproc, hpxproc, nside=8192, numproc=1):
+    """Build a skymap at HEALPixel centers (in nested scheme).
+
+    Parameters
+    ----------
+    drdir : :class:`str`
+        The root directory pointing to a Legacy Surveys Data Release
+        e.g. /global/cfs/cdirs/cosmo/data/legacysurvey/dr9.
+    nsideproc : :class:`int`
+        Resolution (nested HEALPix nside) at which to process the map.
+        To facilitate parallelization, results will only be calculated
+        for HEALPixel `hpxproc` at nside `nsideproc`.
+    hpxproc : :class:`int`
+        Pixel number (nested HEALPixel) for which to process the map.
+        To facilitate parallelization, results will only be calculated
+        for HEALPixel `hpxproc` at nside `nsideproc`.
+    nside : :class:`int`, optional, defaults to nside=8192
+        Resolution (HEALPix nside) at which to build the (nested) map.
+    numproc : :class:`int`, optional, defaults to 1
+        The number of processes over which to parallelize.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        A numpy structured array of (some) values from the Legacy Survey
+        stacks and the `maparray` at the start of this module. Values
+        are looked up at the HEALPixel centers at the passed `nside` and
+        returned within the boundaries of the (nested) HEALPixel that
+        corresponds to `nsideproc` and `hpxproc`.
+
+    Notes
+    -----
+    - `nsideproc` cannot be larger than `nside` as it doesn't make sense
+      to parallelize by grouping larger pixels into smaller pixels.
+    """
+    start = time()
+    log.info(f"Starting...t={time()-start:.1f}s")
+
+    # ADM see Notes.
+    if nsideproc > nside:
+        msg = f"nsideproc (={nsideproc}) cannot be larger than nside (={nside})"
+        raise ValueError(msg)
+        log.critical(msg)
+
+    # ADM recover all the nested HEALPixel centers at the passed nside.
+    # ADM first calculate all the HEALPixel numbers at the passed nside.
+    npix = hp.nside2npix(nside)
+    hpx = np.arange(npix)
+    # ADM now calculate the HEALPixel numbers at the processing nside.
+    fac = (nside//nsideproc)**2
+    largerhpx = hpx//fac
+    # ADM reduce to just HEALPixels within the processing nside.
+    ii = largerhpx == hpxproc
+    hpx = hpx[ii]
+    # ADM finally, recover the locations of the centers.
+    ras, decs = hp.pix2ang(nside, hpx, nest=True, lonlat=True)
+    log.info(f"Found {len(hpx)} HEALPixels at nside={nside} within processing"
+             f" pixel={hpxproc} at nside={nsideproc}...t={time()-start:.1f}s")
+
+    # ADM build the Legacy Surveys bricks object.
+    bricks = brick.Bricks(bricksize=0.25)
+
+    # ADM recover all the brick names at the HEALPixel centers.
+    allbricknames = bricks.brickname(ras, decs)
+
+    # ADM group the locations (dic values) by brick (dic keys).
+    dbrick = {bn: [] for bn in allbricknames}
+    for bn, ra, dec in zip(allbricknames, ras, decs):
+        dbrick[bn].append([ra, dec])
+
+    # ADM just the unique brick names.
+    bricknames = list(dbrick.keys())
+    nbricks = len(bricknames)
+    log.info(f"{len(hpx)} HEALPixels are spread over {nbricks}"
+             f" unique bricks...t={time()-start:.1f}s")
+
+    # ADM calculate quantities in a brick, parallelizing by brick names.
+    # ADM the critical function to run on every brick.
+    def _get_quantities(brickname):
+        """wrap dr8_quantities_at_positions_a_brick() for a brick name"""
+        # ADM extract the brick locations from the brick dictionary.
+        ras, decs = np.array(dbrick[brickname]).T
+        randoms = get_quantities_in_a_brick(ras, decs, brickname, drdir)
+        return randoms
+
+    # ADM this is just to count bricks in _update_status.
+    nbrick = np.zeros((), dtype='i8')
+    t0 = time()
+    # ADM write a total of 25 output messages during processing.
+    interval = nbricks // 25
+    # ADM catch the case of very small numbers of bricks.
+    if interval == 0:
+        interval = 1
+
+    def _update_status(result):
+        """wrapper function for the critical reduction operation,
+           that occurs on the main parallel process"""
+        if nbrick % interval == 0:
+            elapsed = time() - t0
+            rate = (nbrick + 1) / elapsed
+            log.info(f"Processed {nbrick+1}/{nbricks} bricks; {rate:.1f} "
+                     f"bricks/sec; {elapsed/60.:.1f} total mins elapsed")
+            # ADM warn the user if code might exceed 4 hours.
+            if nbrick > 0 and nbricks/rate > 4*3600.:
+                msg = "May take > 4 hours to run, so fail on interactive nodes."
+                log.warning(msg)
+
+        nbrick[...] += 1    # this is an in-place modification.
+        return result
+
+    # - Parallel process input files.
+    if numproc > 1:
+        pool = sharedmem.MapReduce(np=numproc)
+        with pool:
+            qinfo = pool.map(_get_quantities, bricknames, reduce=_update_status)
+    else:
+        qinfo = list()
+        for brickname in bricknames:
+            qinfo.append(_update_status(_get_quantities(brickname)))
+
+    qinfo = np.concatenate(qinfo)
+
+    # ADM resolve north/south bricks, first removing bricks that are
+    # ADM outside of the imaging footprint.
+    inside = qinfo["RELEASE"] != 0
+    resolved = np.concatenate([qinfo[~inside], resolve(qinfo[inside])])
+
+    # ADM build the output array.
+    donedt = [('HPXNUM', '>i8')] + resolved.dtype.descr
+    done = np.zeros(len(resolved), dtype=donedt)
+    for col in resolved.dtype.names:
+        done[col] = resolved[col]
+
+    # ADM add the HEALPixel number to the output array.
+    done["HPXNUM"] = hp.ang2pix(nside, done["RA"], done["DEC"],
+                                nest=True, lonlat=True)
+
+    # ADM sort on HEALPixel before returning.
+    ii = np.argsort(done["HPXNUM"])
+    done = done[ii]
+
+    log.info(f"Done...t={time()-start:.1f}s")
 
     return done
 
