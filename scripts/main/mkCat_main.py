@@ -384,10 +384,10 @@ if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
 if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
-    ffull = dirout+type+notqso+'_full.dat.fits'
+    ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
-        fin = fitsio.read(dirout+'BGS_BRIGHT_full.dat.fits')
+        fin = fitsio.read(dirout+'BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'phot':
             sel = fin['ABSMAG_RP1'] < -21.5
         if args.absmagmd == 'spec':
@@ -488,12 +488,12 @@ if args.add_fs == 'y':
         #diro = copy(dirout)
         inroot = '/dvs_ro/cfs/cdirs/'
         outroot = '/global/cfs/cdirs/'
-        infn = dirout.replace(outroot,'')+type+notqso+'_full.dat.fits'
+        infn = dirout.replace(outroot,'')+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
         print(dirout)
     else:
         inroot = ''
         outroot = ''
-        infn = dirout+type+notqso+'_full.dat.fits'
+        infn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     common.join_with_fastspec(infn,fscols,inroot=inroot,\
     outroot=outroot,fsver=fsver,fsrel=fsrel,specrel=fsspecver,prog=progl)
 
