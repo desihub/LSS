@@ -37,23 +37,28 @@ for tp,notqso in zip(tps,notqsos):
 
 
 #random
-#new process
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog BRIGHT
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog DARK
-#this process is much slower than new process (details to be added), but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
+#assuming target files for randoms were already produced for daily
+#gets all potential assignments and collisions for each of 18 randoms, in sequence
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpotaY1_ran.py --prog BRIGHT
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpotaY1_ran.py --prog DARK
+
+#OLD PROCESS FOR RANDOMS
+#this process is much slower than new process , but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
 #first, we go through bright and dark, making the mtl files per tile that fiberassign uses, then running fiberassign (to get potential assignments, which is the FAVAIL HDU in the fba files)
 #after fiberassign is run, the potential assignments are combined per healpix
 #does 18 randoms in parallel
 #total amount of time is ~linear in the number of tiles to run
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type dark 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type bright 
+#if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
 #to combine with spec info and count tiles
 srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type dark --combwspec y --counttiles y --survey Y1 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type bright --combwspec y --counttiles y --survey Y1 
 
-#if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
+
+#OLD
 #then, we go through per type
 #the "full" random files are made for each healpix
 #this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
@@ -67,9 +72,9 @@ for tp,notqso in zip(tps,notqsos):
     #on perlmutter, enough memory so one node fine?
     #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y
     
-#updated to not go through by healpix:
+#Current:
 for tp,notqso in zip(tps,notqsos):
-	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type LRG --combwspec n --fullr y --survey Y1 
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type tp --combwspec n --fullr y --survey Y1 
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now
@@ -95,7 +100,8 @@ for tp,notqso in zip(tps,notqsos):
 
 #add completeness info per tiles group to randoms, needs to be done after vetos applied to data
 for tp,notqso in zip(tps,notqsos):
-	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --version <LSSversion> --minr --maxr
+	#doing in chunks of 6 seems to be robust for --minr and --maxr arguments
 	#i/o goes slow on node sometimes and this computing is fast, so the following might work better:
 	python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
 
@@ -103,8 +109,10 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
     srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
 
+#get rest frame from fastspecfit
+python mkCat_main.py --type BGS_BRIGHT --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_fs y --survey Y1 --version <LSSversion> 
 
-
+#NO LONGER DEFAULT
 #get k+e
 srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
 
