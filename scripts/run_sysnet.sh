@@ -3,8 +3,8 @@
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #source /global/cfs/cdirs/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the LSS repo is installed, e.g., export LSSCODE=$HOME
-module load cudatoolkit/11.4
-module load pytorch/1.10.0
+#module load cudatoolkit/11.4
+#module load pytorch/1.10.0
 
 
 run_sysnet=$SYSNETDIR/sysnetdev/scripts/app.py #make sure to set $SYSNETDIR to wherever the sysnet repo was installed
