@@ -50,7 +50,7 @@ parser.add_argument("--join_etar", help="whether or not to join to the target fi
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
-parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='')
+parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='_HPmapcut')
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 
 
