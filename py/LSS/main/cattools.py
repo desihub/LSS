@@ -1322,7 +1322,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
             fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
     
     if (dr == 'mock'):
-        fj = fitsio.read(indir+'/combdark_' + pd + '_wdupspec_zdone.fits', columns = ['TARGETID', 'TILEID', 'TILELOCID'])
+        fj = fitsio.read(indir+ '/combdark_wdupspec_zdone_' + pd + '.fits' , columns = ['TARGETID', 'TILEID', 'TILELOCID'])
         
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)
@@ -1827,7 +1827,8 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
     #fgu.sort('TARGETID')
     if alt_out != None:
-        outf = alt_out + '/comb' + tp + '_' + mock_tr + '_'+ 'wdupspec_zdone.fits'
+        #outf = alt_out + '/comb' + tp + '_' + mock_tr + '_'+ 'wdupspec_zdone.fits'
+        outf = alt_out + '/comb' + tp + '_' + 'wdupspec_zdone.fits'
         if mock_priority_mask == 'y':
             if mock_tr == 'QSO':
                 maxp = 3400
