@@ -13,7 +13,7 @@ from LSS.imaging import densvar
 from LSS import common_tools as common
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
@@ -32,6 +32,7 @@ nside,nest = 256,True
 
 indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/imaging/'
+outdir.replace('dvs_ro','global')
 
 if args.data == 'LSS':
     if not os.path.exists(outdir):
@@ -84,9 +85,9 @@ all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 lrg_mask_frac = np.zeros(256*256*12)
 ranmap = np.zeros(256*256*12)
 ranmap_lmask = np.zeros(256*256*12)
-randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
-ran_lrgmask = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
+ran_lrgmask = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
 th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
 ranpix = hp.ang2pix(256,th,phi,nest=True)
 for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
@@ -97,13 +98,13 @@ sel = ranmap > 0
 lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
 sky_g = np.zeros(256*256*12)
-f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
+f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
 pixr = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pixr)
 for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g[pix] = f['sky_median_g'][i]
-f = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
+f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
 pix = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pix)
 for i in range(0,len(f)):
@@ -111,7 +112,7 @@ for i in range(0,len(f)):
     sky_g[pix] = f['sky_median_g'][i]
 
 
-sag = np.load('/global/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
+sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
 
 if args.mapmd == 'all':
     maps = all_maps
@@ -412,7 +413,7 @@ for tp in tps:
     
     
             if do_ebvnew_diff == 'y':
-                dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+                dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
                 nside = 256#64
                 nest = False
                 eclrs = ['gr','rz']
