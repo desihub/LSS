@@ -34,6 +34,7 @@ parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
+parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
 parser.add_argument("--counttiles", default = 'n')
 
 args = parser.parse_args()
@@ -42,39 +43,42 @@ if args.mock == 'ab1stgen':
     infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
+    tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
-    tr = args.tracer
-    rz = args.realization
-    print("Doing %s"%tr)
+#     #tr = args.tracer
+#     rz = args.realization
+#     print("Doing %s"%tr)
 
-    if  tr == "LRG":
-        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
-        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
-    elif tr == "ELG":
-        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
-        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
-    elif tr == "QSO":
-        infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
-        infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
-   # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
-   # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
-    tars1 = Table.read(infn1)#fitsio.read(infn1)
-    tars2 = Table.read(infn2)#fitsio.read(infn2)
-    tars1["GALCAP"] = "N"
-    tars2["GALCAP"] = "S"
-    tars = vstack([tars1, tars2])
-    tars['TARGETID'] = np.arange(len(tars))
-    tarcols = ['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ']
+#     if  tr == "LRG":
+#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
+#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
+#     elif tr == "ELG":
+#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
+#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
+#     elif tr == "QSO":
+#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
+#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
+#    # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
+#    # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
+#     tars1 = Table.read(infn1)#fitsio.read(infn1)
+#     tars2 = Table.read(infn2)#fitsio.read(infn2)
+#     tars1["GALCAP"] = "N"
+#     tars2["GALCAP"] = "S"
+#     tars = vstack([tars1, tars2])
+#     tars['TARGETID'] = np.arange(len(tars))
+    
+    infn = args.base_input + 'EZMocks_6Gpc/EZMocks_6Gpc_' + args.realization + '.fits'
+    tars = fitsio.read(infn)
+    tarcols = list(tars.dtype.names)#['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ']
+
+    tileoutdir = args.base_output+'EZMocks_6Gpc/tartiles'+args.realization+'/'
+    paoutdir = args.base_output+'EZMocks_6Gpc/EzMocks/mock'+args.realization+'/'
+    if args.tracer is not None:
+        tileoutdir += args.tracer+'/'
+        paoutdir += args.tracer+'/'
 
 print(tars.dtype.names)
-
-tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/mock'+args.realization+'/'
-if args.tracer is not None:
-    tileoutdir += args.tracer+'/'
-    paoutdir += args.tracer+'/'
-
-
 
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
