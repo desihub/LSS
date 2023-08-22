@@ -32,7 +32,8 @@ nside,nest = 256,True
 
 indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/imaging/'
-outdir.replace('dvs_ro','global')
+outdir = outdir.replace('dvs_ro','global')
+print('writing to '+outdir)
 
 if args.data == 'LSS':
     if not os.path.exists(outdir):
