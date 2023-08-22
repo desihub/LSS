@@ -373,7 +373,9 @@ if root:
         inds = np.arange(args.minr,args.maxr)
         if args.useMPI == 'y':
             from multiprocessing import Pool
-            with Pool(processes=nran*2) as pool:
+            nproc = 9
+            #nproc = nran*2
+            with Pool(processes=nproc) as pool:
                 res = pool.map(_parfun, inds)
         else:
             for ii in inds:
