@@ -3382,8 +3382,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ffcn.keep_columns(kc)
     
         if write_cat == 'y':
-            comments = ["'clustering' LSS catalog for random number "+str(rann)+", "+reg+" region","entries are only for data with good redshifts"]
-            common.write_LSS(ffcn,outfn,comments)
+            #comments seem to cause I/O issues
+            #comments = ["'clustering' LSS catalog for random number "+str(rann)+", "+reg+" region","entries are only for data with good redshifts"]
+            common.write_LSS(ffcn,outfn)#,comments)
         tabl.append(ffcn)
     #outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     #if clus_arrays is None:
