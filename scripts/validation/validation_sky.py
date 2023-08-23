@@ -154,9 +154,9 @@ for tp in tps:
         #vx = np.max(dt['WEIGHT_SYS'])
         vm = 0.75
         vx = 1.25
-        titl = tp+' WEIGHT_SYS'
-        outf = outdir+tp+'_weightsys.png'
-        plot_map_sindec(rada,sindd,dt['WEIGHT_SYS'],vm,vx,titl,outf)
+        titl = tp+' '+args.weight_col
+        outf = outdir+tp+'_'+args.weight_col+'.png'
+        plot_map_sindec(rada,sindd,dt[args.weightcol],vm,vx,titl,outf)
 
         for reg in regl:
             
