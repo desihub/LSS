@@ -19,6 +19,7 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SN')
 parser.add_argument("--compmd",help="extra completeness on data or random",default='ran')
 parser.add_argument("--ps",help="point size for density map",default=.1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
@@ -125,7 +126,7 @@ for tp in tps:
         if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
             dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
 
-        dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt['WEIGHT_SYS']
+        dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt[args.weight_col]
         sel_nan = dt['WEIGHT']*0 != 0
         if len(dt[sel_nan]) != 0:
             print(str(len(dt[sel_nan]))+ ' nan weights')
