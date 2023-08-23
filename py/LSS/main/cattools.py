@@ -3356,7 +3356,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 
         outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
         ffcn = ffc[wn]
-        if 'S' in flin and 'QSO' in flin:
+        if 'QSO_S' in flin:
             print('resampling in DES region')
             from regressis import footprint
             foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
