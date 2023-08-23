@@ -286,12 +286,16 @@ for tp in tps:
 
 
 
-    mf = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256.fits')
+    mfn = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits')
+    mfs = fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')
+    mfdic ={'N':mfn,'S':mfs}
     for map in maps:
         
-        parv = mf[map]
+        
         print(map)
         for reg,cl in zip(regl,clrs):
+            mf = mfdic[reg]
+            parv = mf[map]
             if reg == 'S' or map[:5] != 'CALIB':
                 fig = plt.figure()
                 sel_reg_d = dtf['PHOTSYS'] == reg
