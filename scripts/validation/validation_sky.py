@@ -156,7 +156,7 @@ for tp in tps:
         vx = 1.25
         titl = tp+' '+args.weight_col
         outf = outdir+tp+'_'+args.weight_col+'.png'
-        plot_map_sindec(rada,sindd,dt[args.weightcol],vm,vx,titl,outf)
+        plot_map_sindec(rada,sindd,dt[args.weight_col],vm,vx,titl,outf)
 
         for reg in regl:
             
