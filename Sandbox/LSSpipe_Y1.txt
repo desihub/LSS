@@ -109,6 +109,9 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
     srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
 
+#this add the completeness info after the map based veto to randoms
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tlcomp y --version v0.6 --fulld n
+
 #get rest frame from fastspecfit
 python mkCat_main.py --type BGS_BRIGHT --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_fs y --survey Y1 --version <LSSversion> 
 
