@@ -382,13 +382,6 @@ for tp in tps:
             plt.grid()
             figs.append(fig)
 
-                    plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
-                    figs.append(fig)
-                    if args.mapmd == 'validate':
-                        fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
-
-                    chi2tot += chi2
-                    nmaptot += 1
 
 #     ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
 #     nside = 64
