@@ -18,6 +18,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 parser.add_argument("--compmd",help="extra completeness on data or random",default='ran')
 parser.add_argument("--ps",help="point size for density map",default=.1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
@@ -25,9 +26,9 @@ parser.add_argument("--dpi",help="resolution in saved density map in dots per in
 args = parser.parse_args()
 
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/sky/'
-
+outdir = outdir.replace('dvs_ro','global')
 if args.data == 'LSS':
     if not os.path.exists(outdir):
         os.mkdir(outdir)
@@ -115,7 +116,7 @@ for tp in tps:
         sdecl = []
         odl = []
         odl_oc = []
-        dt = Table(fitsio.read(indir+tp+zdw+'_full.dat.fits'))
+        dt = Table(fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits'))
         cols = list(dt.dtype.names)
         sel_gz = common.goodz_infull(tp[:3],dt)
         sel_obs = dt['ZWARN'] != 999999
@@ -133,7 +134,7 @@ for tp in tps:
         rada[wr] -=360
 
  
-        rf = indir+tpr+zdw+'_0_full.ran.fits'
+        rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
         rta = fitsio.read(rf)
 
         rara = rta['RA']
