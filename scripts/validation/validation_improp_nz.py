@@ -170,7 +170,7 @@ for tp in tps:
         tw += '_ratio'
     outfn = outdir+tp+'_nzsplit'+str(args.nsplit)+tw+'.pdf'  
 
-    dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
+    dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
     seld = dtf['ZWARN'] != 999999
     seld &= dtf['ZWARN']*0 == 0
 
