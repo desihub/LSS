@@ -350,7 +350,7 @@ for tp in tps:
         #plt.clf()
 
 
-            if do_ebvnew_diff == 'y':
+    #        if do_ebvnew_diff == 'y':
     dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
     nside = 256#64
     nest = False
