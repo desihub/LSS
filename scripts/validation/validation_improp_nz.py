@@ -12,12 +12,14 @@ import healpy as hp
 from LSS.imaging import densvar
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for catalogs",default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SN')
 parser.add_argument("--nsplit",help="number of percentile bins to split into",default=2,type=int)
 parser.add_argument("--mode",help="nz or ratio of nz to unsplit",default='ratio')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
@@ -30,7 +32,7 @@ nside,nest = 256,True
 
 indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/imaging/'
-
+outdir = outdir.replace('dvs_ro','global')
 if args.data == 'LSS':
     if not os.path.exists(outdir):
         os.mkdir(outdir)
@@ -117,7 +119,7 @@ def plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01):
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
         #print('using FRAC_TLOBS_TILES')
         dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
-    dwt = dcomp*dt_reg['WEIGHT_SYS']*dt_reg['WEIGHT_ZFAIL']
+    dwt = dcomp*dt_reg[args.weight_col]*dt_reg['WEIGHT_ZFAIL']
     for i in range(0,nsplit):
         seld = dval > minvl[i]
         seld &= dval < minvl[i+1]
@@ -144,7 +146,7 @@ def plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=2,zbinsize=0.01,y
     if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
         #print('using FRAC_TLOBS_TILES')
         dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
-    dwt = dcomp*dt_reg['WEIGHT_SYS']*dt_reg['WEIGHT_ZFAIL']*dt_reg['WEIGHT_FKP']
+    dwt = dcomp*dt_reg[args.weight_col]*dt_reg['WEIGHT_ZFAIL']*dt_reg['WEIGHT_FKP']
     nzall = np.histogram(dt_reg['Z_not4clus'],range=(zmin,zmax),bins=nzbin,weights=dwt)
     nzs = []
     for i in range(0,int(nsplit/2)):
@@ -347,39 +349,80 @@ for tp in tps:
         #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
         #plt.clf()
 
-    ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
-    nside = 64
+
+            if do_ebvnew_diff == 'y':
+    dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    nside = 256#64
     nest = False
-    debv = np.zeros(nside*nside*12)
-    for i in range(0,len(ebvn)):
-        pix = ebvn[i]['HPXPIXEL']
-        sfdv = ebvn[i]['EBV_SFD']
-        nv = ebvn[i]['EBV_NEW'] 
-        debv[pix] = nv-sfdv
-    parv = debv
-    
-    for reg,cl in zip(regl,clrs):
-        fig = plt.figure()
-        sel_reg_d = dtf['PHOTSYS'] == reg
-        sel_reg_r = rt['PHOTSYS'] == reg
-        dt_reg = dtf[sel_reg_d]
-        rt_reg = rt[sel_reg_r]
-        if args.mode == 'nz':
-            plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+    eclrs = ['gr','rz']
+    for ec in eclrs:
+        ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+        parv = debv
+        for reg,cl in zip(regl,clrs):
+            fig = plt.figure()
+            sel_reg_d = dtf['PHOTSYS'] == reg
+            sel_reg_r = rt['PHOTSYS'] == reg
+            dt_reg = dtf[sel_reg_d]
+            rt_reg = rt[sel_reg_r]
+            if args.mode == 'nz':
+                plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
 
-            plt.legend()
-            plt.xlabel('redshift')
-            plt.ylabel('counts per deg2 ')
-        else:
-            plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
-            plt.legend()
-            plt.xlabel('redshift')
-            plt.ylabel('dN/dz ratio to full sample ')
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('counts per deg2 ')
+            else:
+                plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+                plt.legend()
+                plt.xlabel('redshift')
+                plt.ylabel('dN/dz ratio to full sample ')
 
-        plt.title(args.survey+' '+tp+' EBV_RZ - EBV_SFD '+reg)
-        plt.legend()
-        plt.grid()
-        figs.append(fig)
+            plt.title(args.survey+' '+tp+' EBV_DESI_'+ec.upper()+' - EBV_SFD '+reg)
+            plt.legend()
+            plt.grid()
+            figs.append(fig)
+
+                    plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                    figs.append(fig)
+                    if args.mapmd == 'validate':
+                        fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
+
+                    chi2tot += chi2
+                    nmaptot += 1
+
+#     ebvn = fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits')
+#     nside = 64
+#     nest = False
+#     debv = np.zeros(nside*nside*12)
+#     for i in range(0,len(ebvn)):
+#         pix = ebvn[i]['HPXPIXEL']
+#         sfdv = ebvn[i]['EBV_SFD']
+#         nv = ebvn[i]['EBV_NEW'] 
+#         debv[pix] = nv-sfdv
+#     parv = debv
+#     
+#     for reg,cl in zip(regl,clrs):
+#         fig = plt.figure()
+#         sel_reg_d = dtf['PHOTSYS'] == reg
+#         sel_reg_r = rt['PHOTSYS'] == reg
+#         dt_reg = dtf[sel_reg_d]
+#         rt_reg = rt[sel_reg_r]
+#         if args.mode == 'nz':
+#             plot_nzsplit(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+# 
+#             plt.legend()
+#             plt.xlabel('redshift')
+#             plt.ylabel('counts per deg2 ')
+#         else:
+#             plot_nzsplit_ratio(parv,dt_reg,rt_reg,zmin,zmax,reg,nsplit=args.nsplit,zbinsize=zbinsize)
+#             plt.legend()
+#             plt.xlabel('redshift')
+#             plt.ylabel('dN/dz ratio to full sample ')
+# 
+#         plt.title(args.survey+' '+tp+' EBV_RZ - EBV_SFD '+reg)
+#         plt.legend()
+#         plt.grid()
+#         figs.append(fig)
 
    
     with PdfPages(outfn) as pdf:
