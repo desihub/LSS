@@ -69,11 +69,11 @@ elif tracer == 'QSO':
 else:
     sys.exit('tracer type '+args.tracer+' not supported (yet)')
 
-print(args.mockdir,'pota_',tracer,'.fits')
+
 mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-in_data_fn = args.mockdir+'pota_'+args.prog+'.fits'
-out_data_fn = args.mockdir+tracer+'_complete_noveto_clustering.dat.fits'
-out_data_froot = args.mockdir+tracer+'_complete_noveto_'
+in_data_fn = mockdir+'pota_'+args.prog+'.fits'
+out_data_fn = mockdir+tracer+'_complete_noveto_clustering.dat.fits'
+out_data_froot = mockdir+tracer+'_complete_noveto_'
 cols = ['LOCATION',
  'FIBER',
  'TARGETID',
