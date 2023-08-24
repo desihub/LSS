@@ -1,0 +1,10 @@
+#pseudo pipeline describing how LSS catalogs get created from 2nd gen mocks, including all different flavors
+
+#1st cutsky mocks get created from boxes and have the Y1 tiles list applied to geometry (Aurelio, others add details)
+#These are combined across tracers, have columns added necessary for fiberassign, and have the targeting mask applied via
+https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
+#(Aurelio can add more details)
+
+#Each realization can be passed through to find potential assignments, using the actual Y1 hardware specifications, via
+https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization <mock number>
+#The output will be all of the potential assignments from the mocks, for all tracers, and including all repeats
