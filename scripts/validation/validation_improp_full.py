@@ -423,7 +423,7 @@ for tp in tps:
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
                     parv = debv
                     fig = plt.figure()
-                    plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
                     figs.append(fig)
                     if args.mapmd == 'validate':
                         fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
