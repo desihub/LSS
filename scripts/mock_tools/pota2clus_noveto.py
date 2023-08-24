@@ -111,6 +111,7 @@ selz &= mock_data['RSDZ'] < zmax
 mock_data = mock_data[selz]
 mock_data = Table(mock_data)
 mock_data.rename_column('RSDZ', 'Z')
+mock_data['WEIGHT'] = 1
 common.write_LSS(mock_data,out_data_fn)
 
 def splitGC(flroot,datran='.dat',rann=0):
