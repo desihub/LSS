@@ -8,3 +8,4 @@ https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
 #Each realization can be passed through to find potential assignments, using the actual Y1 hardware specifications, via
 https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization <mock number>
 #The output will be all of the potential assignments from the mocks, for all tracers, and including all repeats
+#Each takes ~20 minutes
