@@ -71,7 +71,7 @@ else:
 
 
 mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-in_data_fn = mockdir+'pota_'+args.prog+'.fits'
+in_data_fn = mockdir+'pota-'+args.prog+'.fits'
 print(in_data_fn)
 out_data_fn = mockdir+tracer+'_complete_noveto_clustering.dat.fits'
 out_data_froot = mockdir+tracer+'_complete_noveto_'
