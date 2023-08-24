@@ -29,7 +29,7 @@ from LSS.globals import main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
-parser.add_argument("--mock", default='ab1stgen')
+parser.add_argument("--mock", default='ab2ndgen')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
@@ -38,13 +38,13 @@ parser.add_argument("--base_input", help="base directory for input for EZ mocks 
 parser.add_argument("--counttiles", default = 'n')
 
 args = parser.parse_args()
-if args.mock == 'ab1stgen':
+if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
-    infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
-    tileoutdir = args.base_output+'FirstGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    paoutdir = args.base_output+'FirstGenMocks/AbacusSummit/mock'+args.realization+'/'
+    tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
 #     #tr = args.tracer
 #     rz = args.realization
