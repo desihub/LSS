@@ -33,8 +33,10 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
-parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/test/')
+parser.add_argument("--realization",type=int)
+parser.add_argument("--prog", help="DARK")
+#parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
+parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/')
 parser.add_argument("--random_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/')
 
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
@@ -56,13 +58,53 @@ if tracer == 'LRG':
     zmin = 0.4
     zmax = 1.1
 
+elif tracer == 'ELG_LOP':
+    zmin = 0.8
+    zmax = 1.6
+
+elif tracer == 'QSO':
+    zmin = 0.8
+    zmax = 2.1
+
+else:
+    sys.exit('tracer type '+args.tracer+' not supported (yet)')
+
 print(args.mockdir,'pota_',tracer,'.fits')
-in_data_fn = args.mockdir+'pota_'+tracer+'.fits'
-out_data_fn = args.base_output+tracer+'_complete_noveto_clustering.dat.fits'
-out_data_froot = args.base_output+tracer+'_complete_noveto_'
-mock_data = fitsio.read(in_data_fn)
+mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+in_data_fn = args.mockdir+'pota_'+args.prog+'.fits'
+out_data_fn = args.mockdir+tracer+'_complete_noveto_clustering.dat.fits'
+out_data_froot = args.mockdir+tracer+'_complete_noveto_'
+cols = ['LOCATION',
+ 'FIBER',
+ 'TARGETID',
+ 'RA',
+ 'DEC','RSDZ',
+ 'PRIORITY_INIT',
+ 'PRIORITY',
+ 'DESI_TARGET','BRICKID','NOBS_G',
+ 'NOBS_R',
+ 'NOBS_Z',
+ 'MASKBITS','ZWARN',
+ 'COLLISION',
+ 'TILEID']
+mock_data = fitsio.read(in_data_fn,columns=cols)
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
+
+if args.prog == 'DARK':
+    bit = targetmask.desi_mask[args.tracer]
+    desitarg='DESI_TARGET'
+
+ndattot = len(mock_data)
+seltar = mock_data[desitarg] & bit > 0
+mock_data = mock_data[seltar]
+print('length before/after cut to target type '+args.tracer)
+print(ndattot,len(mock_data))
+
+'''
+PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
+'''
+
 selz = mock_data['RSDZ'] > zmin
 selz &= mock_data['RSDZ'] < zmax
 mock_data = mock_data[selz]
@@ -99,7 +141,7 @@ def ran_col_assign(randoms,data,sample_columns):
     return randoms
 
 for rann in range(rm,rx):
-    in_ran_fn = args.random_dir+tracer+'_'+str(rann)+'_full_noveto.ran.fits'
+    in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC']))
     ran = ran_col_assign(ran,mock_data,ran_samp_cols)
