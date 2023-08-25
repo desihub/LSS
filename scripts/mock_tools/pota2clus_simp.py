@@ -127,7 +127,7 @@ for tracer in tracers:
     seltar = mock_data[desitarg] & bit > 0
     mock_data = mock_data[seltar]
     lmockdat_noveto = len(mock_data)
-    print('length before/after cut to target type '+args.tracer)
+    print('length before/after cut to target type '+tracer)
     print(ndattot,lmockdat_noveto)
     if tracer == 'LRG':
         zmin = 0.4
