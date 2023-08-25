@@ -152,7 +152,7 @@ for tracer in tracers:
     mock_data_tr = mock_data[seltar]
     lmockdat_noveto = len(mock_data_tr)
     print('length before/after cut to target type '+tracer)
-    print(ndattot,lmockdat_noveto)
+    print(ndattot,len(mock_data))
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
