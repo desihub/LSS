@@ -166,8 +166,6 @@ for tracer in tracers:
         zmax = 2.1
 
 
-    selz = mock_data_tr['RSDZ'] > zmin
-    selz &= mock_data_tr['RSDZ'] < zmax
     mock_data_tr = mock_data_tr[selz]
     mock_data_tr = Table(mock_data_tr)
     mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
@@ -182,6 +180,9 @@ for tracer in tracers:
         ebits = mainp.ebits
         reccircmasks = mainp.reccircmasks
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
+    selz = mock_data_tr['RSDZ'] > zmin
+    selz &= mock_data_tr['RSDZ'] < zmax
+
     common.write_LSS(mock_data_tr,out_data_fn)
 
     def splitGC(flroot,datran='.dat',rann=0):
