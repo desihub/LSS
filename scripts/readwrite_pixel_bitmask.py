@@ -45,7 +45,7 @@ if args.cat_type == 'obielg':
  if args.cat_type == 'Ab2ndgen':
     mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/
     input_path = mockdir+'forFA'+args.input+'.fits'
-    output_path = mockdir+'forFA'+args.input++'_matched_input_full_'+args.tracer+'_imask.fits'
+    output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
    
 
 
