@@ -180,8 +180,8 @@ for tracer in tracers:
         ebits = mainp.ebits
         reccircmasks = mainp.reccircmasks
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
-    selz = mock_data_tr['RSDZ'] > zmin
-    selz &= mock_data_tr['RSDZ'] < zmax
+    selz = mock_data_tr['Z'] > zmin
+    selz &= mock_data_tr['Z'] < zmax
     mock_data_tr = mock_data_tr[selz]
     print('length after cutting to redshift range',len(mock_data_tr))
     common.write_LSS(mock_data_tr,out_data_fn)
