@@ -161,7 +161,7 @@ def ran_col_assign(randoms,data,sample_columns):
     return randoms
 
 for rann in range(rm,rx):
-    in_ran_fn = args.random_dir+args.tracer'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
+    in_ran_fn = args.random_dir+args.tracer+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','TILELOCID']))
     if 'gtl' in args.veto:
