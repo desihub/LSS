@@ -94,7 +94,8 @@ selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
 
 if args.prog == 'DARK':
-    bit = targetmask.desi_mask[args.tracer]
+    #bit = targetmask.desi_mask[args.tracer]
+    bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
     tracers = ['LRG','QSO','ELG_LOP']
 
@@ -122,7 +123,7 @@ for tracer in tracers:
     out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
 
     mainp = main(tracer,'iron','Y1')
-    bit = targetmask.desi_mask[tracer]
+    bit = bittest[tracer]#targetmask.desi_mask[tracer]
     seltar = mock_data[desitarg] & bit > 0
     mock_data = mock_data[seltar]
     lmockdat_noveto = len(mock_data)
