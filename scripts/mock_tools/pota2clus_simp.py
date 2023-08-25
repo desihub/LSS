@@ -176,7 +176,7 @@ for tracer in tracers:
     mock_data_tr['WEIGHT'] = 1
     if 'imaging' in args.veto:
         if tracer == 'LRG':
-            lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_'+args.tracer+'_imask.fits')
+            lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
             mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
             print(len(mock_data_tr))
         ebits = mainp.ebits
