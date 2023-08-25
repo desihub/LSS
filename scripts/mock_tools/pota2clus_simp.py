@@ -189,7 +189,7 @@ for tracer in tracers:
         if 'gtl' in args.veto:
             goodtl = np.isin(ran['TILELOCID'],gtl)
             ran = ran[goodtl]
-        ran = ran_col_assign(ran,mock_data,ran_samp_cols)
+        ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
