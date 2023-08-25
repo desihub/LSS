@@ -21,6 +21,8 @@ from desitarget import targetmask
 import LSS.main.cattools as ct
 import LSS.common_tools as common
 import LSS.mocktools as mocktools
+from LSS.globals import main
+mainp = main
 #import LSS.mkCat_singletile.fa4lsscat as fa
 #from LSS.globals import main
 
@@ -94,6 +96,7 @@ mock_data = mock_data[selcoll]
 if args.prog == 'DARK':
     bit = targetmask.desi_mask[args.tracer]
     desitarg='DESI_TARGET'
+    tracers = ['LRG','QSO','ELG_LOP']
 
 ndattot = len(mock_data)
 out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
