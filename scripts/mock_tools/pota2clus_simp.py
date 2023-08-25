@@ -183,7 +183,10 @@ for tracer in tracers:
 
 
     for rann in range(rm,rx):
-        in_ran_fn = args.random_dir+tracer+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
+        tracerr = tracer
+        if tracer == 'ELG_LOP':
+            tracerr += 'notqso'
+        in_ran_fn = args.random_dir+tracerf+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
         ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','TILELOCID']))
         if 'gtl' in args.veto:
