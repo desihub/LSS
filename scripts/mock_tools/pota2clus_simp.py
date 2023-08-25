@@ -117,6 +117,14 @@ if 'gtl' in args.veto:
     goodtl = np.isin(tilelocid,gtl)
     mock_data = mock_data[goodtl]
     print(lmockdat_noveto,len(mock_data))
+
+def ran_col_assign(randoms,data,sample_columns):
+    inds = np.random.choice(len(data),len(randoms))
+    dshuf = data[inds]
+    for col in sample_columns:
+        randoms[col] =  dshuf[col]
+    return randoms
+
     
 for tracer in tracers:
     out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
@@ -125,8 +133,8 @@ for tracer in tracers:
     mainp = main(tracer,'iron','Y1')
     bit = bittest[tracer]#targetmask.desi_mask[tracer]
     seltar = mock_data[desitarg] & bit > 0
-    mock_data = mock_data[seltar]
-    lmockdat_noveto = len(mock_data)
+    mock_data_tr = mock_data[seltar]
+    lmockdat_noveto = len(mock_data_tr)
     print('length before/after cut to target type '+tracer)
     print(ndattot,lmockdat_noveto)
     if tracer == 'LRG':
@@ -142,15 +150,15 @@ for tracer in tracers:
         zmax = 2.1
 
 
-    selz = mock_data['RSDZ'] > zmin
-    selz &= mock_data['RSDZ'] < zmax
-    mock_data = mock_data[selz]
-    mock_data = Table(mock_data)
-    mock_data = unique(mock_data,keys=['TARGETID'])
-    print('length after cutting to redshift and unique targetid',len(mock_data))
-    mock_data.rename_column('RSDZ', 'Z')
-    mock_data['WEIGHT'] = 1
-    common.write_LSS(mock_data,out_data_fn)
+    selz = mock_data_tr['RSDZ'] > zmin
+    selz &= mock_data_tr['RSDZ'] < zmax
+    mock_data_tr = mock_data_tr[selz]
+    mock_data_tr = Table(mock_data_tr)
+    mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
+    print('length after cutting to redshift and unique targetid',len(mock_data_tr))
+    mock_data_tr.rename_column('RSDZ', 'Z')
+    mock_data_tr['WEIGHT'] = 1
+    common.write_LSS(mock_data_tr,out_data_fn)
 
     def splitGC(flroot,datran='.dat',rann=0):
         import LSS.common_tools as common
@@ -173,12 +181,6 @@ for tracer in tracers:
 
     ran_samp_cols = ['Z','WEIGHT']
 
-    def ran_col_assign(randoms,data,sample_columns):
-        inds = np.random.choice(len(data),len(randoms))
-        dshuf = data[inds]
-        for col in sample_columns:
-            randoms[col] =  dshuf[col]
-        return randoms
 
     for rann in range(rm,rx):
         in_ran_fn = args.random_dir+tracer+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
