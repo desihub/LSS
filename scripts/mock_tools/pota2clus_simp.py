@@ -125,6 +125,22 @@ def ran_col_assign(randoms,data,sample_columns):
         randoms[col] =  dshuf[col]
     return randoms
 
+def apply_imaging_veto(ff,reccircmasks,ebits):
+    if reccircmasks is not None:
+        for maskfn in reccircmasks:
+            mask = common.maskcircandrec(ff,maskfn)
+            ff = ff[~mask]
+
+    if ebits is not None:
+        print('number before imaging mask '+str(len(ff)))
+        if ebits == 'lrg_mask':
+            sel = ff['lrg_mask'] == 0
+            ff = ff[sel]
+        else:
+            ff = common.cutphotmask(ff,ebits)
+        print('number after imaging mask '+str(len(ff)))
+    return ff
+
     
 for tracer in tracers:
     out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
@@ -158,6 +174,14 @@ for tracer in tracers:
     print('length after cutting to redshift and unique targetid',len(mock_data_tr))
     mock_data_tr.rename_column('RSDZ', 'Z')
     mock_data_tr['WEIGHT'] = 1
+    if 'imaging' in args.veto:
+        if tracer == 'LRG':
+            lrgmask = fitsio.read(args.base_dir+'forFA'+args.realization+'_matched_input_full_'+args.tracer+'_imask.fits')
+            mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
+            print(len(mock_data_tr))
+        ebits = mainp.ebits
+        reccircmasks = mainp.reccircmasks
+        apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
     common.write_LSS(mock_data_tr,out_data_fn)
 
     def splitGC(flroot,datran='.dat',rann=0):
@@ -188,11 +212,20 @@ for tracer in tracers:
             tracerr += 'notqso'
         in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-        ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','TILELOCID']))
+        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
+        if tracerr == 'LRG':
+            rcols.append('lrg_mask')
+        ran = Table(fitsio.read(in_ran_fn,columns=rcols))
         if 'gtl' in args.veto:
             goodtl = np.isin(ran['TILELOCID'],gtl)
             ran = ran[goodtl]
+        if 'imaging' in args.veto:
+            ebits = mainp.ebits
+            reccircmasks = mainp.reccircmasks
+            apply_imaging_veto(ran,reccircmasks,ebits)
+
         ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
+        apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
