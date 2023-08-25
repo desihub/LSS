@@ -102,13 +102,7 @@ ndattot = len(mock_data)
 out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
 out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
 
-mainp = main(tracer,'iron','Y1')
-seltar = mock_data[desitarg] & bit > 0
-mock_data = mock_data[seltar]
 lmockdat_noveto = len(mock_data)
-print('length before/after cut to target type '+args.tracer)
-print(ndattot,lmockdat_noveto)
-
 '''
 PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
 '''
@@ -124,8 +118,16 @@ if 'gtl' in args.veto:
     gtl = np.unique(specfc['TILELOCID'])
     goodtl = np.isin(tilelocid,gtl)
     mock_data = mock_data[goodtl]
-    print(lmock_data_noveto,len(mock_data))
+    print(lmockdat_noveto,len(mock_data))
     
+#for tracer in tracers:
+mainp = main(tracer,'iron','Y1')
+seltar = mock_data[desitarg] & bit > 0
+mock_data = mock_data[seltar]
+lmockdat_noveto = len(mock_data)
+print('length before/after cut to target type '+args.tracer)
+print(ndattot,lmockdat_noveto)
+
 
 selz = mock_data['RSDZ'] > zmin
 selz &= mock_data['RSDZ'] < zmax
