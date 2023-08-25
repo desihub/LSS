@@ -74,8 +74,6 @@ else:
 mockdir = args.base_dir+'mock'+str(args.realization)+'/'
 in_data_fn = mockdir+'pota-'+args.prog+'.fits'
 print(in_data_fn)
-out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
-out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
 cols = ['LOCATION',
  'FIBER',
  'TARGETID',
@@ -98,6 +96,9 @@ if args.prog == 'DARK':
     desitarg='DESI_TARGET'
 
 ndattot = len(mock_data)
+out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
+out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
+
 seltar = mock_data[desitarg] & bit > 0
 mock_data = mock_data[seltar]
 lmockdat_noveto = len(mock_data)
@@ -109,7 +110,7 @@ PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
 '''
 if 'gtl' in args.veto:
     tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-    specfo = args.specdata_dir+'datcomb_'+args.program.lower()+'_spec_zdone.fits'
+    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
     print('loading specf file '+specfo)
     specf = Table(fitsio.read(specfo))
     print(len(np.unique(specf['TILEID'])))
