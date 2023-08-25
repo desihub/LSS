@@ -166,10 +166,10 @@ for tracer in tracers:
         zmax = 2.1
 
 
-    mock_data_tr = mock_data_tr[selz]
+    
     mock_data_tr = Table(mock_data_tr)
     mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
-    print('length after cutting to redshift and unique targetid',len(mock_data_tr))
+    print('length after cutting to unique targetid',len(mock_data_tr))
     mock_data_tr.rename_column('RSDZ', 'Z')
     mock_data_tr['WEIGHT'] = 1
     if 'imaging' in args.veto:
@@ -182,7 +182,8 @@ for tracer in tracers:
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
     selz = mock_data_tr['RSDZ'] > zmin
     selz &= mock_data_tr['RSDZ'] < zmax
-
+    mock_data_tr = mock_data_tr[selz]
+    print('length after cutting to redshift range',len(mock_data_tr))
     common.write_LSS(mock_data_tr,out_data_fn)
 
     def splitGC(flroot,datran='.dat',rann=0):
