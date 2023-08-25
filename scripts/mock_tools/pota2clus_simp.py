@@ -103,6 +103,7 @@ out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
 out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
 
 lmockdat_noveto = len(mock_data)
+mainp = main('LRG','iron','Y1') #needed for bad fiber list
 '''
 PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
 '''
