@@ -181,7 +181,7 @@ for tracer in tracers:
             print(len(mock_data_tr))
         ebits = mainp.ebits
         reccircmasks = mainp.reccircmasks
-        apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
+        mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
     common.write_LSS(mock_data_tr,out_data_fn)
 
     def splitGC(flroot,datran='.dat',rann=0):
@@ -222,10 +222,9 @@ for tracer in tracers:
         if 'imaging' in args.veto:
             ebits = mainp.ebits
             reccircmasks = mainp.reccircmasks
-            apply_imaging_veto(ran,reccircmasks,ebits)
+            ran = apply_imaging_veto(ran,reccircmasks,ebits)
 
         ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
-        apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
