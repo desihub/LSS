@@ -5,7 +5,20 @@
 https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
 #(Aurelio can add more details)
 
+source /global/common/software/desi/desi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
 #Each realization can be passed through to find potential assignments, using the actual Y1 hardware specifications, via
 https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization <mock number>
+srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/getpotaY1_mock.py --realization <mock#>
+
 #The output will be all of the potential assignments from the mocks, for all tracers, and including all repeats
 #Each takes ~20 minutes
+
+#Add LRG veto, takes ~3 minutes per mock
+srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/readwrite_pixel_bitmask.py --tracer lrg --input <mock#> --cat_type Ab2ndgen
+
+#Make complete LSS catalogs with goodhardware and imaging veto masks applied
+#Code does randoms in serial, 4 are likely enough
+python scripts/mock_tools/pota2clus_simp.py  --veto _gtlimaging --realization 0 --maxr <max_num_ran_needed>
+
