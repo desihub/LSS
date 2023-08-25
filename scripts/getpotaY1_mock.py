@@ -43,7 +43,10 @@ if args.mock == 'ab2ndgen':
     infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
-    tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    if not os.path.exists(tileoutdir):
+        os.makedirs(tileoutdir)
     paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
 #     #tr = args.tracer
