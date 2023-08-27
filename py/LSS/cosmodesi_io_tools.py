@@ -66,7 +66,8 @@ def get_zlims(tracer, tracer2=None, option=None):
                 zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]    
 
     if tracer.startswith('QSO'):
-        zlims = [0.8, 1.1, 1.6, 2.1]
+        #zlims = [0.8, 1.1, 1.6, 2.1]
+        zlims = [0.8,2.1]
         if option == 'highz':
             zlims = [2.1, 3.5]
         if option == 'lowz':
