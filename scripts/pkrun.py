@@ -269,7 +269,8 @@ if __name__ == '__main__':
         zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
-    zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
+    zlims = list(zip(zlims[:-1], zlims[1:])) 
+    #zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
 
     bin_type = 'lin'
     rebinning_factors = [1, 5, 10]
