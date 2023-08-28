@@ -119,5 +119,5 @@ for reg in regl:
     for ii in range(rm,rx):
         flin = dirout+tp+reg
         ffr = common.clusran_shufrd(flin,P0=P0,zmin=zmin,zmax=zmax,dz=dz)
-        fnout = dirout+tp+reg+'_'+str(ii)+'_rdshuf_clustering.ran.fits'
+        fnout = dirout+tp+'_rdshuf'+reg+'_'+str(ii)+'_clustering.ran.fits'
         common.write_LSS(ffr,fnout)
