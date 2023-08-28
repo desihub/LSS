@@ -447,7 +447,7 @@ def clusran_shufrd(flin,ran_sw='',P0=10000,zmin=0.01,zmax=1.6,dz=0.01):
     nl = np.zeros(len(zl))
     for ii in range(0,len(zl)):
         z = zl[ii]
-        zind = int((z-zmin)/bs)
+        zind = int((z-zmin)/dz)
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
     ffr['NX'] = nl*comp_ntl[ffr['NTILE']-1]
