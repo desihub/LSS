@@ -94,6 +94,7 @@ dirin = dirout
 
 regl = ['_NGC','_SGC']
 
+dz = .01
 if tp[:3] == 'QSO':
 	dz = 0.02
 	zmin = 0.8
