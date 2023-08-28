@@ -389,6 +389,105 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
             outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
     return nz
 
+def get_cols_rzdshuf(tabd,cols_rd,cols_z):
+    #shuffle ra,dec and z from data to make randoms
+    inds_rd = np.random.choice(len(tabd),len(tabd))
+    inds_z = np.random.choice(len(tabd),len(tabd))
+    dshuf_rd = tabsd[i][inds_rd]
+    dshuf_z = tabsd[i][inds_z]
+    tabr = Table()
+    for col in cols_rd:
+        tabr[col] =  dshuf_rd[col]
+    for col in cols_z:
+        tabr[col] =  dshuf_z[col]
+    return tabr
+
+def clusran_shufrd(flin,ran_sw='',P0=10000,zmin=0.01,zmax=1.6,dz=0.01):
+    #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
+    import LSS.common_tools as common
+    fcdn = Table.read(flin+'_clustering.dat.fits')
+    cols_rd = ['RA','DEC','NTILE']
+    cols_z = ['Z']
+
+
+    def _resamp(selregd,fcdn):
+        tabsr = []
+        fcdnn = fcdn[selregd]
+        fcdns = fcdn[~selregd]
+        tabsd = [fcdnn,fcdns]
+        rdl =[]
+        for i in range(0,len(tabsd)):
+            tabr = get_cols_rzdshuf(tabsd[i],cols_rd,cols_z)
+            tabsr.append(tabr)
+        ffr = vstack(tabsr)   
+        return ffr
+
+    if 'NGC' in flin:
+        selregd = fcdn['DEC'] > 32.375
+        ffr = _resamp(selregd,fcdn)
+    elif 'SGC' in flin and 'QSO' in flin:
+        print('resampling in DES region')
+        from regressis import footprint
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        north, south, des = foot.get_imaging_surveys()
+        th_ran,phi_ran = (-ffr['DEC']+90.)*np.pi/180.,ffr['RA']*np.pi/180.
+        th_dat,phi_dat = (-fcdn['DEC']+90.)*np.pi/180.,fcdn['RA']*np.pi/180.
+        pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
+        selregr = des[pixr]
+        pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
+        selregd = des[pixd]
+        ffr = _resamp(selregr,selregd,ffr,fcdn)
+    else:
+        ffr = get_cols_rzdshuf(fcdn,cols_rd,cols_z)
+
+    comp_ntl = get_comp(flin)
+
+    nzd = np.loadtxt(flin+'_nz.txt').transpose()[3] #column with nbar values
+    zl = ffr['Z']
+    nl = np.zeros(len(zl))
+    for ii in range(0,len(zl)):
+        z = zl[ii]
+        zind = int((z-zmin)/bs)
+        if z > zmin and z < zmax:
+            nl[ii] = nzd[zind]
+    ffr['NX'] = nl*comp_ntl[ffr['NTILE']-1]
+
+    fkpl = 1/(1+fd['NX']*P0)
+    ffr['WEIGHT_FKP'] = fkpl
+    ffr['WEIGHT'] = np.ones(len(ffr))
+    return ffr
+    
+    
+    #outfn =  flin+'_'+str(rann)+'_rdshuf_clustering.ran.fits'
+    
+    #if write_cat == 'y':
+        #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
+    #    common.write_LSS(ffr,outfn)
+
+def get_comp(fb,ran_sw=''):
+    fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
+    fd = Table(fitsio.read(fn))
+    mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
+    print('mean completeness '+str(mean_comp))
+    ntl = np.unique(fd['NTILE'])
+    comp_ntl = np.zeros(len(ntl))
+    weight_ntl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = fd['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+        weight_ntl[i] = mean_ntweight
+        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+    fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+    fttl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)): 
+        sel = fran['NTILE'] == ntl[i]
+        mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+        fttl[i] = mean_fracobs_tiles
+    print(comp_ntl,fttl)
+    comp_ntl = comp_ntl*fttl
+    print('completeness per ntile:')
+    print(comp_ntl)
+    return comp_ntl
 
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
     '''
