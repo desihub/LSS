@@ -452,7 +452,7 @@ def clusran_shufrd(flin,ran_sw='',P0=10000,zmin=0.01,zmax=1.6,dz=0.01):
             nl[ii] = nzd[zind]
     ffr['NX'] = nl*comp_ntl[ffr['NTILE']-1]
 
-    fkpl = 1/(1+fd['NX']*P0)
+    fkpl = 1/(1+ffr['NX']*P0)
     ffr['WEIGHT_FKP'] = fkpl
     ffr['WEIGHT'] = np.ones(len(ffr))
     return ffr
