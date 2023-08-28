@@ -393,8 +393,8 @@ def get_cols_rzdshuf(tabd,cols_rd,cols_z):
     #shuffle ra,dec and z from data to make randoms
     inds_rd = np.random.choice(len(tabd),len(tabd))
     inds_z = np.random.choice(len(tabd),len(tabd))
-    dshuf_rd = tabsd[i][inds_rd]
-    dshuf_z = tabsd[i][inds_z]
+    dshuf_rd = tabd[inds_rd]
+    dshuf_z = tabd[inds_z]
     tabr = Table()
     for col in cols_rd:
         tabr[col] =  dshuf_rd[col]
