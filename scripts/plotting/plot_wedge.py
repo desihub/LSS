@@ -31,6 +31,8 @@ ax.set_aspect('equal')
 ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
 
+msdic = {'QSO':.4,'ELG':.2,'LRG':.2,'BGS_ANY':.08}
+
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','lime','b']
 zordl = [10,5,2,1]
@@ -97,10 +99,10 @@ for tp,c,zo in zip(tps,cl,zordl):
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
-    ax.plot(x,y,'s',color=c,zorder=zo,ms=.1,lw=0,mew=0,)
+    ax.plot(x,y,'s',color=c,zorder=zo,ms=msdic[tp],lw=0,mew=0,)
     if tp == 'QSO':
         sel = dt[zcol] > 2.1
-        ax.plot(x[sel],y[sel],'s',color='white',zorder=zo,ms=.1,lw=0,mew=0)
+        ax.plot(x[sel],y[sel],'s',color='white',zorder=zo,ms=msdic[tp],lw=0,mew=0)
     #plt.show()
     
     
