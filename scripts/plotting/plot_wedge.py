@@ -26,7 +26,7 @@ zmax = 3.5
 
 
 #plt.figure()
-fig, ax = plt.subplots(dpi=300)
+fig, ax = plt.subplots(dpi=1000)
 ax.set_aspect('equal')
 ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
