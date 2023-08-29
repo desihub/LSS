@@ -19,8 +19,8 @@ zcol = 'Z_not4clus'
 ram = 0
 rax = 360
 ra0 = (ram+rax)/2.
-decm = -0.25
-decx = .25
+decm = -0.5
+decx = .5
 zmin = 0
 zmax = 3.5
 
