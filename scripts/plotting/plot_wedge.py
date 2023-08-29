@@ -97,10 +97,10 @@ for tp,c,zo in zip(tps,cl,zordl):
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
-    ax.plot(x,y,'s',color=c,zorder=zo,ms=.01,lw=.001)
+    ax.plot(x,y,'s',color=c,zorder=zo,ms=.01)#,lw=.001)
     if tp == 'QSO':
         sel = dt[zcol] > 2.1
-        ax.plot(x[sel],y[sel],'s',color='white',zorder=zo,ms=.01,lw=.002)
+        ax.plot(x[sel],y[sel],'s',color='white',zorder=zo,ms=.01)#,lw=.002)
     #plt.show()
     
     
