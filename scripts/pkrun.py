@@ -8,6 +8,7 @@ The script can (should) be called with multiple processes as (e.g. on 2 nodes, 6
 ```
 srun -n 128 python pkrun.py ...
 ```
+Using -n 64 per node is recommended when applying rp-cut.
 """
 
 # To run: srun -n 64 python pkrun.py --tracer ELG...
@@ -102,6 +103,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         direct_selection_attrs = {'theta': (0., 1.)}
     elif rpcut is not None:
         win_direct_selection_attrs = direct_selection_attrs = {'rp': (0., rpcut)}
+        #direct_edges = {'min': 0., 'step': 0.1, 'max': 200.}  # use this to reduce the computing time for direct pair counts to a few seconds
         direct_edges = {'min': 0., 'step': 0.1}
 
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
@@ -133,7 +135,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             ellsout = [0, 2, 4] # output multipoles
             ellsin = [0, 2, 4] # input (theory) multipoles
             wa_orders = 1 # wide-angle order
-            sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
+            sep = np.geomspace(1e-4, 2e4, 1024*16) # configuration space separation for FFTlog, 2e4 > sqrt(3) * 8000
             kin_rebin = 4 # rebin input theory to save memory
             kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
             # Input projections for window function matrix:
@@ -148,7 +150,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
 
 def get_edges():
-    return {'min':0., 'step':0.001}
+    return {'min': 0., 'step': 0.001}
 
 
 def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
