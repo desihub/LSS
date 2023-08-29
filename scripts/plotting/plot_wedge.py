@@ -31,7 +31,7 @@ ax.set_aspect('equal')
 ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
 
-msdic = {'QSO':.24,'ELG':.22,'LRG':.22,'BGS_ANY':.1}
+msdic = {'QSO':.24,'ELG':.21,'LRG':.21,'BGS_ANY':.1}
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','lime','b']
