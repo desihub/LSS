@@ -31,11 +31,11 @@ ax.set_aspect('equal')
 ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
 
-msdic = {'QSO':.4,'ELG':.2,'LRG':.2,'BGS_ANY':.08}
+msdic = {'QSO':.3,'ELG':.2,'LRG':.2,'BGS_ANY':.08}
 
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','lime','b']
-zordl = [10,5,2,1]
+zordl = [2,5,3,1]
 for tp,c,zo in zip(tps,cl,zordl):
     cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
     if tp == 'ELG':
