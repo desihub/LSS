@@ -809,7 +809,7 @@ if args.regressis == 'y':
         pw_out_fn = pw_out_fn_root+reg+'.fits'
     
         print(pw_out_fn)
-        pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
+        sys_tab.write(pw_out_fn,overwrite=True,format='fits')
 
     #pixweight_data = Table.read(pwf)
     #if 'EBV_DIFFRZ' in fit_maps: 
