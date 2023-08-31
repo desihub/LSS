@@ -73,7 +73,7 @@ parser.add_argument("--blinded", help="are we running on the blinded full catalo
 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
-parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='n')
+parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
 
 
