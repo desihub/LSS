@@ -369,37 +369,37 @@ for tp in tps:
             chi2tot = 0
             nmaptot = 0
 
-			dcomp = 1/dt_reg['FRACZ_TILELOCID']
-			dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
-			rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
-			seldesr = des[rpix]
-			seldesd = des[dpix]
-			norm_des = np.ones(len(dpix))
-			norm_desw = np.ones(len(dpix))
-			if sum(rpix[seldesr]) > 0 and desnorm:
-				des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
-				notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
-				norm_desv = des_ratio/notdes_ratio
-				norm_des[~seldesd] = norm_desv
-				print(norm_desv)
-				des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
-				notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
-				norm_desvw = des_ratiow/notdes_ratiow
-				norm_desw[~seldesd] = norm_desvw
-				print(norm_desvw)
+            dcomp = 1/dt_reg['FRACZ_TILELOCID']
+            dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
+            rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+            seldesr = des[rpix]
+            seldesd = des[dpix]
+            norm_des = np.ones(len(dpix))
+            norm_desw = np.ones(len(dpix))
+            if sum(rpix[seldesr]) > 0 and desnorm:
+                des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+                notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+                norm_desv = des_ratio/notdes_ratio
+                norm_des[~seldesd] = norm_desv
+                print(norm_desv)
+                des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+                notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+                norm_desvw = des_ratiow/notdes_ratiow
+                norm_desw[~seldesd] = norm_desvw
+                print(norm_desvw)
 
-			pixlg = np.zeros(nside*nside*12)
-			pixlgw = np.zeros(nside*nside*12)
-	
-			#if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
-			#    #print('using FRAC_TLOBS_TILES')
-			#    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
-			for ii in range(0,len(dpix)):
-				pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
-				pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
-			pixlr = np.zeros(nside*nside*12)
-			for ii in range(0,len(rpix)):
-				pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
+            pixlg = np.zeros(nside*nside*12)
+            pixlgw = np.zeros(nside*nside*12)
+    
+            #if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+            #    #print('using FRAC_TLOBS_TILES')
+            #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
+            for ii in range(0,len(dpix)):
+                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
+                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
+            pixlr = np.zeros(nside*nside*12)
+            for ii in range(0,len(rpix)):
+                pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
 
             
             if dosag == 'y' and reg == 'S':
