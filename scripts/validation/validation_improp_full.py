@@ -12,6 +12,11 @@ import healpy as hp
 from LSS.imaging import densvar
 from LSS import common_tools as common
 
+from regressis import footprint
+foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+north, south, des = foot.get_imaging_surveys()
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version",default='test')
@@ -134,41 +139,41 @@ nbin = 10
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
-def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1),desnorm=False):
-    from regressis import footprint
-    foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
-    north, south, des = foot.get_imaging_surveys()
-    dcomp = 1/dt_reg['FRACZ_TILELOCID']
-    dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
-    rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
-    seldesr = des[rpix]
-    seldesd = des[dpix]
-    norm_des = np.ones(len(dpix))
-    norm_desw = np.ones(len(dpix))
-    if sum(rpix[seldesr]) > 0 and desnorm:
-        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
-        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
-        norm_desv = des_ratio/notdes_ratio
-        norm_des[~seldesd] = norm_desv
-        print(norm_desv)
-        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
-        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
-        norm_desvw = des_ratiow/notdes_ratiow
-        norm_desw[~seldesd] = norm_desvw
-        print(norm_desvw)
-
-    pixlg = np.zeros(nside*nside*12)
-    pixlgw = np.zeros(nside*nside*12)
-    
-    #if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
-    #    #print('using FRAC_TLOBS_TILES')
-    #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
-    for ii in range(0,len(dpix)):
-        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
-        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
-    pixlr = np.zeros(nside*nside*12)
-    for ii in range(0,len(rpix)):
-        pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
+def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),desnorm=False):
+#     from regressis import footprint
+#     foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+#     north, south, des = foot.get_imaging_surveys()
+#     dcomp = 1/dt_reg['FRACZ_TILELOCID']
+#     dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
+#     rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+#     seldesr = des[rpix]
+#     seldesd = des[dpix]
+#     norm_des = np.ones(len(dpix))
+#     norm_desw = np.ones(len(dpix))
+#     if sum(rpix[seldesr]) > 0 and desnorm:
+#         des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+#         notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+#         norm_desv = des_ratio/notdes_ratio
+#         norm_des[~seldesd] = norm_desv
+#         print(norm_desv)
+#         des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+#         notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+#         norm_desvw = des_ratiow/notdes_ratiow
+#         norm_desw[~seldesd] = norm_desvw
+#         print(norm_desvw)
+# 
+#     pixlg = np.zeros(nside*nside*12)
+#     pixlgw = np.zeros(nside*nside*12)
+#     
+#     #if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+#     #    #print('using FRAC_TLOBS_TILES')
+#     #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
+#     for ii in range(0,len(dpix)):
+#         pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
+#         pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
+#     pixlr = np.zeros(nside*nside*12)
+#     for ii in range(0,len(rpix)):
+#         pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
     wp = pixlr > 0
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
@@ -363,13 +368,46 @@ for tp in tps:
             figs = []
             chi2tot = 0
             nmaptot = 0
+
+			dcomp = 1/dt_reg['FRACZ_TILELOCID']
+			dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
+			rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+			seldesr = des[rpix]
+			seldesd = des[dpix]
+			norm_des = np.ones(len(dpix))
+			norm_desw = np.ones(len(dpix))
+			if sum(rpix[seldesr]) > 0 and desnorm:
+				des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+				notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+				norm_desv = des_ratio/notdes_ratio
+				norm_des[~seldesd] = norm_desv
+				print(norm_desv)
+				des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+				notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+				norm_desvw = des_ratiow/notdes_ratiow
+				norm_desw[~seldesd] = norm_desvw
+				print(norm_desvw)
+
+			pixlg = np.zeros(nside*nside*12)
+			pixlgw = np.zeros(nside*nside*12)
+	
+			#if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
+			#    #print('using FRAC_TLOBS_TILES')
+			#    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
+			for ii in range(0,len(dpix)):
+				pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
+				pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
+			pixlr = np.zeros(nside*nside*12)
+			for ii in range(0,len(rpix)):
+				pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
+
             
             if dosag == 'y' and reg == 'S':
         
                 parv = sag
                 mp = 'sagstream'
                 fig = plt.figure()
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
+                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
                 figs.append(fig)
@@ -381,7 +419,7 @@ for tp in tps:
                 parv = lrg_mask_frac
                 mp = 'fraction of area in LRG mask'
                 
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -392,7 +430,7 @@ for tp in tps:
                 parv = sky_g
                 mp = 'g_sky_res'
                 
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -409,7 +447,7 @@ for tp in tps:
                 parv = m1-m2
                 parv[sel] = hp.UNSEEN
                 mp = map_pair[0]+' - '+map_pair[1]
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
 
@@ -425,7 +463,7 @@ for tp in tps:
                 #print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
-                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
@@ -445,7 +483,7 @@ for tp in tps:
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
                     parv = debv
                     fig = plt.figure()
-                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    chi2 = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     figs.append(fig)
                     if args.mapmd == 'validate':
                         fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
