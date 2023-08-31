@@ -52,7 +52,7 @@ if args.tracers == 'all':
 
 zdw = ''#'zdone'
 
-regl = ['N','S']
+regl = ['S','N']
 clrs = ['r','b']
 
 all_maps = ['CALIB_G',
@@ -146,8 +146,8 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     norm_des = np.ones(len(dpix))
     norm_desw = np.ones(len(dpix))
     if sum(rpix[seldesr]) > 0:
-        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]**dcomb[seldesr])/len(rt_reg[seldecr])
-        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomb[~seldesr])/len(rt_reg[~seldecr])
+        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesr])/len(rt_reg[seldecr])
+        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesr])/len(rt_reg[~seldecr])
         norm_desv = des_ratio/notdes_ratio
         norm_des[~seldesd] = norm_desv
         print(norm_desv)
