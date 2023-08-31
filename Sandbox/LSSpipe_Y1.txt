@@ -128,7 +128,7 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir 
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --notqso notqso
+	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y (--notqso notqso) 
     
 #get n(z) and fkp weights (not really necessary)
 python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --FKPfull y --nzfull y
