@@ -146,13 +146,13 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     norm_des = np.ones(len(dpix))
     norm_desw = np.ones(len(dpix))
     if sum(rpix[seldesr]) > 0:
-        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesr])/len(rt_reg[seldecr])
-        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesr])/len(rt_reg[~seldecr])
+        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
         norm_desv = des_ratio/notdes_ratio
         norm_des[~seldesd] = norm_desv
         print(norm_desv)
-        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomb[seldesr])/len(rt_reg[seldecr])
-        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomb[~seldesr])/len(rt_reg[~seldecr])
+        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomb[seldesd])/len(rt_reg[seldesr])
+        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomb[~seldesd])/len(rt_reg[~seldesr])
         norm_desvw = des_ratiow/notdes_ratiow
         norm_desw[~seldesd] = norm_desvw
         print(norm_desvw)
