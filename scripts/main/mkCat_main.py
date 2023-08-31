@@ -792,20 +792,36 @@ if args.regressis == 'y':
 
     logf.write('using fit maps '+str(fit_maps)+'\n')
     feature_names_ext=None
-    pixweight_data = Table.read(pwf)
+    pw_out_fn_root = dirout+'/regressis_data/'+tracer_clus+'feature_data_'
+    regl = ['N','S']
+    
+    for reg in regl:
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        pw_out_fn = pw_out_fn_root+reg+'.fits'
+    
+        print(pw_out_fn)
+        pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
+
+    #pixweight_data = Table.read(pwf)
     #if 'EBV_DIFFRZ' in fit_maps: 
     #    pixweight_data['EBV_DIFFRZ'] = debv['EBV_DIFFRZ']
-    for ec in ['GR','RZ']:
-        if 'EBV_DIFF_'+ec in fit_maps: 
-            pixweight_data['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+    #for ec in ['GR','RZ']:
+    #    if 'EBV_DIFF_'+ec in fit_maps: 
+    #        pixweight_data['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
         
     use_sgr=False
     if 'SGR' in fit_maps:
         use_sgr = True
         fit_maps.remove('SGR')
-    pw_out_fn = dirout+'/regressis_data/'+tracer_clus+'feature_data.fits'
-    print(pw_out_fn)
-    pixweight_data.write(pw_out_fn,overwrite=True,format='fits')
 
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
@@ -815,7 +831,7 @@ if args.regressis == 'y':
         logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
         rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
         suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
-         max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,\
+         max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
          feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=args.use_map_veto)
         #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 

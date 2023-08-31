@@ -375,8 +375,9 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 
     print('about to make dataframe')
     dataframe = PhotometricDataFrame(survey, tracer, foot, suffix_tracer, **dataframe_params)
+#dataframe.set_features(pixmap={'North': '/global/homes/e/edmondc/Software/regressis/data/pixweight-dr9-256.fits', 'South_mid_ngc': '/global/homes/e/edmondc/Software/regressis/data/pixweight-dr9-256.fits'}, pixmap_external='/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight_external.fits')
     print('about to set feature')
-    dataframe.set_features(pixmap=pixweight_path,pixmap_external=pixmap_external,sgr_stream=sgr_stream_path,sel_columns=feature_names,sel_columns_external=feature_names_ext, use_sgr_stream=use_sgr)
+    dataframe.set_features(pixmap={'North':pixweight_path+'N.fits','South_mid_ngc':pixweight_path+'S.fits','Des':pixweight_path+'S.fits','South_mid_sgc':pixweight_path+'S.fits'},pixmap_external=pixmap_external,sgr_stream=sgr_stream_path,sel_columns=feature_names,sel_columns_external=feature_names_ext, use_sgr_stream=use_sgr)
     print('about to set targets')
     dataframe.set_targets(targets=map_data,fracarea=fracarea)
     print('about to build')
