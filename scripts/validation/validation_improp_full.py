@@ -135,18 +135,37 @@ def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
 def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
+    from regressis import footprint
+    foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    north, south, des = foot.get_imaging_surveys()
+    dcomp = 1/dt_reg['FRACZ_TILELOCID']
     dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
     rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+    seldesr = des[rpix]
+    seldesd = des[dpix]
+    norm_des = np.ones(len(dpix))
+    norm_desw = np.ones(len(dpix))
+    if sum(rpix[seldesr]) > 0:
+        des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]**dcomb[seldesr])/len(rt_reg[seldecr])
+        notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomb[~seldesr])/len(rt_reg[~seldecr])
+        norm_desv = des_ratio/notdes_ratio
+        norm_des[~seldesd] = norm_desv
+        print(norm_desv)
+        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomb[seldesr])/len(rt_reg[seldecr])
+        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomb[~seldesr])/len(rt_reg[~seldecr])
+        norm_desvw = des_ratiow/notdes_ratiow
+        norm_desw[~seldesd] = norm_desvw
+        print(norm_desvw)
 
     pixlg = np.zeros(nside*nside*12)
     pixlgw = np.zeros(nside*nside*12)
-    dcomp = 1/dt_reg['FRACZ_TILELOCID']
+    
     #if 'FRAC_TLOBS_TILES' in list(dt_reg.dtype.names):
     #    #print('using FRAC_TLOBS_TILES')
     #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
     for ii in range(0,len(dpix)):
-        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]
-        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]
+        pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
+        pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
     pixlr = np.zeros(nside*nside*12)
     for ii in range(0,len(rpix)):
         pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
@@ -154,6 +173,7 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     wp &= pixlgw*0 == 0
     wp &= parv != hp.UNSEEN
     #print(len(parv[wp]))
+
     rh,bn = np.histogram(parv[wp],bins=nbin,weights=pixlr[wp],range=(np.percentile(parv[wp],.1),np.percentile(parv[wp],99.9)))
     dh,_ = np.histogram(parv[wp],bins=bn,weights=pixlg[wp])
     dhw,_ = np.histogram(parv[wp],bins=bn,weights=pixlgw[wp])
