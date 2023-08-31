@@ -134,7 +134,7 @@ nbin = 10
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
-def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
+def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1),desnorm=False):
     from regressis import footprint
     foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     north, south, des = foot.get_imaging_surveys()
@@ -145,14 +145,14 @@ def plot_reldens(parv,dt_reg,rt_reg,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     seldesd = des[dpix]
     norm_des = np.ones(len(dpix))
     norm_desw = np.ones(len(dpix))
-    if sum(rpix[seldesr]) > 0:
+    if sum(rpix[seldesr]) > 0 and desnorm:
         des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
         notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
         norm_desv = des_ratio/notdes_ratio
         norm_des[~seldesd] = norm_desv
         print(norm_desv)
-        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomb[seldesd])/len(rt_reg[seldesr])
-        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomb[~seldesd])/len(rt_reg[~seldesr])
+        des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
+        notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
         norm_desvw = des_ratiow/notdes_ratiow
         norm_desw[~seldesd] = norm_desvw
         print(norm_desvw)
@@ -335,10 +335,12 @@ for tp in tps:
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+    desnorm = False
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
+        desnorm=True
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
@@ -367,7 +369,7 @@ for tp in tps:
                 parv = sag
                 mp = 'sagstream'
                 fig = plt.figure()
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
                 figs.append(fig)
@@ -379,7 +381,7 @@ for tp in tps:
                 parv = lrg_mask_frac
                 mp = 'fraction of area in LRG mask'
                 
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -390,7 +392,7 @@ for tp in tps:
                 parv = sky_g
                 mp = 'g_sky_res'
                 
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -407,7 +409,7 @@ for tp in tps:
                 parv = m1-m2
                 parv[sel] = hp.UNSEEN
                 mp = map_pair[0]+' - '+map_pair[1]
-                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
 
@@ -423,7 +425,7 @@ for tp in tps:
                 #print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
-                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
@@ -443,7 +445,7 @@ for tp in tps:
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
                     parv = debv
                     fig = plt.figure()
-                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2 = plot_reldens(parv,dt_reg,rt_reg,cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     figs.append(fig)
                     if args.mapmd == 'validate':
                         fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
