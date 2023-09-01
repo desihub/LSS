@@ -382,8 +382,8 @@ for tp in tps:
                 norm_desv = des_ratio/notdes_ratio
                 norm_des[~seldesd] = norm_desv
                 print(norm_desv)
-                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['FRAC_TLOBS_TILES']))
-                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['FRAC_TLOBS_TILES']))
+                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['FRAC_TLOBS_TILES'])
+                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['FRAC_TLOBS_TILES'])
                 des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
                 len(rt_reg[seldesr])
                 notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
