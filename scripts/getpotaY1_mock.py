@@ -27,6 +27,7 @@ from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
 import time
+import bisect
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
@@ -46,6 +47,7 @@ if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     infn = args.base_input+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    print('Reading', infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
@@ -87,6 +89,18 @@ elif args.mock == 'ezmocks6':
         paoutdir += args.tracer+'/'
 
 print(tars.dtype.names)
+print('Mock targets:', len(tars))
+print('DEC dtype:', tars['DEC'].dtype)
+print('mock type:', type(tars))
+
+t0 = time.time()
+I = np.argsort(tars['DEC'])
+tars = tars[I]
+t1 = time.time()
+print('Sorting mocks: %.1f' % (t1-t0))
+
+#tars_dec = tars['DEC'].copy()
+#print('tars_dec dtype:', tars_dec.dtype, 'stride', tars_dec.strides)
 
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
@@ -103,13 +117,36 @@ def get_tile_targ(tiles):
     tdec = tiles['DEC']
     decmin = tdec - trad
     decmax = tdec + trad
-    wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
+    #ta = time.time()
+    dec = tars['DEC']
+    #tb = time.time()
+    #print('tars[DEC]: %.3f' % (tb-ta))
+    #tc = time.time()
+    #i0,i1 = np.searchsorted(dec, [decmin, decmax])
+    #td = time.time()
+    #j0,j1 = np.searchsorted(dec, [np.float32(decmin), np.float32(decmax)])
+    #te = time.time()
+    k0 = bisect.bisect_left(dec, decmin)
+    k1 = bisect.bisect_left(dec, decmax, lo=k0)
+    #tf = time.time()
+    #m0,m1 = np.searchsorted(tars_dec, [np.float32(decmin), np.float32(decmax)])
+    #tg = time.time()
+    #print('searchsorted: %.3f, searchsorted(float32): %.3f, bisect: %.3f, searchsorted(copy): %.3f' % (td-tc, te-td, tf-te, tg-tf))
+    #print('ijkm', i0,j0,k0,m0, '/', i1,j1,k1,m1)
+    i0,i1 = k0,k1
+    #wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
+    Idec = slice(i0, i1+1)
     #print(len(rt[wdec]))
     t1 = time.time()
-    inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
+    #inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
+    inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars['RA'][Idec], tars['DEC'][Idec])
     t2 = time.time()
     print('got indexes')
-    rtw = tars[wdec][inds]
+    print('inds:', inds[:10])
+    #rtw = tars[Idec][inds]
+    #rtw = tars[i0 + inds]
+    rtw = tars[i0 + np.array(inds)]
+    print('total mock:', len(dec), 'in Dec slice:', 1+i1-i0, 'in tile:', len(rtw))
     t3 = time.time()
     rmtl = Table(rtw)
     t4 = time.time()
@@ -132,7 +169,8 @@ def get_tile_targ(tiles):
     if 'SUBPRIORITY' not in tarcols:
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
     t5 = time.time()
-    return rmtl, np.diff([t0,t1,t2,t3,t4,t5])
+    return rmtl, dict(zip(['t_dec', 't_find_points', 't_rtw', 't_rmtl', 't_rmtl_add'],
+                          np.diff([t0,t1,t2,t3,t4,t5])))
 
 def write_tile_targ(inds ):
     t0 = time.time()
@@ -150,8 +188,10 @@ def write_tile_targ(inds ):
     t3 = time.time()
     #nd += 1
     #print(str(nd),len(tiles))
-    return np.append(np.array([ (t3-t2)+(t1-t0), t2-t1 ]), tiletimes)
-
+    #return np.append(np.array([ (t3-t2)+(t1-t0), t2-t1 ]), tiletimes)
+    t = dict(t_write=(t3-t2)+(t1-t0))
+    t.update(tiletimes)
+    return t
     
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -266,12 +306,17 @@ def getpa(ind):
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
     t8 = time.time()
-    return fdata, np.diff([t0,t1,t2,t3,t4,t5,t6,t7,t8])
+    tt = dict(zip(['t_readfa', 't_loadhw', 't_write_tile', 't_load_tile',
+                   't_setup', 't_load_targets', 't_read_nofa', 't_assign'],
+                  np.diff([t0,t1,t2,t3,t4,t5,t6,t7,t8])))
+    tt['rundate'] = dt
+    return fdata, tt
 
 def run_one_tile(ind):
     T1 = write_tile_targ(ind)
     res,T2 = getpa(ind)
-    return res, np.append(T1, T2)
+    T1.update(T2)
+    return res, T1
 
 def main():
     from multiprocessing import Pool
@@ -311,26 +356,38 @@ def main():
     
     common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
 
-    times = Table()
-    tt = np.vstack(tt)
-    names = ['t_write', 't_get_tile',
-             # within get_tile_targ:
-             't_get_dec', 't_find_points', 't_rtw', 't_mtl', 't_mtl_add',
-             #'t_find_points',
-             't_readfa', # 0-1
-             't_loadhw',
-             't_write_tile',
-             't_load_tile',
-             't_setup',
-             't_load_targets',
-             't_read_nofa',
-             't_assign',
-             ]
-    r,c = tt.shape
-    assert(len(names) == c)
+    #allkeys = set()
+    #for t in tt:
+    #    allkeys.update(t.keys())
+    #print('All keys:', allkeys)
+    # Assume all keys are the same
+    allkeys = tt[0].keys()
 
-    for i,name in enumerate(names):
-        times[name] = tt[:,i]
+    times = Table()
+    for k in allkeys:
+        v = []
+        for t in tt:
+            v.append(t[k])
+        times[k] = v
+    # tt = np.vstack(tt)
+    # names = ['t_write_nofa', 't_get_tile',
+    #          # within get_tile_targ:
+    #          't_get_dec', 't_find_points', 't_rtw', 't_mtl', 't_mtl_add',
+    #          #'t_find_points',
+    #          't_readfa', # 0-1
+    #          't_loadhw',
+    #          't_write_tile',
+    #          't_load_tile',
+    #          't_setup',
+    #          't_load_targets',
+    #          't_read_nofa',
+    #          't_assign',
+    #          ]
+    # r,c = tt.shape
+    # assert(len(names) == c)
+    # 
+    # for i,name in enumerate(names):
+    #     times[name] = tt[:,i]
     times.write('times.fits', format='fits', overwrite=True)
     
 if __name__ == '__main__':
