@@ -26,6 +26,7 @@ import LSS.common_tools as common
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
@@ -37,10 +38,14 @@ parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
 parser.add_argument("--counttiles", default = 'n')
 
+#desi_input_dir = '/dvs_ro/cfs/cdirs/desi'
+desi_input_dir = '/global/cfs/cdirs/desi'
+
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
-    infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    infn = args.base_input+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
@@ -91,24 +96,24 @@ if not os.path.exists(paoutdir):
     print('made '+paoutdir)
 
 
-tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
+tiletab = Table.read(os.path.join(desi_input_dir, 'survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits'))
 
-
-def write_tile_targ(inds ):
-    tiles = tiletab[inds]
-    #for i in range(0,len(tiles)):
-    fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
-    print('creating '+fname)
+def get_tile_targ(tiles):
+    t0 = time.time()
     tdec = tiles['DEC']
     decmin = tdec - trad
     decmax = tdec + trad
     wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
     #print(len(rt[wdec]))
+    t1 = time.time()
     inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
+    t2 = time.time()
     print('got indexes')
     rtw = tars[wdec][inds]
+    t3 = time.time()
     rmtl = Table(rtw)
-    print('made table for '+fname)
+    t4 = time.time()
+    print('made table')
     del rtw
     #n=len(rmtl)
     #rmtl['TARGETID'] = np.arange(1,n+1)+10*n*rannum 
@@ -126,15 +131,28 @@ def write_tile_targ(inds ):
     rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#forcing it to match value assumed below
     if 'SUBPRIORITY' not in tarcols:
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+    t5 = time.time()
+    return rmtl, np.diff([t0,t1,t2,t3,t4,t5])
+
+def write_tile_targ(inds ):
+    t0 = time.time()
+    tiles = tiletab[inds]
+    #for i in range(0,len(tiles)):
+    fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
+    print('creating '+fname)
+    t1 = time.time()
+    rmtl, tiletimes = get_tile_targ(tiles)
+    t2 = time.time()
     print('added columns for '+fname)
     rmtl.write(fname,format='fits', overwrite=True)
     del rmtl
     print('added columns, wrote to '+fname)
+    t3 = time.time()
     #nd += 1
     #print(str(nd),len(tiles))
+    return np.append(np.array([ (t3-t2)+(t1-t0), t2-t1 ]), tiletimes)
 
-
-
+    
 margins = dict(pos=0.05,
                    petal=0.4,
                    gfa=0.4)
@@ -146,12 +164,12 @@ n = 0
 
 
 def getpa(ind):
-
+    t0 = time.time()
     #tile = 1230
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
     
-    fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'))
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
     t = Table(tiletab[ind])
@@ -163,14 +181,22 @@ def getpa(ind):
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
+    t1 = time.time()
+    
     hw = load_hardware(rundate=dt, add_margins=margins)
 
+    t2 = time.time()
+    
     t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
     
+    t3 = time.time()
+
     tiles = load_tiles(
         tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
+    t4 = time.time()
+    
     tids = tiles.id
     print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
@@ -187,9 +213,12 @@ def getpa(ind):
     
     print(tile)
     # Load target files...
+    t5 = time.time()
     load_target_file(tgs, tagalong, tileoutdir+'/tilenofa-%i.fits' % tile)
+    t6 = time.time()
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
     tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =tarcols)
+    t7 = time.time()
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -236,22 +265,73 @@ def getpa(ind):
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
-    return fdata
-    
-if __name__ == '__main__':
+    t8 = time.time()
+    return fdata, np.diff([t0,t1,t2,t3,t4,t5,t6,t7,t8])
+
+def run_one_tile(ind):
+    T1 = write_tile_targ(ind)
+    res,T2 = getpa(ind)
+    return res, np.append(T1, T2)
+
+def main():
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
-    inds = np.arange(len(tls))
+    #inds = np.flatnonzero(np.array(tls) == 1230)
+    #inds = np.arange(len(tls))
     #write_tile_targ(inds[0])
-    with Pool(processes=128) as pool:
-        res = pool.map(write_tile_targ, inds)
+    inds = np.arange(256)
+    
+    # with Pool(processes=128) as pool:
+    #     res = pool.map(write_tile_targ, inds)
+    # with Pool(processes=128) as pool:
+    #     res = pool.map(getpa, inds)
 
+    # with Pool(processes=128) as pool:
+    #     res = pool.map(run_one_tile, inds)
+
+    #res = [run_one_tile(i) for i in inds]
+    # res = []
+    # tt = []
+    # for i in inds:
+    #     r, t = run_one_tile(i)
+    #     res.append(r)
+    #     tt.append(t)
+
+    res = []
+    tt = []
     with Pool(processes=128) as pool:
-        res = pool.map(getpa, inds)
+        R = pool.map(run_one_tile, inds)
+        for r,t in R:
+            res.append(r)
+            tt.append(t)
+    
     colltot = np.concatenate(res)
     if args.getcoll == 'y':
         print(len(colltot),np.sum(colltot['COLLISION']))
     
     common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
-        
+
+    times = Table()
+    tt = np.vstack(tt)
+    names = ['t_write', 't_get_tile',
+             # within get_tile_targ:
+             't_get_dec', 't_find_points', 't_rtw', 't_mtl', 't_mtl_add',
+             #'t_find_points',
+             't_readfa', # 0-1
+             't_loadhw',
+             't_write_tile',
+             't_load_tile',
+             't_setup',
+             't_load_targets',
+             't_read_nofa',
+             't_assign',
+             ]
+    r,c = tt.shape
+    assert(len(names) == c)
+
+    for i,name in enumerate(names):
+        times[name] = tt[:,i]
+    times.write('times.fits', format='fits', overwrite=True)
     
+if __name__ == '__main__':
+    main()
