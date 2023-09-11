@@ -42,7 +42,7 @@ parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--blind", help="string to make output directory blinded or not",default='blinded/')
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
@@ -51,8 +51,6 @@ parser.add_argument("--maxr", help="maximum for random files, 18 are available (
 args = parser.parse_args()
 print(args)
 
-type = args.type
-tp = type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
