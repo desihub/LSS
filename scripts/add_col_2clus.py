@@ -62,7 +62,7 @@ ldirspec = maindir+specrel+'/'
 
 dirout = ldirspec+'LSScats/'+version+'/'
 dirin = dirout
-dirout += args.blinded
+dirout += args.blind
 
 indata = Table(fitsio.read(dirin+args.tracer+'_full_HPmapcut.dat.fits',columns=['TARGETID',args.col_name]))
 
