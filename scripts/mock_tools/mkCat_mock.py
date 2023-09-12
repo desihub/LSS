@@ -170,7 +170,7 @@ def docat(mocknum,rannum):
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
 
     if args.combd == 'y' and rannum == 1:
-        fbadir = maindir+'fba'+str(mocknum)
+        fbadir = os.path.join(maindir,'fba'+str(mocknum))
         outdir = fbadir
         if not os.path.exists(outdir):
             os.mkdir(outdir)
@@ -214,11 +214,11 @@ def docat(mocknum,rannum):
 
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
-        outfs = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+        outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
         tj.write(outfs,format='fits', overwrite=True)
         print('wrote '+outfs)
-        tc = ct.count_tiles_better('dat',pdir,specrel='',survey=args.survey,indir=lssdir,gtl=gtl) 
-        outtc =  lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
+        tc = ct.count_tiles_better('dat', pdir, specrel='', survey=args.survey, indir=lssdir, gtl=gtl) 
+        outtc =  os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
         tc.write(outtc,format='fits', overwrite=True)
         print('wrote '+outtc)
     
