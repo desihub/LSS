@@ -219,6 +219,7 @@ def docat(mocknum, rannum):
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             print('entering common.combtiles_wdup_altmtl for FAVAIL')
             pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
+ 
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles, fbadir, outdir, tarf, tp = pdir)
