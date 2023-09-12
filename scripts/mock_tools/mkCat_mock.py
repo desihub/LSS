@@ -123,6 +123,11 @@ if args.mockver == 'ab_secondgen':
     args.famd = 'ab_secondgen'
 
 
+if args.mockver == 'ab_secondgen':
+    maindir = args.base_output
+    mockz = 'RSDZ'
+    args.famd = 'ab_secondgen'
+
 if args.survey == 'MVMY1':
     tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
 else:
