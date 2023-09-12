@@ -191,8 +191,20 @@ def docat(mocknum,rannum):
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        
         elif args.famd == 'ab_secondgen':
-            fbadir = 
+
+            print('entering altmtl')
+            tarf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
+            fbadir = os.path.join(maindir, 'altmtl_main_rea00%d' % mocknum, 'Univ000', 'fa', 'MAIN')
+            print('entering common.combtiles_assign_wdup', tiles, fbadir, outdir, tarf, pdir)
+
+            asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir, altmtl=True)
+            #if using alt MTL that should have ZWARN_MTL, put that in here
+            asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
+            print('Good, we ended common.combtiles_assign_wdup, now will go to combtiles_pa_wdup')
+            pa = common.combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID','RA','DEC'], fba=True, tp=pdir, ran='dat', altmtl=True)
+ 
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
