@@ -1294,9 +1294,7 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
     s = 0
     td = 0
     print('size of tiles', len(tiles))
-#    outf = os.path.join(outdir, ran + 'comb_' + tp + 'wdup.fits')
 
-#    pa_hdu = 'FAVAIL'
     tl = []
     for tile in tiles['TILEID']:
 
@@ -1375,3 +1373,11 @@ def addNS(tab):
     seln &= sel_ngc#wra
     tab['PHOTSYS'][seln] = 'N'
     return tab
+
+def return_altmtl_fba_fadate(tileid):
+    ts = str(tileid).zfill(6)
+    FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+    fhtOrig = fitsio.read_header(FAOrigName)
+    fadate = fhtOrig['RUNDATE']
+    return ''.join(fadate.split('T')[0].split('-'))
+
