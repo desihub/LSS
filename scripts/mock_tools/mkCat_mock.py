@@ -40,7 +40,7 @@ parser.add_argument("--famd", help="whether to use the fiberassign split into pa
 
 parser.add_argument("--mockmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
-parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/main/mocks/')
+parser.add_argument("--base_output", help="base directory for output",default='/pscratch/sd/a/acarnero/SecondGen/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='himalayas')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
@@ -110,6 +110,11 @@ if args.mockver == 'EZ_3gpc1year':
     mockz = 'TRUEZ'
 
 maindir = args.base_output +mockdir+args.survey+'/'
+
+if args.mockver == 'ab_secondgen':
+    maindir = args.base_output
+    mockz = 'RSDZ'
+    args.famd = 'ab_secondgen'
 
 if args.survey == 'MVMY1':
     tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
@@ -186,7 +191,8 @@ def docat(mocknum,rannum):
             asn = mocktools.combtiles_assign_wdup_7pass(indir,outdir,tarf,tp=pdir)
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = mocktools.combtiles_pa_wdup_7pass(indir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
-           
+        elif args.famd == 'ab_secondgen':
+            fbadir = 
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
