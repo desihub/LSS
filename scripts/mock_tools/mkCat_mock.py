@@ -197,13 +197,13 @@ def docat(mocknum,rannum):
             print('entering altmtl')
             tarf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
             fbadir = os.path.join(maindir, 'altmtl_main_rea00%d' % mocknum, 'Univ000', 'fa', 'MAIN')
-            print('entering common.combtiles_assign_wdup', tiles, fbadir, outdir, tarf, pdir)
+            print('entering common.combtiles_wdup_altmtl for FASSIGN')
 
-            asn = common.combtiles_assign_wdup_altmtl(tiles,fbadir,outdir,tarf,tp=pdir)
+            asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'])
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-            print('Ended common.combtiles_assign_wdup_altmtl, now will go to combine potential assigments')
-            pa = common.combtiles_pa_wdup_altmtl(tiles, fbadir, outdir, tarf, addcols=['TARGETID','RA','DEC'], tp=pdir, ran='dat')
+            print('entering common.combtiles_wdup_altmtl for FAVAIL')
+            pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
  
         else:
             tarf = fbadir+'/targs.fits'
