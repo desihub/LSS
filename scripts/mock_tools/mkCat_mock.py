@@ -120,11 +120,14 @@ if args.mockver == 'EZ_3gpc1year':
     mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
     mockz = 'TRUEZ'
     maindir = args.base_output +mockdir+args.survey+'/'
+<<<<<<< HEAD
 
 if args.mockver == 'ab_secondgen':
     maindir = args.base_output
     mockz = 'RSDZ'
     args.famd = 'ab_secondgen'
+=======
+>>>>>>> ffa27320 (changes)
 
 if args.mockver == 'ab_secondgen':
     maindir = args.base_output
@@ -222,14 +225,12 @@ def docat(mocknum,rannum):
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             print('entering common.combtiles_wdup_altmtl for FAVAIL')
             pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
- 
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
-        
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -298,6 +299,7 @@ def docat(mocknum,rannum):
         ftar = None
         dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
         tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
+<<<<<<< HEAD
 
         fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
         
@@ -308,6 +310,9 @@ def docat(mocknum,rannum):
             print('collision file already exist', fcoll)
 
         ct.mkfulldat(dz, imbits, ftar,args.tracer,bit,os.path.join(dirout, args.tracer+notqso+'_full_noveto.dat.fits'),tlf, survey=args.survey, maxp=maxp, desitarg=desitarg, specver=args.specdata, notqso=notqso, gtl_all=None, mockz=mockz,  mask_coll=fcoll, badfib=mainp.badfib, min_tsnr2=mainp.tsnrcut, mocknum=mocknum)
+=======
+        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
+>>>>>>> ffa27320 (changes)
 
     maxp = 3400
     pthresh = 3000
