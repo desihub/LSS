@@ -104,12 +104,12 @@ randens = 10460. #the number density of randoms in the 1st gen file getting used
 if args.mockver == 'ab_firstgen':
     mockdir = 'FirstGenMocks/AbacusSummit/'
     mockz = 'RSDZ'
+    maindir = args.base_output +mockdir+args.survey+'/'
 
 if args.mockver == 'EZ_3gpc1year':
     mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
     mockz = 'TRUEZ'
-
-maindir = args.base_output +mockdir+args.survey+'/'
+    maindir = args.base_output +mockdir+args.survey+'/'
 
 if args.mockver == 'ab_secondgen':
     maindir = args.base_output
@@ -128,6 +128,7 @@ tiles = fitsio.read(tile_fn)
 
 gtl = None
 if args.add_gtl == 'y':
+    print('adding gtl')
     datarel = args.specdata
     if args.survey == 'DA02':
         datarel = 'guadalupe'
@@ -138,12 +139,12 @@ if args.add_gtl == 'y':
 
 def docat(mocknum,rannum):
 
-    lssdir = maindir+'mock'+str(mocknum)+'/'
+    lssdir = os.path.join(maindir, 'mock'+str(mocknum))
     if not os.path.exists(lssdir):
         os.mkdir(lssdir)
         print('made '+lssdir)
 
-    dirout = lssdir+'LSScats/'
+    dirout = os.path.join(lssdir, 'LSScats')
     if not os.path.exists(dirout):
         os.mkdir(dirout)
         print('made '+dirout)
@@ -204,14 +205,12 @@ def docat(mocknum,rannum):
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             print('entering common.combtiles_wdup_altmtl for FAVAIL')
             pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
- 
         else:
             tarf = fbadir+'/targs.fits'
             asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
-
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -267,8 +266,8 @@ def docat(mocknum,rannum):
     if args.fulld == 'y':
         
         ftar = None
-        dz = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-        tlf = lssdir+'Alltiles_'+pdir+'_tilelocs.dat.fits'
+        dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
+        tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
         ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
 
     maxp = 3400
