@@ -2558,6 +2558,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
     
+    #needs to change because mocks actually need real spec info as well
     if specver == 'mock':
         dz[mockz].name = 'Z' 
         
