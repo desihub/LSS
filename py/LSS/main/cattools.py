@@ -2667,6 +2667,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     print(np.unique(dz['NTILE']))
     
+    #needs to change, because specver should still point to real data
     if specver == 'mock':
         dz['PHOTSYS'] = 'N'
         sel = dz['DEC'] < 32.375
