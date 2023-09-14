@@ -2370,6 +2370,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
+        #CHANGE TO HANDLE MOCK PATHS PROPERLY
         collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
     else:
         pd = 'dark'
