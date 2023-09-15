@@ -355,7 +355,9 @@ if __name__ == '__main__':
         if tracer == "QSO":
             zminr = 0.8
             zmaxr = 3.5
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+        if 'FKP' in args.weight_type:
+            rcols.append('WEIGHT_FKP')
         data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y',use_map_veto=args.use_map_veto)
         print('data columns',data_.dtype.names)
         ranl =[]
