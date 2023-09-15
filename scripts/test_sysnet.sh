@@ -4,4 +4,4 @@ PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the 
 
 run_sysnet=sysnet-app
 
-run_sysnet #should output something like configuration file missing
+$run_sysnet #should output something like configuration file missing
