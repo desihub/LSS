@@ -87,6 +87,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
+parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
