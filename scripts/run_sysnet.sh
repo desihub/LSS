@@ -7,9 +7,9 @@ PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the 
 #module load pytorch/1.10.0
 
 
-run_sysnet=sysnet-app  #$SYSNETDIR/sysnetdev/scripts/app.py #make sure to set $SYSNETDIR to wherever the sysnet repo was installed
+run_sysnet=$SYSNETDIR/sysnetdev/scripts/app.py #make sure to set $SYSNETDIR to wherever the sysnet repo was installed
 
-#export PYTHONPATH=$PYTHONPATH:$SYSNETDIR/sysnetdev/ #make sure to set $SYSNETDIR to wherever the sysnet repo was installed
+export PYTHONPATH=$PYTHONPATH:$SYSNETDIR/sysnetdev/ #make sure to set $SYSNETDIR to wherever the sysnet repo was installed
 
 #!/bin/bash
 # example to run as bash script 
