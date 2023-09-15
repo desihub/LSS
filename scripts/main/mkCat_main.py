@@ -970,7 +970,7 @@ if mkclusran:
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
 if args.NStoGC:
-    fb = dirout+tracer_clus
+    fb = dirout+tracer_clus+'_'
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
 if type == 'QSO':
