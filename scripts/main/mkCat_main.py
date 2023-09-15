@@ -997,29 +997,29 @@ regions = ['NGC', 'SGC']
 
 if args.resamp == 'y':
             
-	for reg in regions:
-		flin = dirout + tracer_clus + '_'+reg    
-		def _parfun(rannum):
-			ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-		
-		inds = np.arange(nran)
-		if args.par == 'y':
-		    from multiprocessing import Pool
-		    with Pool(processes=nran*2) as pool:
-			    res = pool.map(_parfun, inds)
+    for reg in regions:
+        flin = dirout + tracer_clus + '_'+reg    
+        def _parfun(rannum):
+            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+        
+        inds = np.arange(nran)
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
         else:
             for rn in range(rm,rx):
                 _parfun(rn)
     
 allreg = ['N','S','NGC', 'SGC']
 if args.nz == 'y':
-	for reg in allreg:
-		fb = dirout+tracer_clus+'_'+reg
-		fcr = fb+'_0_clustering.ran.fits'
-		fcd = fb+'_clustering.dat.fits'
-		fout = fb+'_nz.txt'
-		common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-		common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
+    for reg in allreg:
+        fb = dirout+tracer_clus+'_'+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
 
     
 
