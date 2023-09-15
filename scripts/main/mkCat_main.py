@@ -970,7 +970,7 @@ if mkclusran:
     for ii in range(rm,rx):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
-if args.NStoGC:
+if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
@@ -1000,7 +1000,7 @@ if args.resamp == 'y':
 	for reg in regions:
 		flin = dirout + tracer_clus + '_'+reg    
 		def _parfun(rannum):
-			ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+			ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 		
 		inds = np.arange(nran)
 		from multiprocessing import Pool
