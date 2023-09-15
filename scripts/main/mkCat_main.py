@@ -1003,10 +1003,13 @@ if args.resamp == 'y':
 			ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 		
 		inds = np.arange(nran)
-		from multiprocessing import Pool
-		with Pool(processes=nran*2) as pool:
-			res = pool.map(_parfun, inds)
-
+		if args.par == 'y':
+		    from multiprocessing import Pool
+		    with Pool(processes=nran*2) as pool:
+			    res = pool.map(_parfun, inds)
+        else:
+            for rn in range(rm,rx):
+                _parfun(rn)
     
 allreg = ['N','S','NGC', 'SGC']
 if args.nz == 'y':
