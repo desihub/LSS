@@ -31,6 +31,10 @@ import bisect
 import time
 from datetime import datetime
 
+t_start = time.time()
+
+log = Logger.get()
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--mock", default='ab2ndgen')
@@ -91,16 +95,13 @@ elif args.mock == 'ezmocks6':
         tileoutdir += args.tracer+'/'
         paoutdir += args.tracer+'/'
 
-print(tars.dtype.names)
-print('Mock targets:', len(tars))
-print('DEC dtype:', tars['DEC'].dtype)
-print('mock type:', type(tars))
-
 t0 = time.time()
-I = np.argsort(tars['DEC'])
-tars = tars[I]
+is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
+if not is_sorted:
+    I = np.argsort(tars['DEC'])
+    tars = tars[I]
 t1 = time.time()
-print('Sorting mocks: %.1f' % (t1-t0))
+log.info('Sorting/verifying mocks: %.1f' % (t1-t0))
 
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
@@ -111,6 +112,8 @@ if not os.path.exists(paoutdir):
 
 
 tiletab = Table.read(os.path.join(desi_input_dir, 'survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits'))
+
+log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
 def get_tile_targ(tiles):
     tdec = tiles['DEC']
@@ -157,7 +160,6 @@ margins = dict(pos=0.05,
                    petal=0.4,
                    gfa=0.4)
 
-log = Logger.get()
 rann = 0
 n = 0
 
@@ -260,6 +262,7 @@ def run_one_tile(ind):
     t0 = time.time()
     write_tile_targ(ind)
     res = getpa(ind)
+    res = np.array(res)
     t1 = time.time()
     log.info('Tile %i took %.3f sec' % (tiletab[ind]['TILEID'], t1-t0))
     return res
@@ -324,21 +327,48 @@ def main():
     t2 = time.time()
     log.info('Loading hardware in series: %.3f sec' % (t2-t1))
 
-    # Now run tiles in parallel!
+    # # Now run tiles in parallel!
+    # with Pool(processes=128) as pool:
+    #     res = pool.map(run_one_tile, inds)
+    # t3 = time.time()
+    # log.info('Running tiles in parallel: %.3f sec' % (t3-t2))
+    #
+    # # Merge and write results
+    # colltot = np.concatenate(res)
+    # if args.getcoll == 'y':
+    #     print(len(colltot),np.sum(colltot['COLLISION']))
+    # t3b = time.time()
+    # 
+    # common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
+    # t4 = time.time()
+    # log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
+
+    # Write output *while* retrieving results in parallel
+    outfn = paoutdir+'/pota-'+args.prog+'.fits'
+    tempout = outfn + '.tmp'
+    fits = fitsio.FITS(tempout, 'rw', clobber=True)
+    first = True
+    ntot = 0
+    ncoll = 0
     with Pool(processes=128) as pool:
-        res = pool.map(run_one_tile, inds)
-
+        it = pool.imap_unordered(run_one_tile, inds)
+        # fetch results as they complete
+        for res in it:
+            ntot += len(res)
+            ncoll += np.sum(res['COLLISION'])
+            if first:
+                fits.write(res, extname='LSS')
+                first = False
+            else:
+                fits[-1].append(res)
+            del res
+    fits.close()
+    os.rename(tempout, outfn)
+    log.info('Wrote %s' % outfn)
     t3 = time.time()
-    log.info('Running tiles in parallel: %.3f sec' % (t3-t2))
-
-    colltot = np.concatenate(res)
     if args.getcoll == 'y':
-        print(len(colltot),np.sum(colltot['COLLISION']))
-    t3b = time.time()
-
-    common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
-    t4 = time.time()
-    log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
+        print(ntot, ncoll)
+    log.info('Running tiles and writing results: %.3f sec' % (t3-t2))
 
 if __name__ == '__main__':
     main()
