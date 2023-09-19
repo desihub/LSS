@@ -6,7 +6,8 @@ import numpy as np
 import os
 from astropy.table import Table, join, vstack
 import argparse
-from fiberassign.hardware import load_hardware
+from fiberassign.hardware import load_hardware_args
+from fiberassign._internal import Hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
 from fiberassign.assign import Assignment
@@ -26,8 +27,9 @@ import LSS.common_tools as common
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
-import time
 import bisect
+import time
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
@@ -39,8 +41,9 @@ parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
 parser.add_argument("--counttiles", default = 'n')
 
-#desi_input_dir = '/dvs_ro/cfs/cdirs/desi'
-desi_input_dir = '/global/cfs/cdirs/desi'
+# On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
+desi_input_dir = '/dvs_ro/cfs/cdirs/desi'
+#desi_input_dir = '/global/cfs/cdirs/desi'
 
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
@@ -99,9 +102,6 @@ tars = tars[I]
 t1 = time.time()
 print('Sorting mocks: %.1f' % (t1-t0))
 
-#tars_dec = tars['DEC'].copy()
-#print('tars_dec dtype:', tars_dec.dtype, 'stride', tars_dec.strides)
-
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
     print('made '+tileoutdir)
@@ -113,49 +113,20 @@ if not os.path.exists(paoutdir):
 tiletab = Table.read(os.path.join(desi_input_dir, 'survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits'))
 
 def get_tile_targ(tiles):
-    t0 = time.time()
     tdec = tiles['DEC']
     decmin = tdec - trad
     decmax = tdec + trad
-    #ta = time.time()
     dec = tars['DEC']
-    #tb = time.time()
-    #print('tars[DEC]: %.3f' % (tb-ta))
-    #tc = time.time()
-    #i0,i1 = np.searchsorted(dec, [decmin, decmax])
-    #td = time.time()
-    #j0,j1 = np.searchsorted(dec, [np.float32(decmin), np.float32(decmax)])
-    #te = time.time()
-    k0 = bisect.bisect_left(dec, decmin)
-    k1 = bisect.bisect_left(dec, decmax, lo=k0)
-    #tf = time.time()
-    #m0,m1 = np.searchsorted(tars_dec, [np.float32(decmin), np.float32(decmax)])
-    #tg = time.time()
-    #print('searchsorted: %.3f, searchsorted(float32): %.3f, bisect: %.3f, searchsorted(copy): %.3f' % (td-tc, te-td, tf-te, tg-tf))
-    #print('ijkm', i0,j0,k0,m0, '/', i1,j1,k1,m1)
-    i0,i1 = k0,k1
-    #wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
+    # "bisect_left" is way faster than "np.searchsorted"!
+    #i0,i1 = np.searchsorted(dec, [np.float32(decmin), np.float32(decmax)])
+    i0 = bisect.bisect_left(dec, decmin)
+    i1 = bisect.bisect_left(dec, decmax, lo=i0)
     Idec = slice(i0, i1+1)
-    #print(len(rt[wdec]))
-    t1 = time.time()
-    #inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
     inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars['RA'][Idec], tars['DEC'][Idec])
-    t2 = time.time()
-    print('got indexes')
-    print('inds:', inds[:10])
-    #rtw = tars[Idec][inds]
-    #rtw = tars[i0 + inds]
     rtw = tars[i0 + np.array(inds)]
-    print('total mock:', len(dec), 'in Dec slice:', 1+i1-i0, 'in tile:', len(rtw))
-    t3 = time.time()
     rmtl = Table(rtw)
-    t4 = time.time()
     print('made table')
     del rtw
-    #n=len(rmtl)
-    #rmtl['TARGETID'] = np.arange(1,n+1)+10*n*rannum 
-    #rmtl['TARGETID'] = np.arange(len(rmtl))
-    #print(len(rmtl['TARGETID'])) #checking this column is there
     if 'DESI_TARGET' not in tarcols:
         rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
     if 'NUMOBS_INIT' not in tarcols:
@@ -168,43 +139,29 @@ def get_tile_targ(tiles):
     rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#forcing it to match value assumed below
     if 'SUBPRIORITY' not in tarcols:
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-    t5 = time.time()
-    return rmtl, dict(zip(['t_dec', 't_find_points', 't_rtw', 't_rmtl', 't_rmtl_add'],
-                          np.diff([t0,t1,t2,t3,t4,t5])))
+    return rmtl
 
-def write_tile_targ(inds ):
-    t0 = time.time()
-    tiles = tiletab[inds]
-    #for i in range(0,len(tiles)):
+def write_tile_targ(ind):
+    '''
+    Write the targets file for the single tile table index "ind".
+    '''
+    tiles = tiletab[ind]
     fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
     print('creating '+fname)
-    t1 = time.time()
-    rmtl, tiletimes = get_tile_targ(tiles)
-    t2 = time.time()
+    rmtl = get_tile_targ(tiles)
     print('added columns for '+fname)
     rmtl.write(fname,format='fits', overwrite=True)
-    del rmtl
     print('added columns, wrote to '+fname)
-    t3 = time.time()
-    #nd += 1
-    #print(str(nd),len(tiles))
-    #return np.append(np.array([ (t3-t2)+(t1-t0), t2-t1 ]), tiletimes)
-    t = dict(t_write=(t3-t2)+(t1-t0))
-    t.update(tiletimes)
-    return t
     
 margins = dict(pos=0.05,
                    petal=0.4,
                    gfa=0.4)
 
-
 log = Logger.get()
 rann = 0
 n = 0
 
-
 def getpa(ind):
-    t0 = time.time()
     #tile = 1230
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
@@ -221,22 +178,17 @@ def getpa(ind):
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
-    t1 = time.time()
-    
-    hw = load_hardware(rundate=dt, add_margins=margins)
+    #hw = load_hardware(rundate=dt, add_margins=margins)
+    tt = parse_datetime(dt)
+    hw = get_hardware_for_time(tt)
+    assert(hw is not None)
 
-    t2 = time.time()
-    
     t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
-    
-    t3 = time.time()
 
     tiles = load_tiles(
         tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
-    t4 = time.time()
-    
     tids = tiles.id
     print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
@@ -253,12 +205,9 @@ def getpa(ind):
     
     print(tile)
     # Load target files...
-    t5 = time.time()
     load_target_file(tgs, tagalong, tileoutdir+'/tilenofa-%i.fits' % tile)
-    t6 = time.time()
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
     tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =tarcols)
-    t7 = time.time()
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -305,90 +254,91 @@ def getpa(ind):
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
-    t8 = time.time()
-    tt = dict(zip(['t_readfa', 't_loadhw', 't_write_tile', 't_load_tile',
-                   't_setup', 't_load_targets', 't_read_nofa', 't_assign'],
-                  np.diff([t0,t1,t2,t3,t4,t5,t6,t7,t8])))
-    tt['rundate'] = dt
-    return fdata, tt
+    return fdata
 
 def run_one_tile(ind):
-    T1 = write_tile_targ(ind)
-    res,T2 = getpa(ind)
-    T1.update(T2)
-    return res, T1
+    t0 = time.time()
+    write_tile_targ(ind)
+    res = getpa(ind)
+    t1 = time.time()
+    log.info('Tile %i took %.3f sec' % (tiletab[ind]['TILEID'], t1-t0))
+    return res
+
+def read_fba_header(ind):
+    '''
+    Read the fiberassign header for one tile index.
+    '''
+    tile = tiletab[ind]['TILEID']
+    ts = '%06i' % tile
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'))
+    return dict([(k, fbah[k]) for k in ['RUNDATE', 'MTLTIME', 'FA_RUN', 'FA_HA', 'FIELDROT']])
+
+def parse_datetime(s):
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:
+        d = datetime.strptime(rundate, "%Y-%m-%dT%H:%M:%S")
+        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
+        d = d.replace(tzinfo=timezone.utc)
+
+hardware_times = []
+def get_hardware_for_time(t):
+    global hardware_times
+    for tlo,thi,hw in hardware_times:
+        if (tlo <= t) and (thi is None or thi > t):
+            #print('Match to time range', tlo, 'to', thi)
+            return hw
+    return None
 
 def main():
     from multiprocessing import Pool
-    tls = list(tiletab['TILEID'])#[:10])
+    tls = list(tiletab['TILEID'])
     #inds = np.flatnonzero(np.array(tls) == 1230)
-    #inds = np.arange(len(tls))
-    #write_tile_targ(inds[0])
-    inds = np.arange(256)
-    
-    # with Pool(processes=128) as pool:
-    #     res = pool.map(write_tile_targ, inds)
-    # with Pool(processes=128) as pool:
-    #     res = pool.map(getpa, inds)
+    #inds = np.arange(256)
+    inds = np.arange(len(tls))
 
-    # with Pool(processes=128) as pool:
-    #     res = pool.map(run_one_tile, inds)
-
-    #res = [run_one_tile(i) for i in inds]
-    # res = []
-    # tt = []
-    # for i in inds:
-    #     r, t = run_one_tile(i)
-    #     res.append(r)
-    #     tt.append(t)
-
-    res = []
-    tt = []
+    t0 = time.time()
+    # Read all fiberassign headers to get the RUNDATES.
     with Pool(processes=128) as pool:
-        R = pool.map(run_one_tile, inds)
-        for r,t in R:
-            res.append(r)
-            tt.append(t)
-    
+        headers = pool.map(read_fba_header, inds)
+    rundates = set([h['RUNDATE'] for h in headers])
+    rundates = sorted(list(rundates))
+    log.info('Unique rundates: %i of %i' % (len(rundates), len(headers)))
+    t1 = time.time()
+    log.info('Reading fiberassign headers in parallel: %.3f sec' % (t1-t0))
+
+    # Read all hardware configurations for our RUNDATES.
+    global hardware_times
+    for t in rundates:
+        dt = parse_datetime(t)
+
+        cached = get_hardware_for_time(dt)
+        if cached is not None:
+            continue
+
+        hw_args,time_lo,time_hi = load_hardware_args(rundate=t, add_margins=margins)
+        hw = Hardware(*hw_args)
+
+        hardware_times.append((time_lo, time_hi, hw))
+
+    t2 = time.time()
+    log.info('Loading hardware in series: %.3f sec' % (t2-t1))
+
+    # Now run tiles in parallel!
+    with Pool(processes=128) as pool:
+        res = pool.map(run_one_tile, inds)
+
+    t3 = time.time()
+    log.info('Running tiles in parallel: %.3f sec' % (t3-t2))
+
     colltot = np.concatenate(res)
     if args.getcoll == 'y':
         print(len(colltot),np.sum(colltot['COLLISION']))
-    
+    t3b = time.time()
+
     common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
+    t4 = time.time()
+    log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
 
-    #allkeys = set()
-    #for t in tt:
-    #    allkeys.update(t.keys())
-    #print('All keys:', allkeys)
-    # Assume all keys are the same
-    allkeys = tt[0].keys()
-
-    times = Table()
-    for k in allkeys:
-        v = []
-        for t in tt:
-            v.append(t[k])
-        times[k] = v
-    # tt = np.vstack(tt)
-    # names = ['t_write_nofa', 't_get_tile',
-    #          # within get_tile_targ:
-    #          't_get_dec', 't_find_points', 't_rtw', 't_mtl', 't_mtl_add',
-    #          #'t_find_points',
-    #          't_readfa', # 0-1
-    #          't_loadhw',
-    #          't_write_tile',
-    #          't_load_tile',
-    #          't_setup',
-    #          't_load_targets',
-    #          't_read_nofa',
-    #          't_assign',
-    #          ]
-    # r,c = tt.shape
-    # assert(len(names) == c)
-    # 
-    # for i,name in enumerate(names):
-    #     times[name] = tt[:,i]
-    times.write('times.fits', format='fits', overwrite=True)
-    
 if __name__ == '__main__':
     main()
