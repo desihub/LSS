@@ -22,7 +22,7 @@ import LSS.main.cattools as ct
 import LSS.common_tools as common
 import LSS.mocktools as mocktools
 #import LSS.mkCat_singletile.fa4lsscat as fa
-#from LSS.globals import main
+from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = 'CSCRATCH'
@@ -132,10 +132,11 @@ if args.add_gtl == 'y':
     datarel = args.specdata
     if args.survey == 'DA02':
         datarel = 'guadalupe'
-    datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'    
-    specdat = ct.get_specdat(datadir,pdir,datarel)
+    datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'   
+    specdat = ct.get_specdat(datadir,pdir,datarel,badfib= main(args.tracer, args.specdata, survey=args.survey).badfib)
     tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
     gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
+    del specdat
 
 def docat(mocknum,rannum):
 
@@ -157,6 +158,7 @@ def docat(mocknum,rannum):
         else:
             bit = targetmask.desi_mask[args.tracer]
             desitarg='DESI_TARGET'
+
 
 
     if args.combr == 'y' and mocknum == 1:
@@ -211,6 +213,7 @@ def docat(mocknum,rannum):
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -222,7 +225,7 @@ def docat(mocknum,rannum):
         print('wrote '+outtc)
     
     if args.combdr == 'y':
-        fbadir_data = maindir+'fba'+str(mocknum)
+        fbadir_data = os.path.join(maindir,'fba'+str(mocknum))
         fbadir_ran = maindir+'random_fba'+str(rannum)
         if args.famd == 'passes':
             fbadir_data = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/faruns/'
@@ -261,14 +264,34 @@ def docat(mocknum,rannum):
             os.system('cp '+fn0+' '+fn)
             print('copied '+fn0+' to '+fn)
 
-    specver = 'mock'    
+    #specver = 'mock'    
     imbits = []    
     if args.fulld == 'y':
         
+        mainp = main(args.tracer, args.specdata, survey=args.survey)
+#inp        imbits = mainp.imbits
+        
+
+        #Question, is this necessary? Should be this or the list below?
+        maxp = 3400
+        if type[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if type[:3] == 'BGS':
+            maxp = 2100
+
         ftar = None
         dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
         tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
-        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
+
+        fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
+        
+        if not os.path.isfile(fcoll):
+            fin = os.path.join('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
+            fcoll = mocktools.create_collision_from_pota(fin, fcoll)
+        else:
+            print('collision file already exist', fcoll)
+
+        ct.mkfulldat(dz, imbits, ftar,args.tracer,bit,os.path.join(dirout, args.tracer+notqso+'_full_noveto.dat.fits'),tlf, survey=args.survey, maxp=maxp, desitarg=desitarg, specver=args.specdata, notqso=notqso, gtl_all=None, mockz=mockz,  mask_coll=fcoll, badfib=mainp.badfib, min_tsnr2=mainp.tsnrcut, mocknum=mocknum)
 
     maxp = 3400
     pthresh = 3000
@@ -287,45 +310,94 @@ def docat(mocknum,rannum):
         pthresh = 2000
         zmin = 0.1
         zmax = 0.5
+    if notqso == 'notqso':
+        maxp = 3200
 
 
         
     if args.fullr == 'y':
-        zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
-        dz = Table.read(zf) 
+        if args.survey != 'Y1':
+            zf = lssdir+'datcomb_'+pdir+'_tarspecwdup_zdone.fits'
+            dz = Table.read(zf) 
 
-        if gtl is None:
-            specdat = common.cut_specdat(dz)
-            gtlf = np.unique(specdat['TILELOCID'])  
-            del specdat     
+            if gtl is None:
+                specdat = common.cut_specdat(dz)
+                gtlf = np.unique(specdat['TILELOCID'])  
+                del specdat     
+            else:
+                gtlf = gtl
+            wg = np.isin(dz['TILELOCID'],gtlf)
+            dz = dz[wg]
+            wtype = ((dz[desitarg] & bit) > 0)
+            if notqso == 'notqso':
+                wtype &= ((dz[desitarg] & 4) == 0)
+            dz = dz[wtype]
+            lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
+            del dz
         else:
-            gtlf = gtl
-        wg = np.isin(dz['TILELOCID'],gtlf)
-        dz = dz[wg]
-        wtype = ((dz[desitarg] & bit) > 0)
-        if notqso == 'notqso':
-            wtype &= ((dz[desitarg] & 4) == 0)
-        dz = dz[wtype]
-        lznp,tlid_full = common.find_znotposs_tloc(dz,priority_thresh=pthresh)
-        del dz
+            #ldata = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata)
+            ldata = os.path.join(maindir, 'mock%d'% mocknum, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+            specft = fitsio.read(ldata) #Is this from data or mock? 
+            #specft = fitsio.read(os.path.join(ldata, 'datcomb_'+args.tracer+notqso+'_tarspecwdup_zdone.fits')) #Is this from data or mock? 
+            wg = np.isin(specft['TILELOCID'], gtl)
+            specft = Table(specft[wg])
+            lznp = common.find_znotposs(specft)
+            del specft
+
+            
+            ranfile = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%swdupspec_zdone.fits' % (rannum, pdir)) 
+            alltileloc = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%s_Alltilelocinfo.fits' % (rannum, pdir)) 
+#            os.system('cp %s %s' %(ranfile, os.path.join(maindir, 'mock'+str(mocknum)+'/.')))
+#            os.system('cp %s %s' %(alltileloc, os.path.join(maindir, 'mock'+str(mocknum)+'/.')))
+
+#            ldata = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata)
+#            specft = fitsio.read(os.path.join(ldata, 'datcomb_'+pdir+'_spec_zdone.fits'), columns=['TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
+
+#            mockspec = fitsio.read(os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits'))
+#            mockspec['TILELOCID'] = 10000*mockspec['TILEID'] + mockspec['LOCATION']
+#            mockspec = join(mockspec, specft, keys=['TILELOCID'], join_type='left')
+#            os.system('mv %s %s' %(os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits'), os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup_original.fits'))
+#            mockspec.write(os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits'))
+            ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits'), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
+#            print(ranfile, alltileloc)
+#            exit()
+        outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
+        mainp = main(args.tracer, args.specdata, survey=args.survey)
+        imbits = mainp.imbits
+        maxp = 3400
+        if args.tracer[:3] == 'LRG' or notqso == 'notqso':
+            maxp = 3200
+        if args.tracer[:3] == 'BGS':
+            maxp = 2100
+        tsnrcut = mainp.tsnrcut
+        ct.mkfullran(gtl,lznp,os.path.join(maindir, 'mock'+str(mocknum)),rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut) 
+##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
         
 
-        outf = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
-        
-        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
-        
-
+    mainp = main(args.tracer, args.specdata, survey=args.survey)
 
     if args.apply_veto == 'y':
         print('applying vetos to mock '+str(mocknum))
-        fin = dirout+args.tracer+notqso+'_full_noveto.dat.fits'
-        fout = dirout+args.tracer+notqso+'_full.dat.fits'
-        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+        fin = os.path.join(dirout, args.tracer+notqso+'_full_noveto.dat.fits')
+        if args.tracer == 'LRG' and args.survey=='Y1' and args.famd == 'ab_secondgen':
+            lrgf = Table.read(fin)
+            lrgmask = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d_matched_input_full_lrg_imask.fits' % mocknum)
+            lrgf = join(lrgf, lrgmask, keys=['TARGETID'])
+            common.write_LSS(lrgf, fin)
 
+        elif args.survey=='Y1' and args.famd == 'ab_secondgen':
+            novf = Table.read(fin)
+            targf = Table(fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum, columns=['TARGETID', 'NOBS_G','NOBS_R','NOBS_Z','MASKBITS']))
+            novf = join(novf, targf, keys=['TARGETID'])
+            common.write_LSS(novf, fin)
+
+        fout = os.path.join(dirout, args.tracer+notqso+'_full.dat.fits')
+        common.apply_veto(fin,fout,ebits=mainp.ebits, zmask=False, maxp=maxp, reccircmasks=mainp.reccircmasks)
         print('applying vetos to random '+str(rannum))
-        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
-        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+        fin = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
+        fout = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits')
+        common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(),rann=rannum)
+        common.apply_veto(fin,fout,ebits=mainp.ebits, zmask=False,maxp=maxp, reccircmasks=mainp.reccircmasks)
 
         #print('random veto '+str(ii)+' done')
     if args.apply_veto_ran == 'y':
@@ -342,7 +414,8 @@ def docat(mocknum,rannum):
     nztl = []
     if args.mkclusdat == 'y':
         nztl.append('')
-        ct.mkclusdat(dirout+args.tracer+notqso,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+        #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+        ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=mainp.tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
 
     
     if args.equal_data_dens == 'y':
@@ -360,22 +433,40 @@ def docat(mocknum,rannum):
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        ct.mkclusran(dirout+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(os.path.join(dirout,args.tracer+notqso+'_'),os.path.join(dirout,args.tracer+notqso+'_'), rannum, rcols=rcols, tsnrcut=mainp.tsnrcut, tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
+        '''
         for reg in regl:
             ranf = dirout+args.tracer+notqso+reg+'_'+str(rannum)+'_clustering.ran.fits'
             ranfm = dirout+args.tracer+notqso+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
             os.system('mv '+ranf+' '+ranfm)
+        '''
 
+        ct.clusNStoGC(os.path.join(dirout, args.tracer+notqso+'_'), nran=1)
+    #THIS IS TEMP:
+    fin = os.path.join(dirout, args.tracer+notqso + '_full.dat.fits')
+    dz = Table.read(fin)
+    if 'PHOTSYS' not in dz.columns:
+        dz['PHOTSYS'] = 'N'
+        sel = dz['DEC'] < 32.375
+        wra = (dz['RA'] > 100-dz['DEC'])
+        wra &= (dz['RA'] < 280 +dz['DEC'])
+        sel |= ~wra
+        dz['PHOTSYS'][sel] = 'S'
+        common.write_LSS(dz, fin)
     
     if args.mkclusdat_allpot == 'y':
         #fbadir = maindir+'fba'+str(mocknum)
         #tarf = fbadir+'/targs.fits'
         #'/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit
-        tarf = args.base_output +mockdir+'/forFA'+str(mocknum)+'.fits'
+        tarf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum
+        #args.base_output +mockdir+'/forFA'+str(mocknum)+'.fits'
         ztab = Table(fitsio.read(tarf,columns=['TARGETID','RSDZ']))
         ztab.rename_column('RSDZ', 'Z')
-        mocktools.mkclusdat_allpot(dirout+args.tracer+notqso,ztab,tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
+        
+        mocktools.mkclusdat_allpot(os.path.join(dirout, args.tracer+notqso), ztab, tp=args.tracer, dchi2=None, tsnrcut=0, zmin=zmin, zmax=zmax)#,ntilecut=ntile)
+
+
 
     if args.mkclusran_allpot == 'y':
         nztl.append('_complete')
@@ -383,13 +474,17 @@ def docat(mocknum,rannum):
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        ct.mkclusran(dirout+args.tracer+notqso+'_',dirout+args.tracer+notqso+'_complete'+'_',rannum,rcols=rcols,tsnrcut=0,tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        fl = os.path.join(dirout, args.tracer+notqso+'_')
+        ct.add_tlobs_ran(fl,rannum)
+        ct.mkclusran(os.path.join(dirout, args.tracer+notqso+'_'), os.path.join(dirout,args.tracer+notqso+'_complete'+'_'), rannum, rcols=rcols, tsnrcut=0, tsnrcol=tsnrcol, compmd='')#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
-        for reg in regl:
-            ranf = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum)+'_clustering.ran.fits'
-            ranfm = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
-            os.system('mv '+ranf+' '+ranfm)
+##        for reg in regl:
+##            ranf = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum)+'_clustering.ran.fits'
+##            ranfm = dirout+args.tracer+notqso+'_complete'+reg+'_'+str(rannum-1)+'_clustering.ran.fits'
+##            os.system('mv '+ranf+' '+ranfm)
+    #THIS IS TEMP
 
+    ct.clusNStoGC(os.path.join(dirout, args.tracer+notqso+'_complete_'), nran=1)
     if args.mkclusdat_tiles == 'y':
         fbadir = maindir+'fba'+str(mocknum)
         tarf = fbadir+'/targs.fits'
