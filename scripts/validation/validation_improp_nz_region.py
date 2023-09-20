@@ -151,7 +151,7 @@ for tp in tps:
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
-    rf = indir+tpr+zdw+'_0_full.ran.fits'
+    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
 
     rt = Table(fitsio.read(rf))
     rt['HPXPIXEL'] = hp.ang2pix(nside, rt['RA'], rt['DEC'], nest=nest, lonlat=True)
