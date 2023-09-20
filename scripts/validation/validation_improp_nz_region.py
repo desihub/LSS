@@ -81,6 +81,7 @@ def plot_nzsplit_ratio(dt, rt, zmin, zmax, zbinsize=0.01, ylim=None):
     seld = dt['DECALS'].copy()
     selr = rt['DECALS'].copy()
     area = np.sum(selr)/2500  # area per deg2 if 1 random file being used
+    print('area DECaLS, not DES is '+str(area))
     nzdecals, bin_edges = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dwt[seld]/area)
     zl = (bin_edges[1:]+bin_edges[:-1])/2
 
@@ -88,6 +89,7 @@ def plot_nzsplit_ratio(dt, rt, zmin, zmax, zbinsize=0.01, ylim=None):
         seld = dt[region].copy()
         selr = rt[region].copy()
         area = np.sum(selr)/2500  # area per deg2 if 1 random file being used
+        print('area '+region+' is '+str(area))
         nzp = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dwt[seld]/area)[0]
         nzp_no_weight = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin)[0]
         # norm = np.sum(nzdecals)/np.sum(nzp)
@@ -183,5 +185,5 @@ for tp in tps:
         for fig in figs:
             pdf.savefig(fig)
             plt.close()
-    print('done with '+tp)
+    print('done with '+tp+'; save to '+outfn)
 
