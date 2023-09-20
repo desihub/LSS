@@ -528,7 +528,6 @@ def docat(mocknum, rannum):
         if 'WEIGHT_FKP' not in cols:
             print('adding FKP weights')
             common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz_step, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
-
     nztl = []
     if args.mkclusdat == 'y':
         nztl.append('')
