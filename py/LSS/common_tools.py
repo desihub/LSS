@@ -93,6 +93,20 @@ def splitGC(input_array):
     sel_ngc = gc.b > 0
     return sel_ngc
 
+def select_regressis_DES(input_array,ra_col='RA',dec_col='DEC'):    
+    '''
+    input_array with RA, DEC given by ra_col,dec_col
+    return selection for DES as defined by regressis
+    '''
+
+    regressis import footprint
+    import healpy as hp
+    foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    north, south, des = foot.get_imaging_surveys()
+    th,phi = (-input_array[dec_col]+90.)*np.pi/180.,input_array[ra_col]*np.pi/180.
+    pix = hp.ang2pix(256,th,phi,nest=True)
+    sel_des = des[pix]
+    return sel_des
 
 def find_znotposs_tloc(dz,priority_thresh=10000):
     #dz should contain the potential targets of a given type, after cutting bad fibers
