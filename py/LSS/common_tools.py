@@ -99,7 +99,7 @@ def select_regressis_DES(input_array,ra_col='RA',dec_col='DEC'):
     return selection for DES as defined by regressis
     '''
 
-    regressis import footprint
+    from regressis import footprint
     import healpy as hp
     foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
     north, south, des = foot.get_imaging_surveys()
