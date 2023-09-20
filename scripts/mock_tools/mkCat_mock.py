@@ -297,15 +297,24 @@ def docat(mocknum,rannum):
     pthresh = 3000
     zmin = 0.8
     zmax = 3.5
+    P0 = 6000
+    dz = 0.02
+
     if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
         maxp = 3200
+        P0 = 10000
+        dz = 0.01
         zmin = 0.4
         zmax = 1.1
     if args.tracer[:3] == 'ELG':
+        P0 = 4000
+        dz = 0.01
         maxp = 3000
         zmin = 0.8
         zmax = 1.6
     if args.tracer[:3] == 'BGS':
+        P0 = 7000
+        dz = 0.01
         maxp = 2100
         pthresh = 2000
         zmin = 0.1
@@ -313,7 +322,7 @@ def docat(mocknum,rannum):
     if notqso == 'notqso':
         maxp = 3200
 
-
+    nzmd = 'mock'
         
     if args.fullr == 'y':
         if args.survey != 'Y1':
@@ -396,7 +405,8 @@ def docat(mocknum,rannum):
         print('applying vetos to random '+str(rannum))
         fin = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
         fout = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits')
-        common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(),rann=rannum)
+        if args.tracer!= 'QSO':
+            common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(),rann=rannum)
         common.apply_veto(fin,fout,ebits=mainp.ebits, zmask=False,maxp=maxp, reccircmasks=mainp.reccircmasks)
 
         #print('random veto '+str(ii)+' done')
@@ -411,11 +421,23 @@ def docat(mocknum,rannum):
     
     #needs to happen before randoms so randoms can get z and weights
     
+##FKP OVER FULL SAMPLE
+    ##fin = fitsio.read(fcd_in)
+##        cols = list(fin.dtype.names)
+##        nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
+
+##        if 'WEIGHT_FKP' not in cols:
+##            print('adding FKP weights')
+##            common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
+
+
+
     nztl = []
     if args.mkclusdat == 'y':
         nztl.append('')
         #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
-        ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=mainp.tsnrcut,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile,ccut=ccut)
+
 
     
     if args.equal_data_dens == 'y':
@@ -433,7 +455,9 @@ def docat(mocknum,rannum):
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        ct.mkclusran(os.path.join(dirout,args.tracer+notqso+'_'),os.path.join(dirout,args.tracer+notqso+'_'), rannum, rcols=rcols, tsnrcut=mainp.tsnrcut, tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
+        fl = os.path.join(dirout, args.tracer+notqso+'_')
+        ct.add_tlobs_ran(fl,rannum)
+        ct.mkclusran(os.path.join(dirout,args.tracer+notqso+'_'),os.path.join(dirout,args.tracer+notqso+'_'), rannum, rcols=rcols, tsnrcut=0, tsnrcol=tsnrcol)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
         '''
         for reg in regl:
