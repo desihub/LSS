@@ -11,21 +11,24 @@ import healpy as hp
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--outdir", help="output directory for the plots", default=None)
 parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey", default='all')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--data", help="LSS or mock directory", default='LSS')
 parser.add_argument("--use_map_veto", help="string to add on the end of full file reflecting if hp maps were used to cut", default='_HPmapcut')
-parser.add_argument("--weight_col", help="column name for weight", default='WEIGHT_SN')
+parser.add_argument("--weight_col", help="column name for the imaging weight; \"off\" if applying no weights", default='WEIGHT_SN')
 args = parser.parse_args()
 
 nside, nest = 256, True
 
-indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
-outdir = indir+'plots/imaging/'
-outdir = outdir.replace('dvs_ro', 'global')
-# outdir = '/global/cfs/cdirs/desicollab/users/rongpu/tmp/imaging/'
+indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats', args.version)
+if args.outdir is None:
+    outdir = os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')
+else:
+    outdir = args.outdir
+
 if args.data == 'LSS':
     if not os.path.exists(outdir):
         os.mkdir(outdir)
@@ -58,31 +61,20 @@ def get_region(cat):
 def plot_nzsplit(dt, rt, zmin, zmax, zbinsize=0.01):
 
     nzbin = int(((1.+zbinsize/10.)*(zmax-zmin))/zbinsize)
-    dcomp = 1/dt['FRACZ_TILELOCID']
-    if 'FRAC_TLOBS_TILES' in list(dt.dtype.names):
-        # print('using FRAC_TLOBS_TILES')
-        dcomp *= 1/dt['FRAC_TLOBS_TILES']
-    dwt = dcomp*dt[args.weight_col]*dt['WEIGHT_ZFAIL']
     for region in ['BASSMZLS', 'DES', 'DECALS']:
         seld = dt[region].copy()
         selr = rt[region].copy()
         area = np.sum(selr)/2500  # area per deg2 if 1 random file being used
-        plt.hist(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dwt[seld]/area, label=region, histtype='step')
+        plt.hist(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dt['dwt'][seld]/area, label=region, histtype='step')
 
 
 def plot_nzsplit_ratio(dt, rt, zmin, zmax, zbinsize=0.01, ylim=None):
     nzbin = int(((1.+zbinsize/10.)*(zmax-zmin))/zbinsize)
-    dcomp = 1/dt['FRACZ_TILELOCID']
-    if 'FRAC_TLOBS_TILES' in list(dt.dtype.names):
-        #print('using FRAC_TLOBS_TILES')
-        dcomp *= 1/dt['FRAC_TLOBS_TILES']
-    dwt = dcomp*dt[args.weight_col]*dt['WEIGHT_ZFAIL']
-
     seld = dt['DECALS'].copy()
     selr = rt['DECALS'].copy()
     area = np.sum(selr)/2500  # area per deg2 if 1 random file being used
     print('area DECaLS, not DES is '+str(area))
-    nzdecals, bin_edges = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dwt[seld]/area)
+    nzdecals, bin_edges = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dt['dwt'][seld]/area)
     zl = (bin_edges[1:]+bin_edges[:-1])/2
 
     for region in ['BASSMZLS', 'DES']:
@@ -90,7 +82,7 @@ def plot_nzsplit_ratio(dt, rt, zmin, zmax, zbinsize=0.01, ylim=None):
         selr = rt[region].copy()
         area = np.sum(selr)/2500  # area per deg2 if 1 random file being used
         print('area '+region+' is '+str(area))
-        nzp = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dwt[seld]/area)[0]
+        nzp = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin, weights=dt['dwt'][seld]/area)[0]
         nzp_no_weight = np.histogram(dt[seld]['Z_not4clus'], range=(zmin, zmax), bins=nzbin)[0]
         # norm = np.sum(nzdecals)/np.sum(nzp)
         # plt.errorbar(zl, nzp/nzdecals*norm, np.sqrt(nzp)/nzdecals*norm, label=region+'/DECALS')
@@ -100,9 +92,9 @@ def plot_nzsplit_ratio(dt, rt, zmin, zmax, zbinsize=0.01, ylim=None):
 
 
 for tp in tps:
-    outfn = outdir+tp+'_nzsplit_region.pdf'
+    outfn = os.path.join(outdir, tp+'_nzsplit_region.pdf')
 
-    dt = Table(fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits'))
+    dt = Table(fitsio.read(os.path.join(indir, tp+zdw+'_full'+args.use_map_veto+'.dat.fits')))
     dt['HPXPIXEL'] = hp.ang2pix(nside, dt['RA'], dt['DEC'], nest=nest, lonlat=True)
 
     seld = dt['ZWARN'] != 999999
@@ -151,13 +143,21 @@ for tp in tps:
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
-    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
+    rf = os.path.join(indir, tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits')
 
     rt = Table(fitsio.read(rf))
     rt['HPXPIXEL'] = hp.ang2pix(nside, rt['RA'], rt['DEC'], nest=nest, lonlat=True)
 
     dt['BASSMZLS'], dt['DECALS'], dt['DES'] = get_region(dt)
     rt['BASSMZLS'], rt['DECALS'], rt['DES'] = get_region(rt)
+
+    dcomp = 1/dt['FRACZ_TILELOCID']
+    if 'FRAC_TLOBS_TILES' in list(dt.dtype.names):
+        # print('using FRAC_TLOBS_TILES')
+        dcomp *= 1/dt['FRAC_TLOBS_TILES']
+    dt['dwt'] = dcomp*dt['WEIGHT_ZFAIL']
+    if args.weight_col!='off':
+        dt['dwt'] *= dt[args.weight_col]
 
     nside, nest = 256, True
     figs = []
