@@ -120,19 +120,12 @@ if args.mockver == 'EZ_3gpc1year':
     mockdir = 'FA_EZ_1year/fiberassign_EZ_3gpc/'    
     mockz = 'TRUEZ'
     maindir = args.base_output +mockdir+args.survey+'/'
-<<<<<<< HEAD
 
 if args.mockver == 'ab_secondgen':
     maindir = args.base_output
     mockz = 'RSDZ'
     args.famd = 'ab_secondgen'
-=======
->>>>>>> ffa27320 (changes)
 
-if args.mockver == 'ab_secondgen':
-    maindir = args.base_output
-    mockz = 'RSDZ'
-    args.famd = 'ab_secondgen'
 
 if args.survey == 'MVMY1':
     tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
@@ -231,6 +224,7 @@ def docat(mocknum,rannum):
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
             pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+        
         pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
         tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
         outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -299,7 +293,6 @@ def docat(mocknum,rannum):
         ftar = None
         dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
         tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
-<<<<<<< HEAD
 
         fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
         
@@ -310,9 +303,6 @@ def docat(mocknum,rannum):
             print('collision file already exist', fcoll)
 
         ct.mkfulldat(dz, imbits, ftar,args.tracer,bit,os.path.join(dirout, args.tracer+notqso+'_full_noveto.dat.fits'),tlf, survey=args.survey, maxp=maxp, desitarg=desitarg, specver=args.specdata, notqso=notqso, gtl_all=None, mockz=mockz,  mask_coll=fcoll, badfib=mainp.badfib, min_tsnr2=mainp.tsnrcut, mocknum=mocknum)
-=======
-        ct.mkfulldat(dz,imbits,ftar,args.tracer,bit,dirout+args.tracer+notqso+'_full_noveto.dat.fits',tlf,desitarg=desitarg,specver=specver,notqso=notqso,gtl_all=gtl,mockz=mockz)
->>>>>>> ffa27320 (changes)
 
     maxp = 3400
     pthresh = 3000
@@ -447,7 +437,6 @@ def docat(mocknum,rannum):
         if args.tracer!= 'QSO':
             common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(), rann=rannum)
         common.apply_veto(fin, fout, ebits=mainp.ebits, zmask=False, maxp=maxp, reccircmasks=mainp.reccircmasks)
-
         #print('random veto '+str(ii)+' done')
     if args.apply_veto_ran == 'y':
         fin = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
@@ -603,7 +592,7 @@ def docat(mocknum,rannum):
         '''
 
         ct.clusNStoGC(os.path.join(dirout, args.tracer+notqso+'_'), args.maxr - args.minr)
-    
+   
     nran = args.maxr-args.minr
     regions = ['NGC', 'SGC']
 
