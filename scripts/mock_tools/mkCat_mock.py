@@ -438,7 +438,6 @@ def docat(mocknum, rannum):
         if args.tracer!= 'QSO':
             common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(), rann=rannum)
         common.apply_veto(fin, fout, ebits=mainp.ebits, zmask=False, maxp=maxp, reccircmasks=mainp.reccircmasks)
-
         #print('random veto '+str(ii)+' done')
     if args.apply_veto_ran == 'y':
         fin = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
