@@ -537,11 +537,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
     fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
     if compmd == 'ran':
-		fttl = np.zeros(len(ntl))
-		for i in range(0,len(ntl)): 
-			sel = fran['NTILE'] == ntl[i]
-			mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-			fttl[i] = mean_fracobs_tiles
+        fttl = np.zeros(len(ntl))
+        for i in range(0,len(ntl)): 
+            sel = fran['NTILE'] == ntl[i]
+            mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+            fttl[i] = mean_fracobs_tiles
     else:
         fttl = np.ones(len(ntl))
     print(comp_ntl,fttl)
