@@ -81,10 +81,13 @@ parser.add_argument("--regressis",help="RF weights for imaging systematics?",def
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
+parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
 
 
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
+parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
+parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -398,9 +401,6 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
 tracer_clus = type+notqso+wzm
 
 regl = ['_N','_S']    
-#needs to happen before randoms so randoms can get z and weights
-#if mkclusdat:
-#    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,ccut=ccut)#,ntilecut=ntile)
 
 lssmapdirout = dirout+'/hpmaps/'
 nside = 256
@@ -468,10 +468,9 @@ if args.add_tlcomp == 'y':
             res = pool.map(_parfun, inds)
 
     
-    
-    
+        
 
-rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']#,'WEIGHT_RF']
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_SN','WEIGHT_RF','TARGETID_DATA']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
     for col in fcols:
@@ -563,10 +562,10 @@ if args.add_ke == 'y':
 
 
 
-if mkclusran and mkclusdat:
-    print('doing clustering randoms')
-    for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
+#if mkclusran and mkclusdat:
+#    print('doing clustering randoms')
+#    for ii in range(rm,rx):
+#        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits)#,ntilecut=ntile,ccut=ccut)
 
 
 if args.add_weight_zfail == 'y':
@@ -656,8 +655,12 @@ if type[:3] == 'LRG':
         zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
     else:
         zrl = [(0.4,1.1)]  
-if type[:3] == 'BGS':
-    zrl = [(0.1,0.4)]    
+if type == 'BGS_BRIGHT-21.5':
+    zrl = [(0.1,0.4)]
+elif type[:3] == 'BGS':
+    zrl = [(0.01,0.5)]
+    zmin = 0.01
+    zmax = 0.5    
 
 
 if args.prepsysnet == 'y' or args.regressis == 'y':
@@ -941,6 +944,13 @@ if args.add_sysnet == 'y':
 utlid = False
 if args.ran_utlid == 'y':
     utlid = True
+
+
+#needs to happen before randoms so randoms can get z and weights
+if mkclusdat:
+    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+
+
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -958,7 +968,11 @@ if mkclusran:
 #         tsnrcut = 1000
 
     for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid)#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+
+if args.NStoGC == 'y':
+    fb = dirout+tracer_clus+'_'
+    ct.clusNStoGC(fb, args.maxr - args.minr)
 
 if type == 'QSO':
     #zmin = 0.6
@@ -977,9 +991,39 @@ if type[:3] == 'ELG':
     P0 = 4000
 if type[:3] == 'BGS':
     P0 = 7000
+
+nran = args.maxr-args.minr
+regions = ['NGC', 'SGC']
+
+if args.resamp == 'y':
+            
+    for reg in regions:
+        flin = dirout + tracer_clus + '_'+reg    
+        def _parfun(rannum):
+            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+        
+        inds = np.arange(nran)
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for rn in range(rm,rx):
+                _parfun(rn)
+    
+allreg = ['N','S','NGC', 'SGC']
+if args.nz == 'y':
+    for reg in allreg:
+        fb = dirout+tracer_clus+'_'+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
+
     
 
-if args.nz == 'y':
+#if args.nz == 'y':
     
 #     if zmask:
 #         wzm = 'zmask_'
@@ -991,13 +1035,13 @@ if args.nz == 'y':
 #    regl = ['_DN','_DS','','_N','_S']
     
     
-    for reg in regl:
-        fb = dirout+tracer_clus+reg
-        fcr = fb+'_0_clustering.ran.fits'
-        fcd = fb+'_clustering.dat.fits'
-        fout = fb+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+#    for reg in regl:
+#        fb = dirout+tracer_clus+reg
+#        fcr = fb+'_0_clustering.ran.fits'
+#        fcd = fb+'_clustering.dat.fits'
+#        fout = fb+'_nz.txt'
+#        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+#        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
 if args.FKPfull == 'y':
     

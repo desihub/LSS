@@ -37,18 +37,17 @@ parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
 parser.add_argument("--prog", default="DARK")
-parser.add_argument("--veto",default='_noveto')
+parser.add_argument("--veto",default='_imaging')
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/')
 parser.add_argument("--random_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/')
 parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
-parser.add_argument("--mockver", default=None, help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
-parser.add_argument("--alt_indir", default = None)
-parser.add_argument("--alt_outdir", default = None)
-parser.add_argument("--tracer", default = None)
-parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
+parser.add_argument("--mockver", default='abacus2ffa', help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
+parser.add_argument("--tracer", default = 'LRG')
+parser.add_argument("--par", default = 'n',help='whether to run random steps in parallel or not')
+#parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
 
 args = parser.parse_args()
@@ -58,80 +57,50 @@ rm = int(args.minr)
 rx = int(args.maxr)
 
 notqso = ''
-#if args.notqso == 'y':
-#    notqso = 'notqso'
 
-#tracer = args.tracer
 
-# if tracer == 'LRG':
-#     zmin = 0.4
-#     zmax = 1.1
-# 
-# elif tracer == 'ELG_LOP':
-#     zmin = 0.8
-#     zmax = 1.6
-# 
-# elif tracer == 'QSO':
-#     zmin = 0.8
-#     zmax = 2.1
-# 
-# else:
-#     sys.exit('tracer type '+args.tracer+' not supported (yet)')
-
-if args.mockver != 'abacus2ffa':
+if args.mockver == 'abacus2ffa':
     mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-    in_data_fn = mockdir+'pota-'+args.prog+'.fits'
-    print(in_data_fn)
-    cols = ['LOCATION',
-    'FIBER',
-    'TARGETID',
-    'RA',
-    'DEC','RSDZ',
-    'PRIORITY_INIT',
-    'PRIORITY',
-    'DESI_TARGET','BRICKID','NOBS_G',
-    'NOBS_R',
-    'NOBS_Z',
-    'MASKBITS','ZWARN',
-    'COLLISION',
-    'TILEID']
-    mock_data = fitsio.read(in_data_fn,columns=cols)
-    selcoll = mock_data['COLLISION'] == False
-    mock_data = mock_data[selcoll]
-
-elif args.mockver == 'abacus2ffa':
-    mockdir = args.alt_indir
-    in_data_fn = mockdir + args.tracer + '_joined_Ab2_m' + str(args.realization) + '.fits'
+    in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
     mock_data = fitsio.read(in_data_fn)
-    if args.remove_unassigned == 'y':
-        mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
+    #do this later after cutting to unique and getting completeness info
+    #if args.remove_unassigned == 'y':
+    #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
+
+else:
+    sys.exit('mock versions other than ' +abacus2ff+' not supported')
 
 if args.prog == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
-    tracers = ['LRG','QSO','ELG_LOP']
-    if args.mockver == 'abacus2ffa':
+    if args.tracer == 'all':
+        tracers = ['LRG','QSO','ELG_LOP']
+    else:
         tracers = [args.tracer]
+    #if args.mockver == 'abacus2ffa':
+    #    tracers = [args.tracer]
 
 ndattot = len(mock_data)
 
 lmockdat_noveto = len(mock_data)
 mainp = main('LRG','iron','Y1') #needed for bad fiber list
 
-if 'gtl' in args.veto:
-    tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-    print('loading specf file '+specfo)
-    specf = Table(fitsio.read(specfo))
-    print(len(np.unique(specf['TILEID'])))
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    print('loaded specf file '+specfo)
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib)
-    gtl = np.unique(specfc['TILELOCID'])
-    goodtl = np.isin(tilelocid,gtl)
-    mock_data = mock_data[goodtl]
-    print(lmockdat_noveto,len(mock_data))
+tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
+specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+print('loading specf file '+specfo)
+specf = Table(fitsio.read(specfo))
+print(len(np.unique(specf['TILEID'])))
+specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+print('loaded specf file '+specfo)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+gtl = np.unique(specfc['TILELOCID'])
+goodtl = np.isin(tilelocid,gtl)
+mock_data = mock_data[goodtl]
+print(lmockdat_noveto,len(mock_data),'number are expected to be the same')
+
+
+
 
 def ran_col_assign(randoms,data,sample_columns):
     inds = np.random.choice(len(data),len(randoms))
@@ -158,8 +127,8 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
 
     
 for tracer in tracers:
-    out_data_fn = mockdir+tracer+'_complete'+args.veto+'_clustering.dat.fits'
-    out_data_froot = mockdir+tracer+'_complete'+args.veto+'_'
+    out_data_fn = mockdir+tracer+'_ffa'+args.veto+'_clustering.dat.fits'
+    out_data_froot = mockdir+tracer+'_ffa'+args.veto+'_'
 
     mainp = main(tracer,'iron','Y1')
     bit = bittest[tracer]#targetmask.desi_mask[tracer]
@@ -185,11 +154,11 @@ for tracer in tracers:
     mock_data_tr = Table(mock_data_tr)
     mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
     print('length after cutting to unique targetid',len(mock_data_tr))
+    selobs = mock_data_tr['WEIGHT_IIP'] != 1e20
+    mock_data_tr = mock_data_tr[selobs]
+    print('length after cutting to "observed" targets',len(mock_data_tr))
     mock_data_tr.rename_column('RSDZ', 'Z')
-    if args.mockver != 'abacus2ffa':
-        mock_data_tr['WEIGHT'] = 1
-    elif args.mockver == 'abacus2ffa':
-        mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_IIP']
+    mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
     if 'imaging' in args.veto:
         if tracer == 'LRG':
             lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
@@ -202,8 +171,14 @@ for tracer in tracers:
     selz &= mock_data_tr['Z'] < zmax
     mock_data_tr = mock_data_tr[selz]
     print('length after cutting to redshift range',len(mock_data_tr))
+    
+    mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
+    mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
+    '''
+    place to add imaging systematic weights and redshift failure weights would be here
+    '''
+    mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
     common.write_LSS(mock_data_tr,out_data_fn)
-
     def splitGC(flroot,datran='.dat',rann=0):
         import LSS.common_tools as common
         from astropy.coordinates import SkyCoord
@@ -223,7 +198,7 @@ for tracer in tracers:
 
     splitGC(out_data_froot,'.dat')
 
-    ran_samp_cols = ['Z','WEIGHT']
+    ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL']
 
 
     for rann in range(rm,rx):
@@ -234,13 +209,14 @@ for tracer in tracers:
             tracerr = 'ELG_LOPnotqso'
         in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
+        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE']
         if tracerr == 'LRG':
             rcols.append('lrg_mask')
         ran = Table(fitsio.read(in_ran_fn,columns=rcols))
-        if 'gtl' in args.veto:
-            goodtl = np.isin(ran['TILELOCID'],gtl)
-            ran = ran[goodtl]
+        ran['FRAC_TLOBS_TILES'] = 1.
+        
+        goodtl = np.isin(ran['TILELOCID'],gtl)
+        ran = ran[goodtl]
         if 'imaging' in args.veto:
             ebits = mainp.ebits
             reccircmasks = mainp.reccircmasks
@@ -250,6 +226,52 @@ for tracer in tracers:
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
+    if type == 'QSO':
+        #zmin = 0.6
+        #zmax = 4.5
+        dz = 0.02
+        P0 = 6000
+
+    else:    
+        dz = 0.01
+        #zmin = 0.01
+        #zmax = 1.61
+
+    if type[:3] == 'LRG':
+        P0 = 10000
+    if type[:3] == 'ELG':
+        P0 = 4000
+    if type[:3] == 'BGS':
+        P0 = 7000
+
+    nran = rx-rm
+    regions = ['NGC', 'SGC']
+
+    #if args.resamp == 'y':
+        
+    for reg in regions:
+        flin = out_data_froot +reg    
+        def _parfun(rannum):
+            ct.clusran_resamp(flin,rannum,rcols=ran_samp_cols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+
+        inds = np.arange(nran)
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for rn in range(rm,rx):
+                _parfun(rn)
+
+    allreg = ['NGC', 'SGC']#'N','S',
+    if args.nz == 'y':
+        for reg in allreg:
+            fb = out_data_froot+'_'+reg
+            fcr = fb+'_0_clustering.ran.fits'
+            fcd = fb+'_clustering.dat.fits'
+            fout = fb+'_nz.txt'
+            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
 
 
 
