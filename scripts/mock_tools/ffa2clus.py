@@ -171,13 +171,14 @@ for tracer in tracers:
     selz &= mock_data_tr['Z'] < zmax
     mock_data_tr = mock_data_tr[selz]
     print('length after cutting to redshift range',len(mock_data_tr))
-    common.write_LSS(mock_data_tr,out_data_fn)
+    
     mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
     mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
     '''
     place to add imaging systematic weights and redshift failure weights would be here
     '''
     mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
+    common.write_LSS(mock_data_tr,out_data_fn)
     def splitGC(flroot,datran='.dat',rann=0):
         import LSS.common_tools as common
         from astropy.coordinates import SkyCoord
