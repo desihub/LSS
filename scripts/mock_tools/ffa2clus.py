@@ -242,7 +242,7 @@ for tracer in tracers:
     nran = rx-rm
     regions = ['NGC', 'SGC']
 
-    if args.resamp == 'y':
+    #if args.resamp == 'y':
         
     for reg in regions:
         flin = out_data_froot + '_'+reg    
