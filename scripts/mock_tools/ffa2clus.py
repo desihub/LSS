@@ -154,6 +154,9 @@ for tracer in tracers:
     mock_data_tr = Table(mock_data_tr)
     mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
     print('length after cutting to unique targetid',len(mock_data_tr))
+    selobs = mock_data_tr['WEIGHT_IIP'] != 1e20
+    mock_data_tr = mock_data_tr[selobs]
+    print('length after cutting to "observed" targets',len(mock_data_tr))
     mock_data_tr.rename_column('RSDZ', 'Z')
     mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
     if 'imaging' in args.veto:
