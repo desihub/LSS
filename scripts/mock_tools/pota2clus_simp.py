@@ -48,6 +48,7 @@ parser.add_argument("--mockver", default=None, help = "which mocks to use. use a
 parser.add_argument("--alt_indir", default = None)
 parser.add_argument("--alt_outdir", default = None)
 parser.add_argument("--tracer", default = None)
+parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
 
 args = parser.parse_args()
@@ -102,7 +103,8 @@ elif args.mockver == 'abacus2ffa':
     mockdir = args.alt_indir
     in_data_fn = mockdir + args.tracer + '_joined_Ab2_m' + str(args.realization) + '.fits'
     mock_data = fitsio.read(in_data_fn)
-    #mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
+    if args.remove_unassigned == 'y':
+        mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
 
 if args.prog == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
