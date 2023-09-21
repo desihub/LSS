@@ -209,10 +209,11 @@ for tracer in tracers:
             tracerr = 'ELG_LOPnotqso'
         in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
+        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE']
         if tracerr == 'LRG':
             rcols.append('lrg_mask')
         ran = Table(fitsio.read(in_ran_fn,columns=rcols))
+        ran['FRAC_TLOBS_TILES'] = 1.
         
         goodtl = np.isin(ran['TILELOCID'],gtl)
         ran = ran[goodtl]
