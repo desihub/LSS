@@ -44,8 +44,8 @@ parser.add_argument("--random_dir",help="where to find the data randoms",default
 parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
-parser.add_argument("--mockver", default=None, help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
-parser.add_argument("--tracer", default = None)
+parser.add_argument("--mockver", default='abacus2ffa', help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
+parser.add_argument("--tracer", default = 'LRG')
 parser.add_argument("--par", default = 'n',help='whether to run random steps in parallel or not')
 #parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
