@@ -250,7 +250,7 @@ for tracer in tracers:
     for reg in regions:
         flin = out_data_froot +reg    
         def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+            ct.clusran_resamp(flin,rannum,rcols=ran_samp_cols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 
         inds = np.arange(nran)
         if args.par == 'y':
