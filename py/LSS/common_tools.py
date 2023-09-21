@@ -503,7 +503,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran'):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -536,11 +536,14 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
     fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
-    fttl = np.zeros(len(ntl))
-    for i in range(0,len(ntl)): 
-        sel = fran['NTILE'] == ntl[i]
-        mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-        fttl[i] = mean_fracobs_tiles
+    if compmd == 'ran':
+		fttl = np.zeros(len(ntl))
+		for i in range(0,len(ntl)): 
+			sel = fran['NTILE'] == ntl[i]
+			mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+			fttl[i] = mean_fracobs_tiles
+    else:
+        fttl = np.ones(len(ntl))
     print(comp_ntl,fttl)
     comp_ntl = comp_ntl*fttl
     print('completeness per ntile:')
@@ -587,7 +590,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].insert_column('NZ',nl)
         #fd['NZ'] = nl
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']*fd['FRAC_TLOBS_TILES']
+        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
+        if compmd == 'ran':
+            wt *= fd['FRAC_TLOBS_TILES']
         wtfac = np.ones(len(fd))
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
