@@ -2370,6 +2370,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
+        #CHANGE TO HANDLE MOCK PATHS PROPERLY
         collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
     else:
         pd = 'dark'
@@ -2410,6 +2411,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     gtl = np.unique(fs['TILELOCID'])
     print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
+    ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     del fs
     dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
@@ -2556,6 +2558,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
     
+    #needs to change because mocks actually need real spec info as well
     if specver == 'mock':
         dz[mockz].name = 'Z' 
         
@@ -2664,6 +2667,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     print(np.unique(dz['NTILE']))
     
+    #needs to change, because specver should still point to real data
     if specver == 'mock':
         dz['PHOTSYS'] = 'N'
         sel = dz['DEC'] < 32.375
@@ -2977,7 +2981,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto=''):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3004,7 +3008,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = fl+wzm+'clustering.dat.fits'
-    ff = Table.read(fl+'_full.dat.fits')
+    ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits')
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
     cols = list(ff.dtype.names)
@@ -3184,7 +3188,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[selz]
 
 
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','TILES','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_FKP']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+    if 'WEIGHT_FKP' in cols:
+        kl.append('WEIGHT_FKP')
     if 'WEIGHT_SN' in cols:
         kl.append('WEIGHT_SN')
     if 'WEIGHT_RF' in cols:
@@ -3429,13 +3435,13 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
-    for col in rcols:
-        kc.append(col)
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
     print('columns sampled from data are:')
     print(rcols)
+    for col in rcols:
+        kc.append(col)
 
 
     outfn =  flin+'_'+str(rann)+'_clustering.ran.fits'

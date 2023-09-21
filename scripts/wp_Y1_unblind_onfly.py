@@ -255,6 +255,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='Y1')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
+    parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['NGC','SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
@@ -273,7 +274,7 @@ if __name__ == '__main__':
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the xi or just keep the original .npy file', default='y')
     # arguments relevant for when running directly from full catalogs.
-    parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'y') 
+    #parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'y') 
 
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -287,6 +288,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     
+    args.use_arrays = 'y'
     if args.rebinning == 'n':
         args.rebinning = False
     if args.rebinning == 'y':
@@ -353,12 +355,14 @@ if __name__ == '__main__':
         if tracer == "QSO":
             zminr = 0.8
             zmaxr = 3.5
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP']
-        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y')
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+        if 'FKP' in args.weight_type:
+            rcols.append('WEIGHT_FKP')
+        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y',use_map_veto=args.use_map_veto)
         print('data columns',data_.dtype.names)
         ranl =[]
         for rann in range(0,args.nran):
-            rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='n',return_cat='y', clus_arrays = data_)
+            rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='n',return_cat='y', clus_arrays = data_,use_map_veto=args.use_map_veto)
             ranl.append(np.array(rani))
         randoms_ = np.concatenate(ranl)
         #out_dir = args.outdir

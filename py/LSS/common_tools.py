@@ -93,6 +93,20 @@ def splitGC(input_array):
     sel_ngc = gc.b > 0
     return sel_ngc
 
+def select_regressis_DES(input_array,ra_col='RA',dec_col='DEC'):    
+    '''
+    input_array with RA, DEC given by ra_col,dec_col
+    return selection for DES as defined by regressis
+    '''
+
+    from regressis import footprint
+    import healpy as hp
+    foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    north, south, des = foot.get_imaging_surveys()
+    th,phi = (-input_array[dec_col]+90.)*np.pi/180.,input_array[ra_col]*np.pi/180.
+    pix = hp.ang2pix(256,th,phi,nest=True)
+    sel_des = des[pix]
+    return sel_des
 
 def find_znotposs_tloc(dz,priority_thresh=10000):
     #dz should contain the potential targets of a given type, after cutting bad fibers
@@ -489,7 +503,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran'):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -522,11 +536,14 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
     fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
-    fttl = np.zeros(len(ntl))
-    for i in range(0,len(ntl)): 
-        sel = fran['NTILE'] == ntl[i]
-        mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-        fttl[i] = mean_fracobs_tiles
+    if compmd == 'ran':
+        fttl = np.zeros(len(ntl))
+        for i in range(0,len(ntl)): 
+            sel = fran['NTILE'] == ntl[i]
+            mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+            fttl[i] = mean_fracobs_tiles
+    else:
+        fttl = np.ones(len(ntl))
     print(comp_ntl,fttl)
     comp_ntl = comp_ntl*fttl
     print('completeness per ntile:')
@@ -573,7 +590,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].insert_column('NZ',nl)
         #fd['NZ'] = nl
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']*fd['FRAC_TLOBS_TILES']
+        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
+        if compmd == 'ran':
+            wt *= fd['FRAC_TLOBS_TILES']
         wtfac = np.ones(len(fd))
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
@@ -1287,10 +1306,16 @@ def addNS(tab):
     given a table that already includes RA,DEC, add PHOTSYS column denoting whether
     the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
     '''
-    wra = (tab['RA'] > 100-tab['DEC'])
-    wra &= (tab['RA'] < 280 +tab['DEC'])
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(tab['RA']* u.deg,tab['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+
+    #wra = (tab['RA'] > 100-tab['DEC'])
+    #wra &= (tab['RA'] < 280 +tab['DEC'])
     tab['PHOTSYS'] = 'S'
     seln = tab['DEC'] > 32.375
-    seln &= wra
+    seln &= sel_ngc#wra
     tab['PHOTSYS'][seln] = 'N'
     return tab
