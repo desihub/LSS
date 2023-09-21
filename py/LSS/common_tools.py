@@ -1301,10 +1301,16 @@ def addNS(tab):
     given a table that already includes RA,DEC, add PHOTSYS column denoting whether
     the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
     '''
-    wra = (tab['RA'] > 100-tab['DEC'])
-    wra &= (tab['RA'] < 280 +tab['DEC'])
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(tab['RA']* u.deg,tab['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+
+    #wra = (tab['RA'] > 100-tab['DEC'])
+    #wra &= (tab['RA'] < 280 +tab['DEC'])
     tab['PHOTSYS'] = 'S'
     seln = tab['DEC'] > 32.375
-    seln &= wra
+    seln &= sel_ngc#wra
     tab['PHOTSYS'][seln] = 'N'
     return tab
