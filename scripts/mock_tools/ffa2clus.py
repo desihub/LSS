@@ -248,7 +248,7 @@ for tracer in tracers:
     #if args.resamp == 'y':
         
     for reg in regions:
-        flin = out_data_froot + '_'+reg    
+        flin = out_data_froot +reg    
         def _parfun(rannum):
             ct.clusran_resamp(flin,rannum,rcols=rcols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 
