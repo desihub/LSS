@@ -1,8 +1,3 @@
-#get unblinded clustering catalogs, in all of N, S, NGC, SGC regions
-#python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --NStoGC y --nz y --par n --resamp y
-
-##/pscratch/sd/a/acarnero/codes/LSS/Sandbox/LSSpipe_Y1.txt
-
 #standard python
 import sys
 import os
@@ -445,7 +440,6 @@ def docat(mocknum,rannum):
             common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(),rann=rannum)
         common.apply_veto(fin,fout,ebits=mainp.ebits, zmask=False,maxp=maxp, reccircmasks=mainp.reccircmasks)
 
-
     regl = ['_N','_S']    
 
 
@@ -530,7 +524,6 @@ def docat(mocknum,rannum):
         fin = fitsio.read(fcd_in)
         cols = list(fin.dtype.names)
         nz_in = common.mknz_full(fcd_in, fcr_in, args.tracer[:3], bs=dz_step, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
-
         if 'WEIGHT_FKP' not in cols:
             print('adding FKP weights')
             common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz_step, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
