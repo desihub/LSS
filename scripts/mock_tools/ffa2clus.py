@@ -226,7 +226,7 @@ for tracer in tracers:
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
-    if type == 'QSO':
+    if args.tracer == 'QSO':
         #zmin = 0.6
         #zmax = 4.5
         dz = 0.02
@@ -237,11 +237,11 @@ for tracer in tracers:
         #zmin = 0.01
         #zmax = 1.61
 
-    if type[:3] == 'LRG':
+    if args.tracer == 'LRG':
         P0 = 10000
-    if type[:3] == 'ELG':
+    if args.tracer == 'ELG':
         P0 = 4000
-    if type[:3] == 'BGS':
+    if args.tracer == 'BGS':
         P0 = 7000
 
     nran = rx-rm
