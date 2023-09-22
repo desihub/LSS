@@ -106,6 +106,17 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
 
     
 for tracer in tracers:
+    if args.mockver == 'abacus2ffa':
+        mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+        in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
+        mock_data_tr = fitsio.read(in_data_fn)
+        #do this later after cutting to unique and getting completeness info
+        #if args.remove_unassigned == 'y':
+        #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
+
+    else:
+        sys.exit('mock versions other than ' +abacus2ff+' not supported')
+
     out_data_fn = mockdir+tracer+'_ffa'+args.veto+'_clustering.dat.fits'
     out_data_froot = mockdir+tracer+'_ffa'+args.veto+'_'
 
@@ -123,16 +134,6 @@ for tracer in tracers:
         zmax = 2.1
 
     if args.mkdat == 'y':
-        if args.mockver == 'abacus2ffa':
-            mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-            in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
-            mock_data_tr = fitsio.read(in_data_fn)
-            #do this later after cutting to unique and getting completeness info
-            #if args.remove_unassigned == 'y':
-            #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
-
-        else:
-            sys.exit('mock versions other than ' +abacus2ff+' not supported')
 
         mainp = main(tracer,'iron','Y1')
         #bit = bittest[tracer]#targetmask.desi_mask[tracer]
