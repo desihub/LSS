@@ -211,10 +211,10 @@ for tracer in tracers:
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
             ran['FRAC_TLOBS_TILES'] = 1.
         
-            print(len(ran)+' random length before good loc cut')
+            print(len(ran),' random length before good loc cut')
             goodtl = ran['GOODHARDLOC']#np.isin(ran['TILELOCID'],gtl)
             ran = ran[goodtl]
-            print(len(ran)+' random length after good loc cut')
+            print(len(ran),' random length after good loc cut')
             if 'imaging' in args.veto:
                 ebits = mainp.ebits
                 reccircmasks = mainp.reccircmasks
