@@ -120,6 +120,7 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
         print('number after imaging mask '+str(len(ff)))
     return ff
 
+nproc = 9
     
 for tracer in tracers:
     if args.mockver == 'abacus2ffa':
@@ -230,7 +231,7 @@ for tracer in tracers:
         inds = np.arange(nran)
         if args.par == 'y':
             from multiprocessing import Pool
-            with Pool(processes=nran*2) as pool:
+            with Pool(processes=nproc) as pool:
                 res = pool.map(_mkran, inds)
         else:
             for rn in range(rm,rx):
@@ -269,7 +270,7 @@ for tracer in tracers:
             inds = np.arange(nran)
             if args.par == 'y':
                 from multiprocessing import Pool
-                with Pool(processes=nran*2) as pool:
+                with Pool(processes=nproc) as pool:
                     res = pool.map(_parfun, inds)
             else:
                 for rn in range(rm,rx):
@@ -313,7 +314,7 @@ for tracer in tracers:
                 from multiprocessing import Pool
             
                 #nproc = 9 #try this so doesn't run out of memory
-                with Pool(processes=nran*2) as pool:
+                with Pool(processes=nproc) as pool:
                     res = pool.map(_parfun, inds)
 
 
