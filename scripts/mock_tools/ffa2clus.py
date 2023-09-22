@@ -296,13 +296,13 @@ for tracer in tracers:
         for reg in allreg:
             fin = out_data_froot+reg+'_clustering.dat.fits'
             fin = fin.replace('global','dvs_ro')  
-            fout = outroot+'_HPmapcut_'+reg+'_clustering.dat.fits'  
+            fout = outroot+reg+'_clustering.dat.fits'  
             common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
             print('data veto done, now doing randoms')
             def _parfun(rn):
                 fin = out_data_froot+reg+'_'+str(rn)+'_clustering.ran.fits'
                 fin = fin.replace('global','dvs_ro')   
-                fout = outroot+'_HPmapcut_'+reg+'_'+str(rn)+'_clustering.ran.fits'        
+                fout = outroot+reg+'_'+str(rn)+'_clustering.ran.fits'        
                 common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
                 print('random veto '+str(rn)+' done')
             if args.par == 'n':

@@ -1076,7 +1076,8 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
             
         else:
             mvals[seln] = mapn[mp][pix[seln]]
-            print(np.min(mvals[seln]),np.max(mvals[seln]))
+            if len(mvals[seln]) > 0:
+                print(np.min(mvals[seln]),np.max(mvals[seln]))
             mvals[~seln] = maps[mp][pix[~seln]]
             print(np.min(mvals[~seln]),np.max(mvals[~seln]))
             if mp == 'STARDENS':
