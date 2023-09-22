@@ -503,7 +503,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran'):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=9):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -571,7 +571,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff.close()
     #ft.write(fn,format='fits',overwrite=True)
     print('done with data')
-    for rann in range(ranmin,nran):
+    def _parfun(rann):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
@@ -610,7 +610,18 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff.close()
         #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
         #ft.write(fn,format='fits',overwrite=True)
-        print('done with random number '+str(rann))
+    if par == 'n':
+        for rann in range(ranmin,nran):
+            _parfun(rann)
+            print('done with random number '+str(rann))
+    else:
+        inds = np.arange(ranmin,nran)
+        from multiprocessing import Pool
+    
+        #nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
+
     return True
 
 def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
