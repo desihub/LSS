@@ -231,7 +231,7 @@ for tracer in tracers:
         if args.par == 'y':
             from multiprocessing import Pool
             with Pool(processes=nran*2) as pool:
-                res = pool.map(_parfun, inds)
+                res = pool.map(_mkran, inds)
         else:
             for rn in range(rm,rx):
                  _mkran(rn)
