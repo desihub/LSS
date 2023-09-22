@@ -76,7 +76,7 @@ if args.prog == 'DARK':
     #if args.mockver == 'abacus2ffa':
     #    tracers = [args.tracer]
 
-ndattot = len(mock_data)
+#ndattot = len(mock_data)
 
 
 
