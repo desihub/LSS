@@ -1,3 +1,20 @@
+'''
+#add completeness info per tiles group to randoms, needs to be done after vetos applied to data
+for tp,notqso in zip(tps,notqsos):
+        srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --version <LSSversion> --minr --maxr
+        #doing in chunks of 6 seems to be robust for --minr and --maxr arguments
+        #i/o goes slow on node sometimes and this computing is fast, so the following might work better:
+        python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
+
+#apply map based veto to data and random; if applying this, make sure to subsequently use --use_map_veto _HPmapcut as an option below
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
+'''
+#get unblinded clustering catalogs, in all of N, S, NGC, SGC regions
+#python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --NStoGC y --nz y --par n --resamp y
+
+##/pscratch/sd/a/acarnero/codes/LSS/Sandbox/LSSpipe_Y1.txt
+
 #standard python
 import sys
 import os
@@ -50,13 +67,13 @@ parser.add_argument("--countran", help="count instances of focal plane locations
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='y')
-
+parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
 parser.add_argument("--apply_veto_ran", help="apply vetos to the full files",default='n')
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat", help="make the data clustering files; these are cut to a small subset of columns",default='n')
-
+parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
 parser.add_argument("--mkclusran_allpot", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
@@ -411,14 +428,69 @@ def docat(mocknum,rannum):
 
         #print('random veto '+str(ii)+' done')
     if args.apply_veto_ran == 'y':
-        print('applying vetos to random '+str(rannum))
-        fin = dirout+args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits'
-        fout = dirout+args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=None,zmask=False,maxp=maxp)
+        fin = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full_noveto.ran.fits')
+        fout = os.path.join(dirout, args.tracer+notqso+'_'+str(rannum)+'_full.ran.fits')
+        if args.tracer!= 'QSO':
+            common.add_veto_col(fin, ran=True, tracer_mask=args.tracer[:3].lower(),rann=rannum)
+        common.apply_veto(fin,fout,ebits=mainp.ebits, zmask=False,maxp=maxp, reccircmasks=mainp.reccircmasks)
 
 
     regl = ['_N','_S']    
+
+
+    wzm = ''
+
+    lssmapdirout = os.path.join(dirout,'hpmaps')
+    nside = 256
+    tracer_clus = args.tracer+notqso+wzm
+
+    if args.mkHPmaps == 'y':
+        from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
+        if not os.path.exists(lssmapdirout):
+            os.mkdir(lssmapdirout)
+            print('made '+lssmapdirout)
+        lssmapdir = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/'
+        rancatname = os.path.join(dirout, tracer_clus+'_*_full.ran.fits')
+        rancatlist = sorted(glob.glob(rancatname))
+        fieldslist = allmapcols
+        masklist = list(np.zeros(len(fieldslist),dtype=int))
     
+        for reg in ['N','S']:
+            outfn = os.path.join(lssmapdirout,tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits')
+            create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
+                          lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
+
+    if args.apply_map_veto == 'y':
+        import healpy as hp
+        #lssmapdirout = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
+        mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits'))
+        maps = fitsio.read(os.path.join(lssmapdirout,tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits'))
+        mapcuts = mainp.mapcuts
+
+#        if args.ranonly != 'y':
+        fout = os.path.join(dirout, args.tracer+notqso+'_full.dat.fits')
+        fin = fout.replace('global','dvs_ro')
+        fout = fout.replace('_full','_full_HPmapcut')
+        common.apply_map_veto(fin, fout, mapn, maps, mapcuts)
+        print('data veto done, now doing randoms')
+        
+        def _parfun(rn):
+            fout = os.path.join(dirout, args.tracer+notqso+'_'+str(rn)+'_full.ran.fits')
+            fin = fout.replace('global','dvs_ro')
+            fout = fout.replace('_full','_full_HPmapcut')
+            common.apply_map_veto(fin, fout, mapn, maps, mapcuts)
+            print('random veto '+str(rn)+' done')
+        if args.par == 'n':
+            for rn in range(rm,rx):
+                _parfun(rn)
+        else:
+            inds = np.arange(rm,rx)
+            from multiprocessing import Pool
+            (rx-rm)*2
+            nproc = 9 #try this so doesn't run out of memory
+            with Pool(processes=nproc) as pool:
+                res = pool.map(_parfun, inds)
+
     #needs to happen before randoms so randoms can get z and weights
     
 ##FKP OVER FULL SAMPLE
@@ -508,7 +580,7 @@ def docat(mocknum,rannum):
 ##            os.system('mv '+ranf+' '+ranfm)
     #THIS IS TEMP
 
-    ct.clusNStoGC(os.path.join(dirout, args.tracer+notqso+'_complete_'), nran=1)
+        ct.clusNStoGC(os.path.join(dirout, args.tracer+notqso+'_complete_'), nran=1)
     if args.mkclusdat_tiles == 'y':
         fbadir = maindir+'fba'+str(mocknum)
         tarf = fbadir+'/targs.fits'
