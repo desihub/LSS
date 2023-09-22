@@ -1,3 +1,20 @@
+'''
+#add completeness info per tiles group to randoms, needs to be done after vetos applied to data
+for tp,notqso in zip(tps,notqsos):
+        srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --version <LSSversion> --minr --maxr
+        #doing in chunks of 6 seems to be robust for --minr and --maxr arguments
+        #i/o goes slow on node sometimes and this computing is fast, so the following might work better:
+        python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
+
+#apply map based veto to data and random; if applying this, make sure to subsequently use --use_map_veto _HPmapcut as an option below
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
+'''
+#get unblinded clustering catalogs, in all of N, S, NGC, SGC regions
+#python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --NStoGC y --nz y --par n --resamp y
+
+##/pscratch/sd/a/acarnero/codes/LSS/Sandbox/LSSpipe_Y1.txt
+
 #standard python
 import sys
 import os
