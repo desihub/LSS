@@ -1054,7 +1054,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
 def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
     din = fitsio.read(fin)
     mask = np.ones(len(din),dtype='bool')
+    if 'PHOTSYS' not in list(din.dtype.names):
+        addNS(Table(din))
     seln = din['PHOTSYS'] == 'N'
+    
+        
     import healpy as hp
     th,phi = radec2thphi(din['RA'],din['DEC'])
     pix = hp.ang2pix(nside,th,phi,nest=True)
