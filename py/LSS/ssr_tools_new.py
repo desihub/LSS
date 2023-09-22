@@ -525,6 +525,7 @@ class model_ssr:
             cost = ccost(bc)
             consl.append(bc[0])
             costt += cost
+            print('cost',cost)
         if self.vis_5hist:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
@@ -537,6 +538,7 @@ class model_ssr:
             plt.show()
             self.consl = consl
             self.mfl = mfl
+            
         print('time for hist_norm',time.time()-t0)
         print('costt',costt)
         return costt    
@@ -569,7 +571,9 @@ class model_ssr:
             wtf = flux_piece*(1/relssr-1)+1
             
         elif self.fluxfittype == 'linear':
-            wtf = (self.fcoeff*(1-rel_flux)+1)*(self.wts_fid-1)+1
+            #print('rel_flux',np.shape(rel_flux))
+            #print('wts_fid',np.shape(self.wts_fid))
+            wtf = (self.fcoeff*(1-rel_flux)+1)*(1/relssr-1)+1
 
         
         sel = wtf < 1
