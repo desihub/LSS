@@ -133,9 +133,10 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 2.1
 
+    mainp = main(tracer,'iron','Y1')
     if args.mkdat == 'y':
 
-        mainp = main(tracer,'iron','Y1')
+        
         #bit = bittest[tracer]#targetmask.desi_mask[tracer]
         #seltar = mock_data[desitarg] & bit > 0
         #mock_data_tr = mock_data[seltar]
