@@ -109,7 +109,7 @@ for tracer in tracers:
     if args.mockver == 'abacus2ffa':
         mockdir = args.base_dir+'mock'+str(args.realization)+'/'
         in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
-        mock_data_tr = fitsio.read(in_data_fn)
+        #mock_data_tr = fitsio.read(in_data_fn)
         #do this later after cutting to unique and getting completeness info
         #if args.remove_unassigned == 'y':
         #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
@@ -198,6 +198,8 @@ for tracer in tracers:
 
     nran = rx-rm
     if args.mkran == 'y':
+        if args.mkdat == 'n':
+            mock_data_tr = fitsio.read(out_data_fn)
         def _mkran(rann):
             tracerr = tracer
             if tracer == 'ELG_LOP':
