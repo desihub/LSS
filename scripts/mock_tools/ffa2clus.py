@@ -285,7 +285,7 @@ for tracer in tracers:
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
             common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
 
-    if args.apply_map_veto == 'y':
+    if args.apply_HPmapcut == 'y':
         import healpy as hp
         nside = 256
         lssmapdirout = args.random_dir+'/hpmaps/'
