@@ -274,4 +274,3 @@ for tracer in tracers:
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
 
 
-
