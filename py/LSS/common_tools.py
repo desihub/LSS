@@ -1166,7 +1166,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     outf is the full path to write out
     comments is a list of comments to include in the header
     '''
-    tmpfn = os.getenv('SCRATCH')+outf.split('/')[-1] + '.tmp'
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
