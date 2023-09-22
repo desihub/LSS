@@ -1055,7 +1055,7 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
     din = fitsio.read(fin)
     mask = np.ones(len(din),dtype='bool')
     if 'PHOTSYS' not in list(din.dtype.names):
-        addNS(Table(din))
+        din = addNS(Table(din))
     seln = din['PHOTSYS'] == 'N'
     
         
