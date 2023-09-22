@@ -226,7 +226,7 @@ for tracer in tracers:
         common.write_LSS(ran,out_ran_fn)
         splitGC(out_data_froot,'.ran',rann)
 
-    if type == 'QSO':
+    if args.tracer == 'QSO':
         #zmin = 0.6
         #zmax = 4.5
         dz = 0.02
@@ -237,11 +237,11 @@ for tracer in tracers:
         #zmin = 0.01
         #zmax = 1.61
 
-    if type[:3] == 'LRG':
+    if args.tracer == 'LRG':
         P0 = 10000
-    if type[:3] == 'ELG':
+    if args.tracer == 'ELG':
         P0 = 4000
-    if type[:3] == 'BGS':
+    if args.tracer == 'BGS':
         P0 = 7000
 
     nran = rx-rm
@@ -264,14 +264,14 @@ for tracer in tracers:
                 _parfun(rn)
 
     allreg = ['NGC', 'SGC']#'N','S',
-    if args.nz == 'y':
-        for reg in allreg:
-            fb = out_data_froot+'_'+reg
-            fcr = fb+'_0_clustering.ran.fits'
-            fcd = fb+'_clustering.dat.fits'
-            fout = fb+'_nz.txt'
-            common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
+    #if args.nz == 'y':
+    for reg in allreg:
+        fb = out_data_froot+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
 
 
 
