@@ -512,6 +512,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
 
+    from desitarget.internal import sharedmem
     nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
@@ -619,7 +620,9 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         from multiprocessing import Pool
     
         #nproc = 9 #try this so doesn't run out of memory
-        with Pool(processes=nproc) as pool:
+        pool = sharedmem.MapReduce(np=nproc)
+        #with Pool(processes=nproc) as pool:
+        with pool:
             res = pool.map(_parfun, inds)
 
     return True
