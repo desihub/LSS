@@ -266,7 +266,7 @@ for tracer in tracers:
     allreg = ['NGC', 'SGC']#'N','S',
     #if args.nz == 'y':
     for reg in allreg:
-        fb = out_data_froot+'_'+reg
+        fb = out_data_froot+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
