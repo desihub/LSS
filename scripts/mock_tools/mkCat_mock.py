@@ -1,8 +1,3 @@
-#get unblinded clustering catalogs, in all of N, S, NGC, SGC regions
-#python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --NStoGC y --nz y --par n --resamp y
-
-##/pscratch/sd/a/acarnero/codes/LSS/Sandbox/LSSpipe_Y1.txt
-
 #standard python
 import sys
 import os
