@@ -265,13 +265,13 @@ for tracer in tracers:
 
     allreg = ['NGC', 'SGC']#'N','S',
     #if args.nz == 'y':
-	for reg in allreg:
-		fb = out_data_froot+'_'+reg
-		fcr = fb+'_0_clustering.ran.fits'
-		fcd = fb+'_clustering.dat.fits'
-		fout = fb+'_nz.txt'
-		common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-		common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
+    for reg in allreg:
+        fb = out_data_froot+'_'+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
 
 
 
