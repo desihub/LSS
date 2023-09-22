@@ -47,6 +47,11 @@ parser.add_argument("--maxr", help="maximum for random files, default is 1, but 
 parser.add_argument("--mockver", default='abacus2ffa', help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
 parser.add_argument("--tracer", default = 'LRG')
 parser.add_argument("--par", default = 'n',help='whether to run random steps in parallel or not')
+parser.add_argument("--mkdat", default = 'n')
+parser.add_argument("--mkran", default = 'n')
+parser.add_argument("--resamp", default = 'n')
+parser.add_argument("--nz", default = 'n')
+parser.add_argument("--apply_HPmapcut", default = 'n')
 #parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
 
@@ -59,16 +64,6 @@ rx = int(args.maxr)
 notqso = ''
 
 
-if args.mockver == 'abacus2ffa':
-    mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-    in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
-    mock_data = fitsio.read(in_data_fn)
-    #do this later after cutting to unique and getting completeness info
-    #if args.remove_unassigned == 'y':
-    #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
-
-else:
-    sys.exit('mock versions other than ' +abacus2ff+' not supported')
 
 if args.prog == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
@@ -82,22 +77,6 @@ if args.prog == 'DARK':
     #    tracers = [args.tracer]
 
 ndattot = len(mock_data)
-
-lmockdat_noveto = len(mock_data)
-mainp = main('LRG','iron','Y1') #needed for bad fiber list
-
-tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-print('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
-print(len(np.unique(specf['TILEID'])))
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-print('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib)
-gtl = np.unique(specfc['TILELOCID'])
-goodtl = np.isin(tilelocid,gtl)
-mock_data = mock_data[goodtl]
-print(lmockdat_noveto,len(mock_data),'number are expected to be the same')
 
 
 
@@ -130,16 +109,10 @@ for tracer in tracers:
     out_data_fn = mockdir+tracer+'_ffa'+args.veto+'_clustering.dat.fits'
     out_data_froot = mockdir+tracer+'_ffa'+args.veto+'_'
 
-    mainp = main(tracer,'iron','Y1')
-    bit = bittest[tracer]#targetmask.desi_mask[tracer]
-    seltar = mock_data[desitarg] & bit > 0
-    mock_data_tr = mock_data[seltar]
-    lmockdat_noveto = len(mock_data_tr)
-    print('length before/after cut to target type '+tracer)
-    print(ndattot,len(mock_data))
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
+        subfrac = 0.958 #fudge factor to get number density correct
 
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
@@ -149,82 +122,115 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 2.1
 
+	if args.mkdat == 'y':
+		if args.mockver == 'abacus2ffa':
+			mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+			in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
+			mock_data_tr = fitsio.read(in_data_fn)
+			#do this later after cutting to unique and getting completeness info
+			#if args.remove_unassigned == 'y':
+			#    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
 
-    
-    mock_data_tr = Table(mock_data_tr)
-    mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
-    print('length after cutting to unique targetid',len(mock_data_tr))
-    selobs = mock_data_tr['WEIGHT_IIP'] != 1e20
-    mock_data_tr = mock_data_tr[selobs]
-    print('length after cutting to "observed" targets',len(mock_data_tr))
-    mock_data_tr.rename_column('RSDZ', 'Z')
-    mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
-    if 'imaging' in args.veto:
-        if tracer == 'LRG':
-            lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
-            mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
-            print(len(mock_data_tr))
-        ebits = mainp.ebits
-        reccircmasks = mainp.reccircmasks
-        mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
-    selz = mock_data_tr['Z'] > zmin
-    selz &= mock_data_tr['Z'] < zmax
-    mock_data_tr = mock_data_tr[selz]
-    print('length after cutting to redshift range',len(mock_data_tr))
-    
-    mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
-    mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
-    '''
-    place to add imaging systematic weights and redshift failure weights would be here
-    '''
-    mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-    common.write_LSS(mock_data_tr,out_data_fn)
-    def splitGC(flroot,datran='.dat',rann=0):
-        import LSS.common_tools as common
-        from astropy.coordinates import SkyCoord
-        import astropy.units as u
-        app = 'clustering'+datran+'.fits'
-        if datran == '.ran':
-            app = str(rann)+'_clustering'+datran+'.fits'
+		else:
+			sys.exit('mock versions other than ' +abacus2ff+' not supported')
 
-        fn = Table(fitsio.read(flroot+app))
-        c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
-        gc = c.transform_to('galactic')
-        sel_ngc = gc.b > 0
-        outf_ngc = flroot+'NGC_'+app
-        common.write_LSS(fn[sel_ngc],outf_ngc)
-        outf_sgc = flroot+'SGC_'+app
-        common.write_LSS(fn[~sel_ngc],outf_sgc)
+		mainp = main(tracer,'iron','Y1')
+		#bit = bittest[tracer]#targetmask.desi_mask[tracer]
+		#seltar = mock_data[desitarg] & bit > 0
+		#mock_data_tr = mock_data[seltar]
+		#lmockdat_noveto = len(mock_data_tr)
+		#print('length before/after cut to target type '+tracer)
+		#print(ndattot,len(mock_data))
+	
+		mock_data_tr = Table(mock_data_tr)
+		mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
+		print('length after cutting to unique targetid',len(mock_data_tr))
+		selobs = mock_data_tr['WEIGHT_IIP'] != 1e20
+		mock_data_tr = mock_data_tr[selobs]
+		print('length after cutting to "observed" targets',len(mock_data_tr))
+		mock_data_tr.rename_column('RSDZ', 'Z')
+		mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
+		if 'imaging' in args.veto:
+			if tracer == 'LRG':
+				lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+				mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
+				print(len(mock_data_tr))
+			ebits = mainp.ebits
+			reccircmasks = mainp.reccircmasks
+			mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
+		selz = mock_data_tr['Z'] > zmin
+		selz &= mock_data_tr['Z'] < zmax
+		mock_data_tr = mock_data_tr[selz]
+		print('length after cutting to redshift range',len(mock_data_tr))
+	    sub_array = np.random.random(len(mock_data_tr))
+	    keep = sub_array < subfrac
+	    mock_data_tr = mock_data_tr[keep]
+	    print('length after random sub-sampling',len(mock_data_tr))
+		mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
+		mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
+		'''
+		place to add imaging systematic weights and redshift failure weights would be here
+		'''
+		mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
+		common.write_LSS(mock_data_tr,out_data_fn)
+		def splitGC(flroot,datran='.dat',rann=0):
+			import LSS.common_tools as common
+			from astropy.coordinates import SkyCoord
+			import astropy.units as u
+			app = 'clustering'+datran+'.fits'
+			if datran == '.ran':
+				app = str(rann)+'_clustering'+datran+'.fits'
 
-    splitGC(out_data_froot,'.dat')
+			fn = Table(fitsio.read(flroot+app))
+			c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
+			gc = c.transform_to('galactic')
+			sel_ngc = gc.b > 0
+			outf_ngc = flroot+'NGC_'+app
+			common.write_LSS(fn[sel_ngc],outf_ngc)
+			outf_sgc = flroot+'SGC_'+app
+			common.write_LSS(fn[~sel_ngc],outf_sgc)
+
+		splitGC(out_data_froot,'.dat')
 
     ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL']
 
+    nran = rx-rm
+    if args.mkran == 'y':
+        def _mkran(rann):
+			tracerr = tracer
+			if tracer == 'ELG_LOP':
+				tracerr += 'notqso'
+			if tracer == 'ELG':
+				tracerr = 'ELG_LOPnotqso'
+			in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
+			out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
+			rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE']
+			if tracerr == 'LRG':
+				rcols.append('lrg_mask')
+			ran = Table(fitsio.read(in_ran_fn,columns=rcols))
+			ran['FRAC_TLOBS_TILES'] = 1.
+		
+			goodtl = np.isin(ran['TILELOCID'],gtl)
+			ran = ran[goodtl]
+			if 'imaging' in args.veto:
+				ebits = mainp.ebits
+				reccircmasks = mainp.reccircmasks
+				ran = apply_imaging_veto(ran,reccircmasks,ebits)
 
-    for rann in range(rm,rx):
-        tracerr = tracer
-        if tracer == 'ELG_LOP':
-            tracerr += 'notqso'
-        if tracer == 'ELG':
-            tracerr = 'ELG_LOPnotqso'
-        in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
-        out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE']
-        if tracerr == 'LRG':
-            rcols.append('lrg_mask')
-        ran = Table(fitsio.read(in_ran_fn,columns=rcols))
-        ran['FRAC_TLOBS_TILES'] = 1.
-        
-        goodtl = np.isin(ran['TILELOCID'],gtl)
-        ran = ran[goodtl]
-        if 'imaging' in args.veto:
-            ebits = mainp.ebits
-            reccircmasks = mainp.reccircmasks
-            ran = apply_imaging_veto(ran,reccircmasks,ebits)
+			ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
+			common.write_LSS(ran,out_ran_fn)
+			splitGC(out_data_froot,'.ran',rann)
 
-        ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
-        common.write_LSS(ran,out_ran_fn)
-        splitGC(out_data_froot,'.ran',rann)
+        inds = np.arange(nran)
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for rn in range(rm,rx):
+                 _mkran(rn)
+    
+    
 
     if args.tracer == 'QSO':
         #zmin = 0.6
@@ -244,33 +250,64 @@ for tracer in tracers:
     if args.tracer == 'BGS':
         P0 = 7000
 
-    nran = rx-rm
+    
     regions = ['NGC', 'SGC']
 
-    #if args.resamp == 'y':
+    if args.resamp == 'y':
         
-    for reg in regions:
-        flin = out_data_froot +reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=ran_samp_cols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+		for reg in regions:
+			flin = out_data_froot +reg    
+			def _parfun(rannum):
+				ct.clusran_resamp(flin,rannum,rcols=ran_samp_cols,compmd='')#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 
-        inds = np.arange(nran)
-        if args.par == 'y':
-            from multiprocessing import Pool
-            with Pool(processes=nran*2) as pool:
-                res = pool.map(_parfun, inds)
-        else:
-            for rn in range(rm,rx):
-                _parfun(rn)
+			inds = np.arange(nran)
+			if args.par == 'y':
+				from multiprocessing import Pool
+				with Pool(processes=nran*2) as pool:
+					res = pool.map(_parfun, inds)
+			else:
+				for rn in range(rm,rx):
+					_parfun(rn)
 
     allreg = ['NGC', 'SGC']#'N','S',
-    #if args.nz == 'y':
-    for reg in allreg:
-        fb = out_data_froot+reg
-        fcr = fb+'_0_clustering.ran.fits'
-        fcd = fb+'_clustering.dat.fits'
-        fout = fb+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
+    if args.nz == 'y':
+		for reg in allreg:
+			fb = out_data_froot+reg
+			fcr = fb+'_0_clustering.ran.fits'
+			fcd = fb+'_clustering.dat.fits'
+			fout = fb+'_nz.txt'
+			common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+			common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='')
+
+	if args.apply_map_veto == 'y':
+		import healpy as hp
+		nside = 256
+	    lssmapdirout = args.random_dir+'/hpmaps/'
+		mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+		maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+		mapcuts = mainp.mapcuts
+        outroot = mockdir+tracer+'_ffa_'
+		for reg in allreg:
+			fin = outroot+reg+'_clustering.dat.fits'
+			fin = fin.replace('global','dvs_ro')  
+			fout = outroot+'_HPmapcut_'+reg+'_clustering.dat.fits'  
+			common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+			print('data veto done, now doing randoms')
+			def _parfun(rn):
+				fin = outroot+reg+'_'+str(rn)+'_clustering.ran.fits'
+				fin = fin.replace('global','dvs_ro')   
+				fout = outroot+'_HPmapcut_'+reg+'_'+str(rn)+'_clustering.ran.fits'        
+				common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+				print('random veto '+str(rn)+' done')
+			if args.par == 'n':
+				for rn in range(rm,rx):
+					_parfun(rn)
+			else:
+				inds = np.arange(rm,rx)
+				from multiprocessing import Pool
+			
+				#nproc = 9 #try this so doesn't run out of memory
+				with Pool(processes=nran*2) as pool:
+					res = pool.map(_parfun, inds)
 
 
