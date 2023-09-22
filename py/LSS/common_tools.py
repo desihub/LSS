@@ -1166,6 +1166,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     outf is the full path to write out
     comments is a list of comments to include in the header
     '''
+    import shutil
     tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
@@ -1177,7 +1178,8 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     print('closed fits file')
-    os.rename(tmpfn, outf)
+    shutil.move(tmpfn, outf)
+    #os.rename(tmpfn, outf)
     #os.system('mv ' + tmpfn + ' ' + outf)
     print('moved output to ' + outf)
 
