@@ -161,7 +161,7 @@ for tracer in tracers:
         #print('length before/after cut to target type '+tracer)
         #print(ndattot,len(mock_data))
     
-        mock_data_tr = Table(mock_data_tr)
+        mock_data_tr = Table(fitsio.read(in_data_fn))
         mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
         print('length after cutting to unique targetid',len(mock_data_tr))
         selobs = mock_data_tr['WEIGHT_IIP'] != 1e20
