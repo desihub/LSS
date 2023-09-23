@@ -253,26 +253,26 @@ if args.add_regressis == 'y':
     fb = dirout+tp
     regl = ['NGC','SGC']
     for reg in regl:
-		fcd = fb+'_'+reg+'_clustering.dat.fits'
-		dd = Table.read(fcd)
-		dd['WEIGHT_RF'] = np.ones(len(dd))
+        fcd = fb+'_'+reg+'_clustering.dat.fits'
+        dd = Table.read(fcd)
+        dd['WEIGHT_RF'] = np.ones(len(dd))
 
-		for zl in zrl:    
-			print(zl)
-			zw = str(zl[0])+'_'+str(zl[1])
+        for zl in zrl:    
+            print(zl)
+            zw = str(zl[0])+'_'+str(zl[1])
 
-			fnreg = dirout+'/regressis_data/main_'+tp+zw+'_256/RF/main_'+tp+zw+'_imaging_weight_256.npy'
-			rfpw = PhotoWeight.load(fnreg)
-			#print(np.mean(rfpw))
-			#dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-			#dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
-			#drfw = rfpw[dpix]
-		
-			selz = dd['Z'] > zl[0]
-			selz &= dd['Z'] <= zl[1]
-			dd['WEIGHT_RF'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
-			#norm = 
-			print(np.mean(dd['WEIGHT_RF'][selz]))
+            fnreg = dirout+'/regressis_data/main_'+tp+zw+'_256/RF/main_'+tp+zw+'_imaging_weight_256.npy'
+            rfpw = PhotoWeight.load(fnreg)
+            #print(np.mean(rfpw))
+            #dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+            #dpix = densvar.hp.ang2pix(densvar.nside,dth,dphi,nest=densvar.nest)
+            #drfw = rfpw[dpix]
+        
+            selz = dd['Z'] > zl[0]
+            selz &= dd['Z'] <= zl[1]
+            dd['WEIGHT_RF'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
+            #norm = 
+            print(np.mean(dd['WEIGHT_RF'][selz]))
     #logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
     common.write_LSS(dd,fcd)#,comments)
