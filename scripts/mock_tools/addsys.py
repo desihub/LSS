@@ -41,6 +41,7 @@ parser.add_argument("--regressis",help="RF weights for imaging systematics?",def
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis_ran",help="add RF weights to randoms?",default='n')
 parser.add_argument("--add_sysnet_ran",help="add sysnet weights to randoms",default='n')
+parser.add_argument("--par",help="whether to run in parallel",default='n')
 
 parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
@@ -278,20 +279,35 @@ if args.add_regressis == 'y':
 
         common.write_LSS(dd,fcd)#,comments)
 
-if args.add_regressis_ran == 'y':
+regl = ['NGC','SGC']
+
+if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
+    if args.add_regressis_ran == 'y':
+        wtcol = 'WEIGHT_RF'
+    else:
+        wtcol = 'WEIGHT_SN'
     fb = dirout+tp
-    fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
-    fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
+    fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
+    fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID',wtcol])
     indata = Table(np.concatenate((fcdn,fcds)))
     indata.rename_column('TARGETID', 'TARGETID_DATA')
+
+	def addrancol(rn):
+		for reg in regl:
+			fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+			cd = fitsio.read(fname)
+			cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+			common.write_LSS(cd,fname)
     
-    regl = ['NGC','SGC']
-    for rn in range(rm,rx):
-        for reg in regl:
-            fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-            cd = fitsio.read(fname)
-            cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
-            common.write_LSS(cd,fname)
+    if args.par == 'n':
+        for rn in range(rm,rx):
+            addrancol(rn)
+    if args.par == 'y':
+		nran = rx-rm
+		inds = np.arange(nran)
+		from multiprocessing import Pool
+		with Pool(processes=nproc) as pool:
+			res = pool.map(_parfun, inds)
 
 
 if args.add_sysnet == 'y':
