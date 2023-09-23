@@ -73,7 +73,7 @@ fit_maps = mainp.fit_maps
 
 
 tpstr = tp
-if tracer_clus == 'BGS_BRIGHT-21.5':
+if tp == 'BGS_BRIGHT-21.5':
     tpstr = 'BGS_BRIGHT'
 nside = 256
 
