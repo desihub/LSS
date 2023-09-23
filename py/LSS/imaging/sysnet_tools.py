@@ -34,6 +34,9 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
             wts *= 1/data['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
         wts = data['WEIGHT']
+    if wtmd == 'wt_comp':
+        wts = data['WEIGHT_COMP']
+
     if 'WEIGHT_ZFAIL' in cols:
         wts *= data['WEIGHT_ZFAIL']
     # only do true for data ???
