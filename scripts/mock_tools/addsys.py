@@ -237,7 +237,7 @@ if args.regressis == 'y':
 
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
-        print('computing RF regressis weight for '+tracer_clus+zw)
+        print('computing RF regressis weight for '+tp+zw)
         #logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
         rt.get_desi_data_clus_compute_weight(dirout, 'main', tp, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
         suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
