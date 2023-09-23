@@ -76,6 +76,7 @@ class main:
         self.reccircmasks=None
         self.mapcuts = {'EBV':0.15,'STARDENS':4.4,'PSFSIZE_G':2.4,'PSFSIZE_R':2.3,'PSFSIZE_Z':2,'GALDEPTH_G':250,'GALDEPTH_R':80,'GALDEPTH_Z':30,'PSFDEPTH_W1':2}
         if tp[:3] == 'BGS':
+            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI']
             self.imbits = [1,13]
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
@@ -93,6 +94,7 @@ class main:
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
+            self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
             self.dchi2 = 0
@@ -101,12 +103,14 @@ class main:
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
+            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
             self.ebits = 'lrg_mask'
             self.tsnrcut = 80
             self.dchi2 = 15
             self.zmin = 0.4
             self.zmax = 1.1
         if tp[:3] == 'ELG':
+            self.fitmaps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8

@@ -615,24 +615,8 @@ if args.imsys == 'y':
 
 zl = (zmin,zmax)
 #fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
-if tracer_clus[:3] == 'ELG':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
+fitmaps = mainp.fitmaps
 
-if tracer_clus[:3] == 'BGS':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI']
-
-if tracer_clus[:3] == 'LRG':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
-    #fit_maps.append('PSFDEPTH_W1')
-#    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-
-if tracer_clus[:3] == 'QSO':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
-    fit_maps.append('PSFDEPTH_W1')
-    fit_maps.append('PSFDEPTH_W2')
-    #fit_maps = ['EBV', 'STARDENS',
-    #             'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
-    #             'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
