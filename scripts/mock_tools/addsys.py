@@ -282,7 +282,7 @@ if args.add_regressis_ran == 'y':
     fb = dirout+tp
     fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
     fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
-    fcd = Table(np.concatenate((fcdn,fcds)))
+    indata = Table(np.concatenate((fcdn,fcds)))
     indata.rename_column('TARGETID', 'TARGETID_DATA')
     
     regl = ['NGC','SGC']
