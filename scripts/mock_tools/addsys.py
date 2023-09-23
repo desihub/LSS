@@ -48,8 +48,6 @@ args = parser.parse_args()
 print(args)
 
 tp = args.tracer
-basedir = args.basedir
-specrel = args.verspec
 rm = int(args.minr)
 rx = int(args.maxr)
 
@@ -74,7 +72,7 @@ zmax = mainp.zmax
 fitmaps = mainp.fitmaps
 
 
-tpstr = tracer_clus
+tpstr = tp
 if tracer_clus == 'BGS_BRIGHT-21.5':
     tpstr = 'BGS_BRIGHT'
 nside = 256
