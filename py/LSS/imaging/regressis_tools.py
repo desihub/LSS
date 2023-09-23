@@ -254,6 +254,102 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     _ = regression.get_weight(save=True)
     #regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
 
+def get_desi_data_clus_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,\
+fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
+max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
+feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto=''):
+    """
+    
+    Combine steps above with no in between write-out
+    
+    Parameters
+    ----------
+    LSS : str
+        Path to locate where are the catalogs of galaxies / quasars.
+    survey : str
+        Which survey is used. Only relevant for the filename of the outputs. e.g., DA02 
+    tracer : str
+        Which tracer is used. e.g, BGS_ANY / LRG / ELG / QSO.
+    nside : int
+        Resolution of the healpix distribution map of the objects.
+    dir_out : str
+        Path where the ouputs will be saved.
+    zlim : list
+    	contains minimum,maximum redshifts to apply
+    nran : int
+        number of random files to use
+    fracthresh : float
+    	inverse of fraction coverage of healpix pixel maximum to be considered for building weights    
+    """
+    #logger.info(f"Collect "+survey+" data for {tracer}:")
+
+    zcol = 'Z'
+    
+    cols = ['RA','DEC',zcol,'WEIGHT']
+    datan = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_NGC_clustering.dat.fits'),columns=cols)
+    datas = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_SGC_clustering.dat.fits'),columns=cols)
+    data = pd.concat([datan,datas])
+
+    wz = data[zcol] > z_lim[0]
+    wz &= data[zcol] < z_lim[1]
+
+    data = data[wz]
+    wts = data['WEIGHT_COMP'].values
+    map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
+
+    #load photometric regions:
+    if foot is None:
+        foot = footprint.DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+    if tracer == 'QSO':
+        north, south, des = foot.get_imaging_surveys()
+    else:
+        north, south_ngc, south_sgc = foot.update_map(foot.data['ISNORTH']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISNGC']), foot.update_map(foot.data['ISSOUTH'] & foot.data['ISSGC'])
+
+    ranl = []
+    tran = tracer
+    if tracer == 'BGS_BRIGHT-21.5':
+        tran = 'BGS_BRIGHT'
+    for i in range(0,nran):
+        rann = read_fits_to_pandas(os.path.join(LSS, tran+'_NGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC'])
+        rans = read_fits_to_pandas(os.path.join(LSS, tran+'_SGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC']) 
+        ran = pd.concat([rann,rans])
+        ranl.append(ran)
+    randoms = pd.concat(ranl, ignore_index=True)
+    print(len(data),len(randoms))
+    # load in deg2 since we know the density of generated randoms in deg2
+    map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
+    # a random file is 2500 randoms per deg2
+    mean = nran*2500
+    #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
+    fracarea = map_randoms / mean
+    fracarea[fracarea == 0] = np.NaN
+    # remove pixels with too small fracarea
+    sel = 1/fracarea > 5.0
+    fracarea[sel] = np.NaN
+    #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
+
+    ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
+    zw = str(z_lim[0])+'_'+str(z_lim[1])
+    tracer += zw
+
+    print('about to make dataframe')
+    dataframe = PhotometricDataFrame(survey, tracer, foot, suffix_tracer, **dataframe_params)
+#dataframe.set_features(pixmap={'North': '/global/homes/e/edmondc/Software/regressis/data/pixweight-dr9-256.fits', 'South_mid_ngc': '/global/homes/e/edmondc/Software/regressis/data/pixweight-dr9-256.fits'}, pixmap_external='/global/cfs/cdirs/desi/survey/catalogs/pixweight_maps_all/pixweight_external.fits')
+    print('about to set feature')
+    dataframe.set_features(pixmap={'North':pixweight_path+'N.fits','South':pixweight_path+'S.fits','South_mid_ngc':pixweight_path+'S.fits','Des':pixweight_path+'S.fits','South_mid_sgc':pixweight_path+'S.fits'},pixmap_external=pixmap_external,sgr_stream=sgr_stream_path,sel_columns=feature_names,sel_columns_external=feature_names_ext, use_sgr_stream=use_sgr)
+    print('about to set targets')
+    dataframe.set_targets(targets=map_data,fracarea=fracarea)
+    print('about to build')
+    output_dir = dataframe.output_dataframe_dir 
+    dataframe.output_dataframe_dir = None
+    dataframe.build(cut_fracarea=cut_fracarea)
+    dataframe.output_dataframe_dir = output_dir
+    print('about to do regression')
+    regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
+    print('about to get weight')
+    _ = regression.get_weight(save=True)
+
+
 def get_desi_data_full_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,\
 fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
 max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
