@@ -199,7 +199,7 @@ if args.regressis == 'y':
     param['output_dir'] = dirreg
     param['use_median'] = False
     param['use_new_norm'] = False
-    if tracer_clus[:3] == 'QSO':
+    if tp[:3] == 'QSO':
         param['regions'] = ['North', 'South', 'Des']
     else:
         param['regions'] = ['North', 'South_mid_ngc', 'South_mid_sgc']
