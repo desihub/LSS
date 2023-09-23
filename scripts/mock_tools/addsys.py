@@ -39,6 +39,9 @@ parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systemat
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
+parser.add_argument("--add_regressis_ran",help="add RF weights to randoms?",default='n')
+parser.add_argument("--add_sysnet_ran",help="add sysnet weights to randoms",default='n')
+
 parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
@@ -275,6 +278,22 @@ if args.add_regressis == 'y':
 
     common.write_LSS(dd,fcd)#,comments)
 
+if args.add_regressis_ran == 'y':
+    fb = dirout+tp
+    fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
+    fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_RF'])
+    fcd = Table(np.concatenate((fcdn,fcds)))
+    indata.rename_column('TARGETID', 'TARGETID_DATA')
+    
+    regl = ['NGC','SGC']
+    for rn in range(rm,rx):
+        for reg in regl:
+            fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+            cd = fitsio.read(fname)
+            cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+            common.write_LSS(cd,fname)
+
+
 if args.add_sysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
@@ -311,3 +330,18 @@ if args.add_sysnet == 'y':
     comments.append("Using sysnet for WEIGHT_SYS")
 
     common.write_LSS(dd,fn_full,comments)
+
+if args.add_sysnet_ran == 'y':
+    fb = dirout+tp
+    fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
+    fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
+    fcd = Table(np.concatenate((fcdn,fcds)))
+    indata.rename_column('TARGETID', 'TARGETID_DATA')
+    
+    regl = ['NGC','SGC']
+    for rn in range(rm,rx):
+        for reg in regl:
+            fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+            cd = fitsio.read(fname)
+            cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+            common.write_LSS(cd,fname)
