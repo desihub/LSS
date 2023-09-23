@@ -127,7 +127,7 @@ if args.prepsysnet == 'y' or args.regressis == 'y':
         debv['EBV_DIFF_'+ec.upper()] = debv_a
 
 dirout = mockdir
-lssmapdirout = data_dir+'/hpmaps/'
+lssmapdirout = datadir+'/hpmaps/'
 if args.prepsysnet == 'y':
     #logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
