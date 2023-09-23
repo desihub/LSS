@@ -210,11 +210,11 @@ if args.regressis == 'y':
 
     #logf.write('using fit maps '+str(fit_maps)+'\n')
     feature_names_ext=None
-    pw_out_fn_root = dirout+'/regressis_data/'+tracer_clus+'feature_data_'
+    pw_out_fn_root = dirout+'/regressis_data/'+tp+'feature_data_'
     regl = ['N','S']
     
     for reg in regl:
-        pwf = lssmapdirout+tpstr+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:
