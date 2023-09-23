@@ -26,6 +26,7 @@ else:
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--realization",type=int)
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
