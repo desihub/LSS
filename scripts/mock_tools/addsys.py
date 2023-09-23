@@ -175,7 +175,7 @@ if args.prepsysnet == 'y':
             common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
-    logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    #logf.write('adding regressis weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     #from regressis, must be installed
     from regressis import DESIFootprint,DR9Footprint
 
