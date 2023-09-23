@@ -69,7 +69,7 @@ zmin = mainp.zmin
 zmax = mainp.zmax
 
 
-fitmaps = mainp.fitmaps
+fit_maps = mainp.fit_maps
 
 
 tpstr = tp
