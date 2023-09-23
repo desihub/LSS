@@ -52,7 +52,7 @@ rm = int(args.minr)
 rx = int(args.maxr)
 
 
-datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'iron/LSScats/'+args.data_version+'/'
+datadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.data_version+'/'
     
 
 if tp[:3] == 'BGS' or tp == 'bright' or tp == 'MWS_ANY':
