@@ -285,7 +285,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 
     zcol = 'Z'
     
-    cols = ['RA','DEC',zcol,'WEIGHT']
+    cols = ['RA','DEC',zcol,'WEIGHT_COMP']
     datan = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_NGC_clustering.dat.fits'),columns=cols)
     datas = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_SGC_clustering.dat.fits'),columns=cols)
     data = pd.concat([datan,datas])
