@@ -308,7 +308,7 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
         inds = np.arange(nran)
         from multiprocessing import Pool
         with Pool(processes=nproc) as pool:
-            res = pool.map(_addrancol, inds)
+            res = pool.map(addrancol, inds)
 
 
 if args.add_sysnet == 'y':
