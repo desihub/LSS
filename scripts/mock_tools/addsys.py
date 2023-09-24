@@ -299,7 +299,7 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
             cols2rem = [wtcol,wtcol+'_1',wtcol+'_2']
             for col in cols2rem:
                 if col in list(cd.dtype.names):
-                    cd.remove(col)
+                    cd.remove_column(col)
             cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
             common.write_LSS(cd,fname)
     
