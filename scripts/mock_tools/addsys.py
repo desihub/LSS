@@ -303,6 +303,7 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
         for rn in range(rm,rx):
             addrancol(rn)
     if args.par == 'y':
+        nproc = 9
         nran = rx-rm
         inds = np.arange(nran)
         from multiprocessing import Pool
@@ -347,17 +348,17 @@ if args.add_sysnet == 'y':
 
     common.write_LSS(dd,fn_full,comments)
 
-if args.add_sysnet_ran == 'y':
-    fb = dirout+tp
-    fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
-    fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
-    fcd = Table(np.concatenate((fcdn,fcds)))
-    indata.rename_column('TARGETID', 'TARGETID_DATA')
-    
-    regl = ['NGC','SGC']
-    for rn in range(rm,rx):
-        for reg in regl:
-            fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-            cd = fitsio.read(fname)
-            cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
-            common.write_LSS(cd,fname)
+# if args.add_sysnet_ran == 'y':
+#     fb = dirout+tp
+#     fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
+#     fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID','WEIGHT_SN'])
+#     fcd = Table(np.concatenate((fcdn,fcds)))
+#     indata.rename_column('TARGETID', 'TARGETID_DATA')
+#     
+#     regl = ['NGC','SGC']
+#     for rn in range(rm,rx):
+#         for reg in regl:
+#             fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+#             cd = fitsio.read(fname)
+#             cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+#             common.write_LSS(cd,fname)
