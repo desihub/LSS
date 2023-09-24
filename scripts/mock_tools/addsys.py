@@ -292,22 +292,22 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
     indata = Table(np.concatenate((fcdn,fcds)))
     indata.rename_column('TARGETID', 'TARGETID_DATA')
 
-	def addrancol(rn):
-		for reg in regl:
-			fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-			cd = fitsio.read(fname)
-			cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
-			common.write_LSS(cd,fname)
+    def addrancol(rn):
+        for reg in regl:
+            fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+            cd = fitsio.read(fname)
+            cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+            common.write_LSS(cd,fname)
     
     if args.par == 'n':
         for rn in range(rm,rx):
             addrancol(rn)
     if args.par == 'y':
-		nran = rx-rm
-		inds = np.arange(nran)
-		from multiprocessing import Pool
-		with Pool(processes=nproc) as pool:
-			res = pool.map(_parfun, inds)
+        nran = rx-rm
+        inds = np.arange(nran)
+        from multiprocessing import Pool
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun, inds)
 
 
 if args.add_sysnet == 'y':
