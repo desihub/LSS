@@ -295,7 +295,11 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
     def addrancol(rn):
         for reg in regl:
             fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-            cd = fitsio.read(fname)
+            cd = Table(fitsio.read(fname))
+            cols2rem = [wtcol,wtcol+'_1',wtcol+'_2']
+            for col in cols2rem:
+                if col in list(cd.dtype.names):
+                    cd.remove(col)
             cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
             common.write_LSS(cd,fname)
     
