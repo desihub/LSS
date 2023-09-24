@@ -285,7 +285,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 
     zcol = 'Z'
     
-    cols = ['RA','DEC',zcol,'WEIGHT_COMP']
+    cols = ['RA','DEC',zcol,'WEIGHT','WEIGHT_FKP']
     datan = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_NGC_clustering.dat.fits'),columns=cols)
     datas = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_SGC_clustering.dat.fits'),columns=cols)
     data = pd.concat([datan,datas])
@@ -294,7 +294,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
-    wts = data['WEIGHT_COMP'].values
+    wts = data['WEIGHT'].values*data['WEIGHT_FKP'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
@@ -310,14 +310,16 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     if tracer == 'BGS_BRIGHT-21.5':
         tran = 'BGS_BRIGHT'
     for i in range(0,nran):
-        rann = read_fits_to_pandas(os.path.join(LSS, tran+'_NGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC'])
-        rans = read_fits_to_pandas(os.path.join(LSS, tran+'_SGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC']) 
+        rann = read_fits_to_pandas(os.path.join(LSS, tran+'_NGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP'])
+        rans = read_fits_to_pandas(os.path.join(LSS, tran+'_SGC_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
         ran = pd.concat([rann,rans])
         ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
-    # load in deg2 since we know the density of generated randoms in deg2
-    map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
+    # load in deg2 since we know the density of generated randoms in deg2, but weights mess this up
+    wts = randoms['WEIGHT'].values*randoms['WEIGHT_FKP'].values
+    wts /= np.mean(wts)
+    map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values,weights=wts, in_deg2=True)
     # a random file is 2500 randoms per deg2
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
