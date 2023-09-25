@@ -1171,7 +1171,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     '''
     import shutil
     ranstring = int(np.random.random()*1e10)
-    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+ranstring
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
