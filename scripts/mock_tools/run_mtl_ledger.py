@@ -15,6 +15,7 @@ if par:
 else:
     mtl.make_ledger(arg1, arg2, obscon=obscon.upper())
 
+
 print('Creating list of tiles to be processed by AltMTL mock production')
 
 path = os.path.join(arg2, 'main', obscon.lower())

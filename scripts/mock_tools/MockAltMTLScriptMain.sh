@@ -22,7 +22,6 @@ path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 #However, you can choose smaller numbers for debugging
 ndir=1
 
-
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
 obscon='DARK'
 
