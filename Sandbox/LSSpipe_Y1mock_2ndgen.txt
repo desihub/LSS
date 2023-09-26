@@ -3,22 +3,65 @@
 #1st cutsky mocks get created from boxes and have the Y1 tiles list applied to geometry (Aurelio, others add details)
 #These are combined across tracers, have columns added necessary for fiberassign, and have the targeting mask applied via
 https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
-#(Aurelio can add more details)
 
-source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+#Set up
+>> source /global/common/software/desi/desi_environment.sh main
+In this documentation, $LSS is the directory where you have the LSS repository
 
-#Each realization can be passed through to find potential assignments, using the actual Y1 hardware specifications, via
+
+#To run on the SecondGen Abacus mock: 
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/prepare_mocks_Y1.py --mockver ab_secondgen --realmin 0 --realmax 2 --prog dark --base_output /pscratch/sd/a/acarnero --apply_mask y --downsampling y --overwrite True
+
+	It needs to run on batch because of the apply_mask option, if not, it will crashed.
+	It has an option called --isProduction. If it is equals to 'y', it will save in the production path /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/. In this case, overwrite will be set to False. 
+	If you don't select a base_output path and it is not production, it will save on your scratch.
+	To run over all 25 realizations, set realmax = 25 
+	Downsampling is an option of mockver == ab_secondgen only
+
+#Add LRG veto, takes ~3 minutes per mock
+>> srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python $LSS/scripts/readwrite_pixel_bitmask.py --tracer lrg -i <mock#> --cat_type Ab2ndgen
+
+	Right now is not parallelized over mock realizations, so you need to run each realization at a time (-i 0, -i 1, ...)
+	It directly save in /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/  for cat_type = Ab2ndgen  (no overwritten)
+ 
+#Each realization can be passed through to find potential assignments and collisions, using the actual Y1 hardware specifications, via
 https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization <mock number>
-srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/getpotaY1_mock.py --realization <mock#>
+>> srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/getpotaY1_mock.py --realization <mock#>
+
+	Currently saves automatically on the production directory. It will overwrite the products, so be careful if running.
 
 #The output will be all of the potential assignments from the mocks, for all tracers, and including all repeats
 #Each takes ~20 minutes
 
-#Add LRG veto, takes ~3 minutes per mock
-srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/readwrite_pixel_bitmask.py --tracer lrg --input <mock#> --cat_type Ab2ndgen
+
+# Now you have several pathways. Make clustering catalogs only from potential assigments (applying all the data masking) or mimic the entire data processing, staring from AltMTL to LSS pipeline.
+
+### POTENTIAL ASSIGNMENT ONLY INSTRUCTIONS ###
+
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 #Make complete LSS catalogs with goodhardware and imaging veto masks applied
 #Code does randoms in serial, 4 are likely enough
-python scripts/mock_tools/pota2clus_simp.py  --veto _gtlimaging --realization 0 --maxr <max_num_ran_needed>
+>> python scripts/mock_tools/pota2clus_simp.py  --veto _gtlimaging --realization 0 --maxr <max_num_ran_needed>
+
+-----------------------------------------------
+
+
+### AltMTL + LSS pipeline INSTRUCTIONS ###
+
+#The output directory names are just suggestions.
+#Generate initial ledgers
+# First define a working directory <base_output> (like in your scratch).
+
+# Create initial ledgers and save hplist to feed MockAltMTL production, both saved in <base_output>/initial_ledger<mock#>
+>> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/initial_ledger<mock#> DARK
+	
+	First need to create (mkdir) the directory <base_output>/initial_ledger<mock#>
+	It will save the HP list in the same directory with the name hpxlist.txt
+
+# Copy the AltMTL script to your working directory, <base_output>
+>> cp $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh <base_output>
+
+# Modify by hand several options inside MockAltMTLScriptMain.sh that you just copied over the working directory
+# This are the ones that you should worry (up to line 50. there are other options but you can ignore)
 

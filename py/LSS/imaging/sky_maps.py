@@ -1345,7 +1345,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         # MMM Reading just one line to get names of columns and header.
         skymapvaluescat = rancat_name_to_map_name(randomcat, lssmapdir=lssmapdir)
         skymapmaskcat = rancat_name_to_mask_name(randomcat, lssmapdir=lssmapdir)
-
+        #AURE 
+        skymapvaluescat = os.path.join(lssmapdir,'mapvalues', 'randoms-1-0-skymapvalues.fits')
         skyfield = fitsio.read(skymapvaluescat, rows=[0])
 
     # MMM check if there are no foreign or misspelled items in fieldlist.
