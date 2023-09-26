@@ -21,6 +21,7 @@ maps_dr9 = ['EBV','STARDENS'] + [f'GALDEPTH_{b}' for b in bands] + [f'PSFSIZE_{b
 def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran_exp=None,
                 nside=256, nest=True, use_obiwan=False, columns=maps_dr9,wtmd='fracz',tp='ELG'):
     logger = logging.getLogger('prep4sysnet')
+    #if zcolumn == 'Z_not4clus':
     data = do_zcut(data, zmin, zmax, zcolumn,tp=tp)
     cols = list(data.dtype.names)
     weights = np.ones_like(data[zcolumn])
@@ -89,8 +90,9 @@ def hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=None, frac_min=
 
 def do_zcut(data, zmin, zmax, zcolumn,tp='ELG'):
     zgood = (data[zcolumn] > zmin) & (data[zcolumn] < zmax)
-    zgood &= common.goodz_infull(tp,data,zcolumn)
-    zgood &= data['ZWARN'] != 999999
+    if zcolumn == 'Z_not4clus':
+        zgood &= common.goodz_infull(tp,data,zcolumn)
+        zgood &= data['ZWARN'] != 999999
     print(f"# removed from quality and zcut {zmin}<{zmax}: {data[zcolumn].size - zgood.sum()}, {100 * (data[zcolumn].size - zgood.sum()) / data[zcolumn].size:.2f}%")
     return data[zgood]
 
