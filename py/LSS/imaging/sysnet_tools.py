@@ -24,6 +24,7 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
     data = do_zcut(data, zmin, zmax, zcolumn,tp=tp)
     cols = list(data.dtype.names)
     weights = np.ones_like(data[zcolumn])
+    weights_ran = np.ones(len(rands))
 
 
     if wtmd == 'fracz':
@@ -34,6 +35,7 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
             wts *= 1/data['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
         wts = data['WEIGHT']
+        weights_ran = rands['WEIGHT']
     if wtmd == 'wt_comp':
         wts = data['WEIGHT_COMP']
 
@@ -45,7 +47,7 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
     if use_obiwan:
         weights *= data['OBI_WEIGHT']#ut.get_nn_weights(data, run, zmin, zmax, nside, hpix=None, version=version)
         
-    data_hpmap, rands_hpmap = hpixelize(nside, data, rands, weights=weights, nest=False, return_mask=False, nest2ring=False) 
+    data_hpmap, rands_hpmap = hpixelize(nside, data, rands, weights=weights, weights_ran=weights_ran,nest=False, return_mask=False, nest2ring=False) 
     
     hpmaps = create_sysmaps(sys, nest=nest, columns=columns)
         
@@ -103,13 +105,13 @@ def create_sysmaps(hpmaps, nest=True, columns=maps_dr9):
             sysmaps[prop] = hpmaps[prop]
     return pd.DataFrame(sysmaps)
     
-def hpixelize(nside, data, randoms, weights=None, return_mask=False, nest=False, nest2ring=False):
+def hpixelize(nside, data, randoms, weights=None,weights_ran=None,return_mask=False, nest=False, nest2ring=False):
     if weights is None:
         data_hpmap = hpixsum(nside, data['RA'], data['DEC'], nest=nest, nest2ring=nest2ring)
     else:
         data_hpmap = hpixsum(nside, data['RA'], data['DEC'], weights=weights, nest=nest, nest2ring=nest2ring)
     
-    rands_hpmap = hpixsum(nside, randoms['RA'], randoms['DEC'], nest=nest, nest2ring=nest2ring)
+    rands_hpmap = hpixsum(nside, randoms['RA'], randoms['DEC'], weights=weights_ran,nest=nest, nest2ring=nest2ring)
     rands_mask = rands_hpmap > 0.0
     mask = rands_mask
     if return_mask:
