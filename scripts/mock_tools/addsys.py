@@ -174,7 +174,7 @@ if args.prepsysnet == 'y':
             selr = rands['PHOTSYS'] == reg
         
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_comp',tp=tp[:3])
+                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt',tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 
