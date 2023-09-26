@@ -159,7 +159,7 @@ if args.prepsysnet == 'y':
         if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
         for reg in regl:
-            pwf = lssmapdirout+tpstr+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
