@@ -89,7 +89,9 @@ if not os.path.exists(tileoutdir):
 if not os.path.exists(paoutdir):
     os.makedirs(paoutdir)
     print('made '+paoutdir)
-
+if not os.path.exists(os.environ['SCRATCH']+'/rantiles'):
+    os.makedirs(os.environ['SCRATCH']+'/rantiles')
+    print('made '+os.environ['SCRATCH']+'/rantiles')
 
 tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
 
