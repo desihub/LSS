@@ -52,7 +52,7 @@ def normed_plot(data,seltot,sel,range=(80,200),col='TSNR2_ELG',wcol='WEIGHT_ZFAI
     b,_ = np.histogram(data[sel][col],bins=bins)
     c,_ = np.histogram(data[sel][col],bins=bins,weights=data[sel][wcol])
     sp = bins[1]-bins[0]
-    err = np.sqrt(b)/a #rough, correct formula is to use binomial
+    err = np.sqrt(b*(1-b/a))/a  # binomial error
     normc = np.sum(c)/np.sum(a)
     cchi = np.sum((c/a/normc-1.)**2./(err/normc)**2.)
     plt.errorbar(bins[:-1]+sp/2.,c/a/normc,err/normc,fmt=cl+ps,label=lab+' weighted '+str(round(cchi,3)))
