@@ -209,10 +209,10 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'nofail' in weight_type:
         weights /= catalog['WEIGHT_ZFAIL'][mask]
         print('dividing weights by WEIGHT_ZFAIL')
-    if 'GFLUX' in weight_type:
+    if 'addGFLUX' in weight_type:
         weights *= catalog['WEIGHT_FIBERFLUX'][mask]
         print('multiplying weights by WEIGHT_FIBERFLUX')
-    if 'SSR' in weight_type:
+    if 'addSSR' in weight_type:
         weights *= catalog['WEIGHT_focal'][mask]
         print('multiplying weights by WEIGHT_focal')
         
