@@ -301,32 +301,32 @@ if args.add_sysnet == 'y':
         dd = Table.read(fcd)
         dd['WEIGHT_RF'] = np.ones(len(dd))
 
-		for reg in regl_sysnet:
-			for zl in zrl:
-				zw = ''
-				if args.imsys_zbin == 'y':
-					zw = str(zl[0])+'_'+str(zl[1])
-				sn_weights = fitsio.read(dirout+'/sysnet/'+tp+zw+'_'+reg+'/nn-weights.fits')
-				pred_counts = np.mean(sn_weights['weight'],axis=1)
-				pix_weight = np.mean(pred_counts)/pred_counts
-				pix_weight = np.clip(pix_weight,0.5,2.)
-				sn_pix = sn_weights['hpix']
-				hpmap = np.ones(12*256*256)
-				for pix,wt in zip(sn_pix,pix_weight):
-					hpmap[pix] = wt
-		
-				sel = dd['PHOTSYS'] == reg
-				selz = dd['Z'] > zl[0]
-				selz &= dd['Z'] <= zl[1]
+        for reg in regl_sysnet:
+            for zl in zrl:
+                zw = ''
+                if args.imsys_zbin == 'y':
+                    zw = str(zl[0])+'_'+str(zl[1])
+                sn_weights = fitsio.read(dirout+'/sysnet/'+tp+zw+'_'+reg+'/nn-weights.fits')
+                pred_counts = np.mean(sn_weights['weight'],axis=1)
+                pix_weight = np.mean(pred_counts)/pred_counts
+                pix_weight = np.clip(pix_weight,0.5,2.)
+                sn_pix = sn_weights['hpix']
+                hpmap = np.ones(12*256*256)
+                for pix,wt in zip(sn_pix,pix_weight):
+                    hpmap[pix] = wt
+        
+                sel = dd['PHOTSYS'] == reg
+                selz = dd['Z'] > zl[0]
+                selz &= dd['Z'] <= zl[1]
 
-				#print(np.sum(sel))
-				if len(dd[sel&selz]) > 0:
-				    dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
-		#print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
-		#comments = []
-		#comments.append("Using sysnet for WEIGHT_SYS")
+                #print(np.sum(sel))
+                if len(dd[sel&selz]) > 0:
+                    dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+        #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
+        #comments = []
+        #comments.append("Using sysnet for WEIGHT_SYS")
 
-		common.write_LSS(dd,fcd)#,comments)
+        common.write_LSS(dd,fcd)#,comments)
 
 if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
     if args.add_regressis_ran == 'y':
