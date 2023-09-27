@@ -298,8 +298,8 @@ if args.add_sysnet == 'y':
         fcd = fb+'_'+reg+'_clustering.dat.fits'
         dd = Table.read(fcd)
         dd['WEIGHT_SN'] = np.ones(len(dd))
-		dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-		dpix = hp.ang2pix(256,dth,dphi)
+        dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+        dpix = hp.ang2pix(256,dth,dphi)
 
         for reg in regl_sysnet:
             for zl in zrl:
