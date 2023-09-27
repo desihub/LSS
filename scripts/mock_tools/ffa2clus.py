@@ -136,7 +136,7 @@ for tracer in tracers:
 
     out_data_fn = mockdir+tracer+'_ffa'+args.veto+'_clustering.dat.fits'
     out_data_froot = mockdir+tracer+'_ffa'+args.veto+'_'
-
+    subfrac = 1
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
