@@ -149,6 +149,7 @@ for tracer in tracers:
     elif tracer == 'QSO':
         zmin = 0.8
         zmax = 2.1
+        subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
 
     mainp = main(tracer,'iron','Y1')
     if args.mkdat == 'y':
