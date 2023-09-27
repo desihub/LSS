@@ -316,7 +316,7 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
 
 
 if args.add_sysnet == 'y':
-    logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    #logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
     import healpy as hp
     fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
