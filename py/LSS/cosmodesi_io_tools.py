@@ -208,9 +208,14 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         print('multiplying weights by WEIGHT_FKP')
     if 'nofail' in weight_type:
         weights /= catalog['WEIGHT_ZFAIL'][mask]
-        print('dividing weights by WEIGHT_FKP')
-    if 'fluxfail' in weight_type:
-        weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
+        print('dividing weights by WEIGHT_ZFAIL')
+    if 'GFLUX' in weight_type:
+        weights *= catalog['WEIGHT_FIBERFLUX'][mask]
+        print('multiplying weights by WEIGHT_FIBERFLUX')
+    if 'SSR' in weight_type:
+        weights *= catalog['WEIGHT_focal'][mask]
+        print('multiplying weights by WEIGHT_focal')
+        
     if name == 'data' and 'bitwise' in weight_type:
         weights /= catalog['WEIGHT_COMP'][mask]
         print('dividing weights by WEIGHT_COMP')
