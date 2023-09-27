@@ -47,7 +47,8 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 -----------------------------------------------
 
 
-### AltMTL + LSS pipeline INSTRUCTIONS ###
+### AltMTL + LSS pipeline INSTRUCTIONS ### 
+## CAUTION: NO PIP WEIGHTS YET TESTED OR IMPLEMENTED ##
 
 #The output directory names are just suggestions.
 #Generate initial ledgers
@@ -64,4 +65,31 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 # Modify by hand several options inside MockAltMTLScriptMain.sh that you just copied over the working directory
 # This are the ones that you should worry (up to line 50. there are other options but you can ignore)
+	* simName='<base_output>/altmtl_main_rea<mock#>'   This is the directory where to save all the AltMTL products for a given mock#
+	* path2LSS=/pscratch/sd/a/MYUSER/codes/LSS/bin/  This is the path to the LSS repo bin subdirectory
+	* ndir=1   Number of Alternative ledgers. In principle, we should run a single realization to get as data, and then another large run with ndir=128 or 256 to calculate PIP weights. If ndir = 1, then BitWeights are not calculated.
+	* obscon='DARK'  Either DARK or BRIGHT
+	* endDate='--endDate=20220613' End date for Y1 campaign
+	* exampleLedgerBase=<base_output>/initial_ledger<mock#>  This is the directory you indicated when creating the initial ledgers
+	* hpListFile="<base_output>/initial_ledger<mock#>/hpxlist.txt"  This is the hp file list created while running the initial ledgers
+	* targfile='--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits'  This is the path to the parent target sample
 
+# This script takes quite some time to run (~24h). It generates ndir random realizations (given subpriority) and run fiber assigment creating potential assignments and assignments itself. 
+# Their outputs will serve as input for the LSS pipeline.
+
+
+# Run LSS pipeline as follows. 
+# CAUTION: it has only been tested to run one mock by one mock with mockmin = 0 and mockmax = 1
+# Prepare and combine data for dark or bright time data. Better run in batch mode since it might die in between if not running in batch mode.
+# We don't need randoms at this stage any more. They will be read directly from data randoms when creating the full catalogs
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/mkCat_mock.py --base_output <base_output> --simName <base_output>/altmtl_main_rea{MOCKNUM} --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer dark --combd y
+
+# Create the full catalogs for data and randoms and apply vetos. Calcualte the FKP weights and make the clustering catalogs.
+#LRG
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/mkCat_mock.py --base_output <base_output> --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer LRG --fulld y --fullr y --minr 0 --maxr 1  --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusdat y --mkclusran y --resamp y --nz y --getFKP y
+
+#ELG (ELG_LOP with notqso)
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/mkCat_mock.py --base_output <base_output> --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer ELG_LOP --notqso y --fulld y --fullr y --minr 0 --maxr 1  --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusdat y --mkclusran y --resamp y --nz y --getFKP y
+
+#QSO
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/mkCat_mock.py --base_output <base_output> --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer QSO --fulld y --fullr y --minr 0 --maxr 1  --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusdat y --mkclusran y --resamp y --nz y --getFKP y

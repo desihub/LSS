@@ -3617,7 +3617,6 @@ def clusNStoGC(flroot,nran=1):
     nn = np.sum(fn['WEIGHT'])
     fs = Table(fitsio.read(flroot+'S_clustering.dat.fits'))
     ns = np.sum(fs['WEIGHT'])
-    '''
     if 'QSO' in flroot:
         print('getting data numbers in DES region')
         from regressis import footprint
@@ -3628,7 +3627,6 @@ def clusNStoGC(flroot,nran=1):
         selregd = des[pixd]
         ns_des =  np.sum(fs[selregd]['WEIGHT'])
         ns_notdes =  np.sum(fs[~selregd]['WEIGHT'])
-    '''
     fc = vstack((fn,fs))
     print(np.sum(fc['WEIGHT']),nn,ns)
     c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
@@ -3643,7 +3641,6 @@ def clusNStoGC(flroot,nran=1):
         fn = Table(fitsio.read(flroot+'N_'+str(rann)+'_clustering.ran.fits'))
         nnr = np.sum(fn['WEIGHT'])
         fs = Table(fitsio.read(flroot+'S_'+str(rann)+'_clustering.ran.fits'))
-        '''
         if 'QSO' in flroot:
             print('resampling in DES region')
             th_ran,phi_ran = (-fs['DEC']+90.)*np.pi/180.,fs['RA']*np.pi/180.
@@ -3652,7 +3649,6 @@ def clusNStoGC(flroot,nran=1):
             nsr_des = np.sum(fs[selregr]['WEIGHT'])
             nsr_notdes = np.sum(fs[~selregr]['WEIGHT'])
         
-        '''
         nsr = np.sum(fs['WEIGHT'])
         rn = nn/nnr
         rs = ns/nsr

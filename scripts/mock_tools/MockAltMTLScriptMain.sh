@@ -285,25 +285,32 @@ runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
 echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
 
-if [ $splitByReal -ne 0 ]; then
-    printf -v OFBW "%s/MakeBitweights%sOutputCase1%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-    srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
-else
-    printf -v OFBW "%s/MakeBitweights%sOutputCase2%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-    srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
+if [$indir -gt 1]; then 
+	if [ $splitByReal -ne 0 ]; then
+    		printf -v OFBW "%s/MakeBitweights%sOutputCase1%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
+    		srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
+	else
+    		printf -v OFBW "%s/MakeBitweights%sOutputCase2%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
+    		srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
+	fi
+	endBW=`date +%s.%N`
 fi
 
-endBW=`date +%s.%N`
 
 
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
-runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
+
+if [$indir -gt 1]; then
+	runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
+fi
 
 echo "runtime for initialization"
 echo $runtimeInit
 echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
-echo "runtime for making bitweights"
-echo $runtimeBitweights
+if [$indir -gt 1]; then  
+	echo "runtime for making bitweights"
+	echo $runtimeBitweights
+fi
