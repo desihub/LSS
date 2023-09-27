@@ -287,7 +287,7 @@ if args.add_sysnet == 'y':
     #logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
     import healpy as hp
-    fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
+    fn_full = dirout+tracer+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fn_full)
     dd['WEIGHT_SN'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
