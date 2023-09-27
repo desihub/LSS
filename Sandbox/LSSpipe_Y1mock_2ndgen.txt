@@ -58,7 +58,7 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 >> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/initial_ledger<mock#> DARK
 	
 	First need to create (mkdir) the directory <base_output>/initial_ledger<mock#>
-	It will save the HP list in the same directory with the name hpxlist.txt
+	It will save the HP list in the same directory with the name hpxlist_<obscon>.txt
 
 # Copy the AltMTL script to your working directory, <base_output>
 >> cp $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh <base_output>
