@@ -290,8 +290,6 @@ if args.add_sysnet == 'y':
     fn_full = dirout+tp+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fn_full)
     dd['WEIGHT_SN'] = np.ones(len(dd))
-    dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-    dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
     regl = ['NGC','SGC']
@@ -299,7 +297,9 @@ if args.add_sysnet == 'y':
     for reg in regl:
         fcd = fb+'_'+reg+'_clustering.dat.fits'
         dd = Table.read(fcd)
-        dd['WEIGHT_RF'] = np.ones(len(dd))
+        dd['WEIGHT_SN'] = np.ones(len(dd))
+		dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+		dpix = hp.ang2pix(256,dth,dphi)
 
         for reg in regl_sysnet:
             for zl in zrl:
