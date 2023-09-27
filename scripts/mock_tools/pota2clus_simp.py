@@ -44,6 +44,12 @@ parser.add_argument("--random_dir",help="where to find the data randoms",default
 parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
+parser.add_argument("--mockver", default=None, help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
+parser.add_argument("--alt_indir", default = None)
+parser.add_argument("--alt_outdir", default = None)
+parser.add_argument("--tracer", default = None)
+parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
+
 
 args = parser.parse_args()
 print(args)
@@ -72,32 +78,41 @@ notqso = ''
 # else:
 #     sys.exit('tracer type '+args.tracer+' not supported (yet)')
 
+if args.mockver != 'abacus2ffa':
+    mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+    in_data_fn = mockdir+'pota-'+args.prog+'.fits'
+    print(in_data_fn)
+    cols = ['LOCATION',
+    'FIBER',
+    'TARGETID',
+    'RA',
+    'DEC','RSDZ',
+    'PRIORITY_INIT',
+    'PRIORITY',
+    'DESI_TARGET','BRICKID','NOBS_G',
+    'NOBS_R',
+    'NOBS_Z',
+    'MASKBITS','ZWARN',
+    'COLLISION',
+    'TILEID']
+    mock_data = fitsio.read(in_data_fn,columns=cols)
+    selcoll = mock_data['COLLISION'] == False
+    mock_data = mock_data[selcoll]
 
-mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-in_data_fn = mockdir+'pota-'+args.prog+'.fits'
-print(in_data_fn)
-cols = ['LOCATION',
- 'FIBER',
- 'TARGETID',
- 'RA',
- 'DEC','RSDZ',
- 'PRIORITY_INIT',
- 'PRIORITY',
- 'DESI_TARGET','BRICKID','NOBS_G',
- 'NOBS_R',
- 'NOBS_Z',
- 'MASKBITS','ZWARN',
- 'COLLISION',
- 'TILEID']
-mock_data = fitsio.read(in_data_fn,columns=cols)
-selcoll = mock_data['COLLISION'] == False
-mock_data = mock_data[selcoll]
+elif args.mockver == 'abacus2ffa':
+    mockdir = args.alt_indir
+    in_data_fn = mockdir + args.tracer + '_joined_Ab2_m' + str(args.realization) + '.fits'
+    mock_data = fitsio.read(in_data_fn)
+    if args.remove_unassigned == 'y':
+        mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
 
 if args.prog == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
     tracers = ['LRG','QSO','ELG_LOP']
+    if args.mockver == 'abacus2ffa':
+        tracers = [args.tracer]
 
 ndattot = len(mock_data)
 
@@ -157,7 +172,7 @@ for tracer in tracers:
         zmin = 0.4
         zmax = 1.1
 
-    elif tracer == 'ELG_LOP':
+    elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
         zmax = 1.6
 
@@ -171,7 +186,10 @@ for tracer in tracers:
     mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
     print('length after cutting to unique targetid',len(mock_data_tr))
     mock_data_tr.rename_column('RSDZ', 'Z')
-    mock_data_tr['WEIGHT'] = 1
+    if args.mockver != 'abacus2ffa':
+        mock_data_tr['WEIGHT'] = 1
+    elif args.mockver == 'abacus2ffa':
+        mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_IIP']
     if 'imaging' in args.veto:
         if tracer == 'LRG':
             lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
@@ -212,6 +230,8 @@ for tracer in tracers:
         tracerr = tracer
         if tracer == 'ELG_LOP':
             tracerr += 'notqso'
+        if tracer == 'ELG':
+            tracerr = 'ELG_LOPnotqso'
         in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
         rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']

@@ -4,6 +4,8 @@
 """
 Note
 ----
+This is a modifed version of wp_Y1_unblind_only.py for using two tracers.
+```
 The script can be called with multiple processes as (e.g. on 2 nodes, 64 threads for each):
 ```
 srun -n 2 python wp_Y1_unblind_onfly.py --nthreads 64 ...
@@ -91,7 +93,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None,rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None,rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, dat_cat2=None, ran_cat2=None, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -108,7 +110,6 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     jack_positions = None
 
     if mpicomm is None or mpicomm.rank == mpiroot:
-
         data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir,rec_type=rec_type, tracer=tracer, option=option, cat_read=cat_read, dat_cat=dat_cat, ran_cat=ran_cat, **catalog_kwargs)
 
         if (with_shifted) & (cat_read == None):
@@ -120,8 +121,8 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
         jack_positions = data_positions1
 
         if not autocorr:
-            data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
-            if with_shifted:
+            data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir,rec_type=rec_type, tracer=tracer, option=option, cat_read=cat_read, dat_cat=dat_cat2, ran_cat=ran_cat2, **catalog_kwargs)
+            if with_shifted & (cat_read == None):
                 shifted = randoms
                 randoms = io.read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option, **catalog_kwargs)
             (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = io.concatenate_data_randoms(data, randoms, **catalog_kwargs)
@@ -197,6 +198,10 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             D1D2 = tmp.D1D2
             result += tmp
         results.append(result)
+        
+        if tracer2 is not None:
+            print('skipping random split')
+            break              # currently, the random split (done in the second iteration of this loop), doesn't work for multiple tracers
     return results[0].concatenate_x(*results), wang
 
 
@@ -266,7 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
-                                                   see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
+                                                   see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=80)#, default=20) # because currently the split doesn't work for multiple tracers
     parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
     parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
@@ -327,45 +332,60 @@ if __name__ == '__main__':
         print("Using arrays")
         from LSS.globals import main
         
-        
-        tracer2 = None
-        tracer = args.tracer[0]
-        mainp = main(tracer,survey='Y1')
-        dchi2 = mainp.dchi2
-        #outaa = args.outdir
-        #flaa = args.basedir
-        #outaa = outaa + "/" + tracer
-        flaa = cat_dir + "/" + tracer
-        flinr = cat_dir + "/" + tracer + "_"
-        if tracer == 'BGS_BRIGHT-21.5':
-            flinr = cat_dir + "/BGS_BRIGHT_"
+        tracer, tracer2 = args.tracer[0], None
+        if len(args.tracer) > 1:
+            tracer2 = args.tracer[1]
+            if len(args.tracer) > 2:
+                raise ValueError('Provide <= 2 tracers!')
+        if tracer2 == tracer:
+            tracer2 = None # otherwise counting of self-pairs
+            
+        #tracer2 = None
+        #tracer = args.tracer[0]
+        data_ = []
+        randoms_ = []
+        for t in args.tracer:
+            
+            mainp = main(t,survey='Y1')
+            dchi2 = mainp.dchi2
+            #outaa = args.outdir
+            #flaa = args.basedir
+            #outaa = outaa + "/" + tracer
+            flaa = cat_dir + "/" + t
+            flinr = cat_dir + "/" + t + "_"
+            if t == 'BGS_BRIGHT-21.5':
+                flinr = cat_dir + "/BGS_BRIGHT_"
 
-        #rann = 1
+            #rann = 1
 
-        if tracer == "LRG":
-            zminr = 0.4
-            zmaxr = 1.1
-        if tracer[:3] == "ELG":
-            zminr = 0.8
-            zmaxr = 1.6
-        if tracer[:3] == "BGS":
-            zminr = 0.1
-            zmaxr = 0.4
+            if t == "LRG":
+                zminr = 0.4
+                zmaxr = 1.1
+            if t[:3] == "ELG":
+                zminr = 0.8
+                zmaxr = 1.6
+            if t[:3] == "BGS":
+                zminr = 0.1
+                zmaxr = 0.4
 
-        if tracer == "QSO":
-            zminr = 0.8
-            zmaxr = 3.5
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']#,'WEIGHT_FKP']
-        if 'FKP' in args.weight_type:
-            rcols.append('WEIGHT_FKP')
-        data_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=tracer,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y',use_map_veto=args.use_map_veto)
-        print('data columns',data_.dtype.names)
-        ranl =[]
-        for rann in range(0,args.nran):
-            rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='n',return_cat='y', clus_arrays = data_,use_map_veto=args.use_map_veto)
-            ranl.append(np.array(rani))
-        randoms_ = np.concatenate(ranl)
-        #out_dir = args.outdir
+            if t == "QSO":
+                zminr = 0.8
+                zmaxr = 3.5
+            rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+            if 'FKP' in args.weight_type:
+                rcols.append('WEIGHT_FKP')
+            datai_ = ct.mkclusdat(flaa,weighttileloc=True,zmask=False,tp=t,dchi2=dchi2,tsnrcut=0,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=zminr,zmax=zmaxr,write_cat='n',return_cat='y',use_map_veto=args.use_map_veto)
+            print('data columns',datai_.dtype.names)
+            
+            ranl =[]
+            for rann in range(0,args.nran):
+                rani = ct.mkclusran(flinr,flinr,rann,rcols=rcols,zmask=False,tsnrcut=0,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='n',return_cat='y', clus_arrays = datai_,use_map_veto=args.use_map_veto)
+                ranl.append(np.array(rani))
+            randomsi_ = np.concatenate(ranl)
+            #out_dir = args.outdir
+            
+            data_.append(datai_)
+            randoms_.append(randomsi_)
 
     
     elif args.use_arrays == 'n':
@@ -413,19 +433,38 @@ if __name__ == '__main__':
         base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir,rec_type=args.rec_type, weight_type=args.weight_type, bin_type=args.bin_type, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut)
         for region in regions:
             if args.use_arrays == 'y':
-                sel_ngc_dat = common.splitGC(data_)
-                sel_ngc_ran = common.splitGC(randoms_)
+                sel_ngc_dat = common.splitGC(data_[0])
+                sel_ngc_ran = common.splitGC(randoms_[0])
+                fcdn2=None; randoms_gc2=None
+                
+                if len(args.tracer) > 1:
+                    sel_ngc_dat2 = common.splitGC(data_[1])
+                    sel_ngc_ran2 = common.splitGC(randoms_[1])
                 
                 if region == 'NGC':
-                    ffr = randoms_[sel_ngc_ran]
-                    fcdn = data_[sel_ngc_dat]
+                    ffr = randoms_[0][sel_ngc_ran]
+                    fcdn = data_[0][sel_ngc_dat]
                     randoms_gc = ct.clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=fcdn, ran_cat=randoms_gc)
+                    
+                    if len(args.tracer) > 1:
+                        ffr2 = randoms_[1][sel_ngc_ran2]
+                        fcdn2 = data_[1][sel_ngc_dat2]
+                        randoms_gc2 = ct.clusran_resamp_arrays(ffr2,fcdn2,region,tracer2,rcols=rcols)
+                    
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', 
+                                          dat_cat=fcdn, ran_cat=randoms_gc, dat_cat2=fcdn2, ran_cat2=randoms_gc2)
                 if region == 'SGC':
-                    ffr = randoms_[~sel_ngc_ran]
-                    fcdn = data_[~sel_ngc_dat]
+                    ffr = randoms_[0][~sel_ngc_ran]
+                    fcdn = data_[0][~sel_ngc_dat]
                     randoms_gc = ct.clusran_resamp_arrays(ffr,fcdn,region,tracer,rcols=rcols)
-                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=fcdn, ran_cat=randoms_gc)
+                    
+                    if len(args.tracer) > 1:
+                        ffr2 = randoms_[1][~sel_ngc_ran2]
+                        fcdn2 = data_[1][~sel_ngc_dat2]
+                        randoms_gc2 = ct.clusran_resamp_arrays(ffr2,fcdn2,region,tracer2,rcols=rcols)
+                        
+                    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', 
+                                          dat_cat=fcdn, ran_cat=randoms_gc, dat_cat2=fcdn2, ran_cat2=randoms_gc2)
 
                 #if region == "N":
                 #    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, recon_dir=args.recon_dir, rec_type=args.rec_type, cat_read='Y', dat_cat=data_[0], ran_cat=randoms_[0])
@@ -439,6 +478,7 @@ if __name__ == '__main__':
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
                 result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, **catalog_kwargs)
+                print('Finished compute_correlation_function')
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))

@@ -181,12 +181,21 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'default' in weight_type and 'bitwise' not in weight_type:
         weights *= catalog['WEIGHT'][mask]
         print('multiplying weights by WEIGHT')
-    if 'RF' in weight_type:
-        weights *= catalog['WEIGHT_RF'][mask]
-        print('multiplying weights by WEIGHT_RF')
-    if 'SN' in weight_type:
-        weights *= catalog['WEIGHT_SN'][mask]
-        print('multiplying weights by WEIGHT_SN')
+    #if 'RF' in weight_type:
+    #    weights *= catalog['WEIGHT_RF'][mask]
+    #    print('multiplying weights by WEIGHT_RF')
+    #if 'SN' in weight_type:
+    #    weights *= catalog['WEIGHT_SN'][mask]
+    #    print('multiplying weights by WEIGHT_SN')
+    if 'swapinRF' in weight_type:
+        #assumes default already added the rest of the weights and that SN was used as default weight
+        weights *=  catalog['WEIGHT_RF'][mask]/catalog['WEIGHT_SN'][mask]
+    if 'addRF' in weight_type:
+        #assumes no imaging systematic weights were in default
+        weights *=  catalog['WEIGHT_RF'][mask]
+    if 'addSN' in weight_type:
+        #assumes no imaging systematic weights were in default
+        weights *=  catalog['WEIGHT_SN'][mask]
 
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
