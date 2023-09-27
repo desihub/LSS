@@ -41,6 +41,7 @@ parser.add_argument("--famd", help="whether to use the fiberassign split into pa
 parser.add_argument("--mockmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/pscratch/sd/a/acarnero/SecondGen/')
+parser.add_argument("--simName", help="base directory of AltMTL mock",default='/pscratch/sd/a/acarnero/SecondGen/altmtl_main_rea{MOCKNUM}')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='himalayas')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
@@ -144,7 +145,7 @@ if args.add_gtl == 'y':
     gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
     del specdat
 
-def docat(mocknum,rannum):
+def docat(mocknum, rannum):
 
     lssdir = os.path.join(maindir, 'mock'+str(mocknum))
     if not os.path.exists(lssdir):
@@ -178,8 +179,8 @@ def docat(mocknum,rannum):
         outdir = fbadir
         common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir)
 
-    if args.combd == 'y' and rannum == 1:
-        fbadir = os.path.join(maindir,'fba'+str(mocknum))
+    if args.combd == 'y' and (rannum == 1 or rannum == 0):
+        fbadir = os.path.join(maindir, 'fba' + str(mocknum))
         outdir = fbadir
         if not os.path.exists(outdir):
             os.mkdir(outdir)
@@ -205,7 +206,7 @@ def docat(mocknum,rannum):
 
             print('entering altmtl')
             tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
-            fbadir = os.path.join(maindir, 'altmtl_main_rea00%d' % mocknum, 'Univ000', 'fa', 'MAIN')
+            fbadir = os.path.join(args.simName.format(MOCKNUM = str(mocknum).zfill(3), 'Univ000', 'fa', 'MAIN')
             print('entering common.combtiles_wdup_altmtl for FASSIGN')
 
             asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'])
@@ -215,34 +216,34 @@ def docat(mocknum,rannum):
             pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
         else:
             tarf = fbadir+'/targs.fits'
-            asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,tp=pdir)
+            asn = common.combtiles_assign_wdup(tiles, fbadir, outdir, tarf, tp = pdir)
             #if using alt MTL that should have ZWARN_MTL, put that in here
             asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-            pa = common.combtiles_pa_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RA','DEC'],fba=True,tp=pdir,ran='dat')
+            pa = common.combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID','RA','DEC'], fba = True, tp = pdir, ran='dat')
         
-        pa['TILELOCID'] = 10000*pa['TILEID'] +pa['LOCATION']
-        tj = join(pa,asn,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
-        outfs = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
-        tj.write(outfs,format='fits', overwrite=True)
-        print('wrote '+outfs)
-        tc = ct.count_tiles_better('dat', pdir, specrel='', survey=args.survey, indir=lssdir, gtl=gtl) 
-        outtc =  os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
-        tc.write(outtc,format='fits', overwrite=True)
+        pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
+        tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
+        outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+        tj.write(outfs, format = 'fits', overwrite = True)
+        print('wrote ' + outfs)
+        tc = ct.count_tiles_better('dat', pdir, specrel = '', survey = args.survey, indir = lssdir, gtl = gtl) 
+        outtc =  os.path.join(lssdir, 'Alltiles_' + pdir + '_tilelocs.dat.fits')
+        tc.write(outtc, format = 'fits', overwrite = True)
         print('wrote '+outtc)
     
     if args.combdr == 'y':
-        fbadir_data = os.path.join(maindir,'fba'+str(mocknum))
+        fbadir_data = os.path.join(maindir, 'fba' + str(mocknum))
         fbadir_ran = maindir+'random_fba'+str(rannum)
         if args.famd == 'passes':
             fbadir_data = maindir+'/multipass_mock'+str(mocknum)+'_'+pdir+'/faruns/'
             fbadir_ran = maindir+'/ran'+str(rannum)+'_'+pdir+'/faruns/'
 
-        specf = Table(fitsio.read(fbadir_data+'/datcomb_'+pdir+'assignwdup.fits'))
+        specf = Table(fitsio.read(fbadir_data + '/datcomb_' + pdir + 'assignwdup.fits'))
         specf.remove_columns(['TARGETID'])
-        fgu = Table(fitsio.read(fbadir_ran+'/rancomb_'+pdir+'wdup.fits'))
+        fgu = Table(fitsio.read(fbadir_ran + '/rancomb_' + pdir + 'wdup.fits'))
         print(len(fgu))
-        fgu = join(fgu,specf,keys=['LOCATION','TILEID'],join_type='left')
-        fgu['TILELOCID'] = 10000*fgu['TILEID'] +fgu['LOCATION']
+        fgu = join(fgu, specf, keys = ['LOCATION', 'TILEID'], join_type = 'left')
+        fgu['TILELOCID'] = 10000*fgu['TILEID'] + fgu['LOCATION']
         del specf
         print(len(fgu))
         print(fgu.dtype.names)
@@ -511,7 +512,6 @@ def docat(mocknum,rannum):
             nproc = 9 #try this so doesn't run out of memory
             with Pool(processes=nproc) as pool:
                 res = pool.map(_parfun, inds)
-
     
     if args.getFKP == 'y':
         randens = 2500.
@@ -533,16 +533,6 @@ def docat(mocknum,rannum):
     if args.mkclusdat == 'y':
         nztl.append('')
         fin = os.path.join(dirout, args.tracer+notqso + '_full'+args.use_map_veto+'.dat.fits')
-        dz = Table.read(fin)
-        if 'PHOTSYS' not in dz.columns:
-            dz['PHOTSYS'] = 'N'
-            sel = dz['DEC'] < 32.375
-            wra = (dz['RA'] > 100-dz['DEC'])
-            wra &= (dz['RA'] < 280 +dz['DEC'])
-            sel |= ~wra
-            dz['PHOTSYS'][sel] = 'S'
-            common.write_LSS(dz, fin)
-
         #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
         ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax, use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
@@ -565,9 +555,10 @@ def docat(mocknum,rannum):
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
-        fl = os.path.join(dirout, args.tracer+notqso+'_')
-        ct.add_tlobs_ran(fl,rannum)
-        ct.mkclusran(os.path.join(dirout,args.tracer+notqso+'_'),os.path.join(dirout,args.tracer+notqso+'_'), rannum, rcols=rcols, tsnrcut=0, tsnrcol=tsnrcol, use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+        fl = os.path.join(dirout, args.tracer + notqso + '_')
+        print('adding tlobs to randoms with ', fl)
+        ct.add_tlobs_ran(fl, rannum, hpmapcut=args.use_map_veto)
+        ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rannum, rcols = rcols, tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
         '''
         for reg in regl:
@@ -583,14 +574,14 @@ def docat(mocknum,rannum):
 
     if args.resamp == 'y':
         for reg in regions:
-            flin = os.path.join(dirout, tracer_clus + '_'+reg)
+            flin = os.path.join(dirout, tracer_clus + '_' + reg)
         def _parfun(rannum):
-            ct.clusran_resamp(flin, rannum, rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+            ct.clusran_resamp(flin, rannum, rcols = rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 
         inds = np.arange(nran)
         if args.par == 'y':
             from multiprocessing import Pool
-            with Pool(processes=nran*2) as pool:
+            with Pool(processes = nran*2) as pool:
                 res = pool.map(_parfun, inds)
         else:
             for rn in range(rm,rx):
@@ -603,8 +594,8 @@ def docat(mocknum,rannum):
             fcr = fb + '_0_clustering.ran.fits'
             fcd = fb + '_clustering.dat.fits'
             fout = fb + '_nz.txt'
-            common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-            common.addnbar(fb, bs=dz_step, zmin=zmin, zmax=zmax, P0=P0, nran=nran)
+            common.mknz(fcd, fcr, fout, bs = dz_step, zmin = zmin, zmax = zmax)
+            common.addnbar(fb, bs = dz_step, zmin = zmin, zmax = zmax, P0 = P0, nran = nran)
 
     '''
     if args.FKPfull == 'y':
