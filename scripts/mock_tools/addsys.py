@@ -281,6 +281,45 @@ if args.add_regressis == 'y':
 
 regl = ['NGC','SGC']
 
+
+
+if args.add_sysnet == 'y':
+    #logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    from LSS.imaging import densvar
+    import healpy as hp
+    fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
+    dd = Table.read(fn_full)
+    dd['WEIGHT_SN'] = np.ones(len(dd))
+    dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
+    dpix = hp.ang2pix(256,dth,dphi)
+
+    regl_sysnet = ['N','S']
+    for reg in regl_sysnet:
+        for zl in zrl:
+            zw = ''
+            if args.imsys_zbin == 'y':
+                zw = str(zl[0])+'_'+str(zl[1])
+            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer+zw+'_'+reg+'/nn-weights.fits')
+            pred_counts = np.mean(sn_weights['weight'],axis=1)
+            pix_weight = np.mean(pred_counts)/pred_counts
+            pix_weight = np.clip(pix_weight,0.5,2.)
+            sn_pix = sn_weights['hpix']
+            hpmap = np.ones(12*256*256)
+            for pix,wt in zip(sn_pix,pix_weight):
+                hpmap[pix] = wt
+        
+            sel = dd['PHOTSYS'] == reg
+            selz = dd['Z_not4clus'] > zl[0]
+            selz &= dd['Z_not4clus'] <= zl[1]
+
+            #print(np.sum(sel))
+            dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+    #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
+    comments = []
+    comments.append("Using sysnet for WEIGHT_SYS")
+
+    common.write_LSS(dd,fn_full,comments)
+
 if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
     if args.add_regressis_ran == 'y':
         wtcol = 'WEIGHT_RF'
@@ -314,43 +353,6 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
         with Pool(processes=nproc) as pool:
             res = pool.map(addrancol, inds)
 
-
-if args.add_sysnet == 'y':
-    #logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
-    from LSS.imaging import densvar
-    import healpy as hp
-    fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
-    dd = Table.read(fn_full)
-    dd['WEIGHT_SN'] = np.ones(len(dd))
-    dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
-    dpix = hp.ang2pix(256,dth,dphi)
-
-    regl_sysnet = ['N','S']
-    for reg in regl_sysnet:
-        for zl in zrl:
-            zw = ''
-            if args.imsys_zbin == 'y':
-                zw = str(zl[0])+'_'+str(zl[1])
-            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
-            pred_counts = np.mean(sn_weights['weight'],axis=1)
-            pix_weight = np.mean(pred_counts)/pred_counts
-            pix_weight = np.clip(pix_weight,0.5,2.)
-            sn_pix = sn_weights['hpix']
-            hpmap = np.ones(12*256*256)
-            for pix,wt in zip(sn_pix,pix_weight):
-                hpmap[pix] = wt
-        
-            sel = dd['PHOTSYS'] == reg
-            selz = dd['Z_not4clus'] > zl[0]
-            selz &= dd['Z_not4clus'] <= zl[1]
-
-            #print(np.sum(sel))
-            dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
-    #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
-    comments = []
-    comments.append("Using sysnet for WEIGHT_SYS")
-
-    common.write_LSS(dd,fn_full,comments)
 
 # if args.add_sysnet_ran == 'y':
 #     fb = dirout+tp
