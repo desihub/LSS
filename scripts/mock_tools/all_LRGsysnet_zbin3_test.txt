@@ -1,0 +1,2 @@
+scripts/Y1ab2ndgen_sysnet_tracer_zbin.sh 0 LRG_ffa 0.8_1.1
+scripts/Y1ab2ndgen_sysnet_tracer_zbin.sh 1 LRG_ffa 0.8_1.1
