@@ -52,26 +52,25 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 #The output directory names are just suggestions.
 #Generate initial ledgers
-# First define a working directory <base_output> (like in your scratch).
+# First define an output directory <base_output> (like in your scratch or if in production for obscon=dark, this is $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit).
 
 # Create initial ledgers and save hplist to feed MockAltMTL production, both saved in <base_output>/initial_ledger<mock#>
->> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/initial_ledger<mock#> DARK
+>> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/altmtl<mock#>/initled/ DARK
 	
-	First need to create (mkdir) the directory <base_output>/initial_ledger<mock#>
+	First need to create (mkdir) the directory <base_output>/altmtl<mock#>/initled
 	It will save the HP list in the same directory with the name hpxlist_<obscon>.txt
 
-# Copy the AltMTL script to your working directory, <base_output>
->> cp $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh <base_output>
-
-# Modify by hand several options inside MockAltMTLScriptMain.sh that you just copied over the working directory
+# Run AltMTL process (without generating bitweights yet) for 1 realization with $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh
+# Modify by hand several options inside MockAltMTLScriptMain.sh
 # This are the ones that you should worry (up to line 50. there are other options but you can ignore)
-	* simName='<base_output>/altmtl_main_rea<mock#>'   This is the directory where to save all the AltMTL products for a given mock#
+	* mockNumber=<mock#> If running over production directories, set the realization here and can skip simName and targfile configuration.
+	* simName="<base_output>/altmtl<mock#>/initled/"   This is the directory where to save all the AltMTL products for a given mock#
 	* path2LSS=/pscratch/sd/a/MYUSER/codes/LSS/bin/  This is the path to the LSS repo bin subdirectory
 	* ndir=1   Number of Alternative ledgers. In principle, we should run a single realization to get as data, and then another large run with ndir=128 or 256 to calculate PIP weights. If ndir = 1, then BitWeights are not calculated.
 	* obscon='DARK'  Either DARK or BRIGHT
 	* endDate='--endDate=20220613' End date for Y1 campaign
 	* exampleLedgerBase=<base_output>/initial_ledger<mock#>  This is the directory you indicated when creating the initial ledgers
-	* hpListFile="<base_output>/initial_ledger<mock#>/hpxlist.txt"  This is the hp file list created while running the initial ledgers
+	* hpListFile="<base_output>/initial_ledger<mock#>/hpxlist_dark.txt"  This is the hp file list created while running the initial ledgers
 	* targfile='--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits'  This is the path to the parent target sample
 
 # This script takes quite some time to run (~24h). It generates ndir random realizations (given subpriority) and run fiber assigment creating potential assignments and assignments itself. 

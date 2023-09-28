@@ -1,8 +1,20 @@
 #!/bin/bash
 start=`date +%s.%N`
 
+#ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
+#There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
+#However, you should specify your own directory to a. not overwrite the survey alt MTLs 
+# and b. keep your alt MTLs somewhere that you have control/access
+
+#Uncomment the following line to set your own/nonscratch directory
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/
+
+
+#Mock realization
+mockNumber = 1
+
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName='SecondGen/altmtl_main_rea000'
+simName="altmtl$mockNumber"
 
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
@@ -10,6 +22,7 @@ path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 ndir=1
+
 
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
 obscon='DARK'
@@ -33,11 +46,11 @@ endDate='--endDate=20220613' #'' june 13 2022 20220613
 #exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
-exampleLedgerBase=$SCRATCH/SecondGen/initial_ledger
+exampleLedgerBase=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl$mockNumber/initled/
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #List of healpixels to create Alt MTLs for
-hpListFile="/pscratch/sd/a/acarnero/SecondGen/hpxlist.txt"
+hpListFile="$exampleLedgerBase/hpxlist_dark.txt"
 #hpListFile="$path2LSS/MainSurveyHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
 
@@ -47,7 +60,7 @@ hpListFile="/pscratch/sd/a/acarnero/SecondGen/hpxlist.txt"
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' #WITHOUT PHOTSYS
 #targfile='--targfile=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/TargetsWithNumobs_012322.fits' #WITHOUT PHOTSYS
-targfile='--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA0.fits'
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA$mockNumber.fits"
 
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
@@ -61,14 +74,6 @@ profile='--profile'
 #Uncomment second option if running on mocks
 #mock=''
 mock='--mock'
-
-#ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
-#There will be an environment variable $ALTMTLHOME for the "survey alt MTLs"
-#However, you should specify your own directory to a. not overwrite the survey alt MTLs 
-# and b. keep your alt MTLs somewhere that you have control/access
-
-#Uncomment the following line to set your own/nonscratch directory
-#ALTMTLHOME=/path/to/your/directory/
 
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
@@ -285,7 +290,7 @@ runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
 echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
 
-if [$indir -gt 1]; then 
+if [ "$indir" -gt 1 ]; then 
 	if [ $splitByReal -ne 0 ]; then
     		printf -v OFBW "%s/MakeBitweights%sOutputCase1%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
     		srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py $survey $obscon $ndir $splitByReal $splitByChunk $hpListFile $outputMTLFinalDestination $overwrite2 >& $OFBW
@@ -302,7 +307,7 @@ fi
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
 
-if [$indir -gt 1]; then
+if [ "$indir" -gt 1 ]; then
 	runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
 fi
 
@@ -310,7 +315,7 @@ echo "runtime for initialization"
 echo $runtimeInit
 echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
-if [$indir -gt 1]; then  
+if [ "$indir" -gt 1 ]; then  
 	echo "runtime for making bitweights"
 	echo $runtimeBitweights
 fi

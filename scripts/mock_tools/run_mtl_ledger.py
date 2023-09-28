@@ -27,7 +27,7 @@ for f in ff:
     dd.append(int(f.split('hp-')[-1].split('.ecsv')[0]))
 tosave = ','.join(map(str, sorted(dd)))
 
-savepath = os.path.join(arg2, 'hpxlist_{obscon}.txt'.format(obscon = obscon.lower())
+savepath = os.path.join(arg2, 'hpxlist_{obscon}.txt'.format(obscon = obscon.lower()))
 
 ff = open(savepath, 'w')
 ff.write(tosave)

@@ -7,7 +7,6 @@ from LSS.SV3 import altmtltools as amt
 from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
-import dill
 from sys import argv
 import os
 import numpy as np
