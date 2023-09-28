@@ -1,10 +1,7 @@
+#!/bin/bash
+
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the LSS repo is installed, e.g., export LSSCODE=$HOME
-
-#!/bin/bash
-# example to run as bash script 
-# dnnp with pnll, linp with pnll or lin with mse
-# bash run_sysnet.sh N ELG_LOPnotqso true false 1024 0.003 dnnp pnll true v0
 
 # below is code for reading data and where output is
 run=$1 # north or south
