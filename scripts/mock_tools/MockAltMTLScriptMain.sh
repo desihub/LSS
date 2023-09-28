@@ -7,11 +7,10 @@ start=`date +%s.%N`
 # and b. keep your alt MTLs somewhere that you have control/access
 
 #Uncomment the following line to set your own/nonscratch directory
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/
-
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
 
 #Mock realization
-mockNumber = 1
+mockNumber=1
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 simName="altmtl$mockNumber"

@@ -1075,7 +1075,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     raise ValueError('If processing mocks, you MUST specify a target file')
                 
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                          numobs_from_ledger=numobs_from_ledger, targets = targets)
+                          numobs_from_ledger=numobs_from_ledger) #, targets = targets)
             elif targets is None:
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                           numobs_from_ledger=numobs_from_ledger)
