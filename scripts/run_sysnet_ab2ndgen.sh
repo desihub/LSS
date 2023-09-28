@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py #make sure to set $LSSDIR to wherever the LSS repo is installed, e.g., export LSSCODE=$HOME
-
 # below is code for reading data and where output is
 run=$1 # north or south
 tracer=$2
