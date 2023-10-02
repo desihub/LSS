@@ -6,7 +6,7 @@ import numpy as np
 import os
 from astropy.table import Table, join, vstack
 import argparse
-from fiberassign.hardware import load_hardware_args
+from fiberassign.hardware import load_hardware, get_default_exclusion_margins
 from fiberassign._internal import Hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
@@ -318,10 +318,7 @@ def main():
         cached = get_hardware_for_time(dt)
         if cached is not None:
             continue
-
-        hw_args,time_lo,time_hi = load_hardware_args(rundate=t, add_margins=margins)
-        hw = Hardware(*hw_args)
-
+        hw,time_lo,time_hi = load_hardware(rundate=t, add_margins=margins, get_time_range=True)
         hardware_times.append((time_lo, time_hi, hw))
 
     t2 = time.time()
