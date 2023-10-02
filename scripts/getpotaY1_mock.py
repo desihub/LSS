@@ -93,6 +93,7 @@ elif args.mock == 'ezmocks6':
         tileoutdir = os.path.join(tileoutdir, args.tracer)
         paoutdir = os.path.join(paoutdir, args.tracer)
 
+# Ensure that the targets file is sorted by Dec.
 t0 = time.time()
 is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
 if not is_sorted:
@@ -111,17 +112,23 @@ if not os.path.exists(paoutdir):
 tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'Y1', 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
-def get_tile_targ(tiles):
-    tdec = tiles['DEC']
+def get_tile_targ(tile):
+    '''
+    Creates an astropy Table of (mock) targets within the given `tile`.
+    '''
+    tdec = tile['DEC']
     decmin = tdec - trad
     decmax = tdec + trad
     dec = tars['DEC']
+    # The `tars` global table of targets is sorted by Dec.  We therefore only need to look at
+    # indices that can possibly be within range given just the Dec distance (decmin to decmax).
     # "bisect_left" is way faster than "np.searchsorted"!
     #i0,i1 = np.searchsorted(dec, [np.float32(decmin), np.float32(decmax)])
     i0 = bisect.bisect_left(dec, decmin)
     i1 = bisect.bisect_left(dec, decmax, lo=i0)
     Idec = slice(i0, i1+1)
-    inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars['RA'][Idec], tars['DEC'][Idec])
+    inds = desimodel.footprint.find_points_radec(tile['RA'], tdec,
+                                                 tars['RA'][Idec], tars['DEC'][Idec])
     rtw = tars[i0 + np.array(inds)]
     rmtl = Table(rtw)
     print('made table')
@@ -213,7 +220,7 @@ def getpa(ind):
     # Compute the fibers on all tiles available for each target and sky
     favail = LocationsAvailable(tgsavail)
 
-    # FAKE stucksky
+    # FAKE stucksky (positioners that happen to be stuck on good sky positions)
     stucksky = {}
 
     # Create assignment object
@@ -223,10 +230,10 @@ def getpa(ind):
     navail = np.sum([len(avail[x]) for x in avail.keys()])
     fibers = dict(hw.loc_fiber)
     fdata = Table()
-    fdata['LOCATION'] = np.zeros(navail,dtype=int)
-    fdata['FIBER'] = np.zeros(navail,dtype=int)
-    fdata['TARGETID'] = np.zeros(navail,dtype=int)
-    
+    fdata['LOCATION'] = np.zeros(navail, dtype=int)
+    fdata['FIBER']    = np.zeros(navail, dtype=int)
+    fdata['TARGETID'] = np.zeros(navail, dtype=int)
+
     off = 0
     # The "FAVAIL" (available targets) HDU is sorted first by LOCATION,
     # then by TARGETID.
@@ -265,7 +272,7 @@ def read_fba_header(ind):
     '''
     Read the fiberassign header for one tile index.
     '''
-    tile = tiletab[ind]['TILEID']
+    tile = tiletab['TILEID'][ind]
     ts = '%06i' % tile
     fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     return dict([(k, fbah[k]) for k in ['RUNDATE', 'MTLTIME', 'FA_RUN', 'FA_HA', 'FIELDROT']])
@@ -308,7 +315,6 @@ def main():
     global hardware_times
     for t in rundates:
         dt = parse_datetime(t)
-
         cached = get_hardware_for_time(dt)
         if cached is not None:
             continue
@@ -318,7 +324,10 @@ def main():
     t2 = time.time()
     log.info('Loading hardware in series: %.3f sec' % (t2-t1))
 
-    # # Now run tiles in parallel!
+    # Keeping this old code because it's a little easier to understand than what we're doing
+    # below (streaming results to disk).
+    #
+    # # Run fiber assignment on tiles in parallel
     # with Pool(processes=128) as pool:
     #     res = pool.map(run_one_tile, inds)
     # t3 = time.time()
@@ -347,9 +356,11 @@ def main():
         for res in it:
             ntot += len(res)
             ncoll += np.sum(res['COLLISION'])
+            # First result: write to output file.
             if first:
                 fits.write(res, extname='LSS')
                 first = False
+            # Subsequent results: append to output file.
             else:
                 fits[-1].append(res)
             del res
