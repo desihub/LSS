@@ -302,7 +302,7 @@ for tracer in tracers:
             fout = outroot+reg+'_clustering.dat.fits'  
             common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
             print('data veto done, now doing randoms')
-            def _parfun(rn):
+            def _parfunHP(rn):
                 fin = out_data_froot+reg+'_'+str(rn)+'_clustering.ran.fits'
                 fin = fin.replace('global','dvs_ro')   
                 fout = outroot+reg+'_'+str(rn)+'_clustering.ran.fits'        
@@ -317,6 +317,6 @@ for tracer in tracers:
             
                 #nproc = 9 #try this so doesn't run out of memory
                 with Pool(processes=nproc) as pool:
-                    res = pool.map(_parfun, inds)
+                    res = pool.map(_parfunHP, inds)
 
 
