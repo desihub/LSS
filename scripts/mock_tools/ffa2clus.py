@@ -204,6 +204,7 @@ for tracer in tracers:
         if args.mkdat == 'n':
             mock_data_tr = fitsio.read(out_data_fn)
         def _mkran(rann):
+            
             tracerr = tracer
             if tracer == 'ELG_LOP':
                 tracerr += 'notqso'
@@ -236,7 +237,7 @@ for tracer in tracers:
             with Pool(processes=nproc) as pool:
                 res = pool.map(_mkran, inds)
         else:
-            for rn in range(rm,rx):
+            for rn in inds:#range(rm,rx):
                  _mkran(rn)
     
     
