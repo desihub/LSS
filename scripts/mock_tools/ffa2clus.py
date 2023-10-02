@@ -254,7 +254,7 @@ for tracer in tracers:
 
     if args.tracer == 'LRG':
         P0 = 10000
-    if args.tracer == 'ELG':
+    if args.tracer[:3] == 'ELG':
         P0 = 4000
     if args.tracer == 'BGS':
         P0 = 7000
