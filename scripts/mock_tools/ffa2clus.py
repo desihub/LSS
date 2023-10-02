@@ -145,6 +145,7 @@ for tracer in tracers:
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
         zmax = 1.6
+        subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
 
     elif tracer == 'QSO':
         zmin = 0.8
