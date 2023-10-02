@@ -2,7 +2,7 @@ from desipipe import Queue, Environment, TaskManager, spawn, setup_logging
 
 import argparse
 
-iparser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument("--zbin", help="which zbin to use, 1,2,3",default=1,type=int)
 args = parser.parse_args()
 
