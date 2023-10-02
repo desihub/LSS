@@ -53,47 +53,45 @@ args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
-    infn = args.base_input+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit', 'forFA'+args.realization+'.fits')
     print('Reading', infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    if not os.path.exists(tileoutdir):
-        os.makedirs(tileoutdir)
-    paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
+    tileoutdir = os.path.join(os.getenv('SCRATCH'), 'SecondGenMocks', 'AbacusSummit', 'tartiles'+args.realization)
+    paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit', 'mock'+args.realization)
 elif args.mock == 'ezmocks6':
-#     #tr = args.tracer
-#     rz = args.realization
-#     print("Doing %s"%tr)
+    # #tr = args.tracer
+    # rz = args.realization
+    # print("Doing %s"%tr)
+    #
+    # if  tr == "LRG":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
+    # elif tr == "ELG":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
+    # elif tr == "QSO":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
+    ## infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
+    ## infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
+    # tars1 = Table.read(infn1)#fitsio.read(infn1)
+    # tars2 = Table.read(infn2)#fitsio.read(infn2)
+    # tars1["GALCAP"] = "N"
+    # tars2["GALCAP"] = "S"
+    # tars = vstack([tars1, tars2])
+    # tars['TARGETID'] = np.arange(len(tars))
 
-#     if  tr == "LRG":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
-#     elif tr == "ELG":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
-#     elif tr == "QSO":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
-#    # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
-#    # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
-#     tars1 = Table.read(infn1)#fitsio.read(infn1)
-#     tars2 = Table.read(infn2)#fitsio.read(infn2)
-#     tars1["GALCAP"] = "N"
-#     tars2["GALCAP"] = "S"
-#     tars = vstack([tars1, tars2])
-#     tars['TARGETID'] = np.arange(len(tars))
-    
-    infn = args.base_input + 'EZMocks_6Gpc/EZMocks_6Gpc_' + args.realization + '.fits'
+    infn = os.path.join(args.base_input + 'EZMocks_6Gpc', 'EZMocks_6Gpc_' + args.realization + '.fits')
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)#['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ']
 
-    tileoutdir = args.base_output+'EZMocks_6Gpc/tartiles'+args.realization+'/'
-    paoutdir = args.base_output+'EZMocks_6Gpc/EzMocks/mock'+args.realization+'/'
+    tileoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'tartiles'+args.realization)
+    paoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'EzMocks', 'mock'+args.realization)
     if args.tracer is not None:
-        tileoutdir += args.tracer+'/'
-        paoutdir += args.tracer+'/'
+        tileoutdir = os.path.join(tileoutdir, args.tracer)
+        paoutdir = os.path.join(paoutdir, args.tracer)
 
 t0 = time.time()
 is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
@@ -110,9 +108,7 @@ if not os.path.exists(paoutdir):
     os.makedirs(paoutdir)
     print('made '+paoutdir)
 
-
-tiletab = Table.read(os.path.join(desi_input_dir, 'survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits'))
-
+tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'Y1', 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
 def get_tile_targ(tiles):
@@ -148,18 +144,15 @@ def write_tile_targ(ind):
     '''
     Write the targets file for the single tile table index "ind".
     '''
-    tiles = tiletab[ind]
-    fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
-    print('creating '+fname)
-    rmtl = get_tile_targ(tiles)
-    print('added columns for '+fname)
-    rmtl.write(fname,format='fits', overwrite=True)
-    print('added columns, wrote to '+fname)
-    
-margins = dict(pos=0.05,
-                   petal=0.4,
-                   gfa=0.4)
+    tile = tiletab[ind]
+    fname = os.path.join(tileoutdir, 'tilenofa-'+str(tile['TILEID'])+'.fits')
+    print('creating', fname)
+    rmtl = get_tile_targ(tile)
+    print('added columns for', fname)
+    rmtl.write(fname, format='fits', overwrite=True)
+    print('added columns, wrote to', fname)
 
+margins = get_default_exclusion_margins()
 rann = 0
 n = 0
 
@@ -167,8 +160,8 @@ def getpa(ind):
     #tile = 1230
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
-    
-    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'))
+
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
     t = Table(tiletab[ind])
@@ -180,15 +173,15 @@ def getpa(ind):
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
-    #hw = load_hardware(rundate=dt, add_margins=margins)
     tt = parse_datetime(dt)
     hw = get_hardware_for_time(tt)
     assert(hw is not None)
 
-    t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
+    tilefn = os.path.join(os.environ['SCRATCH'], 'rantiles', str(tile)+'-'+str(rann)+'-tiles.fits')
+    t.write(tilefn, overwrite=True)
 
     tiles = load_tiles(
-        tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
+        tiles_file=tilefn, obsha=obsha, obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
@@ -207,9 +200,10 @@ def getpa(ind):
     
     print(tile)
     # Load target files...
-    load_target_file(tgs, tagalong, tileoutdir+'/tilenofa-%i.fits' % tile)
+    tilenofafn = os.path.join(tileoutdir, 'tilenofa-%i.fits' % tile)
+    load_target_file(tgs, tagalong, tilenofafn)
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =tarcols)
+    tar_tab = fitsio.read(tilenofafn, columns=tarcols)
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -273,7 +267,7 @@ def read_fba_header(ind):
     '''
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
-    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'))
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     return dict([(k, fbah[k]) for k in ['RUNDATE', 'MTLTIME', 'FA_RUN', 'FA_HA', 'FIELDROT']])
 
 def parse_datetime(s):
@@ -341,7 +335,7 @@ def main():
     # log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
 
     # Write output *while* retrieving results in parallel
-    outfn = paoutdir+'/pota-'+args.prog+'.fits'
+    outfn = os.path.join(paoutdir, 'pota-'+args.prog+'.fits')
     tempout = outfn + '.tmp'
     fits = fitsio.FITS(tempout, 'rw', clobber=True)
     first = True
