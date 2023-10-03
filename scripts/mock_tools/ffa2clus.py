@@ -229,6 +229,7 @@ for tracer in tracers:
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
             common.write_LSS(ran,out_ran_fn)
+            del ran
             splitGC(out_data_froot,'.ran',rann)
 
         inds = np.arange(nran)
@@ -289,6 +290,7 @@ for tracer in tracers:
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
             common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
 
+    
     if args.apply_HPmapcut == 'y':
         import healpy as hp
         nside = 256
@@ -311,7 +313,7 @@ for tracer in tracers:
                 print('random veto '+str(rn)+' done')
             if args.par == 'n':
                 for rn in range(rm,rx):
-                    _parfun(rn)
+                    _parfunHP(rn)
             else:
                 inds = np.arange(rm,rx)
                 from multiprocessing import Pool
