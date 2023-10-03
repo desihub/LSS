@@ -54,13 +54,13 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 #Generate initial ledgers
 # First define an output directory <base_output> (like in your scratch or if in production for obscon=dark, this is $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit).
 
-# Create initial ledgers and save hplist to feed MockAltMTL production, both saved in <base_output>/initial_ledger<mock#>
+# Create initial ledgers and save hplist to feed MockAltMTL production, both saved in <base_output>/initial_ledger<mock#>  (~20 minutes) 
 >> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/altmtl<mock#>/initled/ DARK
 	
 	First need to create (mkdir) the directory <base_output>/altmtl<mock#>/initled
 	It will save the HP list in the same directory with the name hpxlist_<obscon>.txt
 
-# Run AltMTL process (without generating bitweights yet) for 1 realization with $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh
+# Run AltMTL process (without generating bitweights yet) for 1 realization with $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh  (~24 hours)
 # Modify by hand several options inside MockAltMTLScriptMain.sh
 # This are the ones that you should worry (up to line 50. there are other options but you can ignore)
 	* mockNumber=<mock#> If running over production directories, set the realization here and can skip simName and targfile configuration.
