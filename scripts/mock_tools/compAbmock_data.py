@@ -70,10 +70,13 @@ def comp_datamockimsysdiff(tp='LRG',zr='0.4_0.6',wts=['noweight','RF']):
     xi2 = np.loadtxt(lssdir+version+'/xi/smu/xipoles_'+tp+'_GCcomb_'+zr+'_'+datawts[1]+'_lin4_njack0_nran4_split20.txt').transpose()
     xidiff = xi1-xi2
     outf = lssdir+version+'/xi/smu//mockcomp/xipoles_'+tp+'_GCcomb_'+zr+wts[0]+wts[1]+'.png'
-    plt.errorbar(xi1[0],xi1[0]*xidiff[2],mockmean[1],fmt='ko')
+    plt.errorbar(xi1[0],xi1[0]*xidiff[2],xi1[0]*mockmean[1],fmt='ko')
     plt.plot(xi1[0],xi1[0]*mockmean[0][2],'k-')
-    plt.errorbar(xi1[0],xi1[0]*xidiff[3],mockmean[2],fmt='k^',alpha=0.5)
+    plt.errorbar(xi1[0],xi1[0]*xidiff[3],xi1[0]*mockmean[2],fmt='k^',alpha=0.5)
     plt.plot(xi1[0],xi1[0]*mockmean[0][3],'k--',alpha=0.5)
+    plt.xlabel('s (Mpc/h)')
+    plt.ylabel(r's (\$xi$'+wts[0]+r'-$\xi$'+wts[1]+')')
+    plt.title(tp+' '+zr)
     plt.savefig(outf)
     plt.show()
    
