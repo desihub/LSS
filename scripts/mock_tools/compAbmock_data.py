@@ -53,6 +53,7 @@ def getmeanmockxi_diff(tp='LRG_ffa',zr='0.4_0.6',nmock=25,wt='default_FKP',wt2='
     return xi,err0,err2,err4
     
 def comp_datamockimsysdiff(tp='LRG',zr='0.4_0.6',wts=['noweight','RF']):
+    plt.clf()
     mockwts = []
     datawts = []
     for wt in wts:
@@ -79,4 +80,6 @@ def comp_datamockimsysdiff(tp='LRG',zr='0.4_0.6',wts=['noweight','RF']):
     plt.title(tp+' '+zr)
     plt.savefig(outf)
     plt.show()
+    plt.clf()
+    return True
    
