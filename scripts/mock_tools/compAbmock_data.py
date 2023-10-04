@@ -43,9 +43,9 @@ def getmeanmockxi_diff(tp='LRG_ffa',zr='0.4_0.6',nmock=25,wt='default_FKP',wt2='
         dirxi = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock'+str(i)+'/'
         xii = np.loadtxt(dirxi+'/xi/smu/xipoles_'+tp+'_GCcomb_'+zr+'_'+wt+'_lin4_njack0_nran4_split20.txt').transpose()
         xi2 = np.loadtxt(dirxi+'/xi/smu/xipoles_'+tp+'_GCcomb_'+zr+'_'+wt2+'_lin4_njack0_nran4_split20.txt').transpose()
-        err0 += (xi[2]-(xi2[2]-xii[2]))**2
-        err2 += (xi[3]-(xi2[3]-xii[3]))**2
-        err4 += (xi[4]-(xi2[4]-xii[4]))**2
+        err0 += (xi[2]-(xii[2]-xi2[2]))**2
+        err2 += (xi[3]-(xii[3]-xi2[3]))**2
+        err4 += (xi[4]-(xii[4]-xi2[4]))**2
     err0 = np.sqrt(err0/nmock)
     err2 = np.sqrt(err2/nmock)
     err4 = np.sqrt(err4/nmock)
@@ -75,7 +75,7 @@ def comp_datamockimsysdiff(tp='LRG',zr='0.4_0.6',wts=['noweight','RF']):
     plt.errorbar(xi1[0],xi1[0]*xidiff[3],xi1[0]*mockmean[2],fmt='k^',alpha=0.5)
     plt.plot(xi1[0],xi1[0]*mockmean[0][3],'k--',alpha=0.5)
     plt.xlabel('s (Mpc/h)')
-    plt.ylabel(r's (\$xi$'+wts[0]+r'-$\xi$'+wts[1]+')')
+    plt.ylabel(r's ($\xi$'+wts[0]+r'-$\xi$'+wts[1]+')')
     plt.title(tp+' '+zr)
     plt.savefig(outf)
     plt.show()
