@@ -152,10 +152,11 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
 
     if option:
+        if 'noNorth' in option:
+        
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
-    if option:
        if 'ntile' in option:
            if '=' in option:
                opsp = option.split('=')
@@ -190,6 +191,10 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'swapinRF' in weight_type:
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_RF'][mask]/catalog['WEIGHT_SN'][mask]
+    if 'removeSN' in weight_type:
+        #assumes default already added the rest of the weights and that SN was used as default weight
+        weights /=  catalog['WEIGHT_SN'][mask]
+
     if 'addRF' in weight_type:
         #assumes no imaging systematic weights were in default
         weights *=  catalog['WEIGHT_RF'][mask]
