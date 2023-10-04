@@ -152,20 +152,20 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
 
     if option:
-        if 'noNorth' in option:
+        #if 'noNorth' in option:
         
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
-       if 'ntile' in option:
-           if '=' in option:
-               opsp = option.split('=')
-               nt = int(opsp[1])
-               mask &= catalog['NTILE'] == nt
-           if '>' in option:
-               opsp = option.split('>')
-               nt = int(opsp[1])
-               mask &= catalog['NTILE'] >= nt
+        if 'ntile' in option:
+            if '=' in option:
+                opsp = option.split('=')
+                nt = int(opsp[1])
+                mask &= catalog['NTILE'] == nt
+            if '>' in option:
+                opsp = option.split('>')
+                nt = int(opsp[1])
+                mask &= catalog['NTILE'] >= nt
                
          
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
