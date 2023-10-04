@@ -36,9 +36,9 @@ def getmeanmockxi_diff(tp='LRG_ffa',zr='0.4_0.6',nmock=25,wt='default_FKP',wt2='
         xi2 = np.loadtxt(dirxi+'/xi/smu/xipoles_'+tp+'_GCcomb_'+zr+'_'+wt2+'_lin4_njack0_nran4_split20.txt').transpose()
         xil.append(xi-xi2)
     xi = sum(xil)/nmock
-    err0 = np.zeros(len(xi))
-    err2 = np.zeros(len(xi))
-    err4 = np.zeros(len(xi))
+    err0 = np.zeros(len(xi[0]))
+    err2 = np.zeros(len(xi[0]))
+    err4 = np.zeros(len(xi[0]))
     for i in range(mockmin,mockmin+nmock):
         dirxi = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock'+str(i)+'/'
         xii = np.loadtxt(dirxi+'/xi/smu/xipoles_'+tp+'_GCcomb_'+zr+'_'+wt+'_lin4_njack0_nran4_split20.txt').transpose()
