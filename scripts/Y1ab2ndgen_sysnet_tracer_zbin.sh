@@ -1,4 +1,4 @@
-source /global/common/software/desi/desi_environment.sh main
+#!/bin/bash
 
 export LSSDIR=$HOME
 

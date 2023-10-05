@@ -145,6 +145,7 @@ for tracer in tracers:
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
         zmax = 1.6
+        subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
 
     elif tracer == 'QSO':
         zmin = 0.8
@@ -203,6 +204,7 @@ for tracer in tracers:
         if args.mkdat == 'n':
             mock_data_tr = fitsio.read(out_data_fn)
         def _mkran(rann):
+            
             tracerr = tracer
             if tracer == 'ELG_LOP':
                 tracerr += 'notqso'
@@ -227,6 +229,7 @@ for tracer in tracers:
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols)
             common.write_LSS(ran,out_ran_fn)
+            del ran
             splitGC(out_data_froot,'.ran',rann)
 
         inds = np.arange(nran)
@@ -235,7 +238,7 @@ for tracer in tracers:
             with Pool(processes=nproc) as pool:
                 res = pool.map(_mkran, inds)
         else:
-            for rn in range(rm,rx):
+            for rn in inds:#range(rm,rx):
                  _mkran(rn)
     
     
@@ -253,7 +256,7 @@ for tracer in tracers:
 
     if args.tracer == 'LRG':
         P0 = 10000
-    if args.tracer == 'ELG':
+    if args.tracer[:3] == 'ELG':
         P0 = 4000
     if args.tracer == 'BGS':
         P0 = 7000
@@ -287,6 +290,7 @@ for tracer in tracers:
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
             common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
 
+    
     if args.apply_HPmapcut == 'y':
         import healpy as hp
         nside = 256
@@ -301,7 +305,7 @@ for tracer in tracers:
             fout = outroot+reg+'_clustering.dat.fits'  
             common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
             print('data veto done, now doing randoms')
-            def _parfun(rn):
+            def _parfunHP(rn):
                 fin = out_data_froot+reg+'_'+str(rn)+'_clustering.ran.fits'
                 fin = fin.replace('global','dvs_ro')   
                 fout = outroot+reg+'_'+str(rn)+'_clustering.ran.fits'        
@@ -309,13 +313,13 @@ for tracer in tracers:
                 print('random veto '+str(rn)+' done')
             if args.par == 'n':
                 for rn in range(rm,rx):
-                    _parfun(rn)
+                    _parfunHP(rn)
             else:
                 inds = np.arange(rm,rx)
                 from multiprocessing import Pool
             
                 #nproc = 9 #try this so doesn't run out of memory
                 with Pool(processes=nproc) as pool:
-                    res = pool.map(_parfun, inds)
+                    res = pool.map(_parfunHP, inds)
 
 

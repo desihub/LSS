@@ -285,7 +285,8 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 
     zcol = 'Z'
     
-    cols = ['RA','DEC',zcol,'WEIGHT','WEIGHT_FKP']
+    cols = ['RA','DEC',zcol,'WEIGHT_COMP','WEIGHT','WEIGHT_FKP']
+    LSS = LSS.replace('global','dvs_ro')
     datan = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_NGC_clustering.dat.fits'),columns=cols)
     datas = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_SGC_clustering.dat.fits'),columns=cols)
     data = pd.concat([datan,datas])
@@ -294,7 +295,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
-    wts = data['WEIGHT'].values*data['WEIGHT_FKP'].values
+    wts = data['WEIGHT'].values*data['WEIGHT_FKP'].values #data['WEIGHT_COMP']#
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
@@ -317,7 +318,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     randoms = pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
     # load in deg2 since we know the density of generated randoms in deg2, but weights mess this up
-    wts = randoms['WEIGHT'].values*randoms['WEIGHT_FKP'].values
+    wts =randoms['WEIGHT'].values*randoms['WEIGHT_FKP'].values  #np.ones(len(randoms))#
     wts /= np.mean(wts)
     map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values,weights=wts, in_deg2=True)
     # a random file is 2500 randoms per deg2
@@ -388,6 +389,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
+    LSS = LSS.replace('global','dvs_ro')
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full'+use_map_veto+'.dat.fits'),columns=cols)
     if tracer == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
