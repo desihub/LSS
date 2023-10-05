@@ -30,6 +30,7 @@ from LSS.globals import main
 import bisect
 import time
 from datetime import datetime
+import multiprocessing
 
 t_start = time.time()
 
@@ -43,18 +44,22 @@ parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
+parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
+                    default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
+parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
+                    default=multiprocessing.cpu_count()//2, type=int)
 
 # On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
-desi_input_dir = '/dvs_ro/cfs/cdirs/desi'
-#desi_input_dir = '/global/cfs/cdirs/desi'
+#   If you didn't want this for some reason, you could revert '/dvs_ro/cfs/cdirs/desi' to '/global/cfs/cdirs/desi' in the following.
+desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
 
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit', 'forFA'+args.realization+'.fits')
-    print('Reading', infn)
+    log.info('Reading %s' % infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
@@ -104,10 +109,10 @@ log.info('Sorting/verifying mocks: %.1f' % (t1-t0))
 
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
-    print('made '+tileoutdir)
+    #print('made '+tileoutdir)
 if not os.path.exists(paoutdir):
     os.makedirs(paoutdir)
-    print('made '+paoutdir)
+    #print('made '+paoutdir)
 
 tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'Y1', 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
@@ -131,7 +136,7 @@ def get_tile_targ(tile):
                                                  tars['RA'][Idec], tars['DEC'][Idec])
     rtw = tars[i0 + np.array(inds)]
     rmtl = Table(rtw)
-    print('made table')
+    #print('made table')
     del rtw
     if 'DESI_TARGET' not in tarcols:
         rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
@@ -153,11 +158,11 @@ def write_tile_targ(ind):
     '''
     tile = tiletab[ind]
     fname = os.path.join(tileoutdir, 'tilenofa-'+str(tile['TILEID'])+'.fits')
-    print('creating', fname)
+    log.info('creating %s' % fname)
     rmtl = get_tile_targ(tile)
-    print('added columns for', fname)
+    #print('added columns for', fname)
     rmtl.write(fname, format='fits', overwrite=True)
-    print('added columns, wrote to', fname)
+    #print('added columns, wrote to', fname)
 
 margins = get_default_exclusion_margins()
 rann = 0
@@ -184,7 +189,7 @@ def getpa(ind):
     hw = get_hardware_for_time(tt)
     assert(hw is not None)
 
-    tilefn = os.path.join(os.environ['SCRATCH'], 'rantiles', str(tile)+'-'+str(rann)+'-tiles.fits')
+    tilefn = os.path.join(args.tile_temp_dir, str(tile)+'-'+str(rann)+'-tiles.fits')
     t.write(tilefn, overwrite=True)
 
     tiles = load_tiles(
@@ -192,7 +197,7 @@ def getpa(ind):
         select=[tile])
 
     tids = tiles.id
-    print('Tile ids:', tids)
+    #print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
     assert(len(I) == 1)
     i = I[0]
@@ -205,7 +210,7 @@ def getpa(ind):
     plate_radec=True
     tagalong = create_tagalong(plate_radec=plate_radec)
     
-    print(tile)
+    #print(tile)
     # Load target files...
     tilenofafn = os.path.join(tileoutdir, 'tilenofa-%i.fits' % tile)
     load_target_file(tgs, tagalong, tilenofafn)
@@ -251,9 +256,9 @@ def getpa(ind):
         locs = kl[0]
         ids = kl[1]
         locids = ids*10000+locs
-        print('N collisions:', len(coll))
+        log.info('N collisions: %i' % len(coll))
         locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-        print('N collisions original:',np.sum(locidsin),len(fdata))
+        log.info('N collisions original: %i %i' % (np.sum(locidsin),len(fdata)))
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
@@ -303,7 +308,7 @@ def main():
 
     t0 = time.time()
     # Read all fiberassign headers to get the RUNDATES.
-    with Pool(processes=128) as pool:
+    with Pool(processes=args.nprocs) as pool:
         headers = pool.map(read_fba_header, inds)
     rundates = set([h['RUNDATE'] for h in headers])
     rundates = sorted(list(rundates))
@@ -350,7 +355,7 @@ def main():
     first = True
     ntot = 0
     ncoll = 0
-    with Pool(processes=128) as pool:
+    with Pool(processes=args.nprocs) as pool:
         it = pool.imap_unordered(run_one_tile, inds)
         # fetch results as they complete
         for res in it:
@@ -369,7 +374,7 @@ def main():
     log.info('Wrote %s' % outfn)
     t3 = time.time()
     if args.getcoll == 'y':
-        print(ntot, ncoll)
+        log.info('%i %i' % (ntot, ncoll))
     log.info('Running tiles and writing results: %.3f sec' % (t3-t2))
 
 if __name__ == '__main__':
