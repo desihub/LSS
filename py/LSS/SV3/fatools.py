@@ -26,11 +26,15 @@ log = get_logger()
 
 
 #hardcode target directories; these are fixed
+#JL - These change once at the very beginning of observations.
+#JL - Adding a format string to change versioning of photometry. 
 
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
-skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
+#skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
+skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
-tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
+#tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
+tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/targets/main/resolve/'
 # AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
 gaia_ref_epochs = {"dr2": 2015.5}
 
@@ -267,7 +271,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, mtltime = None):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1'):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -366,10 +370,9 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             gaiadr,
             fht['PMCORR'],
             tarfn,
-            tdirMain+prog,
+            tdirMain.format(targver)+prog,
             survey = 'main',
-            mock = mock,
-            mtltime=mtltime)
+            mock = mock)
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -558,10 +561,13 @@ def altcreate_mtl(
     
     try:
         log.info('shape of read_targets_in_tiles output')
-        log.info(d.shape)  
+        log.info(d.shape)
+        ntargs = d.shape  
     except:
         log.info('len of read_targets_in_tiles output post failure of shape')
         log.info(len(d))
+        ntargs = len(d)
+    assert(ntargs)
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
