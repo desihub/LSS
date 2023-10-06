@@ -148,11 +148,20 @@ def procFunc(nproc):
         log.info('non sv survey')
         mtlprestr = ''
 
-    if os.path.exists(outputMTLDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(args.survey.lower(),HPList[-1], args.obscon.lower(), mtlprestr)):
+    if args.usetmp:
+        finalDir = args.finalDir.format(nproc)
+    else:
+        #TEST THIS
+        finalDir = outputMTLDir.format(nproc)
+
+    if os.path.exists(finalDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(args.survey.lower(),HPList[-1], args.obscon.lower(), mtlprestr)):
         log.info('Alt MTL for last HP in list exists. Exiting script')
         log.info(outputMTLDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(args.survey.lower(),HPList[-1], args.obscon.lower(), mtlprestr))
         return 42
     for hpnum in HPList:
+        if os.path.exists(finalDir + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(args.survey.lower(),hpnum, args.obscon.lower(), mtlprestr)) and (not args.overwrite):
+            log.info('Alt MTL for HP {0:d} already exists. Set -ow or --overwrite to force regeneration. '.format(hpnum))
+            continue
         log.info('hpnum = {0}'.format(hpnum))
         exampleLedger = args.exampleLedgerBase + '/{0}/{2}/{3}mtl-{2}-hp-{1}.ecsv'.format(args.survey.lower(),hpnum, args.obscon.lower(), mtlprestr)
         log.info('exampleLedger = {0}'.format(exampleLedger))

@@ -1,17 +1,23 @@
 from desiutil.iers import freeze_iers
 freeze_iers()
-
+from time import time
+import healpy as hp
+import pickle
 from astropy.table import Table,join
+import astropy
+import astropy.io
 import astropy.io.fits as pf
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
+import memory_profiler
+from memory_profiler import profile
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
 from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
-from desitarget.targetmask import desi_mask, bgs_mask, mws_mask
+from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 from desiutil.log import get_logger
 import fitsio
 from LSS.bitweights import pack_bitweights
@@ -36,6 +42,9 @@ pr = cProfile.Profile()
 log = get_logger()
 
 os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
+
+mtlformatdict = {"PARALLAX": '%16.8f', 'PMRA': '%16.8f', 'PMDEC': '%16.8f'}
+
 
 zcatdatamodel = np.array([], dtype=[
     ('RA', '>f8'), ('DEC', '>f8'), ('TARGETID', '>i8'),
@@ -122,11 +131,28 @@ def processTileFile(infile, outfile, startDate, endDate):
 
     origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
     return 0
-
-def uniqueArchiveDateZDatePairs(tileList):
+def uniqueTimestampFATimePairs(tileList, withFlag = False):
     output = []
     for t in tileList: 
-        datepair = (t['ZDATE'], t['ARCHIVEDATE'])
+        if withFlag:
+            datepair = (t['ORIGTIMESTAMP'], t['FAMTLTIME'], t['REPROCFLAG'])
+        else:
+            datepair = (t['ORIGTIMESTAMP'], t['FAMTLTIME'])
+
+        if datepair in  output:
+            continue
+        else:
+            output.append(datepair)
+
+    return output
+def uniqueArchiveDateZDatePairs(tileList, withFlag = False):
+    output = []
+    for t in tileList: 
+        if withFlag:
+            datepair = (t['ZDATE'], t['ARCHIVEDATE'], t['REPROCFLAG'])
+        else:
+            datepair = (t['ZDATE'], t['ARCHIVEDATE'])
+
         if datepair in  output:
             continue
         else:
@@ -207,7 +233,8 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     '''
 
 
-def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False, verbose = False):
+def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False,
+ verbose = False, mock = False, mockTrueZKey = None):
     # Options for 'changeFiberOpt':
     # None: do nothing different to version 1
     # AllTwins: Find a twin fiber with a target of the 
@@ -339,6 +366,108 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
+def makeTileTrackerFN(dirName, survey, obscon):
+    return dirName + '/{0}survey-{1}obscon-TileTracker.txt'.format(survey, obscon.upper())
+
+def makeTileTracker(altMTLDir, survey = 'main', obscon = 'dark', retroactive = False, 
+    overwrite = False, startDate = None, endDate = None):
+    # JL altMTLDir includes the UnivNNN
+    log.info('generating tile tracker file')
+    outputFN = makeTileTrackerFN(altMTLDir,survey, obscon)
+    if os.path.isfile(outputFN) and (not overwrite):
+        log.warning('Output File {0} already exists'.format(outputFN))
+        log.warning('returning to AMTL initialization')
+        return 0
+    if (startDate is None) or (startDate == ''):
+        startDate = 19990101
+    if (endDate is None) or (endDate == ''):
+        endDate = 21991231
+    startDate = int(startDate)
+    endDate = int(endDate)
+    surveyOpsTrunkDir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/'
+    origMTLDoneTiles = Table.read(surveyOpsTrunkDir + '/mtl/mtl-done-tiles.ecsv')
+    #amtlTileFN = origMTLDir + '/mtl-done-tiles.ecsv'
+    origMTLDoneOverrides = Table.read(surveyOpsTrunkDir + '/mtl/mtl-done-overrides.ecsv')
+    #amtlOverrideFN = origMTLDir + '/mtl-done-overrides.ecsv'
+    origMTLTilesSpecStatus = Table.read(surveyOpsTrunkDir + '/ops/tiles-specstatus.ecsv')
+    '''
+    if os.path.isfile(amtlTileFN):
+        altMTLDoneTiles = Table.read(amtlTileFN)
+    else:
+        altMTLDoneTiles = Table()
+    if os.path.isfile(amtlOverrideFN):
+        altMTLDoneOverrides = Table.read(amtlOverrideFN)
+    else:
+        altMTLDoneOverrides = Table()
+    '''
+    TrimmedTiles = origMTLTilesSpecStatus[np.char.lower(origMTLTilesSpecStatus['SURVEY']) == survey.lower()]
+    TrimmedTiles = TrimmedTiles[np.char.lower(TrimmedTiles['FAPRGRM']) == obscon.lower()]
+
+    TrimmedTiles.sort(keys = ['ARCHIVEDATE', 'LASTNIGHT'])
+    #TrimmedTiles.sort(keys = ['TIMESTAMP', 'LASTNIGHT'])
+    TrimmedTileIDs = TrimmedTiles['TILEID']
+    #origMTLDoneTiles.sort(keys = ['ARCHIVEDATE', 'ZDATE'])
+    origMTLDoneTiles.sort(keys = ['TIMESTAMP', 'ZDATE'])
+    TILEID, ARCHIVEDATE, ZDATE,FAMTLDATE, ALTARCHIVEDATE, ORIGTIMESTAMP, REPROCFLAG, OVERRIDEFLAG, OBSCONS, SURVEYS = [],[],[],[],[],[],[],[],[],[]
+    for omtlDoneTile in origMTLDoneTiles:
+        #TILEID TIMESTAMP VERSION PROGRAM ZDATE ARCHIVEDATE
+        thisTileID = omtlDoneTile['TILEID']
+        if not (thisTileID in TrimmedTileIDs):
+             continue
+        thists = str(thisTileID).zfill(6)
+        FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+thists[:3]+'/fiberassign-'+thists+'.fits.gz'
+        fhtOrig = fitsio.read_header(FAOrigName)
+        thisFAMTLTime = fhtOrig['MTLTIME']
+        thisVersion = omtlDoneTile['VERSION']
+        thisProgram = omtlDoneTile['PROGRAM']
+        thisZDate = omtlDoneTile['ZDATE']
+        thisArchiveDate = omtlDoneTile['ARCHIVEDATE']
+        thisOrigTimestamp = omtlDoneTile['TIMESTAMP']
+        if  thisArchiveDate < startDate:
+            thisAltArchiveDate = thisArchiveDate
+        elif thisArchiveDate > endDate: 
+            continue
+        else:
+            thisAltArchiveDate = None
+
+
+        thisReprocFlag = thisTileID in TILEID 
+        #thisOverrideFlag = thisTileID in OverrideTileID
+        TILEID.append(thisTileID)
+        ARCHIVEDATE.append(thisArchiveDate)
+        ZDATE.append(thisZDate)
+        FAMTLDATE.append(thisFAMTLTime)
+        ALTARCHIVEDATE.append(thisAltArchiveDate)
+        ORIGTIMESTAMP.append(thisOrigTimestamp)
+        REPROCFLAG.append(thisReprocFlag)
+        OVERRIDEFLAG.append(None)
+        OBSCONS.append(obscon)
+        SURVEYS.append(survey)
+        
+
+
+    TilesToProcessNearlyInOrder = [TILEID, ARCHIVEDATE, ZDATE, FAMTLDATE, ALTARCHIVEDATE,ORIGTIMESTAMP, REPROCFLAG, OVERRIDEFLAG, OBSCONS, SURVEYS]
+
+    t = Table(TilesToProcessNearlyInOrder,
+           names=('TILEID', 'ARCHIVEDATE', 'ZDATE', 'FAMTLTIME', 'ALTARCHIVEDATE', 'ORIGTIMESTAMP', 'REPROCFLAG', 'OVERRIDEFLAG', 'OBSCON', 'SURVEY'),
+           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate})
+    t.sort(['ORIGTIMESTAMP','FAMTLTIME'])
+    t.write(outputFN, format='ascii.ecsv')
+    return 1
+
+
+
+def tiles_to_be_processed_alt(altmtldir, obscon = 'dark', survey = 'main'):
+    TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
+    TileTracker = Table.read(TileTrackerFN, format = 'ascii.ecsv')
+    returnTiles = TileTracker[(TileTracker['OBSCON'] == obscon.upper()) | (TileTracker['OBSCON'] == obscon.lower())]
+    returnTiles = returnTiles[(returnTiles['SURVEY'] == survey.upper()) | (returnTiles['SURVEY'] == survey.lower())]
+
+    returnTiles = returnTiles[returnTiles['ALTARCHIVEDATE'] == None]
+
+
+    return returnTiles   
+
 def trimToMTL(notMTL, MTL, debug = False, verbose = False):
     # JL trims a target file, which possesses all of the information in an MTL, down
     # JL to the columns allowed in the MTL data model. 
@@ -358,7 +487,7 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
     return notMTL
 
 
-
+#@profile
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
     ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
@@ -485,9 +614,14 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             log.info('pre creating output dir')
         if not os.path.exists(outputMTLDir):
             os.makedirs(outputMTLDir)
-        if not os.path.isfile(outputMTLDir + ztilefn):
+        if not os.path.isfile(finalDir.format(n) + '/' + ztilefn):
             processTileFile(ztilefile, outputMTLDir + ztilefn, startDate, endDate)
             #os.symlink(ztilefile, outputMTLDir + ztilefn)
+        thisTileTrackerFN = makeTileTrackerFN(finalDir.format(n), survey, obscon)
+        log.info('path to tiletracker = {0}'.format(thisTileTrackerFN))
+        if not os.path.isfile(thisTileTrackerFN):
+            makeTileTracker(outputMTLDir, survey = survey, obscon = obscon, retroactive = False, 
+            overwrite = False, startDate = startDate, endDate = endDate)
         subpriors = initialentries['SUBPRIORITY']
 
         if (not reproducing) and shuffleSubpriorities:
@@ -769,7 +903,7 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
         restartMTLs = ls(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
         for fn in restartMTLs:
             copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
-     
+#@profile
 def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
                 secondary=False, singletile = None, singleDate = None, debugOrig = False, 
@@ -897,7 +1031,12 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         althpdirname = io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
                                      survey=survey, obscon=obscon, ender=form)        
         # ADM grab an array of tiles that are yet to be processed.
-        tiles = tiles_to_be_processed(zcatdir, altmtltilefn, obscon, survey)
+        # JL use modified function to automatically switch between 
+        # JL original processing and reprocessing using TileTracker
+        #tiles = tiles_to_be_processed(zcatdir, altmtltilefn, obscon, survey)
+        tiles = tiles_to_be_processed_alt(altmtldir, obscon, survey)
+        #names=('TILEID', 'ORIGARCHIVEDATE', 'ZDATE', 'ALTARCHIVEDATE', 'REPROCFLAG', 'OVERRIDEFLAG', 'OBSCON', 'SURVEY'),
+
         # ADM stop if there are no tiles to process.
         if len(tiles) == 0:
             if (not multiproc) and (n != ndirs - 1):
@@ -910,11 +1049,18 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         if not (singletile is None):
             tiles = tiles[tiles['TILEID'] == singletile]
         try:
-            sorttiles = np.sort(tiles, order = ['ARCHIVEDATE', 'ZDATE'])
+            #sorttiles = np.sort(tiles, order = ['ARCHIVEDATE', 'ZDATE'])
+            #tiles.sort(keys = ['ARCHIVEDATE', 'ZDATE'])
+            tiles.sort(keys = ['ORIGTIMESTAMP', 'FAMTLTIME'])
+            sorttiles = tiles
         except:
-            log.warn('sorting tiles on ARCHIVEDATE failed.')
+            log.info(len(tiles))
+            log.info(tiles.dtype)
+            #log.warn('sorting tiles on ARCHIVEDATE, ZDATE failed.')
+            log.warn('sorting tiles on ARCHIVEDATE, ZDATE failed.')
             log.warn('currently we are aborting, but this may')
-            log.warn('change in the future to switching to order by ZDATE')
+            #log.warn('change in the future to switching to order by ZDATE')
+            log.warn('change in the future.')#' to switching to order by ZDATE')
             raise NotImplementedError('This pipeline does not currently handle tile lists with an unsortable ARCHIVEDATE or without any ARCHIVEDATE whatsoever. Exiting.')
             #sorttiles = np.sort(tiles, order = 'ZDATE')
         if testDoubleDate:
@@ -924,29 +1070,41 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             log.info(tiles[tiles['TILEID' ] == 314])
             log.info(tiles[tiles['TILEID' ] == 315])
             tiles = tiles[cond1 | cond2 ]
-        datepairs = uniqueArchiveDateZDatePairs(sorttiles)
-
+        datepairs = uniqueTimestampFATimePairs(sorttiles, withFlag = True)
         #if singleDate:
         #    dates = np.sort(np.unique(sorttiles['ARCHIVEDATE']))
-        if debug:
-            log.info('first and last 10 hopefully datepairs hopefully in order')
-            log.info(datepairs[0:10])
-            log.info(datepairs[-10:-1])
-            log.info('first and last 10 hopefully zdates hopefully not in order')
-            log.info(sorttiles['ZDATE'][0:10])
-            log.info(sorttiles['ZDATE'][-10:-1])
+        #if debug:
+        #    log.info('first and last 10 hopefully datepairs hopefully in order')
+        #    log.info(datepairs[0:10])
+        #    log.info(datepairs[-10:-1])
+        #    log.info('first and last 10 hopefully (orig)zdates hopefully not in order')
+        #
+        #    #log.info(sorttiles['ZDATE'][0:10])
+        #    #log.info(sorttiles['ZDATE'][-10:-1])
         #else: 
 
-        for zd,ad in datepairs:
-            dateTiles = sorttiles[sorttiles['ARCHIVEDATE'] == ad]
+        #for zd,ad,reprocFlag in datepairs:
+        for ots,famtlt,reprocFlag in datepairs:
             #zdates = np.sort(np.unique(dateTiles['ZDATE']))
-            dateTiles = dateTiles[dateTiles['ZDATE'] == zd]
+            log.info(len(sorttiles))
+            log.info(sorttiles.dtype)
+            try:
+                dateTiles = sorttiles[sorttiles['ORIGTIMESTAMP'] == ots]
+                dateTiles = dateTiles[dateTiles['FAMTLTIME'] == famtlt]
+                dateTiles = dateTiles[dateTiles['REPROCFLAG'] == reprocFlag]
+            except:
+                dateTiles = sorttiles[sorttiles['ORIGTIMESTAMP'] == ots]
+                dateTiles = dateTiles[dateTiles['FAMTLTIME'] == famtlt]
+
             if debug:
-                log.info('inside dateLoop. ZDate is  {0}'.format(zd))
-                log.info('inside dateLoop. archiveDate is  {0}'.format(ad))
+                log.info('inside dateLoop. ORIGTIMESTAMP is  {0}'.format(ots))
+                log.info('inside dateLoop. FAMTLTIME is  {0}'.format(famtlt))
                 log.info('singleDate = {0}'.format(singleDate))
-            assert(len(np.unique(dateTiles['ARCHIVEDATE'])) == 1)
-            assert(len(np.unique(dateTiles['ZDATE'])) == 1)
+
+            
+
+            assert(len(np.unique(dateTiles['ORIGTIMESTAMP'])) == 1)
+            assert(len(np.unique(dateTiles['FAMTLTIME'])) == 1)
             OrigFAs = []
             AltFAs = []
             AltFAs2 = []
@@ -968,136 +1126,218 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
                 fadate = ''.join(fadate.split('T')[0].split('-'))
                 fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
-                if getosubp:
-                    #JL When we are trying to reproduce a prior survey and/or debug, create a separate
-                    #JL directory in fbadirbase + /orig/ to store the reproduced FA files. 
-                    FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
-                    fbadir = fbadirbase + '/orig/'
-                else:
-
-                    #JL For normal "alternate" operations, store the fiber assignmens
-                    #JL in the fbadirbase directory. 
-
-                    FAAltName = fbadirbase + '/fba-' + ts+ '.fits'
-                    fbadir = fbadirbase
-
-                #JL Sometimes fiberassign leaves around temp files if a run is aborted. 
-                #JL This command removes those temp files to prevent endless crashes. 
-                if os.path.exists(FAAltName + '.tmp'):
-                    os.remove(FAAltName + '.tmp')
-                #JL If the alternate fiberassignment was already performed, don't repeat it
-                #JL Unless the 'redoFA' flag is set to true
-                if  redoFA or (not os.path.exists(FAAltName)):
-                    if verbose and os.path.exists(FAAltName):
-                        log.info('repeating fiberassignment')
-                    elif verbose:
-                        log.info('fiberassignment not found, running fiberassignment')
-                    if verbose:
-                        log.info(ts)
-                        log.info(altmtldir + survey.lower())
-                        log.info(fbadir)
-                        log.info(getosubp)
-                        log.info(redoFA)
-                    if getosubp and verbose:
-                        log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
-                        log.info(glob.glob(fbadir + '/*' ))
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
-                    command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
-                    if verbose:
-                        log.info('fa command_run')
-                        log.info(command_run)
-                    result = subprocess.run(command_run, capture_output = True)
-                else: 
-                    log.info('not repeating fiberassignment')
-                OrigFAs.append(pf.open(FAOrigName)[1].data)
-                AltFAs.append(pf.open(FAAltName)[1].data)
-                AltFAs2.append(pf.open(FAAltName)[2].data)
-                TSs.append(ts)
-                fadates.append(fadate)
-            # ADM create the catalog of updated redshifts.
-            zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
-            # ADM insist that for an MTL loop with real observations, the zcat
-            # ADM must conform to the data model. In particular, it must include
-            # ADM ZTILEID, and other columns addes for the Main Survey. These
-            # ADM columns may not be needed for non-ledger simulations.
-            # ADM Note that the data model differs with survey type.
-            zcatdm = survey_data_model(zcatdatamodel, survey=survey)
-            if zcat.dtype.descr != zcatdm.dtype.descr:
-                msg = "zcat data model must be {} not {}!".format(
-                    zcatdm.dtype.descr, zcat.dtype.descr)
-                log.critical(msg)
-                raise ValueError(msg)
-            # ADM useful to know how many targets were updated.
-            _, _, _, _, sky, _ = decode_targetid(zcat["TARGETID"])
-            ntargs, nsky = np.sum(sky == 0), np.sum(sky)
-            msg = "Update state for {} targets".format(ntargs)
-            msg += " (the zcats also contain {} skies with +ve TARGETIDs)".format(nsky)
-            log.info(msg)
-            
-            A2RMap = {}
-            R2AMap = {}
-            for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
-                if changeFiberOpt is None:
-                    #if debug:
-                    #    tempsortofa = np.sort(ofa, order = 'FIBER')
-                    #    tempsortafa = np.sort(afa, order = 'FIBER')
-                    #    
-                    # 
-                    #    tempsortofa = np.sort(ofa, order = 'TARGETID')
-                    #    tempsortafa = np.sort(afa, order = 'TARGETID')
-                        
-                    A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
-                else:
-                    raise NotImplementedError('changeFiberOpt has not yet been implemented')
-
-                    FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-
-                    fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
+                log.info(t['REPROCFLAG'])
+                log.info(type(t['REPROCFLAG']))
+                log.info(t["REPROCFLAG"] == True)
+                log.info(ts)
+                if t['REPROCFLAG']:
+                    
+                    log.info('reproc flag true')
                     if getosubp:
-                        FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
-                        fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
+                        FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+                    else:
+                        FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+                    with open(FAMapName,'rb') as fl:
+                        (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
+
+                    #zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
+                    zcat = make_zcat(zcatdir, [t], obscon, survey, allow_overlaps = True)
+                    log.info('ts = {0}'.format(ts))
+                    altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
+                    reprocess_alt_ledger(altmtldir + '/{0}/{1}/'.format(survey.lower(), obscon.lower()), altZCat, fbadirbase, t, obscon=obscon)
+                    if verbose or debug:
+                        log.info('if main, should sleep 1 second')
+                    thisUTCDate = get_utc_date(survey=survey)
+                    if survey == "main":
+                        sleep(1)
+                        if verbose or debug:
+                            log.info('has slept one second')
+                        dateTiles["TIMESTAMP"] = thisUTCDate
+                    if verbose or debug:
+                        log.info('now writing to amtl_tile_tracker')
+                    write_amtl_tile_tracker(altmtldir, [t], thisUTCDate, obscon = obscon, survey = survey)
+                else:
+                    log.info('ts = {0}'.format(ts))
+                    log.info('t[reprocflag] (should be false if here)= {0}'.format(t['REPROCFLAG']))
+                    
+                    #if str(ts) == str(3414).zfill(6):
+                    #    raise ValueError('Not only do I create the backup here but I also need to fix the reproc flag')
+                    
+                    if getosubp:
+                        #JL When we are trying to reproduce a prior survey and/or debug, create a separate
+                        #JL directory in fbadirbase + /orig/ to store the reproduced FA files. 
+                        FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
+                        #FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+                        fbadir = fbadirbase + '/orig/'
                     else:
 
-                        FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
+                        #JL For normal "alternate" operations, store the fiber assignments
+                        #JL in the fbadirbase directory. 
+
+                        FAAltName = fbadirbase + '/fba-' + ts+ '.fits'
+                        #FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
                         fbadir = fbadirbase
+                    log.info('FAOrigName = {0}'.format(FAOrigName))
 
-                    A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, TargAlt = afa2, changeFiberOpt = changeFiberOpt)
-                A2RMap.update(A2RMapTemp)
-                R2AMap.update(R2AMapTemp)
-            
-            altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
+                    log.info('FAAltName = {0}'.format(FAAltName))
 
-            
+                    #JL Sometimes fiberassign leaves around temp files if a run is aborted. 
+                    #JL This command removes those temp files to prevent endless crashes. 
+                    if os.path.exists(FAAltName + '.tmp'):
+                        os.remove(FAAltName + '.tmp')
+                    #JL If the alternate fiberassignment was already performed, don't repeat it
+                    #JL Unless the 'redoFA' flag is set to true
+                    log.info('redoFA = {0}'.format(redoFA))
+                    log.info('FAAltName = {0}'.format(FAAltName))
 
-            # ADM update the appropriate ledger.
-            if mock:
-                if targets is None:
-                    raise ValueError('If processing mocks, you MUST specify a target file')
-                
-                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                          numobs_from_ledger=numobs_from_ledger, targets = targets)
-            elif targets is None:
-                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                          numobs_from_ledger=numobs_from_ledger)
-            else:
-                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                          numobs_from_ledger=numobs_from_ledger, targets = targets)
-            if verbose or debug:
-                log.info('if main, should sleep 1 second')
-            if survey == "main":
-                sleep(1)
-                if verbose or debug:
-                    log.info('has slept one second')
-                dateTiles["TIMESTAMP"] = get_utc_date(survey=survey)
-            if verbose or debug:
-                log.info('now writing to mtl_tile_file')
-            io.write_mtl_tile_file(altmtltilefn,dateTiles)
-            if verbose or debug:
-                log.info('has written to mtl_tile_file')
-            if singleDate:
-                #return 1
-                return althpdirname, altmtltilefn, ztilefn, tiles
-    return althpdirname, altmtltilefn, ztilefn, tiles
+                    if  redoFA or (not os.path.exists(FAAltName)):
+                        if verbose and os.path.exists(FAAltName):
+                            log.info('repeating fiberassignment')
+                        elif verbose:
+                            log.info('fiberassignment not found, running fiberassignment')
+                        if verbose:
+                            log.info(ts)
+                            log.info(altmtldir + survey.lower())
+                            log.info(fbadir)
+                            log.info(getosubp)
+                            log.info(redoFA)
+                        if getosubp and verbose:
+                            log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
+                            log.info(glob.glob(fbadir + '/*' ))
+                        get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                        command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
+                        if verbose:
+                            log.info('fa command_run')
+                            log.info(command_run)
+                        result = subprocess.run(command_run, capture_output = True)
+                    else: 
+                        log.info('not repeating fiberassignment')
+                    log.info('adding fiberassignments to arrays')
+                    OrigFAs.append(pf.open(FAOrigName)[1].data)
+                    AltFAs.append(pf.open(FAAltName)[1].data)
+                    AltFAs2.append(pf.open(FAAltName)[2].data)
+                    TSs.append(ts)
+                    fadates.append(fadate)
+                    # ADM create the catalog of updated redshifts.
+                    log.info('making zcats')
+                    zcat = make_zcat(zcatdir, [t], obscon, survey)
+                    # ADM insist that for an MTL loop with real observations, the zcat
+                    # ADM must conform to the data model. In particular, it must include
+                    # ADM ZTILEID, and other columns addes for the Main Survey. These
+                    # ADM columns may not be needed for non-ledger simulations.
+                    # ADM Note that the data model differs with survey type.
+                    zcatdm = survey_data_model(zcatdatamodel, survey=survey)
+                    if zcat.dtype.descr != zcatdm.dtype.descr:
+                        msg = "zcat data model must be {} not {}!".format(
+                            zcatdm.dtype.descr, zcat.dtype.descr)
+                        log.critical(msg)
+                        raise ValueError(msg)
+                    # ADM useful to know how many targets were updated.
+                    _, _, _, _, sky, _ = decode_targetid(zcat["TARGETID"])
+                    ntargs, nsky = np.sum(sky == 0), np.sum(sky)
+                    msg = "Update state for {} targets".format(ntargs)
+                    msg += " (the zcats also contain {} skies with +ve TARGETIDs)".format(nsky)
+                    log.info(msg)
+                    
+                    A2RMap = {}
+                    R2AMap = {}
+                    log.info('beginning loop through FA files')
+                    for ofa, afa, afa2, ts in zip (OrigFAs, AltFAs, AltFAs2, TSs):
+                        log.info('ts = {0}'.format(ts))
+                        if changeFiberOpt is None:
+                            #if debug:
+                            #    tempsortofa = np.sort(ofa, order = 'FIBER')
+                            #    tempsortafa = np.sort(afa, order = 'FIBER')
+                            #    
+                            # 
+                            #    tempsortofa = np.sort(ofa, order = 'TARGETID')
+                            #    tempsortafa = np.sort(afa, order = 'TARGETID')
+                                
+                            A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
+                        else:
+                            raise NotImplementedError('changeFiberOpt has not yet been implemented')
+
+                            #FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+                            
+                            A2RMapTemp, R2AMapTemp = createFAmap(ofa, afa, TargAlt = afa2, changeFiberOpt = changeFiberOpt)
+
+                        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
+                        if getosubp:
+                            FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
+                            FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+                            fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
+                        else:
+
+                            FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
+                            FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+                            fbadir = fbadirbase
+
+
+                        if debug:
+                            log.info('ts = {0}'.format(ts))
+                            log.info('FAMapName = {0}'.format(FAMapName))
+                        #JL This line (updating rather than checking for already existing keys) only works if
+                        #JL there are only single passes of tiles per loop iteration. This is the case, but may not 
+                        #JL always be true. 
+                        log.info('updating map dicts')
+                        A2RMap.update(A2RMapTemp)
+                        R2AMap.update(R2AMapTemp)
+                        
+                        if redoFA or (not (os.path.isfile(FAMapName))):
+                            log.info('dumping out fiber map to pickle file')
+                            with open(FAMapName, 'wb') as handle:
+                                pickle.dump((A2RMapTemp, R2AMapTemp), handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('unique keys in R2AMap = {0:d}'.format(np.unique(R2AMap.keys()).shape[0]))
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+                    log.info('---')
+
+                    altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
+
+                    
+
+                    # ADM update the appropriate ledger.
+                    if mock:
+                        if targets is None:
+                            raise ValueError('If processing mocks, you MUST specify a target file')
+                        
+                        update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                                  numobs_from_ledger=numobs_from_ledger, targets = targets)
+                    elif targets is None:
+                        update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                                  numobs_from_ledger=numobs_from_ledger)
+                    else:
+                        update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                                  numobs_from_ledger=numobs_from_ledger, targets = targets)
+                    if verbose or debug:
+                        log.info('if main, should sleep 1 second')
+                    thisUTCDate = get_utc_date(survey=survey)
+                    if survey == "main":
+                        sleep(1)
+                        if verbose or debug:
+                            log.info('has slept one second')
+                        dateTiles["TIMESTAMP"] = thisUTCDate
+                    if verbose or debug:
+                        log.info('now writing to amtl_tile_tracker')
+                    #io.write_mtl_tile_file(altmtltilefn,dateTiles)
+                    #write_amtl_tile_tracker(altmtldir, dateTiles, thisUTCDate, obscon = obscon, survey = survey)
+                    log.info('changes are being registered')
+                    write_amtl_tile_tracker(altmtldir, [t], thisUTCDate, obscon = obscon, survey = survey)
+                    if verbose or debug:
+                        log.info('has written to amtl_tile_tracker')
+                    if singleDate:
+                        #return 1
+                        return althpdirname, altmtltilefn, ztilefn, tiles
+        return althpdirname, altmtltilefn, ztilefn, tiles
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
     """Plots probability that targets were observed among {ndirs} alternate realizations
@@ -1180,7 +1420,7 @@ def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey =
     if not jupyter:
         plt.close()
 
-
+#@profile
 def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False, verbose = False):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations
@@ -1459,4 +1699,313 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
     
         data.write(fn, overwrite = overwrite)
     
+def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
+    """
+    Reprocess HEALPixel-split ledgers for targets with new redshifts.
+
+    Parameters
+    ----------
+    hpdirname : :class:`str`
+        Full path to a directory containing an MTL ledger that has been
+        partitioned by HEALPixel (i.e. as made by `make_ledger`).
+    zcat : :class:`~astropy.table.Table`, optional
+        Redshift catalog table with columns ``TARGETID``, ``NUMOBS``,
+        ``Z``, ``ZWARN``, ``ZTILEID``, and ``msaddcols`` at the top of
+        the code for the Main Survey.
+    obscon : :class:`str`, optional, defaults to "DARK"
+        A string matching ONE obscondition in the desitarget bitmask yaml
+        file (i.e. in `desitarget.targetmask.obsconditions`), e.g. "DARK"
+        Governs how priorities are set using "obsconditions". Basically a
+        check on whether the files in `hpdirname` are as expected.
+
+    Returns
+    -------
+    :class:`dict`
+        A dictionary where the keys are the integer TILEIDs and the values
+        are the TIMESTAMP at which that tile was reprocessed.
+
+    """
+
+    #if getosubp:
+    #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+    #else:
+    #    FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+    #with open(FAMapName,'rb') as fl:
+    #    (A2RMapTemp, R2AMapTemp) = pickle.load(fl,fix_imports = True)
+    t0 = time()
+    log.info("Reprocessing based on zcat with {} entries...t={:.1f}s"
+             .format(len(zcat), time()-t0))
+
+    # ADM the output dictionary.
+    timedict = {}
+
+    # ADM bits that correspond to a "bad" observation in the zwarn_mask.
+    Mxbad = "BAD_SPECQA|BAD_PETALQA|NODATA"
+
+    # ADM find the general format for the ledger files in `hpdirname`.
+    # ADM also returning the obsconditions.
+    fileform, oc = io.find_mtl_file_format_from_header(hpdirname, returnoc=True)
+    # ADM also find the format for any associated override ledgers.
+    overrideff = io.find_mtl_file_format_from_header(hpdirname,
+                                                     forceoverride=True)
+
+    # ADM check the obscondition is as expected.
+    if obscon != oc:
+        msg = "File is type {} but requested behavior is {}".format(oc, obscon)
+        log.critical(msg)
+        raise RuntimeError(msg)
+
+    # ADM check the zcat has unique TARGETID/TILEID combinations.
+    tiletarg = [str(tt["ZTILEID"]) + "-" + str(tt["TARGETID"]) for tt in zcat]
+    if len(set(tiletarg)) != len(tiletarg):
+        msg = "Passed zcat does NOT have unique TARGETID/TILEID combinations!!!"
+        log.critical(msg)
+        raise RuntimeError(msg)
+
+    # ADM record the set of tiles that are being reprocessed.
+    reproctiles = set(zcat["ZTILEID"])
+
+    # ADM read ALL targets from the relevant ledgers.
+    log.info("Reading (all instances of) targets for {} tiles...t={:.1f}s"
+             .format(len(reproctiles), time()-t0))
+    nside = desitarget.mtl._get_mtl_nside()
+    theta, phi = np.radians(90-zcat["DEC"]), np.radians(zcat["RA"])
+    pixnum = hp.ang2pix(nside, theta, phi, nest=True)
+    pixnum = list(set(pixnum))
+    targets = io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False)
+
+    # ADM remove OVERRIDE entries, which should never need reprocessing.
+    targets, _ = desitarget.mtl.remove_overrides(targets)
+
+    # ADM sort by TIMESTAMP to ensure tiles are listed chronologically.
+    targets = targets[np.argsort(targets["TIMESTAMP"])]
+
+    # ADM for speed, we only need to work with targets with a zcat entry.
+    ntargs = len(targets)
+    nuniq = len(set(targets["TARGETID"]))
+    log.info("Read {} targets with {} unique TARGETIDs...t={:.1f}s"
+             .format(ntargs, nuniq, time()-t0))
+    log.info("Limiting targets to {} (unique) TARGETIDs in the zcat...t={:.1f}s"
+             .format(len(set(zcat["TARGETID"])), time()-t0))
+    s = set(zcat["TARGETID"])
+    ii = np.array([tid in s for tid in targets["TARGETID"]])
+    targets = targets[ii]
+    nuniq = len(set(targets["TARGETID"]))
+    log.info("Retained {}/{} targets with {} unique TARGETIDs...t={:.1f}s"
+             .format(len(targets), ntargs, nuniq, time()-t0))
+
+    # ADM split off the updated target states from the unobserved states.
+    _, ii = np.unique(targets["TARGETID"], return_index=True)
+    unobs = targets[sorted(ii)]
+    # ADM this should remove both original UNOBS states and any resets
+    # ADM to UNOBS due to reprocessing data that turned out to be bad.
+    targets = targets[targets["ZTILEID"] != -1]
+    # ADM every target should have been unobserved at some point.
+    if len(set(targets["TARGETID"]) - set(unobs["TARGETID"])) != 0:
+        msg = "Some targets don't have a corresponding UNOBS state!!!"
+        log.critical(msg)
+        raise RuntimeError(msg)
+    # ADM each target should have only one UNOBS state.
+    if len(set(unobs["TARGETID"])) != len(unobs["TARGETID"]):
+        msg = "Passed ledgers have multiple UNOBS states!!!"
+        log.critical(msg)
+        raise RuntimeError(msg)
+
+    log.info("{} ({}) targets are in the unobserved (observed) state...t={:.1f}s"
+             .format(len(unobs), len(targets), time()-t0))
+
+    # ADM store first-time-through tile order to reproduce processing.
+    # ADM ONLY WORKS because we sorted by TIMESTAMP, above!
+    _, ii = np.unique(targets["ZTILEID"], return_index=True)
+    # ADM remember to sort ii so that the first tiles appear first.
+    orderedtiles = targets["ZTILEID"][sorted(ii)]
+
+    # ADM assemble a zcat for all previous and reprocessed observations.
+    zcatfromtargs = np.zeros(len(targets), dtype=zcat.dtype)
+    for col in zcat.dtype.names:
+        zcatfromtargs[col] = targets[col]
+    # ADM note that we'll retain the TIMESTAMPed order of the old ledger
+    # ADM entries and new redshifts will (deliberately) be listed last.
+    allzcat = np.concatenate([zcatfromtargs, zcat])
+    log.info("Assembled a zcat of {} total observations...t={:.1f}s"
+             .format(len(allzcat), time()-t0))
+
+    # ADM determine the FINAL observation for each TILED-TARGETID combo.
+    # ADM must flip first as np.unique finds the FIRST unique entries.
+    allzcat = np.flip(allzcat)
+    # ADM create a unique hash of TILEID and TARGETID.
+    tiletarg = [str(tt["ZTILEID"]) + "-" + str(tt["TARGETID"]) for tt in allzcat]
+    # ADM find the final unique combination of TILEID and TARGETID.
+    _, ii = np.unique(tiletarg, return_index=True)
+    # ADM make sure to retain exact reverse-ordering.
+    ii = sorted(ii)
+    # ADM condition on indexes-of-uniqueness and flip back.
+    allzcat = np.flip(allzcat[ii])
+    log.info("Found {} final TARGETID/TILEID combinations...t={:.1f}s"
+             .format(len(allzcat), time()-t0))
+
+    # ADM mock up a dictionary of timestamps in advance. This is faster
+    # ADM as no delays need to be built into the code.
+    now = get_utc_date(survey="main")
+    timestamps = {t: desitarget.mtl.add_to_iso_date(now, s) for s, t in enumerate(orderedtiles)}
+
+    # ADM make_mtl() expects zcats to be in Table form.
+    allzcat = Table(allzcat)
+    # ADM a merged target list to track and record the final states.
+    mtl = Table(unobs)
+    # ADM to hold the final list of updates per-tile.
+    donemtl = []
+
+    # ADM loop through the tiles in order and update the MTL state.
+    for tileid in orderedtiles:
+        # ADM the timestamp for this tile.
+        timestamp = timestamps[tileid]
+
+        # ADM restrict to the observations on this tile.
+        zcatmini = allzcat[allzcat["ZTILEID"] == tileid]
+        # ADM check there are only unique TARGETIDs on each tile!
+        if len(set(zcatmini["TARGETID"])) != len(zcatmini):
+            msg = "There are duplicate TARGETIDs on tile {}".format(tileid)
+            log.critical(msg)
+            raise RuntimeError(msg)
+
+        # ADM update NUMOBS in the zcat using previous MTL totals.
+        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zcatmini["TARGETID"])
+        zcatmini["NUMOBS"][zii] = mtl["NUMOBS"][mii] + 1
+
+        # ADM restrict to just objects in the zcat that match an UNOBS
+        # ADM target (i,e that match something in the MTL).
+        log.info("Processing {}/{} observations from zcat on tile {}...t={:.1f}s"
+                 .format(len(zii), len(zcatmini), tileid, time()-t0))
+        log.info("(i.e. removed secondaries-if-running-primaries or vice versa)")
+        zcatmini = zcatmini[zii]
+
+        # ADM ------
+        # ADM NOTE: We could use trimtozcat=False without matching, and
+        # ADM just continually update the overall mtl list. But, make_mtl
+        # ADM doesn't track NUMOBS just NUMOBS_MORE, so we need to add
+        # ADM complexity somewhere, hence trimtozcat=True/matching-back.
+        # ADM ------
+        # ADM push the observations on this tile through MTL.
+        zmtl = desitarget.mtl.make_mtl(mtl, oc, zcat=zcatmini, trimtozcat=True, trimcols=True)
+
+        # ADM match back to overall merged target list to update states.
+        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zmtl["TARGETID"])
+        # ADM update the overall merged target list.
+        for col in mtl.dtype.names:
+            mtl[col][mii] = zmtl[col][zii]
+        # ADM also update the TIMESTAMP for changes on this tile.
+        mtl["TIMESTAMP"][mii] = timestamp
+
+        # ADM trimtozcat=True discards BAD observations. Retain these.
+        tidmiss = list(set(zcatmini["TARGETID"]) - set(zmtl["TARGETID"]))
+        tii = desitarget.mtl.match_to(zcatmini["TARGETID"], tidmiss)
+        zbadmiss = zcatmini[tii]
+        # ADM check all of the missing observations are, indeed, bad.
+        if np.any(zbadmiss["ZWARN"] & zwarn_mask.mask(Mxbad) == 0):
+            msg = "Some objects skipped by make_mtl() on tile {} are not BAD!!!"
+            msg = msg.format(tileid)
+            log.critical(msg)
+            raise RuntimeError(msg)
+        log.info("Adding back {} bad observations from zcat...t={:.1f}s"
+                 .format(len(zbadmiss), time()-t0))
+
+        # ADM update redshift information in MTL for bad observations.
+        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zbadmiss["TARGETID"])
+        # ADM update the overall merged target list.
+        # ADM Never update NUMOBS or NUMOBS_MORE using bad observations.
+        for col in set(zbadmiss.dtype.names) - set(["NUMOBS", "NUMOBS_MORE"]):
+            mtl[col][mii] = zbadmiss[col][zii]
+        # ADM also update the TIMESTAMP for changes on this tile.
+        mtl["TIMESTAMP"][mii] = timestamp
+
+        # ADM record the information to add to the output ledgers...
+        donemtl.append(mtl[mtl["ZTILEID"] == tileid])
+
+        # ADM if this tile was actually reprocessed (rather than being a
+        # ADM later overlapping tile) record the TIMESTAMP...
+        if tileid in reproctiles:
+            timedict[tileid] = timestamp
+
+    # ADM collect the results.
+    mtl = Table(np.concatenate(donemtl))
+
+    # ADM re-collect everything on pixels for writing to ledgers.
+    nside = desitarget.mtl._get_mtl_nside()
+    theta, phi = np.radians(90-mtl["DEC"]), np.radians(mtl["RA"])
+    pixnum = hp.ang2pix(nside, theta, phi, nest=True)
+
+    # ADM loop through the pixels and update the ledger, depending
+    # ADM on whether we're working with .fits or .ecsv files.
+    ender = get_mtl_ledger_format()
+    for pix in set(pixnum):
+        # ADM grab the targets in the pixel.
+        ii = pixnum == pix
+        mtlpix = mtl[ii]
+
+        # ADM the correct filenames for this pixel number.
+        fn = fileform.format(pix)
+        overfn = overrideff.format(pix)
+
+        # ADM if an override ledger exists, update it and recover its
+        # ADM relevant MTL entries.
+        if os.path.exists(overfn):
+            overmtl = process_overrides(overfn)
+            # ADM add any override entries TO THE END OF THE LEDGER.
+            mtlpix = vstack([mtlpix, overmtl])
+
+        # ADM if we're working with .ecsv, simply append to the ledger.
+        if ender == 'ecsv':
+            f = open(fn, "a")
+            astropy.io.ascii.write(mtlpix, f, format='no_header', formats=mtlformatdict)
+            f.close()
+        # ADM otherwise, for FITS, we'll have to read in the whole file.
+        else:
+            ledger, hd = fitsio.read(fn, extname="MTL", header=True)
+            done = np.concatenate([ledger, mtlpix.as_array()])
+            fitsio.write(fn+'.tmp', done, extname='MTL', header=hd, clobber=True)
+            os.rename(fn+'.tmp', fn)
+
+    return timedict    
+
+ 
+def write_amtl_tile_tracker(dirname, tiles, timestamp, obscon = 'dark', survey = 'main'):
+    """Write AMTL Processing times into TileTrackers
+
+    Parameters
+    ----------
+    dirname : :class:`str`
+        The path to the AMTL directory.
+    tiles : :class`astropy.table or numpy.recarray`
+        The tiles which were processed in this AMTL loop iteration
+    timestamp : :class:`str`
+        the time at which the AMTL updates were performed
+    obscon : :class:`str`
+        The observing conditions of the tiles that were processed. "dark" or "bright"
+    survey : :class:`str`
+        The survey of the tiles that were processed. "main" or "sv3"
+
+    Returns
+    -------
+    :class:`int`
+        The number of targets that were written to file.
+    :class:`str`
+        The name of the file to which targets were written.
+    """
+    #if len(tiles) == 1:
+    #    tiles = [tiles]
+    TileTrackerFN =  makeTileTrackerFN(dirname, survey, obscon)
+    log.info(TileTrackerFN)
+    if os.path.isfile(TileTrackerFN):
+        TileTracker = Table.read(TileTrackerFN, format = 'ascii.ecsv')
+
+    for t in tiles:
+        tileid = t['TILEID']
+        reprocFlag = t['REPROCFLAG']
+        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['REPROCFLAG'] == reprocFlag)
+        log.info('for tile {0}, number of matching tiles = {1}'.format(tileid, np.sum(cond)))
+        debugTrap = np.copy(TileTracker['ALTARCHIVEDATE'])
+        TileTracker['ALTARCHIVEDATE'][cond] = timestamp
     
+    assert(not (np.all(TileTracker['ALTARCHIVEDATE'] is None)))
+    TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
