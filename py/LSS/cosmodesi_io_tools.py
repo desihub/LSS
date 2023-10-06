@@ -151,7 +151,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
 
     if option:
-        #if 'noNorth' in option:
+        if 'noNorth' in option:
+            decmask = catalog['DEC'] < 32.375
+            mask &= decmask
         
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
