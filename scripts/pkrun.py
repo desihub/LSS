@@ -113,8 +113,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
-                             position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,direct_attrs={"nthreads': 64},
-                             **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
+                             position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,
+                             direct_attrs={"nthreads": 64}, **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = wmatrix = None
     if dowin:
         windows = []
