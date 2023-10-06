@@ -282,6 +282,7 @@ for tracer in tracers:
 
     allreg = ['NGC', 'SGC']#'N','S',
     if args.nz == 'y':
+        #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
         for reg in allreg:
             fb = out_data_froot+reg
             fcr = fb+'_0_clustering.ran.fits'
