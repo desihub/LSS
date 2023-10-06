@@ -63,7 +63,9 @@ def get_zlims(tracer, tracer2=None, option=None):
                 logger.warning('extended is no longer a meaningful option')
                 #zlims = [0.8, 1.1, 1.6]
             if 'smallshells' in option:
-                zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]    
+                zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]
+            if 'uchuu' in option.lower():
+                zlims = [0.88, 1.00, 1.16, 1.34]    
 
     if tracer.startswith('QSO'):
         zlims = [0.8, 1.1, 1.6, 2.1]
@@ -144,16 +146,25 @@ def _format_bitweights(bitweights):
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None):
+    try:
+        logger.info(catalog.shape)
+    except:
+        try:
+            logger.info(len(catalog))
+        except:
+            logger.info('catalog has neither shape nor len')
 
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
-
+    logger.info('np.sum(mask) = {0:d}'.format(np.sum(mask)))
     if option:
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
+    logger.info('np.sum(mask) = {0:d}'.format(np.sum(mask)))
+
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])
