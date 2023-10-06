@@ -103,8 +103,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         direct_selection_attrs = {'theta': (0., 1.)}
     elif rpcut is not None:
         win_direct_selection_attrs = direct_selection_attrs = {'rp': (0., rpcut)}
-        direct_edges = {'min': 0., 'step': 0.1, 'max': 200.}  # use this to reduce the computing time for direct pair counts to a few seconds
-        #direct_edges = {'min': 0., 'step': 0.1}
+        #direct_edges = {'min': 0., 'step': 0.1, 'max': 200.}  # use this to reduce the computing time for direct pair counts to a few seconds
+        direct_edges = {'min': 0., 'step': 0.1}
 
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
                              data_positions2=data_positions2, data_weights2=data_weights2,
@@ -113,7 +113,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
-                             position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,
+                             position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,direct_attrs={"nthreads': 64},
                              **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = wmatrix = None
     if dowin:
