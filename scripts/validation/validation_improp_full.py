@@ -233,7 +233,7 @@ for tp in tps:
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
         if 'PSFDEPTH_W1' in maps:
             maps.remove('PSFDEPTH_W1')
-    if tp[:3] == 'ELG' or tp[:3] == 'BGS' or tp[3] == 'LRG':
+    if tp[:3] == 'ELG' or tp[:3] == 'BGS' or tp[:3] == 'LRG':
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
