@@ -48,6 +48,7 @@ if args.data == 'LSS':
 
 zcol = 'Z_not4clus'
 nran = 18
+GCnorm =True
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -346,6 +347,7 @@ for tp in tps:
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
         desnorm=True
+        GCnorm = False
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
@@ -372,20 +374,43 @@ for tp in tps:
             dcomp = 1/dt_reg['FRACZ_TILELOCID']
             dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
             rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
+
+            norm_n = np.ones(len(dpix))
+            norm_nw = np.ones(len(dpix))
+
+            
+            if reg == 'S' and GCnorm:
+                seln = splitGC(dtreg)
+                seln_ran = splitGC(rtreg)
+                ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['FRAC_TLOBS_TILES'])
+                ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['FRAC_TLOBS_TILES'])
+                n_ratio = np.sum(dt_reg['WEIGHT_FKP'][seln]*dcomp[seln])/ransum_n                
+                s_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dcomp[~seln])/ransum_s
+                norm_nv = n_ratio/s_ratio
+                norm_n[~seln] = norm_nv
+
+                n_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
+                s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
+                norm_nvw = n_ratiow/s_ratiow
+                norm_nw[~seln] = norm_nvw
+                print(norm_desvw)
+
             seldesr = des[rpix]
             seldesd = des[dpix]
             norm_des = np.ones(len(dpix))
             norm_desw = np.ones(len(dpix))
+            
             if sum(rpix[seldesr]) > 0 and desnorm:
-                des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/len(rt_reg[seldesr])
-                notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/len(rt_reg[~seldesr])
+                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['FRAC_TLOBS_TILES'])
+                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['FRAC_TLOBS_TILES'])
+
+                des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/ransum_des
+                notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/ransum_notdes
                 norm_desv = des_ratio/notdes_ratio
                 norm_des[~seldesd] = norm_desv
                 print(norm_desv)
-                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['FRAC_TLOBS_TILES'])
-                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['FRAC_TLOBS_TILES'])
                 des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
-                len(rt_reg[seldesr])
+                
                 notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
                 norm_desvw = des_ratiow/notdes_ratiow
                 norm_desw[~seldesd] = norm_desvw
@@ -400,8 +425,8 @@ for tp in tps:
             #    #print('using FRAC_TLOBS_TILES')
             #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
             for ii in range(0,len(dpix)):
-                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]
-                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]
+                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]*norm_n[ii]
+                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]*norm_nw[ii]
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
