@@ -380,8 +380,8 @@ for tp in tps:
 
             
             if reg == 'S' and GCnorm:
-                seln = common.splitGC(dtreg)
-                seln_ran = splitGC(rtreg)
+                seln = common.splitGC(d_treg)
+                seln_ran = splitGC(rt_reg)
                 ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['FRAC_TLOBS_TILES'])
                 ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['FRAC_TLOBS_TILES'])
                 n_ratio = np.sum(dt_reg['WEIGHT_FKP'][seln]*dcomp[seln])/ransum_n                
