@@ -393,7 +393,7 @@ for tp in tps:
                 s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
                 norm_nvw = n_ratiow/s_ratiow
                 norm_nw[~seln] = norm_nvw
-                print(norm_desvw)
+                print(norm_nvw)
 
             seldesr = des[rpix]
             seldesd = des[dpix]
