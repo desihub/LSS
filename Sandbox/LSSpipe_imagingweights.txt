@@ -1,44 +1,73 @@
 This file is meant to provide instructions for how to create and test your own imaging weights. These instructions should work on NERSC and could guide how to, e.g., run on your laptop.
 
-1) First, copy the LSS full catalogs to your own directory structure. For instance, from the command line (">" below just to indicate command line)
+Updated Oct 7th 2023 to include regressis and show full example for v0.6.
+
+1) First, copy the LSS full catalogs to your own directory structure. For instance, from the command line (">" below just to indicate command line; this could obviously be turned into a script itself, feel free to create and share!)
 
 >mkdir $SCRATCH/DESI_LSS
 >mkdir $SCRATCH/DESI_LSS/Y1
 >mkdir $SCRATCH/DESI_LSS/Y1/LSS
 >mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/
 >mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats
->mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1
->mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/hpmaps
->cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.2.1/*full* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/
->cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.2.1/hpmaps/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/hpmaps/
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6
+>mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/hpmaps
+>cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/*full_HPmapcut* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/
+(The above might take a while.)
+>cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/hpmaps/
 
 For more tests, you might want to copy these full catalogs into different directories, e.g.,
 
 >mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/test
->cp $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.2.1/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/test/
+>cp $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/* $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/test/
 
 Then, when running, the --version argument will be the final subdirectory name
 
 2) Clone the github repo and set environment variables, e.g.,
 
 >source /global/common/software/desi/desi_environment.sh main
+>source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 >cd code_directory
 >git clone https://github.com/desihub/LSS.git
 >export LSSDIR=$HOME/code_directory #assuming $HOME/code_directory is the full path
+>PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
+>export LSSBASE=$SCRATCH/DESI_LSS/
+
+#no longer necessary now that sysnet has been included in the cosmodesi
 >git clone https://github.com/mehdirezaie/sysnetdev/LSS.git 
 >export SYSNETDIR=$HOME/code_directory #assuming $HOME/code_directory is the full path
->PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
->export LSSBASE=$SCRATCH/DESI_LSS
 
 That should set up the environment for running the LSS code
 
-3) Run sysnet, examples are all for LRG for version v0.2.1
+3) Run regressis, examples are all for LRG for version v0.6, but using a subselection of maps compared to the fiducial v0.6 
+
+a) run actual regression
+python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --regressis y --add_regresis y --fulld n --survey Y1 --verspec iron --version v0.6 --usemaps --usemaps HI GALDEPTH_Z PSFSIZE_R
+
+b) validation plots
+mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/plots
+mkdir $SCRATCH/DESI_LSS/Y1/LSS/iron/LSScats/v0.6/plots/imaging
+
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --basedir $LSSBASE --tracers LRG --version v0.6 --weight_col WEIGHT_RF
+
+4) Run sysnet, examples are all for LRG for version v0.6
 
 a) Run the LSS script to prepare data for sysnet
 
->python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --prepsysnet y --fulld n --survey Y1 --verspec iron --version v0.2.1
+If you want to test your own list of maps rather than use the default, pass the option --usemaps map1 map2 map3 etc
+
+>python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir $LSSBASE --type LRG --prepsysnet y --fulld n --survey Y1 --verspec iron --version v0.6
 
 b) Run the sysnet script to get the learning rate, for both N and S regions
+
+This script will run it, but has a hard-coded learning rate of 0.004
+
+>scripts/Y1_custom_sysnet_tracer_zbin.sh <version> <tracer> <zbin>
+
+e.g.,:
+
+>scripts/Y1_custom_sysnet_tracer_zbin.sh v0.6 LRG 0.4_0.6
+
+SYSNET SEEMS BROKEN AFTER PERLMUTTER MAINTENANCE
 
 Variable names:
 >$LSSDIR/LSS/scripts/run_sysnet.sh region tracer do_learning_rate run_regression batch_size learning_rate model loss_function catalog_version basedirNN
@@ -53,11 +82,11 @@ loss_function use pnll for Poisson log-likelihood (most appropriate for galaxy c
 basedirNN the base directory for the NN, should be $LSSBASE with more subdirectories added on
 
 Example:
->$LSSDIR/LSS/scripts/run_sysnet.sh N LRG true false 1024 0.003 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+>$LSSDIR/LSS/scripts/run_sysnet.sh N LRG true false 1024 0.003 dnnp pnll v0.6 $LSSBASE/Y1/LSS/iron/LSScats/
 
 c) Inspect the plot that the terminal says was created (should be in basedirNN/sysnet/tracer_reg/loss_vs_lr_0.png), choose value on x-axis with maximum slope and run NN
 
->$LSSDIR/LSS/scripts/run_sysnet.sh N LRG false true 1024 0.01 dnnp pnll v0.2.1 $LSSBASE/Y1/LSS/iron/LSScats/
+>$LSSDIR/LSS/scripts/run_sysnet.sh N LRG false true 1024 0.01 dnnp pnll v0.6 $LSSBASE/Y1/LSS/iron/LSScats/
 
 
 
