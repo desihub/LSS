@@ -380,7 +380,7 @@ for tp in tps:
 
             
             if reg == 'S' and GCnorm:
-                seln = common.splitGC(d_treg)
+                seln = common.splitGC(dt_reg)
                 seln_ran = splitGC(rt_reg)
                 ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['FRAC_TLOBS_TILES'])
                 ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['FRAC_TLOBS_TILES'])
