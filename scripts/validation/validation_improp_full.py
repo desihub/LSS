@@ -24,7 +24,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SYS')
-parser.add_argument("--mapmd", help="set of maps to use",default='all')
+parser.add_argument("--mapmd", help="set of maps to use",default='validate')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
@@ -210,7 +210,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     plt.title(titl+' '+args.weight_col)
     plt.grid()
     plt.ylim(yl[0],yl[1])
-    print(xlab,chi2)
+    print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
     return chi2
         
 
