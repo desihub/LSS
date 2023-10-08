@@ -287,13 +287,14 @@ if __name__ == '__main__':
             edges = get_edges()
             wang = None
             result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, rpcut=args.rpcut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
-            fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
-            result.save(fn)
-            if window is not None:
-                fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
-                window.save(fn)
-                fn = wmatrix_fn(region=region, **base_file_kwargs)
-                wmatrix.save(fn)
+            if mpicomm.rank == mpiroot:
+                fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
+                result.save(fn)
+                if window is not None:
+                    fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
+                    window.save(fn)
+                    fn = wmatrix_fn(region=region, **base_file_kwargs)
+                    wmatrix.save(fn)
 
         all_regions = regions.copy()
         if mpicomm.rank == mpiroot:
