@@ -84,11 +84,11 @@ for rn in range(rm,rx):
     for reg in regl:
         fname = dirout+args.tracer+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
         cd = Table(fitsio.read(fname))
-		if args.col_name in list(cd.dtype.names):
-			if args.replace == 'y':
-				cd.remove_column(args.col_name)
-			else:
-				sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
+        if args.col_name in list(cd.dtype.names):
+            if args.replace == 'y':
+                cd.remove_column(args.col_name)
+            else:
+                sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
         
         cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
         common.write_LSS(cd,fname)
