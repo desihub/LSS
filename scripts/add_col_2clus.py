@@ -91,9 +91,9 @@ for rn in range(rm,rx):
         cd = Table(fitsio.read(fname))
         if args.col_name in list(cd.dtype.names):
             if args.replace == 'y':
-                cd.remove_column(args.col_name)
                 if args.fix_weight == 'y':
                     cd['WEIGHT'] /= cd[args.col_name]
+                cd.remove_column(args.col_name)
 
             else:
                 sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
