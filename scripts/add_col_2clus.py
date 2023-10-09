@@ -82,7 +82,7 @@ for reg in regl:
             sys.exit('column is in catalog already! Set --replace y if you wish to replace it')
     cd = join(cd,indata,keys=['TARGETID'],join_type='left')
     if args.fix_weight == 'y':
-        cd['WEIGHT'] *= cd[args.colname]
+        cd['WEIGHT'] *= cd[args.col_name]
     common.write_LSS(cd,fname)
 indata.rename_column('TARGETID', 'TARGETID_DATA')
 for rn in range(rm,rx):
@@ -100,7 +100,7 @@ for rn in range(rm,rx):
         
         cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
         if args.fix_weight == 'y':
-            cd['WEIGHT'] *= cd[args.colname]
+            cd['WEIGHT'] *= cd[args.col_name]
 
         common.write_LSS(cd,fname)
 
