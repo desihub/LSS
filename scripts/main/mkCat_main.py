@@ -619,7 +619,7 @@ zl = (zmin,zmax)
 #fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
 
 if args.usemaps == None:
-    fit_maps = mainp.fitmaps
+    fit_maps = mainp.fit_maps
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
