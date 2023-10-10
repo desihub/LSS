@@ -360,7 +360,7 @@ for tp in tps:
 
         for reg,cl in zip(regl,clrs):
             if args.mapmd == 'validate':
-                fo = open(outdir+tp+zr+'_densfullvsall'+'_'+reg+'_'+args.mapmd+'_chi2.txt','w')
+                fo = open(outdir+tp+zr+'_densfullvsall'+'_'+reg+'_'+args.mapmd+args.weight_col+'_chi2.txt','w')
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
