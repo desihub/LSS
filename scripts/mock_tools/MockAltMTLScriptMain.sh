@@ -7,13 +7,13 @@ start=`date +%s.%N`
 # and b. keep your alt MTLs somewhere that you have control/access
 
 #Uncomment the following line to set your own/nonscratch directory
-ALTMTLHOME=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
 
 #Mock realization
 mockNumber=0
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName="test"
+simName="altmtl$mockNumber"
 
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
@@ -45,7 +45,7 @@ endDate='--endDate=20220613' #'' june 13 2022 20220613
 #exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
-exampleLedgerBase=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit/initled
+exampleLedgerBase=$ALTMTLHOME/$simName/initled
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #List of healpixels to create Alt MTLs for
@@ -59,7 +59,7 @@ hpListFile="$exampleLedgerBase/hpxlist_dark.txt"
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' #WITHOUT PHOTSYS
 #targfile='--targfile=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/TargetsWithNumobs_012322.fits' #WITHOUT PHOTSYS
-targfile="--targfile=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit/forFA$mockNumber.fits"
+targfile="--targfile=$ALTMTLHOME/forFA$mockNumber.fits"
 
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
