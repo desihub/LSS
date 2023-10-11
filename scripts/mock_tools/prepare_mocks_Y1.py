@@ -109,7 +109,10 @@ for real in range(args.realmin, args.realmax):
             out_file_name = os.path.join(mockdir, 'EZMocks_6Gpc_{real}.fits'.format(real=real))
 
         elif args.mockver == 'ab_secondgen':
-            mockpath = '/global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky/'
+            if args.isProduction == 'y':
+                mockpath = '/global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky/'
+            else:
+                mockpath = args.mockpath
             file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
             mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'AbacusSummit')
 
