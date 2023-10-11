@@ -30,7 +30,8 @@ do
     echo ""
     echo ""
     
-    srun --immediate=14400 --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 02:00:00 $path2LSS/runAltMTLParallel.py $argstring
+    $path2LSS/runAltMTLParallaure.py $argstring
+#    srun --immediate=14400 --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 02:00:00 $path2LSS/runAltMTLParallel.py $argstring
     retcode=$?
     qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.
     if [ $retcode -ne 0 ]; then

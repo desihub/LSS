@@ -28,7 +28,8 @@ parser.add_argument('-i', '--input', required=True)
 #parser.add_argument('-o', '--output', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
-parser.add_argument( '--cat_type', default='targets', choices=['targets','ran','obielg','Ab2ndgen'],required=False)
+parser.add_argument( '--cat_type', default='targets', required=False)
+#parser.add_argument( '--cat_type', default='targets', choices=['targets','ran','obielg','Ab2ndgen'],required=False)
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 
 args = parser.parse_args()
@@ -46,7 +47,11 @@ if args.cat_type == 'Ab2ndgen':
     mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/'
     input_path = mockdir+'forFA'+args.input+'.fits'
     output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
-   
+else:
+    mockdir = args.cat_type
+    input_path = os.path.join(mockdir, 'forFA'+args.input+'.fits')
+    output_path = os.path.join(mockdir, 'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits')
+
 
 
 tracer = args.tracer.lower()

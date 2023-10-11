@@ -7,13 +7,13 @@ start=`date +%s.%N`
 # and b. keep your alt MTLs somewhere that you have control/access
 
 #Uncomment the following line to set your own/nonscratch directory
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
+ALTMTLHOME=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit
 
 #Mock realization
-mockNumber=1
+mockNumber=0
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
-simName="altmtl$mockNumber"
+simName="test"
 
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
@@ -45,7 +45,7 @@ endDate='--endDate=20220613' #'' june 13 2022 20220613
 #exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
-exampleLedgerBase=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl$mockNumber/initled/
+exampleLedgerBase=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit/initled
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #List of healpixels to create Alt MTLs for
@@ -59,7 +59,7 @@ hpListFile="$exampleLedgerBase/hpxlist_dark.txt"
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' #WITHOUT PHOTSYS
 #targfile='--targfile=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/TargetsWithNumobs_012322.fits' #WITHOUT PHOTSYS
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA$mockNumber.fits"
+targfile="--targfile=/pscratch/sd/a/acarnero/ictest/v2/SecondGenMocks/AbacusSummit/forFA$mockNumber.fits"
 
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
@@ -255,8 +255,8 @@ fi
 
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
-echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --promoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  $startDate $endDate >& $OFIM"
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  $startDate $endDate >& $OFIM
+echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 02:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --promoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  $startDate $endDate >& $OFIM"
+#srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 01:00:00 --mem=120000 $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  $startDate $endDate >& $OFIM
 if [ $? -ne 0 ]; then
     exit 1234
     endInit=`date +%s.%N`

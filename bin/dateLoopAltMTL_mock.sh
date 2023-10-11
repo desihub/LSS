@@ -3,33 +3,21 @@
 echo "All Arguments"
 echo $@
 
+NObsDates=$1
 
-#Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
-#Default = 0/False. Set equal to 1 if you want to restart from the first observations
-qR=$1
+NNodes=$2
 
-#Number of observation dates to loop through
-NObsDates=$2
-#Number of nodes to run on. This will launch up to 64*N jobs 
-#if that number of alternate universes have already been generated
-NNodes=$3
+path2LSS=$3
 
-#Base directory for the alternate MTLs created in the InitializeAltMTLs script
-altmtlbasedir=$4
+CVal=$4
 
-#Include secondary targets?
-secondary=$5
+QVal=$5
 
-#Observing conditions to process the observations
-obscon=$6
+argstring=${@:6}
 
-#Survey whose observations you are processing
-survey=$7
+echo 'argstring'
+echo "$argstring"
 
-numobs_from_ledger=$8
-
-#Force redo fiber assignment if it has already been done. 
-redoFA=$9
 
 for i in $(seq 0 1 $NObsDates)
 do
@@ -41,10 +29,15 @@ do
     echo ""
     echo ""
     echo ""
-    #srun  runAltMTLParallel.py $i
-    srun --nodes=$NNodes -C haswell -A desi --qos=interactive -t 02:00:00 runAltMTLParallel_mock.py $NNodes $qR $altmtlbasedir $secondary $obscon $survey $numobs_from_ledger $redoFA 
+    
+#    $path2LSS/runAltMTLParallaure.py $argstring
+    srun --immediate=14400 --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:01:00 $path2LSS/runAltMTLRealizations.py $argstring
+    retcode=$?
     qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.
-    if [ $? -ne 0 ]; then
+    if [ $retcode -ne 0 ]; then
+        echo 'something went wrong'
+        echo $retcode
         exit 1234
     fi
+
 done
