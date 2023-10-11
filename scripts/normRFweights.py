@@ -63,7 +63,7 @@ dirin = dirout
 fname = dirin+args.tracer+'_full_HPmapcut.dat.fits'
 indata = Table(fitsio.read(fname))
 
-selgoodz = common.goodz_infull(args.tracer,indata,zcol='Z_not4clus')
+selgoodz = common.goodz_infull(args.tracer[:3],indata,zcol='Z_not4clus')
 
 selngc = common.splitGC(indata)
 seln = indata['PHOTSYS'] == 'N'
