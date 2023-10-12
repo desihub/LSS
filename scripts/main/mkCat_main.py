@@ -661,7 +661,8 @@ if args.imsys == 'y':
     use_maps = fit_maps
        
     #rcols.append('WEIGHT_SYSEB')   
-    dat = Table(fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')))
+    fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
+    dat = Table(fitsio.read(fname))
     selgood = common.goodz_infull(tp[:3],dat)
     ranl = []
     for i in range(0,int(args.maxr)):
@@ -699,7 +700,7 @@ if args.imsys == 'y':
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
             #dd.write(fcd,overwrite=True,format='fits')
-
+    common.write_LSS(dat,fname)
 
 if args.prepsysnet == 'y':
     logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
