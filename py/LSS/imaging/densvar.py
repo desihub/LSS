@@ -303,12 +303,14 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     if sys_tab is None:
         pixm = fitsio.read(pixfn)
         pixmext = fitsio.read(pixfn_ext)
+        use_syst_names = syst_names
     else:
         pixm = sys_tab
+        use_syst_names = list(pixm.dtype.names)
     data_pix = get_pix(nside, data_ra, data_dec,nest) 
     rand_pix = get_pix(nside, rand_ra, rand_dec,nest)
 
-    for syst_name in syst_names:
+    for syst_name in use_syst_names:
         data_syst[syst_name] = pixm[syst_name][data_pix]
         rand_syst[syst_name] = pixm[syst_name][rand_pix]
 
