@@ -338,12 +338,12 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=N
     #-- Dictionaries containing all different systematic values
     data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
     #print(data_syst.keys)
- 
+    cols = list(dd.dtype.names)
     weights_ran = np.ones(len(rd))
     if wtmd == 'fracz':
         print('using 1/FRACZ_TILELOCID based completeness weights')
         wts = 1/dd['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in list(dd.dtype.names):
+        if 'FRAC_TLOBS_TILES' in cols:
             print('using FRAC_TLOBS_TILES')
             wts *= 1/dd['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
