@@ -336,9 +336,9 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
 def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
-    dd = dd[sel]
+    dds = dd[sel]
     #-- Dictionaries containing all different systematic values
-    data_syst, rand_syst = read_systematic_maps(dd['RA'],dd['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
+    data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
     #print(data_syst.keys)
     cols = list(dd.dtype.names)
     weights_ran = np.ones(len(rd))
@@ -349,13 +349,13 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=N
             print('using FRAC_TLOBS_TILES')
             wts *= 1/dd['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
-        wts = dd['WEIGHT']
+        wts = dds['WEIGHT']
         weights_ran = rd['WEIGHT']
     if wtmd == 'wt_comp':
-        wts = dd['WEIGHT_COMP']
+        wts = dds['WEIGHT_COMP']
 
     if 'WEIGHT_ZFAIL' in cols:
-        wts *= dd['WEIGHT_ZFAIL']
+        wts *= dds['WEIGHT_ZFAIL']
 
     data_we = wts
     rand_we = weights_ran
