@@ -269,51 +269,12 @@ for tp in tps:
     bs = 0.01
 
     yl = (0.8,1.1)    
-    if tp == 'LRG':
-        z_suc= dtf['ZWARN']==0
-        z_suc &= dtf['DELTACHI2']>15
-        z_suc &= dtf[zcol]<1.1
-        z_suc &= dtf[zcol] > 0.4
-        P0 = 10000
-        nbar = 0.0004
-        #zr = ' 0.4 < z < 1.1'
-
-    if tp[:3] == 'ELG':
-        z_suc = dtf['o2c'] > 0.9
-        z_suc &= dtf[zcol]<1.6
-        z_suc &= dtf[zcol]>0.8
-        zr = ' 0.8 < z < 1.6'
-        yl = (0.7,1.1)
-        P0 = 4000
-        nbar = 0.0008
-
-    if tp == 'QSO':
-        z_suc = dtf[zcol]*0 == 0
-        z_suc &= dtf[zcol] != 999999
-        z_suc &= dtf[zcol] != 1.e20
-        z_suc &= dtf[zcol]<2.1
-        z_suc &= dtf[zcol]>0.8
-        #zr = ' 0.8 < z < 2.1 '
-        zmax = 4
-        bs = 0.02
-        P0 = 6000
-        nbar = 0.00002
-
-
-    if tp[:3] == 'BGS':    
-        z_suc = dtf['ZWARN']==0
-        z_suc &= dtf['DELTACHI2']>40
-        z_suc &= dtf[zcol]<0.4
-        z_suc &= dtf[zcol]>0.1
-        #zr = ' 0.1 < z < 0.4 '
-        P0 = 7000
-        nbar = 0.0005
 
     #nz = common.mknz_full(fcd,rf,tp,bs=bs,zmin=zmin,zmax=zmax)
     
-    seld &= z_suc
+    #seld &= z_suc
 
-    dtf = dtf[seld]
+    #dtf = dtf[seld]
     rt_n = fitsio.read(rf_n)
     rt_s = fitsio.read(rf_s)
     rt = np.concatenate((rt_n,rt_s))
