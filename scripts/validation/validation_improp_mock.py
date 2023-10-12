@@ -27,8 +27,8 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 #parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 parser.add_argument("--weight_col", help="column name for weight",default=None)
 parser.add_argument("--mapmd", help="set of maps to use",default='validate')
-#parser.add_argument("--verspec",help="version for redshifts",default='iron')
-#parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--verspec",help="version for redshifts",default='iron')
+parser.add_argument("--dataver",help="LSS or mock directory",default='v0.6')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -36,7 +36,7 @@ args = parser.parse_args()
 
 nside,nest = 256,True
 
-
+datadir = rgs.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
 indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
@@ -282,9 +282,11 @@ for tp in tps:
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
+    mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits')
+    mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits')
     
-    mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
-    'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
+    mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
+    'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     desnorm = False
     if tp[:3] == 'ELG':
