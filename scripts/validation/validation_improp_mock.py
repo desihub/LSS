@@ -19,14 +19,16 @@ north, south, des = foot.get_imaging_surveys()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
-parser.add_argument("--version", help="catalog version",default='test')
+parser.add_argument("--mockversion", help="catalog version",default='SecondGenMocks/AbacusSummit')
+parser.add_argument("--mockn", help="mock realization",default=0)
+parser.add_argument("--famd", help="string indicating type of fiberassignment",default='_ffa')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
-parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
-parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SYS')
+#parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--weight_col", help="column name for weight",default=None)
 parser.add_argument("--mapmd", help="set of maps to use",default='validate')
-parser.add_argument("--verspec",help="version for redshifts",default='iron')
-parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+#parser.add_argument("--verspec",help="version for redshifts",default='iron')
+#parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -35,7 +37,7 @@ args = parser.parse_args()
 nside,nest = 256,True
 
 
-indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
@@ -50,7 +52,7 @@ GCnorm =True
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
 if args.tracers == 'all':
-    tps = ['LRG','ELG_LOPnotqso','QSO','BGS_BRIGHT-21.5']
+    tps = ['LRG','ELG_LOP','QSO']#,'BGS_BRIGHT-21.5']
     
 
 zdw = ''#'zdone'
@@ -205,13 +207,17 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     plt.xlabel(xlab)
     plt.ylabel('Ngal/<Ngal> ')
 
-    plt.title(titl+' '+args.weight_col)
+    plt.title(titl+' '+wcol)
     plt.grid()
     plt.ylim(yl[0],yl[1])
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
     return chi2
         
 
+if args.weight_col is None:
+    wcol ='noweights'
+else:
+    wcol = args.weight_col
     
 
 for tp in tps:
@@ -234,23 +240,29 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    fcd = indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits'
+    fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
+    fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
+    dtf_n = fitsio.read(fcd_n)
+    dtf_s = fitsio.read(fcd_s)
+    dtf = np.concatenate([dtf_n,dtf_s])
+    
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
 
-    rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
-    dtf = fitsio.read(fcd)
-    seld = dtf['ZWARN'] != 999999
-    seld &= dtf['ZWARN']*0 == 0
-
+    rf_n = indir+tpr+args.famd+'_NGC_clustering.ran.fits'
+    rf_s = indir+tpr+args.famd+'_SGC_clustering.ran.fits'
+    
+    
     cols = list(dtf.dtype.names)
     if 'Z' in cols:
         print(tp+' Z column already in full file')
         zcol = 'Z'
     else:
         zcol = 'Z_not4clus'
-
+    
+    if 'PHOTSYS' not in cols:
+        dtf = common.addNS(Table(dtf))
     
     zmax = 1.6
     zmin = 0.01
@@ -302,39 +314,12 @@ for tp in tps:
     seld &= z_suc
 
     dtf = dtf[seld]
-    #zl = dtf[zcol]
-    #nl = np.zeros(len(zl))
-    #for ii in range(0,len(zl)):
-    #    z = zl[ii]
-    #    zind = int((z-zmin)/bs)
-    #    if z > zmin and z < zmax:
-    #        nl[ii] = nz[zind]
+    rt_n = fitsio.read(rf_n)
+    rt_s = fitsio.read(rf_s)
+    rt = np.concatenate((rt_n,rt_s))
+    if 'PHOTSYS' not in list(rt.dtype.names):
+        rt = common.addNS(Table(rt))
 
-    ntl = np.unique(dtf['NTILE'])
-    comp_ntl = np.zeros(len(ntl))
-    weight_ntl = np.zeros(len(ntl))
-    fttl = np.zeros(len(ntl))
-    for i in range(0,len(ntl)):
-        sel = dtf['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(1/dtf[sel]['FRACZ_TILELOCID'])        
-        weight_ntl[i] = mean_ntweight
-        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-        mean_fracobs_tiles = np.mean(dtf[sel]['FRAC_TLOBS_TILES'])
-        fttl[i] = mean_fracobs_tiles
-    print(comp_ntl,fttl)
-    comp_ntl = comp_ntl*fttl
-    print('completeness per ntile:')
-    print(comp_ntl)
-    nx = nbar*comp_ntl[dtf['NTILE']-1]
-    fkpl = 1/(1+nx*P0) #this is just the effect of the completeness varying on the fkp weight, no actual z dependence
-    dtf = Table(dtf)
-    dtf['WEIGHT_FKP'] = 1/weight_ntl[dtf['NTILE']-1]*fkpl
-    
-    rt = fitsio.read(rf)
-    nx = nbar*comp_ntl[rt['NTILE']-1]
-    fkpl = 1/(1+nx*P0)
-    rt = Table(rt)
-    rt['WEIGHT_FKP'] = 1/weight_ntl[rt['NTILE']-1]*fkpl #randoms should now have weight that varies with completeness in same way as data
     
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
@@ -351,13 +336,13 @@ for tp in tps:
     for zb in zbins:
         zmin = zb[0]
         zmax = zb[1]
-        selz = dtf['Z_not4clus'] > zmin
-        selz &= dtf['Z_not4clus'] < zmax
+        selz = dtf[zcol] > zmin
+        selz &= dtf[zcol] < zmax
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
             if args.mapmd == 'validate':
-                fo = open(outdir+tp+zr+'_densfullvsall'+'_'+reg+'_'+args.mapmd+args.weight_col+'_chi2.txt','w')
+                fo = open(outdir+tp+zr+'_densclusvsall'+'_'+reg+'_'+args.mapmd+wcol+'_chi2.txt','w')
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
@@ -369,7 +354,7 @@ for tp in tps:
             chi2tot = 0
             nmaptot = 0
 
-            dcomp = 1/dt_reg['FRACZ_TILELOCID']
+            dcomp = dt_reg['WEIGHT']
             dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
             rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
 
@@ -380,18 +365,20 @@ for tp in tps:
             if reg == 'S' and GCnorm:
                 seln = common.splitGC(dt_reg)
                 seln_ran = common.splitGC(rt_reg)
-                ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['FRAC_TLOBS_TILES'])
-                ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['FRAC_TLOBS_TILES'])
+                ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['WEIGHT'])
+                ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['WEIGHT'])
                 n_ratio = np.sum(dt_reg['WEIGHT_FKP'][seln]*dcomp[seln])/ransum_n                
                 s_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dcomp[~seln])/ransum_s
                 norm_nv = n_ratio/s_ratio
                 norm_n[~seln] = norm_nv
-
-                n_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
-                s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
-                norm_nvw = n_ratiow/s_ratiow
-                norm_nw[~seln] = norm_nvw
-                print(norm_nvw)
+                if args.weight_col is not None:
+                    n_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
+                    s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
+                    norm_nvw = n_ratiow/s_ratiow
+                    norm_nw[~seln] = norm_nvw
+                    print(norm_nvw)
+                else:
+                    norm_nw = norm_n
 
             seldesr = des[rpix]
             seldesd = des[dpix]
@@ -399,20 +386,23 @@ for tp in tps:
             norm_desw = np.ones(len(dpix))
             
             if sum(rpix[seldesr]) > 0 and desnorm:
-                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['FRAC_TLOBS_TILES'])
-                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['FRAC_TLOBS_TILES'])
+                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['WEIGHT'])
+                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['WEIGHT'])
 
                 des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/ransum_des
                 notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/ransum_notdes
                 norm_desv = des_ratio/notdes_ratio
                 norm_des[~seldesd] = norm_desv
                 print(norm_desv)
-                des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
-                
-                notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
-                norm_desvw = des_ratiow/notdes_ratiow
-                norm_desw[~seldesd] = norm_desvw
-                print(norm_desvw)
+                if args.weight_col is not None:
+                    des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
+                    notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
+                    norm_desvw = des_ratiow/notdes_ratiow
+                    norm_desw[~seldesd] = norm_desvw
+                    print(norm_desvw)
+                else:
+                    norm_desvw = norm_desv
+                    norm_desw = norm_des
                 #mult = dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd]
                 #print(np.sum(mult)/len)
 
@@ -424,10 +414,13 @@ for tp in tps:
             #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]*norm_n[ii]
-                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]*norm_nw[ii]
+                if args.weight_col is not None:
+                    pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]*norm_nw[ii]
+                else:
+                    pixlgw = pixlg
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
-                pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['FRAC_TLOBS_TILES']
+                pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['WEIGHT']
 
             
             if dosag == 'y' and reg == 'S':
@@ -523,12 +516,12 @@ for tp in tps:
             tw = ''
             if args.test == 'y':
                 tw = '_test'
-            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'_'+reg+'_'+args.mapmd+args.weight_col+'.pdf') as pdf:
+            with PdfPages(outdir+tp+zr+'_densfullvsall'+tw+'_'+reg+'_'+args.mapmd+wcol+'.pdf') as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
                     plt.close()
             
-            print('results for '+tp+zr+' '+reg +' using '+args.weight_col+' weights')
+            print('results for '+tp+zr+' '+reg +' using '+wcol+' weights')
             print('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps')
             if args.mapmd == 'validate':
                 fo.write('total chi2 is '+str(chi2tot)+' for '+str(nmaptot)+ ' maps\n')
