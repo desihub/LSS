@@ -28,9 +28,9 @@ log = get_logger()
 #hardcode target directories; these are fixed
 
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
-skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
+skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
-tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
+tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/targets/main/resolve/'
 # AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
 gaia_ref_epochs = {"dr2": 2015.5}
 
