@@ -694,7 +694,7 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             dat[syscol] = np.ones(len(dat))
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_linimsysfit.png')
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dd[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
