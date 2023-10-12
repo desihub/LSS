@@ -665,10 +665,11 @@ if args.imsys == 'y':
     selgood = common.goodz_infull(tp[:3],dat)
     ranl = []
     for i in range(0,18):
-        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
     syscol = 'WEIGHT_IMLIN'
+    regl = ['N','S']
     for reg in regl:
         pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
