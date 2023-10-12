@@ -671,6 +671,7 @@ if args.imsys == 'y':
     rands = np.concatenate(ranl)
     syscol = 'WEIGHT_IMLIN'
     regl = ['N','S']
+    dat[syscol] = np.ones(len(dat))
     for reg in regl:
         pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
@@ -693,7 +694,7 @@ if args.imsys == 'y':
             #rd = fitsio.read(fcr)
             #fcd = fb+'_clustering.dat.fits'
             #dd = Table.read(fcd)
-            dat[syscol] = np.ones(len(dat))
+            
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
             wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
