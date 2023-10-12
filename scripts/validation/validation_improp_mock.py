@@ -42,7 +42,8 @@ outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
 
-os.makedirs(outdir)
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
 
 
 zcol = 'Z_not4clus'
