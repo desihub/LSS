@@ -664,7 +664,7 @@ if args.imsys == 'y':
     dat = Table(fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')))
     selgood = common.goodz_infull(tp[:3],dat)
     ranl = []
-    for i in range(0,args.rmax):
+    for i in range(0,args.maxr):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
