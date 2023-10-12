@@ -251,8 +251,8 @@ for tp in tps:
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
 
-    rf_n = indir+tpr+args.famd+'_NGC_clustering.ran.fits'
-    rf_s = indir+tpr+args.famd+'_SGC_clustering.ran.fits'
+    rf_n = indir+tpr+args.famd+'_0_NGC_clustering.ran.fits'
+    rf_s = indir+tpr+args.famd+'_0_SGC_clustering.ran.fits'
     
     
     cols = list(dtf.dtype.names)
