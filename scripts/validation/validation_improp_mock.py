@@ -282,8 +282,8 @@ for tp in tps:
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
-    mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits')
-    mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits')
+    mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits'
+    mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits'
     
     mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
