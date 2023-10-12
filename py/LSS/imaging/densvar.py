@@ -337,7 +337,7 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=N
     dds = dd[sel]
     #-- Dictionaries containing all different systematic values
     data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
-    print(data_syst.dtype.names)
+    #print(data_syst.keys)
  
     weights_ran = np.ones(len(rd))
     if wtmd == 'fracz':
