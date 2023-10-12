@@ -355,7 +355,7 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=N
     if 'WEIGHT_ZFAIL' in cols:
         wts *= dd['WEIGHT_ZFAIL']
 
-    data_we = wt
+    data_we = wts
     rand_we = weights_ran
     #-- Create fitter object
     s = sf.Syst(data_we, rand_we)
