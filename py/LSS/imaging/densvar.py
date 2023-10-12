@@ -346,10 +346,10 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     weights_ran = np.ones(len(rd))
     if wtmd == 'fracz':
         print('using 1/FRACZ_TILELOCID based completeness weights')
-        wts = 1/dd['FRACZ_TILELOCID']
+        wts = 1/dds['FRACZ_TILELOCID']
         if 'FRAC_TLOBS_TILES' in cols:
             print('using FRAC_TLOBS_TILES')
-            wts *= 1/dd['FRAC_TLOBS_TILES']
+            wts *= 1/dds['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
         wts = dds['WEIGHT']
         weights_ran = rd['WEIGHT']
