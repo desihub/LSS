@@ -300,7 +300,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     rand_syst = {}
 
     pixmext = None
-    if sys_tab is not None:
+    if sys_tab is None:
         pixm = fitsio.read(pixfn)
         pixmext = fitsio.read(pixfn_ext)
     else:
