@@ -580,48 +580,14 @@ if args.add_weight_zfail == 'y':
     else:
         ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
-
-if args.imsys == 'y':
-    from LSS.imaging import densvar
-    #regl = ['_DN','_DS','','_N','_S']
-    #wzm = ''
-    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    use_maps = fit_maps
-    if type[:3] == 'ELG':
-        zrl = [(0.6,0.8),(0.8,1.1),(1.1,1.5)]
-    if type[:3] == 'QSO':
-        zrl = [(0.8,1.6),(1.6,2.1),(2.1,3.5)]    
-    if type[:3] == 'LRG':
-        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
-    if type[:3] == 'BGS':
-        zrl = [(0.1,0.5)]    
-       
-    rcols.append('WEIGHT_SYSEB')   
-    
-    for reg in regl:
-        for zr in zrl:
-            zmin = zr[0]
-            zmax = zr[1]
-            fb = dirout+tracer_clus+reg
-            fcr = fb+'_0_clustering.ran.fits'
-            rd = fitsio.read(fcr)
-            fcd = fb+'_clustering.dat.fits'
-            dd = Table.read(fcd)
-            dd['WEIGHT_SYSEB'] = np.ones(len(dd))
-            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=False)
-            sel = wsysl != 1
-            dd['WEIGHT_SYSEB'][sel] = wsysl[sel]
-            #dd['WEIGHT'][sel] *= wsysl[sel]
-            dd.write(fcd,overwrite=True,format='fits')
-
-zl = (zmin,zmax)
-#fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
-
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
 else:
     fit_maps = [mapn for mapn in args.usemaps]
+
+zl = (zmin,zmax)
+#fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
+
 
 
 tpstr = tracer_clus
@@ -653,7 +619,8 @@ elif type[:3] == 'BGS':
     zmax = 0.5    
 
 
-if args.prepsysnet == 'y' or args.regressis == 'y':
+
+if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys:
     
     def make_hp(value, hpix, nside, fill_with=np.nan):
         """ A Function to create a HEALPix map
@@ -686,6 +653,51 @@ if args.prepsysnet == 'y' or args.regressis == 'y':
     #debv = Table()
     #debv['EBV_DIFFRZ'] = debv256_nest
 
+if args.imsys == 'y':
+    from LSS.imaging import densvar
+    #regl = ['_DN','_DS','','_N','_S']
+    #wzm = ''
+    #fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    use_maps = fit_maps
+       
+    #rcols.append('WEIGHT_SYSEB')   
+    dat = Table(fitsio.read(os.path.join(dirout, f'{tracer_clus}'+'_full'+args.use_map_veto+'.dat.fits')))
+    selgood = common.goodz_infull(tp[:3],dat)
+    ranl = []
+    for i in range(0,18):
+        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ranl.append(ran)
+    rands = np.concatenate(ranl)
+    syscol = 'WEIGHT_IMLIN'
+    for reg in regl:
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+		seld = dat['PHOTSYS'] == reg
+		selr = rands['PHOTSYS'] == reg
+
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+            #fb = dirout+tracer_clus+reg
+            #fcr = fb+'_0_clustering.ran.fits'
+            #rd = fitsio.read(fcr)
+            #fcd = fb+'_clustering.dat.fits'
+            #dd = Table.read(fcd)
+            dat[syscol] = np.ones(len(dd))
+            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_linimsysfit.png')
+            sel = wsysl != 1
+            dd[syscol][sel] = wsysl[sel]
+            #dd['WEIGHT'][sel] *= wsysl[sel]
+            #dd.write(fcd,overwrite=True,format='fits')
 
 
 if args.prepsysnet == 'y':
@@ -696,7 +708,7 @@ if args.prepsysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     #_HPmapcut'
-    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full'+args.use_map_veto+'.dat.fits'))
+    dat = fitsio.read(os.path.join(dirout, f'{tracer_clus}'+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
     for i in range(0,18):
         ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 

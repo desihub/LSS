@@ -293,14 +293,18 @@ def plot_relnz_clus_pixpar(sample,par,reg,weightcol='WEIGHT',zmin=0.8,zmax=1.6,n
     plt.show()
 
 
-def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
+def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     
     #-- Dictionaries containing all different systematic values
     data_syst = {}
     rand_syst = {}
 
-    pixm = fitsio.read(pixfn)
-    pixmext = fitsio.read(pixfn_ext)
+    pixmext = None
+    if sys_tab is not None:
+        pixm = fitsio.read(pixfn)
+        pixmext = fitsio.read(pixfn_ext)
+    else:
+        pixm = sys_tab
     data_pix = get_pix(nside, data_ra, data_dec,nest) 
     rand_pix = get_pix(nside, rand_ra, rand_dec,nest)
 
@@ -308,33 +312,51 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec):
         data_syst[syst_name] = pixm[syst_name][data_pix]
         rand_syst[syst_name] = pixm[syst_name][rand_pix]
 
-    sel = pixmext['EBVreconMEANF15'] < -1
-    mno = np.mean(pixmext[~sel]['EBVreconMEANF15'])
-    #pixmext[sel]['EBVreconMEANF15'] = mno #why did this not work !?
-    for i in range(0,len(pixmext['EBVreconMEANF15'])):
-        if pixmext['EBVreconMEANF15'][i] < -1:
-            pixmext['EBVreconMEANF15'][i] = mno
-    print(np.min(pixmext['EBVreconMEANF15']),np.min(pixmext['EBVreconMEANF15'][sel]),np.min(pixmext['EBVreconMEANF15'][~sel]))
-    for syst_name in syst_names_ext:
-        data_syst[syst_name] = pixmext[syst_name][data_pix]
-        rand_syst[syst_name] = pixmext[syst_name][rand_pix]
+    if pixmext is not None:
+        sel = pixmext['EBVreconMEANF15'] < -1
+        mno = np.mean(pixmext[~sel]['EBVreconMEANF15'])
+        #pixmext[sel]['EBVreconMEANF15'] = mno #why did this not work !?
+        for i in range(0,len(pixmext['EBVreconMEANF15'])):
+            if pixmext['EBVreconMEANF15'][i] < -1:
+                pixmext['EBVreconMEANF15'][i] = mno
+        print(np.min(pixmext['EBVreconMEANF15']),np.min(pixmext['EBVreconMEANF15'][sel]),np.min(pixmext['EBVreconMEANF15'][~sel]))
+        for syst_name in syst_names_ext:
+            data_syst[syst_name] = pixmext[syst_name][data_pix]
+            rand_syst[syst_name] = pixmext[syst_name][rand_pix]
 
-    ebvd = pixm['EBV'] - pixmext['EBVreconMEANF15']
-    data_syst['DELTA_EBV'] = ebvd[data_pix]
-    rand_syst['DELTA_EBV'] = ebvd[rand_pix]
+        ebvd = pixm['EBV'] - pixmext['EBVreconMEANF15']
+        data_syst['DELTA_EBV'] = ebvd[data_pix]
+        rand_syst['DELTA_EBV'] = ebvd[rand_pix]
 
     return data_syst, rand_syst
 
 
-def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True):
-    sel = dd['Z'] > zmin
-    sel &= dd['Z'] < zmax
+def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
+    sel = dd[zcol] > zmin
+    sel &= dd[zcol] < zmax
     dds = dd[sel]
     #-- Dictionaries containing all different systematic values
-    data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'])
+    data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
     print(data_syst.dtype.names)
-    data_we = dds['WEIGHT']
-    rand_we = np.ones(len(rd))
+ 
+    weights_ran = np.ones(len(rd))
+    if wtmd == 'fracz':
+        print('using 1/FRACZ_TILELOCID based completeness weights')
+        wts = 1/data['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols:
+            print('using FRAC_TLOBS_TILES')
+            wts *= 1/data['FRAC_TLOBS_TILES']
+    if wtmd == 'wt':
+        wts = data['WEIGHT']
+        weights_ran = rands['WEIGHT']
+    if wtmd == 'wt_comp':
+        wts = data['WEIGHT_COMP']
+
+    if 'WEIGHT_ZFAIL' in cols:
+        wts *= data['WEIGHT_ZFAIL']
+
+    data_we = wt
+    rand_we = weights_ran
     #-- Create fitter object
     s = sf.Syst(data_we, rand_we)
 
@@ -361,7 +383,9 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True):
     if plotr:
         #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
         s.plot_overdensity(pars=[None, pars_dict], ylim=[0.7, 1.3])
-        plt.show()
+        plt.savefig(figname)
+        plt.clf()
+        #plt.show()
     #-- Get weights for global fit
     #data_weightsys_global = 1/s.get_model(s.best_pars, data_syst)
     data_weightsys_global = 1/s.get_model(pars_dict, data_syst)
