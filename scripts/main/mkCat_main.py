@@ -692,7 +692,7 @@ if args.imsys == 'y':
             #rd = fitsio.read(fcr)
             #fcd = fb+'_clustering.dat.fits'
             #dd = Table.read(fcd)
-            dat[syscol] = np.ones(len(dd))
+            dat[syscol] = np.ones(len(dat))
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
             wsysl = densvar.get_imweight(dat,rands,zmin,zmax,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_linimsysfit.png')
             sel = wsysl != 1
