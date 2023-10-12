@@ -395,6 +395,8 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     data_weightsys_global = 1/s.get_model(pars_dict, data_syst)
     wsysl = np.ones(len(dd))
     wsysl[sel] = data_weightsys_global 
+    del data_syst
+    del rand_syst
     return wsysl
 
 
