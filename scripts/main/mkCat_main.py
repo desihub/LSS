@@ -681,7 +681,7 @@ if args.imsys == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
-        seld = dat['PHOTSYS'] == reg
+        #seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
 
         for zr in zrl:
@@ -694,7 +694,7 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             dat[syscol] = np.ones(len(dat))
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat[seld],rands[selr],zmin,zmax,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dd[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
