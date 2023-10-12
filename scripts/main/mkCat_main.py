@@ -60,7 +60,7 @@ parser.add_argument("--fillran", help="add imaging properties to randoms",defaul
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
 
@@ -664,7 +664,7 @@ if args.imsys == 'y':
     dat = Table(fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')))
     selgood = common.goodz_infull(tp[:3],dat)
     ranl = []
-    for i in range(0,args.maxr):
+    for i in range(0,int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
