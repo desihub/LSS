@@ -289,13 +289,13 @@ for tp in tps:
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     desnorm = False
-    GCnorm = False
+    GCnorm = True
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
         #desnorm=True
-        #GCnorm = False
+        GCnorm = False
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
