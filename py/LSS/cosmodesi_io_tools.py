@@ -189,6 +189,10 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     #if 'SN' in weight_type:
     #    weights *= catalog['WEIGHT_SN'][mask]
     #    print('multiplying weights by WEIGHT_SN')
+    if 'swapinLIN' in weight_type:
+        #assumes default already added the rest of the weights and that SN was used as default weight
+        weights *=  catalog['WEIGHT_EBLIN'][mask]/catalog['WEIGHT_SN'][mask]
+
     if 'swapinRF' in weight_type:
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_RF'][mask]/catalog['WEIGHT_SN'][mask]
