@@ -36,7 +36,7 @@ args = parser.parse_args()
 
 nside,nest = 256,True
 
-datadir = rgs.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
+datadir = args.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
 indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
