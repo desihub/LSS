@@ -342,18 +342,18 @@ def get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=N
     weights_ran = np.ones(len(rd))
     if wtmd == 'fracz':
         print('using 1/FRACZ_TILELOCID based completeness weights')
-        wts = 1/data['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols:
+        wts = 1/dd['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in list(dd.dtype.names):
             print('using FRAC_TLOBS_TILES')
-            wts *= 1/data['FRAC_TLOBS_TILES']
+            wts *= 1/dd['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
-        wts = data['WEIGHT']
-        weights_ran = rands['WEIGHT']
+        wts = dd['WEIGHT']
+        weights_ran = rd['WEIGHT']
     if wtmd == 'wt_comp':
-        wts = data['WEIGHT_COMP']
+        wts = dd['WEIGHT_COMP']
 
     if 'WEIGHT_ZFAIL' in cols:
-        wts *= data['WEIGHT_ZFAIL']
+        wts *= dd['WEIGHT_ZFAIL']
 
     data_we = wt
     rand_we = weights_ran
