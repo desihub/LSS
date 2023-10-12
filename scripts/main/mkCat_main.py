@@ -44,7 +44,7 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
-parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
@@ -661,7 +661,7 @@ if args.imsys == 'y':
     use_maps = fit_maps
        
     #rcols.append('WEIGHT_SYSEB')   
-    dat = Table(fitsio.read(os.path.join(dirout, f'{tracer_clus}'+'_full'+args.use_map_veto+'.dat.fits')))
+    dat = Table(fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')))
     selgood = common.goodz_infull(tp[:3],dat)
     ranl = []
     for i in range(0,18):
@@ -680,8 +680,8 @@ if args.imsys == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
-		seld = dat['PHOTSYS'] == reg
-		selr = rands['PHOTSYS'] == reg
+        seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
 
         for zr in zrl:
             zmin = zr[0]
