@@ -210,7 +210,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     plt.grid()
     plt.ylim(yl[0],yl[1])
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
-    return chi2
+    return chi2,chi2nw
         
 
     
@@ -436,7 +436,7 @@ for tp in tps:
                 parv = sag
                 mp = 'sagstream'
                 fig = plt.figure()
-                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
+                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
                 figs.append(fig)
@@ -448,7 +448,7 @@ for tp in tps:
                 parv = lrg_mask_frac
                 mp = 'fraction of area in LRG mask'
                 
-                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -459,7 +459,7 @@ for tp in tps:
                 parv = sky_g
                 mp = 'g_sky_res'
                 
-                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
                 chi2tot += chi2
                 nmaptot += 1
@@ -476,7 +476,7 @@ for tp in tps:
                 parv = m1-m2
                 parv[sel] = hp.UNSEEN
                 mp = map_pair[0]+' - '+map_pair[1]
-                chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                 chi2tot += chi2
                 nmaptot += 1
 
@@ -492,12 +492,12 @@ for tp in tps:
                 #print(mp)
                 
                 if reg == 'S' or mp[:5] != 'CALIB':
-                    chi2 = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
                     if args.mapmd == 'validate':
-                        fo.write(str(mp)+' '+str(chi2)+'\n')
+                        fo.write(str(mp)+' '+str(chi2)+' '+str(chi2nw)+'\n')
                 #plt.savefig(outdir+tp+'_densfullvs'+map+'.png')
                 #plt.clf()
     
@@ -512,10 +512,10 @@ for tp in tps:
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
                     parv = debv
                     fig = plt.figure()
-                    chi2 = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     figs.append(fig)
                     if args.mapmd == 'validate':
-                        fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+'\n')
+                        fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+' '+str(chi2nw)+'\n')
 
                     chi2tot += chi2
                     nmaptot += 1
