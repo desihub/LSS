@@ -964,6 +964,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
                 fhtOrig = fitsio.read_header(FAOrigName)
                 fadate = fhtOrig['RUNDATE']
+                targver = fhtOrig['TARG'].split('/targets')[0].split('/')[-1]
+                assert(not ('/' in targver))
+                if verbose:
+                    log.info('target photometry version = {0}'.format(targver))
                 #JL stripping out the time of fiber assignment to leave only the date
                 #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
                 fadate = ''.join(fadate.split('T')[0].split('-'))
@@ -987,6 +991,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     os.remove(FAAltName + '.tmp')
                 #JL If the alternate fiberassignment was already performed, don't repeat it
                 #JL Unless the 'redoFA' flag is set to true
+                log.info('desitarget.__file__ = {0}'.format(desitarget.__file__))
+                log.info('FAAltName = {0}'.format(FAAltName))
+
                 if  redoFA or (not os.path.exists(FAAltName)):
                     if verbose and os.path.exists(FAAltName):
                         log.info('repeating fiberassignment')
@@ -1001,14 +1008,22 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     if getosubp and verbose:
                         log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                         log.info(glob.glob(fbadir + '/*' ))
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
                     if verbose:
                         log.info('fa command_run')
                         log.info(command_run)
                     result = subprocess.run(command_run, capture_output = True)
+                    if int(ts) == int('001762'):
+                        raise ValueError('Stopping here to check fiberassign file')
+                    if t['TILEID'] == 1762:
+                        raise ValueError('Stopping here to check fiberassign file')
                 else: 
                     log.info('not repeating fiberassignment')
+                if int(ts) == int('001762'):
+                    raise ValueError('Stopping here to check fiberassign file')
+                if t['TILEID'] == 1762:
+                    raise ValueError('Stopping here to check fiberassign file')
                 OrigFAs.append(pf.open(FAOrigName)[1].data)
                 AltFAs.append(pf.open(FAAltName)[1].data)
                 AltFAs2.append(pf.open(FAAltName)[2].data)
@@ -1036,6 +1051,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             A2RMap = {}
             R2AMap = {}
+
             for ofa, afa, afa2 in zip (OrigFAs, AltFAs, AltFAs2):
                 if changeFiberOpt is None:
                     #if debug:
@@ -1066,9 +1082,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 R2AMap.update(R2AMapTemp)
             
             altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
-
-            
-
+            str2test = str(1762).zfill(6)
+            log.info('str2test = {0}'.format(str2test))
+            log.info('TSs = {0}'.format(TSs))
+            assert(not (str2test in TSs))
             # ADM update the appropriate ledger.
             if mock:
                 if targets is None:
@@ -1092,6 +1109,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             if verbose or debug:
                 log.info('now writing to mtl_tile_file')
             io.write_mtl_tile_file(altmtltilefn,dateTiles)
+
             if verbose or debug:
                 log.info('has written to mtl_tile_file')
             if singleDate:

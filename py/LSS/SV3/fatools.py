@@ -267,7 +267,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = None):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -357,6 +357,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             fht['PMCORR'],
             tarfn,
             tdir+prog,
+            targver = targver,
             mock = mock)
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
@@ -366,7 +367,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             gaiadr,
             fht['PMCORR'],
             tarfn,
-            tdirMain+prog,
+            tdirMain.format(targver)+prog,
+            targver = targver,
             survey = 'main',
             mock = mock)
         else:
@@ -464,6 +466,7 @@ def altcreate_mtl(
     pmcorr,
     outfn,
     targdir,
+    targver = '1.1.1',
     survey='sv3',
     mtltime=None,#I think we will just want this to be the latest for the re/alt runs    
     pmtime_utc_str=None,
@@ -582,11 +585,35 @@ def altcreate_mtl(
     #tcol = ['SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
     #for col in tcol:
     #    columns.append(col) 
+    if verbose:
+        log.info('targdir = {0}'.format(targdir))
     if not mock:
-        d = inflate_ledger(
-                d, targdir, columns=columns, header=False, strictcols=False, quick=True
-            )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
-        
+        log.info('targdir = {0}'.format(targdir))
+        if '1.1.1' in targdir:
+            d = inflate_ledger(
+                    d, targdir, columns=columns, header=False, strictcols=False, quick=True
+                )# AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
+        else:
+            #tempPriorInit = d['PRIORITY_INIT']
+            extracols = ['PRIORITY_INIT', 'DESI_TARGET', 'BGS_TARGET' , 'MWS_TARGET' , 'SCND_TARGET']
+            for col in extracols:
+                columns.append(col)
+            log.info('targver = {0}'.format(targver))
+            log.info('type(d) = {0}'.format(type(d)))
+            d['VERSION'][:] = targver
+
+            log.info('len(d) == {0}'.format(len(d)))
+
+            d = inflate_ledger(
+                    d, targdir, columns=columns, header=False, strictcols=False, quick=False, allowsubset = True,
+                )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
+            log.info('len(d) after inflate ledger == {0}'.format(len(d)))
+            #log.info('stdev PRIORITY_INIT diff = {0:.04f}'.format(np.std(d['PRIORITY_INIT'] - tempPriorInit)))
+
+            #How does ELG Priority promotion 
+            #log.info('A')
+            #condUnobs = d['NUMOBS'] == 0
+            #d['PRIORITY'][condUnobs] = d['PRIORITY_INIT'][condUnobs]
         if add_plate_cols:
             d = Table(d)
             d["PLATE_RA"] = d["RA"]
@@ -617,6 +644,7 @@ def altcreate_mtl(
     except:
         log.info('len of read_targets_in_tiles output pre writing post failure of shape')
         log.info(len(d))
+    log.info('outfn = {0}'.format(outfn))
     d.write(outfn,format='fits', overwrite=True)
     del d
     return True
