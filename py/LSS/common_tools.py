@@ -503,7 +503,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran'):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=9):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -512,6 +512,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     zmax is the upper edge of the maximum bin (read this from file in the future)
     '''
 
+    from desitarget.internal import sharedmem
     nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
@@ -571,7 +572,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff.close()
     #ft.write(fn,format='fits',overwrite=True)
     print('done with data')
-    for rann in range(ranmin,nran):
+    def _parfun(rann):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
@@ -610,7 +611,20 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff.close()
         #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
         #ft.write(fn,format='fits',overwrite=True)
-        print('done with random number '+str(rann))
+    if par == 'n':
+        for rann in range(ranmin,nran):
+            _parfun(rann)
+            print('done with random number '+str(rann))
+    else:
+        inds = np.arange(ranmin,nran)
+        from multiprocessing import Pool
+    
+        #nproc = 9 #try this so doesn't run out of memory
+        pool = sharedmem.MapReduce(np=nproc)
+        #with Pool(processes=nproc) as pool:
+        with pool:
+            res = pool.map(_parfun, inds)
+
     return True
 
 def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
@@ -1054,7 +1068,11 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
 def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
     din = fitsio.read(fin)
     mask = np.ones(len(din),dtype='bool')
+    if 'PHOTSYS' not in list(din.dtype.names):
+        din = addNS(Table(din))
     seln = din['PHOTSYS'] == 'N'
+    
+        
     import healpy as hp
     th,phi = radec2thphi(din['RA'],din['DEC'])
     pix = hp.ang2pix(nside,th,phi,nest=True)
@@ -1072,7 +1090,8 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
             
         else:
             mvals[seln] = mapn[mp][pix[seln]]
-            print(np.min(mvals[seln]),np.max(mvals[seln]))
+            if len(mvals[seln]) > 0:
+                print(np.min(mvals[seln]),np.max(mvals[seln]))
             mvals[~seln] = maps[mp][pix[~seln]]
             print(np.min(mvals[~seln]),np.max(mvals[~seln]))
             if mp == 'STARDENS':
@@ -1150,7 +1169,9 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     outf is the full path to write out
     comments is a list of comments to include in the header
     '''
-    tmpfn = outf + '.tmp'
+    import shutil
+    ranstring = int(np.random.random()*1e10)
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
@@ -1161,8 +1182,9 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     print('closed fits file')
-    os.rename(outf+'.tmp', outf)
-    #os.system('mv ' + tmpfn + ' ' + outf)
+    #shutil.move(tmpfn, outf)
+    #os.rename(tmpfn, outf)
+    os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not
     print('moved output to ' + outf)
 
 

@@ -145,26 +145,32 @@ def _format_bitweights(bitweights):
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None):
-
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
 
     if option:
+        if 'noNorth' in option:
+            decmask = catalog['DEC'] < 32.375
+            mask &= decmask
+        
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
-    if option:
-       if 'ntile' in option:
-           if '=' in option:
-               opsp = option.split('=')
-               nt = int(opsp[1])
-               mask &= catalog['NTILE'] == nt
-           if '>' in option:
-               opsp = option.split('>')
-               nt = int(opsp[1])
-               mask &= catalog['NTILE'] >= nt
+        if 'elgzcatas' in option:
+            zmask = ((catalog['Z'] >= 1.31) & (catalog['Z'] < 1.33))
+            mask &= ~zmask
+            
+        if 'ntile' in option:
+            if '=' in option:
+                opsp = option.split('=')
+                nt = int(opsp[1])
+                mask &= catalog['NTILE'] == nt
+            if '>' in option:
+                opsp = option.split('>')
+                nt = int(opsp[1])
+                mask &= catalog['NTILE'] >= nt
                
          
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
@@ -187,9 +193,23 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     #if 'SN' in weight_type:
     #    weights *= catalog['WEIGHT_SN'][mask]
     #    print('multiplying weights by WEIGHT_SN')
+    if 'swapinLIN' in weight_type:
+        #assumes default already added the rest of the weights and that SN was used as default weight
+        weights *=  catalog['WEIGHT_IMLIN'][mask]/catalog['WEIGHT_SN'][mask]
+
     if 'swapinRF' in weight_type:
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_RF'][mask]/catalog['WEIGHT_SN'][mask]
+    if 'removeSN' in weight_type:
+        #assumes default already added the rest of the weights and that SN was used as default weight
+        weights /=  catalog['WEIGHT_SN'][mask]
+
+    if 'addRF' in weight_type:
+        #assumes no imaging systematic weights were in default
+        weights *=  catalog['WEIGHT_RF'][mask]
+    if 'addSN' in weight_type:
+        #assumes no imaging systematic weights were in default
+        weights *=  catalog['WEIGHT_SN'][mask]
 
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
@@ -202,9 +222,14 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         print('multiplying weights by WEIGHT_FKP')
     if 'nofail' in weight_type:
         weights /= catalog['WEIGHT_ZFAIL'][mask]
-        print('dividing weights by WEIGHT_FKP')
-    if 'fluxfail' in weight_type:
-        weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
+        print('dividing weights by WEIGHT_ZFAIL')
+    if 'addGFLUX' in weight_type:
+        weights *= catalog['WEIGHT_FIBERFLUX'][mask]
+        print('multiplying weights by WEIGHT_FIBERFLUX')
+    if 'addSSR' in weight_type:
+        weights *= catalog['WEIGHT_focal'][mask]
+        print('multiplying weights by WEIGHT_focal')
+        
     if name == 'data' and 'bitwise' in weight_type:
         weights /= catalog['WEIGHT_COMP'][mask]
         print('dividing weights by WEIGHT_COMP')

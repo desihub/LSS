@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# example to run as bash script 
-# dnnp with pnll, linp with pnll or lin with mse
-# bash run_sysnet.sh N ELG_LOPnotqso true false 1024 0.003 dnnp pnll true v0
-
 # below is code for reading data and where output is
 run=$1 # north or south
 tracer=$2
@@ -16,11 +12,10 @@ learnrate=$6
 model=$7
 loss=$8
 
-version=${9} #catalog version
-basedir=${10}
-output_nn=$basedir/$version/sysnet/${tracer}_${run}
+real=${9} #realization number
+output_nn=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/${tracer}_${run}
 #/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/${tracer}_${run}
-input_data=$basedir/$version/sysnet/prep_${tracer}_${run}.fits
+input_data=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/prep_${tracer}_${run}.fits
 #/global/cfs/projectdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/$version/sysnet/prep_${tracer}_${run}.fits
 echo using $input_data and saving to $output_nn
 

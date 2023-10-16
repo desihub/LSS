@@ -38,6 +38,8 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--col_name", help="name of the column to add from data")
+parser.add_argument("--replace", help="if the column is there, replace?",default='n')
+parser.add_argument("--fix_weight", help="should replacing this column propagate to the WEIGHT column?",default='n')
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--blind", help="string to make output directory blinded or not",default='blinded/')
@@ -70,14 +72,35 @@ regl = ['NGC','SGC']
 
 for reg in regl:
     fname = dirout+args.tracer+'_'+reg+'_clustering.dat.fits'
-    cd = fitsio.read(fname)
+    cd = Table(fitsio.read(fname))
+    if args.col_name in list(cd.dtype.names):
+        if args.replace == 'y':
+            if args.fix_weight == 'y':
+                cd['WEIGHT'] /= cd[args.col_name]
+            cd.remove_column(args.col_name)
+        else:
+            sys.exit('column is in catalog already! Set --replace y if you wish to replace it')
     cd = join(cd,indata,keys=['TARGETID'],join_type='left')
+    if args.fix_weight == 'y':
+        cd['WEIGHT'] *= cd[args.col_name]
     common.write_LSS(cd,fname)
 indata.rename_column('TARGETID', 'TARGETID_DATA')
 for rn in range(rm,rx):
     for reg in regl:
         fname = dirout+args.tracer+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-        cd = fitsio.read(fname)
+        cd = Table(fitsio.read(fname))
+        if args.col_name in list(cd.dtype.names):
+            if args.replace == 'y':
+                if args.fix_weight == 'y':
+                    cd['WEIGHT'] /= cd[args.col_name]
+                cd.remove_column(args.col_name)
+
+            else:
+                sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
+        
         cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+        if args.fix_weight == 'y':
+            cd['WEIGHT'] *= cd[args.col_name]
+
         common.write_LSS(cd,fname)
 

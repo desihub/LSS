@@ -44,11 +44,12 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
-parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='y')
+parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
+parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
 parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='_HPmapcut')
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
@@ -59,7 +60,7 @@ parser.add_argument("--fillran", help="add imaging properties to randoms",defaul
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
 
@@ -346,6 +347,7 @@ if args.join_etar == 'y':
 new_cols=mainp.new_cols#['STARDENS','HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK']
 fid_cols=mainp.fid_cols#['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
 allmapcols = new_cols+fid_cols
+
 if args.fillran == 'y':
     logf.write('filled randoms with imaging properties for '+tp+' '+str(datetime.now()))
     print('filling randoms with imaging properties')
@@ -578,61 +580,15 @@ if args.add_weight_zfail == 'y':
     else:
         ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
 
-
-if args.imsys == 'y':
-    from LSS.imaging import densvar
-    #regl = ['_DN','_DS','','_N','_S']
-    #wzm = ''
-    fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    use_maps = fit_maps
-    if type[:3] == 'ELG':
-        zrl = [(0.6,0.8),(0.8,1.1),(1.1,1.5)]
-    if type[:3] == 'QSO':
-        zrl = [(0.8,1.6),(1.6,2.1),(2.1,3.5)]    
-    if type[:3] == 'LRG':
-        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]    
-    if type[:3] == 'BGS':
-        zrl = [(0.1,0.5)]    
-       
-    rcols.append('WEIGHT_SYSEB')   
-    
-    for reg in regl:
-        for zr in zrl:
-            zmin = zr[0]
-            zmax = zr[1]
-            fb = dirout+tracer_clus+reg
-            fcr = fb+'_0_clustering.ran.fits'
-            rd = fitsio.read(fcr)
-            fcd = fb+'_clustering.dat.fits'
-            dd = Table.read(fcd)
-            dd['WEIGHT_SYSEB'] = np.ones(len(dd))
-            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dd,rd,zmin,zmax,fit_maps,use_maps,plotr=False)
-            sel = wsysl != 1
-            dd['WEIGHT_SYSEB'][sel] = wsysl[sel]
-            #dd['WEIGHT'][sel] *= wsysl[sel]
-            dd.write(fcd,overwrite=True,format='fits')
+if args.usemaps == None:
+    fit_maps = mainp.fit_maps
+else:
+    fit_maps = [mapn for mapn in args.usemaps]
 
 zl = (zmin,zmax)
 #fit_maps = ['EBV_CHIANG_SFDcorr','STARDENS','HALPHA','EBV_MPF_Mean_FW15','BETA_ML','HI','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z']
-if tracer_clus[:3] == 'ELG':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
 
-if tracer_clus[:3] == 'BGS':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI']
 
-if tracer_clus[:3] == 'LRG':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
-    #fit_maps.append('PSFDEPTH_W1')
-#    fit_maps = ['STARDENS','HI','BETA_ML','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-
-if tracer_clus[:3] == 'QSO':
-    fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
-    fit_maps.append('PSFDEPTH_W1')
-    fit_maps.append('PSFDEPTH_W2')
-    #fit_maps = ['EBV', 'STARDENS',
-    #             'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z',
-    #             'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2']
 
 tpstr = tracer_clus
 if tracer_clus == 'BGS_BRIGHT-21.5':
@@ -663,7 +619,8 @@ elif type[:3] == 'BGS':
     zmax = 0.5    
 
 
-if args.prepsysnet == 'y' or args.regressis == 'y':
+
+if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys:
     
     def make_hp(value, hpix, nside, fill_with=np.nan):
         """ A Function to create a HEALPix map
@@ -696,7 +653,55 @@ if args.prepsysnet == 'y' or args.regressis == 'y':
     #debv = Table()
     #debv['EBV_DIFFRZ'] = debv256_nest
 
+if args.imsys == 'y':
+    from LSS.imaging import densvar
+    #regl = ['_DN','_DS','','_N','_S']
+    #wzm = ''
+    #fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
+    use_maps = fit_maps
+       
+    #rcols.append('WEIGHT_SYSEB')   
+    fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
+    dat = Table(fitsio.read(fname))
+    selgood = common.goodz_infull(tp[:3],dat)
+    ranl = []
+    for i in range(0,int(args.maxr)):
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ranl.append(ran)
+    rands = np.concatenate(ranl)
+    syscol = 'WEIGHT_IMLIN'
+    regl = ['N','S']
+    dat[syscol] = np.ones(len(dat))
+    for reg in regl:
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        #seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
 
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+            #fb = dirout+tracer_clus+reg
+            #fcr = fb+'_0_clustering.ran.fits'
+            #rd = fitsio.read(fcr)
+            #fcd = fb+'_clustering.dat.fits'
+            #dd = Table.read(fcd)
+            
+            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            sel = wsysl != 1
+            dat[syscol][sel] = wsysl[sel]
+            #dd['WEIGHT'][sel] *= wsysl[sel]
+            #dd.write(fcd,overwrite=True,format='fits')
+    common.write_LSS(dat,fname)
 
 if args.prepsysnet == 'y':
     logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
@@ -706,7 +711,7 @@ if args.prepsysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     #_HPmapcut'
-    dat = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_full'+args.use_map_veto+'.dat.fits'))
+    dat = fitsio.read(os.path.join(dirout, f'{tracer_clus}'+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
     for i in range(0,18):
         ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
