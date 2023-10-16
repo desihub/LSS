@@ -90,7 +90,7 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
     print('made ' + outdir)
 
-namout_txt = outdir + 'target +'_Abacus2mock_forFAemu_m'+ mock +'.dat'
+namout_txt = outdir + target +'_Abacus2mock_forFAemu_m'+ mock +'.dat'
 
 #RA_cut = [20.0, 40.0]
 #dec_cut = [-10.0, 10.0]
