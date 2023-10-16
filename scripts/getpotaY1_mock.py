@@ -1,12 +1,17 @@
 '''
 Find all potential assignment and counts tiles for Y1 mocks
+Use the following environment
+source $CFS/desi/software/desi_environment.sh main
+module swap desimodel/0.19.0
+module swap fiberassign/5.7.2
 '''
 
 import numpy as np
 import os
 from astropy.table import Table, join, vstack
 import argparse
-from fiberassign.hardware import load_hardware
+from fiberassign.hardware import load_hardware, get_default_exclusion_margins
+from fiberassign._internal import Hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
 from fiberassign.assign import Assignment
@@ -26,6 +31,14 @@ import LSS.common_tools as common
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
+import bisect
+import time
+from datetime import datetime
+import multiprocessing
+
+t_start = time.time()
+
+log = Logger.get()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
@@ -35,85 +48,100 @@ parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
+parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
+                    default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
+parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
+                    default=multiprocessing.cpu_count()//2, type=int)
+
+# On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
+#   If you didn't want this for some reason, you could revert '/dvs_ro/cfs/cdirs/desi' to '/global/cfs/cdirs/desi' in the following.
+desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
 
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
-    infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit', 'forFA'+args.realization+'.fits')
+    log.info('Reading %s' % infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    if not os.path.exists(tileoutdir):
-        os.makedirs(tileoutdir)
-    paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
+    tileoutdir = os.path.join(os.getenv('SCRATCH'), 'SecondGenMocks', 'AbacusSummit', 'tartiles'+args.realization)
+    paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit', 'mock'+args.realization)
 elif args.mock == 'ezmocks6':
-#     #tr = args.tracer
-#     rz = args.realization
-#     print("Doing %s"%tr)
+    # #tr = args.tracer
+    # rz = args.realization
+    # print("Doing %s"%tr)
+    #
+    # if  tr == "LRG":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
+    # elif tr == "ELG":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
+    # elif tr == "QSO":
+    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
+    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
+    ## infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
+    ## infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
+    # tars1 = Table.read(infn1)#fitsio.read(infn1)
+    # tars2 = Table.read(infn2)#fitsio.read(infn2)
+    # tars1["GALCAP"] = "N"
+    # tars2["GALCAP"] = "S"
+    # tars = vstack([tars1, tars2])
+    # tars['TARGETID'] = np.arange(len(tars))
 
-#     if  tr == "LRG":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
-#     elif tr == "ELG":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
-#     elif tr == "QSO":
-#         infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
-#         infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
-#    # infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
-#    # infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
-#     tars1 = Table.read(infn1)#fitsio.read(infn1)
-#     tars2 = Table.read(infn2)#fitsio.read(infn2)
-#     tars1["GALCAP"] = "N"
-#     tars2["GALCAP"] = "S"
-#     tars = vstack([tars1, tars2])
-#     tars['TARGETID'] = np.arange(len(tars))
-    
-    infn = args.base_input + 'EZMocks_6Gpc/EZMocks_6Gpc_' + args.realization + '.fits'
+    infn = os.path.join(args.base_input + 'EZMocks_6Gpc', 'EZMocks_6Gpc_' + args.realization + '.fits')
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)#['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ']
 
-    tileoutdir = args.base_output+'EZMocks_6Gpc/tartiles'+args.realization+'/'
-    paoutdir = args.base_output+'EZMocks_6Gpc/EzMocks/mock'+args.realization+'/'
+    tileoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'tartiles'+args.realization)
+    paoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'EzMocks', 'mock'+args.realization)
     if args.tracer is not None:
-        tileoutdir += args.tracer+'/'
-        paoutdir += args.tracer+'/'
+        tileoutdir = os.path.join(tileoutdir, args.tracer)
+        paoutdir = os.path.join(paoutdir, args.tracer)
 
-print(tars.dtype.names)
+# Ensure that the targets file is sorted by Dec.
+t0 = time.time()
+is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
+if not is_sorted:
+    I = np.argsort(tars['DEC'])
+    tars = tars[I]
+t1 = time.time()
+log.info('Sorting/verifying mocks: %.1f' % (t1-t0))
 
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
-    print('made '+tileoutdir)
+    #print('made '+tileoutdir)
 if not os.path.exists(paoutdir):
     os.makedirs(paoutdir)
-    print('made '+paoutdir)
+    #print('made '+paoutdir)
 
+tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'Y1', 'LSS', 'tiles-'+args.prog+'.fits'))
+log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
-tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog+'.fits')
-
-
-def write_tile_targ(inds ):
-    tiles = tiletab[inds]
-    #for i in range(0,len(tiles)):
-    fname = tileoutdir+'/tilenofa-'+str(tiles['TILEID'])+'.fits'
-    print('creating '+fname)
-    tdec = tiles['DEC']
+def get_tile_targ(tile):
+    '''
+    Creates an astropy Table of (mock) targets within the given `tile`.
+    '''
+    tdec = tile['DEC']
     decmin = tdec - trad
     decmax = tdec + trad
-    wdec = (tars['DEC'] > decmin) & (tars['DEC'] < decmax)
-    #print(len(rt[wdec]))
-    inds = desimodel.footprint.find_points_radec(tiles['RA'], tdec,tars[wdec]['RA'], tars[wdec]['DEC'])
-    print('got indexes')
-    rtw = tars[wdec][inds]
+    dec = tars['DEC']
+    # The `tars` global table of targets is sorted by Dec.  We therefore only need to look at
+    # indices that can possibly be within range given just the Dec distance (decmin to decmax).
+    # "bisect_left" is way faster than "np.searchsorted"!
+    #i0,i1 = np.searchsorted(dec, [np.float32(decmin), np.float32(decmax)])
+    i0 = bisect.bisect_left(dec, decmin)
+    i1 = bisect.bisect_left(dec, decmax, lo=i0)
+    Idec = slice(i0, i1+1)
+    inds = desimodel.footprint.find_points_radec(tile['RA'], tdec,
+                                                 tars['RA'][Idec], tars['DEC'][Idec])
+    rtw = tars[i0 + np.array(inds)]
     rmtl = Table(rtw)
-    print('made table for '+fname)
+    #print('made table')
     del rtw
-    #n=len(rmtl)
-    #rmtl['TARGETID'] = np.arange(1,n+1)+10*n*rannum 
-    #rmtl['TARGETID'] = np.arange(len(rmtl))
-    #print(len(rmtl['TARGETID'])) #checking this column is there
     if 'DESI_TARGET' not in tarcols:
         rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
     if 'NUMOBS_INIT' not in tarcols:
@@ -126,32 +154,30 @@ def write_tile_targ(inds ):
     rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#forcing it to match value assumed below
     if 'SUBPRIORITY' not in tarcols:
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-    print('added columns for '+fname)
-    rmtl.write(fname,format='fits', overwrite=True)
-    del rmtl
-    print('added columns, wrote to '+fname)
-    #nd += 1
-    #print(str(nd),len(tiles))
+    return rmtl
 
+def write_tile_targ(ind):
+    '''
+    Write the targets file for the single tile table index "ind".
+    '''
+    tile = tiletab[ind]
+    fname = os.path.join(tileoutdir, 'tilenofa-'+str(tile['TILEID'])+'.fits')
+    log.info('creating %s' % fname)
+    rmtl = get_tile_targ(tile)
+    #print('added columns for', fname)
+    rmtl.write(fname, format='fits', overwrite=True)
+    #print('added columns, wrote to', fname)
 
-
-margins = dict(pos=0.05,
-                   petal=0.4,
-                   gfa=0.4)
-
-
-log = Logger.get()
+margins = get_default_exclusion_margins()
 rann = 0
 n = 0
 
-
 def getpa(ind):
-
     #tile = 1230
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
-    
-    fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
     t = Table(tiletab[ind])
@@ -163,16 +189,19 @@ def getpa(ind):
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
-    hw = load_hardware(rundate=dt, add_margins=margins)
+    tt = parse_datetime(dt)
+    hw = get_hardware_for_time(tt)
+    assert(hw is not None)
 
-    t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
-    
+    tilefn = os.path.join(args.tile_temp_dir, str(tile)+'-'+str(rann)+'-tiles.fits')
+    t.write(tilefn, overwrite=True)
+
     tiles = load_tiles(
-        tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
+        tiles_file=tilefn, obsha=obsha, obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
-    print('Tile ids:', tids)
+    #print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
     assert(len(I) == 1)
     i = I[0]
@@ -185,11 +214,12 @@ def getpa(ind):
     plate_radec=True
     tagalong = create_tagalong(plate_radec=plate_radec)
     
-    print(tile)
+    #print(tile)
     # Load target files...
-    load_target_file(tgs, tagalong, tileoutdir+'/tilenofa-%i.fits' % tile)
+    tilenofafn = os.path.join(tileoutdir, 'tilenofa-%i.fits' % tile)
+    load_target_file(tgs, tagalong, tilenofafn)
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read(tileoutdir+'/tilenofa-%i.fits' % tile,columns =tarcols)
+    tar_tab = fitsio.read(tilenofafn, columns=tarcols)
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -199,7 +229,7 @@ def getpa(ind):
     # Compute the fibers on all tiles available for each target and sky
     favail = LocationsAvailable(tgsavail)
 
-    # FAKE stucksky
+    # FAKE stucksky (positioners that happen to be stuck on good sky positions)
     stucksky = {}
 
     # Create assignment object
@@ -209,10 +239,10 @@ def getpa(ind):
     navail = np.sum([len(avail[x]) for x in avail.keys()])
     fibers = dict(hw.loc_fiber)
     fdata = Table()
-    fdata['LOCATION'] = np.zeros(navail,dtype=int)
-    fdata['FIBER'] = np.zeros(navail,dtype=int)
-    fdata['TARGETID'] = np.zeros(navail,dtype=int)
-    
+    fdata['LOCATION'] = np.zeros(navail, dtype=int)
+    fdata['FIBER']    = np.zeros(navail, dtype=int)
+    fdata['TARGETID'] = np.zeros(navail, dtype=int)
+
     off = 0
     # The "FAVAIL" (available targets) HDU is sorted first by LOCATION,
     # then by TARGETID.
@@ -230,28 +260,126 @@ def getpa(ind):
         locs = kl[0]
         ids = kl[1]
         locids = ids*10000+locs
-        print('N collisions:', len(coll))
+        log.info('N collisions: %i' % len(coll))
         locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-        print('N collisions original:',np.sum(locidsin),len(fdata))
+        log.info('N collisions original: %i %i' % (np.sum(locidsin),len(fdata)))
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
     return fdata
-    
-if __name__ == '__main__':
-    from multiprocessing import Pool
-    tls = list(tiletab['TILEID'])#[:10])
-    inds = np.arange(len(tls))
-    #write_tile_targ(inds[0])
-    with Pool(processes=128) as pool:
-        res = pool.map(write_tile_targ, inds)
 
-    with Pool(processes=128) as pool:
-        res = pool.map(getpa, inds)
-    colltot = np.concatenate(res)
+def run_one_tile(ind):
+    t0 = time.time()
+    write_tile_targ(ind)
+    res = getpa(ind)
+    res = np.array(res)
+    t1 = time.time()
+    log.info('Tile %i took %.3f sec' % (tiletab[ind]['TILEID'], t1-t0))
+    return res
+
+def read_fba_header(ind):
+    '''
+    Read the fiberassign header for one tile index.
+    '''
+    tile = tiletab['TILEID'][ind]
+    ts = '%06i' % tile
+    fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
+    return dict([(k, fbah[k]) for k in ['RUNDATE', 'MTLTIME', 'FA_RUN', 'FA_HA', 'FIELDROT']])
+
+def parse_datetime(s):
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:
+        d = datetime.strptime(rundate, "%Y-%m-%dT%H:%M:%S")
+        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
+        d = d.replace(tzinfo=timezone.utc)
+
+hardware_times = []
+def get_hardware_for_time(t):
+    global hardware_times
+    for tlo,thi,hw in hardware_times:
+        if (tlo <= t) and (thi is None or thi > t):
+            #print('Match to time range', tlo, 'to', thi)
+            return hw
+    return None
+
+def main():
+    from multiprocessing import Pool
+    tls = list(tiletab['TILEID'])
+    #inds = np.flatnonzero(np.array(tls) == 1230)
+    #inds = np.arange(256)
+    inds = np.arange(len(tls))
+
+    t0 = time.time()
+    # Read all fiberassign headers to get the RUNDATES.
+    with Pool(processes=args.nprocs) as pool:
+        headers = pool.map(read_fba_header, inds)
+    rundates = set([h['RUNDATE'] for h in headers])
+    rundates = sorted(list(rundates))
+    log.info('Unique rundates: %i of %i' % (len(rundates), len(headers)))
+    t1 = time.time()
+    log.info('Reading fiberassign headers in parallel: %.3f sec' % (t1-t0))
+
+    # Read all hardware configurations for our RUNDATES.
+    global hardware_times
+    for t in rundates:
+        dt = parse_datetime(t)
+        cached = get_hardware_for_time(dt)
+        if cached is not None:
+            continue
+        hw,time_lo,time_hi = load_hardware(rundate=t, add_margins=margins, get_time_range=True)
+        hardware_times.append((time_lo, time_hi, hw))
+
+    t2 = time.time()
+    log.info('Loading hardware in series: %.3f sec' % (t2-t1))
+
+    # Keeping this old code because it's a little easier to understand than what we're doing
+    # below (streaming results to disk).
+    #
+    # # Run fiber assignment on tiles in parallel
+    # with Pool(processes=128) as pool:
+    #     res = pool.map(run_one_tile, inds)
+    # t3 = time.time()
+    # log.info('Running tiles in parallel: %.3f sec' % (t3-t2))
+    #
+    # # Merge and write results
+    # colltot = np.concatenate(res)
+    # if args.getcoll == 'y':
+    #     print(len(colltot),np.sum(colltot['COLLISION']))
+    # t3b = time.time()
+    # 
+    # common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
+    # t4 = time.time()
+    # log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
+
+    # Write output *while* retrieving results in parallel
+    outfn = os.path.join(paoutdir, 'pota-'+args.prog+'.fits')
+    tempout = outfn + '.tmp'
+    fits = fitsio.FITS(tempout, 'rw', clobber=True)
+    first = True
+    ntot = 0
+    ncoll = 0
+    with Pool(processes=args.nprocs) as pool:
+        it = pool.imap_unordered(run_one_tile, inds)
+        # fetch results as they complete
+        for res in it:
+            ntot += len(res)
+            ncoll += np.sum(res['COLLISION'])
+            # First result: write to output file.
+            if first:
+                fits.write(res, extname='LSS')
+                first = False
+            # Subsequent results: append to output file.
+            else:
+                fits[-1].append(res)
+            del res
+    fits.close()
+    os.rename(tempout, outfn)
+    log.info('Wrote %s' % outfn)
+    t3 = time.time()
     if args.getcoll == 'y':
-        print(len(colltot),np.sum(colltot['COLLISION']))
-    
-    common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
-        
-    
+        log.info('%i %i' % (ntot, ncoll))
+    log.info('Running tiles and writing results: %.3f sec' % (t3-t2))
+
+if __name__ == '__main__':
+    main()
