@@ -2731,13 +2731,22 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     band = 'R'
     
     
-    
+    selp = ff['PRIORITY'] == 3400
 
     s = 0
     modl =[]
     regl = ['S','N']
     for reg in regl:
-        mod = ssr_tools_new.model_ssr(ff,tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer='QSO',reg=reg,outdir=outdir,band=band,outfn_root='QSO',readpars=readpars)
+        # success rate dips at TSNR > 40 in NGC, probably due to chance alignment with low galactic latitude
+        # and high contamination.
+        # removing TSNR > 40 from the fits makes very little difference, however (probably because
+        # the model cannot model a decreasing success rate with increasing TSNR, so the dip just
+        # doesn't change anything)
+        #if reg == 'N':
+        #    maxtsnr = 40.
+        #else:
+        #    maxtsnr = 1800/(8.60/0.255)
+        mod = ssr_tools_new.model_ssr(ff[selp],tsnr_min=mintsnr,tsnr_max=maxtsnr,tracer='QSO',reg=reg,outdir=outdir,band=band,outfn_root='QSO',readpars=readpars)
         modl.append(mod)    
 
     ff = Table.read(outdir+tp+'_full_noveto.dat.fits')
@@ -2747,8 +2756,9 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     selobs &= ff['ZWARN'] != 999999
     selobs &= ff['GOODHARDLOC'] == 1
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
-    selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
     selp = ff['PRIORITY'] == 3400
+    selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
+    
     print('check that ~98% fulfill priority cut:')
     print(np.sum(selp&selobs)/np.sum(selobs))
     
@@ -3435,8 +3445,6 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
     kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
-    if 'TARGETID_DATA' not in rcols:
-        rcols.append('TARGETID_DATA')
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
