@@ -62,7 +62,6 @@ parser.add_argument("--apply_mask", help="apply the same mask as applied to desi
 parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='y')
 parser.add_argument("--isProduction", help="Say yes if you want to save in main production directory",default='n')
 parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=0, type=bool)
-
 args = parser.parse_args()
 
 tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{PROG}.fits'.format(PROG = args.prog.upper()))
@@ -79,6 +78,14 @@ if args.prog == 'dark':
         desitar = {'ELG':2**1, 'LRG':2**0, 'QSO':2**2}
         downsampling = {'ELG':0.7345658717688022, 'LRG':0.708798313382828, 'QSO':0.39728966594530174}
         percentage_elg_hip = 0.1
+
+if args.prog == 'bright':
+    types = ['BGS']
+    priority = {'BGS': 2100}
+    mainp = main(tp = 'BGS_BRIGHT', specver = 'iron')
+    desitar = {'BGS': 2**60}
+    zs = {'BGS': 'z0.200'}
+    numobs = {'BGS': 2}
 
 
 if args.isProduction == 'y':
@@ -118,6 +125,14 @@ for real in range(args.realmin, args.realmax):
 
             out_file_name = os.path.join(mockdir, 'forFA{real}.fits'.format(real=real))
 
+        elif args.mockver == 'ab_secondgen_cosmosim':
+            mockpath = '/global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky/'
+            file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
+            mockdir = os.path.join(args.base_output, 'cosmosim', 'SecondGenMocks', 'AbacusSummit')
+            out_file_name = os.path.join(mockdir, 'forFA{real}.fits'.format(real=real))
+
+
+
         else:
             raise ValueError(args.mockver+' not supported with legacy mockver argument. Use mockpath/mockfilename arguments instead.')
     else:
@@ -145,6 +160,13 @@ for real in range(args.realmin, args.realmax):
             print(thepath)
             data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'STATUS']))
 
+        if args.mockver == 'ab_secondgen_cosmosim':
+            thepath = os.path.join(mockpath, type_, 'v0', zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
+            print('thepath')
+            print(thepath)
+            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO']))
+
+
         elif args.mockver == 'ezmocks6':
             path_ezmock = os.path.join(mockpath, type_, zs[type_])
             if  type_ == "LRG":
@@ -165,19 +187,27 @@ for real in range(args.realmin, args.realmax):
 
         print(data.dtype.names)
         print(type_, len(data))
-        status = data['STATUS'][()]
-        idx = np.arange(len(status))
+        if args.prog == 'dark':
+            status = data['STATUS'][()]
+            idx = np.arange(len(status))
+        elif args.prog == 'bright':
+            idx = np.arange(len(data))
 
-        if args.mockver == 'ab_secondgen':
+        if args.mockver == 'ab_secondgen' or args.mockver == 'ab_secondgen_cosmosim':
 
             mask_main = mask_secondgen(nz=1, foot='Y1')
-            idx_main = idx[(status & (mask_main))==mask_main]
+            if args.prog == 'dark':
+                idx_main = idx[(status & (mask_main))==mask_main]
+            elif args.prog == 'bright':
+                idx_main = idx
 
-            if type_ == 'LRG' or type_ == 'QSO':
+
+            if type_ == 'LRG' or type_ == 'QSO' or type_ == 'BGS':
+                print(len(data))
                 if args.downsampling == 'y':
                     ran_tot = np.random.uniform(size = len(idx_main))
                     idx_main = idx_main[(ran_tot<=downsampling[type_])]
-                data = data[idx_main]
+
                 data = Table(data)
                 
                 data['DESI_TARGET'] = desitar[type_]
@@ -251,8 +281,12 @@ for real in range(args.realmin, args.realmax):
             mask_main = mask_firstgen(main=0, nz=1, Y5=0, sv3=0) #no longer cutting to Y5 footprint because it doesn't actually cover Y1
             if type_ == 'LRG':
                 mask_main = mask_firstgen(main=1, nz=1, Y5=0, sv3=0)
-            idx_main = idx[(status & (mask_main))==mask_main]
+            if args.prog == 'dark':
+                idx_main = idx[(status & (mask_main))==mask_main]
+            # else:
+            #     idx_main = idx[mask_main == mask_main]
             data = data[idx_main]
+            
             print(len(data))
             data = Table(data)
             data['DESI_TARGET'] = desitar[type_]
@@ -262,7 +296,7 @@ for real in range(args.realmin, args.realmax):
             data['NUMOBS_INIT'] = numobs[type_]
 
             datat.append(data)
-    
+
     targets = vstack(datat)
     del datat
     if args.mockver != 'ab_secondgen':
@@ -286,7 +320,10 @@ for real in range(args.realmin, args.realmax):
     n=len(targets)
     targets.rename_column('Z_COSMO', 'TRUEZ') 
     targets.rename_column('Z', 'RSDZ') 
-    targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
+    if args.prog == 'bright':
+        targets['BGS_TARGET'] = 2 * np.ones(n, dtype='i8')
+    else:
+        targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
     targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
     targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
     targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
