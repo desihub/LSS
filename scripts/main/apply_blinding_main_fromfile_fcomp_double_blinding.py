@@ -73,7 +73,7 @@ parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
-parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='')
 #parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='GC')
 
 #parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
@@ -169,7 +169,7 @@ elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/
 else:
     sys.exit('verspec '+args.verspec+' not supported')
 
-dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
+dirout = args.basedir_out + '/LSScats/' + version + '/'
 
 def mkdir(dirname):
     """Try to create ``dirname`` and catch :class:`OSError`."""
@@ -248,8 +248,8 @@ if root:
     fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = dirin +'BGS_BRIGHT'
-    fcr_in = fbr_in + '_1_full'+args.use_map_veto+'.ran.fits'
-    fcd_in = fb_in + '_full'+args.use_map_veto+'.dat.fits'
+    fcr_in = fbr_in +'{}_0_clustering.ran.fits'
+    fcd_in = fb_in + '{}_clustering.dat.fits'
     print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
@@ -282,53 +282,53 @@ if root:
 
     if args.baoblind == 'y':
         
+        cl = gcl
+        for reg in cl:
+            fnd = fcd_in.format(reg)
+            # fndr = dirout + type + notqso + fcr_in.format(reg)
+            data = Table(fitsio.read(fnd))
+            # data_real = Table(fitsio.read(fndr))
+        # fin = fitsio.read(fnd)
+        # cols = list(fin.dtype.names)
+        # nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
 
-        fin = fitsio.read(fcd_in)
-        cols = list(fin.dtype.names)
-        nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
-
-        if 'WEIGHT_FKP' not in cols:
-            print('adding FKP weights')
-            common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
+        # if 'WEIGHT_FKP' not in cols:
+        #     print('adding FKP weights')
+        #     common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
 
         
-        data = Table(fitsio.read(fcd_in))
-        data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
-        outf = dirout + type + notqso + '_full.dat.fits'
-        print('output going to '+outf)
-        blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
+        # data = Table(fitsio.read(fcd_in))
+            data['Z'] = np.clip(data['Z'],0.01,3.6)
+            outf = dirout + fnd.split('/')[-1]
+            print('output going to '+outf)
+            blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z')
 
         #fb_out = dirout + type + notqso
         #fcd_out = fb_out + '_full.dat.fits'
-        nz_out = common.mknz_full(outf, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
+        # nz_out = common.mknz_full(outf, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
 
-        ratio_nz = nz_in / nz_out
+        # ratio_nz = nz_in / nz_out
 
-        fd = Table(fitsio.read(outf))
-        cols = list(fd.dtype.names)
-        if 'WEIGHT_SYS' not in cols:
-            if args.wsyscol is not None:
-                fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
-            else:
-                print('did not find WEIGHT_SYS, putting it in as all 1')
-                fd['WEIGHT_SYS'] = np.ones(len(fd))
-        zl = fd['Z']
-        zind = ((zl - zmin) / dz).astype(int)
-        gz = fd['ZWARN'] != 999999
-        zr = zl > zmin
-        zr &= zl < zmax
-
-        wl = np.ones(len(fd))
-        wl[gz&zr] = nz_in[zind[gz&zr]] / nz_out[zind[gz&zr]]
-        fd['WEIGHT_SYS'] *= wl
-        common.write_LSS(fd, outf)
+            fd = Table(fitsio.read(outf))
+            cols = list(fd.dtype.names)
+            if 'WEIGHT_SYS' not in cols:
+                if args.wsyscol is not None:
+                    fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
+                else:
+                    print('did not find WEIGHT_SYS, putting it in as all 1')
+                    fd['WEIGHT_SYS'] = np.ones(len(fd))
+            zl = fd['Z']
+            zr = zl > zmin
+            zr &= zl < zmax
+            fd = fd[zr]
+            common.write_LSS(fd, outf)
 
 
     if args.visnz == 'y':
         print('min/max of weights for nz:')
         print(np.min(wl),np.max(wl))
         fdin = fitsio.read(fcd_in)
-        a = plt.hist(fdin['Z_not4clus'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
+        a = plt.hist(fdin['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='input')
         b = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',label='blinded')
         c = plt.hist(fd['Z'][gz],bins=100,range=(zmin,zmax),histtype='step',weights=fd['WEIGHT_SYS'][gz],label='blinded+reweight')
         plt.legend()
@@ -408,6 +408,21 @@ if args.dorecon == 'y':
         randoms_rec_fn = catalog_fn(**catalog_kwargs, cat_dir=dirout, rec_type='IFFTrsd', name='randoms')
         rectools.run_reconstruction(Reconstruction, distance, data_fn, randoms_fn, data_rec_fn, randoms_rec_fn, f=f, bias=bias, convention='rsd', dtype='f8', zlim=(zmin, zmax), mpicomm=mpicomm)
 
+if root:
+    #re-sample redshift dependent columns from data
+    nran = args.maxr-args.minr
+    if args.resamp == 'y':
+        regions = ['NGC', 'SGC']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
+        for reg in regions:
+            flin = dirout + args.type + notqso + '_'+reg    
+            def _parfun(rannum):
+                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+            
+            inds = np.arange(nran)
+            from multiprocessing import Pool
+            with Pool(processes=nran*2) as pool:
+                res = pool.map(_parfun, inds)
 if root and (args.rsdblind == 'y'):
     #if args.reg_md == 'NS':
     #    cl = regl
@@ -455,11 +470,8 @@ if args.fnlblind == 'y':
     bias = tp2bias[args.type[:3]]
 
     # build blinding cosmology
-    cosmo_blind = get_cosmo_blind('DESI', z=zeff)
-    cosmo_blind.params['w0_fld'] = w0_blind
-    cosmo_blind.params['wa_fld'] = wa_blind
-    cosmo_blind._derived['f'] = f_blind
-    cosmo_blind._derived['fnl'] = fnl_blind   # on fixe la valeur pour de bon
+    cosmo_blind = DESI()
+    cosmo_blind._derived['fnl'] = fnl_blind  # only parameter used for PNG blinding
     blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
 
     # loop over the different region of the sky
