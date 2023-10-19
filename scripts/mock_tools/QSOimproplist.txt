@@ -1,25 +1,25 @@
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 0 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 1 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 2 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 3 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 4 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 5 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 6 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 7 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 8 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 9 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 10 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 11 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 12 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 13 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 14 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 15 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 16 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 17 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 18 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 19 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 20 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 21 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 22 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 23 
-python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 24 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 0 --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 1 --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 2 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 3 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 4 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 5 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 6 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 7 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 8 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 9  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 10 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 11 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 12 --weight_type WEIGHT_RF 
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 13  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 14  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 15  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 16  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 17  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 18  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 19  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 20  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 21  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 22  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 23  --weight_type WEIGHT_RF
+python scripts/validation/validation_improp_mock.py --tracers QSO --mockn 24  --weight_type WEIGHT_RF
