@@ -52,6 +52,7 @@ parser.add_argument("--mkran", default = 'n')
 parser.add_argument("--resamp", default = 'n')
 parser.add_argument("--nz", default = 'n')
 parser.add_argument("--apply_HPmapcut", default = 'n')
+parser.add_argument("--mapcutdata", help="only happens if apply_HPmapcut is 'y'",default = 'y')
 #parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
 
@@ -301,11 +302,12 @@ for tracer in tracers:
         mapcuts = mainp.mapcuts
         outroot = mockdir+tracer+'_ffa_'
         for reg in allreg:
-            fin = out_data_froot+reg+'_clustering.dat.fits'
-            fin = fin.replace('global','dvs_ro')  
-            fout = outroot+reg+'_clustering.dat.fits'  
-            common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
-            print('data veto done, now doing randoms')
+            if args.mapcutdata == 'y':
+                fin = out_data_froot+reg+'_clustering.dat.fits'
+                fin = fin.replace('global','dvs_ro')  
+                fout = outroot+reg+'_clustering.dat.fits'  
+                common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+                print('data veto done, now doing randoms')
             def _parfunHP(rn):
                 fin = out_data_froot+reg+'_'+str(rn)+'_clustering.ran.fits'
                 fin = fin.replace('global','dvs_ro')   
