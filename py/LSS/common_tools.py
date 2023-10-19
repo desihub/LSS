@@ -1184,6 +1184,12 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     print('closed fits file')
     #shutil.move(tmpfn, outf)
     #os.rename(tmpfn, outf)
+    testcol = list(ff.dtype.names)[0]
+    try:
+        fitsio.read(tmpfn,columns=(testcol))
+    except:
+        print('read failed, output corrupted?!')
+        return 'FAILED'    
     os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not
     print('moved output to ' + outf)
 
