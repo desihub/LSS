@@ -1,5 +1,6 @@
 from desiutil.iers import freeze_iers
 freeze_iers()
+import collections.abc
 from time import time
 import healpy as hp
 import pickle
@@ -403,161 +404,141 @@ def checkMTLChanged(MTLFile1, MTLFile2):
 
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
+def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
+    endDate = None, overwrite = True):
+    """Create action file which orders all actions to do with AMTL in order 
+    in which real survey did them.
 
-def makeTileTracker(altMTLDir, survey = 'main', obscon = 'dark', retroactive = False, 
-    overwrite = False, startDate = None, endDate = None):
-
-    # JL altMTLDir includes the UnivNNN
-    log.info('generating tile tracker file')
-    outputFN = makeTileTrackerFN(altMTLDir,survey, obscon)
-    if os.path.isfile(outputFN) and (not overwrite):
-        log.warning('Output File {0} already exists'.format(outputFN))
-        log.warning('returning to AMTL initialization')
-        return 0
-    if (startDate is None) or (startDate == ''):
-        startDate = 19990101
-    if (endDate is None) or (endDate == ''):
-        endDate = 21991231
-    startDate = int(startDate)
-    endDate = int(endDate)
-    surveyOpsTrunkDir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/'
-    origMTLDoneTiles = Table.read(surveyOpsTrunkDir + '/mtl/mtl-done-tiles.ecsv')
-    #amtlTileFN = origMTLDir + '/mtl-done-tiles.ecsv'
-    origMTLDoneOverrides = Table.read(surveyOpsTrunkDir + '/mtl/mtl-done-overrides.ecsv')
-    #amtlOverrideFN = origMTLDir + '/mtl-done-overrides.ecsv'
-    origMTLTilesSpecStatus = Table.read(surveyOpsTrunkDir + '/ops/tiles-specstatus.ecsv')
-    '''
-    if os.path.isfile(amtlTileFN):
-        altMTLDoneTiles = Table.read(amtlTileFN)
-    else:
-        altMTLDoneTiles = Table()
-    if os.path.isfile(amtlOverrideFN):
-        altMTLDoneOverrides = Table.read(amtlOverrideFN)
-    else:
-        altMTLDoneOverrides = Table()
-    '''
-    TrimmedTiles = origMTLTilesSpecStatus[np.char.lower(origMTLTilesSpecStatus['SURVEY']) == survey.lower()]
-    TrimmedTiles = TrimmedTiles[np.char.lower(TrimmedTiles['FAPRGRM']) == obscon.lower()]
-
-    TrimmedTiles.sort(keys = ['ARCHIVEDATE', 'LASTNIGHT'])
-    #TrimmedTiles.sort(keys = ['TIMESTAMP', 'LASTNIGHT'])
-    TrimmedTileIDs = TrimmedTiles['TILEID']
-    #origMTLDoneTiles.sort(keys = ['ARCHIVEDATE', 'ZDATE'])
-    origMTLDoneTiles.sort(keys = ['TIMESTAMP', 'ZDATE'])
-    TILEID, ARCHIVEDATE, ZDATE, FADATE,ALTFADATE, FAMTLDATE, ALTARCHIVEDATE, ORIGMTLDATE, ORIGMTLTIMESTAMP, REPROCFLAG, OVERRIDEFLAG, OBSCONS, SURVEYS = [],[],[],[],[],[],[],[],[],[],[],[],[]
-    for omtlDoneTile in origMTLDoneTiles:
-        #TILEID TIMESTAMP VERSION PROGRAM ZDATE ARCHIVEDATE
-        thisTileID = omtlDoneTile['TILEID']
-        if not (thisTileID in TrimmedTileIDs):
-             continue
-        thists = str(thisTileID).zfill(6)
-        FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+thists[:3]+'/fiberassign-'+thists+'.fits.gz'
-        fhtOrig = fitsio.read_header(FAOrigName)
-        thisVersion = omtlDoneTile['VERSION']
-        thisProgram = omtlDoneTile['PROGRAM']
-        thisZDate = omtlDoneTile['ZDATE']
-        thisArchiveDate = omtlDoneTile['ARCHIVEDATE']
-        thisOrigMTLTimestamp = omtlDoneTile['TIMESTAMP']
-        thisOrigMTLDate = thisOrigMTLTimestamp.split('T')[0].replace('-', '')
-        if  thisArchiveDate < startDate:
-            thisAltArchiveDate = thisArchiveDate
-        elif thisArchiveDate > endDate: 
-            continue
-        else:
-            thisAltArchiveDate = None
-
-
-
-        thisReprocFlag = thisTileID in TILEID 
-        if thisReprocFlag:
-            thisFAMTLTime = None
-            thisFADate = None
-            thisAltFADate = None
-        else:
-            thisFAMTLTime = fhtOrig['RUNDATE']
-
-            thisFADate = thisFAMTLTime.split('T')[0].replace('-', '')
-            if  thisArchiveDate < startDate:
-                thisAltFADate = thisFADate
-            else:
-                thisAltArchiveDate = None
-                thisAltFADate = None
-
-        #thisOverrideFlag = thisTileID in OverrideTileID
-        TILEID.append(thisTileID)
-        ARCHIVEDATE.append(thisArchiveDate)
-        ZDATE.append(thisZDate)
-        FADATE.append(thisFADate)
-        FAMTLDATE.append(thisFAMTLTime)
-        ALTFADATE.append(thisAltFADate)
-        ALTARCHIVEDATE.append(thisAltArchiveDate)
-        ORIGMTLDATE.append(thisOrigMTLDate)
-        ORIGMTLTIMESTAMP.append(thisOrigMTLTimestamp)
-        REPROCFLAG.append(thisReprocFlag)
-        OVERRIDEFLAG.append(None)
-        OBSCONS.append(obscon)
-        SURVEYS.append(survey)
-        
-
-
-    TilesToProcessNearlyInOrder = [TILEID, ARCHIVEDATE, ZDATE, ALTFADATE, FADATE, FAMTLDATE, ALTARCHIVEDATE, ORIGMTLDATE, ORIGMTLTIMESTAMP, REPROCFLAG, OVERRIDEFLAG, OBSCONS, SURVEYS]
-
-    if survey.lower() == 'sv3':
-        firstSurveyDate = 20210404
-    elif survey.lower() == 'main':
-        firstSurveyDate = 20210513
-    else:
-        log.warning('SURVEY SHOULD BE EITHER `sv3` OR `main`, BUT WAS GIVEN AS {0}'.format(survey.lower()))
-        firstSurveyDate = 20200101
-
-    t = Table(TilesToProcessNearlyInOrder,
-           names=('TILEID', 'ARCHIVEDATE', 'ZDATE', 'ALTFADATE', 'FADATE', 'FAMTLTIME', 'ALTARCHIVEDATE', 'ORIGMTLDATE', 'ORIGMTLTIMESTAMP', 'REPROCFLAG', 'OVERRIDEFLAG', 'OBSCON', 'SURVEY'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'Today': max(int(startDate), firstSurveyDate )})
-    t.sort(['ORIGMTLTIMESTAMP','ZDATE'])
-    #t.sort(['ORIGMTLTIMESTAMP','FAMTLTIME'])
-    t.write(outputFN, format='ascii.ecsv')
-    return 1
-
-
-
-def tiles_to_be_processed_alt(altmtldir, obscon = 'dark', survey = 'main', today = None, mode = 'fa'):
-
-
-
-    TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
-    TileTracker = Table.read(TileTrackerFN, format = 'ascii.ecsv')
-
-    if mode.lower() == 'fa':
-        dateKey = 'FADATE'
-        log.info('len(TileTracker) pre removal of Nones = {0}'.format(len(TileTracker)))
-        TileTracker = TileTracker[TileTracker[dateKey] != None]
-        log.info('len(TileTracker) post removal of Nones = {0}'.format(len(TileTracker)))
-
-    elif mode.lower() == 'update':
-        dateKey = 'ORIGMTLDATE'
-    else:
-        raise ValueError('mode must be either `fa` or `update`. You provided {0}'.format(mode))
-
-
-    if not (today is None):
-        log.info('dateKey = {0}'.format(dateKey))
-        log.info('today = {0}'.format(today))
-        log.info('TileTracker.shape = {0}'.format(len(TileTracker)))
-        log.info('some example dates = {0}'.format(TileTracker[dateKey][0:4]))
-        TileTracker = TileTracker[TileTracker[dateKey].astype(int) == int(today)]
+    Parameters
+    ----------
+    altmtldir : :class:`str`
+        Path to the directory for a single realization of alternate MTL
+        ledgers. e.g. /pscratch/u/user/simName/Univ000/
+    obscon : :class:`str`, optional, defaults to "dark"
+        A string matching ONE obscondition in the desitarget bitmask yaml
+        file (i.e. in `desitarget.targetmask.obsconditions`), e.g. "DARK"
+        Governs how priorities are set when merging targets.
+    survey : :class:`str`, optional, defaults to "main"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.
     
 
-    indices = np.where( ((TileTracker['OBSCON'] == obscon.upper()) | (TileTracker['OBSCON'] == obscon.lower())) & (TileTracker['SURVEY'] == survey.upper()) | (TileTracker['SURVEY'] == survey.lower()) )
-    log.info('indices = {0}'.format(indices))
-    returnTiles = TileTracker[indices]
-    #returnTiles = returnTiles[np.where((returnTiles['SURVEY'] == survey.upper()) | (returnTiles['SURVEY'] == survey.lower()))]
-    if mode.lower() == 'update':
-        returnTiles = returnTiles[np.where(returnTiles['ALTARCHIVEDATE'] == None)]
-    if mode.lower() == 'fa':
-        returnTiles = returnTiles[np.where(returnTiles['ALTFADATE'] == None)]
+    Returns
+    -------
+    
+    [Nothing]
+
+    Notes
+    -----
+    - Writes a tiletracker file to {altmtldir}/{survey.lower()}survey-{obscon.upper()}obscon-TileTracker.ecsv
+    """
+
+    TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
+
+    if (survey.lower() == 'main') or (survey.lower() == 'y1'):
+        
+        surveyForTSS = 'main'
+        if survey.lower() == 'y1':
+            TileFN = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{0}.fits'.format(obscon.upper())
+        else:
+            TileFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv'
+    elif survey.lower() == 'sv3':
+        surveyForTSS = 'sv3'
+        TileFN = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-{0}.fits'.format(obscon.upper())
+    else:
+        raise ValueError('only valid values for `survey` are `main` and `sv3.` {0} was provided'.format(survey))
+
+    FABaseDir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'
+
+    Tiles = Table.read(TileFN)
+
+    TSSFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
+
+    TSS = Table.read(TSSFN)
+
+    MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
+
+    MTLDT = Table.read(MTLDTFN)
+
+    #tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
+    TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
+    
+    TilesSel = np.unique(TSS_Sel['TILEID'])
+    
+    TileIDs = []
+    TypeOfActions = []
+    TimesOfActions = []
+    doneFlag = []
+    archiveDates = []
+    
+    for tileid in TilesSel:
+        print('tileid = {0}'.format(tileid))
+        
+        ts = str(tileid).zfill(6)
+        
+        thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
+        
+        if len(thisTileMTLDT) > 1:
+            thisTileMTLDT.sort('TIMESTAMP')
+        elif len(thisTileMTLDT) == 0:
+            continue
+        else:
+            log.info(len(thisTileMTLDT))
+            log.info(thisTileMTLDT['ARCHIVEDATE'])
+            log.info(thisTileMTLDT['ARCHIVEDATE'][0])
+            log.info(type(thisTileMTLDT['ARCHIVEDATE'][0]))
+            if thisTileMTLDT['ARCHIVEDATE'][0] > int(endDate):
+                continue
+        reprocFlag = False
+        thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
+
+        thisfhtOrig = fitsio.read_header(thisFAFN)
+        thisfadate = thisfhtOrig['MTLTIME']
+        thisfadate = desitarget.mtl.add_to_iso_date(thisfadate, 1)
+        thisfanite = int(''.join(thisfadate.split('T')[0].split('-')))
+        if thisfanite > endDate:
+            continue
+        
+        TileIDs.append(tileid)
+        TypeOfActions.append('fa')
+        TimesOfActions.append(thisfadate)
+        archiveDates.append(thisfanite)
+        if thisfanite < startDate:
+            doneFlag.append(True)
+        else:
+            doneFlag.append(False)
+        
+        for update in thisTileMTLDT:
+            
+                
+            thisupdateTimestamp = update['TIMESTAMP']
+            thisupdateNite = int(''.join(thisupdateTimestamp.split('T')[0].split('-')))
+            if (thisupdateNite > endDate):
+                continue
+            
+            TileIDs.append(tileid)
+            if reprocFlag:
+                TypeOfActions.append('reproc')
+            else:
+                TypeOfActions.append('update')
+            TimesOfActions.append(thisupdateTimestamp)
+            if (thisupdateNite < startDate):
+                doneFlag.append(True)
+            else:
+                doneFlag.append(False)
+            archiveDates.append(update['ARCHIVEDATE'])
+            reprocFlag = True
+    ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
+    t = Table(ActionList,
+           names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
+           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir})
+    t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
+    
+    t.write(TileTrackerFN, format='ascii.ecsv', overwrite = overwrite)
 
 
-    return returnTiles   
+
 
 def trimToMTL(notMTL, MTL, debug = False, verbose = False):
     # JL trims a target file, which possesses all of the information in an MTL, down
@@ -640,12 +621,16 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     else:
         log.debug('startdate')
         log.debug(startDate)
-        initialentries = allentries[allentries["TIMESTAMP"] < startDate]
+        initialentries = allentries[allentries["TIMESTAMP"] <= startDate]
         subpriorsInit = initialentries["SUBPRIORITY"] 
 
         origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
         startDateShort = int(startDate.split('T')[0].replace('-', ''))
+    if ('T' in endDate) & ('-' in endDate):
+        endDateShort = int(endDate.split('T')[0].replace('-', '')) 
+    else:
+        endDateShort = int(endDate)
 
     if verbose or debug:
         log.info('generate subset? {0}'.format(genSubset))
@@ -711,8 +696,10 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         thisTileTrackerFN = makeTileTrackerFN(finalDir.format(n), survey, obscon)
         log.info('path to tiletracker = {0}'.format(thisTileTrackerFN))
         if not os.path.isfile(thisTileTrackerFN):
-            makeTileTracker(outputMTLDir, survey = survey, obscon = obscon, retroactive = False, 
-            overwrite = False, startDate = startDate, endDate = endDate)
+            makeTileTracker(finalDir.format(n), survey = survey, obscon = obscon,overwrite = False,
+             startDate = startDateShort, endDate = endDateShort)
+            #makeTileTracker(outputMTLDir, survey = survey, obscon = obscon,overwrite = False,
+            #startDate = startDateShort, endDate = endDateShort)
         subpriors = initialentries['SUBPRIORITY']
 
         if (not reproducing) and shuffleSubpriorities:
@@ -907,9 +894,10 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
 
-            
-        io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
-        log.info('wrote MTLs')
+        retval = io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+        if debug or verbose:
+            log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
+        log.info('wrote MTLs to {0}'.format(outputMTLDir))
         if saveBackup and (not usetmp):
             if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
                 os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
@@ -928,10 +916,12 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             if debug:
                 log.info('tempdir contents before copying')
                 log.info(glob.glob(outputMTLDir + '/*' ))
+                log.info(glob.glob(outputMTLDir + '/main/dark/*' ))
             copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/' + str(fn))
             if debug:
                 log.info('tempdir contents after copying')
                 log.info(glob.glob(outputMTLDir + '/*' ))
+                log.info(glob.glob(outputMTLDir + '/main/dark/*' ))
 
             if saveBackup and not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn)):
                 #JL Potentially move the saveBackup copying to an afterburner
@@ -995,12 +985,16 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
         for fn in restartMTLs:
             copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
 
-def do_fiberassignment(altmtldir, survey = 'sv3', obscon = 'dark', today = None, 
+def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark', 
     verbose = False, debug = False, getosubp = False, redoFA = False, mock = False):
-    FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
+    #FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
     if len(FATiles):
         try:
             log.info('FATiles[0] = {0}'.format(FATiles[0]))
+            if isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray)):
+                pass 
+            else:
+                FATiles = [FATiles]
         except:
             log.info('cannot access element 0 of FATiles')
     log.info('FATiles = {0}'.format(FATiles))
@@ -1013,11 +1007,11 @@ def do_fiberassignment(altmtldir, survey = 'sv3', obscon = 'dark', today = None,
     fadates = []
 
 
-    if len(FATiles):
-        log.info('len FATiles = {0}'.format(len(FATiles)))
-        pass 
-    else:
-        return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
+    #if len(FATiles):
+    #    log.info('len FATiles = {0}'.format(len(FATiles)))
+    #    pass 
+    #else:
+    #    return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
     for t in FATiles:
         log.info('t = {0}'.format(t))
         #JL This loop takes each of the original fiberassignments for each of the tiles on $date
@@ -1042,8 +1036,8 @@ def do_fiberassignment(altmtldir, survey = 'sv3', obscon = 'dark', today = None,
         
         log.info('fbadirbase = {0}'.format(fbadirbase))
         log.info('ts = {0}'.format(ts))
-        log.info('t[reprocflag] (should be false if here)= {0}'.format(t['REPROCFLAG']))
-        assert(not bool(t['REPROCFLAG']))
+        ##log.info('t[reprocflag] (should be false if here)= {0}'.format(t['REPROCFLAG']))
+        ##assert(not bool(t['REPROCFLAG']))
         #if str(ts) == str(3414).zfill(6):
         #    raise ValueError('Not only do I create the backup here but I also need to fix the reproc flag')
         
@@ -1090,6 +1084,7 @@ def do_fiberassignment(altmtldir, survey = 'sv3', obscon = 'dark', today = None,
             if getosubp and verbose:
                 log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                 log.info(glob.glob(fbadir + '/*' ))
+            #get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
             get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
             command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
             if verbose:
@@ -1107,7 +1102,7 @@ def do_fiberassignment(altmtldir, survey = 'sv3', obscon = 'dark', today = None,
         
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
-def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, survey = 'sv3', obscon = 'dark', changeFiberOpt = None, verbose = False, debug = False, getosubp = False, redoFA = False, today = None):
+def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, survey = 'sv3', obscon = 'dark', changeFiberOpt = None, verbose = False, debug = False, getosubp = False, redoFA = False):
     A2RMap = {}
     R2AMap = {}
     if verbose:
@@ -1145,7 +1140,7 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
                 log.info('dumping out fiber map to pickle file')
             with open(FAMapName, 'wb') as handle:
                 pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
-        thisUTCDate = get_utc_date(survey=survey)
+        #thisUTCDate = get_utc_date(survey=survey)
         if verbose:
             log.info('---')
             log.info('unique keys in R2AMap = {0:d}'.format(np.unique(R2AMap.keys()).shape[0]))
@@ -1154,32 +1149,43 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
             log.info('---')
             log.info('unique keys in A2RMap = {0:d}'.format(np.unique(A2RMap.keys()).shape[0]))
             log.info('---')
-        retval = write_amtl_tile_tracker(altmtldir, [t], thisUTCDate, today, obscon = obscon, survey = survey, mode = 'fa')
+        #retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'fa')
+        retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey)
         log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
     return A2RMap, R2AMap
-def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  survey = 'sv3', obscon = 'dark', today = None, 
+def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = 'sv3', obscon = 'dark', today = None, 
     getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False):
     if verbose or debug:
         log.info('today = {0}'.format(today))
         log.info('obscon = {0}'.format(obscon))
         log.info('survey = {0}'.format(survey))
-    UpdateTiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'update')
-    log.info('updatetiles = {0}'.format(UpdateTiles))
+    #UpdateTiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'update')
+    #log.info('updatetiles = {0}'.format(UpdateTiles))
     # ADM grab the zcat directory (in case we're relying on $ZCAT_DIR).
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
-    if len(UpdateTiles):
-        pass 
-    else:
-        return althpdirname, altmtltilefn, ztilefn, None
-    for t in UpdateTiles:
-        if t['REPROCFLAG']:
-            raise ValueError('Make sure backup is made and reprocessing logic is correct before beginning reprocessing.')
+    #if len(UpdateTiles):
+    #    pass 
+    #else:
+    #    return althpdirname, altmtltilefn, ztilefn, None
+    #isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray))
+    if not isinstance(actions['TILEID'], (collections.abc.Sequence, np.ndarray)):
+        actions = [actions]
+    log.info('actions = {0}'.format(actions))
+    for t in actions:
+        log.info('t = {0}'.format(t))
+        if t['ACTIONTYPE'].lower() == 'reproc':
+            raise ValueError('Reprocessing should be handled elsewhere.')
+            #raise ValueError('Make sure backup is made and reprocessing logic is correct before beginning reprocessing.')
         ts = str(t['TILEID']).zfill(6)
 
-        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + t['FADATE'] + '/'
+        FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+        fhtOrig = fitsio.read_header(FAOrigName)
+        fadate = fhtOrig['RUNDATE']
+        fadate = ''.join(fadate.split('T')[0].split('-'))
+        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
         log.info('t = {0}'.format(t))
         log.info('fbadirbase = {0}'.format(fbadirbase))
         log.info('ts = {0}'.format(ts))
@@ -1240,12 +1246,12 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  survey = 'sv3', obs
         assert(didUpdateHappen)
         if verbose or debug:
             log.info('if main, should sleep 1 second')
-        thisUTCDate = get_utc_date(survey=survey)
+        #thisUTCDate = get_utc_date(survey=survey)
         if survey == "main":
             sleep(1)
             if verbose or debug:
                 log.info('has slept one second')
-            t["ALTARCHIVEDATE"] = thisUTCDate
+            #t["ALTARCHIVEDATE"] = thisUTCDate
         if verbose or debug:
             log.info('now writing to amtl_tile_tracker')
         #io.write_mtl_tile_file(altmtltilefn,dateTiles)
@@ -1253,14 +1259,15 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  survey = 'sv3', obs
         log.info('changes are being registered')
         log.info('altmtldir = {0}'.format(altmtldir))
         log.info('t = {0}'.format(t))
-        log.info('thisUTCDate = {0}'.format(thisUTCDate))
+        #log.info('thisUTCDate = {0}'.format(thisUTCDate))
         log.info('today = {0}'.format(today))
-        retval = write_amtl_tile_tracker(altmtldir, [t], thisUTCDate, today, obscon = obscon, survey = survey, mode = 'update')
+        #retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'update')
+        retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey)
         log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
         if verbose or debug:
             log.info('has written to amtl_tile_tracker')
 
-    return althpdirname, altmtltilefn, ztilefn, UpdateTiles
+    return althpdirname, altmtltilefn, ztilefn, actions
 #@profile
 def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
@@ -1354,9 +1361,9 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
     # ADM first grab all of the relevant files.
     # ADM grab the MTL directory (in case we're relying on $MTL_DIR).
-    mtldir = get_mtl_dir(mtldir)
+    ##mtldir = get_mtl_dir(mtldir)
     # ADM construct the full path to the mtl tile file.
-    mtltilefn = os.path.join(mtldir, get_mtl_tile_file_name(secondary=secondary))
+    ##mtltilefn = os.path.join(mtldir, get_mtl_tile_file_name(secondary=secondary))
     # ADM construct the relevant sub-directory for this survey and
     # ADM set of observing conditions..
     form = get_mtl_ledger_format()
@@ -1384,6 +1391,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
 
     if quickRestart:
+        raise NotImplementedError('There is no way the quick restart will work properly post refactor.')
         quickRestartFxn(ndirs = ndirs, altmtlbasedir = altmtlbasedir, survey = survey, obscon = obscon, multiproc = multiproc, nproc = nproc)
 
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
@@ -1399,48 +1407,55 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         
         altMTLTileTrackerFN = makeTileTrackerFN(altmtldir, survey = survey, obscon = obscon)
         altMTLTileTracker = Table.read(altMTLTileTrackerFN)
-        today = altMTLTileTracker.meta['Today']
-        endDate = altMTLTileTracker.meta['EndDate']
-        if not (singletile is None):
-            tiles = tiles[tiles['TILEID'] == singletile]
+        #today = altMTLTileTracker.meta['Today']
+        #endDate = altMTLTileTracker.meta['EndDate']
+
+        actionList = altMTLTileTracker[np.invert(altMTLTileTracker['DONEFLAG'])]
+
+        actionList.sort(['ACTIONTIME'])
+        #if not (singletile is None):
+        #   tiles = tiles[tiles['TILEID'] == singletile]
         
-        if testDoubleDate:
-            raise NotImplementedError('this block needs to be moved for new organization of tiletracker.')
-            log.info('Testing Rosette with Doubled Date only')
-            cond1 = ((tiles['TILEID'] >= 298) & (tiles['TILEID'] <= 324))
-            cond2 = ((tiles['TILEID'] >= 475) & (tiles['TILEID'] <= 477))
-            log.info(tiles[tiles['TILEID' ] == 314])
-            log.info(tiles[tiles['TILEID' ] == 315])
-            tiles = tiles[cond1 | cond2 ]
+        #if testDoubleDate:
+        #    raise NotImplementedError('this block needs to be moved for new organization of tiletracker.')
+        #    log.info('Testing Rosette with Doubled Date only')
+        #    cond1 = ((tiles['TILEID'] >= 298) & (tiles['TILEID'] <= 324))
+        #    cond2 = ((tiles['TILEID'] >= 475) & (tiles['TILEID'] <= 477))
+        #    log.info(tiles[tiles['TILEID' ] == 314])
+        #    log.info(tiles[tiles['TILEID' ] == 315])
+        #    tiles = tiles[cond1 | cond2 ]
         
 
         #for ots,famtlt,reprocFlag in datepairs:
-        while int(today) <= int(endDate):
-            log.info('----------')
-            log.info('----------')
-            log.info('----------')
-            log.info('today = {0}'.format(today))
-            log.info('----------')
-            log.info('----------')
-            log.info('----------')
-            log.info('----------')
+        #while int(today) <= int(endDate):
+        for action in actionList:
 
-            OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, survey = survey, obscon = obscon, today = today,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock)
-            if len(OrigFAs):
-                A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA, today = today)
-            
-            althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, survey = survey, obscon = obscon, today = today,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
-            retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
-            log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
+            if action['ACTIONTYPE'] == 'fa':
 
-            today = nextDate(today)
-            log.info('----------')
-            log.info('----------')
-            log.info('----------')
-            log.info('moving to next day: {0}'.format(today))
-            log.info('----------')
-            log.info('----------')
-            log.info('----------')
+                OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock)
+                assert(len(OrigFAs))
+                A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
+            elif action['ACTIONTYPE'] == 'update':
+                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
+            elif action['ACTIONTYPE'] == 'reproc':
+                raise NotImplementedError('make backup, then remove this line and continue')
+                #returns timedict
+                retval = reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK")
+                if debug or verbose:
+                    log.info(f'retval = {retval}')
+            else:
+                raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
+            #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
+            #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
+
+            #today = nextDate(today)
+            #log.info('----------')
+            #log.info('----------')
+            #log.info('----------')
+            #log.info('moving to next day: {0}'.format(today))
+            #log.info('----------')
+            #log.info('----------')
+            #log.info('----------')
 
             
         return althpdirname, altmtltilefn, ztilefn, tiles
@@ -2075,7 +2090,7 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
     return timedict    
 
  
-def write_amtl_tile_tracker(dirname, tiles, timestamp, today,  obscon = 'dark', survey = 'main', mode = 'fa'):
+def write_amtl_tile_tracker(dirname, tiles, obscon = 'dark', survey = 'main'):
     """Write AMTL Processing times into TileTrackers
 
     Parameters
@@ -2105,27 +2120,29 @@ def write_amtl_tile_tracker(dirname, tiles, timestamp, today,  obscon = 'dark', 
     if os.path.isfile(TileTrackerFN):
         TileTracker = Table.read(TileTrackerFN, format = 'ascii.ecsv')
 
-    if mode.lower() == 'update':
-        dateKey = 'ALTARCHIVEDATE'
-    elif mode.lower() == 'fa':
-        dateKey = 'ALTFADATE'
-    elif mode.lower() == 'endofday':
-        TileTracker.meta['Today'] = today
-        TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
-        return 'only wrote today in metadata'
+    #if mode.lower() == 'update':
+    #    dateKey = 'ALTARCHIVEDATE'
+    #elif mode.lower() == 'fa':
+    #    dateKey = 'ALTFADATE'
+    #elif mode.lower() == 'endofday':
+    #    TileTracker.meta['Today'] = today
+    #    TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
+    #    return 'only wrote today in metadata'
     for t in tiles:
+        log.info('t = {0}'.format(t))
         tileid = t['TILEID']
-        reprocFlag = t['REPROCFLAG']
-        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['REPROCFLAG'] == reprocFlag)
+        #reprocFlag = t['REPROCFLAG']
+        actionType = t['ACTIONTYPE']
+        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['ACTIONTYPE'] == actionType)
         log.info('for tile {0}, number of matching tiles = {1}'.format(tileid, np.sum(cond)))
         #debugTrap = np.copy(TileTracker[dateKey])
-        TileTracker[dateKey][cond] = timestamp
+        TileTracker['DONEFLAG'][cond] = True
     
-    assert(not (np.all(TileTracker[dateKey] is None)))
+    assert(not (np.all(np.invert(TileTracker['DONEFLAG']))))
 
-    if mode == 'update':
-        todaysTiles = TileTracker[TileTracker['ORIGMTLDATE'] == today]
-        #if np.sum(todaysTiles['ALTARCHIVEDATE'] == None) == 0:
+    #if mode == 'update':
+    #    todaysTiles = TileTracker[TileTracker['ORIGMTLDATE'] == today]
+    #    #if np.sum(todaysTiles['ALTARCHIVEDATE'] == None) == 0:
             
     TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
-    return 'wrote more than just today in metadata'
+    return 'done'

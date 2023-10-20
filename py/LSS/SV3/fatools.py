@@ -30,11 +30,11 @@ log = get_logger()
 #JL - Adding a format string to change versioning of photometry. 
 
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
-#skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
-skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/skies'
+skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
+#skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
-#tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
-tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/targets/main/resolve/'
+tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
+#tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/targets/main/resolve/'
 # AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
 gaia_ref_epochs = {"dr2": 2015.5}
 
@@ -365,14 +365,24 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
-            altcreate_mtl(tilef,
-            mtldir+prog,        
-            gaiadr,
-            fht['PMCORR'],
-            tarfn,
-            tdirMain.format(targver)+prog,
-            survey = 'main',
-            mock = mock)
+            if targver == '1.1.1':
+                log.info('targver (should be 1.1.1) = {0}'.format(targver))
+                altcreate_mtl(tilef,
+                mtldir+prog,        
+                gaiadr,
+                fht['PMCORR'],
+                tarfn,
+                tdirMain.format(targver)+prog,
+                survey = 'main',
+                mock = mock)
+            #tdirMain+prog,
+            elif targver == '1.0.0':
+                if not os.path.exists(outdir):
+                    log.info('running makedirs. making {0}'.format(outdir))
+                    os.makedirs(outdir)
+                
+                shutil.copyfile(indir+ts+'-targ.fits', tarfn)
+
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -590,10 +600,12 @@ def altcreate_mtl(
     #for col in tcol:
     #    columns.append(col) 
     if not mock:
+        log.info('len(d)= {0}'.format(len(d)))
+
         d = inflate_ledger(
                 d, targdir, columns=columns, header=False, strictcols=False, quick=True
             )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
-        
+        log.info('len(d)= {0}'.format(len(d)))
         if add_plate_cols:
             d = Table(d)
             d["PLATE_RA"] = d["RA"]
