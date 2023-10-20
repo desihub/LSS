@@ -294,7 +294,8 @@ for tp in tps:
         zbins = [(0.8,1.1),(1.1,1.6)]
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
-        #desnorm=True
+        #if args.weight_col == 'WEIGHT_RF':
+        desnorm=True
         GCnorm = False
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
