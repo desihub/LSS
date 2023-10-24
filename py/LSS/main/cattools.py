@@ -1278,7 +1278,7 @@ def count_tiles_input(fjg):
 
     return tc
 
-def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None):
+def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None, prog_ = 'dark'):
     '''
     from files with duplicates that have already been sorted by targetid, quickly go
     through and get the multi-tile information
@@ -1322,7 +1322,7 @@ def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',p
             fj = fitsio.read(indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILEID','TILELOCID'])
     
     if (dr == 'mock'):
-        fj = fitsio.read(indir+ '/combdark_wdupspec_zdone_' + pd + '.fits' , columns = ['TARGETID', 'TILEID', 'TILELOCID'])
+        fj = fitsio.read(indir+ '/comb' + prog_ +'_wdupspec_zdone_' + pd + '.fits' , columns = ['TARGETID', 'TILEID', 'TILELOCID'])
         
         #outf = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/random'+str(rann)+'/rancomb_'+pd+'ntileinfo.fits'
     wg = np.isin(fj['TILELOCID'],gtl)

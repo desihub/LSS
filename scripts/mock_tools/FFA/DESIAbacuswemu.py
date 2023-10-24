@@ -12,10 +12,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mocknumber')
 parser.add_argument('--tracer')
 parser.add_argument('--basedir')
+parser.add_argument('--prog')
 parser.add_argument('--outdir', default = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FAemu_preliminary/sikandar/Updated_Code_CFC/fof_v1.0/in/")
 parser.add_argument('--overwrite', default = 'n', help = 'do you want to overwrite the final output file?')
 args = parser.parse_args()
-
 
 mock = args.mocknumber
 galcap = 'B'
@@ -36,7 +36,7 @@ raw_nz = []
 ntile = []
 
 basedir = args.basedir
-namin_gal = basedir + "/mock%s/pota-DARK_joined_%s.fits"%(mock, target)
+namin_gal = basedir + "/mock" + mock + "/pota-" + args.prog + "_joined_" + target + ".fits"
 hdul = fits.open(namin_gal)
 hdul.info()
 hdul[1].header
@@ -70,6 +70,8 @@ if target == 'LRG':
     target0 = 1
 if target == 'QSO':
     target0 = 4
+if target == 'BGS':
+    target0 = 60
 print(target)
 print(target0)
 #id_tarcut = np.where(data_ref["DESI_target"] == target0)
@@ -90,7 +92,7 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
     print('made ' + outdir)
 
-namout_txt = outdir + 'target +'_Abacus2mock_forFAemu_m'+ mock +'.dat'
+namout_txt = outdir + target +'_Abacus2mock_forFAemu_m'+ mock +'.dat'
 
 #RA_cut = [20.0, 40.0]
 #dec_cut = [-10.0, 10.0]

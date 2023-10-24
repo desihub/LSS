@@ -48,6 +48,8 @@ if args.mock == 'ab2ndgen':
     if not os.path.exists(tileoutdir):
         os.makedirs(tileoutdir)
     paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
+
+
 elif args.mock == 'ezmocks6':
 #     #tr = args.tracer
 #     rz = args.realization
@@ -254,6 +256,6 @@ if __name__ == '__main__':
     if args.getcoll == 'y':
         print(len(colltot),np.sum(colltot['COLLISION']))
     
-    common.write_LSS(colltot,paoutdir+'/pota-'+args.prog+'.fits')
+    common.write_LSS(colltot,paoutdir+'/pota-'+g+'.fits')
         
     

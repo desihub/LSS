@@ -164,7 +164,8 @@ for real in range(args.realmin, args.realmax):
             thepath = os.path.join(mockpath, type_, 'v0', zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
             print('thepath')
             print(thepath)
-            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO']))
+            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'R_MAG_APP']))
+            data = data[data["R_MAG_APP"]<19.5]
 
 
         elif args.mockver == 'ezmocks6':
