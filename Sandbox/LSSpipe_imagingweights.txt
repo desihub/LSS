@@ -67,8 +67,6 @@ e.g.,:
 
 >scripts/Y1_custom_sysnet_tracer_zbin.sh v0.6 LRG 0.4_0.6
 
-SYSNET SEEMS BROKEN AFTER PERLMUTTER MAINTENANCE
-
 Variable names:
 >$LSSDIR/LSS/scripts/run_sysnet.sh region tracer do_learning_rate run_regression batch_size learning_rate model loss_function catalog_version basedirNN
 region can be N or S
