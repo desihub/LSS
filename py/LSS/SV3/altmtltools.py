@@ -1,40 +1,54 @@
 from desiutil.iers import freeze_iers
 freeze_iers()
+
 import collections.abc
 from time import time
-import healpy as hp
-import pickle
-from astropy.table import Table,join
 import astropy
 import astropy.io
 import astropy.io.fits as pf
+from astropy.table import Table,join
+
+import memory_profiler
+from memory_profiler import profile
+
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
-import memory_profiler
-from memory_profiler import profile
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
 from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
 from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
+
 from desiutil.log import get_logger
+
 import fitsio
+
+import healpy as hp
+
+
 from LSS.bitweights import pack_bitweights
 from LSS.SV3.fatools import get_fba_fromnewmtl
 import LSS.SV3.fatools as fatools
+
 import matplotlib.pyplot as plt
+
 import numpy as np
 from numpy import random as rand
 import numpy.lib.recfunctions as rfn
+
 import os
+import pickle
 import subprocess
 import sys
 from time import sleep
+
 import cProfile, pstats
 import io as ProfileIO
 from pstats import SortKey
+
 import glob
 
 
@@ -618,6 +632,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         firstTS = allentries[0]["TIMESTAMP"] 
         initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
         subpriorsInit = initialentries["SUBPRIORITY"]
+        startDateShort = 19990101
     else:
         log.debug('startdate')
         log.debug(startDate)
@@ -690,6 +705,8 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             log.info('pre creating output dir')
         if not os.path.exists(outputMTLDir):
             os.makedirs(outputMTLDir)
+        if not os.path.exists(finalDir.format(n)):
+            os.makedirs(finalDir.format(n))
         if not os.path.isfile(finalDir.format(n) + '/' + ztilefn):
             processTileFile(ztilefile, outputMTLDir + ztilefn, startDate, endDate)
             #os.symlink(ztilefile, outputMTLDir + ztilefn)
@@ -986,7 +1003,7 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
             copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
 
 def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark', 
-    verbose = False, debug = False, getosubp = False, redoFA = False, mock = False):
+    verbose = False, debug = False, getosubp = False, redoFA = False, mock = False, reproducing = False):
     #FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
     if len(FATiles):
         try:
@@ -1085,7 +1102,7 @@ def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark',
                 log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                 log.info(glob.glob(fbadir + '/*' ))
             #get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
-            get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
+            get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver, reproducing = reproducing)#, targets = targets)
             command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
             if verbose:
                 log.info('fa command_run')
@@ -1275,7 +1292,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False):
+                    debug = False, verbose = False, reproducing = False):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1432,17 +1449,19 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
             if action['ACTIONTYPE'] == 'fa':
 
-                OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock)
+                OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
                 assert(len(OrigFAs))
                 A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
             elif action['ACTIONTYPE'] == 'update':
                 althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
             elif action['ACTIONTYPE'] == 'reproc':
-                raise NotImplementedError('make backup, then remove this line and continue')
                 #returns timedict
-                retval = reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK")
+
+
+                retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
                 if debug or verbose:
                     log.info(f'retval = {retval}')
+                
             else:
                 raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
@@ -1820,7 +1839,7 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
     
         data.write(fn, overwrite = overwrite)
     
-def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
+def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcatdir = None):
     """
     Reprocess HEALPixel-split ledgers for targets with new redshifts.
 
@@ -1846,6 +1865,33 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
         are the TIMESTAMP at which that tile was reprocessed.
 
     """
+    tileid = action['TILEID']
+    ts = str(tileid).zfill(6)
+    FABaseDir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'
+    FAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
+
+    fhtOrig = fitsio.read_header(FAFN)
+    fadate = fhtOrig['RUNDATE']
+    fanite = int(''.join(fadate.split('T')[0].split('-')))
+
+    hpdirname = altmtldir + f'/{survey.lower()}/{obscon.lower()}/'
+
+    fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + str(fanite) + '/'
+
+    #if getosubp:
+    #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+    #else:
+    FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+    with open(FAMapName,'rb') as fl:
+        (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
+
+    #zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
+    zcatdir = get_zcat_dir(zcatdir)
+    zcat = make_zcat(zcatdir, [action], obscon, survey, allow_overlaps = True)
+    log.info('ts = {0}'.format(ts))
+    altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
+
+
 
     #if getosubp:
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
@@ -1854,8 +1900,8 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
     #with open(FAMapName,'rb') as fl:
     #    (A2RMapTemp, R2AMapTemp) = pickle.load(fl,fix_imports = True)
     t0 = time()
-    log.info("Reprocessing based on zcat with {} entries...t={:.1f}s"
-             .format(len(zcat), time()-t0))
+    log.info("Reprocessing based on altZCat with {} entries...t={:.1f}s"
+             .format(len(altZCat), time()-t0))
 
     # ADM the output dictionary.
     timedict = {}
@@ -1876,21 +1922,21 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
         log.critical(msg)
         raise RuntimeError(msg)
 
-    # ADM check the zcat has unique TARGETID/TILEID combinations.
+    # ADM check the altZCat has unique TARGETID/TILEID combinations.
     tiletarg = [str(tt["ZTILEID"]) + "-" + str(tt["TARGETID"]) for tt in zcat]
     if len(set(tiletarg)) != len(tiletarg):
-        msg = "Passed zcat does NOT have unique TARGETID/TILEID combinations!!!"
+        msg = "Passed altZCat does NOT have unique TARGETID/TILEID combinations!!!"
         log.critical(msg)
         raise RuntimeError(msg)
 
     # ADM record the set of tiles that are being reprocessed.
-    reproctiles = set(zcat["ZTILEID"])
+    reproctiles = set(altZCat["ZTILEID"])
 
     # ADM read ALL targets from the relevant ledgers.
     log.info("Reading (all instances of) targets for {} tiles...t={:.1f}s"
              .format(len(reproctiles), time()-t0))
     nside = desitarget.mtl._get_mtl_nside()
-    theta, phi = np.radians(90-zcat["DEC"]), np.radians(zcat["RA"])
+    theta, phi = np.radians(90-altZCat["DEC"]), np.radians(altZCat["RA"])
     pixnum = hp.ang2pix(nside, theta, phi, nest=True)
     pixnum = list(set(pixnum))
     targets = io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False)
@@ -1901,14 +1947,14 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
     # ADM sort by TIMESTAMP to ensure tiles are listed chronologically.
     targets = targets[np.argsort(targets["TIMESTAMP"])]
 
-    # ADM for speed, we only need to work with targets with a zcat entry.
+    # ADM for speed, we only need to work with targets with a altZCat entry.
     ntargs = len(targets)
     nuniq = len(set(targets["TARGETID"]))
     log.info("Read {} targets with {} unique TARGETIDs...t={:.1f}s"
              .format(ntargs, nuniq, time()-t0))
-    log.info("Limiting targets to {} (unique) TARGETIDs in the zcat...t={:.1f}s"
-             .format(len(set(zcat["TARGETID"])), time()-t0))
-    s = set(zcat["TARGETID"])
+    log.info("Limiting targets to {} (unique) TARGETIDs in the altZCat...t={:.1f}s"
+             .format(len(set(altZCat["TARGETID"])), time()-t0))
+    s = set(altZCat["TARGETID"])
     ii = np.array([tid in s for tid in targets["TARGETID"]])
     targets = targets[ii]
     nuniq = len(set(targets["TARGETID"]))
@@ -1941,37 +1987,37 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
     # ADM remember to sort ii so that the first tiles appear first.
     orderedtiles = targets["ZTILEID"][sorted(ii)]
 
-    # ADM assemble a zcat for all previous and reprocessed observations.
-    zcatfromtargs = np.zeros(len(targets), dtype=zcat.dtype)
-    for col in zcat.dtype.names:
-        zcatfromtargs[col] = targets[col]
+    # ADM assemble a altZCat for all previous and reprocessed observations.
+    altZCatfromtargs = np.zeros(len(targets), dtype=zcat.dtype)
+    for col in altZCat.dtype.names:
+        altZCatfromtargs[col] = targets[col]
     # ADM note that we'll retain the TIMESTAMPed order of the old ledger
     # ADM entries and new redshifts will (deliberately) be listed last.
-    allzcat = np.concatenate([zcatfromtargs, zcat])
-    log.info("Assembled a zcat of {} total observations...t={:.1f}s"
-             .format(len(allzcat), time()-t0))
+    allaltZCat = np.concatenate([altZCatfromtargs, altZCat])
+    log.info("Assembled a altZCat of {} total observations...t={:.1f}s"
+             .format(len(allaltZCat), time()-t0))
 
     # ADM determine the FINAL observation for each TILED-TARGETID combo.
     # ADM must flip first as np.unique finds the FIRST unique entries.
-    allzcat = np.flip(allzcat)
+    allaltZCat = np.flip(allaltZCat)
     # ADM create a unique hash of TILEID and TARGETID.
-    tiletarg = [str(tt["ZTILEID"]) + "-" + str(tt["TARGETID"]) for tt in allzcat]
+    tiletarg = [str(tt["ZTILEID"]) + "-" + str(tt["TARGETID"]) for tt in allaltZCat]
     # ADM find the final unique combination of TILEID and TARGETID.
     _, ii = np.unique(tiletarg, return_index=True)
     # ADM make sure to retain exact reverse-ordering.
     ii = sorted(ii)
     # ADM condition on indexes-of-uniqueness and flip back.
-    allzcat = np.flip(allzcat[ii])
+    allaltZCat = np.flip(allaltZCat[ii])
     log.info("Found {} final TARGETID/TILEID combinations...t={:.1f}s"
-             .format(len(allzcat), time()-t0))
+             .format(len(allaltZCat), time()-t0))
 
     # ADM mock up a dictionary of timestamps in advance. This is faster
     # ADM as no delays need to be built into the code.
     now = get_utc_date(survey="main")
     timestamps = {t: desitarget.mtl.add_to_iso_date(now, s) for s, t in enumerate(orderedtiles)}
 
-    # ADM make_mtl() expects zcats to be in Table form.
-    allzcat = Table(allzcat)
+    # ADM make_mtl() expects altZCats to be in Table form.
+    allaltZCat = Table(allaltZCat)
     # ADM a merged target list to track and record the final states.
     mtl = Table(unobs)
     # ADM to hold the final list of updates per-tile.
@@ -1983,23 +2029,23 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
         timestamp = timestamps[tileid]
 
         # ADM restrict to the observations on this tile.
-        zcatmini = allzcat[allzcat["ZTILEID"] == tileid]
+        altZCatmini = allaltZCat[allaltZCat["ZTILEID"] == tileid]
         # ADM check there are only unique TARGETIDs on each tile!
-        if len(set(zcatmini["TARGETID"])) != len(zcatmini):
+        if len(set(altZCatmini["TARGETID"])) != len(altZCatmini):
             msg = "There are duplicate TARGETIDs on tile {}".format(tileid)
             log.critical(msg)
             raise RuntimeError(msg)
 
-        # ADM update NUMOBS in the zcat using previous MTL totals.
-        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zcatmini["TARGETID"])
-        zcatmini["NUMOBS"][zii] = mtl["NUMOBS"][mii] + 1
+        # ADM update NUMOBS in the altZCat using previous MTL totals.
+        mii, zii = desitarget.mtl.match(mtl["TARGETID"], altZCatmini["TARGETID"])
+        altZCatmini["NUMOBS"][zii] = mtl["NUMOBS"][mii] + 1
 
-        # ADM restrict to just objects in the zcat that match an UNOBS
+        # ADM restrict to just objects in the altZCat that match an UNOBS
         # ADM target (i,e that match something in the MTL).
-        log.info("Processing {}/{} observations from zcat on tile {}...t={:.1f}s"
-                 .format(len(zii), len(zcatmini), tileid, time()-t0))
+        log.info("Processing {}/{} observations from altZCat on tile {}...t={:.1f}s"
+                 .format(len(zii), len(altZCatmini), tileid, time()-t0))
         log.info("(i.e. removed secondaries-if-running-primaries or vice versa)")
-        zcatmini = zcatmini[zii]
+        altZCatmini = altZCatmini[zii]
 
         # ADM ------
         # ADM NOTE: We could use trimtozcat=False without matching, and
@@ -2008,7 +2054,7 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
         # ADM complexity somewhere, hence trimtozcat=True/matching-back.
         # ADM ------
         # ADM push the observations on this tile through MTL.
-        zmtl = desitarget.mtl.make_mtl(mtl, oc, zcat=zcatmini, trimtozcat=True, trimcols=True)
+        zmtl = desitarget.mtl.make_mtl(mtl, oc, zcat=altZCatmini, trimtozcat=True, trimcols=True)
 
         # ADM match back to overall merged target list to update states.
         mii, zii = desitarget.mtl.match(mtl["TARGETID"], zmtl["TARGETID"])
@@ -2019,16 +2065,16 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
         mtl["TIMESTAMP"][mii] = timestamp
 
         # ADM trimtozcat=True discards BAD observations. Retain these.
-        tidmiss = list(set(zcatmini["TARGETID"]) - set(zmtl["TARGETID"]))
-        tii = desitarget.mtl.match_to(zcatmini["TARGETID"], tidmiss)
-        zbadmiss = zcatmini[tii]
+        tidmiss = list(set(altZCatmini["TARGETID"]) - set(zmtl["TARGETID"]))
+        tii = desitarget.mtl.match_to(altZCatmini["TARGETID"], tidmiss)
+        zbadmiss = altZCatmini[tii]
         # ADM check all of the missing observations are, indeed, bad.
         if np.any(zbadmiss["ZWARN"] & zwarn_mask.mask(Mxbad) == 0):
             msg = "Some objects skipped by make_mtl() on tile {} are not BAD!!!"
             msg = msg.format(tileid)
             log.critical(msg)
             raise RuntimeError(msg)
-        log.info("Adding back {} bad observations from zcat...t={:.1f}s"
+        log.info("Adding back {} bad observations from altZCat...t={:.1f}s"
                  .format(len(zbadmiss), time()-t0))
 
         # ADM update redshift information in MTL for bad observations.
@@ -2086,7 +2132,7 @@ def reprocess_alt_ledger(hpdirname, zcat, fbadirbase, tile, obscon="DARK"):
             done = np.concatenate([ledger, mtlpix.as_array()])
             fitsio.write(fn+'.tmp', done, extname='MTL', header=hd, clobber=True)
             os.rename(fn+'.tmp', fn)
-
+    retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
     return timedict    
 
  

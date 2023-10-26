@@ -32,18 +32,18 @@ echo "$argstring"
 if [ $QVal = 'interactive' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 --dependency=afterany:16533190 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 --dependency=afterany:17342877 $path2LSS/runAltMTLParallel.py $argstring
 fi
 if [ $QVal = 'regular' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:16533190 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:17342877 $path2LSS/runAltMTLParallel.py $argstring
 fi
 
 if [ $QVal = 'debug' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:15:00 --dependency=afterany:16533190 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:15:00 --dependency=afterany:17342877 $path2LSS/runAltMTLParallel.py $argstring
 fi
 #retcode=$?
 #qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.

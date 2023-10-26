@@ -34,6 +34,7 @@ parser.add_argument('-mock', '--mock', dest = 'mock', default=False, action='sto
 parser.add_argument('-tf', '--targfile', dest='targfile', required=False, default = None, type=str, help = 'Location for target file for mocks or data. Only required if mocks are being processed.')
 parser.add_argument('-v', '--verbose', dest = 'verbose', default=False, action='store_true', help = 'set flag to enter verbose mode')
 parser.add_argument('-qr', '--quickRestart', dest = 'quickRestart', default=False, action='store_true', help = 'set flag to remove any AMTL updates that have already been performed. Useful for rapidfire debugging of steps in this part of the pipeline.')
+parser.add_argument('-rep', '--reproducing', action='store_true', dest='reproducing', default=False, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to confirm to the alt mtl code that you are trying to reproduce real MTLs. This option should (must?) be used in conjunction with --shuffleSubpriorities.', required = False)
 parser.add_argument('-prof', '--profile', dest = 'profile', default=False, action='store_true', help = 'set flag to profile code time usage. This flag may not profile all components of any particular stage of the AMTL pipeline. ')
 parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='store_true', help = 'set flag to enter debug mode.')
 parser.add_argument('-nfl', '--NumObsNotFromLedger', dest = 'numobs_from_ledger', default=True, action='store_false', help = 'If True (flag is NOT set) then inherit the number of observations so far from the ledger rather than expecting it to have a reasonable value in the zcat.')
@@ -116,7 +117,7 @@ def procFunc(nproc):
         print(targets['DEC'][0:5])
     else:
         targets = None
-    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:

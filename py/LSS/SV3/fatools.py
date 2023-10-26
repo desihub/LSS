@@ -271,7 +271,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1'):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1', reproducing = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -365,8 +365,11 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
-            if targver == '1.1.1':
-                log.info('targver (should be 1.1.1) = {0}'.format(targver))
+            if (not reproducing) or (targver == '1.1.1'):
+                if verbose:
+                    log.info('if reproducing is True, targver must be 1.1.1')
+                    log.info(f'targver  = {targver}')
+                    log.info(f'reproducing = {reproducing}')
                 altcreate_mtl(tilef,
                 mtldir+prog,        
                 gaiadr,
@@ -377,6 +380,10 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 mock = mock)
             #tdirMain+prog,
             elif targver == '1.0.0':
+                if verbose:
+                    log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
+                    log.info(f'targver  = {targver}')
+                    log.info(f'reproducing = {reproducing}')
                 if not os.path.exists(outdir):
                     log.info('running makedirs. making {0}'.format(outdir))
                     os.makedirs(outdir)
