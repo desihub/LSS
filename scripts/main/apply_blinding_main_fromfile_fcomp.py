@@ -358,9 +358,10 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-        clus_arrays = []
-        for reg in ['N','S']:
-            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+        #for reg in ['N','S']:
+        #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        
         def _parfun(rannum):
             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
@@ -384,7 +385,8 @@ if root:
                 print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
-        ct.clusNStoGC(fb, args.maxr - args.minr)
+        #ct.clusNStoGC(fb, args.maxr - args.minr)
+        ct.splitclusGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
