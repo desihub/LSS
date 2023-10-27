@@ -3377,9 +3377,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 
         if reg != '':
             wn = ffc['PHOTSYS'] == reg.strip('_')
-
+            ffcn = ffc[wn]
+        else:
+            ffcn = ffc
         outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
-        ffcn = ffc[wn]
+        
         des_resamp = False
         if 'QSO' in flin:
             if 'S' in reg or reg == '':
