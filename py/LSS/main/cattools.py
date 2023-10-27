@@ -3266,7 +3266,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             common.write_LSS(ffs,outfn,comments)
         else:
             outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS(ff,outfn,comments)
+            common.write_LSS(ff,outfn)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
