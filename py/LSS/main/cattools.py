@@ -3389,7 +3389,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         print('columns sampled from data are:')
         print(rcols)
 
-        wn = ffc['PHOTSYS'] == reg
+        if reg != '':
+            wn = ffc['PHOTSYS'] == reg.strip('_')
 
         outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
         ffcn = ffc[wn]
