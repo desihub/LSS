@@ -3241,14 +3241,18 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #common.write_LSS(ff,outf,comments)
 
     if write_cat == 'y':
-        outfn = fl+wzm+'N_clustering.dat.fits'
-        comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-        common.write_LSS(ff[wn],outfn,comments)
+        if splitNS == 'y':
+            outfn = fl+wzm+'N_clustering.dat.fits'
+            comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+            common.write_LSS(ff[wn],outfn,comments)
 
-        outfn = fl+wzm+'S_clustering.dat.fits'
-        comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
-        ffs = ff[~wn]
-        common.write_LSS(ffs,outfn,comments)
+            outfn = fl+wzm+'S_clustering.dat.fits'
+            comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+            ffs = ff[~wn]
+            common.write_LSS(ffs,outfn,comments)
+        else:
+            outfn = fl+wzm+'clustering.dat.fits'
+            common.write_LSS(ff,outfn,comments)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
@@ -3352,12 +3356,15 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         return ffr
 
 
-    regl = ['N','S']
+    if nosplit == 'n':
+        regl = ['N_','S_']
+    else:
+        regl = ['']
     tabl = []
     for ind in range(0,len(regl)):
         reg = regl[ind]
         if clus_arrays is None:
-            fcdn = Table.read(fl+wzm+reg+'_clustering.dat.fits')
+            fcdn = Table.read(fl+wzm+reg+'clustering.dat.fits')
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
@@ -3372,7 +3379,16 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 
         outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
         ffcn = ffc[wn]
-        if 'QSO_S' in flin:
+        des_resamp = False
+        if 'QSO' in flin:
+            if 'S' in reg or reg == '':
+                des_resamp = True
+        if reg == '': #N/S resampling
+            selregr = ffcn['DEC'] > 32.375
+            selregd = fcdn['DEC'] > 32.375
+            ffr = _resamp(selregr,selregd,ffr,fcdn)
+
+        if des_resamp:
             print('resampling in DES region')
             from regressis import footprint
             foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
@@ -3384,7 +3400,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
             selregd = des[pixd]
             ffcn = _resamp(selregr,selregd,ffcn,fcdn)
-        else:
+        no_resamp = False
+        if reg == 'N' or (reg == 'S' and des_resamp == False):
+            no_resamp = True
+        if no_resamp:
+            print('Not doing any re-sampling')
             inds = np.random.choice(len(fcdn),len(ffcn))
             dshuf = fcdn[inds]
             for col in rcols:
@@ -3666,6 +3686,31 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
+def splitclusGC(flroot,nran=1):
+    import LSS.common_tools as common
+    '''
+    split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    fc = Table(fitsio.read(flroot+'clustering.dat.fits'))
+    c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    outf_ngc = flroot+'NGC_clustering.dat.fits'
+    common.write_LSS(fc[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_clustering.dat.fits'
+    common.write_LSS(fc[~sel_ngc],outf_sgc)
+    
+    for rann in range(0,nran):
+        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+        gc = c.transform_to('galactic')
+        sel_ngc = gc.b > 0
+        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[sel_ngc],outf_ngc)
+        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[~sel_ngc],outf_sgc)
 
 
 
