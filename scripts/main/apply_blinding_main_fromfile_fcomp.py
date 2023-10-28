@@ -463,9 +463,9 @@ if args.fnlblind == 'y':
 
     # build blinding cosmology
     cosmo_blind = get_cosmo_blind('DESI', z=zeff)
-    cosmo_blind.params['w0_fld'] = w0_blind
-    cosmo_blind.params['wa_fld'] = wa_blind
-    cosmo_blind._derived['f'] = f_blind
+    #cosmo_blind.params['w0_fld'] = w0_blind
+    #cosmo_blind.params['wa_fld'] = wa_blind
+    #cosmo_blind._derived['f'] = f_blind
     cosmo_blind._derived['fnl'] = fnl_blind   # on fixe la valeur pour de bon
     blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
 
