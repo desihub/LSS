@@ -3362,6 +3362,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
         ffr['WEIGHT'][rand_sel[1]] *= rdr
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
+            print('data/random weighted ratio after resampling:'+str(rd))
 
 #         tabsr = []
 #         ffrn = ffr[selregr]
@@ -3532,6 +3535,10 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
         ffr['WEIGHT'][rand_sel[1]] *= rdr
+        #check that everything worked
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
+            print('data/random weighted ratio after resampling:'+str(rd))
         
 
 #         tabsr = []
