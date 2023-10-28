@@ -3399,7 +3399,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'  
         
         des_resamp = False
         if 'QSO' in flin:
