@@ -3198,7 +3198,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[selz]
 
 
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','PHOTSYS']#,'WEIGHT_FKP']
     if 'WEIGHT_FKP' in cols:
         kl.append('WEIGHT_FKP')
     if 'WEIGHT_SN' in cols:
@@ -3324,34 +3324,53 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     print(len(ffc),len(ffr))
     if return_cat == 'y' and nosplit=='y':
         #this option will then pass the arrays to the clusran_resamp_arrays function
-        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES'])
+        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS'])
         return ffc
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
         print('length after cutting to unique tilelocid '+str(len(ffc)))
     def _resamp(selregr,selregd,ffr,fcdn):
-        tabsr = []
-        ffrn = ffr[selregr]
-        ffrs = ffr[~selregr]
-        fcdnn = fcdn[selregd]
-        fcdns = fcdn[~selregd]
-        tabsr = [ffrn,ffrs]
-        tabsd = [fcdnn,fcdns]
-        rdl =[]
-        for i in range(0,len(tabsr)):
-            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
-            dshuf = tabsd[i][inds]
+        for col in rcols:
+            ffr[col] =  np.zeros(len(ffr))
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            print(len(fcdn[dsel]),len(inds),np.max(inds))
+            dshuf = fcdn[dsel][inds]
             for col in rcols:
-                tabsr[i][col] =  dshuf[col]
-            if compmd == 'ran':
-                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
-            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+                ffr[col][rsel] = dshuf[col]
+        ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+        rdl = []
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        tabsr[1]['WEIGHT'] *= rdr
-        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
-        ffr = vstack(tabsr)   
+        ffr[rand_sel[1]]['WEIGHT'] *= rdr
+
+#         tabsr = []
+#         ffrn = ffr[selregr]
+#         ffrs = ffr[~selregr]
+#         fcdnn = fcdn[selregd]
+#         fcdns = fcdn[~selregd]
+#         tabsr = [ffrn,ffrs]
+#         tabsd = [fcdnn,fcdns]
+#         rdl =[]
+#         for i in range(0,len(tabsr)):
+#             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+#             dshuf = tabsd[i][inds]
+#             for col in rcols:
+#                 tabsr[i][col] =  dshuf[col]
+#             if compmd == 'ran':
+#                 tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
+#             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+#             rdl.append(rd)
+#         rdr = rdl[0]/rdl[1]
+#         print('norm factor is '+str(rdr))
+#         tabsr[1]['WEIGHT'] *= rdr
+#         #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+#         ffr = vstack(tabsr)   
         #print(len(ffr),len_o)     
         return ffr
 
@@ -3368,7 +3387,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-        kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
+        kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
         rcols = np.array(rcols)
         wc = np.isin(rcols,list(fcdn.dtype.names))
         rcols = rcols[wc]
@@ -3387,9 +3406,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             if 'S' in reg or reg == '':
                 des_resamp = True
         if reg == '': #N/S resampling
-            selregr = ffcn['DEC'] > 32.375
-            selregd = fcdn['DEC'] > 32.375
-            ffr = _resamp(selregr,selregd,ffr,fcdn)
+            selregr = ffcn['PHOTSYS'] ==  'N'
+            selregd = fcdn['PHOTSYS'] ==  'N'
+            ffcn = _resamp(selregr,selregd,ffcn,fcdn)
 
         if des_resamp:
             print('resampling in DES region')
@@ -3481,28 +3500,47 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     
     len_o = len(ffr)
     def _resamp(selregr,selregd,ffr,fcdn):
-        tabsr = []
-        ffrn = ffr[selregr]
-        ffrs = ffr[~selregr]
-        fcdnn = fcdn[selregd]
-        fcdns = fcdn[~selregd]
-        tabsr = [ffrn,ffrs]
-        tabsd = [fcdnn,fcdns]
-        rdl =[]
-        for i in range(0,len(tabsr)):
-            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
-            dshuf = tabsd[i][inds]
+        for col in rcols:
+            ffr[col] =  np.zeros(len(ffr))
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            print(len(fcdn[dsel]),len(inds),np.max(inds))
+            dshuf = fcdn[dsel][inds]
             for col in rcols:
-                tabsr[i][col] =  dshuf[col]
-            if compmd == 'ran':
-                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
-            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+                ffr[col][rsel] = dshuf[col]
+        ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+        rdl = []
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        tabsr[1]['WEIGHT'] *= rdr
-        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
-        ffr = vstack(tabsr)   
+        ffr[rand_sel[1]]['WEIGHT'] *= rdr
+
+#         tabsr = []
+#         ffrn = ffr[selregr]
+#         ffrs = ffr[~selregr]
+#         fcdnn = fcdn[selregd]
+#         fcdns = fcdn[~selregd]
+#         tabsr = [ffrn,ffrs]
+#         tabsd = [fcdnn,fcdns]
+#         rdl =[]
+#         for i in range(0,len(tabsr)):
+#             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+#             dshuf = tabsd[i][inds]
+#             for col in rcols:
+#                 tabsr[i][col] =  dshuf[col]
+#             if compmd == 'ran':
+#                 tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
+#             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+#             rdl.append(rd)
+#         rdr = rdl[0]/rdl[1]
+#         print('norm factor is '+str(rdr))
+#         tabsr[1]['WEIGHT'] *= rdr
+#         #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+#         ffr = vstack(tabsr)   
         #print(len(ffr),len_o)     
         return ffr
 
