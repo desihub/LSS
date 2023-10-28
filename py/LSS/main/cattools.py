@@ -3347,7 +3347,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        ffr[rand_sel[1]]['WEIGHT'] *= rdr
+        ffr['WEIGHT'][rand_sel[1]] *= rdr
 
 #         tabsr = []
 #         ffrn = ffr[selregr]
@@ -3486,7 +3486,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
             print(col+' not in original randoms')
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
@@ -3517,7 +3517,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        ffr[rand_sel[1]]['WEIGHT'] *= rdr
+        ffr['WEIGHT'][rand_sel[1]] *= rdr
+        
 
 #         tabsr = []
 #         ffrn = ffr[selregr]
