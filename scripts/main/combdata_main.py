@@ -476,7 +476,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 except:
                     print('column '+col +' was not in stacked tarwdup table')    
 
-            tarfn.write(outf,format='fits', overwrite=True)
+            common.write_LSS(tarfn,outf)
+            #tarfn.write(outf,format='fits', overwrite=True)
             print('wrote out '+outf)
             
             #try:
