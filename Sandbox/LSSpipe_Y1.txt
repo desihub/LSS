@@ -130,8 +130,8 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir 
 for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y (--notqso notqso) 
     
-#get n(z) and fkp weights (not really necessary; depricated)
-#python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --#survey Y1  --FKPfull y --nzfull y
+#get n(z) from full catalogs and make plots
+python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --nzfull y --version <version>
 
 #apply blinding and get blinded clustering catalogs
 module swap pyrecon/main pyrecon/mpi
