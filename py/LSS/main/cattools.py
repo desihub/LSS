@@ -461,6 +461,7 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
     else:
         tmask = np.ones(len(tiles)).astype('bool')
 
+    newl = []
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = None
@@ -486,11 +487,11 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
                 for colname in cols:
                     new[colname][...] = tspec[colname][...]
 
-                #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                newl.append(new)
+                #specd = np.hstack((specd,new))
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            #kp = (specd['TARGETID'] > 0)
+            #specd = specd[kp]
 
             n += 1
             print(tile,n,len(tiles[tmask]),len(specd))
@@ -498,6 +499,10 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
+    newtot = np.hstack(newl)
+    specd = np.hstack((specd,newtot)
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
         fitsio.write(outf,specd,clobber=True)
