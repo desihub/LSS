@@ -500,7 +500,7 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
             nfail += 1
     print('total number of failures was '+str(nfail))
     newtot = np.hstack(newl)
-    specd = np.hstack((specd,newtot)
+    specd = np.hstack((specd,newtot))
     kp = (specd['TARGETID'] > 0)
     specd = specd[kp]
     if n > 0:
