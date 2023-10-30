@@ -852,6 +852,7 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     print(len(maskf))
     maskf = Table(maskf)
     maskf.sort('TARGETID')
+    df = Table(df)
     df.sort('TARGETID')
     if np.array_equal(df['TARGETID'],maskf['TARGETID']):
         df[tracer_mask+'_mask'] = maskf[tracer_mask+'_mask']
