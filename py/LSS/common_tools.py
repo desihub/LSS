@@ -1046,6 +1046,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
         write_LSS(tlobs,tlobs_fn)
+        del tlobs
         fcompa = []
         fracta = []
         for tl in ff['TILES']:
