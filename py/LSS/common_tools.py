@@ -850,7 +850,14 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     sel = np.isin(maskf['TARGETID'],df['TARGETID'])
     maskf = maskf[sel]
     print(len(maskf))
-    df = join(df,maskf,keys=['TARGETID'])
+    maskf = Table(maskf)
+    maskf.sort('TARGETID')
+    df.sort('TARGETID')
+    if np.array_equal(df['TARGETID'],maskf['TARGETID']):
+        df[tracer_mask+'_mask'] = maskf[tracer_mask+'_mask']
+    else:
+        return('TARGETIDs do not match! exiting')
+    #df = join(df,maskf,keys=['TARGETID'])
     print(len(df),'should match above')
     #comments = ['Adding imaging mask column']
     write_LSS(df,fn)#,comments)
