@@ -1209,6 +1209,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
         print('read failed, output corrupted?!')
         return 'FAILED'    
     os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not
+    os.system('chmod 775 ' + outf) #mv was still giving people permission issues, I'm confused but this should make it good
     print('moved output to ' + outf)
 
 
