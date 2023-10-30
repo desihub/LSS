@@ -1054,6 +1054,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        print('data quantities measured, moving to write-out phase')
         #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         #if comp_only:
         #    return True
