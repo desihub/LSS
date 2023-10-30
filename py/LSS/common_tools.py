@@ -1067,7 +1067,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
         print('area is ' + str(len(ff) / 2500))
     #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
     write_LSS(ff, fout)#, comments)
-
+    del ff
 #     tmpfn = fout+'.tmp'
 #     if os.path.isfile(tmpfn):
 #         os.system('rm '+tmpfn)
