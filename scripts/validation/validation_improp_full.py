@@ -510,7 +510,8 @@ for tp in tps:
                 nest = False
                 eclrs = ['gr','rz']
                 for ec in eclrs:
-                    ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+                    #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+                    ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
                     parv = debv
                     fig = plt.figure()
