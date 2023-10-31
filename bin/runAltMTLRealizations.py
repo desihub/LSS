@@ -46,6 +46,11 @@ parser.add_argument('-md', '--multiDate', action='store_true', dest='multiDate',
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
+parser.add_argument('-ed', '--endDate', dest='endDate', default='', help = 'End Date', required = False, type = str)
+parser.add_argument('-ip', '--initpath', dest='initpath', default='', help = 'Path to initial ledgers', required = False, type = str)
+
+
+
 
 print(argv)
 
@@ -118,11 +123,20 @@ def procFunc(nproc):
     else:
         targets = None
     print('aqui va')
+    ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
+    ztilefn = ztilefile.split('/')[-1]
+    outputMTLDir = os.path.join(args.altMTLBaseDir.format(mock_number=nproc),'Univ000')
+    if not os.path.exists(outputMTLDir):
+        os.makedirs(outputMTLDir)
+    if not os.path.isfile(os.path.join(outputMTLDir, ztilefn)):
+        amt.processTileFile(ztilefile, os.path.join(outputMTLDir, ztilefn), '', args.endDate)
+    if not os.path.isdir(os.path.join(outputMTLDir, 'main')):
+        os.system('cp -r %s %s'%(os.path.join(args.initpath.format(mock_number=nproc),'main'), outputMTLDir))
     print('amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)')
     print(args.obscon, args.survey, args.mtldir, args.zcatdir, args.altMTLBaseDir.format(mock_number=nproc), ndirs, args.numobs_from_ledger, args.secondary, args.getosubp, args.quickRestart, multiproc, nproc, singleDate, args.redoFA, args.mock, targets, args.debug, args.verbose)
     
-    #retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)
-    retval = 151
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)#, initpath = args.initpath.format(mock_number=nproc))
+    #retval = 151
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:

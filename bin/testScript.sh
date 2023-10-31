@@ -7,11 +7,12 @@ start=`date +%s.%N`
 # and b. keep your alt MTLs somewhere that you have control/access
 
 #Uncomment the following line to set your own/nonscratch directory
+#ALTMTLHOME=./
 ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
 
 #Mock realization
-mockinit=0
-mockend=6
+mockinit=4
+mockend=25
 let ndir=$mockend-$mockinit 
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
@@ -47,6 +48,10 @@ echo ---------------------------
 #Otherwise this is optional
 #targfile='--targfile=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/TargetsWithNumobs_012322.fits' #WITHOUT PHOTSYS
 targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA{mock_number}.fits"
+
+
+initpath="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/$simName/initled/"
+
 echo $targfile
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
@@ -122,6 +127,7 @@ qR=''
 
 #Number of observation dates to loop through
 #Defaults to 40 dates for SV3
+#NObsDates=4
 NObsDates=400
 
 #Number of nodes to run on. This will launch up to 64*N jobs 
@@ -224,7 +230,7 @@ overwrite2=1
 printf -v OFDL "dateLoop%sAltMTLOutput_%sRepro%s.out" $obscon $survey $datestring
 #printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" ./$outputMTLFinalDestination $obscon $survey $datestring
 
-argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile --mockmin=$mockinit --mockmax=$mockend"
+argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile --mockmin=$mockinit --mockmax=$mockend --initpath=$initpath $endDate"
 echo nohup bash $path2LSS/dateLoopAltMTL_mock.sh $NObsDates $NNodes $path2LSS $CVal $QVal $qR $argstring  >& $OFDL
 nohup bash $path2LSS/dateLoopAltMTL_mock.sh $NObsDates $NNodes $path2LSS $CVal $QVal $qR $argstring  >& $OFDL
 

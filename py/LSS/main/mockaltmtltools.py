@@ -776,7 +776,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False):
+                    debug = False, verbose = False, initpath=None):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1002,7 +1002,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     if getosubp and verbose:
                         log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                         log.info(glob.glob(fbadir + '/*' ))
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                    if initpath is None:
+                        get_fba_fromnewmtl(ts, mtldir = os.path.join(altmtldir, survey.lower() + '/'), outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                    else:
+                        get_fba_fromnewmtl(ts, mtldir = os.path.join(initpath, survey.lower() + '/'), outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
                     if verbose:
                         log.info('fa command_run')
