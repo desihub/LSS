@@ -574,7 +574,7 @@ if __name__ == '__main__':
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='Y1')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC','NGCS','DES','SGCnotDES'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
     parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)

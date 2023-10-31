@@ -329,6 +329,7 @@ for tp in tps:
     nx = nbar*comp_ntl[dtf['NTILE']-1]
     fkpl = 1/(1+nx*P0) #this is just the effect of the completeness varying on the fkp weight, no actual z dependence
     dtf = Table(dtf)
+    #fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
     dtf['WEIGHT_FKP'] = 1/weight_ntl[dtf['NTILE']-1]*fkpl
     
     rt = fitsio.read(rf)
@@ -503,13 +504,15 @@ for tp in tps:
     
     
             if do_ebvnew_diff == 'y':
-                dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+                #dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+                dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'
                 nside = 256#64
                 nest = False
                 eclrs = ['gr','rz']
                 for ec in eclrs:
-                    ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
-                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+                    #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+                    ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
                     parv = debv
                     fig = plt.figure()
                     chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)

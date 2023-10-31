@@ -461,6 +461,7 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
     else:
         tmask = np.ones(len(tiles)).astype('bool')
 
+    newl = []
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = None
@@ -486,11 +487,11 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
                 for colname in cols:
                     new[colname][...] = tspec[colname][...]
 
-                #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                newl.append(new)
+                #specd = np.hstack((specd,new))
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            #kp = (specd['TARGETID'] > 0)
+            #specd = specd[kp]
 
             n += 1
             print(tile,n,len(tiles[tmask]),len(specd))
@@ -498,6 +499,10 @@ def combtile_em(tiles,outf='',md='',prog='dark',redo='n'):
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
+    newtot = np.hstack(newl)
+    specd = np.hstack((specd,newtot))
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
         fitsio.write(outf,specd,clobber=True)
@@ -2480,8 +2485,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
     dz.sort('sort')
     print('sorted')
+    
     dz = unique(dz,keys=['TARGETID'],keep='last')
-
+    dz.remove_column('sort')
     print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
     print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
     print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
@@ -2507,7 +2513,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if specver == 'daily':
         spec_cols = ['TARGETID','TILEID','LOCATION','Z','ZERR','SPECTYPE','DELTACHI2'\
         ,'COADD_FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
-        ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_LYA','TSNR2_QSO','TSNR2_LRG']
+        ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX']
         dailydir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
         prog = 'dark'
         if tp[:3] == 'BGS':
@@ -3198,7 +3204,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     ff = ff[selz]
 
 
-    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#,'WEIGHT_FKP']
+    kl = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','PHOTSYS']#,'WEIGHT_FKP']
     if 'WEIGHT_FKP' in cols:
         kl.append('WEIGHT_FKP')
     if 'WEIGHT_SN' in cols:
@@ -3241,14 +3247,18 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     #common.write_LSS(ff,outf,comments)
 
     if write_cat == 'y':
-        outfn = fl+wzm+'N_clustering.dat.fits'
-        comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-        common.write_LSS(ff[wn],outfn,comments)
+        if splitNS == 'y':
+            outfn = fl+wzm+'N_clustering.dat.fits'
+            comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
+            common.write_LSS(ff[wn],outfn,comments)
 
-        outfn = fl+wzm+'S_clustering.dat.fits'
-        comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
-        ffs = ff[~wn]
-        common.write_LSS(ffs,outfn,comments)
+            outfn = fl+wzm+'S_clustering.dat.fits'
+            comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
+            ffs = ff[~wn]
+            common.write_LSS(ffs,outfn,comments)
+        else:
+            outfn = fl+wzm+'clustering.dat.fits'
+            common.write_LSS(ff,outfn)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
@@ -3320,59 +3330,96 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     print(len(ffc),len(ffr))
     if return_cat == 'y' and nosplit=='y':
         #this option will then pass the arrays to the clusran_resamp_arrays function
-        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES'])
+        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS'])
         return ffc
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
         print('length after cutting to unique tilelocid '+str(len(ffc)))
     def _resamp(selregr,selregd,ffr,fcdn):
-        tabsr = []
-        ffrn = ffr[selregr]
-        ffrs = ffr[~selregr]
-        fcdnn = fcdn[selregd]
-        fcdns = fcdn[~selregd]
-        tabsr = [ffrn,ffrs]
-        tabsd = [fcdnn,fcdns]
-        rdl =[]
-        for i in range(0,len(tabsr)):
-            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
-            dshuf = tabsd[i][inds]
+        for col in rcols:
+            ffr[col] =  np.zeros(len(ffr))
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            print(len(fcdn[dsel]),len(inds),np.max(inds))
+            dshuf = fcdn[dsel][inds]
             for col in rcols:
-                tabsr[i][col] =  dshuf[col]
-            if compmd == 'ran':
-                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
-            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+                ffr[col][rsel] = dshuf[col]
+        ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+        rdl = []
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        tabsr[1]['WEIGHT'] *= rdr
-        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
-        ffr = vstack(tabsr)   
+        ffr['WEIGHT'][rand_sel[1]] *= rdr
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
+            print('data/random weighted ratio after resampling:'+str(rd))
+
+#         tabsr = []
+#         ffrn = ffr[selregr]
+#         ffrs = ffr[~selregr]
+#         fcdnn = fcdn[selregd]
+#         fcdns = fcdn[~selregd]
+#         tabsr = [ffrn,ffrs]
+#         tabsd = [fcdnn,fcdns]
+#         rdl =[]
+#         for i in range(0,len(tabsr)):
+#             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+#             dshuf = tabsd[i][inds]
+#             for col in rcols:
+#                 tabsr[i][col] =  dshuf[col]
+#             if compmd == 'ran':
+#                 tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
+#             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+#             rdl.append(rd)
+#         rdr = rdl[0]/rdl[1]
+#         print('norm factor is '+str(rdr))
+#         tabsr[1]['WEIGHT'] *= rdr
+#         #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+#         ffr = vstack(tabsr)   
         #print(len(ffr),len_o)     
         return ffr
 
 
-    regl = ['N','S']
+    if nosplit == 'n':
+        regl = ['N_','S_']
+    else:
+        regl = ['']
     tabl = []
     for ind in range(0,len(regl)):
         reg = regl[ind]
         if clus_arrays is None:
-            fcdn = Table.read(fl+wzm+reg+'_clustering.dat.fits')
+            fcdn = Table.read(fl+wzm+reg+'clustering.dat.fits')
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-        kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
+        kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
         rcols = np.array(rcols)
         wc = np.isin(rcols,list(fcdn.dtype.names))
         rcols = rcols[wc]
         print('columns sampled from data are:')
         print(rcols)
 
-        wn = ffc['PHOTSYS'] == reg
+        if reg != '':
+            wn = ffc['PHOTSYS'] == reg.strip('_')
+            ffcn = ffc[wn]
+        else:
+            ffcn = ffc
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'  
+        
+        des_resamp = False
+        if 'QSO' in flin:
+            if 'S' in reg or reg == '':
+                des_resamp = True
+        if reg == '': #N/S resampling
+            selregr = ffcn['PHOTSYS'] ==  'N'
+            selregd = fcdn['PHOTSYS'] ==  'N'
+            ffcn = _resamp(selregr,selregd,ffcn,fcdn)
 
-        outfn =  fl+ws+wzm+reg+'_'+str(rann)+'_clustering.ran.fits'  
-        ffcn = ffc[wn]
-        if 'QSO_S' in flin:
+        if des_resamp:
             print('resampling in DES region')
             from regressis import footprint
             foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
@@ -3384,7 +3431,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
             selregd = des[pixd]
             ffcn = _resamp(selregr,selregd,ffcn,fcdn)
-        else:
+        no_resamp = False
+        if reg == 'N' or (reg == 'S' and des_resamp == False):
+            no_resamp = True
+        if no_resamp:
+            print('Not doing any re-sampling')
             inds = np.random.choice(len(fcdn),len(ffcn))
             dshuf = fcdn[inds]
             for col in rcols:
@@ -3444,7 +3495,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
             print(col+' not in original randoms')
     fcdn = Table.read(flin+'_clustering.dat.fits')
     fcdn.rename_column('TARGETID', 'TARGETID_DATA')
-    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES']
+    kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
     rcols = np.array(rcols)
     wc = np.isin(rcols,list(fcdn.dtype.names))
     rcols = rcols[wc]
@@ -3458,28 +3509,52 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     
     len_o = len(ffr)
     def _resamp(selregr,selregd,ffr,fcdn):
-        tabsr = []
-        ffrn = ffr[selregr]
-        ffrs = ffr[~selregr]
-        fcdnn = fcdn[selregd]
-        fcdns = fcdn[~selregd]
-        tabsr = [ffrn,ffrs]
-        tabsd = [fcdnn,fcdns]
-        rdl =[]
-        for i in range(0,len(tabsr)):
-            inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
-            dshuf = tabsd[i][inds]
+        for col in rcols:
+            ffr[col] =  np.zeros(len(ffr))
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            print(len(fcdn[dsel]),len(inds),np.max(inds))
+            dshuf = fcdn[dsel][inds]
             for col in rcols:
-                tabsr[i][col] =  dshuf[col]
-            if compmd == 'ran':
-                tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
-            rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+                ffr[col][rsel] = dshuf[col]
+        ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+        rdl = []
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
-        tabsr[1]['WEIGHT'] *= rdr
-        #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
-        ffr = vstack(tabsr)   
+        ffr['WEIGHT'][rand_sel[1]] *= rdr
+        #check that everything worked
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
+            print('data/random weighted ratio after resampling:'+str(rd))
+        
+
+#         tabsr = []
+#         ffrn = ffr[selregr]
+#         ffrs = ffr[~selregr]
+#         fcdnn = fcdn[selregd]
+#         fcdns = fcdn[~selregd]
+#         tabsr = [ffrn,ffrs]
+#         tabsd = [fcdnn,fcdns]
+#         rdl =[]
+#         for i in range(0,len(tabsr)):
+#             inds = np.random.choice(len(tabsd[i]),len(tabsr[i]))
+#             dshuf = tabsd[i][inds]
+#             for col in rcols:
+#                 tabsr[i][col] =  dshuf[col]
+#             if compmd == 'ran':
+#                 tabsr[i]['WEIGHT'] *= tabsr[i]['FRAC_TLOBS_TILES']
+#             rd = np.sum(tabsr[i]['WEIGHT'])/np.sum(tabsd[i]['WEIGHT'])
+#             rdl.append(rd)
+#         rdr = rdl[0]/rdl[1]
+#         print('norm factor is '+str(rdr))
+#         tabsr[1]['WEIGHT'] *= rdr
+#         #print(np.sum(tabsr[0]['WEIGHT'])/np.sum(tabsd[0]['WEIGHT']),np.sum(tabsr[1]['WEIGHT'])/np.sum(tabsd[1]['WEIGHT']))
+#         ffr = vstack(tabsr)   
         #print(len(ffr),len_o)     
         return ffr
 
@@ -3666,6 +3741,31 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
+def splitclusGC(flroot,nran=1):
+    import LSS.common_tools as common
+    '''
+    split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    fc = Table(fitsio.read(flroot+'clustering.dat.fits'))
+    c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+    outf_ngc = flroot+'NGC_clustering.dat.fits'
+    common.write_LSS(fc[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_clustering.dat.fits'
+    common.write_LSS(fc[~sel_ngc],outf_sgc)
+    
+    for rann in range(0,nran):
+        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+        gc = c.transform_to('galactic')
+        sel_ngc = gc.b > 0
+        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[sel_ngc],outf_ngc)
+        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[~sel_ngc],outf_sgc)
 
 
 

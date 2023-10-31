@@ -380,8 +380,9 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
     wts = 1/df['FRACZ_TILELOCID']
     if 'FRAC_TLOBS_TILES' in cols:
         wts *= 1/df['FRAC_TLOBS_TILES']
-    if 'WEIGHT_SYS' in cols:
-        wts *= df['WEIGHT_SYS']
+    #if 'WEIGHT_SYS' in cols:
+    #    #wtnorm = np.mean()
+    #    wts *= df['WEIGHT_SYS']
     selnan = wts*0 != 0
     print('number of nans in weights '+str(np.sum(selnan)))
     wts[selnan] = 1.
@@ -846,10 +847,22 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     else:
         print('adding '+tracer_mask)
     print(len(df))
-    df = join(df,maskf,keys=['TARGETID'])
+    sel = np.isin(maskf['TARGETID'],df['TARGETID'])
+    maskf = maskf[sel]
+    print(len(maskf))
+    maskf = Table(maskf)
+    maskf.sort('TARGETID')
+    df = Table(df)
+    df.sort('TARGETID')
+    if np.array_equal(df['TARGETID'],maskf['TARGETID']):
+        df[tracer_mask+'_mask'] = maskf[tracer_mask+'_mask']
+    else:
+        return('TARGETIDs do not match! exiting')
+    #df = join(df,maskf,keys=['TARGETID'])
     print(len(df),'should match above')
-    comments = ['Adding imaging mask column']
-    write_LSS(df,fn,comments)
+    #comments = ['Adding imaging mask column']
+    write_LSS(df,fn)#,comments)
+    del df
 
 def parse_circandrec_mask(custom_mask_fn):
     '''
@@ -1033,6 +1046,7 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
         write_LSS(tlobs,tlobs_fn)
+        del tlobs
         fcompa = []
         fracta = []
         for tl in ff['TILES']:
@@ -1040,7 +1054,16 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        print('data quantities measured, moving to write-out phase')
         #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
+        #if comp_only:
+        #    return True
+    if '.ran' in fin:
+        print('area is ' + str(len(ff) / 2500))
+    #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
+    if comp_only == False:
+        write_LSS(ff, fout)#, comments)
+    if '.dat' in fin:
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
@@ -1048,13 +1071,8 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
         print('assignment completeness is '+str(comp))
         print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
         print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
-        if comp_only:
-            return True
-    if '.ran' in fin:
-        print('area is ' + str(len(ff) / 2500))
-    #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-    write_LSS(ff, fout)#, comments)
 
+    del ff
 #     tmpfn = fout+'.tmp'
 #     if os.path.isfile(tmpfn):
 #         os.system('rm '+tmpfn)
@@ -1190,7 +1208,8 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     except:
         print('read failed, output corrupted?!')
         return 'FAILED'    
-    os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not
+    os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not for actually getting the file in place
+    os.system('chmod 775 ' + outf) #this should fix permissions for the group
     print('moved output to ' + outf)
 
 

@@ -1,12 +1,17 @@
 '''
 Documentation needs to be updated
+ENVIRONMENT
+=============
+source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+module swap pyrecon/main pyrecon/mpi
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
+
+
 EXAMPLE USE
 ===========
 
-
-
-GENERAL NOTES
-=============
+srun -n 128 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
 
 
 NOTES FOR TESTING AND VALIDATION
@@ -358,9 +363,10 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-        clus_arrays = []
-        for reg in ['N','S']:
-            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+        #for reg in ['N','S']:
+        #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        
         def _parfun(rannum):
             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
@@ -384,7 +390,8 @@ if root:
                 print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
-        ct.clusNStoGC(fb, args.maxr - args.minr)
+        #ct.clusNStoGC(fb, args.maxr - args.minr)
+        ct.splitclusGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
@@ -456,9 +463,9 @@ if args.fnlblind == 'y':
 
     # build blinding cosmology
     cosmo_blind = get_cosmo_blind('DESI', z=zeff)
-    cosmo_blind.params['w0_fld'] = w0_blind
-    cosmo_blind.params['wa_fld'] = wa_blind
-    cosmo_blind._derived['f'] = f_blind
+    #cosmo_blind.params['w0_fld'] = w0_blind
+    #cosmo_blind.params['wa_fld'] = wa_blind
+    #cosmo_blind._derived['f'] = f_blind
     cosmo_blind._derived['fnl'] = fnl_blind   # on fixe la valeur pour de bon
     blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
 
