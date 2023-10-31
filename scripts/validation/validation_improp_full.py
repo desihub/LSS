@@ -512,7 +512,7 @@ for tp in tps:
                 for ec in eclrs:
                     #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
                     ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
-                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
                     parv = debv
                     fig = plt.figure()
                     chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
