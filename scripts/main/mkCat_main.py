@@ -620,7 +620,7 @@ elif type[:3] == 'BGS':
 
 
 
-if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys:
+if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y':
     
     def make_hp(value, hpix, nside, fill_with=np.nan):
         """ A Function to create a HEALPix map
@@ -633,14 +633,16 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys:
 
     import healpy as hp
 
-    dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    #dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'
     nside = 256#64
     nest = False
     eclrs = ['gr','rz']
     debv = Table()
     for ec in eclrs:
-        ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
-        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD']
+        #ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
         debv_a = hp.reorder(debv_a,r2n=True)
         debv['EBV_DIFF_'+ec.upper()] = debv_a
 
