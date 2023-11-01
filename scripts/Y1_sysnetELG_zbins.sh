@@ -1,5 +1,5 @@
-
-source /global/common/software/desi/desi_environment.sh main
+#!/bin/bash
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
 export LSSDIR=$HOME
 #export SYSNETDIR=$HOME/desicode
