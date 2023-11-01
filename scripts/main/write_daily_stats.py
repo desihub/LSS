@@ -36,7 +36,7 @@ for tp in tps:
     print('number density pre veto '+str(ngnv/areanv))
     rt = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full.ran.fits',ext=1)
     area = rt['NAXIS2']/2500
-    cols = ['ZWARN','LOCATION_ASSIGNED','DELTACHI2']
+    cols = ['Z_not4clus','ZWARN','LOCATION_ASSIGNED','DELTACHI2']
     if tp[:3] == 'ELG':
         cols.append('o2c')
     dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits',columns=cols)
