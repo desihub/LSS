@@ -39,7 +39,7 @@ for tp in tps:
     cols = ['ZWARN','LOCATION_ASSIGNED','DELTACHI2']
     if tp[:3] == 'ELG':
         cols.append('o2c')
-    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits')
+    dt = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full.dat.fits',columns=cols)
     print('number density after veto '+str(len(dt)/area))
     #wz = dt[zcol]*0 == 0
     #wz &= dt[zcol] != 999999
