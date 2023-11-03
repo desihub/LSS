@@ -137,6 +137,6 @@ python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/sur
 module swap pyrecon/main pyrecon/mpi
 srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y
 
-#get unblinded clustering catalogs, in all of N, S, NGC, SGC regions
-python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --NStoGC y --nz y --par n --resamp y
+#get unblinded clustering catalogs, first in total (with proper resampling within regions) then split into separate NGC, SGC catalogs
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --splitGC y --nz y --par n --
 
