@@ -348,7 +348,6 @@ if root:
     if args.mkclusdat == 'y':
         ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax,compmd=args.compmd)
 
-
     if args.mkclusran == 'y':
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
         tsnrcol = 'TSNR2_ELG'
@@ -358,9 +357,10 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-        clus_arrays = []
-        for reg in ['N','S']:
-            clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+        #for reg in ['N','S']:
+        #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        
         def _parfun(rannum):
             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
@@ -384,7 +384,47 @@ if root:
                 print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
-        ct.clusNStoGC(fb, args.maxr - args.minr)
+        #ct.clusNStoGC(fb, args.maxr - args.minr)
+        ct.splitclusGC(fb, args.maxr - args.minr)
+
+
+
+#     if args.mkclusran == 'y':
+#         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
+#         tsnrcol = 'TSNR2_ELG'
+#         if args.type[:3] == 'BGS':
+#             tsnrcol = 'TSNR2_BGS'
+#         #for rannum in range(args.minr, args.maxr):
+#         ranin = dirin + args.type + notqso + '_'
+#         if args.type == 'BGS_BRIGHT-21.5':
+#             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
+#         clus_arrays = []
+#         for reg in ['N','S']:
+#             clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+#         def _parfun(rannum):
+#             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
+#             #for clustering, make rannum start from 0
+#             if 'Y1/mock' in args.verspec:
+#                 for reg in regl:
+#                     ranf = dirout + args.type + notqso + reg + '_' + str(rannum) + '_clustering.ran.fits'
+#                     ranfm = dirout + args.type + notqso + reg + '_' + str(rannum - 1) + '_clustering.ran.fits'
+#                     os.system('mv ' + ranf + ' ' + ranfm)
+#         nran = args.maxr-args.minr
+#         inds = np.arange(args.minr,args.maxr)
+#         if args.useMPI == 'y':
+#             from multiprocessing import Pool
+#             nproc = 9
+#             #nproc = nran*2
+#             with Pool(processes=nproc) as pool:
+#                 res = pool.map(_parfun, inds)
+#         else:
+#             for ii in inds:
+#                 _parfun(ii)
+#                 #ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
+#                 print(ii,clus_arrays[0].dtype.names)
+#         #if args.split_GC == 'y':
+#         fb = dirout + args.type + notqso + '_'
+#         ct.clusNStoGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
