@@ -88,6 +88,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
+parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 
 
@@ -981,6 +982,7 @@ if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
     ct.clusNStoGC(fb, args.maxr - args.minr)
 
+
 if type == 'QSO':
     #zmin = 0.6
     #zmax = 4.5
@@ -1018,16 +1020,20 @@ if args.resamp == 'y':
             for rn in range(rm,rx):
                 _parfun(rn)
     
-allreg = ['N','S','NGC', 'SGC']
+#allreg = ['N','S','NGC', 'SGC']
+#allreg = ['NGC','SGC']
 if args.nz == 'y':
-    for reg in allreg:
-        fb = dirout+tracer_clus+'_'+reg
-        fcr = fb+'_0_clustering.ran.fits'
-        fcd = fb+'_clustering.dat.fits'
-        fout = fb+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
+    #for reg in allreg:
+	fb = dirout+tracer_clus#+'_'+reg
+	fcr = fb+'_0_clustering.ran.fits'
+	fcd = fb+'_clustering.dat.fits'
+	fout = fb+'_nz.txt'
+	common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+	common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
 
+if args.splitGC == 'y':
+    fb = dirout+tracer_clus+'_'
+    ct.splitclusGC(fb, args.maxr - args.minr)   
     
 
 #if args.nz == 'y':
