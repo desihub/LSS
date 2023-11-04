@@ -127,25 +127,25 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
             rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
             print('data/random weighted ratio after resampling:'+str(rd))
 
-	des_resamp = False
-	if 'QSO' in tracer:
-		des_resamp = True
-	selregr = randoms['PHOTSYS'] ==  'N'
-	selregd = data['PHOTSYS'] ==  'N'
-	randoms = _resamp(selregr,selregd)
+    des_resamp = False
+    if 'QSO' in tracer:
+        des_resamp = True
+    selregr = randoms['PHOTSYS'] ==  'N'
+    selregd = data['PHOTSYS'] ==  'N'
+    randoms = _resamp(selregr,selregd)
 
-	if des_resamp:
-		print('resampling in DES region')
-		from regressis import footprint
-		foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
-		north, south, des = foot.get_imaging_surveys()
-		th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
-		th_dat,phi_dat = (-data['DEC']+90.)*np.pi/180.,data['RA']*np.pi/180.
-		pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
-		selregr = des[pixr]
-		pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
-		selregd = des[pixd]
-		randoms = _resamp(selregr,selregd)
+    if des_resamp:
+        print('resampling in DES region')
+        from regressis import footprint
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        north, south, des = foot.get_imaging_surveys()
+        th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
+        th_dat,phi_dat = (-data['DEC']+90.)*np.pi/180.,data['RA']*np.pi/180.
+        pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
+        selregr = des[pixr]
+        pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
+        selregd = des[pixd]
+        randoms = _resamp(selregr,selregd)
 
     return randoms
 
@@ -213,15 +213,15 @@ for tracer in tracers:
         print('length after cutting to "observed" targets',len(mock_data_tr))
         mock_data_tr.rename_column('RSDZ', 'Z')
         mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
-		
-		#apply imaging vetos
-		if tracer == 'LRG':
-			lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
-			mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
-			print(len(mock_data_tr))
-		ebits = mainp.ebits
-		reccircmasks = mainp.reccircmasks
-		mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
+        
+        #apply imaging vetos
+        if tracer == 'LRG':
+            lrgmask = fitsio.read(args.base_dir+'forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+            mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
+            print(len(mock_data_tr))
+        ebits = mainp.ebits
+        reccircmasks = mainp.reccircmasks
+        mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         
         mock_data_tr = common.apply_map_veto_array(mock_data_tr,mapn,maps,mapcuts)
         print('map data veto done')
@@ -321,13 +321,13 @@ for tracer in tracers:
     if args.nz == 'y':
         #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
         #for reg in allreg:
-		fb = out_data_froot
-		fcr = fb+'0_clustering.ran.fits'
-		fcd = fb+'clustering.dat.fits'
-		fout = fb+'nz.txt'
-		common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-		common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
-	
+        fb = out_data_froot
+        fcr = fb+'0_clustering.ran.fits'
+        fcd = fb+'clustering.dat.fits'
+        fout = fb+'nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
+    
     if args.splitGC == 'y':
         splitGC(out_data_froot,'.dat')
         def _spran(rann):
