@@ -326,10 +326,10 @@ for tracer in tracers:
     if args.nz == 'y':
         #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
         #for reg in allreg:
-        fb = out_data_froot
-        fcr = fb+'0_clustering.ran.fits'
-        fcd = fb+'clustering.dat.fits'
-        fout = fb+'nz.txt'
+        fb = out_data_froot[:-1]
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
     
