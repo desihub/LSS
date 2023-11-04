@@ -714,10 +714,10 @@ if args.prepsysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     #_HPmapcut'
-    dat = fitsio.read(os.path.join(dirout, f'{tracer_clus}'+'_full'+args.use_map_veto+'.dat.fits'))
+    dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
     for i in range(0,18):
-        ran = fitsio.read(os.path.join(dirout, f'{tpstr}'+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
