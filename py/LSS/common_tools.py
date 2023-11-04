@@ -1085,6 +1085,42 @@ def apply_veto(fin,fout,ebits=None,zmask=False,maxp=3400,comp_only=False,reccirc
 
 def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
     din = fitsio.read(fin)
+    din = apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=nside)
+#     mask = np.ones(len(din),dtype='bool')
+#     if 'PHOTSYS' not in list(din.dtype.names):
+#         din = addNS(Table(din))
+#     seln = din['PHOTSYS'] == 'N'
+#     
+#         
+#     import healpy as hp
+#     th,phi = radec2thphi(din['RA'],din['DEC'])
+#     pix = hp.ang2pix(nside,th,phi,nest=True)
+#     maps2cut = list(mapcuts.keys())
+#     inlen = len(din)
+#     print('initial',inlen)
+#     for mp in maps2cut:
+#         mvals = np.zeros(len(din))
+#         if 'DEPTH' in mp:
+#             bnd = mp.split('_')[-1]
+#             mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[seln]])
+#             mvals[~seln] = maps[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*maps['EBV'][pix[~seln]])
+#             mask &= mvals > mapcuts[mp]
+#             print(mp,len(din[mask]),len(din[mask])/inlen)
+#             
+#         else:
+#             mvals[seln] = mapn[mp][pix[seln]]
+#             if len(mvals[seln]) > 0:
+#                 print(np.min(mvals[seln]),np.max(mvals[seln]))
+#             mvals[~seln] = maps[mp][pix[~seln]]
+#             print(np.min(mvals[~seln]),np.max(mvals[~seln]))
+#             if mp == 'STARDENS':
+#                 mvals = np.log10(mvals)
+#             mask &= mvals < mapcuts[mp]   
+#             print(mp,len(din[mask]),len(din[mask])/inlen)
+#    write_LSS(din[mask],fout) 
+    write_LSS(din,fout) 
+ 
+def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256):
     mask = np.ones(len(din),dtype='bool')
     if 'PHOTSYS' not in list(din.dtype.names):
         din = addNS(Table(din))
@@ -1116,7 +1152,8 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
                 mvals = np.log10(mvals)
             mask &= mvals < mapcuts[mp]   
             print(mp,len(din[mask]),len(din[mask])/inlen)
-    write_LSS(din[mask],fout) 
+    return din[mask]
+
             
 
 def get_tlcomp(fin):
