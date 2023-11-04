@@ -76,7 +76,7 @@ if args.prog == 'DARK':
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
     if args.tracer == 'all':
-        tracers = ['LRG','QSO','ELG_LOP']
+        tracers = ['QSO','ELG_LOP','LRG']
     else:
         tracers = [args.tracer]
     #if args.mockver == 'abacus2ffa':
@@ -140,6 +140,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
     if des_resamp:
         print('resampling in DES region')
         from regressis import footprint
+        import healpy as hp
         foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
         north, south, des = foot.get_imaging_surveys()
         th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
