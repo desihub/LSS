@@ -227,7 +227,7 @@ for tracer in tracers:
         reccircmasks = mainp.reccircmasks
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         
-        mock_data_tr = common.apply_map_veto_array(mock_data_tr,mapn,maps,mapcuts)
+        mock_data_tr = common.apply_map_veto_arrays(mock_data_tr,mapn,maps,mapcuts)
         print('map data veto done')
 
 
