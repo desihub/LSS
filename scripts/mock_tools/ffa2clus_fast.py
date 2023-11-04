@@ -63,7 +63,7 @@ rx = int(args.maxr)
 
 notqso = ''
 
-lssmapdirout = args.random_dir+'/hpmaps/'
+lssmapdirout = args.data_dir+'/hpmaps/'
 mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
 maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
 mainp = main('LRG','iron','Y1')
