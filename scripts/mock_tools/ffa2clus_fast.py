@@ -83,6 +83,8 @@ if args.prog == 'DARK':
     #    tracers = [args.tracer]
 
 #ndattot = len(mock_data)
+print(tracers)
+
 
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
