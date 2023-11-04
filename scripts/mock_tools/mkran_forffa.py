@@ -114,49 +114,49 @@ for tracer in tracers:
     mainp = main(tracer,'iron','Y1')
 
     nran = rx-rm
-    if args.mkran == 'y':
-        def _mkran(rann):
-            
-            tracerr = tracer
-            if tracer == 'ELG_LOP':
-                tracerr += 'notqso'
-            if tracer == 'ELG':
-                tracerr = 'ELG_LOPnotqso'
-            in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
-            out_ran_fn = out_data_froot+str(rann)+'_full.ran.fits'
-            rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE','GOODHARDLOC','PHOTSYS']
-            if tracerr == 'LRG':
-                rcols.append('lrg_mask')
-            ran = Table(fitsio.read(in_ran_fn,columns=rcols))
-            ran['FRAC_TLOBS_TILES'] = 1.
+    #if args.mkran == 'y':
+    def _mkran(rann):
         
-            print(len(ran),' random length before good loc cut')
-            goodtl = ran['GOODHARDLOC']#np.isin(ran['TILELOCID'],gtl)
-            ran = ran[goodtl]
-            print(len(ran),' random length after good loc cut')
-            if 'imaging' in args.veto:
-                ebits = mainp.ebits
-                reccircmasks = mainp.reccircmasks
-                ran = apply_imaging_veto(ran,reccircmasks,ebits)
-            if args.apply_HPmapcut == 'y':
-                nside = 256
-                lssmapdirout = args.random_dir+'/hpmaps/'
-                mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-                maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
-                mapcuts = mainp.mapcuts
-                ran = common.apply_map_veto_arrays(ran,mapn,maps,mapcuts,nside)
-                print('random veto '+str(rn)+' done')
+        tracerr = tracer
+        if tracer == 'ELG_LOP':
+            tracerr += 'notqso'
+        if tracer == 'ELG':
+            tracerr = 'ELG_LOPnotqso'
+        in_ran_fn = args.random_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits' #all noveto have same ra,dec, tracer becomes important for LRG imaging veto
+        out_ran_fn = out_data_froot+str(rann)+'_full.ran.fits'
+        rcols = ['RA','DEC','TILELOCID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS','TARGETID','NTILE','GOODHARDLOC','PHOTSYS']
+        if tracerr == 'LRG':
+            rcols.append('lrg_mask')
+        ran = Table(fitsio.read(in_ran_fn,columns=rcols))
+        ran['FRAC_TLOBS_TILES'] = 1.
+    
+        print(len(ran),' random length before good loc cut')
+        goodtl = ran['GOODHARDLOC']#np.isin(ran['TILELOCID'],gtl)
+        ran = ran[goodtl]
+        print(len(ran),' random length after good loc cut')
+        if 'imaging' in args.veto:
+            ebits = mainp.ebits
+            reccircmasks = mainp.reccircmasks
+            ran = apply_imaging_veto(ran,reccircmasks,ebits)
+        if args.apply_HPmapcut == 'y':
+            nside = 256
+            lssmapdirout = args.random_dir+'/hpmaps/'
+            mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+            maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+            mapcuts = mainp.mapcuts
+            ran = common.apply_map_veto_arrays(ran,mapn,maps,mapcuts,nside)
+            print('random veto '+str(rn)+' done')
 
-            common.write_LSS(ran,out_ran_fn)
+        common.write_LSS(ran,out_ran_fn)
 
-        inds = np.arange(nran)
-        if args.par == 'y':
-            from multiprocessing import Pool
-            with Pool(processes=nproc) as pool:
-                res = pool.map(_mkran, inds)
-        else:
-            for rn in inds:#range(rm,rx):
-                 _mkran(rn)
+    inds = np.arange(nran)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_mkran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _mkran(rn)
     
     
 
