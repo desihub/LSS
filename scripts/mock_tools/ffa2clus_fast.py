@@ -135,7 +135,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         des_resamp = True
     selregr = randoms['PHOTSYS'] ==  'N'
     selregd = data['PHOTSYS'] ==  'N'
-    randoms = _resamp(selregr,selregd)
+    _resamp(selregr,selregd)
 
     if des_resamp:
         print('resampling in DES region')
