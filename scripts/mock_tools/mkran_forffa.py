@@ -145,7 +145,7 @@ for tracer in tracers:
             maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
             mapcuts = mainp.mapcuts
             ran = common.apply_map_veto_arrays(ran,mapn,maps,mapcuts,nside)
-            print('random veto '+str(rn)+' done')
+            print('random veto '+str(rann)+' done')
 
         common.write_LSS(ran,out_ran_fn)
 
