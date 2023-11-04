@@ -148,7 +148,7 @@ for tracer in tracers:
 
         common.write_LSS(ran,out_ran_fn)
 
-    inds = np.arange(nran)
+    inds = np.arange(rm,rx)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool(processes=nproc) as pool:
