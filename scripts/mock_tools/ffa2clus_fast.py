@@ -126,9 +126,6 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         rdr = rdl[0]/rdl[1]
         print('norm factor is '+str(rdr))
         randoms['WEIGHT'][rand_sel[1]] *= rdr
-        for dsel,rsel in zip(dat_sel,rand_sel):
-            rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
-            print('data/random weighted ratio after resampling:'+str(rd))
 
     des_resamp = False
     if 'QSO' in tracer:
@@ -136,6 +133,13 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
     selregr = randoms['PHOTSYS'] ==  'N'
     selregd = data['PHOTSYS'] ==  'N'
     _resamp(selregr,selregd)
+    rand_sel = [selregr,~selregr]
+    dat_sel = [ selregd,~selregd]
+    
+    for dsel,rsel in zip(dat_sel,rand_sel):
+        rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
+        print('data/random weighted ratio after resampling:'+str(rd))
+
 
     if des_resamp:
         print('resampling in DES region')
@@ -149,7 +153,13 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         selregr = des[pixr]
         pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
         selregd = des[pixd]
-        randoms = _resamp(selregr,selregd)
+        _resamp(selregr,selregd)
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+    
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
+            print('data/random weighted ratio after resampling:'+str(rd))
 
     return randoms
 
