@@ -116,7 +116,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
             inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
             print(len(data[dsel]),len(inds),np.max(inds))
             dshuf = data[dsel][inds]
-            for col in rcols:
+            for col in sample_columns:
                 randoms[col][rsel] = dshuf[col]
         randoms['WEIGHT'] *= randoms['FRAC_TLOBS_TILES'] 
         rdl = []
