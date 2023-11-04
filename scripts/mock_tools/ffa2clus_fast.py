@@ -267,7 +267,7 @@ for tracer in tracers:
             in_ran_fn = ran_fname_base+str(rann)+'_full.ran.fits' 
             out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
             rcols = ['RA','DEC','TILELOCID','PHOTSYS','TARGETID','NTILE','FRAC_TLOBS_TILES']
-            ran = Table(fitsio.read(in_ran_fn),columns=rcols)
+            ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
             common.write_LSS(ran,out_ran_fn)
