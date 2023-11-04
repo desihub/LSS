@@ -59,14 +59,10 @@ notqso = ''
 
 
 
-if args.prog == 'DARK':
-    #bit = targetmask.desi_mask[args.tracer]
-    bittest = targetmask.desi_mask
-    desitarg='DESI_TARGET'
-    if args.tracer == 'all':
-        tracers = ['LRG','QSO','ELG_LOP']
-    else:
-        tracers = [args.tracer]
+if args.tracer == 'all':
+    tracers = ['LRG','QSO','ELG_LOP']
+else:
+    tracers = [args.tracer]
     #if args.mockver == 'abacus2ffa':
     #    tracers = [args.tracer]
 
