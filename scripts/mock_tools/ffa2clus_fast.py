@@ -185,7 +185,7 @@ print('output directory is '+outdir)
 for tracer in tracers:
    
     
-    in_data_fn = mockdir + 'ffa_full_'+args.tracer+'.fits'
+    in_data_fn = mockdir + 'ffa_full_'+tracer+'.fits'
 
     out_data_fn = outdir+tracer+'_ffa_clustering.dat.fits'
     out_data_froot = outdir+tracer+'_ffa_'
