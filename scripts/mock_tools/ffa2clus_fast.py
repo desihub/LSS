@@ -176,6 +176,9 @@ if args.outloc == None:
 
 if args.outloc == 'prod':
     outdir = mockdir
+
+print('input directory is '+mockdir)
+print('output directory is '+outdir)    
     
 for tracer in tracers:
    
@@ -203,8 +206,6 @@ for tracer in tracers:
 
     mainp = main(tracer,'iron','Y1')
     if args.mkdat == 'y':
-
-        
     
         mock_data_tr = Table(fitsio.read(in_data_fn))
         mock_data_tr = unique(mock_data_tr,keys=['TARGETID'])
