@@ -285,7 +285,7 @@ for tracer in tracers:
     
     
 
-    if args.tracer == 'QSO':
+    if tracer == 'QSO':
         #zmin = 0.6
         #zmax = 4.5
         dz = 0.02
@@ -296,11 +296,11 @@ for tracer in tracers:
         #zmin = 0.01
         #zmax = 1.61
 
-    if args.tracer == 'LRG':
+    if tracer == 'LRG':
         P0 = 10000
-    if args.tracer[:3] == 'ELG':
+    if tracer[:3] == 'ELG':
         P0 = 4000
-    if args.tracer == 'BGS':
+    if tracer == 'BGS':
         P0 = 7000
 
     
