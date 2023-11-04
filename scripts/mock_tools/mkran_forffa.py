@@ -107,7 +107,7 @@ nproc = 9
     
 for tracer in tracers:
 
-    out_data_froot = args.basedir+tracer+'_ffa'+args.veto+'_'
+    out_data_froot = args.base_dir+tracer+'_ffa'+args.veto+'_'
     if apply_HPmapcut == 'y':
         out_data_froot += 'HPmapcut'
 
