@@ -3779,6 +3779,29 @@ def splitclusGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
 
+def splitclusNS(flroot,nran=1):
+    import LSS.common_tools as common
+    '''
+    split full clustering catalog by North and South based on PHOTSYS
+    '''
+
+    fc = Table(fitsio.read(flroot+'clustering.dat.fits'))
+    sel_N = fc['PHOTSYS'] == 'N'
+    outf_n = flroot+'N_clustering.dat.fits'
+    common.write_LSS(fc[sel_N], outf_n)
+    outf_s = flroot+'S_clustering.dat.fits'
+    common.write_LSS(fc[~sel_N], outf_s)
+    
+    for rann in range(0,nran):
+        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+        sel_N = fc['PHOTSYS'] == 'N'
+        outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[sel_N], outf_n)
+        outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
+        common.write_LSS(fc[~sel_N], outf_s)
+
+
+
 
 
 

@@ -62,6 +62,7 @@ parser.add_argument("--apply_mask", help="apply the same mask as applied to desi
 parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='y')
 parser.add_argument("--isProduction", help="Say yes if you want to save in main production directory",default='n')
 parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=0, type=bool)
+parser.add_argument("--split_snapshot", help="apply different snapshots to different redshift ranges?",default='y')
 
 args = parser.parse_args()
 
@@ -73,7 +74,12 @@ if args.prog == 'dark':
     mainp = main(tp = 'QSO', specver = 'iron')
     desitar = {'ELG':34, 'LRG':1, 'QSO':4}
     numobs = {'ELG':2, 'LRG':2, 'QSO':4}
-    zs = {'ELG':'z1.100','LRG':'z0.800','QSO':'z1.400'}
+    
+    if args.split_snapshot == 'y':
+        zs = {'ELG':{'z0.950':[0.,1.1], 'z1.100':[1.1,99.]}, 'LRG':{'z0.500':[0.,0.6], 'z0.800':[0.6,0.8], 'z1.100':[0.8,99.]}, 'QSO':{'z1.400':[0.,99.]}}
+    else:
+        zs = {'ELG':'z1.100', 'LRG':'z0.800', 'QSO':'z1.400'}
+
     
     if args.mockver == 'ab_secondgen':
         desitar = {'ELG':2**1, 'LRG':2**0, 'QSO':2**2}
@@ -115,8 +121,10 @@ for real in range(args.realmin, args.realmax):
                 mockpath = args.mockpath
             file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
             mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'AbacusSummit')
-
-            out_file_name = os.path.join(mockdir, 'forFA{real}.fits'.format(real=real))
+            if args.split_snapshot == 'y':
+                out_file_name = os.path.join(mockdir, 'forFA{real}_snapshot.fits'.format(real=real))
+            else:
+                out_file_name = os.path.join(mockdir, 'forFA{real}.fits'.format(real=real))
 
         else:
             raise ValueError(args.mockver+' not supported with legacy mockver argument. Use mockpath/mockfilename arguments instead.')
@@ -140,11 +148,24 @@ for real in range(args.realmin, args.realmax):
     datat = []
     for type_ in types:
         if args.mockver == 'ab_firstgen' or args.mockver == 'ab_secondgen':
-            thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
-            print('thepath')
-            print(thepath)
-            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'STATUS']))
+            if args.split_snapshot == 'y':
+                datas = []
 
+                for bins in zs[type_]:
+                    print(bins)
+                    thepath = os.path.join(mockpath, type_, bins, file_name.format(TYPE = type_, Z = bins, PH = "%03d" % real))
+                    print('thepath')
+                    print(thepath)
+                    dat = fitsio.read(thepath, columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
+                    mask = (dat['Z']>= zs[type_][bins][0])&(dat['Z']< zs[type_][bins][1])
+                    datas.append(Table(dat[mask]))
+                data = vstack(datas)
+                del datas
+                del dat
+            else:
+                thepath = os.path.join(mockpath, type_, zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
+                data = fitsio.read(thepath, columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
+        
         elif args.mockver == 'ezmocks6':
             path_ezmock = os.path.join(mockpath, type_, zs[type_])
             if  type_ == "LRG":

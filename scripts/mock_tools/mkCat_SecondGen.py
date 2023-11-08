@@ -40,6 +40,7 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 parser.add_argument("--mockmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--mockmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--base_output", help="base directory for output",default='/pscratch/sd/a/acarnero/SecondGen/')
+parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="base directory of AltMTL mock",default='/pscratch/sd/a/acarnero/SecondGen/altmtl_main_rea{MOCKNUM}')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='himalayas')
@@ -113,6 +114,8 @@ if args.mockver == 'ab_secondgen':
     maindir = args.base_output
     mockz = 'RSDZ'
 
+if args.targDir == None:
+    args.targDir = maindir
 
 if args.survey == 'MVMY1':
     tile_fn = '/global/cfs/cdirs/desi/users/FA_EZ_1year/fiberassign_EZ_3gpc/fba001/inputs/tiles.fits'
@@ -164,7 +167,8 @@ def docat(mocknum, rannum):
     if args.mockver == 'ab_secondgen' and args.combd == 'y':
         print('--- START COMBD ---')
         print('entering altmtl')
-        tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
+        tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+        ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
         fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
         #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
         outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
@@ -219,7 +223,8 @@ def docat(mocknum, rannum):
         fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
         
         if not os.path.isfile(fcoll):
-            fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
+            fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
+            #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
             fcoll = mocktools.create_collision_from_pota(fin, fcoll)
         else:
             print('collision file already exist', fcoll)
@@ -303,7 +308,7 @@ def docat(mocknum, rannum):
             lrgf = Table.read(fin)
             if 'lrg_mask' not in lrgf.columns:
                 
-                lrgmask = Table.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d_matched_input_full_lrg_imask.fits' % mocknum)
+                lrgmask = Table.read(os.path.join(args.targDir, 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
                 lrgf = join(lrgf, lrgmask, keys=['TARGETID'])
                 common.write_LSS(lrgf, fin)
 
@@ -317,7 +322,7 @@ def docat(mocknum, rannum):
                     maskcols.append(colm)
             if len(maskcols) > 0:
                 maskcols.append('TARGETID')
-                targf = Table(fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum, columns = maskcols))
+                targf = Table(fitsio.read(os.path.join(args.targDir, 'forFA%d.fits' % mocknum), columns = maskcols))
                 novf = join(novf, targf, keys=['TARGETID'])
                 ovw = True
             if 'PHOTSYS' not in novf.columns:
@@ -442,24 +447,6 @@ def docat(mocknum, rannum):
                 pool.join()
         print('*** END WITH APPLY_MAP_VETO ***')
 
-    if args.getFKP == 'y':
-        print('--- START GETFKP ---')
-        randens = 2500.
-        nzmd = 'mock'
-        fcd_in = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
-        fcr_in = os.path.join(dirout, args.tracer + notqso + '_' + str(rannum[0]) + '_full' + args.use_map_veto + '.ran.fits')
-        nzf_in = os.path.join(dirout, args.tracer + notqso + '_full_nz.txt')
-        wo = 'y'
-        if os.path.isfile(nzf_in):
-            wo = 'n'
-        fin = fitsio.read(fcd_in)
-        cols = list(fin.dtype.names)
-        nz_in = common.mknz_full(fcd_in, fcr_in, args.tracer[:3], bs = dz_step, zmin = zmin, zmax = zmax, write = wo, randens = randens, md = nzmd)
-        if 'WEIGHT_FKP' not in cols:
-            print('adding FKP weights')
-            common.addFKPfull(fcd_in, nz_in, type[:3], bs = dz_step, zmin = zmin, zmax = zmax, P0 = P0, md = nzmd)
-        print('*** END WITH GETFKP ***')
-
     nztl = []
     if args.mkclusdat == 'y':
         print('--- START MKCLUSDAT ---')
@@ -467,6 +454,7 @@ def docat(mocknum, rannum):
         fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
         #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
         ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+        #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
         print('*** END WITH MKCLUSDAT ***')
 
     
@@ -483,8 +471,6 @@ def docat(mocknum, rannum):
         if len(nztl) == 0:
             nztl.append('')
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']
-        if args.getFKP == 'y':
-            rcols.append('WEIGHT_FKP')
         tsnrcol = 'TSNR2_ELG'
         if args.tracer[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
@@ -494,7 +480,8 @@ def docat(mocknum, rannum):
         global _parfun4
         def _parfun4(rann):
             ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
-            ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+            ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+            #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
         #for clustering, make rannum start from 0
         if args.par == 'n':
             for rn in range(rannum[0], rannum[1]):
@@ -510,21 +497,27 @@ def docat(mocknum, rannum):
                 pool.close()
                 pool.join()
 
-        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
+#        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
         print('*** END WITH MKCLUSRAN ***')
 
     nran = rannum[1] - rannum[0]
+##    regions = ['NGC', 'SGC']#, 'N', 'S']
+
+
     regions = ['NGC', 'SGC', 'N', 'S']
 
     if args.resamp == 'y':
-        print('--- START RESAMP ---')
-        rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL', 'WEIGHT_FKP']
+        ct.splitclusGC(os.path.join(dirout, args.tracer + notqso + '_'), nran)
+        ct.splitclusNS(os.path.join(dirout, args.tracer + notqso + '_'), nran)
+        print('--- START RESAMP AND NZ ---')
+        rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#, 'WEIGHT_FKP']
+        
         for reg in regions:
-            flin = os.path.join(dirout, tracer_clus + '_' + reg)
+            fb = os.path.join(dirout, tracer_clus + '_' + reg)
             
             global _parfun5
             def _parfun5(rann):
-                ct.clusran_resamp(flin, rann, rcols = rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+                ct.clusran_resamp(fb, rann, rcols = rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
 
             inds = np.arange(rannum[0], rannum[1])
             if args.par == 'y':
@@ -537,19 +530,13 @@ def docat(mocknum, rannum):
             else:
                 for rn in range(rannum[0], rannum[1]):
                     _parfun5(rn)
-        print('*** END WITH RESAMP ***')
 
-    allreg = ['N', 'S', 'NGC', 'SGC']
-    if args.nz == 'y':
-        print('--- START NZ ---')
-        for reg in allreg:
-            fb = os.path.join(dirout, tracer_clus + '_' + reg)
             fcr = fb + '_' + str(rannum[0]) + '_clustering.ran.fits'
             fcd = fb + '_clustering.dat.fits'
             fout = fb + '_nz.txt'
             common.mknz(fcd, fcr, fout, bs = dz_step, zmin = zmin, zmax = zmax)
             common.addnbar(fb, bs = dz_step, zmin = zmin, zmax = zmax, P0 = P0, nran = nran)
-        print('*** END WITH NZ ***')
+        print('*** END WITH RESAMP AND NZ ***')
 
     '''
     if args.FKPfull == 'y':
