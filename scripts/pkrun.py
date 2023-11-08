@@ -204,6 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS', 'NGC', 'SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
+    parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
@@ -264,9 +265,13 @@ if __name__ == '__main__':
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
 
+
+    option = args.option#
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
+        if option is not None:
+            sys.exit('conflicting options, need to fix code if both are needed')
         option = args.zlim[0]
         zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
@@ -280,7 +285,7 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut,option=option)
         for region in regions:
             if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
