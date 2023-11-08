@@ -53,7 +53,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
