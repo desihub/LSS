@@ -104,6 +104,24 @@ elif tp[:3] == 'BGS':
     zmin = 0.01
     zmax = 0.5    
 
+def splitGC_wo(flroot,datran='.dat',rann=0):
+    import LSS.common_tools as common
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    app = 'clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = str(rann)+'_clustering'+datran+'.fits'
+
+    #fn = Table(fitsio.read(flroot+app))
+    #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
+    #gc = c.transform_to('galactic')
+    sel_ngc = common.splitGC(fn)#gc.b > 0
+    outf_ngc = flroot+'NGC_'+app
+    common.write_LSS(fn[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_'+app
+    common.write_LSS(fn[~sel_ngc],outf_sgc)
+
+
 mockdir = args.base_dir+'mock'+str(args.realization)+'/'
 
 if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y':
@@ -134,6 +152,65 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y':
 
 dirout = mockdir
 lssmapdirout = datadir+'/hpmaps/'
+
+if args.imsys == 'y':
+    from LSS.imaging import densvar
+    use_maps = fit_maps
+       
+
+    datn = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_clustering.dat.fits'))
+    dat = np.concatenate((datn,dats))
+    dat = common.addNS(Table(dat))
+    ranl = []
+    for i in range(0,18):
+        rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        ran = np.concatenate((rann,rans))
+        ran = common.addNS(Table(ran))
+        ranl.append(ran)
+    rands = np.concatenate(ranl)
+    regl = ['N','S']
+
+
+    syscol = 'WEIGHT_IMLIN'
+    regl = ['N','S']
+    dat[syscol] = np.ones(len(dat))
+    for reg in regl:
+        pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        #seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
+
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+            #fb = dirout+tracer_clus+reg
+            #fcr = fb+'_0_clustering.ran.fits'
+            #rd = fitsio.read(fcr)
+            #fcd = fb+'_clustering.dat.fits'
+            #dd = Table.read(fcd)
+            
+            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            sel = wsysl != 1
+            dat[syscol][sel] = wsysl[sel]
+            #dd['WEIGHT'][sel] *= wsysl[sel]
+            #dd.write(fcd,overwrite=True,format='fits')
+    fname = os.path.join(dirout, tp+'_clustering.dat.fits')
+    common.write_LSS(dat,fname)
+    flroot = os.path.join(dirout, tp+'_')
+    splitGC_wo(flroot)
+
+
 if args.prepsysnet == 'y':
     #logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
@@ -330,11 +407,13 @@ if args.add_sysnet == 'y':
 
         common.write_LSS(dd,fcd)#,comments)
 
-if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y':
+if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys_ran:
     if args.add_regressis_ran == 'y':
         wtcol = 'WEIGHT_RF'
-    else:
+    if args.add_sysnet_ran == 'y':
         wtcol = 'WEIGHT_SN'
+    if args.add_imsys_ran == 'y':
+        wtcom = 'WEIGHT_IMLIN'
     fb = dirout+tp
     fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
     fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID',wtcol])
