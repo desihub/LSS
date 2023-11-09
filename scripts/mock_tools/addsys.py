@@ -160,14 +160,14 @@ if args.imsys == 'y':
     use_maps = fit_maps
        
 
-    datn = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_clustering.dat.fits'))
-    dats = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_clustering.dat.fits'))
+    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     dat = np.concatenate((datn,dats))
     dat = common.addNS(Table(dat))
     ranl = []
     for i in range(0,18):
-        rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
-        rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
         ran = np.concatenate((rann,rans))
         ran = common.addNS(Table(ran))
         ranl.append(ran)
