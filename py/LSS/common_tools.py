@@ -79,7 +79,7 @@ def make_hp(value, hpix, nside, fill_with=np.nan):
 
 	return m_
 
-def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/')
+def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'):
     import healpy as hp
 
     #dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
