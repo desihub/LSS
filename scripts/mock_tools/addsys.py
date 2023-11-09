@@ -37,10 +37,12 @@ parser.add_argument("--maxr", help="maximum for random files, 18 are available (
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
+parser.add_argument("--imsys",help="if yes, do imaging systematic using eboss method",default='n')
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis_ran",help="add RF weights to randoms?",default='n')
 parser.add_argument("--add_sysnet_ran",help="add sysnet weights to randoms",default='n')
+parser.add_argument("--add_imsys_ran",help="add sysnet weights to randoms",default='n')
 parser.add_argument("--par",help="whether to run in parallel",default='n')
 
 parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
