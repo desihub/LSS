@@ -415,7 +415,7 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys
     if args.add_sysnet_ran == 'y':
         wtcol = 'WEIGHT_SN'
     if args.add_imsys_ran == 'y':
-        wtcom = 'WEIGHT_IMLIN'
+        wtcol = 'WEIGHT_IMLIN'
     fb = dirout+tp
     fcdn = fitsio.read(fb+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
     fcds = fitsio.read(fb+'_SGC_clustering.dat.fits',columns=['TARGETID',wtcol])
