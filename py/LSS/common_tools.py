@@ -70,6 +70,33 @@ def goodz_infull(tp,dz,zcol='Z_not4clus'):
     
     return z_suc
 
+def make_hp(value, hpix, nside, fill_with=np.nan):
+	""" A Function to create a HEALPix map
+	"""
+	m_ = np.zeros(12*nside*nside)
+	m_[:] = fill_with
+	m_[hpix] = value
+
+	return m_
+
+def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/')
+    import healpy as hp
+
+    #dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    
+    nside = 256#64
+    nest = False
+    eclrs = ['gr','rz']
+    debv = Table()
+    for ec in eclrs:
+        #ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
+        debv_a = hp.reorder(debv_a,r2n=True)
+        debv['EBV_DIFF_'+ec.upper()] = debv_a
+    
+    return debv
+
 
 def cutphotmask(aa,bits):
     print(str(len(aa)) +' before imaging veto' )
