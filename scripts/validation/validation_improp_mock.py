@@ -51,7 +51,6 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
-GCnorm =True
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -292,7 +291,7 @@ for tp in tps:
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     desnorm = False
-    GCnorm = True#False
+    GCnorm = False#True
     if args.weight_col == 'WEIGHT_RF':
         GCnorm = True
     if tp[:3] == 'ELG':
