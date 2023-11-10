@@ -46,7 +46,7 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
-GCnorm =True
+GCnorm =False
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -216,6 +216,9 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     
 
 for tp in tps:
+    if args.weight_col == 'WEIGHT_RF':
+        GCnorm = True
+    
     depthmd = 'GAL'
     if tp == 'QSO':
         depthmd = 'PSF'
