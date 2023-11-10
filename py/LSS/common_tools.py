@@ -334,7 +334,7 @@ def comp_tileloc(dz):
     return loco,fzo
 
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran',wtmd='clus'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -358,7 +358,10 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
     df = fitsio.read(fcd)
 
     nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
+    if wtmd == 'clus':
+        #this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
+        wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=wts)
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
     for i in range(0,nbin):
         zl = zhist[1][i]
