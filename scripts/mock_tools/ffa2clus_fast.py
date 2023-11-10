@@ -45,6 +45,8 @@ parser.add_argument("--specdata_dir",help="where to find the spec data ",default
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is all 18)",default=18,type=int) 
 parser.add_argument("--mockver", default='AbacusSummit', help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
+parser.add_argument("--mockcatver", default=None, help = "if not None, gets added to the output path")
+
 parser.add_argument("--tracer", default = 'all')
 parser.add_argument("--outloc", default = None)
 parser.add_argument("--par", default = 'y',help='whether to run random steps in parallel or not')
@@ -184,11 +186,16 @@ nproc = 9
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
 
 if args.outloc == 'prod':
     outdir = mockdir
+
+if args.mockcatver is not None:
+    outdir += args.mockcatver + '/'
+
+if not os.path.exists(outdir):
+	os.makedirs(outdir)
+
 
 print('input directory is '+mockdir)
 print('output directory is '+outdir)    
