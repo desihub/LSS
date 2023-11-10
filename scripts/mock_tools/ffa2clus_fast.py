@@ -96,7 +96,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
 
-    #fn = Table(fitsio.read(flroot+app))
+    fn = Table(fitsio.read(flroot+app))
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
