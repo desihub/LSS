@@ -202,7 +202,7 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wt',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wtfkp',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
