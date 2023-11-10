@@ -290,6 +290,7 @@ for tracer in tracers:
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
             common.write_LSS(ran,out_ran_fn)
             del ran
+            return True
             #splitGC(out_data_froot,'.ran',rann)
 
         inds = np.arange(nran)

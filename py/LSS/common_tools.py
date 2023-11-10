@@ -1278,7 +1278,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not for actually getting the file in place
     #os.system('chmod 775 ' + outf) #this should fix permissions for the group
     print('moved output to ' + outf)
-
+    return True
 
 def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
     """
