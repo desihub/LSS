@@ -19,7 +19,8 @@ north, south, des = foot.get_imaging_surveys()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
-parser.add_argument("--mockversion", help="catalog version",default='SecondGenMocks/AbacusSummit')
+parser.add_argument("--mockversion", help="mock version",default='SecondGenMocks/AbacusSummit')
+parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--mockn", help="mock realization",default=0)
 parser.add_argument("--famd", help="string indicating type of fiberassignment",default='_ffa')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
@@ -38,6 +39,8 @@ nside,nest = 256,True
 
 datadir = args.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
 indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
+if args.mockcatver is not None:
+    indir += args.mockcatver+'/'
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
