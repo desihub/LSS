@@ -494,7 +494,8 @@ for tp in tps:
                 fig = plt.figure()
                 parv = mf[reg][mp]
                 #print(mp)
-                
+                if mp == 'STARDENS':
+                    parv = np.log(parv)
                 if reg == 'S' or mp[:5] != 'CALIB':
                     chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     chi2tot += chi2
