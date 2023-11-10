@@ -629,7 +629,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
         print(np.mean(wtfac))
-        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
+        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1] #this should keep, e.g., N/S normalization in place
         #fkpl = 1./(1+nl*P0*mean_comp)
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)
