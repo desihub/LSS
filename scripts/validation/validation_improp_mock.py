@@ -289,7 +289,9 @@ for tp in tps:
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     desnorm = False
-    GCnorm = True
+    GCnorm = False
+    if args.weight_col == 'WEIGHT_RF':
+        GCnorm = True
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
     if tp == 'QSO':
