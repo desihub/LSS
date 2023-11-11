@@ -67,8 +67,8 @@ notqso = ''
 
 nside = 256
 lssmapdirout = args.data_dir+'/hpmaps/'
-mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
 mainp = main('LRG','iron','Y1')
 mapcuts = mainp.mapcuts
 
@@ -96,7 +96,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
 
-    fn = Table(fitsio.read(flroot+app))
+    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
@@ -203,7 +203,7 @@ print('output directory is '+outdir)
 for tracer in tracers:
    
     
-    in_data_fn = mockdir + 'ffa_full_'+tracer+'.fits'
+    in_data_fn = mockdir.replace('global','dvs_ro')  + 'ffa_full_'+tracer+'.fits'
 
     out_data_fn = outdir+tracer+'_ffa_clustering.dat.fits'
     out_data_froot = outdir+tracer+'_ffa_'
@@ -270,7 +270,7 @@ for tracer in tracers:
     ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL']
 
     nran = rx-rm
-    ran_fname_base = args.base_dir+tracer+'_ffa_imaging_HPmapcut'
+    ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracer+'_ffa_imaging_HPmapcut'
 
     if args.mkran == 'y':
         if args.mkdat == 'n':
