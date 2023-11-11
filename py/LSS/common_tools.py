@@ -608,7 +608,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
-        fd = Table(fitsio.read(fn))
+        fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
         #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
