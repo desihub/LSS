@@ -249,7 +249,7 @@ for tp in tps:
     #dtf_s = fitsio.read(fcd_s)
     #dtf = np.concatenate([dtf_n,dtf_s])
     fcd = indir+tp+args.famd+'_clustering.dat.fits'
-    dtf = fitiso.read(fcd)
+    dtf = fitsio.read(fcd)
     
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
