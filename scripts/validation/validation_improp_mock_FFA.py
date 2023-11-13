@@ -368,7 +368,7 @@ for tp in tps:
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
-            rt_reg = rt[sel_reg_r&selz_ran]
+            rt_reg = rt[sel_reg_r]#&selz_ran]
             
             #reset for every loop through the maps        
             nside,nest = 256,True
