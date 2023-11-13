@@ -249,13 +249,14 @@ for tp in tps:
     #dtf_n = fitsio.read(fcd_n)
     #dtf_s = fitsio.read(fcd_s)
     #dtf = np.concatenate([dtf_n,dtf_s])
-    full_data_fn = fulldir.replace('global','dvs_ro')  + 'ffa_full_'+tp+'.fits'
-    full_data = fitsio.read(full_data_fn,columns=['TARGETID','WEIGHT_IIP'])
+    #full_data_fn = fulldir.replace('global','dvs_ro')  + 'ffa_full_'+tp+'.fits'
+    #full_data = fitsio.read(full_data_fn,columns=['TARGETID','WEIGHT_IIP'])
     fcd = indir+tp+args.famd+'_clustering.dat.fits'
     dtf = fitsio.read(fcd)
-    print('before join to full',len(dtf))
-    dtf = join(dtf,full_data,keys=['TARGETID'])
-    print('after join to full',len(dtf))
+    dtf.dtype.names
+    #print('before join to full',len(dtf))
+    #dtf = join(dtf,full_data,keys=['TARGETID'])
+    #print('after join to full',len(dtf))
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
