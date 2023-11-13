@@ -108,7 +108,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 def ran_col_assign(randoms,data,sample_columns,tracer):
-
+    data.rename_column('TARGETID', 'TARGETID_DATA')
     def _resamp(selregr,selregd):
         for col in sample_columns:
             randoms[col] =  np.zeros(len(randoms))
@@ -181,7 +181,7 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
         print('number after imaging mask '+str(len(ff)))
     return ff
 
-nproc = 9
+nproc = 18
 
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 if args.outloc == None:
@@ -267,14 +267,14 @@ for tracer in tracers:
 
         #splitGC(out_data_froot,'.dat')
 
-    ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL']
+    ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL','TARGETID_DATA']
 
     nran = rx-rm
     ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracer+'_ffa_imaging_HPmapcut'
 
     if args.mkran == 'y':
         if args.mkdat == 'n':
-            mock_data_tr = fitsio.read(out_data_fn)
+            mock_data_tr = Table(fitsio.read(out_data_fn))
         def _mkran(rann):
             
             tracerr = tracer
