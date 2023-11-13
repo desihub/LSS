@@ -38,7 +38,7 @@ if args.prog == 'dark':
     priority = {'ELG':3000,'LRG':3200,'QSO':3400}
     mainp = main(tp='QSO',specver='iron')
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/''
+indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/'
 
 status = 3
 datat = []
@@ -48,11 +48,11 @@ for type_ in types:
     sel = data['STATUS'] == 3
     data = data[sel]
     data = data.cutphotmask(targets,bits=mainp.imbits) #already done?
-	data = Table(data)
-	data['DESI_TARGET'] = desitar[type_]
-	data['PRIORITY_INIT'] = priority[type_]
-	data['PRIORITY'] = priority[type_]
-	datat.append(data)
+    data = Table(data)
+    data['DESI_TARGET'] = desitar[type_]
+    data['PRIORITY_INIT'] = priority[type_]
+    data['PRIORITY'] = priority[type_]
+    datat.append(data)
 targets = vstack(datat)
 del datat
 n=len(targets)
