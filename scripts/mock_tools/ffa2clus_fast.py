@@ -36,7 +36,7 @@ else:
 parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
-parser.add_argument("--prog", default="DARK")
+#parser.add_argument("--prog", default="DARK")
 #parser.add_argument("--veto",default='_imaging')
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/')
@@ -78,14 +78,14 @@ mainp = main('LRG','iron','Y1')
 mapcuts = mainp.mapcuts
 
 
-if args.prog == 'DARK':
+#if args.prog == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
-    bittest = targetmask.desi_mask
-    desitarg='DESI_TARGET'
-    if args.tracer == 'all':
-        tracers = ['QSO','ELG_LOP','LRG']
-    else:
-        tracers = [args.tracer]
+#    bittest = targetmask.desi_mask
+#    desitarg='DESI_TARGET'
+if args.tracer == 'all':
+    tracers = ['QSO','ELG_LOP','LRG']
+else:
+    tracers = [args.tracer]
     #if args.mockver == 'abacus2ffa':
     #    tracers = [args.tracer]
 
@@ -199,7 +199,7 @@ if args.mockcatver is not None:
     outdir += args.mockcatver + '/'
 
 if not os.path.exists(outdir):
-	os.makedirs(outdir)
+    os.makedirs(outdir)
 
 
 print('input directory is '+mockdir)
