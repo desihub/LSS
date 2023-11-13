@@ -38,9 +38,12 @@ if args.prog == 'dark':
     priority = {'ELG':3000,'LRG':3200,'QSO':3400}
     mainp = main(tp='QSO',specver='iron')
 
-indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/'
+inroot = '/global/cfs/cdirs/desi/survey/catalogs/'
+inmock = 'Y1/mocks/SecondGenMocks/EZmock/'
+indir = inroot+inmock
 
-outdir = indir+'/forFA/'
+outroot = os.getenv('SCRATCH')
+outdir = outroot+inmock+'/forFA/'
 if not os.path.exists(outdir):
 	os.makedirs(outdir)
 out_file_name = outdir + 'forFA'+args.realization+'.fits'
