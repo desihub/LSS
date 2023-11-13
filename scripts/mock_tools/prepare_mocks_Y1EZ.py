@@ -44,7 +44,7 @@ status = 3
 datat = []
 for type_ in types:
     fname = 'EZmock_'+type_+'_complete_AbacusSummit_base_c000_ph000_NScomb_'+args.realization.zfill(4)+'.fits.gz'
-    data = fitsio.read(indir+fname,columns=['RA','DEC','Z','Z_COSMO','STATUS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])#f[1].data
+    data = fitsio.read(indir+type_+'/'+fname,columns=['RA','DEC','Z','Z_COSMO','STATUS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])#f[1].data
     sel = data['STATUS'] == 3
     data = data[sel]
     data = data.cutphotmask(targets,bits=mainp.imbits) #already done?
