@@ -26,7 +26,7 @@ else:
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--realization", help="number for the realization",default=1,type=int)
+parser.add_argument("--realization", help="number for the realization",default='0')
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 args = parser.parse_args()
