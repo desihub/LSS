@@ -160,16 +160,18 @@ if args.imsys == 'y':
     use_maps = fit_maps
        
 
-    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
-    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
-    dat = np.concatenate((datn,dats))
-    dat = common.addNS(Table(dat))
+    #datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    #dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
+    #dat = np.concatenate((datn,dats))
+    #dat = common.addNS(Table(dat))
+    dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
     ranl = []
     for i in range(0,18):
-        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        ran = np.concatenate((rann,rans))
-        ran = common.addNS(Table(ran))
+        #rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        #rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        #ran = np.concatenate((rann,rans))
+        #ran = common.addNS(Table(ran))
+        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP'])
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
@@ -221,16 +223,18 @@ if args.prepsysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     #_HPmapcut'
-    datn = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_clustering.dat.fits'))
-    dats = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_clustering.dat.fits'))
-    dat = np.concatenate((datn,dats))
-    dat = common.addNS(Table(dat))
+    #datn = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_clustering.dat.fits'))
+    #dats = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_clustering.dat.fits'))
+    #dat = np.concatenate((datn,dats))
+    #dat = common.addNS(Table(dat))
+    dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
     ranl = []
     for i in range(0,18):
-        rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
-        rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
-        ran = np.concatenate((rann,rans))
-        ran = common.addNS(Table(ran))
+        #rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        #rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        #ran = np.concatenate((rann,rans))
+        #ran = common.addNS(Table(ran))
+        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP'])        
         ranl.append(ran)
     rands = np.concatenate(ranl)
     regl = ['N','S']
@@ -255,7 +259,7 @@ if args.prepsysnet == 'y':
             selr = rands['PHOTSYS'] == reg
         
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_comp',tp=tp[:3])
+                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 

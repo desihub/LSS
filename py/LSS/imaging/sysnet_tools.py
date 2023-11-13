@@ -34,6 +34,9 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
         if 'FRAC_TLOBS_TILES' in cols:
             print('using FRAC_TLOBS_TILES')
             wts *= 1/data['FRAC_TLOBS_TILES']
+    if wtmd == 'wt_iip':
+        wts = data['WEIGHT_IIP']
+
     if wtmd == 'wt':
         wts = data['WEIGHT']
         weights_ran = rands['WEIGHT']
