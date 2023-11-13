@@ -47,7 +47,7 @@ for type_ in types:
     data = fitsio.read(indir+type_+'/'+fname,columns=['RA','DEC','Z','Z_COSMO','STATUS','NOBS_G','NOBS_R','NOBS_Z','MASKBITS'])#f[1].data
     sel = data['STATUS'] == 3
     data = data[sel]
-    data = data.cutphotmask(targets,bits=mainp.imbits) #already done?
+    data = common.cutphotmask(data,bits=mainp.imbits) #already done?
     data = Table(data)
     data['DESI_TARGET'] = desitar[type_]
     data['PRIORITY_INIT'] = priority[type_]
