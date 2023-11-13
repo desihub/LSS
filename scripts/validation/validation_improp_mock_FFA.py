@@ -335,10 +335,10 @@ for tp in tps:
         mean_ntweight = np.mean(dtf[sel]['WEIGHT_IIP'])        
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-        mean_fracobs_tiles = np.mean(dtf[sel]['FRAC_TLOBS_TILES'])
-        fttl[i] = mean_fracobs_tiles
-    print(comp_ntl,fttl)
-    comp_ntl = comp_ntl*fttl
+        #mean_fracobs_tiles = np.mean(dtf[sel]['FRAC_TLOBS_TILES'])
+        #fttl[i] = mean_fracobs_tiles
+    #print(comp_ntl,fttl)
+    #comp_ntl = comp_ntl*fttl
     print('completeness per ntile:')
     print(comp_ntl)
     nx = nbar*comp_ntl[dtf['NTILE']-1]
