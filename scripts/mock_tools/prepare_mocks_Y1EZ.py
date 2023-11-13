@@ -39,7 +39,7 @@ if args.prog == 'dark':
     mainp = main(tp='QSO',specver='iron')
 
 inroot = '/global/cfs/cdirs/desi/survey/catalogs/'
-inmock = 'Y1/mocks/SecondGenMocks/EZmock/'
+inmock = '/Y1/mocks/SecondGenMocks/EZmock/'
 indir = inroot+inmock
 
 outroot = os.getenv('SCRATCH')
