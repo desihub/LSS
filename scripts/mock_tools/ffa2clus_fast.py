@@ -67,8 +67,13 @@ notqso = ''
 
 nside = 256
 lssmapdirout = args.data_dir+'/hpmaps/'
-mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+if args.tracer[:3] == 'BGS':
+    mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+
+else:
+    mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
 mainp = main('LRG','iron','Y1')
 mapcuts = mainp.mapcuts
 
@@ -202,8 +207,10 @@ print('output directory is '+outdir)
     
 for tracer in tracers:
    
-    
-    in_data_fn = mockdir.replace('global','dvs_ro')  + 'ffa_full_'+tracer+'.fits'
+    tracerd = tracer
+    if tracer == 'BGS_BRIGHT-21.5':
+        tracerd = 'BGS'
+    in_data_fn = mockdir.replace('global','dvs_ro')  + 'ffa_full_'+tracerd+'.fits'
 
     out_data_fn = outdir+tracer+'_ffa_clustering.dat.fits'
     out_data_froot = outdir+tracer+'_ffa_'
@@ -223,7 +230,9 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 2.1
         subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
-
+    elif tracer == 'BGS_BRIGHT-21.5':
+        zmin = 0.1
+        zmax = 0.4
     mainp = main(tracer,'iron','Y1')
     if args.mkdat == 'y':
     
@@ -235,6 +244,10 @@ for tracer in tracers:
         print('length after cutting to "observed" targets',len(mock_data_tr))
         mock_data_tr.rename_column('RSDZ', 'Z')
         mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
+        if tracer == 'BGS_BRIGHT-21.5':
+            selm = (mock_data_tr['R_MAG_ABS']+0.095) < -21.5
+            mock_data_tr = mock_data_tr[selm]
+            print('length after abs mag cut '+str(len(mock_data_tr)))
         
         #apply imaging vetos
         if tracer == 'LRG':
@@ -270,7 +283,10 @@ for tracer in tracers:
     ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL','TARGETID_DATA']
 
     nran = rx-rm
-    ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracer+'_ffa_imaging_HPmapcut'
+    tracerr = tracer
+    if tracer[:3] == 'BGS':
+        tracerr = 'BGS_BRIGHT'
+    ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
 
     if args.mkran == 'y':
         if args.mkdat == 'n':
@@ -282,6 +298,8 @@ for tracer in tracers:
                 tracerr += 'notqso'
             if tracer == 'ELG':
                 tracerr = 'ELG_LOPnotqso'
+            if tracer == 'BGS_BRIGHT-21.5':
+                tracerr = 'BGS_BRIGHT'
             in_ran_fn = ran_fname_base+str(rann)+'_full.ran.fits' 
             out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
             rcols = ['RA','DEC','TILELOCID','PHOTSYS','TARGETID','NTILE','FRAC_TLOBS_TILES']
@@ -319,7 +337,7 @@ for tracer in tracers:
         P0 = 10000
     if tracer[:3] == 'ELG':
         P0 = 4000
-    if tracer == 'BGS':
+    if tracer[:3] == 'BGS':
         P0 = 7000
 
     
