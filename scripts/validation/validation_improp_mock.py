@@ -243,18 +243,21 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
-    fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
-    dtf_n = fitsio.read(fcd_n)
-    dtf_s = fitsio.read(fcd_s)
-    dtf = np.concatenate([dtf_n,dtf_s])
+    #fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
+    #fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
+    #dtf_n = fitsio.read(fcd_n)
+    #dtf_s = fitsio.read(fcd_s)
+    #dtf = np.concatenate([dtf_n,dtf_s])
+    fcd = indir+tp+args.famd+'_clustering.dat.fits'
+    dtf = fitiso.read(fcd)
     
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
 
-    rf_n = indir+tpr+args.famd+'_NGC_0_clustering.ran.fits'
-    rf_s = indir+tpr+args.famd+'_SGC_0_clustering.ran.fits'
+    #rf_n = indir+tpr+args.famd+'_NGC_0_clustering.ran.fits'
+    #rf_s = indir+tpr+args.famd+'_SGC_0_clustering.ran.fits'
+    rf = indir+tpr+args.famd+'_0_clustering.ran.fits'
     
     
     cols = list(dtf.dtype.names)
@@ -278,9 +281,10 @@ for tp in tps:
     #seld &= z_suc
 
     #dtf = dtf[seld]
-    rt_n = fitsio.read(rf_n)
-    rt_s = fitsio.read(rf_s)
-    rt = np.concatenate((rt_n,rt_s))
+    #rt_n = fitsio.read(rf_n)
+    #rt_s = fitsio.read(rf_s)
+    #rt = np.concatenate((rt_n,rt_s))
+    rt = fitsio.read(rf)
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
@@ -308,6 +312,8 @@ for tp in tps:
         zmax = zb[1]
         selz = dtf[zcol] > zmin
         selz &= dtf[zcol] < zmax
+        selz_ran = rt[zcol] > zmin
+        selz_ran &= rt[zcol] < zmax
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
@@ -316,7 +322,7 @@ for tp in tps:
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
-            rt_reg = rt[sel_reg_r]
+            rt_reg = rt[sel_reg_r&selz_ran]
             
             #reset for every loop through the maps        
             nside,nest = 256,True
