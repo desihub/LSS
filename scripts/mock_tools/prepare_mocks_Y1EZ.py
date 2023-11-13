@@ -40,6 +40,11 @@ if args.prog == 'dark':
 
 indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/'
 
+outdir = indir+mock+args.realization+'/forFA/'
+if not os.path.exists(outdir):
+	os.makedirs(outdir)
+out_file_name = outdir + 'forFA'+args.realization+'.fits'
+
 status = 3
 datat = []
 for type_ in types:
