@@ -245,7 +245,7 @@ for tracer in tracers:
         mock_data_tr.rename_column('RSDZ', 'Z')
         mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
         if tracer == 'BGS_BRIGHT-21.5':
-            selm = (mock_data_tr['R_MAG_ABS']+0.095) < -21.5
+            selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
             mock_data_tr = mock_data_tr[selm]
             print('length after abs mag cut '+str(len(mock_data_tr)))
         
