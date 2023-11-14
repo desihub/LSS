@@ -2139,12 +2139,12 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
 
 
-    zf = indir+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
     dz = Table.read(zf)
     logger.info(dz.dtype.names)
 
-    zfpd = indir+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    zfpd = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
     dzpd = Table.read(zfpd)
     
     #dz = join(dz,dzpd,keys=['TARGETID'])
