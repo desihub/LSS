@@ -293,6 +293,7 @@ if args.apply_veto == 'y':
     print('--- START APPLY_VETO; including HP maps---')
     print('applying vetos to mock ' + str(mocknum))
     import healpy as hp
+    nside = 256
     lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
