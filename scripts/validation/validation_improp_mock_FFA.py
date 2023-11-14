@@ -246,7 +246,7 @@ for tp in tps:
 
     fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
     fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
-    print('test')
+    print('test test')
     dtf_n = fitsio.read(fcd_n)
     dtf_s = fitsio.read(fcd_s)
     dtf = np.concatenate([dtf_n,dtf_s])
