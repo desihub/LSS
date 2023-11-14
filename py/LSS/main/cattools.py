@@ -3270,10 +3270,10 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def add_tlobs_ran(fl,rann,hpmapcut=''):
+def add_tlobs_ran(fl,rann,hpmapcut='',wo=True):
     import LSS.common_tools as common
     rf_name = fl+str(rann)+'_full'+hpmapcut+'.ran.fits'
-    ranf = Table(fitsio.read(rf_name))
+    ranf = Table(fitsio.read(rf_name.replace('global','dvs_ro')))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     #tlarray = np.zeros(len(ranf))
@@ -3309,6 +3309,7 @@ def add_tlobs_ran(fl,rann,hpmapcut=''):
     print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
     outf = rf_name#fl+str(rann)+'_full.ran.fits'
+    
     common.write_LSS(ranf,outf)
     del ranf
     return True
@@ -3322,7 +3323,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ws = ''
     if utlid:
         ws = 'utlid_'
-    ffr = Table.read(flin+str(rann)+'_full'+use_map_veto+'.ran.fits')
+    in_fname = flin+str(rann)+'_full'+use_map_veto+'.ran.fits'
+    
+    ffr = Table.read(in_fname.replace('global','dvs_ro'))
 
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]
