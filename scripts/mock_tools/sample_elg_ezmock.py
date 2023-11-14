@@ -1,9 +1,11 @@
 import numpy as np
 import time
 
+elg_frac_fn = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/y1_elg_lop_fraction.txt'
+
 def fraction_func(x):
     start_time = time.time()
-    red,bin_values = np.loadtxt('y1_elg_lop_fraction.txt', unpack=True)
+    red,bin_values = np.loadtxt(elg_frac_fn, unpack=True)
     red_inf = red-0.005
     bin_limits = np.append(red_inf,1.6)
 
