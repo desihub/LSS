@@ -305,7 +305,7 @@ if args.apply_veto == 'y':
     if args.tracer == 'LRG':
         maskcols.append('lrg_mask')
     coltest = np.isin(maskcols,colnames)
-    readcols = np.copy(maskcols)
+    readcols = maskcols
     readcols.append('TARGETID')
     addcols = 0
     if np.sum(coltest) != len(maskcols):
