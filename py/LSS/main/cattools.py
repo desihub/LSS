@@ -3024,7 +3024,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = fl+wzm+'clustering.dat.fits'
-    ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits')
+    ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
     cols = list(ff.dtype.names)
