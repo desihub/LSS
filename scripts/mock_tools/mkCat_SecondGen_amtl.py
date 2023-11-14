@@ -287,6 +287,8 @@ if args.fullr == 'y':
 
 mainp = main(args.tracer, args.specdata, survey=args.survey)
 
+tracer_clus = args.tracer + notqso 
+
 if args.apply_veto == 'y':
     print('--- START APPLY_VETO; including HP maps---')
     print('applying vetos to mock ' + str(mocknum))
