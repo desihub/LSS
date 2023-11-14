@@ -44,11 +44,11 @@ parser.add_argument("--counttiles", default = 'n')
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
-    infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
+    infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'_snapshot.fits'
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
+    tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/AbacusSummit/tartiles'+args.realization+'_snapshot/'
     if not os.path.exists(tileoutdir):
         os.makedirs(tileoutdir)
     paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'

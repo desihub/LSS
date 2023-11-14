@@ -49,8 +49,8 @@ if args.cat_type == 'Ab2ndgen':
     output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
 else:
     mockdir = args.cat_type
-    input_path = os.path.join(mockdir, 'forFA'+args.input+'.fits')
-    output_path = os.path.join(mockdir, 'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits')
+    input_path = os.path.join(mockdir, 'forFA'+args.input+'_snapshot.fits')
+    output_path = os.path.join(mockdir, 'forFA'+args.input+'_snapshot_matched_input_full_'+args.tracer+'_imask.fits')
 
 
 

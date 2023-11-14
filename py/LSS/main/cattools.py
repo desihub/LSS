@@ -2482,7 +2482,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dtl = count_tiles_input(dz[wg])
     else:
         dtl = Table.read(ftiles)
-    
+
+    #print('ECHO ',dz['TARGETID'][0])
+    #df = dz.to_pandas()
+    #df = df.sample(frac = 1).reset_index(drop=True)
+    #dz = Table.from_pandas(df)
+
+    #print('ECHO ',dz['TARGETID'][0])
     #if tp[:3] != 'QSO':
     if tp[:3] == 'QSO':
         selnp = dz['LOCATION_ASSIGNED'] == 0
@@ -3753,7 +3759,7 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
-def splitclusGC(flroot,nran=1):
+def splitclusGC(flroot,nran=1, rannums=None):
     import LSS.common_tools as common
     '''
     split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
@@ -3768,18 +3774,28 @@ def splitclusGC(flroot,nran=1):
     common.write_LSS(fc[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_clustering.dat.fits'
     common.write_LSS(fc[~sel_ngc],outf_sgc)
-    
-    for rann in range(0,nran):
-        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
-        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
-        gc = c.transform_to('galactic')
-        sel_ngc = gc.b > 0
-        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[sel_ngc],outf_ngc)
-        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[~sel_ngc],outf_sgc)
+    if rannums == None:
+        for rann in range(0,nran):
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+            gc = c.transform_to('galactic')
+            sel_ngc = gc.b > 0
+            outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_ngc],outf_ngc)
+            outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_ngc],outf_sgc)
+    else:
+        for rann in rannums:
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+            gc = c.transform_to('galactic')
+            sel_ngc = gc.b > 0
+            outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_ngc],outf_ngc)
+            outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_ngc],outf_sgc)
 
-def splitclusNS(flroot,nran=1):
+def splitclusNS(flroot,nran=1, rannums=None):
     import LSS.common_tools as common
     '''
     split full clustering catalog by North and South based on PHOTSYS
@@ -3791,15 +3807,22 @@ def splitclusNS(flroot,nran=1):
     common.write_LSS(fc[sel_N], outf_n)
     outf_s = flroot+'S_clustering.dat.fits'
     common.write_LSS(fc[~sel_N], outf_s)
-    
-    for rann in range(0,nran):
-        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
-        sel_N = fc['PHOTSYS'] == 'N'
-        outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[sel_N], outf_n)
-        outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[~sel_N], outf_s)
-
+    if rannums == None:
+        for rann in range(0,nran):
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            sel_N = fc['PHOTSYS'] == 'N'
+            outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_N], outf_n)
+            outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_N], outf_s)
+    else:
+        for rann in rannums:   
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            sel_N = fc['PHOTSYS'] == 'N'
+            outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_N], outf_n)
+            outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_N], outf_s)
 
 
 
