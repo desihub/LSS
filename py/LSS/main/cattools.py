@@ -3760,6 +3760,7 @@ def clusNStoGC(flroot,nran=1):
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
 def splitclusGC(flroot,nran=1, rannums=None):
+
     import LSS.common_tools as common
     '''
     split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
@@ -3774,6 +3775,7 @@ def splitclusGC(flroot,nran=1, rannums=None):
     common.write_LSS(fc[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_clustering.dat.fits'
     common.write_LSS(fc[~sel_ngc],outf_sgc)
+
     if rannums == None:
         for rann in range(0,nran):
             fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
@@ -3823,7 +3825,6 @@ def splitclusNS(flroot,nran=1, rannums=None):
             common.write_LSS(fc[sel_N], outf_n)
             outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
             common.write_LSS(fc[~sel_N], outf_s)
-
 
 
 

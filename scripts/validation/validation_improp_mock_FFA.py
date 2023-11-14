@@ -19,7 +19,6 @@ north, south, des = foot.get_imaging_surveys()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
-
 parser.add_argument("--mockversion", help="mock version",default='SecondGenMocks/AbacusSummit')
 parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--mockn", help="mock realization",default=0)
@@ -40,10 +39,9 @@ nside,nest = 256,True
 
 datadir = args.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
 indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
-
+fulldir = indir
 if args.mockcatver is not None:
     indir += args.mockcatver+'/'
-
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
@@ -54,7 +52,6 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
-
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -247,24 +244,28 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-
     fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
     fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
+    print('test test')
     dtf_n = fitsio.read(fcd_n)
     dtf_s = fitsio.read(fcd_s)
     dtf = np.concatenate([dtf_n,dtf_s])
-
-
-    
+    #full_data_fn = fulldir.replace('global','dvs_ro')  + 'ffa_full_'+tp+'.fits'
+    #full_data = fitsio.read(full_data_fn,columns=['TARGETID','WEIGHT_IIP'])
+    #fcd = indir+tp+args.famd+'_clustering.dat.fits'
+    #print(fcd)
+    #dtf = fitsio.read(fcd)
+    #dtf.dtype.names
+    #print('before join to full',len(dtf))
+    #dtf = join(dtf,full_data,keys=['TARGETID'])
+    #print('after join to full',len(dtf))
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
 
-
     #rf_n = indir+tpr+args.famd+'_NGC_0_clustering.ran.fits'
     #rf_s = indir+tpr+args.famd+'_SGC_0_clustering.ran.fits'
     rf = indir+tpr+args.famd+'_0_clustering.ran.fits'
-
     
     
     cols = list(dtf.dtype.names)
@@ -288,12 +289,10 @@ for tp in tps:
     #seld &= z_suc
 
     #dtf = dtf[seld]
-
     #rt_n = fitsio.read(rf_n)
     #rt_s = fitsio.read(rf_s)
     #rt = np.concatenate((rt_n,rt_s))
     rt = fitsio.read(rf)
-
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
@@ -303,31 +302,66 @@ for tp in tps:
     mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
-    desnorm = False
+    P0 = 10000
+    nbar = 0.0004
 
+    desnorm = False
     GCnorm = False#True
     if args.weight_col == 'WEIGHT_RF':
         GCnorm = True
-
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
+        P0 = 4000
+        nbar = 0.0005
+
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
         #if args.weight_col == 'WEIGHT_RF':
         desnorm=True
         #GCnorm = False
+        P0 = 6000
+        nbar = 0.00002
 
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
+        P0 = 7000
+        nbar = 0.0005
+
+
+    ntl = np.unique(dtf['NTILE'])
+    comp_ntl = np.zeros(len(ntl))
+    weight_ntl = np.zeros(len(ntl))
+    fttl = np.zeros(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = dtf['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(dtf[sel]['WEIGHT_IIP'])        
+        weight_ntl[i] = mean_ntweight
+        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+        #mean_fracobs_tiles = np.mean(dtf[sel]['FRAC_TLOBS_TILES'])
+        #fttl[i] = mean_fracobs_tiles
+    #print(comp_ntl,fttl)
+    #comp_ntl = comp_ntl*fttl
+    print('completeness per ntile:')
+    print(comp_ntl)
+    nx = nbar*comp_ntl[dtf['NTILE']-1]
+    fkpl = 1/(1+nx*P0) #this is just the effect of the completeness varying on the fkp weight, no actual z dependence
+    dtf = Table(dtf)
+    #fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
+    dtf['WEIGHT_FKPU'] = fkpl
+
+    nx = nbar*comp_ntl[rt['NTILE']-1]
+    fkpl = 1/(1+nx*P0)
+    rt = Table(rt)
+    rt['WEIGHT_FKPU'] = fkpl #randoms should now have weight that varies with completeness in same way as data
+
+
     for zb in zbins:
         zmin = zb[0]
         zmax = zb[1]
         selz = dtf[zcol] > zmin
         selz &= dtf[zcol] < zmax
-
         selz_ran = rt[zcol] > zmin
         selz_ran &= rt[zcol] < zmax
-
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
@@ -336,9 +370,7 @@ for tp in tps:
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
-
-            rt_reg = rt[sel_reg_r&selz_ran]
-
+            rt_reg = rt[sel_reg_r]#&selz_ran]
             
             #reset for every loop through the maps        
             nside,nest = 256,True
@@ -357,15 +389,15 @@ for tp in tps:
             if reg == 'S' and GCnorm:
                 seln = common.splitGC(dt_reg)
                 seln_ran = common.splitGC(rt_reg)
-                ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKP']*rt_reg[seln_ran]['WEIGHT'])
-                ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKP']*rt_reg[~seln_ran]['WEIGHT'])
-                n_ratio = np.sum(dt_reg['WEIGHT_FKP'][seln]*dcomp[seln])/ransum_n                
-                s_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dcomp[~seln])/ransum_s
+                ransum_n = np.sum(rt_reg[seln_ran]['WEIGHT_FKPU']*rt_reg[seln_ran]['WEIGHT'])
+                ransum_s = np.sum(rt_reg[~seln_ran]['WEIGHT_FKPU']*rt_reg[~seln_ran]['WEIGHT'])
+                n_ratio = np.sum(dt_reg['WEIGHT_FKPU'][seln]*dcomp[seln])/ransum_n                
+                s_ratio = np.sum(dt_reg['WEIGHT_FKPU'][~seln]*dcomp[~seln])/ransum_s
                 norm_nv = n_ratio/s_ratio
                 norm_n[~seln] = norm_nv
                 if args.weight_col is not None:
-                    n_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
-                    s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
+                    n_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
+                    s_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
                     norm_nvw = n_ratiow/s_ratiow
                     norm_nw[~seln] = norm_nvw
                     print(norm_nvw)
@@ -378,17 +410,17 @@ for tp in tps:
             norm_desw = np.ones(len(dpix))
             
             if sum(rpix[seldesr]) > 0 and desnorm:
-                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKP']*rt_reg[seldesr]['WEIGHT'])
-                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKP']*rt_reg[~seldesr]['WEIGHT'])
+                ransum_des = np.sum(rt_reg[seldesr]['WEIGHT_FKPU']*rt_reg[seldesr]['WEIGHT'])
+                ransum_notdes = np.sum(rt_reg[~seldesr]['WEIGHT_FKPU']*rt_reg[~seldesr]['WEIGHT'])
 
-                des_ratio = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dcomp[seldesd])/ransum_des
-                notdes_ratio = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dcomp[~seldesd])/ransum_notdes
+                des_ratio = np.sum(dt_reg['WEIGHT_FKPU'][seldesd]*dcomp[seldesd])/ransum_des
+                notdes_ratio = np.sum(dt_reg['WEIGHT_FKPU'][~seldesd]*dcomp[~seldesd])/ransum_notdes
                 norm_desv = des_ratio/notdes_ratio
                 norm_des[~seldesd] = norm_desv
                 print(norm_desv)
                 if args.weight_col is not None:
-                    des_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
-                    notdes_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
+                    des_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][seldesd]*dt_reg[args.weight_col][seldesd]*dcomp[seldesd])/ransum_des
+                    notdes_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][~seldesd]*dt_reg[args.weight_col][~seldesd]*dcomp[~seldesd])/ransum_notdes
                     norm_desvw = des_ratiow/notdes_ratiow
                     norm_desw[~seldesd] = norm_desvw
                     print(norm_desvw)
@@ -405,14 +437,14 @@ for tp in tps:
             #    #print('using FRAC_TLOBS_TILES')
             #    dcomp *= 1/dt_reg['FRAC_TLOBS_TILES']
             for ii in range(0,len(dpix)):
-                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dcomp[ii]*norm_des[ii]*norm_n[ii]
+                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKPU']*dcomp[ii]*norm_des[ii]*norm_n[ii]
                 if args.weight_col is not None:
-                    pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]*norm_nw[ii]
+                    pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKPU']*dt_reg[ii][args.weight_col]*dcomp[ii]*norm_desw[ii]*norm_nw[ii]
                 else:
                     pixlgw = pixlg
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
-                pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['WEIGHT']
+                pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKPU']*rt_reg[ii]['WEIGHT']
 
             
             if dosag == 'y' and reg == 'S':

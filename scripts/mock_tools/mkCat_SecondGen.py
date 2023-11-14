@@ -379,7 +379,9 @@ def docat(mocknum, rannum):
     lssmapdirout = os.path.join(dirout, 'hpmaps')
     nside = 256
     tracer_clus = args.tracer + notqso + wzm
+
     '''
+
     if args.mkHPmaps == 'y':
         print('--- START MKHPMAPS ---')
         from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
@@ -409,7 +411,9 @@ def docat(mocknum, rannum):
             create_pixweight_file(rancatlist, fieldslist, masklist, nside_out = nside,
                           lssmapdir = lssmapdir, outfn = outfn, reg = reg)    
         print('*** END WITH MKHPMAPS ***')
+
     '''
+
     if args.apply_map_veto == 'y':
         print('--- START APPLY_MAP_VETO ---')
         import healpy as hp
@@ -507,12 +511,14 @@ def docat(mocknum, rannum):
     regions = ['NGC', 'SGC', 'N', 'S']
 
     if args.resamp == 'y':
+
         if int(rannum[0]) == 0:
             rannum_split = None
         else:
             rannum_split = list(range(int(rannum[0]), int(rannum[1])))
         ct.splitclusGC(os.path.join(dirout, args.tracer + notqso + '_'), nran, rannums=rannum_split)
         ct.splitclusNS(os.path.join(dirout, args.tracer + notqso + '_'), nran, rannums=rannum_split)
+
         print('--- START RESAMP AND NZ ---')
         rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL']#, 'WEIGHT_FKP']
         

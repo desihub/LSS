@@ -70,6 +70,33 @@ def goodz_infull(tp,dz,zcol='Z_not4clus'):
     
     return z_suc
 
+def make_hp(value, hpix, nside, fill_with=np.nan):
+	""" A Function to create a HEALPix map
+	"""
+	m_ = np.zeros(12*nside*nside)
+	m_[:] = fill_with
+	m_[hpix] = value
+
+	return m_
+
+def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'):
+    import healpy as hp
+
+    #dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+    
+    nside = 256#64
+    nest = False
+    eclrs = ['gr','rz']
+    debv = Table()
+    for ec in eclrs:
+        #ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+        ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+        debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
+        debv_a = hp.reorder(debv_a,r2n=True)
+        debv['EBV_DIFF_'+ec.upper()] = debv_a
+    
+    return debv
+
 
 def cutphotmask(aa,bits):
     print(str(len(aa)) +' before imaging veto' )
@@ -307,7 +334,7 @@ def comp_tileloc(dz):
     return loco,fzo
 
 
-def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
+def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran',wtmd='clus'):
     '''
     fcd is the full path to the catalog file in fits format with the data; requires columns Z and WEIGHT
     fcr is the full path to the random catalog meant to occupy the same area as the data; assumed to come from the imaging randoms that have a density of 2500/deg2
@@ -330,7 +357,10 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
 
     df = fitsio.read(fcd)
     nbin = int((zmax-zmin)/bs)
-    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
+    if wtmd == 'clus':
+        #this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
+        wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=wts)
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
     for i in range(0,nbin):
         zl = zhist[1][i]
@@ -340,6 +370,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
         nbarz =  zhist[0][i]/voli
         outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz)+' '+str(zhist[0][i])+' '+str(voli)+'\n')
     outf.close()
+    return True
 
 def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='data',zcol='Z_not4clus',reg=None):
     '''
@@ -576,7 +607,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
         #ff = fitsio.FITS(fn,'rw')
         #fd = ff['LSS'].read()
-        fd = Table(fitsio.read(fn))
+        fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
         #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
@@ -598,7 +629,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
         print(np.mean(wtfac))
-        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
+        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1] #this should keep, e.g., N/S normalization in place
         #fkpl = 1./(1+nl*P0*mean_comp)
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)
@@ -1247,7 +1278,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     os.system('mv ' + tmpfn + ' ' + outf) #for some reason shutil is giving people permission issues but mv does not for actually getting the file in place
     #os.system('chmod 775 ' + outf) #this should fix permissions for the group
     print('moved output to ' + outf)
-
+    return True
 
 def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
     """

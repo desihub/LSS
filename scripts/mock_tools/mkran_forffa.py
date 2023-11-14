@@ -140,8 +140,15 @@ for tracer in tracers:
         if args.apply_HPmapcut == 'y':
             nside = 256
             lssmapdirout = args.random_dir+'/hpmaps/'
-            mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-            maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+
+            if tracer[:3] == 'BGS':
+                mapn = fitsio.read(lssmapdirout+'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+                maps = fitsio.read(lssmapdirout+'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+            
+            else:
+                mapn = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+                maps = fitsio.read(lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+
             mapcuts = mainp.mapcuts
             ran = common.apply_map_veto_arrays(ran,mapn,maps,mapcuts,nside)
             print('random veto '+str(rann)+' done')

@@ -46,7 +46,9 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
-GCnorm =True
+
+GCnorm =False
+
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -216,6 +218,9 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     
 
 for tp in tps:
+    if args.weight_col == 'WEIGHT_RF':
+        GCnorm = True
+    
     depthmd = 'GAL'
     if tp == 'QSO':
         depthmd = 'PSF'
@@ -274,7 +279,7 @@ for tp in tps:
         zr = ' 0.8 < z < 1.6'
         yl = (0.7,1.1)
         P0 = 4000
-        nbar = 0.0008
+        nbar = 0.0005
 
     if tp == 'QSO':
         z_suc = dtf[zcol]*0 == 0
@@ -491,7 +496,8 @@ for tp in tps:
                 fig = plt.figure()
                 parv = mf[reg][mp]
                 #print(mp)
-                
+                #if mp == 'STARDENS':
+                #    parv = np.log(parv)
                 if reg == 'S' or mp[:5] != 'CALIB':
                     chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
                     chi2tot += chi2

@@ -76,8 +76,8 @@ class main:
         self.reccircmasks=None
         self.mapcuts = {'EBV':0.15,'STARDENS':4.4,'PSFSIZE_G':2.4,'PSFSIZE_R':2.3,'PSFSIZE_Z':2,'GALDEPTH_G':250,'GALDEPTH_R':80,'GALDEPTH_Z':30,'PSFDEPTH_W1':2}
         if tp[:3] == 'BGS':
-            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI']
-            self.imbits = [1,13]
+            self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI'] #used up until v0.6
+            self.fit_maps = ['STARDENS','GALDEPTH_R','HI']
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
@@ -91,6 +91,7 @@ class main:
             #if survey == 'Y1':
             #    self.zmax = 0.4
             self.ebits = [11] 
+            self.imbits = [1,13]
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
@@ -103,7 +104,8 @@ class main:
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
-            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
+            self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
+            self.fit_maps = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
             self.ebits = 'lrg_mask'
             self.tsnrcut = 80
             self.dchi2 = 15

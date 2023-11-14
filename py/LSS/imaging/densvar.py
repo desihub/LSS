@@ -353,6 +353,11 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     if wtmd == 'wt':
         wts = dds['WEIGHT']
         weights_ran = rd['WEIGHT']
+
+    if wtmd == 'wtfkp':
+        wts = dds['WEIGHT']*dds['WEIGHT_FKP']
+        weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']
+
     if wtmd == 'wt_comp':
         wts = dds['WEIGHT_COMP']
 
