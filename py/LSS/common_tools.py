@@ -329,7 +329,6 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran'):
         outf.write('#effective area is '+str(area)+'square degrees\n')
 
     df = fitsio.read(fcd)
-
     nbin = int((zmax-zmin)/bs)
     zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax),weights=df['WEIGHT'])
     outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')

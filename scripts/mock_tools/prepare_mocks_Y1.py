@@ -59,10 +59,10 @@ parser.add_argument("--realmax", help="number for the realization",default=1,typ
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='y')
-parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='y')
+parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='n')
 parser.add_argument("--isProduction", help="Say yes if you want to save in main production directory",default='n')
 parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=0, type=bool)
-parser.add_argument("--split_snapshot", help="apply different snapshots to different redshift ranges?",default='y')
+parser.add_argument("--split_snapshot", help="apply different snapshots to different redshift ranges?",default='n')
 
 args = parser.parse_args()
 
@@ -224,7 +224,7 @@ for real in range(args.realmin, args.realmax):
 
                 data_lop = Table(data[idx_LOP])
                 data_vlo = Table(data[idx_VLO])
-
+                
                 df_lop=data_lop.to_pandas()
                 df_vlo=data_vlo.to_pandas()
                 num_HIP_LOP = int(len(df_lop) * percentage_elg_hip)
