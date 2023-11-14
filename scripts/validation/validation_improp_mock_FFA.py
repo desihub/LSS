@@ -244,16 +244,17 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    #fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
-    #fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
-    #dtf_n = fitsio.read(fcd_n)
-    #dtf_s = fitsio.read(fcd_s)
-    #dtf = np.concatenate([dtf_n,dtf_s])
+    fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
+    fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
+    dtf_n = fitsio.read(fcd_n)
+    dtf_s = fitsio.read(fcd_s)
+    dtf = np.concatenate([dtf_n,dtf_s])
     #full_data_fn = fulldir.replace('global','dvs_ro')  + 'ffa_full_'+tp+'.fits'
     #full_data = fitsio.read(full_data_fn,columns=['TARGETID','WEIGHT_IIP'])
-    fcd = indir+tp+args.famd+'_clustering.dat.fits'
-    dtf = fitsio.read(fcd)
-    dtf.dtype.names
+    #fcd = indir+tp+args.famd+'_clustering.dat.fits'
+    #print(fcd)
+    #dtf = fitsio.read(fcd)
+    #dtf.dtype.names
     #print('before join to full',len(dtf))
     #dtf = join(dtf,full_data,keys=['TARGETID'])
     #print('after join to full',len(dtf))
