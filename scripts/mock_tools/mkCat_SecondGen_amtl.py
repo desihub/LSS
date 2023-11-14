@@ -81,8 +81,9 @@ print(args)
 
 mocknum = args.mocknum
 
-rm = int(args.rmin)
-rx = int(args.rmax)
+rm = int(args.minr)
+rx = int(args.maxr)
+rannum = (rm,rx)
 
 notqso = ''
 if args.notqso == 'y':
@@ -247,7 +248,7 @@ if args.tracer[:3] == 'BGS':
 #        maxp = 3200
 
 nzmd = 'mock'
-rannum = (args.rmin,args.rmax)
+
     
 if args.fullr == 'y':
     print('--- START FULLR ---')
