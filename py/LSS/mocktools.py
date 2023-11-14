@@ -419,14 +419,14 @@ def mock_equal_data_density(mockdir, datadir, outdir, tracer, region, zmin, zmax
 
 def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
     print('reading PRIORITY from mock and save it to random zdone')
-    mockspec = Table(fitsio.read(mockassign,columns=['LOCATION','TILEID','PRIORITY']))
-    dataspec = Table(fitsio.read(fdataspec, columns=['LOCATION','TILEID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']))
+    mockspec = Table(fitsio.read(mockassign.replace('global','dvs_ro'),columns=['LOCATION','TILEID','PRIORITY']))
+    dataspec = Table(fitsio.read(fdataspec.replace('global','dvs_ro'), columns=['LOCATION','TILEID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']))
 
     specD = join(mockspec, dataspec, keys=['LOCATION','TILEID'], join_type = 'left')
 
     #mockspec['TILELOCID'] = 10000*mockspec['TILEID'] +mockspec['LOCATION']
     #mockspec.keep_columns(['TILELOCID','PRIORITY'])
-    randomdata = Table(fitsio.read(ranfile, columns=['LOCATION','FIBER','TARGETID','RA','DEC','TILEID']))
+    randomdata = Table(fitsio.read(ranfile.replace('global','dvs_ro'), columns=['LOCATION','FIBER','TARGETID','RA','DEC','TILEID']))
     #randomdata['TILELOCID'] = 10000*randomdata['TILEID'] +randomdata['LOCATION']
     randomdata = join(randomdata, specD, keys=['LOCATION','TILEID'], join_type='left')
 
