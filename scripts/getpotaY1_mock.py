@@ -61,6 +61,7 @@ desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi
 args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
+
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
     infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit', 'forFA'+args.realization+'.fits')
     log.info('Reading %s' % infn)
@@ -69,6 +70,7 @@ if args.mock == 'ab2ndgen':
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
     tileoutdir = os.path.join(os.getenv('SCRATCH'), 'SecondGenMocks', 'AbacusSummit', 'tartiles'+args.realization)
     paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit', 'mock'+args.realization)
+
 elif args.mock == 'ezmocks6':
     # #tr = args.tracer
     # rz = args.realization
@@ -116,7 +118,9 @@ if not os.path.exists(tileoutdir):
     #print('made '+tileoutdir)
 if not os.path.exists(paoutdir):
     os.makedirs(paoutdir)
+
     #print('made '+paoutdir)
+
 
 tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'Y1', 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
@@ -378,8 +382,10 @@ def main():
     log.info('Wrote %s' % outfn)
     t3 = time.time()
     if args.getcoll == 'y':
+
         log.info('%i %i' % (ntot, ncoll))
     log.info('Running tiles and writing results: %.3f sec' % (t3-t2))
 
 if __name__ == '__main__':
     main()
+

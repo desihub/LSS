@@ -19,6 +19,7 @@ north, south, des = foot.get_imaging_surveys()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
+
 parser.add_argument("--mockversion", help="mock version",default='SecondGenMocks/AbacusSummit')
 parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--mockn", help="mock realization",default=0)
@@ -39,8 +40,10 @@ nside,nest = 256,True
 
 datadir = args.basedir+args.survey+'/LSS/'+args.verspec+'/LSScats/'+args.dataver+'/'
 indir = args.basedir+args.survey+'/mocks/'+args.mockversion+'/mock'+str(args.mockn)+'/'
+
 if args.mockcatver is not None:
     indir += args.mockcatver+'/'
+
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
@@ -51,6 +54,7 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
+
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
@@ -243,21 +247,24 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    #fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
-    #fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
-    #dtf_n = fitsio.read(fcd_n)
-    #dtf_s = fitsio.read(fcd_s)
-    #dtf = np.concatenate([dtf_n,dtf_s])
-    fcd = indir+tp+args.famd+'_clustering.dat.fits'
-    dtf = fitsio.read(fcd)
+
+    fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
+    fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
+    dtf_n = fitsio.read(fcd_n)
+    dtf_s = fitsio.read(fcd_s)
+    dtf = np.concatenate([dtf_n,dtf_s])
+
+
     
     tpr = tp
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
 
+
     #rf_n = indir+tpr+args.famd+'_NGC_0_clustering.ran.fits'
     #rf_s = indir+tpr+args.famd+'_SGC_0_clustering.ran.fits'
     rf = indir+tpr+args.famd+'_0_clustering.ran.fits'
+
     
     
     cols = list(dtf.dtype.names)
@@ -281,10 +288,12 @@ for tp in tps:
     #seld &= z_suc
 
     #dtf = dtf[seld]
+
     #rt_n = fitsio.read(rf_n)
     #rt_s = fitsio.read(rf_s)
     #rt = np.concatenate((rt_n,rt_s))
     rt = fitsio.read(rf)
+
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
@@ -295,9 +304,11 @@ for tp in tps:
     'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     desnorm = False
+
     GCnorm = False#True
     if args.weight_col == 'WEIGHT_RF':
         GCnorm = True
+
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
     if tp == 'QSO':
@@ -305,6 +316,7 @@ for tp in tps:
         #if args.weight_col == 'WEIGHT_RF':
         desnorm=True
         #GCnorm = False
+
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
@@ -312,8 +324,10 @@ for tp in tps:
         zmax = zb[1]
         selz = dtf[zcol] > zmin
         selz &= dtf[zcol] < zmax
+
         selz_ran = rt[zcol] > zmin
         selz_ran &= rt[zcol] < zmax
+
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
@@ -322,7 +336,9 @@ for tp in tps:
             sel_reg_d = dtf['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dtf[sel_reg_d&selz]
+
             rt_reg = rt[sel_reg_r&selz_ran]
+
             
             #reset for every loop through the maps        
             nside,nest = 256,True

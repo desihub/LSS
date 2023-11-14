@@ -356,7 +356,6 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran',wtmd
         outf.write('#effective area is '+str(area)+'square degrees\n')
 
     df = fitsio.read(fcd)
-
     nbin = int((zmax-zmin)/bs)
     if wtmd == 'clus':
         #this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
@@ -1383,6 +1382,37 @@ def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'D
     print('wrote ' + outf)
     return dat_comb
 
+def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC']):
+    s = 0
+    td = 0
+    print('size of tiles', len(tiles))
+    tl = []
+    for tile in tiles['TILEID']:
+
+        fadate = return_altmtl_fba_fadate(tile)
+        ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
+        if pa_hdu == 'FAVAIL':
+            fa = Table(fitsio.read(ffa, ext=pa_hdu))
+        else:
+            fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+
+        sel = fa['TARGETID'] >= 0
+        fa = fa[sel]
+        td += 1
+        fa['TILEID'] = int(tile)
+        tl.append(fa)
+    dat_comb = vstack(tl)
+    print('size combitles for ',pa_hdu, len(dat_comb))
+    tar_in = fitsio.read(tarf, columns=addcols)
+    dat_comb = join(dat_comb, tar_in, keys=['TARGETID'])
+    print(len(dat_comb))
+
+    dat_comb.write(outf, format='fits', overwrite=True)
+    print('wrote ' + outf)
+    return dat_comb
+
+
+
 def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
 
     s = 0
@@ -1434,3 +1464,11 @@ def addNS(tab):
     seln &= sel_ngc#wra
     tab['PHOTSYS'][seln] = 'N'
     return tab
+
+def return_altmtl_fba_fadate(tileid):
+    ts = str(tileid).zfill(6)
+    FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+    fhtOrig = fitsio.read_header(FAOrigName)
+    fadate = fhtOrig['RUNDATE']
+    return ''.join(fadate.split('T')[0].split('-'))
+

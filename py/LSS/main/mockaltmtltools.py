@@ -776,7 +776,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False):
+                    debug = False, verbose = False, initpath=None):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -841,7 +841,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
-
+#amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)
+#DARK main /global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/ /global/cfs/cdirs/desi/spectro/redux/daily/ /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl2/ None True False False False True 2 True False True
     if mock:
         if targets is None:
             raise ValueError('If processing mocks, you MUST specify a target file')
@@ -891,7 +892,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         if debugOrig:
             altmtldir = altmtlbasedir
         else:
-            altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
+            altmtldir = os.path.join(altmtlbasedir.format(mock_number=n), 'Univ000')
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
 
         althpdirname = io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
@@ -1001,7 +1002,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     if getosubp and verbose:
                         log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
                         log.info(glob.glob(fbadir + '/*' ))
-                    get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                    if initpath is None:
+                        get_fba_fromnewmtl(ts, mtldir = os.path.join(altmtldir, survey.lower() + '/'), outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)#, targets = targets)
+                    else:
+                        get_fba_fromnewmtl(ts, mtldir = os.path.join(initpath, survey.lower() + '/'), outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock)
                     command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
                     if verbose:
                         log.info('fa command_run')

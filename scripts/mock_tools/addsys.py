@@ -261,8 +261,8 @@ if args.prepsysnet == 'y':
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
         
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
+
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 
@@ -415,6 +415,7 @@ if args.add_sysnet == 'y':
         #comments.append("Using sysnet for WEIGHT_SYS")
 
         common.write_LSS(dd,fcd)#,comments)
+
 
 if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys_ran:
     if args.add_regressis_ran == 'y':

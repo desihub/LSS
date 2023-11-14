@@ -36,6 +36,7 @@ else:
 parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
+
 #parser.add_argument("--prog", default="DARK")
 #parser.add_argument("--veto",default='_imaging')
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
@@ -46,7 +47,6 @@ parser.add_argument("--minr", help="minimum number for random files",default=0,t
 parser.add_argument("--maxr", help="maximum for random files, default is all 18)",default=18,type=int) 
 parser.add_argument("--mockver", default='AbacusSummit', help = "which mocks to use. use abacus2ffa for Abacus 2nd gen fast fiber assignment")
 parser.add_argument("--mockcatver", default=None, help = "if not None, gets added to the output path")
-
 parser.add_argument("--tracer", default = 'all')
 parser.add_argument("--outloc", default = None)
 parser.add_argument("--par", default = 'y',help='whether to run random steps in parallel or not')
@@ -67,6 +67,7 @@ notqso = ''
 
 nside = 256
 lssmapdirout = args.data_dir+'/hpmaps/'
+
 if args.tracer[:3] == 'BGS':
     mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
     maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'BGS_BRIGHT_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
@@ -74,8 +75,10 @@ if args.tracer[:3] == 'BGS':
 else:
     mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
     maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+
 mainp = main('LRG','iron','Y1')
 mapcuts = mainp.mapcuts
+
 
 
 #if args.prog == 'DARK':
@@ -86,6 +89,7 @@ if args.tracer == 'all':
     tracers = ['QSO','ELG_LOP','LRG']
 else:
     tracers = [args.tracer]
+
     #if args.mockver == 'abacus2ffa':
     #    tracers = [args.tracer]
 
@@ -100,7 +104,6 @@ def splitGC(flroot,datran='.dat',rann=0):
     app = 'clustering'+datran+'.fits'
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
-
     fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
@@ -186,11 +189,15 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
         print('number after imaging mask '+str(len(ff)))
     return ff
 
+
 nproc = 18
+
 
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
+
+
 
 if args.outloc == 'prod':
     outdir = mockdir
@@ -201,16 +208,17 @@ if args.mockcatver is not None:
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
-
 print('input directory is '+mockdir)
 print('output directory is '+outdir)    
     
 for tracer in tracers:
    
+
     tracerd = tracer
     if tracer == 'BGS_BRIGHT-21.5':
         tracerd = 'BGS'
     in_data_fn = mockdir.replace('global','dvs_ro')  + 'ffa_full_'+tracerd+'.fits'
+
 
     out_data_fn = outdir+tracer+'_ffa_clustering.dat.fits'
     out_data_froot = outdir+tracer+'_ffa_'
@@ -230,9 +238,11 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 2.1
         subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
+
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
+
     mainp = main(tracer,'iron','Y1')
     if args.mkdat == 'y':
     
@@ -244,10 +254,12 @@ for tracer in tracers:
         print('length after cutting to "observed" targets',len(mock_data_tr))
         mock_data_tr.rename_column('RSDZ', 'Z')
         mock_data_tr['WEIGHT_COMP'] = mock_data_tr['WEIGHT_IIP']
+
         if tracer == 'BGS_BRIGHT-21.5':
             selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
             mock_data_tr = mock_data_tr[selm]
             print('length after abs mag cut '+str(len(mock_data_tr)))
+
         
         #apply imaging vetos
         if tracer == 'LRG':
@@ -280,6 +292,7 @@ for tracer in tracers:
 
         #splitGC(out_data_froot,'.dat')
 
+
     ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL','TARGETID_DATA']
 
     nran = rx-rm
@@ -291,6 +304,7 @@ for tracer in tracers:
     if args.mkran == 'y':
         if args.mkdat == 'n':
             mock_data_tr = Table(fitsio.read(out_data_fn))
+
         def _mkran(rann):
             
             tracerr = tracer
@@ -298,8 +312,10 @@ for tracer in tracers:
                 tracerr += 'notqso'
             if tracer == 'ELG':
                 tracerr = 'ELG_LOPnotqso'
+
             if tracer == 'BGS_BRIGHT-21.5':
                 tracerr = 'BGS_BRIGHT'
+
             in_ran_fn = ran_fname_base+str(rann)+'_full.ran.fits' 
             out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
             rcols = ['RA','DEC','TILELOCID','PHOTSYS','TARGETID','NTILE','FRAC_TLOBS_TILES']
@@ -308,7 +324,9 @@ for tracer in tracers:
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
             common.write_LSS(ran,out_ran_fn)
             del ran
+
             return True
+
             #splitGC(out_data_froot,'.ran',rann)
 
         inds = np.arange(nran)
@@ -337,7 +355,9 @@ for tracer in tracers:
         P0 = 10000
     if tracer[:3] == 'ELG':
         P0 = 4000
+
     if tracer[:3] == 'BGS':
+
         P0 = 7000
 
     

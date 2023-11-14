@@ -3,7 +3,7 @@ from desiutil.iers import freeze_iers
 freeze_iers()
 
 from multiprocessing import Pool
-from LSS.SV3 import altmtltools as amt
+from LSS.main import mockaltmtltools as amt
 from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
@@ -19,7 +19,7 @@ from pstats import SortKey
 import argparse
 
 #Base directory for the alternate MTLs created in the InitializeAltMTLs script
-
+#--altMTLBaseDir=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl{mock_number}/ --obscon=DARK --survey=main --ProcPerNode=128 --debug --verbose --mock --targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA{mock_number}.fits --mockmin=0 --mockmax=6
 
 parser = argparse.ArgumentParser(
                     prog = 'RunAltMTLParallel',
@@ -27,6 +27,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True, type=str, help = 'the path to the location where alt MTLs are stored, up to, but not including survey and obscon information.')
 
 parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
+parser.add_argument('-mockmin', '--mockmin', dest='mockmin', default=0, help = 'Minimum mock number', required = False, type = int)
+parser.add_argument('-mockmax', '--mockmax', dest='mockmax', default=6, help = 'Maximum mock number', required = False, type = int)
 parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
 parser.add_argument('-sec', '--secondary', dest = 'secondary', default=False, action='store_true', help = 'set flag to incorporate secondary targets.')
 parser.add_argument('-mock', '--mock', dest = 'mock', default=False, action='store_true', help = 'set flag if running pipeline on mocks.')
@@ -44,6 +46,11 @@ parser.add_argument('-md', '--multiDate', action='store_true', dest='multiDate',
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
+parser.add_argument('-ed', '--endDate', dest='endDate', default='', help = 'End Date', required = False, type = str)
+parser.add_argument('-ip', '--initpath', dest='initpath', default='', help = 'Path to initial ledgers', required = False, type = str)
+
+
+
 
 print(argv)
 
@@ -104,7 +111,7 @@ def procFunc(nproc):
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
-        targets = Table.read(args.targfile)
+        targets = Table.read(args.targfile.format(mock_number=nproc))
         print('targets.dtype')
         print(targets.dtype)
         print('targets[0:5]')
@@ -115,7 +122,21 @@ def procFunc(nproc):
         print(targets['DEC'][0:5])
     else:
         targets = None
-    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)
+    print('aqui va')
+    ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
+    ztilefn = ztilefile.split('/')[-1]
+    outputMTLDir = os.path.join(args.altMTLBaseDir.format(mock_number=nproc),'Univ000')
+    if not os.path.exists(outputMTLDir):
+        os.makedirs(outputMTLDir)
+    if not os.path.isfile(os.path.join(outputMTLDir, ztilefn)):
+        amt.processTileFile(ztilefile, os.path.join(outputMTLDir, ztilefn), '', args.endDate)
+    if not os.path.isdir(os.path.join(outputMTLDir, 'main')):
+        os.system('cp -r %s %s'%(os.path.join(args.initpath.format(mock_number=nproc),'main'), outputMTLDir))
+    print('amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)')
+    print(args.obscon, args.survey, args.mtldir, args.zcatdir, args.altMTLBaseDir.format(mock_number=nproc), ndirs, args.numobs_from_ledger, args.secondary, args.getosubp, args.quickRestart, multiproc, nproc, singleDate, args.redoFA, args.mock, targets, args.debug, args.verbose)
+    
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose)#, initpath = args.initpath.format(mock_number=nproc))
+    #retval = 151
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:
@@ -133,16 +154,16 @@ def procFunc(nproc):
     return 42
 
 inds = []
-start = int(NodeID*NProc/SlurmNProcs)
-end = int((NodeID + 1)*NProc/SlurmNProcs)
+#start = int(NodeID*NProc/SlurmNProcs)
+#end = int((NodeID + 1)*NProc/SlurmNProcs)
 log.info('NodeID = {0:d}'.format(NodeID))
-log.info('StartProc = {0:d}'.format(start))
-log.info('EndProc = {0:d}'.format(end))
+log.info('StartProc = {0:d}'.format(args.mockmin))
+log.info('EndProc = {0:d}'.format(args.mockmax))
 
 
-for i in range(start, end):
+for i in range(args.mockmin, args.mockmax):
     log.info('Process i = {0}'.format(i))
-    files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
+    files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
     if len(files):
         pass
     else:
@@ -151,6 +172,7 @@ for i in range(start, end):
     inds.append(i)
     
 assert(len(inds))
+print(inds)
 p = Pool(NProc)
 atexit.register(p.close)
 result = p.map(procFunc,inds)

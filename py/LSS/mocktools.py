@@ -417,9 +417,31 @@ def mock_equal_data_density(mockdir, datadir, outdir, tracer, region, zmin, zmax
 
 
 
+def create_collision_from_pota(fin, fout):
+    print('Creating collision file from pota file', fin)
+    df = fitsio.read(fin.replace('global','dvs_ro'))
+    selcoll = df['COLLISION'] == True
+    df = df[selcoll]
+    print('size of collisions', len(df))
+    common.write_LSS(df, fout, extname='COLLISION')
+    return fout
 
+def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
+    print('reading PRIORITY from mock and save it to random zdone')
+    mockspec = Table(fitsio.read(mockassign,columns=['LOCATION','TILEID','PRIORITY']))
+    dataspec = Table(fitsio.read(fdataspec, columns=['LOCATION','TILEID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG']))
 
+    specD = join(mockspec, dataspec, keys=['LOCATION','TILEID'], join_type = 'left')
 
-    
+    #mockspec['TILELOCID'] = 10000*mockspec['TILEID'] +mockspec['LOCATION']
+    #mockspec.keep_columns(['TILELOCID','PRIORITY'])
+    randomdata = Table(fitsio.read(ranfile, columns=['LOCATION','FIBER','TARGETID','RA','DEC','TILEID']))
+    #randomdata['TILELOCID'] = 10000*randomdata['TILEID'] +randomdata['LOCATION']
+    randomdata = join(randomdata, specD, keys=['LOCATION','TILEID'], join_type='left')
+
+    randomdata.write(os.path.join(outdir, ranfile.split('/')[-1]), overwrite=True)
+    print('copying alltileloc from spec dir to mock dir')
+    shutil.copy(alltileloc, os.path.join(outdir, alltileloc.split('/')[-1]))
+    return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
 
     

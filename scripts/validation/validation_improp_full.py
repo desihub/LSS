@@ -46,7 +46,9 @@ if not os.path.exists(outdir):
 
 zcol = 'Z_not4clus'
 nran = 18
+
 GCnorm =False
+
 
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}

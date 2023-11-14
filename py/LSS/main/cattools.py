@@ -2152,10 +2152,13 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     cols = list(dz.dtype.names)
     if tscol not in cols:
+        print(tscol,' not present! Should be there...')
         dz[tscol] = np.ones(len(dz))
 
+    if 'TILELOCID' not in cols:
+        dz['TILELOCID'] = 10000*dz['TILEID'] + dz['LOCATION']
 
-    wk = ~np.isin(dz['TILELOCID'],lznp)
+    wk = ~np.isin(dz['TILELOCID'], lznp)
     dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
     dz['ZPOSSLOC'][wk] = 1
 
@@ -2341,7 +2344,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
 
 
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ',mask_coll=False):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None, mockz=None, mask_coll=False, mocknum=None, mockassigndir=None):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2382,6 +2385,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         tscol = 'TSNR2_ELG'
         collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
 
+    if mockz and mask_coll:
+        collf = mask_coll
+
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
@@ -2392,7 +2398,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz = dz[wtype]
 
     if mask_coll:
-        coll = Table(fitsio.read(collf))
+        coll = Table(fitsio.read(collf.replace('global','dvs_ro')))
         print('length before masking collisions '+str(len(dz)))
         dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
         print('length after masking collisions '+str(len(dz)))
@@ -2409,15 +2415,23 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
     print(specf)
-    fs = fitsio.read(specf)
+    fs = fitsio.read(specf.replace('global', 'dvs_ro'))
     fs = common.cut_specdat(fs,badfib)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
-    print(len(gtl))
-    fs.keep_columns(['TILELOCID','PRIORITY'])
+    print('size of gtl', len(gtl))
+
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
-    dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+    if mockz:
+        assignf = os.path.join(mockassigndir, 'datcomb_darkassignwdup.fits')
+        fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
+        fs = Table(fs)
+        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+
+
+    fs.keep_columns(['TILELOCID','PRIORITY'])
+    dz = join(dz, fs, keys=['TILELOCID'],join_type='left', uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     del fs
     dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
@@ -2426,7 +2440,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
-    print(len(dz[wg]))
+    print('Size of sample after cutting to gtl from data', len(dz[wg]))
+
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
     print(len(dz[wg]))
@@ -2434,7 +2449,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
     print('length after selecting type '+str(len(dz)))
-
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
@@ -2468,7 +2482,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dtl = count_tiles_input(dz[wg])
     else:
         dtl = Table.read(ftiles)
-    
+
+    #print('ECHO ',dz['TARGETID'][0])
+    #df = dz.to_pandas()
+    #df = df.sample(frac = 1).reset_index(drop=True)
+    #dz = Table.from_pandas(df)
+
+    #print('ECHO ',dz['TARGETID'][0])
     #if tp[:3] != 'QSO':
     if tp[:3] == 'QSO':
         selnp = dz['LOCATION_ASSIGNED'] == 0
@@ -2565,7 +2585,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     
     #needs to change because mocks actually need real spec info as well
-    if specver == 'mock':
+    if mockz: #specver == 'mock':
         dz[mockz].name = 'Z' 
         
     if tp == 'QSO' and azf != '':
@@ -2674,7 +2694,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     print(np.unique(dz['NTILE']))
     
     #needs to change, because specver should still point to real data
-    if specver == 'mock':
+    if mockz:
         dz['PHOTSYS'] = 'N'
         sel = dz['DEC'] < 32.375
         wra = (dz['RA'] > 100-dz['DEC'])
@@ -3696,7 +3716,6 @@ def clusNStoGC(flroot,nran=1):
         selregd = des[pixd]
         ns_des =  np.sum(fs[selregd]['WEIGHT'])
         ns_notdes =  np.sum(fs[~selregd]['WEIGHT'])
-
     fc = vstack((fn,fs))
     print(np.sum(fc['WEIGHT']),nn,ns)
     c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
@@ -3719,7 +3738,6 @@ def clusNStoGC(flroot,nran=1):
             nsr_des = np.sum(fs[selregr]['WEIGHT'])
             nsr_notdes = np.sum(fs[~selregr]['WEIGHT'])
         
-
         nsr = np.sum(fs['WEIGHT'])
         rn = nn/nnr
         rs = ns/nsr
@@ -3741,7 +3759,8 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
-def splitclusGC(flroot,nran=1):
+def splitclusGC(flroot,nran=1, rannums=None):
+
     import LSS.common_tools as common
     '''
     split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
@@ -3756,16 +3775,56 @@ def splitclusGC(flroot,nran=1):
     common.write_LSS(fc[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_clustering.dat.fits'
     common.write_LSS(fc[~sel_ngc],outf_sgc)
-    
-    for rann in range(0,nran):
-        fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
-        c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
-        gc = c.transform_to('galactic')
-        sel_ngc = gc.b > 0
-        outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[sel_ngc],outf_ngc)
-        outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
-        common.write_LSS(fc[~sel_ngc],outf_sgc)
+
+    if rannums == None:
+        for rann in range(0,nran):
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+            gc = c.transform_to('galactic')
+            sel_ngc = gc.b > 0
+            outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_ngc],outf_ngc)
+            outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_ngc],outf_sgc)
+    else:
+        for rann in rannums:
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
+            gc = c.transform_to('galactic')
+            sel_ngc = gc.b > 0
+            outf_ngc = flroot+'NGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_ngc],outf_ngc)
+            outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_ngc],outf_sgc)
+
+def splitclusNS(flroot,nran=1, rannums=None):
+    import LSS.common_tools as common
+    '''
+    split full clustering catalog by North and South based on PHOTSYS
+    '''
+
+    fc = Table(fitsio.read(flroot+'clustering.dat.fits'))
+    sel_N = fc['PHOTSYS'] == 'N'
+    outf_n = flroot+'N_clustering.dat.fits'
+    common.write_LSS(fc[sel_N], outf_n)
+    outf_s = flroot+'S_clustering.dat.fits'
+    common.write_LSS(fc[~sel_N], outf_s)
+    if rannums == None:
+        for rann in range(0,nran):
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            sel_N = fc['PHOTSYS'] == 'N'
+            outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_N], outf_n)
+            outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_N], outf_s)
+    else:
+        for rann in rannums:   
+            fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
+            sel_N = fc['PHOTSYS'] == 'N'
+            outf_n = flroot+'N_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[sel_N], outf_n)
+            outf_s = flroot+'S_'+str(rann)+'_clustering.ran.fits'
+            common.write_LSS(fc[~sel_N], outf_s)
 
 
 
