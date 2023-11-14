@@ -108,7 +108,7 @@ if args.targDir == None:
     args.targDir = maindir
 
 
-
+tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
 
