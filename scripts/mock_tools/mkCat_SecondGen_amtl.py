@@ -388,7 +388,7 @@ if args.mkclusran == 'y':
         tsnrcol = 'TSNR2_BGS'
     fl = os.path.join(dirout, args.tracer + notqso + '_')
     print('adding tlobs to randoms with ', fl)
-    clus_arrays = [fitsio.read(dirout + args.tracer + notqso+'_clustering.dat.fits')]
+    clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     global _parfun4
     def _parfun4(rann):
         ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
