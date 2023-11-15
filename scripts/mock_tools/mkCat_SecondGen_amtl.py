@@ -307,7 +307,6 @@ if args.apply_veto == 'y':
         if 'lrg_mask' not in colnames:
             addcols = 1
             addlrg = 1
-        maskcols.append('lrg_mask')
     coltest = np.isin(maskcols,colnames)
     readcols = maskcols
     readcols.append('TARGETID')
