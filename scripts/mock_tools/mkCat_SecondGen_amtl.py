@@ -413,6 +413,7 @@ if args.mkclusran == 'y':
 
 nproc = 18
 fb = os.path.join(dirout, tracer_clus)
+nran = rx-rm
 if args.nz == 'y':
     #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
     #for reg in allreg:
