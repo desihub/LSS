@@ -415,6 +415,15 @@ def mock_equal_data_density(mockdir, datadir, outdir, tracer, region, zmin, zmax
     mock_tab[sel_fraction].write(out_fn, overwrite = True)
     print("Mock fraction catalogue writing complete.")
 
+def create_collision_from_pota(fin, fout):
+    print('Creating collision file from pota file', fin)
+    df = fitsio.read(fin.replace('global','dvs_ro'))
+    selcoll = df['COLLISION'] == True
+    df = df[selcoll]
+    print('size of collisions', len(df))
+    common.write_LSS(df, fout, extname='COLLISION')
+    return fout
+
 
 
 def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
