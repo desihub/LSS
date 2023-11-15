@@ -331,7 +331,7 @@ if args.apply_veto == 'y':
 
 
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks) #returns vetoed array
+    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n') #returns vetoed array
     dataf = apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
     common.write_LSS(dataf,fout)
     print('data veto done, now doing randoms')
