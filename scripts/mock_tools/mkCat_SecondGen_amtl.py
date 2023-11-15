@@ -39,6 +39,7 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
 parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
+parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="base directory of AltMTL mock",default='/pscratch/sd/a/acarnero/SecondGen/altmtl_main_rea{MOCKNUM}')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
@@ -134,8 +135,11 @@ if not os.path.exists(lssdir):
     print('made '+lssdir)
 
 dirout = os.path.join(lssdir, 'LSScats')
+if args.outmd == 'scratch':
+    dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH'))
+
 if not os.path.exists(dirout):
-    os.mkdir(dirout)
+    os.makedirs(dirout)
     print('made '+dirout)
 
 
