@@ -136,7 +136,7 @@ if not os.path.exists(lssdir):
 
 dirout = os.path.join(lssdir, 'LSScats')
 if args.outmd == 'scratch':
-    dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH'))
+    dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
 if not os.path.exists(dirout):
     os.makedirs(dirout)
