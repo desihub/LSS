@@ -38,7 +38,7 @@ parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
-parser.add_argument("--base_output", help="base directory for output",default='/pscratch/sd/a/acarnero/SecondGen/')
+parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="base directory of AltMTL mock",default='/pscratch/sd/a/acarnero/SecondGen/altmtl_main_rea{MOCKNUM}')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
@@ -256,7 +256,7 @@ if args.fullr == 'y':
     specft = fitsio.read(ldata) #Is this from data or mock? 
     wg = np.isin(specft['TILELOCID'], gtl)
     specft = Table(specft[wg])
-    lznp = common.find_znotposs(specft)
+    #lznp = common.find_znotposs(specft) #doesn't actually get used and takes a long time
     del specft
     mainp = main(args.tracer, args.specdata, survey=args.survey)
     imbits = mainp.imbits
