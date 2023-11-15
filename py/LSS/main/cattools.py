@@ -2158,9 +2158,14 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     if 'TILELOCID' not in list(dz.dtype.names):
         dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION']
         print(dz.dtype.names)
-    wk = ~np.isin(dz['TILELOCID'],lznp)
-    dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['ZPOSSLOC'][wk] = 1
+    
+    
+    if lznp is None:
+        dz['ZPOSSLOC'] = np.ones(len(dz)).astype('bool')
+    else:    
+        dz['ZPOSSLOC'] = np.zeros(len(dz)).astype('bool')
+        wk = ~np.isin(dz['TILELOCID'],lznp)
+        dz['ZPOSSLOC'][wk] = 1
 
     wg = np.isin(dz['TILELOCID'],gtl)
     if badfib is not None:
