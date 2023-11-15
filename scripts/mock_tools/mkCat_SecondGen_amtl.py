@@ -261,6 +261,7 @@ if args.fullr == 'y':
     wg = np.isin(specft['TILELOCID'], gtl)
     specft = Table(specft[wg])
     #lznp = common.find_znotposs(specft) #doesn't actually get used and takes a long time
+    lznp = None
     del specft
     mainp = main(args.tracer, args.specdata, survey=args.survey)
     imbits = mainp.imbits
