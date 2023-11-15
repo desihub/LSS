@@ -60,7 +60,7 @@ parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; 
 parser.add_argument("--mkclusran_tiles", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_tiles", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
-parser.add_argument("--split_GC",help='whether to combine N/S and then split NGC/SGC',default='n')
+parser.add_argument("--splitGC",help='whether to combine N/S and then split NGC/SGC',default='n')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
