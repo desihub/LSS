@@ -77,6 +77,27 @@ parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final cl
 
 #--use_map_veto _HPmapcut
 
+import logging
+
+# create logger
+logname = 'LSSran'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+
 args = parser.parse_args()
 print(args)
 
