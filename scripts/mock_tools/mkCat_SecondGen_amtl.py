@@ -315,7 +315,7 @@ if args.apply_veto == 'y':
         addcols = 1
         joinmask = 1
         print(maskcols,coltest,colnames)
-        sys.exit()
+        #sys.exit()
     if 'PHOTSYS' not in colnames:
         addcols = 1
     if addcols == 1:
@@ -332,8 +332,8 @@ if args.apply_veto == 'y':
 
 
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n') #returns vetoed array
-    dataf = apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
+    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
+    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
     common.write_LSS(dataf,fout)
     print('data veto done, now doing randoms')
     
@@ -345,7 +345,7 @@ if args.apply_veto == 'y':
         if args.tracer == 'LRG':
             common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann)
         ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks)
-        ranf = apply_map_veto_arrays(ranf,mapn,maps,mapcuts)
+        ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts)
         common.write_LSS(ranf,fout)
     
     if args.par == 'n':

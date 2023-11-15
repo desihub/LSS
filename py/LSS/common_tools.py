@@ -969,7 +969,7 @@ def maskcircandrec(indata,maskfn):
     
     
 
-def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None,wo='y'):
+def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None,wo='y',mapveto=''):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -1072,7 +1072,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         #print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
         fract_dicta = dict(zip(tll, fractl))
-        tlobs_fn = fout.replace('full.dat.fits','frac_tlobs.fits')
+        tlobs_fn = fout.replace('full'+mapveto+'.dat.fits','frac_tlobs.fits')
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
