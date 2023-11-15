@@ -302,7 +302,11 @@ if args.apply_veto == 'y':
     fin = os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits')
     colnames = list(fitsio.read(fin,rows=1).dtype.names)
     maskcols = ['NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS']
+    addlrg = 0
     if args.tracer == 'LRG':
+        if 'lrg_mask' not in colnames:
+            addcols = 1
+            addlrg = 1
         maskcols.append('lrg_mask')
     coltest = np.isin(maskcols,colnames)
     readcols = maskcols
@@ -310,18 +314,17 @@ if args.apply_veto == 'y':
     addcols = 0
     if np.sum(coltest) != len(maskcols):
         addcols = 1
+        joinmask = 1
     if 'PHOTSYS' not in colnames:
         addcols = 1
     if addcols == 1:
         dataf = Table(fitsio.read(fin))
-        for col in maskcols:
-            if col not in colnames:
-                if col == 'lrg_mask':
-                    lrgmask = Table.read(os.path.join(args.targDir, 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
-                    dataf = join(dataf, lrgmask, keys=['TARGETID'])
-                else:                   
-                    targf = Table(fitsio.read(os.path.join(args.targDir, 'forFA%d.fits' % mocknum), columns = readcols))
-                    dataf = join(dataf, targf, keys=['TARGETID'])
+        if addlrg == 1:
+            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
+            dataf = join(dataf, lrgmask, keys=['TARGETID'])
+        if joinmask == 1:                   
+            targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d.fits' % mocknum), columns = readcols))
+            dataf = join(dataf, targf, keys=['TARGETID'])
         if 'PHOTSYS' not in colnames:
             dataf = common.addNS(dataf)
         common.write_LSS(dataf, fin)
