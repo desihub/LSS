@@ -303,8 +303,8 @@ if args.fullr == 'y':
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
-        (rannum[1]-rannum[0])*2
-        nproc = 9 #try this so doesn't run out of memory
+        #(rannum[1]-rannum[0])*2
+        nproc = 18 #try 9 if runs out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun1, inds)
             pool.close()
@@ -381,7 +381,7 @@ if args.apply_veto == 'y':
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
-        nproc = 9 #try this so doesn't run out of memory
+        nproc = 18 #try this so doesn't run out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun2, inds)
             pool.close()
@@ -428,7 +428,7 @@ if args.mkclusran == 'y':
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
-        nproc = 9 #try this so doesn't run out of memory
+        nproc = 18 #try this so doesn't run out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun4, inds)
             pool.close()
