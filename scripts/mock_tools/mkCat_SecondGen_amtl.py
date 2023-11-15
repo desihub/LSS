@@ -314,6 +314,8 @@ if args.apply_veto == 'y':
     if np.sum(coltest) != len(maskcols):
         addcols = 1
         joinmask = 1
+        print(maskcols,coltest,colnames)
+        sys.exit()
     if 'PHOTSYS' not in colnames:
         addcols = 1
     if addcols == 1:
