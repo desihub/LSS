@@ -469,6 +469,11 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 if args.splitGC == 'y':
+    dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+
+    if not os.path.exists(dirout):
+        os.makedirs(dirout)
+    print('made '+dirout)
     splitGC(fb+'_','.dat')
     def _spran(rann):
         splitGC(fb+'_','.ran',rann)
