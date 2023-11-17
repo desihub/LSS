@@ -257,7 +257,10 @@ for tracer in tracers:
         
         #apply imaging vetos
         if tracer == 'LRG':
-            lrgmask = fitsio.read(args.base_dir+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+            if mockver == 'EZmock/FFA':
+                lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+            else:
+                lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
             mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
             print(len(mock_data_tr))
         ebits = mainp.ebits
