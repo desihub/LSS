@@ -3684,8 +3684,31 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True):
     common.write_LSS(ranf,outf)
     del ranf
     return True
+  
+def add_tlobs_ran_array(ranf,tlf):
+    import LSS.common_tools as common
+    tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
+    tlarray = []
+    nt = 0
+    utls = np.unique(ranf['TILES'])
+    gtls = np.isin(utls,tlf['TILES'])
+    for tls in in_array['TILES']:
+        try:    
+            fr = tldic[tls]
+        except:
+            fr = 0
+        tlarray.append(fr)
+        if nt%100000 == 0:
+           print(nt,len(ranf))  
+        nt += 1  
+    tlarray = np.array(tlarray)
+    sel = tlarray == 0
+    print(len(tlarray[sel]),' number with 0 frac')
+    ranf['FRAC_TLOBS_TILES'] = tlarray
+    return ranf
+  
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto=''):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n'):
     import LSS.common_tools as common
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
@@ -3702,6 +3725,10 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ffc = ffr[wz]
     print('length after,before tsnr cut:')
     print(len(ffc),len(ffr))
+    del ffr
+    if add_tlobs == 'y':
+        tlf = fitsio.read(fl+'frac_tlobs.fits')
+        ffc = add_tlobs_ran_array(ffc,tlf)
     if return_cat == 'y' and nosplit=='y':
         #this option will then pass the arrays to the clusran_resamp_arrays function
         ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS'])

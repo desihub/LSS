@@ -254,7 +254,7 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
     dz_step = 0.01
     zmin = 0.4
     zmax = 1.1
-    subfrac = 0.942
+    subfrac = 0.945
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
@@ -419,8 +419,8 @@ if args.mkclusran == 'y':
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     global _parfun4
     def _parfun4(rann):
-        ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
-        ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays)#,ntilecut=ntile,ccut=ccut)
+        #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
+        ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0
     if args.par == 'n':
