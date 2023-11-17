@@ -170,12 +170,15 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if recon_dir != 'n':
         out_dir = out_dir[:-2] + recon_dir+'/pk/'
+    if option:
+        zmax = str(zmax) + option
+
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -184,12 +187,15 @@ def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zm
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if recon_dir != 'n':
         out_dir = out_dir[:-2] + recon_dir+'/pk/'
+    if option:
+        zmax = str(zmax) + option
+
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
