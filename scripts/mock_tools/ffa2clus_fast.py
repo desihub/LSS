@@ -84,6 +84,8 @@ mapcuts = mainp.mapcuts
 #    desitarg='DESI_TARGET'
 if args.tracer == 'all':
     tracers = ['QSO','ELG_LOP','LRG']
+    if args.mockver == 'EZmock/FFA':
+        tracers = ['ELG','QSO','LRG']
 else:
     tracers = [args.tracer]
     #if args.mockver == 'abacus2ffa':
