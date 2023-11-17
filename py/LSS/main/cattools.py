@@ -3692,7 +3692,7 @@ def add_tlobs_ran_array(ranf,tlf):
     nt = 0
     utls = np.unique(ranf['TILES'])
     gtls = np.isin(utls,tlf['TILES'])
-    for tls in in_array['TILES']:
+    for tls in ranf['TILES']:
         try:    
             fr = tldic[tls]
         except:
