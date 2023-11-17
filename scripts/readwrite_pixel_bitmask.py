@@ -20,7 +20,7 @@ import argparse
 
 time_start = time.time()
 
-n_processes = 64
+n_processes = 128
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
@@ -44,6 +44,10 @@ if args.cat_type == 'obielg':
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_'+args.tracer+'_imask.fits'
 if args.cat_type == 'Ab2ndgen':
     mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/'
+    input_path = mockdir+'forFA'+args.input+'.fits'
+    output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
+if args.cat_type == 'Y1EZmock':
+    mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/forFA/'
     input_path = mockdir+'forFA'+args.input+'.fits'
     output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
    
