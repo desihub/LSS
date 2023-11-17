@@ -225,6 +225,10 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 1.6
         subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
+        if args.mockver == 'EZmock/FFA':
+            subfrac1 = .72
+            subfrac2 = .54
+            zsplit = 1.5
 
     elif tracer == 'QSO':
         zmin = 0.8
@@ -267,6 +271,11 @@ for tracer in tracers:
         mock_data_tr = mock_data_tr[selz]
         print('length after cutting to redshift range',len(mock_data_tr))
         sub_array = np.random.random(len(mock_data_tr))
+        if args.mockver == 'EZmock/FFA' and tracer == 'ELG_LOP':
+            subfrac = np.ones(len(mock_data_tr))
+            selzsub = mock_data_tr['Z'] < zsplit
+            subfrac[selzsub] = subfrac1
+            subfrac[~selzsub] = subfrac2
         keep = sub_array < subfrac
         mock_data_tr = mock_data_tr[keep]
         print('length after random sub-sampling',len(mock_data_tr))
