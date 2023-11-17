@@ -20,7 +20,7 @@ import argparse
 
 time_start = time.time()
 
-n_processes = 128
+n_processes = 256
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
