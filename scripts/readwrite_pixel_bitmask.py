@@ -29,7 +29,7 @@ parser.add_argument('-i', '--input', required=True)
 parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
 parser.add_argument( '--cat_type', default='targets', choices=['targets','ran','obielg','Ab2ndgen'],required=False)
-parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
+#parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 
 args = parser.parse_args()
 
