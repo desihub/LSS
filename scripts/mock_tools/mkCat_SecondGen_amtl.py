@@ -217,15 +217,6 @@ if args.tracer[:3] == 'BGS':
 if args.fulld == 'y':
     print('--- START FULLD ---')
     mainp = main(args.tracer, args.specdata, survey=args.survey)
-#inp        imbits = mainp.imbits
-    
-
-    #Question, is this necessary? Should be this or the list below?
-    maxp = 3400
-    if args.tracer[:3] == 'LRG' or notqso == 'notqso':
-        maxp = 3200
-    if args.tracer[:3] == 'BGS':
-        maxp = 2100
 
     ftar = None
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -250,18 +241,27 @@ zmax = 3.5
 P0 = 6000
 dz_step = 0.02
 
+subfrac = 1
+if tracer == 'QSO':
+    zmin = 0.8
+    zmax = 2.1
+    subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
+
+
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
     P0 = 10000
     dz_step = 0.01
     zmin = 0.4
     zmax = 1.1
+    subfrac = 0.942
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
 #        maxp = 3000
     zmin = 0.8
     zmax = 1.6
+    subfrac = 0.676
 if args.tracer[:3] == 'BGS':
     P0 = 7000
     dz_step = 0.01
@@ -382,6 +382,8 @@ if args.apply_veto == 'y':
 
         inds = np.arange(rannum[0], rannum[1])
         nproc = 18 #try this so doesn't run out of memory
+        if tracer == 'QSO':
+            nproc = 9 #QSO has OOM with all 18
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun2, inds)
             pool.close()
@@ -447,8 +449,8 @@ if args.nz == 'y':
     fcr = fb+'_0_clustering.ran.fits'
     fcd = fb+'_clustering.dat.fits'
     fout = fb+'_nz.txt'
-    common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax,compmd='')
-    common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
+    common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
+    common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,nproc=nproc)
 
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
