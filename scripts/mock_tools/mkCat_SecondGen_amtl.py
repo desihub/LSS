@@ -382,7 +382,7 @@ if args.apply_veto == 'y':
 
         inds = np.arange(rannum[0], rannum[1])
         nproc = 18 #try this so doesn't run out of memory
-        if tracer == 'QSO':
+        if tracer == 'QSO' or tracer == 'LRG':
             nproc = 9 #QSO has OOM with all 18
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun2, inds)
