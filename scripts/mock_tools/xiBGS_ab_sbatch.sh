@@ -1,9 +1,11 @@
 #!/bin/bash
+#SBATCH --time=00:30:00
 #SBATCH --qos=debug
 #SBATCH --nodes=1
 #SBATCH --constraint=gpu
 #SBATCH --gpus-per-node=4
 #SBATCH --array=0-24
+#SBATCH --account=desi
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
