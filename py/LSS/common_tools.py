@@ -988,8 +988,8 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
     if '.ran' in fin:
         #seld &= ff['ZPOSSLOC'] == 1
         #print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
-        selp9 = ff['PRIORITY'] == 999999
-        ff['PRIORITY'][selp9] = -999999
+        #selp9 = ff['PRIORITY'] == 999999
+        #ff['PRIORITY'][selp9] = -999999
         seld &= ff['PRIORITY'] <= maxp
         print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
 
