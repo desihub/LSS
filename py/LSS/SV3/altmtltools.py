@@ -12,7 +12,7 @@ import memory_profiler
 from memory_profiler import profile
 
 import desitarget
-from desitarget import io, mtl
+#from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
@@ -392,8 +392,8 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = F
     return altZCat
 
 def checkMTLChanged(MTLFile1, MTLFile2):
-    MTL1 = io.read_mtl_ledger(MTLFile1, unique = True)
-    MTL2 = io.read_mtl_ledger(MTLFile2, unique = True)
+    MTL1 = desitarget.io.read_mtl_ledger(MTLFile1, unique = True)
+    MTL2 = desitarget.io.read_mtl_ledger(MTLFile2, unique = True)
     NDiff = 0
     NDiff2 = 0
     NDiff3 = 0
@@ -911,7 +911,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
 
-        retval = io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+        retval = desitarget.io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
         if debug or verbose:
             log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
         log.info('wrote MTLs to {0}'.format(outputMTLDir))
@@ -1419,7 +1419,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
  
-        althpdirname = io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
+        althpdirname = desitarget.io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
                                      survey=survey, obscon=obscon, ender=form)
         
         altMTLTileTrackerFN = makeTileTrackerFN(altmtldir, survey = survey, obscon = obscon)
@@ -1457,7 +1457,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             elif action['ACTIONTYPE'] == 'reproc':
                 #returns timedict
 
-
+                #raise NotImplementedError('make backup here before reprocessing. Then resume Debugging.')
                 retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
                 if debug or verbose:
                     log.info(f'retval = {retval}')
@@ -1477,7 +1477,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             #log.info('----------')
 
             
-        return althpdirname, altmtltilefn, ztilefn, tiles
+        return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
     """Plots probability that targets were observed among {ndirs} alternate realizations
@@ -1911,9 +1911,9 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
 
     # ADM find the general format for the ledger files in `hpdirname`.
     # ADM also returning the obsconditions.
-    fileform, oc = io.find_mtl_file_format_from_header(hpdirname, returnoc=True)
+    fileform, oc = desitarget.io.find_mtl_file_format_from_header(hpdirname, returnoc=True)
     # ADM also find the format for any associated override ledgers.
-    overrideff = io.find_mtl_file_format_from_header(hpdirname,
+    overrideff = desitarget.io.find_mtl_file_format_from_header(hpdirname,
                                                      forceoverride=True)
 
     # ADM check the obscondition is as expected.
@@ -1939,7 +1939,7 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     theta, phi = np.radians(90-altZCat["DEC"]), np.radians(altZCat["RA"])
     pixnum = hp.ang2pix(nside, theta, phi, nest=True)
     pixnum = list(set(pixnum))
-    targets = io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False)
+    targets = desitarget.io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False)
 
     # ADM remove OVERRIDE entries, which should never need reprocessing.
     targets, _ = desitarget.mtl.remove_overrides(targets)
@@ -2037,7 +2037,7 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
             raise RuntimeError(msg)
 
         # ADM update NUMOBS in the altZCat using previous MTL totals.
-        mii, zii = desitarget.mtl.match(mtl["TARGETID"], altZCatmini["TARGETID"])
+        mii, zii = desitarget.geomask.match(mtl["TARGETID"], altZCatmini["TARGETID"])
         altZCatmini["NUMOBS"][zii] = mtl["NUMOBS"][mii] + 1
 
         # ADM restrict to just objects in the altZCat that match an UNOBS
@@ -2057,16 +2057,20 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
         zmtl = desitarget.mtl.make_mtl(mtl, oc, zcat=altZCatmini, trimtozcat=True, trimcols=True)
 
         # ADM match back to overall merged target list to update states.
-        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zmtl["TARGETID"])
+        mii, zii = desitarget.geomask.match(mtl["TARGETID"], zmtl["TARGETID"])
         # ADM update the overall merged target list.
         for col in mtl.dtype.names:
+            if col.upper() == 'RA':
+                continue
+            elif col.upper() == 'DEC':
+                continue
             mtl[col][mii] = zmtl[col][zii]
         # ADM also update the TIMESTAMP for changes on this tile.
         mtl["TIMESTAMP"][mii] = timestamp
 
         # ADM trimtozcat=True discards BAD observations. Retain these.
         tidmiss = list(set(altZCatmini["TARGETID"]) - set(zmtl["TARGETID"]))
-        tii = desitarget.mtl.match_to(altZCatmini["TARGETID"], tidmiss)
+        tii = desitarget.geomask.match_to(altZCatmini["TARGETID"], tidmiss)
         zbadmiss = altZCatmini[tii]
         # ADM check all of the missing observations are, indeed, bad.
         if np.any(zbadmiss["ZWARN"] & zwarn_mask.mask(Mxbad) == 0):
@@ -2078,10 +2082,14 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
                  .format(len(zbadmiss), time()-t0))
 
         # ADM update redshift information in MTL for bad observations.
-        mii, zii = desitarget.mtl.match(mtl["TARGETID"], zbadmiss["TARGETID"])
+        mii, zii = desitarget.geomask.match(mtl["TARGETID"], zbadmiss["TARGETID"])
         # ADM update the overall merged target list.
         # ADM Never update NUMOBS or NUMOBS_MORE using bad observations.
-        for col in set(zbadmiss.dtype.names) - set(["NUMOBS", "NUMOBS_MORE"]):
+        for col in set(zbadmiss.dtype.names) - set(["NUMOBS", "NUMOBS_MORE", "RA", "DEC"]):
+            if col.upper() == 'RA':
+                continue
+            elif col.upper() == 'DEC':
+                continue
             mtl[col][mii] = zbadmiss[col][zii]
         # ADM also update the TIMESTAMP for changes on this tile.
         mtl["TIMESTAMP"][mii] = timestamp
