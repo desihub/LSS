@@ -455,8 +455,6 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
             jack_positions = [np.concatenate([p1, p2], axis=0) for p1, p2 in zip(jack_positions, data_positions2)]
 
     if njack >= 2:
-        print('jack_positions')
-        print(jack_positions)
         subsampler = KMeansSubsampler('angular', positions=jack_positions, nsamples=njack, nside=512, random_state=42, position_type='rdd',
                                       dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
