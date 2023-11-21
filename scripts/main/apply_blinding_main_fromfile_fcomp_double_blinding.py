@@ -289,11 +289,21 @@ if root:
             regl = ['_NGC','_SGC']
             for reg in regl:
                 dl.append(fitsio.read(dirin_blind + type + notqso+reg+'_clustering.dat.fits'))  
-                data = np.concatenate(dl)
+                data = Table(np.concatenate(dl))
                 if 'PHOTSYS' not in list(data.dtype.names):
-                    data = common.addNS(Table(data))
+                    data = common.addNS(data)
         else:
-            data = fitsio.read(data_clus_fn)
+            data = Table(fitsio.read(data_clus_fn))
+        
+        #redo 'WEIGHT' column because of completeness factorization (applied back later if FKP option is chosen)
+        cols = list(data.dtype.names)
+        if 'WEIGHT_SYS' not in cols:
+            if args.wsyscol is not None:
+                fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
+            else:
+                print('did not find WEIGHT_SYS, putting it in as all 1')
+                fd['WEIGHT_SYS'] = np.ones(len(fd))
+        data['WEIGHT'] = data['WEIGHT_COMP']*data['WEIGHT_ZFAIL']*data['WEIGHT_SYS']
         #cl = gcl
         #for reg in cl:
         #    fnd = fcd_in.format(reg)
@@ -323,13 +333,6 @@ if root:
         # ratio_nz = nz_in / nz_out
 
         fd = Table(fitsio.read(outf))
-        cols = list(fd.dtype.names)
-        if 'WEIGHT_SYS' not in cols:
-            if args.wsyscol is not None:
-                fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
-            else:
-                print('did not find WEIGHT_SYS, putting it in as all 1')
-                fd['WEIGHT_SYS'] = np.ones(len(fd))
         zl = fd['Z']
         zr = zl > zmin
         zr &= zl < zmax
