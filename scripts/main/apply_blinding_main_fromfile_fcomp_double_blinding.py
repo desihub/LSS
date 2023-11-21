@@ -365,6 +365,9 @@ if root:
             for reg in regl:
                 dl.append(fitsio.read(dirout + type + notqso+reg+'_clustering.dat.fits'))  
                 dtot = np.concatenate(dl)
+                if 'PHOTSYS' not in list(dtot.dtype.names):
+                    dtot = common.addNS(dtot)
+                
                 clus_arrays = [dtot]  
         else:
             clus_arrays = [fitsio.read(data_clus_fn)]
