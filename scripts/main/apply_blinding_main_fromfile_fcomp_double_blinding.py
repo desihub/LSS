@@ -250,7 +250,7 @@ if root:
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = dirin +'BGS_BRIGHT'
     #fcr_in = fbr_in +'{}_0_clustering.ran.fits'
-    fcd_in = dirin_blinded+ type + notqso+ '{}_clustering.dat.fits'
+    fcd_in = dirin_blind+ type + notqso+ '{}_clustering.dat.fits'
     print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
