@@ -357,7 +357,16 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-        clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+        data_clus_fn = dirout + type + notqso+'_clustering.dat.fits'
+        if os.path.isfile(data_clus_fn) == False:
+            dl = []
+            regl = ['_NGC','_SGC']
+            for reg in regl:
+                dl.append(fitsio.read(dirout + type + notqso+reg+'_clustering.dat.fits'))  
+                dtot = np.concatenate(dl)
+                clus_arrays = [dtot]  
+        else:
+            clus_arrays = [fitsio.read(data_clus_fn)]
         #for reg in ['N','S']:
         #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         
