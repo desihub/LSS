@@ -153,6 +153,7 @@ if 'mock' not in args.verspec:
     ldirspec = maindir+specrel+'/'
 
     dirin = ldirspec+'LSScats/'+version+'/'
+    dirin_blind = ldirspec+'LSScats/'+version+'/blinded/'
     LSSdir = ldirspec+'LSScats/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
@@ -169,7 +170,7 @@ elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/
 else:
     sys.exit('verspec '+args.verspec+' not supported')
 
-dirout = args.basedir_out + '/LSScats/' + version + '/'
+dirout = args.basedir_out + '/LSScats/' + version + '/doubleblinded/'
 
 def mkdir(dirname):
     """Try to create ``dirname`` and catch :class:`OSError`."""
@@ -248,8 +249,8 @@ if root:
     fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = dirin +'BGS_BRIGHT'
-    fcr_in = fbr_in +'{}_0_clustering.ran.fits'
-    fcd_in = fb_in + '{}_clustering.dat.fits'
+    #fcr_in = fbr_in +'{}_0_clustering.ran.fits'
+    fcd_in = dirin_blinded+ type + notqso+ '{}_clustering.dat.fits'
     print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
