@@ -222,6 +222,8 @@ for tracer in tracers:
         zmin = 0.4
         zmax = 1.1
         subfrac = 0.958 #fudge factor to get number density correct
+        if args.mockver == 'EZmock/FFA':
+            subfrac = 0.96
 
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
@@ -236,6 +238,8 @@ for tracer in tracers:
         zmin = 0.8
         zmax = 2.1
         subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
+        if args.mockver == 'EZmock/FFA':
+            subfrac = 0.66
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
