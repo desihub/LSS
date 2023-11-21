@@ -290,7 +290,7 @@ if root:
             for reg in regl:
                 dl.append(fitsio.read(dirin_blind + type + notqso+reg+'_clustering.dat.fits'))  
                 data = np.concatenate(dl)
-                if 'PHOTSYS' not in list(dtot.dtype.names):
+                if 'PHOTSYS' not in list(data.dtype.names):
                     data = common.addNS(Table(data))
         else:
             data = fitsio.read(data_clus_fn)
