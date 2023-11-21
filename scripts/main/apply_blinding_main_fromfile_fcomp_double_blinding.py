@@ -366,7 +366,7 @@ if root:
                 dl.append(fitsio.read(dirout + type + notqso+reg+'_clustering.dat.fits'))  
                 dtot = np.concatenate(dl)
                 if 'PHOTSYS' not in list(dtot.dtype.names):
-                    dtot = common.addNS(Table(dtot)
+                    dtot = common.addNS(Table(dtot))
                 
                 clus_arrays = [dtot]  
         else:
