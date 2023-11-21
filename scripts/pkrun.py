@@ -131,8 +131,6 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         if mpicomm.rank == mpiroot:
             window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
             # Let us compute the wide-angle and window function matrix
-            kout = result.k # output k-bins
-            ellsout = [0, 2, 4] # output multipoles
             ellsin = [0, 2, 4] # input (theory) multipoles
             wa_orders = 1 # wide-angle order
             sep = np.geomspace(1e-4, 2e4, 1024*16) # configuration space separation for FFTlog, 2e4 > sqrt(3) * 8000
@@ -142,7 +140,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
             # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
             projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
             # Window matrix
-            wmatrix = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
+            wmatrix = PowerSpectrumSmoothWindowMatrix(result, projsin=projsin, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
             # We resum over theory odd-wide angle
             wmatrix.resum_input_odd_wide_angle()
 
