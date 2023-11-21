@@ -73,7 +73,7 @@ parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
-parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 #parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='GC')
 
 #parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
