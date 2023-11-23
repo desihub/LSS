@@ -30,6 +30,7 @@ parser.add_argument('-v', '--version', default='none', required=False)
 parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
 parser.add_argument( '--cat_type', default='targets')#, choices=['targets','ran','obielg','Ab2ndgen'],required=False)
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
+parser.add_argument( '--secgen_ver', default=None, required=False)
 
 args = parser.parse_args()
 
@@ -43,7 +44,10 @@ if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_'+args.tracer+'_imask.fits'
 if args.cat_type == 'Ab2ndgen':
-    mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/'
+    if args.secgen_ver is None:
+        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/'
+    else:
+        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/%s/' %  args.secgen_ver
     input_path = mockdir+'forFA'+args.input+'.fits'
     output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
 if args.cat_type == 'Y1EZmock':
