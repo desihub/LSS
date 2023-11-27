@@ -421,7 +421,7 @@ if args.add_sysnet == 'y':
 
         common.write_LSS(dd,fcd)#,comments)
 
-if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys_ran:
+if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys_ran == 'y':
     if args.add_regressis_ran == 'y':
         wtcol = 'WEIGHT_RF'
     if args.add_sysnet_ran == 'y':
