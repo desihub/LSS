@@ -169,7 +169,7 @@ if args.imsys == 'y':
     #dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     #dat = np.concatenate((datn,dats))
     #dat = common.addNS(Table(dat))
-    dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
+    dat = Table(fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits')))
     print(len(dat))
     ranl = []
     for i in range(0,1):
@@ -182,8 +182,6 @@ if args.imsys == 'y':
     rands = np.concatenate(ranl)
     print(len(rands))
     regl = ['N','S']
-    for reg in regl:
-        print(reg)
 
 
     syscol = 'WEIGHT_IMLIN'
