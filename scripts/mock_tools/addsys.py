@@ -158,11 +158,13 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y':
 dirout = mockdir
 lssmapdirout = datadir+'/hpmaps/'
 
+print(args.imsys)
+
 if args.imsys == 'y':
     from LSS.imaging import densvar
     use_maps = fit_maps
        
-
+    print('in imsys loop')
     #datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
     #dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     #dat = np.concatenate((datn,dats))
