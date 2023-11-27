@@ -187,7 +187,7 @@ def get_imlin(realization):
 
     if args.add_imsys_ran == 'y':
         regl = ['NGC','SGC']
-        if args.add_imsys_ran == 'y':
+        
         wtcol = 'WEIGHT_IMLIN'
         fb = dirout+tp
         fcdn = fitsio.read(fb.replace('global','dvs_ro')+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
