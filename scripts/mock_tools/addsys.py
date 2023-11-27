@@ -187,6 +187,7 @@ if args.imsys == 'y':
     regl = ['N','S']
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
+        print(reg)
         pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
@@ -199,7 +200,7 @@ if args.imsys == 'y':
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
         #seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
-
+        print(zrl)
         for zr in zrl:
             zmin = zr[0]
             zmax = zr[1]
