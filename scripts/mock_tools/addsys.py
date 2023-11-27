@@ -179,6 +179,7 @@ if args.imsys == 'y':
         ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])
         ranl.append(ran)
     rands = np.concatenate(ranl)
+    print(len(rands))
     regl = ['N','S']
 
 
