@@ -27,8 +27,8 @@ else:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--min_real", help="minimum number for mock realization",default=0)
-parser.add_argument("--max_real", help="maximum (+1) for mock realization",default=25) 
+parser.add_argument("--min_real", help="minimum number for mock realization",default=0,type=int)
+parser.add_argument("--max_real", help="maximum (+1) for mock realization",default=25,type=int) 
 
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
