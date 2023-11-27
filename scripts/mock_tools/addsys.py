@@ -169,7 +169,7 @@ if args.imsys == 'y':
     #dat = common.addNS(Table(dat))
     dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
     ranl = []
-    for i in range(0,18):
+    for i in range(0,1):
         #rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
         #rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
         #ran = np.concatenate((rann,rans))
