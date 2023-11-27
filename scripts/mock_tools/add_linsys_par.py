@@ -129,9 +129,9 @@ lssmapdirout = datadir+'/hpmaps/'
 print(args.imsys)
 
 def get_imlin(realization):
-	mockdir = args.base_dir+'mock'+str(args.realization)+'/'
-	if args.mockcatver is not None:
-		mockdir += args.mockcatver+'/'
+    mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+    if args.mockcatver is not None:
+        mockdir += args.mockcatver+'/'
 
     from LSS.imaging import densvar
     use_maps = fit_maps
@@ -185,46 +185,46 @@ def get_imlin(realization):
 
 
 
-	if args.add_imsys_ran == 'y':
-	    regl = ['NGC','SGC']
-		if args.add_imsys_ran == 'y':
-		wtcol = 'WEIGHT_IMLIN'
-		fb = dirout+tp
-		fcdn = fitsio.read(fb.replace('global','dvs_ro')+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
-		fcds = fitsio.read(fb.replace('global','dvs_ro')+'_SGC_clustering.dat.fits',columns=['TARGETID',wtcol])
-		indata = Table(np.concatenate((fcdn,fcds)))
-		indata.rename_column('TARGETID', 'TARGETID_DATA')
+    if args.add_imsys_ran == 'y':
+        regl = ['NGC','SGC']
+        if args.add_imsys_ran == 'y':
+        wtcol = 'WEIGHT_IMLIN'
+        fb = dirout+tp
+        fcdn = fitsio.read(fb.replace('global','dvs_ro')+'_NGC_clustering.dat.fits',columns=['TARGETID',wtcol])
+        fcds = fitsio.read(fb.replace('global','dvs_ro')+'_SGC_clustering.dat.fits',columns=['TARGETID',wtcol])
+        indata = Table(np.concatenate((fcdn,fcds)))
+        indata.rename_column('TARGETID', 'TARGETID_DATA')
 
-		def addrancol(rn):
-			for reg in regl:
-				fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
-				cd = Table(fitsio.read(fname.replace('global','dvs_ro')))
-				cols2rem = [wtcol,wtcol+'_1',wtcol+'_2']
-				for col in cols2rem:
-					if col in list(cd.dtype.names):
-						cd.remove_column(col)
-				cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
-				common.write_LSS(cd,fname)
-	
-		if args.par == 'n':
-			for rn in range(rm,rx):
-				addrancol(rn)
-		if args.par == 'y':
-			nproc = 9
-			nran = rx-rm
-			inds = np.arange(nran)
-			from multiprocessing import Pool
-			with Pool(processes=nproc) as pool:
-				res = pool.map(addrancol, inds)
+        def addrancol(rn):
+            for reg in regl:
+                fname = dirout+tp+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+                cd = Table(fitsio.read(fname.replace('global','dvs_ro')))
+                cols2rem = [wtcol,wtcol+'_1',wtcol+'_2']
+                for col in cols2rem:
+                    if col in list(cd.dtype.names):
+                        cd.remove_column(col)
+                cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+                common.write_LSS(cd,fname)
+    
+        if args.par == 'n':
+            for rn in range(rm,rx):
+                addrancol(rn)
+        if args.par == 'y':
+            nproc = 9
+            nran = rx-rm
+            inds = np.arange(nran)
+            from multiprocessing import Pool
+            with Pool(processes=nproc) as pool:
+                res = pool.map(addrancol, inds)
 
 if __name__ == '__main__':
-	from multiprocessing import Pool
-	from desitarget.internal import sharedmem
-	import sys
-	inds = []
-	for i in range(args.min_real,args.max_real):
-		inds.append(i)
-	pool = sharedmem.MapReduce()
-	with pool:
-		pool.map(get_imlin,inds)#,reduce=reduce)
+    from multiprocessing import Pool
+    from desitarget.internal import sharedmem
+    import sys
+    inds = []
+    for i in range(args.min_real,args.max_real):
+        inds.append(i)
+    pool = sharedmem.MapReduce()
+    with pool:
+        pool.map(get_imlin,inds)#,reduce=reduce)
 
