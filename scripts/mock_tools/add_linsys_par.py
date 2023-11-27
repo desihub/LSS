@@ -126,8 +126,6 @@ debv = common.get_debv()
 
 lssmapdirout = datadir+'/hpmaps/'
 
-print(args.imsys)
-
 def get_imlin(realization):
     mockdir = args.base_dir+'mock'+str(args.realization)+'/'
     if args.mockcatver is not None:
