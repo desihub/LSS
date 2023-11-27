@@ -182,10 +182,12 @@ if args.imsys == 'y':
     rands = np.concatenate(ranl)
     print(len(rands))
     regl = ['N','S']
+    for reg in regl:
+        print(reg)
 
 
     syscol = 'WEIGHT_IMLIN'
-    regl = ['N','S']
+    
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
         print(reg)
