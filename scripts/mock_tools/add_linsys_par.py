@@ -123,7 +123,7 @@ def splitGC_wo(flroot,datran='.dat',rann=0):
 debv = common.get_debv()
     
 
-dirout = mockdir
+
 lssmapdirout = datadir+'/hpmaps/'
 
 print(args.imsys)
@@ -132,7 +132,7 @@ def get_imlin(realization):
     mockdir = args.base_dir+'mock'+str(args.realization)+'/'
     if args.mockcatver is not None:
         mockdir += args.mockcatver+'/'
-
+    dirout = mockdir
     from LSS.imaging import densvar
     use_maps = fit_maps
        
