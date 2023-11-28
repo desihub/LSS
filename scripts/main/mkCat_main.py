@@ -76,7 +76,7 @@ parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for 
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
-
+parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -103,7 +103,7 @@ parser.add_argument("--readpars",help="set to y for certain steps if you want to
 
 
 #options not typically wanted
-parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+
 parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
 parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
