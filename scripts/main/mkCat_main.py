@@ -728,8 +728,13 @@ if args.prepsysnet == 'y':
 
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
+            if args.use_allsky_rands == 'y':
+                selr_all = allsky_rands['PHOTSYS'] == reg
+                allrands = allsky_rands[selr_all]
+            else:
+                allrands = None
         
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allsky_rands, 
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fit_maps,wtmd='fracz',tp=args.type[:3])
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
