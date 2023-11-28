@@ -547,8 +547,8 @@ class model_ssr:
             self.consl = consl
             self.mfl = mfl
             
-        print('time for hist_norm',time.time()-t0)
-        print('costt',costt)
+        #print('time for hist_norm',time.time()-t0)
+        #print('costt',costt)
         return costt    
         
     
