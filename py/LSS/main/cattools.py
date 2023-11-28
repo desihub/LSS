@@ -3186,7 +3186,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
  
 
 
-def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
+def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmapcut'):
     import LSS.common_tools as common
     from LSS import ssr_tools_new
     '''
@@ -3199,14 +3199,14 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
 
     '''
     
-    ff = Table.read(indir+tp+'_full.dat.fits')
+    ff = Table.read(indir+tp+'_full'+hpmapcut+'.dat.fits')
     cols = list(ff.dtype.names)
     if 'Z' in cols:
         #print('Z column already in full file')
     #else:
         #ff['Z_not4clus'].name = 'Z'
         ff['Z'].name = 'Z_not4clus'
-        common.write_LSS(ff,indir+tp+'_full.dat.fits',comments='changed Z column back to Z_not4clus')
+        common.write_LSS(ff,indir+tp+'_full'+hpmapcut+'.dat.fits',comments='changed Z column back to Z_not4clus')
 
     #selobs = ff['ZWARN'] == 0
     selobs = ff['ZWARN']*0 == 0
@@ -3286,7 +3286,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
         #s = 1
     
     if tp == 'BGS_BRIGHT-21.5':
-        fullname = indir+tp+'_full.dat.fits'
+        fullname = indir+tp+'_full'+hpmapcut+'.dat.fits'
     else:
         fullname = indir+tp+'_full_noveto.dat.fits'
     ff = Table.read(fullname)
@@ -3331,17 +3331,17 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False):
             ffc.remove_columns(['mod_success_rate'])
         ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
         common.write_LSS(ffc,indir+tp+'_full.dat.fits')#,comments='added ZFAIL weight')
-    fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
-    if os.path.isfile(fname_mapveto):
-        ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
-        ffc = Table.read(fname_mapveto)
-        cols = list(ffc.dtype.names)
-        if 'WEIGHT_ZFAIL' in cols:
-            ffc.remove_columns(['WEIGHT_ZFAIL'])
-        if 'mod_success_rate' in cols:
-            ffc.remove_columns(['mod_success_rate'])
-        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-        common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
+        fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
+        if os.path.isfile(fname_mapveto):
+            ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+            ffc = Table.read(fname_mapveto)
+            cols = list(ffc.dtype.names)
+            if 'WEIGHT_ZFAIL' in cols:
+                ffc.remove_columns(['WEIGHT_ZFAIL'])
+            if 'mod_success_rate' in cols:
+                ffc.remove_columns(['mod_success_rate'])
+            ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+            common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
     
     
 #     if dchi2 is not None:
