@@ -337,10 +337,12 @@ class model_ssr:
         else:
             if tracer == 'LRG':
                self.fluxfittype = 'piecewise'
+               print('about to do linear fit for flux dependence')
                rest = minimize(lambda params: self.hist_norm(params, fluxfittype='linear'), [2,self.mft],method='Powell')
                fcoeff_start, piv_start = rest.x
                #if reg == 'N':
                #print('reg',reg)
+               print('linear fit done, now doing piecewise')
                rest = minimize(lambda params: self.hist_norm(params, fluxfittype=self.fluxfittype), [fcoeff_start, piv_start, 3],method='Powell')
                #elif reg == 'S':
                #    print('reg',reg)
@@ -350,6 +352,7 @@ class model_ssr:
                fcoeff,piv,C = rest.x
                self.vis_5hist = True
                chi2 = self.hist_norm([fcoeff,piv,C],fluxfittype=self.fluxfittype)
+               print('results and chi2:')
                print(fcoeff,piv,C,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
                fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
                fo.write('#'+self.band+'flux fit\n')
@@ -360,12 +363,14 @@ class model_ssr:
                fo.close()
             else:
                self.fluxfittype = 'linear'
+               print('about to do linear fit for flux dependence')
                rest = minimize(lambda params: self.hist_norm(params, fluxfittype=self.fluxfittype), [2,self.mft],method='Powell')
                #rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
                fcoeff,piv = rest.x
                self.vis_5hist = True
                chi2 = self.hist_norm([fcoeff,piv],fluxfittype=self.fluxfittype)
+               print('results and chi2:')
                print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
                fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
                fo.write('#'+self.band+'flux fit\n')
@@ -468,8 +473,8 @@ class model_ssr:
     def hist_norm(self,params,fluxfittype='linear',outfn='test.png'):
         if (fluxfittype != 'linear') and (fluxfittype != 'piecewise'):
             print('ERROR, fluxfittype must be either linear or piecewise')
-        print('call to hist norm, params',params)
-        print('len of mod.cat',len(self.cat['FIBERFLUX_'+self.band+'_EC']))
+        #print('call to hist norm, params',params)
+        #print('len of mod.cat',len(self.cat['FIBERFLUX_'+self.band+'_EC']))
         t0 = time.time()
         nzfper = []
         consl = []
@@ -525,7 +530,7 @@ class model_ssr:
             cost = ccost(bc)
             consl.append(bc[0])
             costt += cost
-            print('cost',cost)
+            #print('cost',cost)
         if self.vis_5hist:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
