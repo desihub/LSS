@@ -50,6 +50,9 @@ parser.add_argument("--add_regressis_ext",help="add RF weights for imaging syste
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
 
+#AJRM 
+parser.add_argument("--mockcatver", help="catalog version",default=None)
+parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -224,6 +227,7 @@ if args.imsys == 'y':
 
 
 if args.prepsysnet == 'y':
+    nran = 18
     #logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
@@ -237,14 +241,26 @@ if args.prepsysnet == 'y':
     #dat = common.addNS(Table(dat))
     dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
     ranl = []
-    for i in range(0,18):
+    for i in range(0,nran):
+        print(f"reading randoms {i+1}/{nran}")
         #rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
         #rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
         #ran = np.concatenate((rann,rans))
         #ran = common.addNS(Table(ran))
-        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP'])        
+        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])        
         ranl.append(ran)
     rands = np.concatenate(ranl)
+    
+    if args.use_allsky_rands == 'y':
+        print('using randoms allsky for frac_area')
+        ranl = []
+        randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        for i in range(0,nran):
+            print(f"reading allsky randoms {i+1}/{nran}")
+            ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
+            ranl.append(ran)
+        allsky_rands = np.concatenate(ranl)
+        
     regl = ['N','S']
     
     for zl in zrl:
@@ -265,8 +281,13 @@ if args.prepsysnet == 'y':
 
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
+            if args.use_allsky_rands == 'y':
+                selr_all = allsky_rands['PHOTSYS'] == reg
+                allrands = allsky_rands[selr_all]
+            else:
+                allrands = None
         
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, allsky_rands=allrands, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
                     nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
@@ -401,8 +422,12 @@ if args.add_sysnet == 'y':
                     zw = str(zl[0])+'_'+str(zl[1])
                 sn_weights = fitsio.read(dirout+'/sysnet/'+tp+zw+'_'+reg+'/nn-weights.fits')
                 pred_counts = np.mean(sn_weights['weight'],axis=1)
-                pix_weight = np.mean(pred_counts)/pred_counts
+                #pix_weight = np.mean(pred_counts)/pred_counts
+                #pix_weight = np.clip(pix_weight,0.5,2.)
+                pix_weight = 1./pred_counts
+                pix_weight = pix_weight / np.mean(pix_weight)
                 pix_weight = np.clip(pix_weight,0.5,2.)
+                print(pix_weight.min(),pix_weight.max(),pix_weight.mean())
                 sn_pix = sn_weights['hpix']
                 hpmap = np.ones(12*256*256)
                 for pix,wt in zip(sn_pix,pix_weight):
