@@ -107,6 +107,8 @@ parser.add_argument("--readpars",help="set to y for certain steps if you want to
 parser.add_argument("--ran_utlid", help="cut randoms so that they only have 1 entry per tilelocid",default='n')
 parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts?",default='n')
 
+#AJRM 
+parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -470,9 +472,6 @@ if args.add_tlcomp == 'y':
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun, inds)
 
-    
-        
-
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','WEIGHT_SN','WEIGHT_RF','TARGETID_DATA']#,'WEIGHT_FKP']#,'WEIGHT_RF']
 if type[:3] == 'BGS':
     fcols = ['G','R','Z','W1','W2']
@@ -690,6 +689,18 @@ if args.prepsysnet == 'y':
         print('made '+dirout+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
+    
+    allsky_rands = None
+    if args.use_allsky_rands == 'y':
+        print('using randoms allsky for frac_area')
+        ranl = []
+        randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        for i in range(0,18):
+            print(f"reading allsky randoms {i+1}/18")
+            ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
+            ranl.append(ran)
+        allsky_rands = np.concatenate(ranl)
+    
     #_HPmapcut'
     dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
@@ -718,8 +729,9 @@ if args.prepsysnet == 'y':
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
         
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allsky_rands, 
+                                                  zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
+                                                  columns=fit_maps,wtmd='fracz',tp=args.type[:3])
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 
@@ -904,7 +916,10 @@ if args.add_sysnet == 'y':
                 zw = str(zl[0])+'_'+str(zl[1])
             sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
-            pix_weight = np.mean(pred_counts)/pred_counts
+            #pix_weight = np.mean(pred_counts)/pred_counts
+            #pix_weight = np.clip(pix_weight,0.5,2.)
+            pix_weight = 1./pred_counts
+            pix_weight = pix_weight / pix_weight.mean()
             pix_weight = np.clip(pix_weight,0.5,2.)
             sn_pix = sn_weights['hpix']
             hpmap = np.ones(12*256*256)
