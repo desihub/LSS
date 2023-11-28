@@ -18,7 +18,7 @@ import LSS.common_tools as common
 bands = ['R','G','Z']
 maps_dr9 = ['EBV','STARDENS'] + [f'GALDEPTH_{b}' for b in bands] + [f'PSFSIZE_{b}' for b in bands]
 
-def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran_exp=None,
+def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran_exp=None,
                 nside=256, nest=True, use_obiwan=False, columns=maps_dr9,wtmd='fracz',tp='ELG'):
     logger = logging.getLogger('prep4sysnet')
     #if zcolumn == 'Z_not4clus':
@@ -50,16 +50,24 @@ def prep4sysnet(data, rands, sys, zcolumn='Z_not4clus', zmin=0.6, zmax=1.6, nran
     weights *= wts
     if use_obiwan:
         weights *= data['OBI_WEIGHT']#ut.get_nn_weights(data, run, zmin, zmax, nside, hpix=None, version=version)
-        
-    data_hpmap, rands_hpmap = hpixelize(nside, data, rands, weights=weights, weights_ran=weights_ran,nest=False, return_mask=False, nest2ring=False) 
     
     hpmaps = create_sysmaps(sys, nest=nest, columns=columns)
+    
+    if allsky_rands is None:
+        data_hpmap, rands_hpmap = hpixelize(nside, data, rands, weights=weights, weights_ran=weights_ran,nest=False,
+                                            return_mask=False, nest2ring=False) 
+        prep_table = hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, fracmd='old', nran_exp=nran_exp)
+    else: 
+        data_hpmap  = hpixsum(nside,data['RA'],data['DEC'],weights=weights,nest=False,nest2ring=False)
+        rands_hpmap = hpixsum(nside,rands['RA'],rands['DEC'],nest=False,nest2ring=False)
+        all_rands_hpmap = hpixsum(nside,allsky_rands['RA'],allsky_rands['DEC'],nest=False,nest2ring=False)
+        frac_area_hpmap = rands_hpmap / all_rands_hpmap
         
-    prep_table = hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=nran_exp)
+        prep_table = hpdataset(data_hpmap, frac_area_hpmap, hpmaps, columns, fracmd='new',nran_exp=None)
     
     return prep_table
     
-def hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=None, frac_min=0.0):
+def hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=None, frac_min=0.0,fracmd='old'):
     logger = logging.getLogger('hpdataset')
 
     features = hpmaps[columns].values
@@ -68,13 +76,17 @@ def hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, nran_exp=None, frac_min=
     for i,col in enumerate(columns):
         seen_mask &= is_seen[:,i]
         
-    if nran_exp is None:
-        nran_exp = np.mean(rands_hpmap[rands_hpmap>0])
-    print(f'nran_exp: {nran_exp}')
-    logger.info(f'nran_exp: {nran_exp}')
-    frac = rands_hpmap / nran_exp
+    if fracmd == 'old':
+        if nran_exp is None:
+            nran_exp = np.mean(rands_hpmap[rands_hpmap>0])
+        print(f'nran_exp: {nran_exp}')
+        logger.info(f'nran_exp: {nran_exp}')
+        frac = rands_hpmap / nran_exp
+    if fracmd == 'new':
+        # this method assumes that rands_hpmap is already a healpix map of 
+        # the fractional area of each pixel
+        frac = rands_hpmap
     frac_mask = frac > frac_min
-    
     mask = frac_mask & seen_mask
     hpix = np.argwhere(mask).flatten()
         
