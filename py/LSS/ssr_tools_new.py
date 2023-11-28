@@ -289,6 +289,7 @@ class model_ssr:
             fo.write(str(chi2)+'\n')
             fo.close()
         self.pars = pars
+        plt.clf()
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
         plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
@@ -296,7 +297,7 @@ class model_ssr:
         plt.xlabel('TSNR2_'+tracer)
         plt.legend()
         plt.savefig(self.outdir+outfn_root+rw+'overall_failratefit.png')        
-        plt.show()
+        #plt.show()
         plt.clf()
         #fit to fiberflux trend
         print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+tracer])
@@ -351,7 +352,7 @@ class model_ssr:
                #method='Powell', tol=1e-6)
                fcoeff,piv,C = rest.x
                self.vis_5hist = True
-               chi2 = self.hist_norm([fcoeff,piv,C],fluxfittype=self.fluxfittype)
+               chi2 = self.hist_norm([fcoeff,piv,C],fluxfittype=self.fluxfittype,outfn=outfn_root+rw+'5histfit.png')
                print('results and chi2:')
                print(fcoeff,piv,C,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
                fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
@@ -369,7 +370,7 @@ class model_ssr:
                #method='Powell', tol=1e-6)
                fcoeff,piv = rest.x
                self.vis_5hist = True
-               chi2 = self.hist_norm([fcoeff,piv],fluxfittype=self.fluxfittype)
+               chi2 = self.hist_norm([fcoeff,piv],fluxfittype=self.fluxfittype,outfn=outfn_root+rw+'5histfit.png')
                print('results and chi2:')
                print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
                fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
@@ -442,7 +443,8 @@ class model_ssr:
             plt.plot(self.mfl,self.flux_mod(self.mfl),'r--')
             plt.plot(self.flux_vals,self.ssr_flux,'ko')
             plt.plot(self.flux_vals,self.flux_mod(self.flux_vals),'k-')
-            plt.show()
+            plt.savefig(self.outdir+outfn_root+rw+'flux_dep.png') 
+            #plt.show()
            
             
         
@@ -538,9 +540,10 @@ class model_ssr:
             plt.ylabel(self.outfn_root+' Z success rate, in fiber bins')
             plt.xlabel('TSNR2_'+self.tracer)
             plt.legend()
-            plt.savefig(self.outdir+outfn)        
+            plt.savefig(self.outdir+outfn)
+            plt.clf()        
 
-            plt.show()
+            #plt.show()
             self.consl = consl
             self.mfl = mfl
             
