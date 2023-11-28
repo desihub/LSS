@@ -41,7 +41,7 @@ outdir = outdir.replace('dvs_ro','global')
 print('writing to '+outdir)
 
 if not os.path.exists(outdir):
-    os.makdirs(outdir)
+    os.makedirs(outdir)
 
 
 zcol = 'Z_not4clus'
