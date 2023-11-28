@@ -169,7 +169,7 @@ def get_imlin(realization):
             zmax = zr[1]
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wtcomp',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wt_comp',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
     fname = os.path.join(dirout, tp+'_clustering.dat.fits')
