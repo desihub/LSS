@@ -137,7 +137,7 @@ nbin = 10
 def get_pix(ra, dec):
     return hp.ang2pix(nside, np.radians(-dec+90), np.radians(ra), nest=nest)
     
-def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),desnorm=False):
+def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),desnorm=False,meancomp=1):
 #     from regressis import footprint
 #     foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
 #     north, south, des = foot.get_imaging_surveys()
@@ -188,7 +188,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     normw = sum(rh)/sum(dhw)
     svw = dhw/rh*normw
 
-    meancomp = np.mean(1/dcomp)#np.mean(dt_reg['FRACZ_TILELOCID'])
+    #meancomp = np.mean(1/dcomp)#np.mean(dt_reg['FRACZ_TILELOCID'])
     ep = np.sqrt(dh/meancomp)/rh*norm #put in mean completeness factor to account for completeness weighting
     
     chi2 = np.sum((svw-1)**2./ep**2.)
@@ -384,6 +384,8 @@ def main(mockn):
                 nmaptot = 0
 
                 dcomp = dt_reg['WEIGHT']
+                meancomp = np.mean(1/dcomp)
+                print('mean comp is '+str(meancomp))
                 dpix = get_pix(dt_reg['RA'],dt_reg['DEC'])
                 rpix = get_pix(rt_reg['RA'],rt_reg['DEC'])
 
@@ -457,7 +459,7 @@ def main(mockn):
                     parv = sag
                     mp = 'sagstream'
                     fig = plt.figure()
-                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,titl=args.survey+' '+tp+zr+' '+reg,xlab=mp,yl=yl,desnorm=desnorm,meancomp =meancomp)
                     chi2tot += chi2
                     nmaptot += 1
                     figs.append(fig)
@@ -469,7 +471,7 @@ def main(mockn):
                     parv = lrg_mask_frac
                     mp = 'fraction of area in LRG mask'
                 
-                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm,meancomp =meancomp)
                     figs.append(fig)
                     chi2tot += chi2
                     nmaptot += 1
@@ -480,7 +482,7 @@ def main(mockn):
                     parv = sky_g
                     mp = 'g_sky_res'
                 
-                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm,meancomp =meancomp)
                     figs.append(fig)
                     chi2tot += chi2
                     nmaptot += 1
@@ -497,7 +499,7 @@ def main(mockn):
                     parv = m1-m2
                     parv[sel] = hp.UNSEEN
                     mp = map_pair[0]+' - '+map_pair[1]
-                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm,meancomp =meancomp)
                     chi2tot += chi2
                     nmaptot += 1
 
@@ -513,7 +515,7 @@ def main(mockn):
                     #print(mp)
                 
                     if reg == 'S' or mp[:5] != 'CALIB':
-                        chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                        chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm,meancomp =meancomp)
                         chi2tot += chi2
                         nmaptot += 1
                         figs.append(fig)
@@ -534,7 +536,7 @@ def main(mockn):
                         debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
                         parv = debv
                         fig = plt.figure()
-                        chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                        chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm,meancomp =meancomp)
                         figs.append(fig)
                         if args.mapmd == 'validate':
                             fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+' '+str(chi2nw)+'\n')
