@@ -140,3 +140,23 @@ srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp 
 #get unblinded clustering catalogs, first in total (with proper resampling within regions) then split into separate NGC, SGC catalogs
 python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --splitGC y --nz y --par n 
 
+#step run to get v1 catalogs
+
+#copy existing v0.6 full catalogs
+cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/*full* /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1/
+
+#replace zfail weights
+#LRG and QSO run in cosmodesi environment
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+(ELG requires desispec, so source /global/common/software/desi/desi_environment.sh main and redo LSS environment)
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+
+#copy maps over
+mkdir /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1/hpmaps
+cp /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v0.6/hpmaps/* /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1/hpmaps/
+
+#linear systematic weights 
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
