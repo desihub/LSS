@@ -3171,6 +3171,18 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
         ffc.remove_columns(['mod_success_rate'])
     ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
     common.write_LSS(ffc,outdir+tp+'_full.dat.fits',comments='added ZFAIL weight')
+
+    fname_mapveto = outdir+tp+'_full_HPmapcut.dat.fits'
+    if os.path.isfile(fname_mapveto):
+        ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
+        ffc = Table.read(fname_mapveto)
+        cols = list(ffc.dtype.names)
+        if 'WEIGHT_ZFAIL' in cols:
+            ffc.remove_columns(['WEIGHT_ZFAIL'])
+        if 'mod_success_rate' in cols:
+            ffc.remove_columns(['mod_success_rate'])
+        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
  
 
 
