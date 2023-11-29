@@ -382,6 +382,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     """
     #logger.info(f"Collect "+survey+" data for {tracer}:")
 
+    print('in weight function')
     zcol = 'Z_not4clus'
     
     cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES','WEIGHT_ZFAIL']
