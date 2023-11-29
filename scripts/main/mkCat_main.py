@@ -607,6 +607,7 @@ if args.swap20211212 == 'y':
         ff[col+'_4swap'] = ff[col+'_4swap'].filled(999999)
 
     sel = ff['Z_not4clus_4swap'] != 999999
+    sel &= np.isin(ff['TILEID'],tllist)
     print('rows to have redshift values replaced:')
     print(len(ff[sel]))
     for col in swap_cols:
