@@ -577,10 +577,10 @@ if args.swap20211212 == 'y':
         rename_cols = ['Z_not4clus','ZWARN','DELTACHI2','OII_FLUX','OII_FLUX_IVAR']
 
     for tl in tllist:
-        rr = fitsio.read(dirspec+str(tl)+'/redrock-9-'+str(tl)+'-thru20211212.fits')
+        rr = fitsio.read(dirspec+str(tl)+'/20211212/redrock-9-'+str(tl)+'-thru20211212.fits')
         datal.append(rr)
         if type[:3] == 'ELG':
-            em = fitsio.read(dirspec+str(tl)+'/emline-9-'+str(tl)+'-thru20211212.fits')
+            em = fitsio.read(dirspec+str(tl)+'/20211212/emline-9-'+str(tl)+'-thru20211212.fits')
             eml.append(em)
     data = np.concatenate(datal)
     data = Table(data)
