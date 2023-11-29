@@ -453,6 +453,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     if tracer == 'BGS_BRIGHT-21.5':
         tran = 'BGS_BRIGHT'
     for i in range(0,nran):
+        print('reading random '+str(i))
         ran = read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
     randoms = pd.concat(ranl, ignore_index=True)
