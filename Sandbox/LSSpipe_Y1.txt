@@ -160,3 +160,7 @@ cp /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v0.6/hpmaps/* /gl
 #linear systematic weights 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+
+#validation for linear
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers LRG --version v1 --weight_col WEIGHT_IMLIN
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers ELG_LOPnotqso --version v1 --weight_col WEIGHT_IMLIN
