@@ -1425,7 +1425,6 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
             fa = join(fa,ft,keys=['TARGETID'])
             if len(fa) != lb4join:
                 print(tile,lb4join,len(fa))
-
         sel = fa['TARGETID'] >= 0
         fa = fa[sel]
         td += 1
