@@ -596,7 +596,7 @@ if args.swap20211212 == 'y':
         data[col].name = col+'_4swap'
     swap_cols = ['Z_not4clus_4swap','ZWARN_4swap','DELTACHI2_4swap']
     if type[:3] == 'ELG':
-        o2c = np.log10(data['OII_FLUX'] * np.sqrt(data['OII_FLUX_IVAR']))+0.2*np.log10(data['DELTACHI2'])
+        o2c = np.log10(data['OII_FLUX_4swap'] * np.sqrt(data['OII_FLUX_IVAR_4swap']))+0.2*np.log10(data['DELTACHI2_4swap'])
         data['o2c_4swap'] = o2c
         swap_cols = ['Z_not4clus_4swap','ZWARN_4swap','DELTACHI2_4swap','OII_FLUX_4swap','OII_FLUX_IVAR_4swap','o2c_4swap']
     fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
