@@ -391,6 +391,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     #data = fitsio.read(os.path.join(LSS, f'{tracer}'+'_full.dat.fits'))
     LSS = LSS.replace('global','dvs_ro')
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full'+use_map_veto+'.dat.fits'),columns=cols)
+    print('read data')
     if tracer == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = data[zcol]*0 == 0
@@ -434,7 +435,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     data = data[wz]
     wts = 1./data['FRACZ_TILELOCID'].values*1./data['FRAC_TLOBS_TILES'].values*data['WEIGHT_ZFAIL'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
-
+    print('made data map')
     #load photometric regions:
     #north, south, des = DR9Footprint(nside, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False).get_imaging_surveys()
     if foot is None:
