@@ -72,6 +72,9 @@ parser.add_argument("--absmagmd", help="whether to use purely photometry+z based
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
+parser.add_argument("--swap20211212", help="swap petal 9 redshifts from 20211212",default='n')
+
+
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
@@ -562,9 +565,54 @@ if args.add_bitweight == 'y':
     ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
     common.write_LSS(ff,fn)#,comments='Added alt MTL info')
 
+if args.swap20211212 == 'y':
+    dirspec = '/global/cfs/cdirs/desi/spectro/redux/reproc_20211212_iron/tiles/cumulative/'
+    tllist = [10376, 10380,  21386, 22541, 23406,  23414,  24518,  24567,2526,25266,26075,2840,2842,5642, 7207, 7733,  8621]
+    datal = []
+    keep_cols = ['TARGETID','Z','ZWARN','DELTACHI2']
+    rename_cols = ['Z_not4clus','ZWARN','DELTACHI2']
+    if type[:3] == 'ELG':
+        eml = []
+        keep_cols = ['TARGETID','Z','ZWARN','DELTACHI2','OII_FLUX','OII_FLUX_IVAR']
+        rename_cols = ['Z_not4clus','ZWARN','DELTACHI2','OII_FLUX','OII_FLUX_IVAR']
 
+    for tl in tllist:
+        rr = fitsio.read(dirspec+str(tl)+'/redrock-9-'+str(tl)+'thru20211212.fits')
+        datal.append(rr)
+        if type[:3] == 'ELG':
+            em = fitsio.read(dirspec+str(tl)+'/emline-9-'+str(tl)+'thru20211212.fits')
+            eml.append(em)
+    data = np.concatenate(datal)
+    data = Table(data)
+    if type[:3] == 'ELG':
+        emd = np.concatenate(eml)
+        c2add = ['OII_FLUX','OII_FLUX_IVAR']
+        for col in c2add:
+            data[col] = emd[col]
+    data.keep_columns(keep_cols)
+    data['Z'].name = 'Z_not4clus'
+    for col in rename_cols:
+        data[col].name = col+'_4swap'
+    swap_cols = ['Z_not4clus_4swap','ZWARN_4swap','DELTACHI2_4swap']
+    if type[:3] == 'ELG':
+        o2c = np.log10(data['OII_FLUX'] * np.sqrt(data['OII_FLUX_IVAR']))+0.2*np.log10(data['DELTACHI2'])
+        data['o2c_4swap'] = o2c
+        swap_cols = ['Z_not4clus_4swap','ZWARN_4swap','DELTACHI2_4swap',,'OII_FLUX_4swap','OII_FLUX_IVAR_4swap','o2c_4swap']
+    fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    
+    ff = fitsio.read(fn)
+    ff = join(ff,data,keys=['TARGETID'],join_type='left')
+    for col in rename_cols:
+        ff[col+'_4swap'] = ff[col+'_4swap'].filled(999999)
 
-
+    sel = ff['Z_not4clus_4swap'] != 999999
+    print('rows to have redshift values replaced:')
+    print(len(ff[sel]))
+    for col in swap_cols:
+        ff[col.replace('_4swap','')][sel] = ff[col][sel]
+    ff.remove_columns(swap_cols)
+    common.write_LSS(ff,fn)
+    
 #if mkclusran and mkclusdat:
 #    print('doing clustering randoms')
 #    for ii in range(rm,rx):
