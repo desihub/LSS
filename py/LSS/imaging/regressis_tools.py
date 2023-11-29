@@ -456,7 +456,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
         tran = 'BGS_BRIGHT'
     for i in range(0,nran):
         print('reading random '+str(i))
-        ran = fitsio.read(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) )#read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) 
+        ran = fitsio.read(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) #read_fits_to_pandas(os.path.join(LSS, f'{tran}'+'_'+str(i)+'_full'+use_map_veto+'.ran.fits'), columns=['RA', 'DEC']) 
         ranl.append(ran)
     randoms = pd.DataFrame(np.concatenate(ranl))#pd.concat(ranl, ignore_index=True)
     print(len(data),len(randoms))
