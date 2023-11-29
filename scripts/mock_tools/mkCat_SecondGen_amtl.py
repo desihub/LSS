@@ -23,6 +23,7 @@ import LSS.common_tools as common
 import LSS.mocktools as mocktools
 #import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
+import errno
 
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = 'CSCRATCH'
@@ -31,6 +32,15 @@ elif os.environ['NERSC_HOST'] == 'perlmutter':
 else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
+
+def test_dir(value):
+    if not os.path.exists(value):
+        try:
+            os.makedirs(value, 0o755)
+            print('made ' + value)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
 
 parser = argparse.ArgumentParser()
@@ -154,18 +164,20 @@ if args.add_gtl == 'y':
 
 
 lssdir = os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum)
-if not os.path.exists(lssdir):
-    os.mkdir(lssdir)
-    print('made '+lssdir)
+test_dir(lssdir)
+#if not os.path.exists(lssdir):
+#    os.mkdir(lssdir)
+#    print('made '+lssdir)
 
 dirout = os.path.join(lssdir, 'LSScats')
 dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+test_dir(dirout)
 
-if not os.path.exists(dirout):
-    os.makedirs(dirout)
-    print('made '+dirout)
+#if not os.path.exists(dirout):
+#    os.makedirs(dirout)
+#    print('made '+dirout)
 
 
 if args.tracer != 'dark' and args.tracer != 'bright':
@@ -181,16 +193,15 @@ if args.tracer != 'dark' and args.tracer != 'bright':
 asn = None
 pa = None
 outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+test_dir(outdir)
+
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('--- START COMBD ---')
     print('entering altmtl')
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
-    fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
+    fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
-    
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
     print('entering common.combtiles_wdup_altmtl for FASSIGN')
 
     asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'])
