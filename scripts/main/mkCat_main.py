@@ -322,17 +322,6 @@ if mkfulld:
         maskcoll = True
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
-if args.add_bitweight == 'y':
-    logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
-    fn = dirout+type+notqso+'_full_noveto.dat.fits'
-    ff = fitsio.read(fn)
-    if type[:3] != 'BGS':
-        bitf = fitsio.read(mainp.darkbitweightfile)
-    else:
-        bitf = fitsio.read(mainp.brightbitweightfile)
-    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ff,fn,comments='Added alt MTL info')
-
 
 if args.add_veto == 'y':
     logf.write('added veto columns to data catalogs for '+tp+' '+str(datetime.now()))
@@ -561,6 +550,18 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
     
+if args.add_bitweight == 'y':
+    logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
+    fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    print(fn)
+    ff = fitsio.read(fn)
+    if type[:3] != 'BGS':
+        bitf = fitsio.read(mainp.darkbitweightfile)
+    else:
+        bitf = fitsio.read(mainp.brightbitweightfile)
+    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
+    common.write_LSS(ff,fn)#,comments='Added alt MTL info')
+
 
 
 
