@@ -17,6 +17,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--hpmapcut",help="string to add for hpmapcut or not",default='_HPmapcut')
 args = parser.parse_args()
 
 
@@ -80,7 +81,7 @@ for tp in tps:
         dz = 0.1
         zmin = 0.1
         zmax = 0.5
-    df = fitsio.read(indir+tp+zdw+'_full.dat.fits')
+    df = fitsio.read(indir+tp+zdw+'_full'+args.hpmapcut+'.dat.fits')
 
 
     #dcl = []
