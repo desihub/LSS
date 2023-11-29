@@ -567,7 +567,8 @@ if args.add_bitweight == 'y':
 
 if args.swap20211212 == 'y':
     dirspec = '/global/cfs/cdirs/desi/spectro/redux/reproc_20211212_iron/tiles/cumulative/'
-    tllist = [10376, 10380,  21386, 22541, 23406,  23414,  24518,  24567,2526,25266,26075,2840,2842,5642, 7207, 7733,  8621]
+    tllist = [10376, 10380,  21386, 22541, 23406,  23414,  24518,  24567,2526,25266,26075,2840,2842,5642, 7207,  8621]
+    
     datal = []
     keep_cols = ['TARGETID','Z','ZWARN','DELTACHI2']
     rename_cols = ['Z_not4clus','ZWARN','DELTACHI2']
