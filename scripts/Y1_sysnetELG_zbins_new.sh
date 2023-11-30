@@ -12,14 +12,14 @@ VERSION=$1
 LR_N=0.009    # learning rate
 NBATCH_N=256  # Powers of 2
 NCHAIN_N=5    # chains
-NEPOCH_N=200  # number of epochs
+NEPOCH_N=100  # number of epochs
 NNS_N=(3 10)  # NN structure (# layers, # units)
 
 # Some NN parameters for South
 LR_S=0.007    # learning rate
 NBATCH_S=1024 # Powers of 2
 NCHAIN_S=5    # chains
-NEPOCH_S=200  # number of epochs
+NEPOCH_S=100  # number of epochs
 NNS_S=(4 20)  # NN structure (# layers, # units)
 
 BASEDIR=$LSSBASE/Y1/LSS/iron/LSScats/
