@@ -73,6 +73,7 @@ parser.add_argument("--absmagmd", help="whether to use purely photometry+z based
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
 parser.add_argument("--swap20211212", help="swap petal 9 redshifts from 20211212",default='n')
+parser.add_argument("--fixzwarn", help="change any originally 'not observed' zwarn back to 999999",default='n')
 
 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
