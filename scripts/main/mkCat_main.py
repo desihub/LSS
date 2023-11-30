@@ -608,11 +608,23 @@ if args.swap20211212 == 'y':
 
     sel = ff['Z_not4clus_4swap'] != 999999
     sel &= np.isin(ff['TILEID'],tllist)
+    sel &= ff['ZWARN'] != 999999 #don't flip any original not observed
     print('rows to have redshift values replaced:')
     print(len(ff[sel]))
     for col in swap_cols:
         ff[col.replace('_4swap','')][sel] = ff[col][sel]
     ff.remove_columns(swap_cols)
+    common.write_LSS(ff,fn)
+
+if args.fixzwarn == 'y':
+    fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'    
+    ff = Table(fitsio.read(fn))
+    sel = ff['FIBER'] == 999999
+    sel &= ff['ZWARN'] != 999999
+    ff['ZWARN'][sel] = 999999
+    sel = ff['FIBER'] == 999999
+    sela = ff['ZWARN'] == 999999
+    print(len(ff[sel]),len(ff[sela]))
     common.write_LSS(ff,fn)
     
 #if mkclusran and mkclusdat:
@@ -885,6 +897,7 @@ if args.regressis == 'y':
     
         print('computing RF regressis weight for '+tracer_clus+zw)
         logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
+        
         rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
         suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
          max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
