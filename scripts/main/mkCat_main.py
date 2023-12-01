@@ -11,6 +11,11 @@ import glob
 import argparse
 from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
+
+import logging
+logger = logging.getLogger('mkCat')
+logger.setLevel(level=logging.INFO)
+
 #from desihub
 #from desitarget import targetmask
 #from regressis, must be installed
@@ -760,7 +765,7 @@ if args.prepsysnet == 'y':
         ranl = []
         randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
         for i in range(0,18):
-            print(f"reading allsky randoms {i+1}/18")
+            logger.info(f"reading allsky randoms {i+1}/18")
             ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
             ranl.append(ran)
         allsky_rands = np.concatenate(ranl)
