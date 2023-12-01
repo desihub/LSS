@@ -560,7 +560,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
             nl[ii] = nzd[zind]
     mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
     print('mean completeness '+str(mean_comp))
-    if 'NTILE' is not in list(fd.dtype.names):
+    if 'NTILE' not in list(fd.dtype.names):
         fd['NTILE'] = np.ones(len(fd))
         print('added NTILE = 1 column because column did not exist')
     ntl = np.unique(fd['NTILE'])
@@ -627,7 +627,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #ff['LSS'].insert_column('NZ',nl)
         #fd['NZ'] = nl
         print('mean completeness '+str(mean_comp))
-        if 'NTILE' is not in list(fd.dtype.names):
+        if 'NTILE' not in list(fd.dtype.names):
             fd['NTILE'] = np.ones(len(fd))
             print('added NTILE = 1 column because column did not exist')
 
