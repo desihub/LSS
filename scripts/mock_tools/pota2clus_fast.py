@@ -97,20 +97,11 @@ mainp = main('LRG','iron','Y1')
 mapcuts = mainp.mapcuts
 
 
-#if args.prog == 'DARK':
-    #bit = targetmask.desi_mask[args.tracer]
-#    bittest = targetmask.desi_mask
-#    desitarg='DESI_TARGET'
 if args.tracer == 'all':
     tracers = ['LRG','ELG_LOP','QSO']
-    #if args.mockver == 'EZmock/FFA':
-    #    tracers = ['ELG','QSO','LRG']
 else:
     tracers = [args.tracer]
-    #if args.mockver == 'abacus2ffa':
-    #    tracers = [args.tracer]
 
-#ndattot = len(mock_data)
 logger.info(tracers)
 
 
@@ -175,7 +166,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         logger.info('resampling in DES region')
         from regressis import footprint
         import healpy as hp
-        foot = footprint.DR9Footlogger.info(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
         north, south, des = foot.get_imaging_surveys()
         th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
         th_dat,phi_dat = (-data['DEC']+90.)*np.pi/180.,data['RA']*np.pi/180.
@@ -248,12 +239,8 @@ selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
 
 if args.prog == 'DARK':
-    #bit = targetmask.desi_mask[args.tracer]
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
-    tracers = ['LRG','QSO','ELG_LOP']
-    #if args.mockver == 'abacus2ffa':
-    #    tracers = [args.tracer]
 
 ndattot = len(mock_data)
 
