@@ -273,6 +273,9 @@ goodtl = np.isin(tilelocid,gtl)
 mock_data = mock_data[goodtl]
 logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
 
+mock_data = Table(mock_data)
+mock_data = unique(mock_data,keys=['TARGETID'])
+mock_data.rename_column('RSDZ', 'Z')
 
 
     
@@ -283,10 +286,8 @@ for tracer in tracers:
     seltar = mock_data[desitarg] & bit > 0
     mock_data_tr = mock_data[seltar]
     lmockdat_noveto = len(mock_data_tr)
-    logger.info('length before/after cut to target type '+tracer)
+    logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
     logger.info(str(ndattot)+','+str(len(mock_data)))
-    mock_data_tr = Table(mock_data_tr)
-    mock_data_tr.rename_column('RSDZ', 'Z')
 
    
     tracerd = tracer
