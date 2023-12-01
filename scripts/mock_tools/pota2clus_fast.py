@@ -287,7 +287,7 @@ for tracer in tracers:
     mock_data_tr = mock_data[seltar]
     lmockdat_noveto = len(mock_data_tr)
     logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
-    logger.info(str(ndattot)+','+str(len(mock_data)))
+    logger.info(str(ndattot)+','+str(len(mock_data_tr)))
 
    
     tracerd = tracer
