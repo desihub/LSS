@@ -135,7 +135,7 @@ python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/sur
 
 #apply blinding and get blinded clustering catalogs
 module swap pyrecon/main pyrecon/mpi
-srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y
+srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
 
 #get unblinded clustering catalogs, first in total (with proper resampling within regions) then split into separate NGC, SGC catalogs
 python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --splitGC y --nz y --par n 
@@ -180,5 +180,11 @@ python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py -
 #add bitweights
 python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
 
-#regressis imaging sysetmatic weights
+#regressis imaging systematic weights
 python scripts/main/mkCat_main.py --type QSO --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type LRG --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+
+#sysnet imaging systematic weights
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetELG_zbins_new.sh
