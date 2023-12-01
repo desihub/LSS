@@ -74,6 +74,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
 parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--basedir_out", help="base directory for output, default is C(P)SCRATCH", default=os.environ[scratch])
+parser.add_argument("--mv_out2cfs", help="whether to move the output cfs or not", default='n')
 parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
@@ -554,3 +555,8 @@ if root:
     os.system('rm '+dirout+args.type+'*_N_*')
     os.system('rm '+dirout+args.type+'*IFFT*')
     os.system('rm '+dirout+args.type+'*full*')
+    
+    if args.mv2cfs == 'y':
+        mvdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron' + '/LSScats/' + version + '/blinded/'
+        os.system('mv '+dirout+'* '+mvdir)
+        os.system('chmod 775 '+mvdir+'*')
