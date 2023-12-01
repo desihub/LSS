@@ -272,7 +272,7 @@ gtl = np.unique(specfc['TILELOCID'])
 goodtl = np.isin(tilelocid,gtl)
 mock_data = mock_data[goodtl]
 logger.info(lmockdat_noveto,len(mock_data))
-mock_data.rename_column('RSDZ', 'Z')
+
 
 
     
@@ -285,6 +285,8 @@ for tracer in tracers:
     lmockdat_noveto = len(mock_data_tr)
     logger.info('length before/after cut to target type '+tracer)
     logger.info(ndattot,len(mock_data))
+    mock_data_tr = Table(mock_data_tr)
+    mock_data_tr.rename_column('RSDZ', 'Z')
 
    
     tracerd = tracer
