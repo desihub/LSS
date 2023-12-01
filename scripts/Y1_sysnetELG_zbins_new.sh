@@ -44,5 +44,5 @@ $RUN_SYSNET S ELG_LOPnotqso1.1_1.6 false true $NBATCH_S $LR_S dnnp pnll $VERSION
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION
 
-python scripts/validation/validation_improp_full.py --tracer ELG_LOPnotqso --version $VERSION
+python scripts/validation/validation_improp_full.py --tracer ELG_LOPnotqso --version $VERSION --weight_col WEIGHT_SN
 
