@@ -561,15 +561,16 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
     print('mean completeness '+str(mean_comp))
     ntl = np.unique(fd['NTILE'])
-    comp_ntl = np.zeros(len(ntl))
-    weight_ntl = np.zeros(len(ntl))
+    comp_ntl = np.ones(len(ntl))
+    weight_ntl = np.ones(len(ntl))
     for i in range(0,len(ntl)):
         sel = fd['NTILE'] == ntl[i]
         mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-    fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+    
     if compmd == 'ran':
+        fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
         fttl = np.zeros(len(ntl))
         for i in range(0,len(ntl)): 
             sel = fran['NTILE'] == ntl[i]
