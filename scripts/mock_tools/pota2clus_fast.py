@@ -271,7 +271,7 @@ specfc = common.cut_specdat(specf,badfib=mainp.badfib)
 gtl = np.unique(specfc['TILELOCID'])
 goodtl = np.isin(tilelocid,gtl)
 mock_data = mock_data[goodtl]
-logger.info(lmockdat_noveto,len(mock_data))
+logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
 
 
 
@@ -284,7 +284,7 @@ for tracer in tracers:
     mock_data_tr = mock_data[seltar]
     lmockdat_noveto = len(mock_data_tr)
     logger.info('length before/after cut to target type '+tracer)
-    logger.info(ndattot,len(mock_data))
+    logger.info(str(ndattot)+','+str(len(mock_data)))
     mock_data_tr = Table(mock_data_tr)
     mock_data_tr.rename_column('RSDZ', 'Z')
 
@@ -335,7 +335,7 @@ for tracer in tracers:
         selz = mock_data_tr['Z'] > zmin
         selz &= mock_data_tr['Z'] < zmax
         mock_data_tr = mock_data_tr[selz]
-        logger.info('length after cutting to redshift range',len(mock_data_tr))
+        logger.info('length after cutting to redshift range:'+str(len(mock_data_tr)))
         mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
         mock_data_tr['WEIGHT_COMP'] = np.ones(len(mock_data_tr))
         mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
