@@ -23,13 +23,18 @@ import LSS.common_tools as common
 import LSS.mocktools as mocktools
 from LSS.globals import main
 
+import logging
+logger = logging.getLogger('mkCat')
+logger.setLevel(level=logging.INFO)
+
+
 #import LSS.mkCat_singletile.fa4lsscat as fa
 #from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'perlmutter':
     scratch = 'PSCRATCH'
 else:
-    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    logger.info('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 
@@ -58,7 +63,7 @@ parser.add_argument("--splitGC", default = 'y')
 
 
 args = parser.parse_args()
-print(args)
+logger.info(args)
 
 rm = int(args.minr)
 rx = int(args.maxr)
@@ -92,7 +97,7 @@ else:
     #    tracers = [args.tracer]
 
 #ndattot = len(mock_data)
-print(tracers)
+logger.info(tracers)
 
 
 def splitGC(flroot,datran='.dat',rann=0):
@@ -125,7 +130,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
             inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
-            print(len(data[dsel]),len(inds),np.max(inds))
+            logger.info(len(data[dsel]),len(inds),np.max(inds))
             dshuf = data[dsel][inds]
             for col in sample_columns:
                 randoms[col][rsel] = dshuf[col]
@@ -135,7 +140,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
             rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
             rdl.append(rd)
         rdr = rdl[0]/rdl[1]
-        print('norm factor is '+str(rdr))
+        logger.info('norm factor is '+str(rdr))
         randoms['WEIGHT'][rand_sel[1]] *= rdr
 
     des_resamp = False
@@ -149,14 +154,14 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
     
     for dsel,rsel in zip(dat_sel,rand_sel):
         rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
-        print('data/random weighted ratio after resampling:'+str(rd))
+        logger.info('data/random weighted ratio after resampling:'+str(rd))
 
 
     if des_resamp:
-        print('resampling in DES region')
+        logger.info('resampling in DES region')
         from regressis import footprint
         import healpy as hp
-        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        foot = footprint.DR9Footlogger.info(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
         north, south, des = foot.get_imaging_surveys()
         th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
         th_dat,phi_dat = (-data['DEC']+90.)*np.pi/180.,data['RA']*np.pi/180.
@@ -170,7 +175,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
     
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
-            print('data/random weighted ratio after resampling:'+str(rd))
+            logger.info('data/random weighted ratio after resampling:'+str(rd))
 
     return randoms
 
@@ -181,13 +186,13 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
             ff = ff[~mask]
 
     if ebits is not None:
-        print('number before imaging mask '+str(len(ff)))
+        logger.info('number before imaging mask '+str(len(ff)))
         if ebits == 'lrg_mask':
             sel = ff['lrg_mask'] == 0
             ff = ff[sel]
         else:
             ff = common.cutphotmask(ff,ebits)
-        print('number after imaging mask '+str(len(ff)))
+        logger.info('number after imaging mask '+str(len(ff)))
     return ff
 
 nproc = 18
@@ -206,11 +211,11 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
 
 
-print('input directory is '+mockdir)
-print('output directory is '+outdir)    
+logger.info('input directory is '+mockdir)
+logger.info('output directory is '+outdir)    
 
 in_data_fn = mockdir+'pota-'+args.prog+'.fits'
-print(in_data_fn)
+logger.info(in_data_fn)
 cols = ['LOCATION',
 'FIBER',
 'TARGETID',
@@ -243,16 +248,17 @@ mainp = main('LRG','iron','Y1') #needed for bad fiber list
 
 tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
 specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-print('loading specf file '+specfo)
+logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
-print(len(np.unique(specf['TILEID'])))
+logger.info(len(np.unique(specf['TILEID'])))
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-print('loaded specf file '+specfo)
+logger.info('loaded specf file '+specfo)
 specfc = common.cut_specdat(specf,badfib=mainp.badfib)
 gtl = np.unique(specfc['TILELOCID'])
 goodtl = np.isin(tilelocid,gtl)
 mock_data = mock_data[goodtl]
-print(lmockdat_noveto,len(mock_data))
+logger.info(lmockdat_noveto,len(mock_data))
+mock_data.rename_column('RSDZ', 'Z')
 
 
     
@@ -263,8 +269,8 @@ for tracer in tracers:
     seltar = mock_data[desitarg] & bit > 0
     mock_data_tr = mock_data[seltar]
     lmockdat_noveto = len(mock_data_tr)
-    print('length before/after cut to target type '+tracer)
-    print(ndattot,len(mock_data))
+    logger.info('length before/after cut to target type '+tracer)
+    logger.info(ndattot,len(mock_data))
 
    
     tracerd = tracer
@@ -295,25 +301,25 @@ for tracer in tracers:
         if tracer == 'BGS_BRIGHT-21.5':
             selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
             mock_data_tr = mock_data_tr[selm]
-            print('length after abs mag cut '+str(len(mock_data_tr)))
+            logger.info('length after abs mag cut '+str(len(mock_data_tr)))
         
         #apply imaging vetos
         if tracer == 'LRG':
             lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
             mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
-            print(len(mock_data_tr))
+            logger.info(len(mock_data_tr))
         ebits = mainp.ebits
         reccircmasks = mainp.reccircmasks
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         
         mock_data_tr = common.apply_map_veto_arrays(mock_data_tr,mapn,maps,mapcuts)
-        print('map data veto done')
+        logger.info('map data veto done')
 
 
         selz = mock_data_tr['Z'] > zmin
         selz &= mock_data_tr['Z'] < zmax
         mock_data_tr = mock_data_tr[selz]
-        print('length after cutting to redshift range',len(mock_data_tr))
+        logger.info('length after cutting to redshift range',len(mock_data_tr))
         mock_data_tr['WEIGHT_SYS'] = np.ones(len(mock_data_tr))
         mock_data_tr['WEIGHT_COMP'] = np.ones(len(mock_data_tr))
         mock_data_tr['WEIGHT_ZFAIL'] = np.ones(len(mock_data_tr))
