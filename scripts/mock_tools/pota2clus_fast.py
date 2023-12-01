@@ -144,7 +144,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
             inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
-            logger.info(len(data[dsel]),len(inds),np.max(inds))
+            #logger.info(str(len(data[dsel]),len(inds),np.max(inds))
             dshuf = data[dsel][inds]
             for col in sample_columns:
                 randoms[col][rsel] = dshuf[col]
@@ -252,8 +252,8 @@ if args.prog == 'DARK':
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
     tracers = ['LRG','QSO','ELG_LOP']
-    if args.mockver == 'abacus2ffa':
-        tracers = [args.tracer]
+    #if args.mockver == 'abacus2ffa':
+    #    tracers = [args.tracer]
 
 ndattot = len(mock_data)
 
