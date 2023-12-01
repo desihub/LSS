@@ -765,7 +765,7 @@ if args.prepsysnet == 'y':
         ranl = []
         randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
         for i in range(0,18):
-            logger.info(f"reading allsky randoms {i+1}/18")
+            logger.info("reading allsky randoms "+str(i))
             ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
             ranl.append(ran)
         allsky_rands = np.concatenate(ranl)
