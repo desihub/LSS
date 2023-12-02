@@ -3,7 +3,7 @@
 #SBATCH --qos=regular
 #SBATCH --nodes=1
 #SBATCH --constraint=cpu
-#SBATCH --array=102-130
+#SBATCH --array=131-164
 #SBATCH --account=desi
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
