@@ -36,6 +36,7 @@ else:
 parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
+parser.add_argument("--overwrite",help='if "n", check to see if LSS catalogs exist before proceeding, exit if they do',default='n')
 #parser.add_argument("--prog", default="DARK")
 #parser.add_argument("--veto",default='_imaging')
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
@@ -193,6 +194,9 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
 nproc = 18
 
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
+if args.overwrite == 'n':
+    if os.path.isfile(mockdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'):
+        sys.exit('ELG LSS catalog already exists')
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
 
