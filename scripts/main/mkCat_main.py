@@ -712,6 +712,7 @@ if args.imsys == 'y':
     fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
     dat = Table(fitsio.read(fname))
     selgood = common.goodz_infull(tp[:3],dat)
+    dat = dat[selgood]
     ranl = []
     for i in range(0,1):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
