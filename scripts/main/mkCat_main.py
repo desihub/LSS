@@ -718,7 +718,7 @@ if args.imsys == 'y':
         ranl.append(ran)
     rands = np.concatenate(ranl)
     syscol = 'WEIGHT_IMLIN'
-    regl = ['N','S']
+    regl = ['S','N']
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
         pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
@@ -749,11 +749,11 @@ if args.imsys == 'y':
                     fitmapsbin = fit_maps
                 else:
                     if zmax == 0.6:
-                        fitmapsbin = mainp.fitmaps46s
+                        fitmapsbin = mainp.fit_maps46s
                     if zmax == 0.8:
-                        fitmapsbin = mainp.fitmaps68s
+                        fitmapsbin = mainp.fit_maps68s
                     if zmax == 1.1:
-                        fitmapsbin = mainp.fitmaps81s
+                        fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
