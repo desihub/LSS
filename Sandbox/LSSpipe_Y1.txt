@@ -189,5 +189,5 @@ python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --version v1  --base
 #sysnet imaging systematic weights
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetELG_zbins_new.sh
 
-#redo linear systematic weights for LRG using extra maps for different zbins in S
+#redo linear systematic weights for LRG using extra maps for different zbins in S; when doing so noticed bug that catalogs weren't being cut to good z, so redo all types
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
