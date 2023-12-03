@@ -706,7 +706,7 @@ if args.imsys == 'y':
     #regl = ['_DN','_DS','','_N','_S']
     #wzm = ''
     #fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
-    use_maps = fit_maps
+    
        
     #rcols.append('WEIGHT_SYSEB')   
     fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
@@ -744,7 +744,20 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            if type == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fitmaps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fitmaps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fitmaps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fitmaps81s
+            else:
+                fitmapsbin = fitmaps
+            use_maps = fit_mapsbin
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_mapsbin,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
