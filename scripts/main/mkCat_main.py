@@ -774,16 +774,17 @@ if args.prepsysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     
-    allsky_rands = None
-    if args.use_allsky_rands == 'y':
-        print('using randoms allsky for frac_area')
-        ranl = []
-        randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-        for i in range(0,18):
-            logger.info("reading allsky randoms "+str(i))
-            ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
-            ranl.append(ran)
-        allsky_rands = np.concatenate(ranl)
+    #allsky_rands = None
+    #if args.use_allsky_rands == 'y':
+    #    print('using randoms allsky for frac_area')
+        #ranl = []
+        #randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        #for i in range(0,18):
+        #    logger.info("reading allsky randoms "+str(i))
+        #    ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
+        #    ranl.append(ran)
+        #allsky_rands = np.concatenate(ranl)
+        
     
     #_HPmapcut'
     dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
@@ -813,8 +814,11 @@ if args.prepsysnet == 'y':
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
             if args.use_allsky_rands == 'y':
-                selr_all = allsky_rands['PHOTSYS'] == reg
-                allrands = allsky_rands[selr_all]
+                allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+                allsky_rands = fitsio.read(allsky_fn)
+                allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
+            #    selr_all = allsky_rands['PHOTSYS'] == reg
+            #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
         

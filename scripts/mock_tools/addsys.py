@@ -251,15 +251,18 @@ if args.prepsysnet == 'y':
         ranl.append(ran)
     rands = np.concatenate(ranl)
     
-    if args.use_allsky_rands == 'y':
-        print('using randoms allsky for frac_area')
-        ranl = []
-        randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-        for i in range(0,nran):
-            print(f"reading allsky randoms {i+1}/{nran}")
-            ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
-            ranl.append(ran)
-        allsky_rands = np.concatenate(ranl)
+    #if args.use_allsky_rands == 'y':
+    #    print('using randoms allsky for frac_area')
+    #    allsky_fn = "/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_nran18_nside256_ring.fits"
+    #    allsky_rands = fitsio.read(allsky_fn)
+    #    allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
+        #ranl = []
+        #randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        #for i in range(0,nran):
+        #    print(f"reading allsky randoms {i+1}/{nran}")
+        #    ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
+        #    ranl.append(ran)
+        #allsky_rands = np.concatenate(ranl)
         
     regl = ['N','S']
     
@@ -282,8 +285,11 @@ if args.prepsysnet == 'y':
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg
             if args.use_allsky_rands == 'y':
-                selr_all = allsky_rands['PHOTSYS'] == reg
-                allrands = allsky_rands[selr_all]
+                allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+                allsky_rands = fitsio.read(allsky_fn)
+                allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
+            #    selr_all = allsky_rands['PHOTSYS'] == reg
+            #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
         
