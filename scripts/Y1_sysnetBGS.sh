@@ -9,14 +9,14 @@ PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
 VERSION=$1
 
 # Some NN parameters for North
-LR_N=0.009    # learning rate
+LR_N=0.02    # learning rate
 NBATCH_N=256  # Powers of 2
 NCHAIN_N=5    # chains
 NEPOCH_N=100  # number of epochs
 NNS_N=(3 10)  # NN structure (# layers, # units)
 
 # Some NN parameters for South
-LR_S=0.007    # learning rate
+LR_S=0.01    # learning rate
 NBATCH_S=1024 # Powers of 2
 NCHAIN_S=5    # chains
 NEPOCH_S=100  # number of epochs
