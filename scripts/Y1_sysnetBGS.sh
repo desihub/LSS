@@ -40,7 +40,7 @@ $RUN_SYSNET N BGS_BRIGHT-21.50.1_0.4 false true $NBATCH_N $LR_N dnnp pnll $VERSI
 # Run SYSNet for South
 $RUN_SYSNET S BGS_BRIGHT-21.50.1_0.4 false true $NBATCH_S $LR_S dnnp pnll $VERSION $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
 
-python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type BGS_BRIGHT-21.50.1_0.4 --add_sysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION
+python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type BGS_BRIGHT-21.5 --add_sysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION
 
-python scripts/validation/validation_improp_full.py --tracer BGS_BRIGHT-21.50.1_0.4 --version $VERSION --weight_col WEIGHT_SN
+python scripts/validation/validation_improp_full.py --tracer BGS_BRIGHT-21.5 --version $VERSION --weight_col WEIGHT_SN
 
