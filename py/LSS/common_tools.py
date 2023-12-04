@@ -535,7 +535,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=9):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
