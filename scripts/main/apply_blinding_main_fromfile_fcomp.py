@@ -382,7 +382,7 @@ if root:
             from multiprocessing import Pool
             #nproc = 9
             #nproc = nran*2
-            with Pool()) as pool:
+            with Pool() as pool:
                 res = pool.map(_parfun, inds)
         else:
             for ii in inds:
