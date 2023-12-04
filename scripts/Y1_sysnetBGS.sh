@@ -25,8 +25,10 @@ NNS_S=(4 20)  # NN structure (# layers, # units)
 BASEDIR=$LSSBASE/Y1/LSS/iron/LSScats/
 RUN_SYSNET=$LSSDIR/LSS/scripts/run_sysnetELG_cd_new.sh
 
-# If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
-python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type BGS_BRIGHT-21.5 --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION --use_allsky_rands y
+# If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job; is run if supplied argument 
+if [ $2 == 1 ]; then
+  python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type BGS_BRIGHT-21.5 --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION --use_allsky_rands y
+fi
 
 # Find learning rate for North
 $RUN_SYSNET N BGS_BRIGHT-21.50.1_0.4 true false $NBATCH_N 0.003 dnnp pnll $VERSION $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
