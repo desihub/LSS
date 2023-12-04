@@ -58,9 +58,12 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
                                             return_mask=False, nest2ring=False) 
         prep_table = hpdataset(data_hpmap, rands_hpmap, hpmaps, columns, fracmd='old', nran_exp=nran_exp)
     else: 
+        print("using all sky randoms in fracgood")
+        # now this assumes that allsky_rands is a healpix map
         data_hpmap  = hpixsum(nside,data['RA'],data['DEC'],weights=weights,nest=False,nest2ring=False)
         rands_hpmap = hpixsum(nside,rands['RA'],rands['DEC'],nest=False,nest2ring=False)
-        all_rands_hpmap = hpixsum(nside,allsky_rands['RA'],allsky_rands['DEC'],nest=False,nest2ring=False)
+        #all_rands_hpmap = hpixsum(nside,allsky_rands['RA'],allsky_rands['DEC'],nest=False,nest2ring=False)
+        all_rands_hpmap = allsky_rands
         frac_area_hpmap = rands_hpmap / all_rands_hpmap
         
         prep_table = hpdataset(data_hpmap, frac_area_hpmap, hpmaps, columns, fracmd='new',nran_exp=None)
