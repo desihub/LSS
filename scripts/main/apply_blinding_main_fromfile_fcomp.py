@@ -556,7 +556,7 @@ if root:
     os.system('rm '+dirout+args.type+'*IFFT*')
     os.system('rm '+dirout+args.type+'*full*')
     
-    if args.mv2cfs == 'y':
+    if args.mv_out2cfs == 'y':
         mvdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron' + '/LSScats/' + version + '/blinded/'
         os.system('mv '+dirout+'* '+mvdir)
         os.system('chmod 775 '+mvdir+'*')
