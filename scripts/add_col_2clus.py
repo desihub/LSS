@@ -115,7 +115,7 @@ if args.par == 'n':
         _add2ran(rn)
 if args.par == 'y':
 	from multiprocessing import Pool
-	with Pool(processes=nproc) as pool:
+	with Pool() as pool:
 		res = pool.map(_add2ran, inds)
 
 
