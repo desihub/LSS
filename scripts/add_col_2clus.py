@@ -74,17 +74,20 @@ regl = ['NGC','SGC']
 for reg in regl:
     fname = dirout+args.tracer+'_'+reg+'_clustering.dat.fits'
     cd = Table(fitsio.read(fname))
+    dojoin = 1
     if args.col_name in list(cd.dtype.names):
         if args.replace == 'y':
             if args.fix_weight == 'y':
                 cd['WEIGHT'] /= cd[args.col_name]
             cd.remove_column(args.col_name)
         else:
-            sys.exit('column is in catalog already! Set --replace y if you wish to replace it')
-    cd = join(cd,indata,keys=['TARGETID'],join_type='left')
-    if args.fix_weight == 'y':
-        cd['WEIGHT'] *= cd[args.col_name]
-    common.write_LSS(cd,fname)
+            dojoin = 0
+            #sys.exit('column is in catalog already! Set --replace y if you wish to replace it')
+    if dojoin == 1:
+        cd = join(cd,indata,keys=['TARGETID'],join_type='left')
+        if args.fix_weight == 'y':
+            cd['WEIGHT'] *= cd[args.col_name]
+        common.write_LSS(cd,fname)
 indata.rename_column('TARGETID', 'TARGETID_DATA')
 
 def _add2ran(rn):
@@ -98,7 +101,7 @@ def _add2ran(rn):
                 cd.remove_column(args.col_name)
 
             else:
-                sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
+                sys.exit('column is in random catalog '+str(rn)+' already! Use --replace y if you wish to replace it ')
         
         cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
         if args.fix_weight == 'y':
