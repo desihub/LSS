@@ -110,10 +110,10 @@ def _add2ran(rn):
         common.write_LSS(cd,fname)
 
 inds = np.arange(rm,rx)
-if par == 'n':
+if args.par == 'n':
     for rn in inds:
         _add2ran(rn)
-if par == 'y':
+if args.par == 'y':
 	from multiprocessing import Pool
 	with Pool(processes=nproc) as pool:
 		res = pool.map(_add2ran, inds)
