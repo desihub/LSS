@@ -46,6 +46,7 @@ parser.add_argument("--blind", help="string to make output directory blinded or 
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
+parser.add_argument("--par",help="process randoms in parallel?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 
@@ -85,7 +86,8 @@ for reg in regl:
         cd['WEIGHT'] *= cd[args.col_name]
     common.write_LSS(cd,fname)
 indata.rename_column('TARGETID', 'TARGETID_DATA')
-for rn in range(rm,rx):
+
+def _add2ran(rn):
     for reg in regl:
         fname = dirout+args.tracer+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
         cd = Table(fitsio.read(fname))
@@ -104,3 +106,31 @@ for rn in range(rm,rx):
 
         common.write_LSS(cd,fname)
 
+inds = np.arange(rm,rx)
+if par == 'n':
+    for rn in inds:
+        _add2ran(rn)
+if par == 'y':
+	from multiprocessing import Pool
+	with Pool(processes=nproc) as pool:
+		res = pool.map(_add2ran, inds)
+
+
+#     for reg in regl:
+#         fname = dirout+args.tracer+'_'+reg+'_'+str(rn)+'_clustering.ran.fits'
+#         cd = Table(fitsio.read(fname))
+#         if args.col_name in list(cd.dtype.names):
+#             if args.replace == 'y':
+#                 if args.fix_weight == 'y':
+#                     cd['WEIGHT'] /= cd[args.col_name]
+#                 cd.remove_column(args.col_name)
+# 
+#             else:
+#                 sys.exit('column is in catalog already, but it was not in the data. Somthing strange happened! ')
+#         
+#         cd = join(cd,indata,keys=['TARGETID_DATA'],join_type='left')
+#         if args.fix_weight == 'y':
+#             cd['WEIGHT'] *= cd[args.col_name]
+# 
+#         common.write_LSS(cd,fname)
+# 
