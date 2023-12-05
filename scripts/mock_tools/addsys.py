@@ -51,7 +51,7 @@ parser.add_argument("--imsys_nside",help="healpix nside used for imaging systema
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
 
 #AJRM 
-parser.add_argument("--mockcatver", help="catalog version",default=None)
+#parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
 
 args = parser.parse_args()
