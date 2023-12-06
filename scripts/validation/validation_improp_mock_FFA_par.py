@@ -251,7 +251,8 @@ def main(mockn):
 
         fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
         if not os.path.exists(fcd_n):
-            sys.exit(fcd_n +' not found')
+            print(fcd_n +' not found')
+            return True
         fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
         print('test test')
         dtf_n = fitsio.read(fcd_n)
