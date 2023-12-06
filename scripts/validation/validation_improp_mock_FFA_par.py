@@ -268,8 +268,8 @@ def main(mockn):
         #dtf = join(dtf,full_data,keys=['TARGETID'])
         #print('after join to full',len(dtf))
         tpr = tp
-        if tp == 'BGS_BRIGHT-21.5':
-            tpr = 'BGS_BRIGHT'
+        #if tp == 'BGS_BRIGHT-21.5':
+        #    tpr = 'BGS_BRIGHT'
 
         #rf_n = indir+tpr+args.famd+'_NGC_0_clustering.ran.fits'
         #rf_s = indir+tpr+args.famd+'_SGC_0_clustering.ran.fits'
