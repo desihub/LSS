@@ -397,7 +397,9 @@ if args.add_regressis == 'y':
         print(np.mean(dd['WEIGHT_RF'][selz]))
     #logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
-        common.write_LSS(dd,fcd)#,comments)
+    common.write_LSS(dd,fcd)#,comments)
+    flroot = os.path.join(dirout, tp+'_')
+    splitGC_wo(flroot)
 
 regl = ['NGC','SGC']
 
