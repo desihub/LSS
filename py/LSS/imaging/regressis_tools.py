@@ -322,7 +322,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     #wts =randoms['WEIGHT'].values*randoms['WEIGHT_FKP'].values  #np.ones(len(randoms))#
     #wts /= np.mean(wts)
     #map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values,weights=wts, in_deg2=True)
-    map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values in_deg2=True)
+    map_randoms = build_healpix_map(nside, randoms['RA'].values, randoms['DEC'].values, in_deg2=True)
     # a random file is 2500 randoms per deg2
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
