@@ -329,9 +329,9 @@ def main(mockn):
 
         if tp == 'QSO':
             zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
-            #if args.weight_col == 'WEIGHT_RF':
-            desnorm=True
-            #GCnorm = False
+            if args.weight_col == 'WEIGHT_RF':
+                desnorm=True
+                GCnorm = False
             P0 = 6000
             nbar = 0.00002
 
