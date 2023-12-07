@@ -1,0 +1,58 @@
+1 #LRGs are old LRGs, need to be replaced
+2 #only 1 .tmp file in directory
+11 #no directory at all
+32 #no directory at all (temp folder missing only ELG ffa)
+36 #nothing beyond pota-DARK_joined_unreduced
+40 #no directory at all (temp folder missing only ELG ffa)
+43 #no directory at all (temp folder missing only ELG ffa)
+68 #nothing beyond pota-DARK_joined_unreduced
+72 #no directory at all (temp folder missing only ELG ffa)
+85 #no directory at all (temp folder missing ELG and QSO ffa)
+98 #no directory at all (temp folder only missing ffa ELG)
+104 #permissions issue
+108 #permissions issue
+113 #permissions issue
+114 #permissions issue
+217 #all ffa missing
+228 #all ffa missing
+279 #all ffa missing
+282 #all ffa missing
+317 #all ffa missing
+320 #all ffa missing
+330 #ffa_full_ELG_LOP and QSO missing
+385 #all ffa missing
+416 #all ffa missing
+487 #only ffa_full_ELG_LOP missing
+630 #all ffa missing
+649 #all ffa missing
+683 #all ffa missing
+692 #all ffa missing
+706 #only LRG ffa
+726 #no directory at all (temp folder only missing ffa ELG)
+753 #no directory at all (temp folder only missing ffa ELG)
+754 #no directory at all (temp folder only missing ffa ELG)
+926 #all ffa missing
+927 #all ffa missing
+928 #all ffa missing
+929 #all ffa missing
+937 #no directory at all (temp folder only missing ffa ELG)
+938 run again
+939 #all ffa missing
+940 #even temp directory missing
+941 #even temp directory missing
+975 #no directory at all (temp folder only missing ffa ELG)
+978 #some missing files, but all in temp, permissions issue in regular directory
+979 #some missing files, but all in temp, permissions issue in regular directory
+986 #no directory at all (temp folder only missing ffa ELG)
+988 #no directory at all (temp folder only missing ffa ELG, which didn't finish write-out)
+989 #no directory at all (temp folder only missing ffa ELG)
+990 #no directory at all (temp folder only missing ffa ELG)
+991 #no directory at all (temp folder only missing ffa ELG)
+992 #no directory at all (temp folder only missing ffa ELG)
+993 #no directory at all (temp folder only missing ffa ELG)
+994 run again
+995 #no directory at all (temp folder only missing ffa ELG)
+996 #no directory at all (temp folder only missing ffa ELG)
+997 #no directory at all (temp folder only missing ffa ELG)
+998 #no directory at all (temp folder only missing ffa ELG)
+999 #no directory at all (temp folder only missing ffa ELG)
