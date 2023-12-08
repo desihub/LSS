@@ -73,6 +73,7 @@ parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default
 parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default='n')
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 parser.add_argument("--add_fs", help="add rest frame info from fastspecfit",default='n')
+parser.add_argument("--redoBGS215", help="whether to use purely photometry+z based rest frame info or fastspecfit",default='n')
 parser.add_argument("--absmagmd", help="whether to use purely photometry+z based rest frame info or fastspecfit",choices=['spec','phot'],default='spec')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
@@ -389,17 +390,6 @@ wzm = ''
 if ccut is not None:
     wzm += ccut #you could change this to however you want the file names to turn out
 
-if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
-    ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
-    if os.path.isfile(ffull) == False:
-        logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
-        fin = fitsio.read(dirout+'BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
-        if args.absmagmd == 'phot':
-            sel = fin['ABSMAG_RP1'] < -21.5
-        if args.absmagmd == 'spec':
-            sel = (fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
-            #sys.exit('need to code up using fastspecfit for abs mag selection!')
-        common.write_LSS(fin[sel],ffull)
 
 tracer_clus = type+notqso+wzm
 
@@ -558,6 +548,19 @@ if args.add_ke == 'y':
         #    dat = common.add_ke(dat,zcol='Z_not4clus')
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
+
+if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
+    ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
+        logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
+        fin = fitsio.read(dirout+'BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
+        if args.absmagmd == 'phot':
+            sel = fin['ABSMAG_RP1'] < -21.5
+        if args.absmagmd == 'spec':
+            sel = (fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
+            #sys.exit('need to code up using fastspecfit for abs mag selection!')
+        common.write_LSS(fin[sel],ffull)
+
     
 if args.add_bitweight == 'y':
     logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
