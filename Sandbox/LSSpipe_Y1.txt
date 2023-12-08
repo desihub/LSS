@@ -187,7 +187,14 @@ python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --version v1  --basedir
 python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
 
 #sysnet imaging systematic weights
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetELG_zbins_new.sh
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetELG_zbins_new.sh v1
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetBGS.sh v1 1
 
 #redo linear systematic weights for LRG using extra maps for different zbins in S; when doing so noticed bug that catalogs weren't being cut to good z, so redo all types
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+
+#get blinded catalogs
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --wsyscol WEIGHT_IMLIN --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y 
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type QSO --wsyscol WEIGHT_RF --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type BGS_BRIGHT-21.5 --wsyscol WEIGHT_SN --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type ELG_LOPnotqso --wsyscol WEIGHT_SN --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
