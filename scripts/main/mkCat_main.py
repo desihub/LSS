@@ -468,7 +468,7 @@ if type[:3] == 'BGS':
 
 
 if args.add_fs == 'y':
-    fscols=['TARGETID','ABSMAG_SDSS_G','ABSMAG_SDSS_R']
+    fscols=['TARGETID','ABSMAG01_SDSS_G','ABSMAG01_SDSS_R']
     fsver = 'v1.0'
     fsrel = 'dr1'
     fsspecver = args.verspec
@@ -557,7 +557,7 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
         if args.absmagmd == 'phot':
             sel = fin['ABSMAG_RP1'] < -21.5
         if args.absmagmd == 'spec':
-            sel = (fin['ABSMAG_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
+            sel = (fin['ABSMAG01_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
             #sys.exit('need to code up using fastspecfit for abs mag selection!')
         common.write_LSS(fin[sel],ffull)
 
