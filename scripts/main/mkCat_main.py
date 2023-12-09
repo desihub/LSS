@@ -1047,7 +1047,7 @@ if args.ran_utlid == 'y':
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
-
+inds = np.arange(args.minr,args.maxr)
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -1064,8 +1064,18 @@ if mkclusran:
 #         dchi2 = 40
 #         tsnrcut = 1000
 
-    for ii in range(rm,rx):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+    clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+    def _parfun_cr(ind):
+        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
+    if args.par == 'y':
+		from multiprocessing import Pool
+		with Pool() as pool:
+			res = pool.map(_parfun_cr, inds)
+
+    else:
+        for ii in inds:#range(rm,rx):
+            _parfun_cr(ii)
+        #,ntilecut=ntile,ccut=ccut)
 
 if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
@@ -1103,7 +1113,7 @@ if args.resamp == 'y':
         def _parfun(rannum):
             ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
         
-        inds = np.arange(nran)
+        
         if args.par == 'y':
             from multiprocessing import Pool
             with Pool() as pool:
