@@ -1106,7 +1106,7 @@ if args.resamp == 'y':
         inds = np.arange(nran)
         if args.par == 'y':
             from multiprocessing import Pool
-            with Pool(processes=nran*2) as pool:
+            with Pool() as pool:
                 res = pool.map(_parfun, inds)
         else:
             for rn in range(rm,rx):
