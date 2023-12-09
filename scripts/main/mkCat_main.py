@@ -1065,7 +1065,7 @@ if mkclusran:
 #         tsnrcut = 1000
 
     clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
-    def _parfun_cr(ind):
+    def _parfun_cr(ii):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
     if args.par == 'y':
         from multiprocessing import Pool
