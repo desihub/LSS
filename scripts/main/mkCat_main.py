@@ -1092,6 +1092,9 @@ if type[:3] == 'BGS':
 
 nran = args.maxr-args.minr
 regions = ['NGC', 'SGC']
+if args.splitGC == 'y':
+    fb = dirout+tracer_clus+'_'
+    ct.splitclusGC(fb, args.maxr - args.minr)   
 
 if args.resamp == 'y':
             
@@ -1112,17 +1115,14 @@ if args.resamp == 'y':
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
 if args.nz == 'y':
-    #for reg in allreg:
-	fb = dirout+tracer_clus#+'_'+reg
-	fcr = fb+'_0_clustering.ran.fits'
-	fcd = fb+'_clustering.dat.fits'
-	fout = fb+'_nz.txt'
-	common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-	common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
+    for reg in regions:#allreg:
+		fb = dirout+tracer_clus+'_'+reg
+		fcr = fb+'_0_clustering.ran.fits'
+		fcd = fb+'_clustering.dat.fits'
+		fout = fb+'_nz.txt'
+		common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
+		common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
 
-if args.splitGC == 'y':
-    fb = dirout+tracer_clus+'_'
-    ct.splitclusGC(fb, args.maxr - args.minr)   
     
 
 #if args.nz == 'y':
