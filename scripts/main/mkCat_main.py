@@ -1068,9 +1068,9 @@ if mkclusran:
     def _parfun_cr(ind):
         ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
     if args.par == 'y':
-		from multiprocessing import Pool
-		with Pool() as pool:
-			res = pool.map(_parfun_cr, inds)
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_parfun_cr, inds)
 
     else:
         for ii in inds:#range(rm,rx):
