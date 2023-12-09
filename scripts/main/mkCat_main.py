@@ -1063,10 +1063,13 @@ if mkclusran:
 #         tsnrcol = 'TSNR2_BGS'
 #         dchi2 = 40
 #         tsnrcut = 1000
+    ranin = dirin + args.type + notqso + '_'
+    if args.type == 'BGS_BRIGHT-21.5':
+        ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
 
     clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(dirin+type+notqso+'_',dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
+        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
