@@ -3852,7 +3852,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             rand_sel = [selregr,selregr_des,~selregr&~selregr_des]
             dat_sel = [ selregd,selregd_des,~selregd&~selregd_des]
 
-            ffcn = _resamp(selregr,selregd,ffcn,fcdn)
+            ffcn = _resamp(rand_sel,dat_sel,ffcn,fcdn)
         no_resamp = False
         if reg == 'N' or (reg == 'S' and des_resamp == False):
             no_resamp = True
