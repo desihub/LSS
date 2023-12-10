@@ -3835,7 +3835,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             rand_sel = [selregr,~selregr]
             dat_sel = [ selregd,~selregd]
 
-            ffcn = _resamp(rand_del,dat_sel,ffcn,fcdn)
+            ffcn = _resamp(rand_sel,dat_sel,ffcn,fcdn)
 
         if des_resamp and reg == '':
             print('resampling in DES region')
