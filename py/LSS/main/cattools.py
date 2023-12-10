@@ -3748,11 +3748,12 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
         print('length after cutting to unique tilelocid '+str(len(ffc)))
-    def _resamp(selregr,selregd,ffr,fcdn):
+    #def _resamp(selregr,selregd,ffr,fcdn):
+    def _resamp(rand_sel,dat_sel,ffr,fcdn):
         for col in rcols:
             ffr[col] =  np.zeros(len(ffr))
-        rand_sel = [selregr,~selregr]
-        dat_sel = [ selregd,~selregd]
+        #rand_sel = [selregr,~selregr]
+        #dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
             inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
             print(len(fcdn[dsel]),len(inds),np.max(inds))
@@ -3827,12 +3828,15 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         if 'QSO' in flin:
             if 'S' in reg or reg == '':
                 des_resamp = True
-        if reg == '': #N/S resampling
+        if reg == '' and des_resamp == False: #N/S resampling
             selregr = ffcn['PHOTSYS'] ==  'N'
             selregd = fcdn['PHOTSYS'] ==  'N'
-            ffcn = _resamp(selregr,selregd,ffcn,fcdn)
+            rand_sel = [selregr,~selregr]
+            dat_sel = [ selregd,~selregd]
 
-        if des_resamp:
+            ffcn = _resamp(rand_del,dat_sel,ffcn,fcdn)
+
+        if des_resamp and reg == '':
             print('resampling in DES region')
             from regressis import footprint
             foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
@@ -3840,9 +3844,14 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             th_ran,phi_ran = (-ffcn['DEC']+90.)*np.pi/180.,ffcn['RA']*np.pi/180.
             th_dat,phi_dat = (-fcdn['DEC']+90.)*np.pi/180.,fcdn['RA']*np.pi/180.
             pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
-            selregr = des[pixr]
+            selregr_des = des[pixr]
             pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
-            selregd = des[pixd]
+            selregd_des = des[pixd]
+            selregr = ffcn['PHOTSYS'] ==  'N'
+            selregd = fcdn['PHOTSYS'] ==  'N'
+            rand_sel = [selregr,selregr_des,~selregr&~selregr_des]
+            dat_sel = [ selregd,selregd_des,~selregd&~selregd_des]
+
             ffcn = _resamp(selregr,selregd,ffcn,fcdn)
         no_resamp = False
         if reg == 'N' or (reg == 'S' and des_resamp == False):
