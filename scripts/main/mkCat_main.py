@@ -1131,7 +1131,7 @@ if args.splitGC == 'y':
     inds = np.arange(nran)
     if args.par == 'y':
         from multiprocessing import Pool
-        with Pool(processes=nproc) as pool:
+        with Pool() as pool:
             res = pool.map(_spran, inds)
     else:
         for rn in inds:#range(rm,rx):
