@@ -1082,7 +1082,7 @@ if mkclusran:
 
 if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
-    ct.clusNStoGC(fb, args.maxr - args.minr,par=args.par)
+    ct.clusNStoGC(fb, args.maxr - args.minr)#,par=args.par)
 
 
 if type == 'QSO':
@@ -1107,7 +1107,7 @@ nran = args.maxr-args.minr
 regions = ['NGC', 'SGC']
 if args.splitGC == 'y':
     fb = dirout+tracer_clus+'_'
-    ct.splitclusGC(fb, args.maxr - args.minr)   
+    ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
 
 if args.resamp == 'y':
             
