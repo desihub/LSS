@@ -4189,7 +4189,7 @@ def splitclusGC(flroot,nran=1,par='n'):
         common.write_LSS(fc[sel_ngc],outf_ngc)
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
-    inds = np.arrange(nran)
+    inds = np.arange(nran)
     if par == 'n':
         for rann in inds:
             _ranparfun(rann)
