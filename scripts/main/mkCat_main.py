@@ -1082,7 +1082,7 @@ if mkclusran:
 
 if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
-    ct.clusNStoGC(fb, args.maxr - args.minr)
+    ct.clusNStoGC(fb, args.maxr - args.minr,par=args.par)
 
 
 if type == 'QSO':
