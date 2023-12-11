@@ -4164,7 +4164,7 @@ def clusNStoGC(flroot,nran=1):
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
    
-def splitclusGC(flroot,nran=1):
+def splitclusGC(flroot,nran=1,par='n'):
     import LSS.common_tools as common
     '''
     split full clustering catalog by Galactic cap; should already have been re-sampled N/S (and DES for QSO)
@@ -4179,8 +4179,8 @@ def splitclusGC(flroot,nran=1):
     common.write_LSS(fc[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_clustering.dat.fits'
     common.write_LSS(fc[~sel_ngc],outf_sgc)
+    def _ranparfun(rann):
     
-    for rann in range(0,nran):
         fc = Table(fitsio.read(flroot+str(rann)+'_clustering.ran.fits'))
         c = SkyCoord(fc['RA']* u.deg,fc['DEC']* u.deg,frame='icrs')
         gc = c.transform_to('galactic')
@@ -4189,8 +4189,15 @@ def splitclusGC(flroot,nran=1):
         common.write_LSS(fc[sel_ngc],outf_ngc)
         outf_sgc = flroot+'SGC_'+str(rann)+'_clustering.ran.fits'
         common.write_LSS(fc[~sel_ngc],outf_sgc)
-
-
+    inds = np.arrange(nran)
+    if par == 'n':
+        for rann in inds:
+            _ranparfun(rann)
+    if par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_ranparfun, inds)
+    
 
 
 def random_mtl(rd,outf ):
