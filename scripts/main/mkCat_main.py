@@ -1125,17 +1125,17 @@ def splitGC(flroot,datran='.dat',rann=0):
 if args.splitGC == 'y':
     fb = dirout+tracer_clus+'_'
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
-	splitGC(fb,'.dat')
-	def _spran(rann):
-		splitGC(fb,'.ran',rann)
-	inds = np.arange(nran)
-	if args.par == 'y':
-		from multiprocessing import Pool
-		with Pool(processes=nproc) as pool:
-			res = pool.map(_spran, inds)
-	else:
-		for rn in inds:#range(rm,rx):
-			 _spran(rn)
+    splitGC(fb,'.dat')
+    def _spran(rann):
+        splitGC(fb,'.ran',rann)
+    inds = np.arange(nran)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_spran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _spran(rn)
 
 
 
