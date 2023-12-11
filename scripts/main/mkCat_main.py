@@ -1105,9 +1105,39 @@ if type[:3] == 'BGS':
 
 nran = args.maxr-args.minr
 regions = ['NGC', 'SGC']
+
+def splitGC(flroot,datran='.dat',rann=0):
+    import LSS.common_tools as common
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    app = 'clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = str(rann)+'_clustering'+datran+'.fits'
+
+    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    sel_ngc = common.splitGC(fn)#gc.b > 0
+    outf_ngc = flroot+'NGC_'+app
+    common.write_LSS(fn[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_'+app
+    common.write_LSS(fn[~sel_ngc],outf_sgc)
+
+
 if args.splitGC == 'y':
     fb = dirout+tracer_clus+'_'
-    ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
+   # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
+	splitGC(fb,'.dat')
+	def _spran(rann):
+		splitGC(fb,'.ran',rann)
+	inds = np.arange(nran)
+	if args.par == 'y':
+		from multiprocessing import Pool
+		with Pool(processes=nproc) as pool:
+			res = pool.map(_spran, inds)
+	else:
+		for rn in inds:#range(rm,rx):
+			 _spran(rn)
+
+
 
 if args.resamp == 'y':
             
