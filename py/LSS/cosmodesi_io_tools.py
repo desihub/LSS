@@ -210,6 +210,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'addSN' in weight_type:
         #assumes no imaging systematic weights were in default
         weights *=  catalog['WEIGHT_SN'][mask]
+    if 'addIMLIN' in weight_type:
+        #assumes no imaging systematic weights were in default
+        weights *=  catalog['WEIGHT_IMLIN'][mask]
 
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
