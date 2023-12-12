@@ -85,7 +85,7 @@ if args.prog == 'dark':
 if args.prog == 'bright':
     types = ['BGS']
     priority = {'BGS': 2100}
-    mainp = main(tp = 'BGS_BRIGHT', specver = 'iron')
+    mainp = main(tp = 'BGS', specver = 'iron')
     desitar = {'BGS': 2**60}
     zs = {'BGS': 'z0.200'}
     numobs = {'BGS': 2}
@@ -219,8 +219,8 @@ for real in range(args.realmin, args.realmax):
                 idx_main = idx[(in_y1 == 1)]
 
 
+            print('SIZE FROM FILE ORIGINAL', len(data))
             if type_ == 'LRG' or type_ == 'QSO':
-                print(len(data))
                 if args.downsampling == 'y':
                     ran_tot = np.random.uniform(size = len(idx_main))
                     idx_main = idx_main[(ran_tot<=downsampling[type_])]
@@ -246,6 +246,8 @@ for real in range(args.realmin, args.realmax):
 
                 data = Table(data[idx_main])
 
+                print('SIZE FROM FILE AFTER Y1 cut', len(data))
+
                 data['DESI_TARGET'] = desitar[type_]
                 data['PRIORITY_INIT'] = priority[type_]
                 data['PRIORITY'] = priority[type_]
@@ -254,26 +256,40 @@ for real in range(args.realmin, args.realmax):
 
 
                 mask_bright = data["R_MAG_APP"]<args.rbandcut
-                data['DESI_TARGET'][mask_bright] += 2**1
-                data['DESI_TARGET'][~mask_bright] += 2**0
-                data['PRIORITY_INIT'][~mask_bright] = 2000
-                data['PRIORITY'][~mask_bright] = 2000
-
+                mask_faint = (data["R_MAG_APP"]>=args.rbandcut)&(data["R_MAG_APP"]<=20.175)
                 dat_bright = data[mask_bright]
-                dat_faint = data[~mask_bright]
-                dat_faint = dat_faint[(dat_faint["R_MAG_APP"] <= 20.175)]
+                dat_faint = data[mask_faint]
+               
+                print('size of BRIGHT', len(dat_bright))
+                print('size of FAINT', len(dat_faint))
+
+                dat_bright['BGS_TARGET'] = 2**1
+                
+                dat_faint['BGS_TARGET'] = 2**0
+                #dat_faint['PRIORITY_INIT'] = 2000
+                #dat_faint['PRIORITY'] = 2000
+
+
+                #dat_faint = dat_faint[(dat_faint["R_MAG_APP"] <= 20.175)]
 
                 datat.append(dat_bright)
                 
                 PromoteFracBGSFaint=0.2
 
                 ran_hip = np.random.uniform(size = len(dat_faint))
-                dat_faint['DESI_TARGET'][(ran_hip<=PromoteFracBGSFaint)] += 2**3
-                dat_faint['PRIORITY_INIT'][(ran_hip<=PromoteFracBGSFaint)] = 2100
-                dat_faint['PRIORITY'][(ran_hip<=PromoteFracBGSFaint)] = 2100
+
+                dat_faint_f = dat_faint[(ran_hip>PromoteFracBGSFaint)]
+                dat_faint_hip = dat_faint[(ran_hip<=PromoteFracBGSFaint)]
+
+                dat_faint_hip['BGS_TARGET'] += 2**3
+
+                dat_faint_f['PRIORITY_INIT'] = 2000 
+
+                dat_faint_f['PRIORITY'] = 2000
 
 
-                datat.append(dat_faint)
+                datat.append(dat_faint_f)
+                datat.append(dat_faint_hip)
 
             elif type_ == 'ELG':
 
@@ -357,10 +373,10 @@ for real in range(args.realmin, args.realmax):
 
     targets = vstack(datat)
     del datat
-    if args.mockver != 'ab_secondgen' or args.mockver != 'ab_secondgen_cosmosim':
-        print(len(targets),' in Y5 area')
-        selY1 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
-        targets = targets[selY1]
+    ###if args.mockver != 'ab_secondgen' or args.mockver != 'ab_secondgen_cosmosim':
+    print(len(targets),' in Y5 area')
+    selY1 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
+    targets = targets[selY1]
     print(len(targets),' in Y1 area')
 
     if args.apply_mask == 'y':
@@ -378,9 +394,7 @@ for real in range(args.realmin, args.realmax):
     n=len(targets)
     targets.rename_column('Z_COSMO', 'TRUEZ') 
     targets.rename_column('Z', 'RSDZ') 
-    if args.prog == 'bright':
-        targets['BGS_TARGET'] = targets['DESI_TARGET'] #2 * np.ones(n, dtype='i8')
-    else:
+    if args.prog == 'dark':
         targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
     targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
     targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)

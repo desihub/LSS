@@ -183,7 +183,8 @@ test_dir(dirout)
 if args.tracer != 'dark' and args.tracer != 'bright':
     if args.tracer == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[args.tracer]
-        desitarg='BGS_TARGET'
+        desitarg='DESI_TARGET'
+        ##desitarg='BGS_TARGET'
     else:
         bit = targetmask.desi_mask[args.tracer]
         desitarg='DESI_TARGET'

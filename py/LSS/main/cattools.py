@@ -2427,7 +2427,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     if mockz:
-        assignf = os.path.join(mockassigndir, 'datcomb_darkassignwdup.fits')
+        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup.fits').format(PROG=prog)
         fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
         fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
