@@ -16,7 +16,7 @@ from desitarget.mtl import inflate_ledger
 from desitarget import targetmask
 from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
-from desitarget import targetmask
+
 
 import LSS.main.cattools as ct
 import LSS.common_tools as common
