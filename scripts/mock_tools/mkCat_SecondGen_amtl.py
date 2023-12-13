@@ -196,7 +196,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('entering common.combtiles_wdup_altmtl for FAVAIL')
     pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
 
-if args.joindspec == 'y'
+if args.joindspec == 'y':
 
     if asn is None:
         afn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
