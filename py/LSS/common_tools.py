@@ -1398,7 +1398,7 @@ def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'D
     print('wrote ' + outf)
     return dat_comb
 
-def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN','PRIORITY'],fba=True,tp='dark'):
+def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark'):
 
     s = 0
     td = 0
@@ -1407,16 +1407,22 @@ def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','T
     outf = outdir+'/datcomb_'+tp+'assignwdup.fits'
     if fba:
         pa_hdu = 'FASSIGN'
+        tar_hdu = 'FTARGETS'
     tl = []
     for tile in tiles['TILEID']:
         if fba:
             ffa = fbadir+'/fba-'+str(tile).zfill(6)+'.fits'
         if os.path.isfile(ffa):
             fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+            ft = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','PRIORITY','SUBPRIORITY']))
             sel = fa['TARGETID'] >= 0
             fa = fa[sel]
+            lb4join = len(fa)
             td += 1
             fa['TILEID'] = int(tile)
+            fa = join(fa,ft,keys=['TARGETID'])
+            if len(fa) != lb4join:
+                print(tile,lb4join,len(fa))
             tl.append(fa)
             print(td,len(tiles))
         else:
