@@ -1398,6 +1398,45 @@ def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'D
     print('wrote ' + outf)
     return dat_comb
 
+def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC']):
+    s = 0
+    td = 0
+    print('size of tiles', len(tiles))
+    tl = []
+    for tile in tiles['TILEID']:
+
+        fadate = return_altmtl_fba_fadate(tile)
+        ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
+        if pa_hdu == 'FAVAIL':
+            fa = Table(fitsio.read(ffa, ext=pa_hdu))
+        else:
+            fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+            ft = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','PRIORITY','SUBPRIORITY']))
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
+            lb4join = len(fa)
+            td += 1
+            fa['TILEID'] = int(tile)
+            fa = join(fa,ft,keys=['TARGETID'])
+            if len(fa) != lb4join:
+                print(tile,lb4join,len(fa))
+
+        sel = fa['TARGETID'] >= 0
+        fa = fa[sel]
+        td += 1
+        fa['TILEID'] = int(tile)
+        tl.append(fa)
+    dat_comb = vstack(tl)
+    print('size combitles for ',pa_hdu, len(dat_comb))
+    tar_in = fitsio.read(tarf, columns=addcols)
+    dat_comb = join(dat_comb, tar_in, keys=['TARGETID'])
+    print(len(dat_comb))
+
+    dat_comb.write(outf, format='fits', overwrite=True)
+    print('wrote ' + outf)
+    return dat_comb
+
+
 def combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark'):
 
     s = 0
