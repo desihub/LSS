@@ -195,6 +195,20 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
 
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
+    fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
+    
+    if not os.path.isfile(fcoll):
+        fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
+        #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
+        fcoll = mocktools.create_collision_from_pota(fin, fcoll)
+    else:
+        print('collision file already exist', fcoll)
+
+    coll = Table(fitsio.read(fcoll))
+    print('length before masking collisions '+str(len(tj)))
+    tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
+    print('length after masking collisions '+str(len(tj)))
+
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
     tj.write(outfs, format = 'fits', overwrite = True)
     print('wrote ' + outfs)
@@ -222,14 +236,14 @@ if args.fulld == 'y':
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
-    fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
+#    fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
     
-    if not os.path.isfile(fcoll):
-        fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
+#    if not os.path.isfile(fcoll):
+#        fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
         #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
-        fcoll = mocktools.create_collision_from_pota(fin, fcoll)
-    else:
-        print('collision file already exist', fcoll)
+#        fcoll = mocktools.create_collision_from_pota(fin, fcoll)
+#    else:
+#        print('collision file already exist', fcoll)
 
     ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     print('*** END WITH FULLD ***')
