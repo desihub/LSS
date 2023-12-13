@@ -202,10 +202,13 @@ if args.joindspec == 'y':
     if asn is None:
         afn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
         asn = fitsio.read(afn)
+        print('loaded assignments')
     if pa is None:
         pafn = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
         pa = Table(fitsio.read(pafn))
+        print('loaded potential assignements')
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
+    print('about to join assignments and potential assignments')
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
     
