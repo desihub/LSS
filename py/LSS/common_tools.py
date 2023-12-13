@@ -1430,7 +1430,7 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
     dat_comb = vstack(tl)
     print('size combitles for ',pa_hdu, len(dat_comb))
     tar_in = fitsio.read(tarf, columns=addcols)
-    dat_comb = join(dat_comb, tar_in, keys=['TARGETID'])
+    dat_comb = join(dat_comb, tar_in, keys=['TARGETID'],join_type='left')
     print(len(dat_comb))
 
     dat_comb.write(outf, format='fits', overwrite=True)
