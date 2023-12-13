@@ -177,6 +177,7 @@ if args.tracer != 'dark' and args.tracer != 'bright':
 
 asn = None
 pa = None
+outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('--- START COMBD ---')
     print('entering altmtl')
@@ -184,7 +185,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
-    outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+    
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     print('entering common.combtiles_wdup_altmtl for FASSIGN')
