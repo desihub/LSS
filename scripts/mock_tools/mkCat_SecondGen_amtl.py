@@ -9,7 +9,7 @@ import numpy as np
 import fitsio
 import glob
 import argparse
-from astropy.table import Table,join,unique,vstack
+from astropy.table import Table,join,unique,vstack,setdiff
 from matplotlib import pyplot as plt
 from desitarget.io import read_targets_in_tiles
 from desitarget.mtl import inflate_ledger
@@ -45,6 +45,7 @@ parser.add_argument("--simName", help="base directory of AltMTL mock",default='/
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA02')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='himalayas')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
+parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data",default='y')
@@ -174,7 +175,8 @@ if args.tracer != 'dark' and args.tracer != 'bright':
 
 
 
-
+asn = None
+pa = None
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('--- START COMBD ---')
     print('entering altmtl')
@@ -194,6 +196,14 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('entering common.combtiles_wdup_altmtl for FAVAIL')
     pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
 
+if args.joindspec == 'y'
+
+    if asn is None:
+        afn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
+        asn = fitsio.read(afn)
+    if pa is None:
+        pafn = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
+        pa = Table(fitsio.read(pafn))
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
