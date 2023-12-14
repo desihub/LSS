@@ -499,7 +499,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     outf_sgc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'SGC_'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
-
+inds = np.arange(rm,rx)
 if args.splitGC == 'y':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
@@ -509,7 +509,7 @@ if args.splitGC == 'y':
     splitGC(fb+'_','.dat')
     def _spran(rann):
         splitGC(fb+'_','.ran',rann)
-    inds = np.arange(nran)
+    #inds = np.arange(nran)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool(processes=nproc) as pool:
