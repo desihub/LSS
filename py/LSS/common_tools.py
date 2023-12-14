@@ -1412,7 +1412,7 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
         if pa_hdu == 'FAVAIL':
             fa = Table(fitsio.read(ffa, ext=pa_hdu))
             sel = np.isin(fa['TARGETID'],tids)
-            fa = fa[sel]
+            fa = fa[sel] #for targets, we only want science targets
         else:
             tar_hdu = 'FTARGETS'
             fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
