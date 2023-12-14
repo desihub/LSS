@@ -662,7 +662,7 @@ if __name__ == '__main__':
             logger.info('Catalog directory is {}.'.format(cat_dir))
 
         if args.outdir is None:
-            out_dir = os.path.join(io.get_scratch_dir(), args.survey)
+            out_dir = os.path.join(io.get_scratch_dir(), args.survey,args.version)
         else:
             out_dir = args.outdir
         if mpicomm is None or mpicomm.rank == mpiroot:
