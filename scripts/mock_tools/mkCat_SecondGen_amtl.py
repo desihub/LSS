@@ -537,7 +537,7 @@ if args.resamp == 'y':
         fcd = flin+'_clustering.dat.fits'
         fout = flin+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par)
+        common.addnbar(flin,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par)
 
 
     
