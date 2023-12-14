@@ -435,12 +435,12 @@ if args.mkclusdat == 'y':
 
     
     
-
+rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA']
 if args.mkclusran == 'y':
     print('--- START MKCLUSRAN ---')
     if len(nztl) == 0:
         nztl.append('')
-    rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA']
+    
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
         tsnrcol = 'TSNR2_BGS'
