@@ -518,6 +518,21 @@ if args.splitGC == 'y':
         for rn in inds:#range(rm,rx):
              _spran(rn)
 
+if args.resamp == 'y':
+    regions = ['NGC','SGC']        
+    for reg in regions:
+        flin = fb + '_'+reg    
+        def _parfun_re(rannum):
+            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+        
+        
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool() as pool:
+                res = pool.map(_parfun_re, inds)
+        else:
+            for rn in range(rm,rx):
+                _parfun_re(rn)
 
 
     
