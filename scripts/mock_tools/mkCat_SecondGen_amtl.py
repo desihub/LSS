@@ -197,6 +197,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('entering common.combtiles_wdup_altmtl for FAVAIL')
     pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
 
+fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
 
     if asn is None:
@@ -210,7 +211,7 @@ if args.joindspec == 'y':
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     print('about to join assignments and potential assignments')
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
-    fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
+    
     
     if not os.path.isfile(fcoll):
         fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
