@@ -494,9 +494,11 @@ def splitGC(flroot,datran='.dat',rann=0):
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
-    outf_ngc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'NGC_'+app
+    #outf_ngc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'NGC_'+app
+    outf_ngc = flroot+'NGC_'+app
     common.write_LSS(fn[sel_ngc],outf_ngc)
-    outf_sgc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'SGC_'+app
+    #outf_sgc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'SGC_'+app
+    outf_sgc = flroot+'SGC_'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
 inds = np.arange(rm,rx)
