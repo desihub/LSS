@@ -2493,6 +2493,10 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
     #print('ECHO ',dz['TARGETID'][0])
     #if tp[:3] != 'QSO':
+    dz['ransort'] = np.random.random(len(dz))
+    dz.sort('ransort')
+    print('randomly sorted')
+    dz.remove_column('ransort')
     if tp[:3] == 'QSO':
         selnp = dz['LOCATION_ASSIGNED'] == 0
         pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
@@ -3983,6 +3987,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
 
     if 'NGC' in flin:
         #need to split N/S when sampling
+        print('doing N/S re-sampling')
         selregr = ffr['DEC'] > 32.375
         selregd = fcdn['DEC'] > 32.375
         ffr = _resamp(selregr,selregd,ffr,fcdn)
