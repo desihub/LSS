@@ -84,7 +84,7 @@ mapcuts = mainp.mapcuts
 #    bittest = targetmask.desi_mask
 #    desitarg='DESI_TARGET'
 if args.tracer == 'all':
-    tracers = ['LRG','ELG_LOP','QSO']
+    tracers = ['ELG_LOP','QSO','LRG']
     #if args.mockver == 'EZmock/FFA':
     #    tracers = ['ELG','QSO','LRG']
 else:
