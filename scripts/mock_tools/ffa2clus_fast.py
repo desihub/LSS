@@ -227,14 +227,16 @@ for tracer in tracers:
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
-        subfrac = 0.958 #fudge factor to get number density correct
+        if args.mockver == 'AbacusSummit':
+            subfrac = 0.958 #fudge factor to get number density correct
         if args.mockver == 'EZmock/FFA':
             subfrac = 0.96
 
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
         zmax = 1.6
-        subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
+        if args.mockver == 'AbacusSummit':
+            subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
         if args.mockver == 'EZmock/FFA':
             subfrac1 = .72
             subfrac2 = .54
@@ -243,7 +245,8 @@ for tracer in tracers:
     elif tracer == 'QSO':
         zmin = 0.8
         zmax = 2.1
-        subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
+        if args.mockver == 'AbacusSummit':
+            subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
         if args.mockver == 'EZmock/FFA':
             subfrac = 0.66
     elif tracer == 'BGS_BRIGHT-21.5':
