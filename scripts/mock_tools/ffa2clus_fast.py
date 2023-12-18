@@ -241,6 +241,7 @@ for tracer in tracers:
             subfrac1 = .72
             subfrac2 = .54
             zsplit = 1.5
+        zsplit = None
         if args.mockver == 'AbacusSummit_v3':
             subfrac1 = .8
             subfrac2 = .63
@@ -293,7 +294,7 @@ for tracer in tracers:
         mock_data_tr = mock_data_tr[selz]
         print('length after cutting to redshift range',len(mock_data_tr))
         sub_array = np.random.random(len(mock_data_tr))
-        if args.mockver == 'EZmock/FFA' and tracer == 'ELG_LOP':
+        if zsplit is not None:
             subfrac = np.ones(len(mock_data_tr))
             selzsub = mock_data_tr['Z'] < zsplit
             subfrac[selzsub] = subfrac1
