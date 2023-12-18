@@ -241,13 +241,17 @@ for tracer in tracers:
             subfrac1 = .72
             subfrac2 = .54
             zsplit = 1.5
+        if args.mockver == 'AbacusSummit_v3':
+            subfrac1 = .8
+            subfrac2 = .63
+            zsplit = 1.5
 
     elif tracer == 'QSO':
         zmin = 0.8
         zmax = 2.1
         if args.mockver == 'AbacusSummit':
             subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
-        if args.mockver == 'EZmock/FFA':
+        if args.mockver == 'EZmock/FFA' or args.mockver == 'AbacusSummit_v3':
             subfrac = 0.66
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
