@@ -224,6 +224,7 @@ for tracer in tracers:
     out_data_froot = outdir+tracer+'_ffa_'
     
     subfrac = 1
+    zsplit = None
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
@@ -241,7 +242,7 @@ for tracer in tracers:
             subfrac1 = .72
             subfrac2 = .54
             zsplit = 1.5
-        zsplit = None
+        
         if args.mockver == 'AbacusSummit_v3':
             subfrac1 = .8
             subfrac2 = .63
