@@ -9,14 +9,31 @@ https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
 In this documentation, $LSS is the directory where you have the LSS repository
 
 
-#To run on the SecondGen Abacus mock: 
->> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/prepare_mocks_Y1.py --mockver ab_secondgen --realmin 0 --realmax 2 --prog dark --base_output /pscratch/sd/a/acarnero --apply_mask y --downsampling y --overwrite True
+#To run on the SecondGen Abacus mock:
 
-	It needs to run on batch because of the apply_mask option, if not, it will crashed.
-	It has an option called --isProduction. If it is equals to 'y', it will save in the production path /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/. In this case, overwrite will be set to False. 
-	If you don't select a base_output path and it is not production, it will save on your scratch.
-	To run over all 25 realizations, set realmax = 25 
-	Downsampling is an option of mockver == ab_secondgen only
+1) PREPARE MOCKS FROM Abacus CutSKY:
+>> ./prepare_script.sh   [Should be made to run in batch several mocks at a time]
+It executes a query like:
+srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python prepare_mocks_Y1_dark.py --mockver ab_secondgen --mockpath /global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky_v3 --realmin 0 --realmax 2 --isProduction y --split_snapshot y --new_version AbacusSummit_v3_1
+
+2) CREATE MATCH TO lrg_mask for LRGs
+>> ./script_lrgmask_Y1.sh
+
+3) CREATE FIBER COLLISION FILE AND CALCULATE POTA FILES
+>> ./getpota_Y1_script.sh
+
+### AltMTL + LSS pipeline INSTRUCTIONS ### 
+
+4) CREATE INITIAL LEDGERS
+>> ./run_Y1SecondGen_initialledger_batch.sh
+
+** Currently, you need to swap to branch ReprocessingAMTL in LSS and pip install . **
+
+5) INITIALIZE ALTMTL DIRECTORY STRUCTURE FOR FIRST 1 MOCK
+
+
+
+
 
 #Add LRG veto, takes ~3 minutes per mock
 >> srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python $LSS/scripts/readwrite_pixel_bitmask.py --tracer lrg -i <mock#> --cat_type Ab2ndgen
