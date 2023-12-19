@@ -1,5 +1,5 @@
 SeconGenVer=AbacusSummit_v3_1 #AbacusSummit
-for j in {0..24}
+for j in {4..24}
 do
 #j=0
 echo $j
