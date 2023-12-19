@@ -256,7 +256,7 @@ for tracer in tracers:
         if args.mockver == 'EZmock/FFA':
             subfrac = 0.66
         if args.mockver == 'AbacusSummit_v3':
-            subfrac = 0.61
+            subfrac = 0.66
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
