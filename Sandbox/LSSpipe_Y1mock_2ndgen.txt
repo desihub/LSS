@@ -9,7 +9,9 @@ https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
 In this documentation, $LSS is the directory where you have the LSS repository
 
 
-#To run on the SecondGen Abacus mock:
+#To run on the SecondGen Abacus mocks:
+
+0) GOTO LSS/SCRIPTS/MOCK_TOOLS
 
 1) PREPARE MOCKS FROM Abacus CutSKY:
 >> ./prepare_script.sh   [Should be made to run in batch several mocks at a time]
@@ -29,7 +31,32 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python prepare_mocks_
 
 ** Currently, you need to swap to branch ReprocessingAMTL in LSS and pip install . **
 
+*) GOTO LSS/BIN
+
 5) INITIALIZE ALTMTL DIRECTORY STRUCTURE FOR FIRST 1 MOCK
+>> ./Y1ALTMTLRealizationsDARK_mock_init.sh
+
+6) MAKE PARENT DIRECTORIES FOR OTHER REALIZATIONS
+Right now this is a manual step, like
+>> mkdir ./altmtl<MOCKNUMBER>/Univ000 for <MOCKNUMBER> between 1 and 24 (included)
+
+7) COPY INITIAL LEDGERS TO ALTMTL RUN DIRECTORY AND COPY ECSV FILES
+>> python initAMTL.py
+
+8) MANUALLY ADD EXTRA TILES TO THE END OF mainsurvey-DARKobscon-TileTracker.ecsv
+>> python /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/add_extra_tilesTracker.py
+
+9) RUN ALTMTL PROCESS ON MOCK REALIZATIONS
+This process runs on regular queue that takes 12 hours but to complete the operation we need more time. Therefore, it needs to be run at least twice
+>> nohup ./Y1ALTMTLRealizationsDARK_mock.sh &
+
+** If you want to leave the second process in the queue, once you start running the first, you can put a second process in the queue stating to start after this first process ends, with the option --dependency=afterany:<JOBID> in dateLoopAltMTLBugFix_mock_batch.sh 
+<JOBID> can be found with squeue -u <USER>
+
+10) RUN A SECOND TIME
+>> nohup ./Y1ALTMTLRealizationsDARK_mock.sh &
+
+
 
 
 
