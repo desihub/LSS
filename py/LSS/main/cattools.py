@@ -3380,7 +3380,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3464,8 +3464,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
 
-    if subfrac < 1:
+    if subfrac != 1:
         sub_array = np.random.random(len(ff))
+        if zsplit is None:
+            subfrac = np.ones(len(mock_data_tr))
+            selzsub = ff['Z'] < zsplit
+            
+            subfrac[selzsub] = subfrac[0]]
+            subfrac[~selzsub] = subfrac[1]
         keep = sub_array < subfrac
         wz &= keep
         
