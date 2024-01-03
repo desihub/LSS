@@ -425,6 +425,10 @@ if args.apply_veto == 'y':
     print('*** END VETO ***')
     #print('random veto '+str(ii)+' done')
 
+readdir = dirout
+if args.start_from_full == 'y':
+	readdir = dirfinal
+
 
 nztl = []
 if args.mkclusdat == 'y':
@@ -432,9 +436,6 @@ if args.mkclusdat == 'y':
     nztl.append('')
     #fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
     #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
-    readdir = dirout
-    if args.start_from_full == 'y':
-        readdir = dirfinal
     ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit)#,ntilecut=ntile,ccut=ccut)
     #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
@@ -457,7 +458,7 @@ if args.mkclusran == 'y':
     global _parfun4
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
-        ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(os.path.join(readdir, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0
     if args.par == 'n':
