@@ -3470,7 +3470,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             subfrac = np.ones(len(mock_data_tr))
             selzsub = ff['Z'] < zsplit
             
-            subfrac[selzsub] = subfrac[0]]
+            subfrac[selzsub] = subfrac[0]
             subfrac[~selzsub] = subfrac[1]
         keep = sub_array < subfrac
         wz &= keep
