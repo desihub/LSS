@@ -59,6 +59,8 @@ parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms ba
 parser.add_argument("--mkclusran_allpot", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
+parser.add_argument("--start_from_full",help="whether to start from the full catalogs already moved the the final directory",default='n')
+
 parser.add_argument("--mkclusran_tiles", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_tiles", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default='n')
@@ -157,6 +159,7 @@ if not os.path.exists(lssdir):
     print('made '+lssdir)
 
 dirout = os.path.join(lssdir, 'LSScats')
+dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
@@ -427,9 +430,12 @@ nztl = []
 if args.mkclusdat == 'y':
     print('--- START MKCLUSDAT ---')
     nztl.append('')
-    fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
+    #fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
     #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
-    ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit)#,ntilecut=ntile,ccut=ccut)
+    readdir = dirout
+    if args.start_from_full == 'y':
+        readdir = dirfinal
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit)#,ntilecut=ntile,ccut=ccut)
     #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 
