@@ -3465,14 +3465,17 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         print('length after tsnrcut '+str(len(ff[wz])))
 
     if subfrac != 1:
+        subfracl = np.ones(len(ff))
         sub_array = np.random.random(len(ff))
-        if zsplit is None:
-            subfrac = np.ones(len(mock_data_tr))
+        if zsplit is not None:
+            #subfrac = np.ones(len(ff))
             selzsub = ff['Z'] < zsplit
             
-            subfrac[selzsub] = subfrac[0]
-            subfrac[~selzsub] = subfrac[1]
-        keep = sub_array < subfrac
+            subfracl[selzsub] = subfrac[0]
+            subfracl[~selzsub] = subfrac[1]
+        else:
+            subfracl *= subfrac
+        keep = sub_array < subfracl
         wz &= keep
         
     ff = ff[wz]
