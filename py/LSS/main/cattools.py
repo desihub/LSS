@@ -3752,7 +3752,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     print(len(ffc),len(ffr))
     del ffr
     if add_tlobs == 'y':
-        tlf = fitsio.read(fl+'frac_tlobs.fits')
+        tlf = fitsio.read(flin+'frac_tlobs.fits')
         ffc = add_tlobs_ran_array(ffc,tlf)
     if return_cat == 'y' and nosplit=='y':
         #this option will then pass the arrays to the clusran_resamp_arrays function
