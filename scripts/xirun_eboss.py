@@ -287,18 +287,9 @@ if __name__ == '__main__':
         mpiroot = 0
 
     print("use_arrays set to false")
-    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-        cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-        cat_dir = args.basedir
-        args.region = ['']
-    else:
-        cat_dir = args.basedir
-    if mpicomm is None or mpicomm.rank == mpiroot:
-        logger.info('Catalog directory is {}.'.format(cat_dir))
 
     if args.outdir is None:
-        out_dir = os.path.join(io.get_scratch_dir(), args.survey,args.version)
+        out_dir = os.path.join(io.get_scratch_dir(), 'ebossxi')
     else:
         out_dir = args.outdir
     if mpicomm is None or mpicomm.rank == mpiroot:
@@ -327,7 +318,7 @@ if __name__ == '__main__':
     for region in regions:
         if mpicomm is None or mpicomm.rank == mpiroot:
             root = '{}_{}_{}{}_{}'.format(tracer, zmin, zmax, args.rec,region)
-            fout = os.path.join(args.outdir, 'allcounts_{}.npy'.format(root))
+            fout = os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
 
         if mpicomm is None or mpicomm.rank == mpiroot:
                 logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
@@ -342,8 +333,8 @@ if __name__ == '__main__':
     all_regions = regions.copy()
     if mpicomm is None or mpicomm.rank == mpiroot:
         if 'NGC' in regions and 'SGC' in regions:  # let's combine
-            result = sum([TwoPointCorrelationFunction.load(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,region))).normalize() for region in ['NGC', 'SGC']])
-            result.save(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,'GCcomb')))
+            result = sum([TwoPointCorrelationFunction.load(os.path.join(out_dir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,region))).normalize() for region in ['NGC', 'SGC']])
+            result.save(os.path.join(out_dir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,'GCcomb')))
             all_regions.append('GCcomb')
 
 #           if args.rebinning:
