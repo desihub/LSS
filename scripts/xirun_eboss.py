@@ -147,7 +147,7 @@ from matplotlib import pyplot as plt
 dirname = '/global/cfs/cdirs/sdss/data/sdss/dr16/eboss/lss/catalogs/DR16/'
 
 
-def compute_correlation_function(corr_type, edges, zlim,nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec='_rec', njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None):
+def compute_correlation_function(corr_type, edges, zlim,region,nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec='_rec', njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None):
     data_fn = os.path.join(dirname, 'eBOSS_{}_clustering_data{}-{}-vDR16.fits'.format(tracer,rec, region))
     data = Table.read(data_fn)
 
@@ -323,7 +323,7 @@ if __name__ == '__main__':
                 logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
         edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-        result = compute_correlation_function(corr_type, edges=edges, zlim=(zmin,zmax),nthreads=nthreads, gpu=gpu, region=region, njack=args.njack, mpicomm=mpicomm, mpiroot=mpiroot)
+        result = compute_correlation_function(corr_type, edges=edges, zlim=(zmin,zmax), region=region,nthreads=nthreads, gpu=gpu, njack=args.njack, mpicomm=mpicomm, mpiroot=mpiroot)
                 # Save pair counts
         if mpicomm is None or mpicomm.rank == mpiroot:
             
