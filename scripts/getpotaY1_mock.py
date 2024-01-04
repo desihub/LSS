@@ -65,7 +65,7 @@ print(args)
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
-    infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'forFA'+args.realization+'.fits')
+    infn = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'forFA'+args.realization+'.fits')
     log.info('Reading %s' % infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
