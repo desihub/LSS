@@ -69,7 +69,7 @@ if args.mock == 'ab2ndgen':
     tarcols = list(tars.dtype.names)
     #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
     tileoutdir = os.path.join(os.getenv('SCRATCH'), 'SecondGenMocks', 'AbacusSummit', 'tartiles'+args.realization)
-    paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit', 'mock'+args.realization)
+    paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
 elif args.mock == 'ezmocks6':
     # #tr = args.tracer
     # rz = args.realization
