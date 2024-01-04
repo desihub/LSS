@@ -43,6 +43,7 @@ log = Logger.get()
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--mock", default='ab2ndgen')
+parser.add_argument("--mock_version",default='')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
@@ -62,7 +63,7 @@ args = parser.parse_args()
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
-    infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit', 'forFA'+args.realization+'.fits')
+    infn = os.path.join(args.base_input+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'forFA'+args.realization+'.fits')
     log.info('Reading %s' % infn)
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
