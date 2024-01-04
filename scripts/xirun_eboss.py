@@ -122,41 +122,41 @@ from matplotlib import pyplot as plt
 #     zmax = 2.2
 # 
 # for reg in regl:
-# 	print(reg)
-# 	#(sep, xiell), wang = compute_correlation_function('multi', bs, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
-# 	fnroot = tw+'eboss'+reg+'_'+str(zmin)+str(zmax)+'DR16'+'_'+args.bintype
-# 	pfn = dirxi+'paircounts_'+fnroot+'.npy'
-# 	result = compute_correlation_function('multi', tracer=tcorr, region=reg, zlim=(zmin,zmax),nthreads=args.nthreads,fnroot=fnroot)
-# 	for bs in bsl:
-# 		result = TwoPointEstimator.load(pfn)
-# 		result.rebin((bs, 1))
-# 		sep,xiell = project_to_multipoles(result)#, wang
-# 		fo = open(dirxi+'xi024'+fnroot+str(bs)+'.dat','w')
-# 		for i in range(0,len(sep)):
-# 			fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
-# 		fo.close()
-# 		if args.vis == 'y':
-# 			if args.bintype == 'log':
-# 				plt.loglog(sep,xiell[0])
-# 			if args.bintype == 'lin':
-# 				plt.plot(sep,sep**2.*xiell[0])
-# 			plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
-# 			plt.show()    
+#   print(reg)
+#   #(sep, xiell), wang = compute_correlation_function('multi', bs, tracer=tcorr, region=reg, nrandoms=args.nran, zlim=(zmin,zmax), weight_type=weight_type,nthreads=args.nthreads)
+#   fnroot = tw+'eboss'+reg+'_'+str(zmin)+str(zmax)+'DR16'+'_'+args.bintype
+#   pfn = dirxi+'paircounts_'+fnroot+'.npy'
+#   result = compute_correlation_function('multi', tracer=tcorr, region=reg, zlim=(zmin,zmax),nthreads=args.nthreads,fnroot=fnroot)
+#   for bs in bsl:
+#       result = TwoPointEstimator.load(pfn)
+#       result.rebin((bs, 1))
+#       sep,xiell = project_to_multipoles(result)#, wang
+#       fo = open(dirxi+'xi024'+fnroot+str(bs)+'.dat','w')
+#       for i in range(0,len(sep)):
+#           fo.write(str(sep[i])+' '+str(xiell[0][i])+' '+str(xiell[1][i])+' '+str(xiell[2][i])+'\n')
+#       fo.close()
+#       if args.vis == 'y':
+#           if args.bintype == 'log':
+#               plt.loglog(sep,xiell[0])
+#           if args.bintype == 'lin':
+#               plt.plot(sep,sep**2.*xiell[0])
+#           plt.title(ttype+' '+str(zmin)+'<z<'+str(zmax)+' in '+reg)
+#           plt.show()    
 
 
 dirname = '/global/cfs/cdirs/sdss/data/sdss/dr16/eboss/lss/catalogs/DR16/'
 
 
 def compute_correlation_function(corr_type, edges, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec='_rec', njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
-    data_fn = os.path.join(dirname, 'eBOSS_{}_clustering_data{}-{}-vDR16.fits'.format(tracer,rec region))
+    data_fn = os.path.join(dirname, 'eBOSS_{}_clustering_data{}-{}-vDR16.fits'.format(tracer,rec, region))
     data = Table.read(data_fn)
 
     randoms_fn = os.path.join(dirname, 'eBOSS_{}_clustering_random-{}-vDR16.fits'.format(tracer, region)) 
     randoms = Table.read(randoms_fn) 
     
     if rec == '_rec':
-		randoms_fn = os.path.join(dirname, 'eBOSS_{}_clustering_random{}-{}-vDR16.fits'.format(tracer, rec,region)) 
-		randoms_rec = Table.read(randoms_fn) 
+        randoms_fn = os.path.join(dirname, 'eBOSS_{}_clustering_random{}-{}-vDR16.fits'.format(tracer, rec,region)) 
+        randoms_rec = Table.read(randoms_fn) 
 
     def get_positions_weights(catalog):
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
@@ -286,32 +286,32 @@ if __name__ == '__main__':
         mpicomm = mpi.COMM_WORLD
         mpiroot = 0
 
-	print("use_arrays set to false")
-	if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
-		cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
-	elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
-		cat_dir = args.basedir
-		args.region = ['']
-	else:
-		cat_dir = args.basedir
-	if mpicomm is None or mpicomm.rank == mpiroot:
-		logger.info('Catalog directory is {}.'.format(cat_dir))
+    print("use_arrays set to false")
+    if os.path.normpath(args.basedir) == os.path.normpath('/global/cfs/cdirs/desi/survey/catalogs/'):
+        cat_dir = io.catalog_dir(base_dir=args.basedir, survey=args.survey, verspec=args.verspec, version=args.version)
+    elif os.path.normpath(args.basedir) == os.path.normpath('/global/project/projectdirs/desi/users/acarnero/mtl_mock000_univ1/'):
+        cat_dir = args.basedir
+        args.region = ['']
+    else:
+        cat_dir = args.basedir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Catalog directory is {}.'.format(cat_dir))
 
-	if args.outdir is None:
-		out_dir = os.path.join(io.get_scratch_dir(), args.survey,args.version)
-	else:
-		out_dir = args.outdir
-	if mpicomm is None or mpicomm.rank == mpiroot:
-		logger.info('Output directory is {}.'.format(out_dir))
+    if args.outdir is None:
+        out_dir = os.path.join(io.get_scratch_dir(), args.survey,args.version)
+    else:
+        out_dir = args.outdir
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('Output directory is {}.'.format(out_dir))
 
-	tracer, tracer2 = args.tracer[0], None
-	if len(args.tracer) > 1:
-		tracer2 = args.tracer[1]
-		if len(args.tracer) > 2:
-			raise ValueError('Provide <= 2 tracers!')
-	if tracer2 == tracer:
-		tracer2 = None # otherwise counting of self-pairs
-	catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, recon_dir=args.recon_dir,rec_type=args.rec_type) # survey required for zdone
+    tracer, tracer2 = args.tracer[0], None
+    if len(args.tracer) > 1:
+        tracer2 = args.tracer[1]
+        if len(args.tracer) > 2:
+            raise ValueError('Provide <= 2 tracers!')
+    if tracer2 == tracer:
+        tracer2 = None # otherwise counting of self-pairs
+    catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, recon_dir=args.recon_dir,rec_type=args.rec_type) # survey required for zdone
         
     
 
@@ -346,46 +346,46 @@ if __name__ == '__main__':
             result.save(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,'GCcomb'))
             all_regions.append('GCcomb')
 
-# 			if args.rebinning:
-# 				for region in all_regions:
-# 					txt_kwargs = base_file_kwargs.copy()
-# 					txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
-# 					result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
-# 					for factor in rebinning_factors:
-# 						#result = TwoPointEstimator.load(fn)
-# 						rebinned = result[:(result.shape[0] // factor) * factor:factor]
-# 						txt_kwargs.update(bin_type=args.bin_type+str(factor))
-# 						if corr_type == 'smu':
-# 							fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
-# 							rebinned.save_txt(fn_txt)
-# 							fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
-# 							rebinned.save_txt(fn_txt, ells=(0, 2, 4), ignore_nan=True)
-# 							fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
-# 							rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
-# 						elif corr_type == 'rppi':
-# 							fn_txt = corr_fn(file_type='wp', **txt_kwargs)
-# 							rebinned.save_txt(fn_txt, pimax=40.)
-# 							for pifac in pi_rebinning_factors:
-# 								rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
-# 								txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
-# 								fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
-# 								rebinned.save_txt(fn_txt)
-# 						elif corr_type == 'theta':
-# 							fn_txt = corr_fn(file_type='theta', **txt_kwargs)
-# 							rebinned.save_txt(fn_txt)
+#           if args.rebinning:
+#               for region in all_regions:
+#                   txt_kwargs = base_file_kwargs.copy()
+#                   txt_kwargs.update(region=region, out_dir=os.path.join(out_dir, corr_type))
+#                   result = TwoPointCorrelationFunction.load(corr_fn(file_type='npy', **txt_kwargs))
+#                   for factor in rebinning_factors:
+#                       #result = TwoPointEstimator.load(fn)
+#                       rebinned = result[:(result.shape[0] // factor) * factor:factor]
+#                       txt_kwargs.update(bin_type=args.bin_type+str(factor))
+#                       if corr_type == 'smu':
+#                           fn_txt = corr_fn(file_type='xismu', **txt_kwargs)
+#                           rebinned.save_txt(fn_txt)
+#                           fn_txt = corr_fn(file_type='xipoles', **txt_kwargs)
+#                           rebinned.save_txt(fn_txt, ells=(0, 2, 4), ignore_nan=True)
+#                           fn_txt = corr_fn(file_type='xiwedges', **txt_kwargs)
+#                           rebinned.save_txt(fn_txt, wedges=(-1., -2./3, -1./3, 0., 1./3, 2./3, 1.))
+#                       elif corr_type == 'rppi':
+#                           fn_txt = corr_fn(file_type='wp', **txt_kwargs)
+#                           rebinned.save_txt(fn_txt, pimax=40.)
+#                           for pifac in pi_rebinning_factors:
+#                               rebinned = result[:(result.shape[0]//factor)*factor:factor,:(result.shape[1]//pifac)*pifac:pifac]
+#                               txt_kwargs.update(bin_type=args.bin_type+str(factor)+'_'+str(pifac))
+#                               fn_txt = corr_fn(file_type='xirppi', **txt_kwargs)
+#                               rebinned.save_txt(fn_txt)
+#                       elif corr_type == 'theta':
+#                           fn_txt = corr_fn(file_type='theta', **txt_kwargs)
+#                           rebinned.save_txt(fn_txt)
 # 
-# 						if args.vis:
-# 							if corr_type == 'smu':
-# 								sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
-# 							elif corr_type == 'rppi':
-# 								sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
-# 							else:
-# 								sep, xis = rebinned(return_sep=True, return_std=False)
-# 							if args.bin_type == 'log':
-# 								for xi in xis: plt.loglog(sep, xi)
-# 							if args.bin_type == 'lin':
-# 								for xi in xis: plt.plot(sep, sep**2 * xi)
-# 							tracers = tracer
-# 							if tracer2 is not None: tracers += ' x ' + tracer2
-# 							plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
-# 							plt.show()
+#                       if args.vis:
+#                           if corr_type == 'smu':
+#                               sep, xis = rebinned(ells=(0, 2, 4), return_sep=True, return_std=False)
+#                           elif corr_type == 'rppi':
+#                               sep, xis = rebinned(pimax=40, return_sep=True, return_std=False)
+#                           else:
+#                               sep, xis = rebinned(return_sep=True, return_std=False)
+#                           if args.bin_type == 'log':
+#                               for xi in xis: plt.loglog(sep, xi)
+#                           if args.bin_type == 'lin':
+#                               for xi in xis: plt.plot(sep, sep**2 * xi)
+#                           tracers = tracer
+#                           if tracer2 is not None: tracers += ' x ' + tracer2
+#                           plt.title('{} {:.2f} < z {:.2f} in {}'.format(tracers, zmin, zmax, region))
+#                           plt.show()
