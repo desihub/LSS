@@ -323,7 +323,7 @@ if __name__ == '__main__':
                 logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
         edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-        result = compute_correlation_function(corr_type, edges=edges, zlim=(zmin,zmax), region=region,nthreads=nthreads, gpu=gpu, njack=args.njack, mpicomm=mpicomm, mpiroot=mpiroot)
+        result = compute_correlation_function(corr_type, edges=edges, zlim=(zmin,zmax), region=region,nthreads=nthreads, gpu=gpu, njack=args.njack, mpicomm=mpicomm, mpiroot=mpiroot,tracer=tracer)
                 # Save pair counts
         if mpicomm is None or mpicomm.rank == mpiroot:
             
