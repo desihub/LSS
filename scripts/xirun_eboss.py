@@ -289,7 +289,7 @@ if __name__ == '__main__':
     print("use_arrays set to false")
 
     if args.outdir is None:
-        out_dir = os.path.join(io.get_scratch_dir(), 'ebossxi')
+        out_dir = os.path.join(os.getenv('SCRATCH'), 'ebossxi')
     else:
         out_dir = args.outdir
     if mpicomm is None or mpicomm.rank == mpiroot:
