@@ -60,6 +60,8 @@ parser.add_argument("--nprocs", help="Number of multiprocessing processes to use
 desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
 
 args = parser.parse_args()
+print(args)
+
 if args.mock == 'ab2ndgen':
     #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
     #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
