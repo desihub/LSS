@@ -342,8 +342,8 @@ if __name__ == '__main__':
     all_regions = regions.copy()
     if mpicomm is None or mpicomm.rank == mpiroot:
         if 'NGC' in regions and 'SGC' in regions:  # let's combine
-            result = sum([TwoPointCorrelationFunction.load(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,region)).normalize() for region in ['NGC', 'SGC']])
-            result.save(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,'GCcomb'))
+            result = sum([TwoPointCorrelationFunction.load(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,region))).normalize() for region in ['NGC', 'SGC']])
+            result.save(os.path.join(args.outdir, 'allcounts_{}_{}_{}{}_{}.npy'.format(tracer, zmin, zmax, args.rec,'GCcomb')))
             all_regions.append('GCcomb')
 
 #           if args.rebinning:
