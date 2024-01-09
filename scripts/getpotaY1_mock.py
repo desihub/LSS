@@ -1,9 +1,7 @@
 '''
 Find all potential assignment and counts tiles for Y1 mocks
 Use the following environment
-source $CFS/desi/software/desi_environment.sh main
-module swap desimodel/0.19.0
-module swap fiberassign/5.7.2
+source /global/common/software/desi/desi_environment.sh main
 '''
 
 import numpy as np
