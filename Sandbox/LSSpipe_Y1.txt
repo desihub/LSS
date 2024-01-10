@@ -218,3 +218,11 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mai
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --fulld n --survey Y1 --verspec iron --version v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
 
+#jan 10th re-add bitweights
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
