@@ -567,16 +567,16 @@ if args.add_bitweight == 'y':
     fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     print(fn)
     ff = Table(fitsio.read(fn))
-    try:
-        ff.remove_columns(['BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2'])
-        print('removed ','BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2')
-    except:
-        pass
-    try:
-        ff.remove_columns(['BITWEIGHTS','PROBOBS'])
-        print('removed ','BITWEIGHTS','PROBOBS')
-    except:
-        pass
+    #try:
+    ff.remove_columns(['BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2'])
+    print('removed ','BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2')
+    #except:
+    #    print('not removing 1/2 bitweights')
+    #try:
+    ff.remove_columns(['BITWEIGHTS','PROBOBS'])
+    print('removed ','BITWEIGHTS','PROBOBS')
+    #except:
+    #    print('not removing bitweights')
 
     if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
