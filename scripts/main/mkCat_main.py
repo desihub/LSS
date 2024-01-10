@@ -566,7 +566,18 @@ if args.add_bitweight == 'y':
     logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
     fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     print(fn)
-    ff = fitsio.read(fn)
+    ff = Table(fitsio.read(fn))
+    try:
+        ff.remove_columns(['BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2'])
+        print('removed ','BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2')
+    except:
+        pass
+    try:
+        ff.remove_columns(['BITWEIGHTS','PROBOBS'])
+        print('removed ','BITWEIGHTS','PROBOBS')
+    except:
+        pass
+
     if type[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
     else:
