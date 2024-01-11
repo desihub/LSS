@@ -17,13 +17,34 @@ from desitarget import targetmask
 from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
 
+import logging
+
+# create logger
+logname = 'LSSran'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+
 #sys.path.append('../py') #this requires running from LSS/bin, *something* must allow linking without this but is not present in code yet
 
 #from this package
 #try:
 import LSS.main.cattools as ct
 import LSS.common_tools as common
-import LSS.mkCat_singletile.fa4lsscat as fa
+#import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
 
 if os.environ['NERSC_HOST'] == 'cori':
@@ -31,7 +52,7 @@ if os.environ['NERSC_HOST'] == 'cori':
 elif os.environ['NERSC_HOST'] == 'perlmutter':
     scratch = 'PSCRATCH'
 else:
-    print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    logger.info('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 
@@ -51,6 +72,8 @@ parser.add_argument("--fullr", help="make the random files associated with the f
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--fillran", help="add columns",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
+parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
+
 parser.add_argument("--clus", help="make the data/random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
@@ -63,7 +86,7 @@ parser.add_argument("--notqso",help="if y, do not include any qso targets",defau
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
 
 args = parser.parse_args()
-print(args)
+logger.info(args)
 
 
 
@@ -137,11 +160,11 @@ randir = basedir +'/main/LSS/random'
 
 if not os.path.exists(maindir+'/logs'):
     os.mkdir(maindir+'/logs')
-    print('made '+maindir+'/logs')
+    logger.info('made '+maindir+'/logs')
 
 if not os.path.exists(maindir+'/LSScats'):
     os.mkdir(maindir+'/LSScats')
-    print('made '+maindir+'/LSScats')
+    logger.info('made '+maindir+'/LSScats')
 
 
 
@@ -151,18 +174,18 @@ if not os.path.exists(maindir+'/LSScats'):
 #for i in range(rm,rx):
 #    if not os.path.exists(maindir+'random'+str(i)):
 #        os.mkdir(maindir+'random'+str(i))
-#        print('made '+str(i)+' random directory')
+#        logger.info('made '+str(i)+' random directory')
 
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
-    print('made '+ldirspec)
+    logger.info('made '+ldirspec)
 
 
 dirout = ldirspec+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
-    print('made '+dirout)
+    logger.info('made '+dirout)
 
 mainp = main(type,args.verspec)
 
@@ -187,8 +210,8 @@ if args.survey == 'Y1':
     wd &=mt['ZDATE'] < 20220900
 
 mtld = mt[wd]
-#print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
+#logger.info('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
+logger.info('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 selt = np.isin(tiles['TILEID'],mtld['TILEID'])
 ta = Table()
@@ -200,27 +223,27 @@ ta['DEC'] =tiles[selt]['DEC']
 
 #if mkfullr or combr:
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-print('loading specf file '+specfo)
+logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-print('loaded specf file '+specfo)
+logger.info('loaded specf file '+specfo)
 specfc = common.cut_specdat(specf,badfib=mainp.badfib)
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 
 if mkfullr:
-    print('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
+    logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
     wg = np.isin(specft['TILELOCID'],gtl)
     specft = Table(specft[wg])
-    print('length after selecting type and good hardware '+str(len(specf)))
+    logger.info('length after selecting type and good hardware '+str(len(specf)))
 
-    lznp = common.find_znotposs(specft)    
-    print('finished finding znotposs')
+    lznp = common.find_znotposs(specft,logname=logname)    
+    logger.info('finished finding znotposs')
     if type == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
@@ -233,45 +256,45 @@ kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS
 specf.keep_columns(kc)
 
 
-print(len(ta))
-print('done with preliminaries')
+logger.info(len(ta))
+logger.info('done with preliminaries')
 
 def doran(ii):
-    print('doing random '+str(ii))
+    logger.info('doing random '+str(ii))
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
     dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
     if mkranmtl:
-        print('making random mtl files for each tile')
+        logger.info('making random mtl files for each tile')
         #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
         ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
 
 
 #     if mkranmtl:
-#         print('making random mtl files for each tile')
+#         logger.info('making random mtl files for each tile')
 #         if par:
 #             nti = int(len(ta)/rx)+1
-#             print(nti,len(ta),ii)
+#             logger.info(nti,len(ta),ii)
 #             for jj in range(rm,rx):
-#                 print(jj)
+#                 logger.info(jj)
 #                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-#                 print('read random file '+str(jj))
+#                 logger.info('read random file '+str(jj))
 #                 tim = nti*ii
 #                 tix = nti*(ii+1)
 #                 if tix < len(ta):
 #                     tiles = ta[tim:tix]
 #                 else:
 #                     tiles = ta[tim:]
-#                 print('writing randoms to '+str(len(tiles))+' tiles')
+#                 logger.info('writing randoms to '+str(len(tiles))+' tiles')
 #                 ct.randomtiles_main_fromran(tiles,rt )
 #         else:
 #             ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
-        print('DID YOU DELETE THE OLD FILES!!!')
+        logger.info('DID YOU DELETE THE OLD FILES!!!')
         for it in range(0,len(ta)):
-            #print(it,len(mtld))    
+            #logger.info(it,len(mtld))    
             tile = ta['TILEID'][it]
             ts = str(tile).zfill(6)
             fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -283,7 +306,7 @@ def doran(ii):
                 if int(fav[:1]) >= 5:
                     fav = '5.0.0'
             except:
-                print(fav)        
+                logger.info(fav)        
 
             if fav == faver:
                 ttemp = Table(ta[it])
@@ -294,21 +317,21 @@ def doran(ii):
                     ttemp['FA_HA'] = fbah['FA_HA']
                     ttemp['FIELDROT'] = fbah['FIELDROT']
                 except:
-                    print('did not add FA_PLAN and FIELDROT')
+                    logger.info('did not add FA_PLAN and FIELDROT')
                 #for i in range(rm,rx):
                 testfbaf = randir+str(ii)+'/fba-'+str(tile).zfill(6)+'.fits'
                 if os.path.isfile(testfbaf):
-                    print('fba file already made')
+                    logger.info('fba file already made')
                 else:                   
-                    print(ttemp)
-                    print(fav,dt)
+                    logger.info(ttemp)
+                    logger.info(fav,dt)
                     ttemp.write('tiletemp'+str(ii)+'.fits',format='fits', overwrite=True)
                     fa.getfatiles(randir+str(ii)+'/tilenofa-'+str(tile)+'.fits','tiletemp'+str(ii)+'.fits',dirout=randir+str(ii)+'/',dt = dt,faver=faver)
 
  
 
     if combr:
-        print(len(mtld['TILEID']))
+        logger.info(len(mtld['TILEID']))
         #ct.combran(mtld,ii,randir,dirout,type,sv3_targetmask.desi_mask)
         if type == 'dark' or type == 'bright':
             
@@ -327,7 +350,7 @@ def doran(ii):
                 tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     if args.combwspec == 'y':
-        print('combining with spec info')
+        logger.info('combining with spec info')
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
         mask_coll = False
         if args.survey == 'Y1':
@@ -335,7 +358,7 @@ def doran(ii):
         ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
     
     if args.counttiles == 'y':    
-        print('counting tiles')
+        logger.info('counting tiles')
         tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
         common.write_LSS(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
@@ -358,27 +381,27 @@ def doran(ii):
 #             fbcol = 'FIBERSTATUS'
 
         outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        print('about to make full ran '+outf)
+        logger.info('about to make full ran '+outf)
         ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
-    #print('ran mkfullran\n')
+    #logger.info('ran mkfullran\n')
     if args.add_veto == 'y':
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii)
 
     if args.fillran == 'y':
-        print('filling randoms with imaging properties')
+        logger.info('filling randoms with imaging properties')
         fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         #ct.addcol_ran(fn,ii)
         new_cols=mainp.new_cols
         fid_cols=mainp.fid_cols
         common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
-        print('done with '+str(ii))
+        logger.info('done with '+str(ii))
 
 
     if args.apply_veto == 'y':
-        print('applying vetos')
+        logger.info('applying vetos')
         maxp = 3400
         if type[:3] == 'LRG' or notqso == 'notqso':
             maxp = 3200
@@ -387,9 +410,11 @@ def doran(ii):
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp)
-        #print('random veto '+str(ii)+' done')
+        #logger.info('random veto '+str(ii)+' done')
 
-
+    if args.add_tlcomp == 'y':
+        fl = dirout+type+notqso+'_'
+        ct.add_tlobs_ran(fl,ii)
 
     if mkclusran:
 #         tsnrcol = 'TSNR2_ELG'
@@ -406,11 +431,11 @@ def doran(ii):
 #             tsnrcut = 1000
 
         ct.mkclusran(dirout+type+notqso+'_',ii,zmask=zma,tsnrcut=tsnrcut,tsnrcol=tsnrcol)
-    print('done with random '+str(ii))
+    logger.info('done with random '+str(ii))
     return True
         #ct.mkclusran(dirout+type+'Alltiles_',ii,zmask=zma)
     #logf.write('ran mkclusran\n')
-    #print('ran mkclusran\n')
+    #logger.info('ran mkclusran\n')
     
 if __name__ == '__main__':
     if par:
@@ -418,19 +443,19 @@ if __name__ == '__main__':
         import sys
         #N = int(sys.argv[2])
         #N = 32
-        N = rx-rm+1
+        N = rx-rm#+1
         #p = Pool(N)
         inds = []
         for i in range(rm,rx):
             inds.append(i)
         #with sharedmem.MapReduce() as pool:
-        pool = sharedmem.MapReduce(np=N)
+        pool = sharedmem.MapReduce(np=6)
         with pool:
         
-            def reduce( r):
-                print('chunk done')
-                return r
-            pool.map(doran,inds,reduce=reduce)
+            #def reduce(ii, r):
+            #    logger.info('chunk done '+str(ii))
+            #    return r
+            pool.map(doran,inds)#,reduce=reduce)
 
         #p.map(doran,inds)
     else:

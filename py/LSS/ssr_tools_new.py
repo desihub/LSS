@@ -10,6 +10,7 @@ from scipy.optimize import curve_fit, minimize
 from scipy.special import erf
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+import time
 
 import LSS.common_tools as common
 
@@ -246,10 +247,13 @@ class model_ssr:
         print(self.nzf)
         self.nzfe = np.sqrt(hf)/ha
         bc = []
+        median_bins = []
         bs = bine[1]-bine[0]
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
+            median_bins.append(np.median(self.cat['TSNR2_'+tracer][(self.cat['TSNR2_'+tracer] >= bine[i]) & (self.cat['TSNR2_'+tracer] < bine[i+1])]))
         self.bc = np.array(bc)
+        self.median_bins = np.array(median_bins)
         self.bine = bine
         self.vis_5hist = False
         self.outdir = outdir
@@ -285,6 +289,7 @@ class model_ssr:
             fo.write(str(chi2)+'\n')
             fo.close()
         self.pars = pars
+        plt.clf()
         plt.errorbar(self.bc,self.nzf,self.nzfe,fmt='ko',label='data')
         mod = self.failure_rate_eff(self.bc, *pars)
         plt.plot(self.bc,mod,'k--',label='model; chi2='+str(round(chi2,3)))
@@ -292,10 +297,13 @@ class model_ssr:
         plt.xlabel('TSNR2_'+tracer)
         plt.legend()
         plt.savefig(self.outdir+outfn_root+rw+'overall_failratefit.png')        
-        plt.show()
+        #plt.show()
         plt.clf()
         #fit to fiberflux trend
+        print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+tracer])
+        print('self.cat',self.cat)
         assr = 1. -self.failure_rate_eff(self.cat['TSNR2_'+tracer],*pars)   
+        print('assr',assr)
         relssr = assr/np.max(assr) 
         self.wts_fid = 1/relssr
         nzfper = []
@@ -322,25 +330,57 @@ class model_ssr:
         
         if readpars:
             parsflux = np.loadtxt(self.outdir+outfn_root+rw+'pars_fluxfit.txt')
-            fcoeff,piv = parsflux[0],parsflux[1]
+            fcoeff,piv,C = parsflux[0],parsflux[1],parsflux[2]
             ssrvsflux = np.loadtxt(self.outdir+outfn_root+rw+'maxssrvsflux.txt').transpose()
             self.mfl = ssrvsflux[0]
             self.consl = ssrvsflux[1]
             
         else:
-            rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
+            if tracer == 'LRG':
+               self.fluxfittype = 'piecewise'
+               print('about to do linear fit for flux dependence')
+               rest = minimize(lambda params: self.hist_norm(params, fluxfittype='linear'), [2,self.mft],method='Powell')
+               fcoeff_start, piv_start = rest.x
+               #if reg == 'N':
+               #print('reg',reg)
+               print('linear fit done, now doing piecewise')
+               rest = minimize(lambda params: self.hist_norm(params, fluxfittype=self.fluxfittype), [fcoeff_start, piv_start, 3],method='Powell')
+               #elif reg == 'S':
+               #    print('reg',reg)
+               #    rest = minimize(lambda params: self.hist_norm(params, fluxfittype=self.fluxfittype), [14.82,2.94,2.09],method='Powell')
+               #rest = minimize(self.hist_norm, [2,self.mft,3],method='Powell',args='linear')#np.ones(1))#, bounds=((-10, 10)),
                #method='Powell', tol=1e-6)
-            fcoeff,piv = rest.x
-            self.vis_5hist = True
-            chi2 = self.hist_norm([fcoeff,piv])
-            print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
-            fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
-            fo.write('#'+self.band+'flux fit\n')
-            fo.write('#coeff flux_pivot chi2\n')
+               fcoeff,piv,C = rest.x
+               self.vis_5hist = True
+               chi2 = self.hist_norm([fcoeff,piv,C],fluxfittype=self.fluxfittype,outfn=outfn_root+rw+'5histfit.png')
+               print('results and chi2:')
+               print(fcoeff,piv,C,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
+               fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
+               fo.write('#'+self.band+'flux fit\n')
+               fo.write('#coeff flux_pivot C chi2\n')
         
-            fo.write(str(fcoeff)+' '+str(piv)+' ')
-            fo.write(str(chi2)+'\n')
-            fo.close()
+               fo.write(str(fcoeff)+' '+str(piv)+' '+str(C)+' ')
+               fo.write(str(chi2)+'\n')
+               fo.close()
+            else:
+               self.fluxfittype = 'linear'
+               print('about to do linear fit for flux dependence')
+               rest = minimize(lambda params: self.hist_norm(params, fluxfittype=self.fluxfittype), [2,self.mft],method='Powell')
+               #rest = minimize(self.hist_norm, [2,self.mft],method='Powell')#np.ones(1))#, bounds=((-10, 10)),
+               #method='Powell', tol=1e-6)
+               fcoeff,piv = rest.x
+               self.vis_5hist = True
+               chi2 = self.hist_norm([fcoeff,piv],fluxfittype=self.fluxfittype,outfn=outfn_root+rw+'5histfit.png')
+               print('results and chi2:')
+               print(fcoeff,piv,chi2)#,self.hist_norm(0.),self.hist_norm(1.)) 
+               fo = open(self.outdir+outfn_root+rw+'pars_fluxfit.txt','w')
+               fo.write('#'+self.band+'flux fit\n')
+               fo.write('#coeff flux_pivot chi2\n')
+        
+               fo.write(str(fcoeff)+' '+str(piv)+' ')
+               fo.write(str(chi2)+'\n')
+               fo.close()
+
             self.mfl = np.array(self.mfl)
             print(self.consl)
             fo = open(self.outdir+outfn_root+rw+'maxssrvsflux.txt','w')
@@ -351,6 +391,8 @@ class model_ssr:
             
         self.fcoeff = fcoeff
         self.piv = piv
+        if tracer == 'LRG':
+            self.C = C
             #print(self.mfl)
         
         #Now, we need a smooth function for maximum ssr vs. flux
@@ -401,7 +443,8 @@ class model_ssr:
             plt.plot(self.mfl,self.flux_mod(self.mfl),'r--')
             plt.plot(self.flux_vals,self.ssr_flux,'ko')
             plt.plot(self.flux_vals,self.flux_mod(self.flux_vals),'k-')
-            plt.show()
+            plt.savefig(self.outdir+outfn_root+rw+'flux_dep.png') 
+            #plt.show()
            
             
         
@@ -417,7 +460,7 @@ class model_ssr:
         return cost
     
     def wrapper_hist(self,params):
-        h_predict = self.failure_rate_eff(self.bc, *params)
+        h_predict = self.failure_rate_eff(self.median_bins, *params)
         diff = self.nzf-h_predict
         cost = np.sum((diff/self.nzfe)**2.)
         return cost
@@ -429,10 +472,20 @@ class model_ssr:
         return np.clip(np.exp(-(efftime+a)/b)+c, 0, 1)
 
     
-    def hist_norm(self,params,outfn='test.png'):
+    def hist_norm(self,params,fluxfittype='linear',outfn='test.png'):
+        if (fluxfittype != 'linear') and (fluxfittype != 'piecewise'):
+            print('ERROR, fluxfittype must be either linear or piecewise')
+        #print('call to hist norm, params',params)
+        #print('len of mod.cat',len(self.cat['FIBERFLUX_'+self.band+'_EC']))
+        t0 = time.time()
         nzfper = []
         consl = []
-        fluxc,piv_flux = params
+        if fluxfittype == 'piecewise':
+            fluxc,piv_flux,C = params
+            flux_break = 3.
+            self.flux_break = flux_break
+        elif fluxfittype == 'linear':
+            fluxc,piv_flux = params
         nb = 5
         pstep = 100//5
         costt = 0
@@ -446,8 +499,22 @@ class model_ssr:
                 mfl.append(mf)
             #fper.append(mf)
             
-            rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/piv_flux#self.mft
-            wtf = (fluxc*(1-rel_flux)+1)*(self.wts_fid-1)+1
+            if fluxfittype == 'piecewise':
+                rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/piv_flux #mod.mft
+                flux_piece = fluxc * (1 - rel_flux) + 1
+            
+                #flux_break = 3.
+                D = (fluxc + 1 - flux_break * fluxc/piv_flux - C) * 1./flux_break
+                flux_piece[self.cat['FIBERFLUX_'+self.band+'_EC'] > flux_break] = C + D * self.cat['FIBERFLUX_'+self.band+'_EC'][self.cat['FIBERFLUX_'+self.band+'_EC'] > flux_break]
+            
+                #inv_rel_flux[mod.cat['FIBERFLUX_'+mod.band+'_EC'] > piv_flux2] = - 0.5 * (rel_flux[mod.cat['FIBERFLUX_'+mod.band+'_EC'] > piv_flux2] - piv_flux2/piv_flux) + (1 - piv_flux2/piv_flux)
+                wtf = flux_piece*(self.wts_fid-1)+1
+            
+            elif fluxfittype == 'linear':
+                rel_flux = self.cat['FIBERFLUX_'+self.band+'_EC']/piv_flux#self.mft
+                wtf = (fluxc*(1-rel_flux)+1)*(self.wts_fid-1)+1
+
+
             selw = wtf < 1
             wtf[selw] = 1
             ha,_ = np.histogram(self.cat['TSNR2_'+self.tracer][sel],bins=self.bine)
@@ -465,6 +532,7 @@ class model_ssr:
             cost = ccost(bc)
             consl.append(bc[0])
             costt += cost
+            #print('cost',cost)
         if self.vis_5hist:
             for i in range(0,nb):
                 plt.errorbar(self.bc,nzfper[i],self.nzfpere[i])
@@ -472,11 +540,15 @@ class model_ssr:
             plt.ylabel(self.outfn_root+' Z success rate, in fiber bins')
             plt.xlabel('TSNR2_'+self.tracer)
             plt.legend()
-            plt.savefig(self.outdir+outfn)        
+            plt.savefig(self.outdir+outfn)
+            plt.clf()        
 
-            plt.show()
+            #plt.show()
             self.consl = consl
             self.mfl = mfl
+            
+        #print('time for hist_norm',time.time()-t0)
+        #print('costt',costt)
         return costt    
         
     
@@ -494,7 +566,23 @@ class model_ssr:
         print(np.min(max_ssr_flux),np.max(max_ssr_flux),np.mean(max_ssr_flux))
         #data['mod_success_rate'] = 1. -   
         rel_flux = dflux/self.piv
-        wtf = (self.fcoeff*(1-rel_flux)+1)*(1/relssr-1)+1
+        
+        
+        if self.fluxfittype == 'piecewise':
+            flux_piece = self.fcoeff * (1 - rel_flux) + 1
+            
+            #flux_break = 3.
+            D = (self.fcoeff + 1 - self.flux_break * self.fcoeff/self.piv - self.C) * 1./self.flux_break
+            flux_piece[dflux > self.flux_break] = self.C + D * dflux[dflux > self.flux_break]
+            
+            #inv_rel_flux[mod.cat['FIBERFLUX_'+mod.band+'_EC'] > piv_flux2] = - 0.5 * (rel_flux[mod.cat['FIBERFLUX_'+mod.band+'_EC'] > piv_flux2] - piv_flux2/piv_flux) + (1 - piv_flux2/piv_flux)
+            wtf = flux_piece*(1/relssr-1)+1
+            
+        elif self.fluxfittype == 'linear':
+            #print('rel_flux',np.shape(rel_flux))
+            #print('wts_fid',np.shape(self.wts_fid))
+            wtf = (self.fcoeff*(1-rel_flux)+1)*(1/relssr-1)+1
+
         
         sel = wtf < 1
         wtf[sel] = 1

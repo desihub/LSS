@@ -8,6 +8,7 @@ The script can (should) be called with multiple processes as (e.g. on 2 nodes, 6
 ```
 srun -n 128 python pkrun.py ...
 ```
+Using -n 64 per node is recommended when applying rp-cut.
 """
 
 # To run: srun -n 64 python pkrun.py --tracer ELG...
@@ -52,7 +53,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, option=None, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -102,6 +103,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         direct_selection_attrs = {'theta': (0., 1.)}
     elif rpcut is not None:
         win_direct_selection_attrs = direct_selection_attrs = {'rp': (0., rpcut)}
+        #direct_edges = {'min': 0., 'step': 0.1, 'max': 200.}  # use this to reduce the computing time for direct pair counts to a few seconds
         direct_edges = {'min': 0., 'step': 0.1}
 
     result = CatalogFFTPower(data_positions1=data_positions1, data_weights1=data_weights1,
@@ -112,7 +114,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
                              edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
                              position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,
-                             **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
+                             direct_attrs={"nthreads": 64}, **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = wmatrix = None
     if dowin:
         windows = []
@@ -120,6 +122,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         edges = {'step': 2. * np.pi / boxsizes[0]}
         for iboxsize, boxsize in enumerate(boxsizes):
             windows.append(CatalogSmoothWindow(randoms_positions1=randoms_positions1, randoms_weights1=randoms_weights1,
+                                               randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
                                                power_ref=result, edges=edges, boxsize=boxsize, position_type='rdd',
                                                direct_selection_attrs=win_direct_selection_attrs if iboxsize == 0 else None,
                                                direct_edges=direct_edges if iboxsize == 0 else None,
@@ -128,18 +131,16 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
         if mpicomm.rank == mpiroot:
             window = PowerSpectrumSmoothWindow.concatenate_x(*windows, frac_nyq=0.9)
             # Let us compute the wide-angle and window function matrix
-            kout = result.k # output k-bins
-            ellsout = [0, 2, 4] # output multipoles
             ellsin = [0, 2, 4] # input (theory) multipoles
             wa_orders = 1 # wide-angle order
-            sep = np.geomspace(1e-4, 4e3, 1024*16) # configuration space separation for FFTlog
+            sep = np.geomspace(1e-4, 2e4, 1024*16) # configuration space separation for FFTlog, 2e4 > sqrt(3) * 8000
             kin_rebin = 4 # rebin input theory to save memory
             kin_lim = (0, 2e1) # pre-cut input (theory) ks to save some memory
             # Input projections for window function matrix:
             # theory multipoles at wa_order = 0, and wide-angle terms at wa_order = 1
             projsin = ellsin + PowerSpectrumOddWideAngleMatrix.propose_out(ellsin, wa_orders=wa_orders)
             # Window matrix
-            wmatrix = PowerSpectrumSmoothWindowMatrix(kout, projsin=projsin, projsout=ellsout, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
+            wmatrix = PowerSpectrumSmoothWindowMatrix(result, projsin=projsin, window=window, sep=sep, kin_rebin=kin_rebin, kin_lim=kin_lim)
             # We resum over theory odd-wide angle
             wmatrix.resum_input_odd_wide_angle()
 
@@ -147,15 +148,18 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
 
 
 def get_edges():
-    return {'min':0., 'step':0.001}
+    return {'min': 0., 'step': 0.001}
 
 
-def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
     if recon_dir != 'n':
         out_dir = out_dir[:-2] + recon_dir+'/pk/'
+    if option:
+        zmax = str(zmax) + option
+
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -164,10 +168,15 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if recon_dir != 'n':
+        out_dir = out_dir[:-2] + recon_dir+'/pk/'
+    if option:
+        zmax = str(zmax) + option
+
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -176,10 +185,15 @@ def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zm
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, rec_type=False, weight_type='default', bin_type='lin', rpcut=None, out_dir='.'):
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
+    if recon_dir != 'n':
+        out_dir = out_dir[:-2] + recon_dir+'/pk/'
+    if option:
+        zmax = str(zmax) + option
+
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
@@ -191,12 +205,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main', 'Y1'], default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
+    parser.add_argument('--survey', help='e.g., SV3 or main', type=str, choices=['SV3', 'DA02', 'main', 'Y1'], default='Y1')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
     parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS', 'NGC', 'SGC'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
+    parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
     parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
@@ -237,7 +252,7 @@ if __name__ == '__main__':
         logger.info('Catalog directory is {}.'.format(cat_dir))
 
     if args.outdir is None:
-        out_dir = os.path.join(get_scratch_dir(), args.survey)
+        out_dir = os.path.join(get_scratch_dir(), args.survey,args.version)
     else:
         out_dir = args.outdir
     if mpicomm is None or mpicomm.rank == mpiroot:
@@ -257,14 +272,19 @@ if __name__ == '__main__':
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
 
+
+    option = args.option#
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
+        if option is not None:
+            sys.exit('conflicting options, need to fix code if both are needed')
         option = args.zlim[0]
         zlims = get_zlims(tracer, tracer2=tracer2, option=option)
     else:
         zlims = [float(zlim) for zlim in args.zlim]
-    zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
+    zlims = list(zip(zlims[:-1], zlims[1:])) 
+    #zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
 
     bin_type = 'lin'
     rebinning_factors = [1, 5, 10]
@@ -272,20 +292,21 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut,option=option)
         for region in regions:
             if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
             result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, rpcut=args.rpcut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
-            fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
-            result.save(fn)
-            if window is not None:
-                fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
-                window.save(fn)
-                fn = wmatrix_fn(region=region, **base_file_kwargs)
-                wmatrix.save(fn)
+            if mpicomm.rank == mpiroot:
+                fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
+                result.save(fn)
+                if window is not None:
+                    fn = window_fn(file_type='npy', region=region, **base_file_kwargs)
+                    window.save(fn)
+                    fn = wmatrix_fn(region=region, **base_file_kwargs)
+                    wmatrix.save(fn)
 
         all_regions = regions.copy()
         if mpicomm.rank == mpiroot:

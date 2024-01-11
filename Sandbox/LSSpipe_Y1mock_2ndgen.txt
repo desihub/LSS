@@ -1,0 +1,145 @@
+#pseudo pipeline describing how LSS catalogs get created from 2nd gen mocks, including all different flavors
+
+#1st cutsky mocks get created from boxes and have the Y1 tiles list applied to geometry (Aurelio, others add details)
+#These are combined across tracers, have columns added necessary for fiberassign, and have the targeting mask applied via
+https://github.com/desihub/LSS/blob/main/scripts/mock_tools/prepare_mocks_Y1.py
+
+#Set up
+>> source /global/common/software/desi/desi_environment.sh main
+In this documentation, $LSS is the directory where you have the LSS repository
+
+
+#To run on the SecondGen Abacus mocks:
+
+0) GOTO LSS/SCRIPTS/MOCK_TOOLS
+
+1) PREPARE MOCKS FROM Abacus CutSKY:
+>> ./prepare_script.sh   [Should be made to run in batch several mocks at a time]
+It executes a query like:
+srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python prepare_mocks_Y1_dark.py --mockver ab_secondgen --mockpath /global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky_v3 --realmin 0 --realmax 2 --isProduction y --split_snapshot y --new_version AbacusSummit_v3_1
+
+2) CREATE MATCH TO lrg_mask for LRGs
+>> ./script_lrgmask_Y1.sh
+
+3) CREATE FIBER COLLISION FILE AND CALCULATE POTA FILES
+>> ./getpota_Y1_script.sh
+
+### AltMTL + LSS pipeline INSTRUCTIONS ### 
+
+4) CREATE INITIAL LEDGERS
+>> ./run_Y1SecondGen_initialledger_batch.sh
+
+** Currently, you need to swap to branch ReprocessingAMTL in LSS and pip install . **
+
+*) GOTO LSS/BIN
+
+5) INITIALIZE ALTMTL DIRECTORY STRUCTURE FOR FIRST 1 MOCK
+>> ./Y1ALTMTLRealizationsDARK_mock_init.sh
+
+6) MAKE PARENT DIRECTORIES FOR OTHER REALIZATIONS
+Right now this is a manual step, like
+>> mkdir ./altmtl<MOCKNUMBER>/Univ000 for <MOCKNUMBER> between 1 and 24 (included)
+
+7) COPY INITIAL LEDGERS TO ALTMTL RUN DIRECTORY AND COPY ECSV FILES
+>> python initAMTL.py
+
+8) MANUALLY ADD EXTRA TILES TO THE END OF mainsurvey-DARKobscon-TileTracker.ecsv
+>> python /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/add_extra_tilesTracker.py
+
+9) RUN ALTMTL PROCESS ON MOCK REALIZATIONS
+This process runs on regular queue that takes 12 hours but to complete the operation we need more time. Therefore, it needs to be run at least twice
+>> nohup ./Y1ALTMTLRealizationsDARK_mock.sh &
+
+** If you want to leave the second process in the queue, once you start running the first, you can put a second process in the queue stating to start after this first process ends, with the option --dependency=afterany:<JOBID> in dateLoopAltMTLBugFix_mock_batch.sh 
+<JOBID> can be found with squeue -u <USER>
+
+10) RUN A SECOND TIME
+>> nohup ./Y1ALTMTLRealizationsDARK_mock.sh &
+
+
+
+
+
+
+
+#Add LRG veto, takes ~3 minutes per mock
+>> srun -N 1 -C cpu -t 04:00:00 -q interactive --account desi python $LSS/scripts/readwrite_pixel_bitmask.py --tracer lrg -i <mock#> --cat_type Ab2ndgen
+
+	Right now is not parallelized over mock realizations, so you need to run each realization at a time (-i 0, -i 1, ...)
+	It directly save in /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/  for cat_type = Ab2ndgen  (no overwritten)
+ 
+#Each realization can be passed through to find potential assignments and collisions, using the actual Y1 hardware specifications, via
+https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization <mock number>
+>> srun -N 1 -C cpu  -t 04:00:00 -q interactive --account desi python scripts/getpotaY1_mock.py --realization <mock#>
+
+	Currently saves automatically on the production directory. It will overwrite the products, so be careful if running.
+
+#The output will be all of the potential assignments from the mocks, for all tracers, and including all repeats
+#Each takes ~20 minutes
+
+
+# Now you have several pathways. Make clustering catalogs only from potential assigments (applying all the data masking) or mimic the entire data processing, staring from AltMTL to LSS pipeline.
+
+### POTENTIAL ASSIGNMENT ONLY INSTRUCTIONS ###
+
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+
+#Make complete LSS catalogs with goodhardware and imaging veto masks applied
+#Code does randoms in serial, 4 are likely enough
+>> python scripts/mock_tools/pota2clus_simp.py  --veto _gtlimaging --realization 0 --maxr <max_num_ran_needed>
+
+-----------------------------------------------
+
+
+### AltMTL + LSS pipeline INSTRUCTIONS ### 
+## CAUTION: NO PIP WEIGHTS YET TESTED OR IMPLEMENTED ##
+
+#The output directory names are just suggestions.
+#Generate initial ledgers
+# First define an output directory <base_output> (like in your scratch or if in production for obscon=dark, this is $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit).
+
+# Create initial ledgers and save hplist to feed MockAltMTL production, both saved in <base_output>/initial_ledger<mock#>  (~20 minutes) 
+>> python $LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits <base_output>/altmtl<mock#>/initled/ DARK
+	
+	First need to create (mkdir) the directory <base_output>/altmtl<mock#>/initled
+	It will save the HP list in the same directory with the name hpxlist_<obscon>.txt
+
+# Run AltMTL process (without generating bitweights yet) for 1 realization with $LSS/scripts/mock_tools/MockAltMTLScriptMain.sh  (~24 hours)
+# Modify by hand several options inside MockAltMTLScriptMain.sh
+# This are the ones that you should worry (up to line 50. there are other options but you can ignore)
+	* mockNumber=<mock#> If running over production directories, set the realization here and can skip simName and targfile configuration.
+	* simName="<base_output>/altmtl<mock#>/initled/"   This is the directory where to save all the AltMTL products for a given mock#
+	* path2LSS=/pscratch/sd/a/MYUSER/codes/LSS/bin/  This is the path to the LSS repo bin subdirectory
+	* ndir=1   Number of Alternative ledgers. In principle, we should run a single realization to get as data, and then another large run with ndir=128 or 256 to calculate PIP weights. If ndir = 1, then BitWeights are not calculated.
+	* obscon='DARK'  Either DARK or BRIGHT
+	* endDate='--endDate=20220613' End date for Y1 campaign
+	* exampleLedgerBase=<base_output>/initial_ledger<mock#>  This is the directory you indicated when creating the initial ledgers
+	* hpListFile="<base_output>/initial_ledger<mock#>/hpxlist_dark.txt"  This is the hp file list created while running the initial ledgers
+	* targfile='--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA<mock#>.fits'  This is the path to the parent target sample
+
+# This script takes quite some time to run (~24h). It generates ndir random realizations (given subpriority) and run fiber assigment creating potential assignments and assignments itself. 
+# Their outputs will serve as input for the LSS pipeline.
+
+
+# Run LSS pipeline as follows. 
+# CAUTION: it has only been tested to run one mock by one mock with mockmin = 0 and mockmax = 1
+# Prepare and combine data for dark or bright time data. Better run in batch mode since it might die in between if not running in batch mode.
+# We don't need randoms at this stage any more. They will be read directly from data randoms when creating the full catalogs
+>> srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/mock_tools/mkCat_SecondGen.py --base_output <base_output> --simName <base_output>/altmtl_main_rea{MOCKNUM} --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer dark --combd y
+
+[40 minutes]
+
+Example for mock = 1:
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python mkCat_SecondGen.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl1 --simName /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl1 --mockver ab_secondgen --mockmin 1 --mockmax 2 --survey Y1 --add_gtl y --specdata iron --tracer dark --combd y
+
+
+
+# Create the full catalogs for data and randoms and apply vetos. Calcualte the FKP weights and make the clustering catalogs.
+#LRG
+>> srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python mkCat_SecondGen.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl{MOCKNUM} --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer LRG --minr 0 --maxr 18 --fulld y --fullr y --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusran y --resamp y --nz y --getFKP y --mkclusdat y --targDir /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
+
+#ELG (ELG_LOP with notqso)
+>> srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python mkCat_SecondGen.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl{MOCKNUM} --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer ELG_LOP --notqso y --minr 0 --maxr 18 --fulld y --fullr y --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusran y --resamp y --nz y --getFKP y --mkclusdat y --targDir /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit
+
+#QSO
+>> srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python mkCat_SecondGen.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/altmtl{MOCKNUM} --mockver ab_secondgen --mockmin 0 --mockmax 1 --survey Y1 --add_gtl y --specdata iron --tracer QSO --minr 0 --maxr 18 --fulld y --fullr y --apply_map_veto y --apply_veto y --use_map_veto _HPmapcut --mkclusran y --resamp y --nz y --getFKP y --mkclusdat y --targDir /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit

@@ -1,12 +1,17 @@
 '''
 Documentation needs to be updated
+ENVIRONMENT
+=============
+source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+module swap pyrecon/main pyrecon/mpi
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
+
+
 EXAMPLE USE
 ===========
 
-
-
-GENERAL NOTES
-=============
+srun -n 128 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
 
 
 NOTES FOR TESTING AND VALIDATION
@@ -67,12 +72,14 @@ logging.getLogger("jax._src.lib.xla_bridge").addFilter(logging.Filter("No GPU/TP
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir_in", help="base directory for input, default is location for official catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--basedir_out", help="base directory for output, default is C(P)SCRATCH", default=os.environ[scratch])
+parser.add_argument("--mv_out2cfs", help="whether to move the output cfs or not", default='n')
 parser.add_argument("--version", help="catalog version", default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='Y1')
 parser.add_argument("--verspec", help="version for redshifts", default='iron')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 #parser.add_argument("--reg_md", help="whether to run on split N/S or NGC/SGC", default='GC')
 
 #parser.add_argument("--split_GC", help="whether to make the split NGC/SGC", default='y')
@@ -80,13 +87,17 @@ parser.add_argument("--notqso", help="if y, do not include any qso targets", def
 parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file','specified'],default='from_file')
 
 parser.add_argument("--baoblind", help="if y, do the bao blinding shift", default='n')
+parser.add_argument("--compmd", help="whether the extra completeness gets added to data or random", choices=['dat','ran'],default='ran')
+
 parser.add_argument("--mkclusdat", help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)", default='n')
+parser.add_argument("--wsyscol", help="column name to use for WEIGHT_SYS", default='WEIGHT_SN')
 parser.add_argument("--mkclusran", help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)", default='n')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)# use 1 for abacus mocks
 parser.add_argument("--maxr", help="maximum for random files, default is 1", default=1, type=int) # use 2 for abacus mocks
 parser.add_argument("--dorecon", help="if y, run the recon needed for RSD blinding", default='n')
 parser.add_argument("--rsdblind", help="if y, do the RSD blinding shift", default='n')
 parser.add_argument("--fnlblind", help="if y, do the fnl blinding", default='n')
+parser.add_argument("--resamp", help="resample the randoms to make sure all is consistent with how weights changed", default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 
 parser.add_argument("--fiducial_f", help="fiducial value for f", default=0.8)
@@ -243,8 +254,9 @@ if root:
     fbr_in = fb_in
     if type == 'BGS_BRIGHT-21.5':
         fbr_in = dirin +'BGS_BRIGHT'
-    fcr_in = fbr_in + '_1_full.ran.fits'
-    fcd_in = fb_in + '_full.dat.fits'
+    fcr_in = fbr_in + '_1_full'+args.use_map_veto+'.ran.fits'
+    fcd_in = fb_in + '_full'+args.use_map_veto+'.dat.fits'
+    print('input file is '+fcd_in)
     nzf_in = dirin + type + notqso + '_full_nz.txt'
     wo = 'y'
     if os.path.isfile(nzf_in):
@@ -282,23 +294,30 @@ if root:
         nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
 
         if 'WEIGHT_FKP' not in cols:
+            print('adding FKP weights')
             common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
 
-        data = Table(fitsio.read(dirin + type + notqso + '_full.dat.fits'))
+        
+        data = Table(fitsio.read(fcd_in))
         data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
+        print('output going to '+outf)
         blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
 
-        fb_out = dirout + type + notqso
-        fcd_out = fb_out + '_full.dat.fits'
-        nz_out = common.mknz_full(fcd_out, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
+        #fb_out = dirout + type + notqso
+        #fcd_out = fb_out + '_full.dat.fits'
+        nz_out = common.mknz_full(outf, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, randens=randens, md=nzmd, zcol='Z')
 
         ratio_nz = nz_in / nz_out
 
-        fd = Table(fitsio.read(fcd_out))
+        fd = Table(fitsio.read(outf))
         cols = list(fd.dtype.names)
         if 'WEIGHT_SYS' not in cols:
-            fd['WEIGHT_SYS'] = np.ones(len(fd))
+            if args.wsyscol is not None:
+                fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
+            else:
+                print('did not find WEIGHT_SYS, putting it in as all 1')
+                fd['WEIGHT_SYS'] = np.ones(len(fd))
         zl = fd['Z']
         zind = ((zl - zmin) / dz).astype(int)
         gz = fd['ZWARN'] != 999999
@@ -308,7 +327,7 @@ if root:
         wl = np.ones(len(fd))
         wl[gz&zr] = nz_in[zind[gz&zr]] / nz_out[zind[gz&zr]]
         fd['WEIGHT_SYS'] *= wl
-        common.write_LSS(fd, fcd_out)
+        common.write_LSS(fd, outf)
 
 
     if args.visnz == 'y':
@@ -333,11 +352,11 @@ if root:
 
 
     if args.mkclusdat == 'y':
-        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax)
+        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax,compmd=args.compmd)
 
 
     if args.mkclusran == 'y':
-        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
         tsnrcol = 'TSNR2_ELG'
         if args.type[:3] == 'BGS':
             tsnrcol = 'TSNR2_BGS'
@@ -345,8 +364,12 @@ if root:
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
+        clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
+        #for reg in ['N','S']:
+        #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
+        
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
@@ -355,13 +378,21 @@ if root:
                     os.system('mv ' + ranf + ' ' + ranfm)
         nran = args.maxr-args.minr
         inds = np.arange(args.minr,args.maxr)
-        from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
-            res = pool.map(_parfun, inds)
-
+        if args.useMPI == 'y':
+            from multiprocessing import Pool
+            #nproc = 9
+            #nproc = nran*2
+            with Pool() as pool:
+                res = pool.map(_parfun, inds)
+        else:
+            for ii in inds:
+                _parfun(ii)
+                #ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
+                print(ii,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
-        ct.clusNStoGC(fb, args.maxr - args.minr)
+        #ct.clusNStoGC(fb, args.maxr - args.minr)
+        ct.splitclusGC(fb, args.maxr - args.minr)
 
     sys.stdout.flush()
 
@@ -433,9 +464,9 @@ if args.fnlblind == 'y':
 
     # build blinding cosmology
     cosmo_blind = get_cosmo_blind('DESI', z=zeff)
-    cosmo_blind.params['w0_fld'] = w0_blind
-    cosmo_blind.params['wa_fld'] = wa_blind
-    cosmo_blind._derived['f'] = f_blind
+    #cosmo_blind.params['w0_fld'] = w0_blind
+    #cosmo_blind.params['wa_fld'] = wa_blind
+    #cosmo_blind._derived['f'] = f_blind
     cosmo_blind._derived['fnl'] = fnl_blind   # on fixe la valeur pour de bon
     blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias=bias, z=zeff, position_type='rdz', mpicomm=mpicomm, mpiroot=0)
 
@@ -474,17 +505,19 @@ if args.fnlblind == 'y':
 
 if root:
     #re-sample redshift dependent columns from data
-    regions = ['NGC', 'SGC']
-    rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA']
-    for reg in regions:
-        flin = dirout + args.type + notqso + '_'+reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#, ntilecut=ntile, ccut=ccut)
-        nran = args.maxr-args.minr
-        inds = np.arange(1)
-        from multiprocessing import Pool
-        with Pool(processes=nran+1) as pool:
-            res = pool.map(_parfun, inds)
+    nran = args.maxr-args.minr
+    if args.resamp == 'y':
+        regions = ['NGC', 'SGC']
+        rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
+        for reg in regions:
+            flin = dirout + args.type + notqso + '_'+reg    
+            def _parfun(rannum):
+                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+            
+            inds = np.arange(nran)
+            from multiprocessing import Pool
+            with Pool() as pool:
+                res = pool.map(_parfun, inds)
 
     
     if type[:3] == 'QSO':
@@ -513,7 +546,7 @@ if root:
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran)
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par='y')
 
 
 
@@ -522,3 +555,8 @@ if root:
     os.system('rm '+dirout+args.type+'*_N_*')
     os.system('rm '+dirout+args.type+'*IFFT*')
     os.system('rm '+dirout+args.type+'*full*')
+    
+    if args.mv_out2cfs == 'y':
+        mvdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron' + '/LSScats/' + version + '/blinded/'
+        os.system('mv '+dirout+'* '+mvdir)
+        os.system('chmod 775 '+mvdir+'*')

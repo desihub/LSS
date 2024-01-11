@@ -359,7 +359,7 @@ logger = logging.getLogger('xirunpc')
 #     return [(positions[name], weights[name]) for name in ['data', 'randoms']] 
 
 
-def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs
@@ -386,7 +386,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
                                             data_positions2=fibered_data_positions2, data_weights2=fibered_data_weights2,
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
-                                            estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads,
+                                            estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
                                             dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
     # First D1R2_parent/D1R2_IIP angular weight
@@ -397,7 +397,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
                                             data_positions2=parent_randoms_positions2, data_weights2=parent_randoms_weights2,
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_randoms_positions2, randoms_weights2=parent_randoms_weights2,
-                                            estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads,
+                                            estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
                                             dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
     wangR1D2 = None
     if not autocorr:
@@ -405,7 +405,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
                                                data_positions2=fibered_data_positions2, data_weights2=fibered_data_weights2,
                                                randoms_positions1=parent_randoms_positions1, randoms_weights1=parent_randoms_weights1,
                                                randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
-                                               estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads,
+                                               estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
                                                dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
     wang = {}
@@ -416,7 +416,7 @@ def compute_angular_weights(nthreads=8, dtype='f8', tracer='ELG', tracer2=None, 
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None,rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -425,7 +425,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
     with_shifted = rec_type is not None
 
     if 'angular' in weight_type and wang is None:
-        wang = compute_angular_weights(nthreads=nthreads, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
+        wang = compute_angular_weights(nthreads=nthreads, gpu=gpu, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
 
     data_positions1, data_weights1, data_samples1, data_positions2, data_weights2, data_samples2 = None, None, None, None, None, None
     randoms_positions1, randoms_weights1, randoms_samples1, randoms_positions2, randoms_weights2, randoms_samples2 = None, None, None, None, None, None
@@ -517,7 +517,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, dtype='
                     tmp_randoms_kwargs[name] = array
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
-                                              engine='corrfunc', position_type='rdd', nthreads=nthreads, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
+                                              engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
                                               D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs)
             D1D2 = tmp.D1D2
             result += tmp
@@ -537,7 +537,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
         edges = (sedges, np.linspace(-1., 1., 201)) #s is input edges and mu evenly spaced between -1 and 1
     elif corr_type == 'rppi':
         if bin_type == 'lin':
-            edges = (sedges, np.linspace(-200., 200, 401)) #transverse and radial separations are coded to be the same here
+            edges = (sedges, np.linspace(-40., 40, 101)) #transverse and radial separations are coded to be the same here
         else:
             edges = (sedges, np.linspace(0., 40., 41))
     elif corr_type == 'theta':
@@ -553,8 +553,8 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     if region: tracer += '_' + region
     if option:
         zmax = str(zmax) + option
-    if recon_dir != 'n':
-        out_dir += recon_dir+'/'
+    #if recon_dir != 'n':
+    #    out_dir += recon_dir+'/'
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
     wang = '{}_'.format(wang) if wang is not None else ''
     root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
@@ -568,16 +568,17 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['ELG'])
+    parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['LRG'])
     # Set basedir to the actual location of catalogs when starting with full (not clustering) catalogs for mocks. No need to set survey, verspec, version then.
     parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
-    parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='SV3')
-    parser.add_argument('--verspec', help='version for redshifts', type=str, default='guadalupe')
+    parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='Y1')
+    parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS','NGC','SGC','NGCS','DES','SGCnotDES'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--maglim', help='absolute r-band magnitude limits', type=str, nargs='*', default=None)
-    parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu', 'rppi'])
+    parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
+    parser.add_argument('--corr_type', help='correlation type', type=str, nargs='*', choices=['smu', 'rppi', 'theta'], default=['smu'])
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     # Need to add support for fkp weights for use_arrays option
     parser.add_argument('--bin_type', help='binning type', type=str, choices=['log', 'lin'], default='lin')
@@ -585,8 +586,9 @@ if __name__ == '__main__':
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=60)
-    parser.add_argument('--nthreads', help='number of threads', type=int, default=64)
+    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=0)
+    parser.add_argument('--gpu', help='whether to run on the GPU', action='store_true')
+    parser.add_argument('--nthreads', help='number of threads (defaults to 4 if --gpu else 128)', type=int, default=None)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     #parser.add_argument('--mpi', help='whether to use MPI', action='store_true', default=False)
     parser.add_argument('--vis', help='show plot of each xi?', action='store_true', default=False)
@@ -602,6 +604,11 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
+
+    gpu, nthreads = args.gpu, args.nthreads
+    if nthreads is None:
+        if gpu: nthreads = 4
+        else: nthreads = 128
     write_arrays = args.write_arrays
     
     if args.rebinning == 'n':
@@ -655,7 +662,7 @@ if __name__ == '__main__':
             logger.info('Catalog directory is {}.'.format(cat_dir))
 
         if args.outdir is None:
-            out_dir = os.path.join(io.get_scratch_dir(), args.survey)
+            out_dir = os.path.join(io.get_scratch_dir(), args.survey,args.version)
         else:
             out_dir = args.outdir
         if mpicomm is None or mpicomm.rank == mpiroot:
@@ -676,10 +683,12 @@ if __name__ == '__main__':
     if regions is None:
         regions = io.get_regions(args.survey, rec=bool(args.rec_type))
 
-    option = None
+    option = args.option#None
     if args.zlim is None:
         zlims = io.get_zlims(tracer, tracer2=tracer2)
     elif not args.zlim[0].replace('.', '').isdigit():
+        if option is not None:
+            sys.exit('conflicting options, need to fix code if both are needed')
         option = args.zlim[0]
         zlims = io.get_zlims(tracer, tracer2=tracer2, option=option)
     else:
@@ -693,7 +702,8 @@ if __name__ == '__main__':
     else:
         maglims = None
 
-    zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
+    zlims = list(zip(zlims[:-1], zlims[1:])) #this doesn't run the whole range
+    #zlims = list(zip(zlims[:-1], zlims[1:])) + ([(zlims[0], zlims[-1])] if len(zlims) > 2 else []) # len(zlims) == 2 == single redshift range
     rebinning_factors = [1, 4, 5, 10] if 'lin' in args.bin_type else [1, 2, 4]
     pi_rebinning_factors = [1, 4, 5, 10] if 'log' in args.bin_type else [1]
     if mpicomm is None or mpicomm.rank == mpiroot:
@@ -714,7 +724,7 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=args.nthreads, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))

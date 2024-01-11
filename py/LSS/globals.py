@@ -73,36 +73,55 @@ class main:
         self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
+        self.reccircmasks=None
+        self.mapcuts = {'EBV':0.15,'STARDENS':4.4,'PSFSIZE_G':2.4,'PSFSIZE_R':2.3,'PSFSIZE_Z':2,'GALDEPTH_G':250,'GALDEPTH_R':80,'GALDEPTH_Z':30,'PSFDEPTH_W1':2}
         if tp[:3] == 'BGS':
-            self.imbits = [1,13]
+            self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI'] #used up until v0.6
+            self.fit_maps = ['STARDENS','GALDEPTH_R','HI']
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
-            self.zmin = 0.1
+            self.zmin = 0.01
             self.zmax = 0.5
-            if survey == 'Y1':
+            if tp == 'BGS_BRIGHT-21.5':
+                self.zmin = 0.1
                 self.zmax = 0.4
+            #self.zmin = 0.1
+            #self.zmax = 0.5
+            #if survey == 'Y1':
+            #    self.zmax = 0.4
             self.ebits = [11] 
+            self.imbits = [1,13]
         else:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
+            self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
             self.dchi2 = 0
             self.zmin = 0.8
             self.zmax = 3.5
+            self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
+            self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
+            self.fit_maps = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
+            self.fit_maps46s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_R']
+            self.fit_maps68s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_G']
+            self.fit_maps81s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','PSFSIZE_Z']
             self.ebits = 'lrg_mask'
             self.tsnrcut = 80
             self.dchi2 = 15
             self.zmin = 0.4
             self.zmax = 1.1
         if tp[:3] == 'ELG':
+            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
             self.zmax = 1.6
+            self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt','/global/cfs/cdirs/desi/users/rongpu/desi_mask/elg_custom_mask_v1.1_draft.txt']
+
         if tp[:3] == 'ELG':# or tp[:3] == 'BGS':
             self.ebits = [11]    
         if specver == 'everest':
@@ -139,8 +158,8 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/'+specver+'/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/QSO/'+specver+'/QSO_cat_iron_cumulative_v0.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/unique_badfibers.txt')
-        self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/dark_bitweights_v0.fits'
-        self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/bright_bitweights_v0.fits'
+        self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
+        self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-bright-allTiles_v1.fits'
         
         #properties for maps
         self.new_cols=['EBV_CHIANG_SFDcorr','STARDENS','HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK']

@@ -17,7 +17,7 @@ import argparse
 
 time_start = time.time()
 
-n_processes = 32
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument( '--cat_type', default='obielg', choices=['obielg', 'abacus'],required=False)
@@ -27,9 +27,12 @@ parser.add_argument('--do_randoms', default = 'n', choices = ['n','y'], required
 parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
+parser.add_argument('--overwrite', default = 'n', required=False )
+parser.add_argument('--n_processes', default = 32, required=False ,type=int)
 
 args = parser.parse_args()
 
+n_processes = args.n_processes
 
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
@@ -67,7 +70,10 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
 
 if os.path.isfile(output_path):
-    raise ValueError(output_path+' already exists!')
+    if args.overwrite == 'n':
+        raise ValueError(output_path+' already exists!')
+    if args.overwrite == 'y':
+        print('will overwrite '+output_path)
 
 
 def bitmask_radec(brickid, ra, dec):
@@ -177,7 +183,7 @@ res.sort('idx')
 res.remove_column('idx')
 
 #if output_path.endswith('.fits'):
-res.write(output_path)
+res.write(output_path,overwrite=True)
 #else:
 #    np.write(output_path, np.array(res['masknobs']))
 

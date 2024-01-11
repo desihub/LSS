@@ -37,23 +37,28 @@ for tp,notqso in zip(tps,notqsos):
 
 
 #random
-#new process
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog BRIGHT
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/ --prog DARK
-#this process is much slower than new process (details to be added), but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
+#assuming target files for randoms were already produced for daily
+#gets all potential assignments and collisions for each of 18 randoms, in sequence
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpotaY1_ran.py --prog BRIGHT
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpotaY1_ran.py --prog DARK
+
+#OLD PROCESS FOR RANDOMS
+#this process is much slower than new process , but the creation of target files for the randoms is still necessary to do first (though could also be sped up)
 #first, we go through bright and dark, making the mtl files per tile that fiberassign uses, then running fiberassign (to get potential assignments, which is the FAVAIL HDU in the fba files)
 #after fiberassign is run, the potential assignments are combined per healpix
 #does 18 randoms in parallel
 #total amount of time is ~linear in the number of tiles to run
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type dark 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_Y1ran_px.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --type bright 
+#if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
 #to combine with spec info and count tiles
 srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type dark --combwspec y --counttiles y --survey Y1 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type bright --combwspec y --counttiles y --survey Y1 
 
-#if times out while still running fiberassign files, make sure to delete files with .tmp in the name
 
+
+#OLD
 #then, we go through per type
 #the "full" random files are made for each healpix
 #this masks them using the same imaging mask bits as applied to targeting and also removes the tileids/fiberid where none of the given type were assigned (but an observation was requested)
@@ -67,9 +72,9 @@ for tp,notqso in zip(tps,notqsos):
     #on perlmutter, enough memory so one node fine?
     #srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main_Y1ran_px.py  --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec himalayas --rfa n --combhp n --combfull y --fullr y
     
-#updated to not go through by healpix:
+#Current:
 for tp,notqso in zip(tps,notqsos):
-	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type LRG --combwspec n --fullr y --survey Y1 
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type tp --combwspec n --fullr y --survey Y1 
 
 #this adds vetos to both data and randoms (could put randoms in separate script and parallize)
 #only necessary for LRGs for now
@@ -86,29 +91,138 @@ for tp,notqso in zip(tps,notqsos):
 for tp,notqso in zip(tps,notqsos):
 	python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1  --mkHPmaps y
 
-#this applies vetos to data 
+#add bitweights to data before applying vetos
+python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --notqso notqso --version v#
+
+#this applies vetos to data and randoms (no need for interactive node and use --maxr 0 if you don't want to run randoms
 for tp,notqso in zip(tps,notqsos):
-    python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --notqso notqso --maxr 0
-#--maxr 0 stops the code from running any randoms
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --notqso notqso --version v#
 
+#add completeness info per tiles group to randoms, needs to be done after vetos applied to data
+for tp,notqso in zip(tps,notqsos):
+	srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --version <LSSversion> 
+	#doing in chunks of 6 seems to be robust and the multiprocessing has been hardcoded for that
+	#i/o goes slow on node sometimes and this computing is fast, so the following might work better:
+	python scripts/main/mkCat_main_ran.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tl y --par n
 
+#apply map based veto to data and random; if applying this, make sure to subsequently use --use_map_veto _HPmapcut as an option below (though this should now be the default everywhere)
+for tp,notqso in zip(tps,notqsos):
+    srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --notqso notqso --version v#
 
+#this add the completeness info after the map based veto to randoms
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec iron --survey Y1 --add_tlcomp y --version v0.6 --fulld n
+
+#get rest frame from fastspecfit
+python mkCat_main.py --type BGS_BRIGHT --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_fs y --survey Y1 --version <LSSversion> 
+
+#NO LONGER DEFAULT
 #get k+e
 srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_BRIGHT --verspec himalayas --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_ke y --survey Y1 
 
 #to get regressis and zfail weights
-Y1_regressis_zfail.sh iron
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --verspec iron --version v0.6 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+#script to do all needs editing Y1_regressis_zfail.sh iron
 
 #get regressis weights
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 for tp,notqso in zip(tps,notqsos):
-	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec himalayas --notqso notqso
+	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y (--notqso notqso) 
     
-#get bitweights n(z) and fkp weights
-python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --add_bitweight y --FKPfull y --nzfull y
+#get n(z) from full catalogs and make plots
+python scripts/main/mkCat_main.py --type tp --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --survey Y1 --nzfull y --version <version>
 
 #apply blinding and get blinded clustering catalogs
 module swap pyrecon/main pyrecon/mpi
-srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y
+srun -n 128 python scripts/main/apply_blinding_main_fromfile_fcomp.py --type tp --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
 
+#get unblinded clustering catalogs, first in total (with proper resampling within regions) then split into separate NGC, SGC catalogs
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --survey Y1 --verspec iron --version v0.6 --clusd y --clusran y --splitGC y --nz y --par n --imsys_colname <imsys_colname>
+
+#step run to get v1 catalogs
+
+#copy existing v0.6 full catalogs
+cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/*full* /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1/
+
+#replace zfail weights
+#LRG and QSO run in cosmodesi environment
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+(ELG requires desispec, so source /global/common/software/desi/desi_environment.sh main and redo LSS environment)
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
+
+#swap in rerun for petal 9 20211212
+python scripts/main/mkCat_main.py --type LRG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swap20211212 y --verspec iron --survey Y1 --version v1
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swap20211212 y --verspec iron --survey Y1 --version v1
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swap20211212 y --verspec iron --survey Y1 --version v1
+
+#tsnr trend plots after weights
+python scripts/validation/validation_tsnr_zbin.py --version v1
+
+#copy maps over
+mkdir /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1/hpmaps
+cp /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v0.6/hpmaps/* /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1/hpmaps/
+
+#linear systematic weights 
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+
+#validation for linear
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers LRG --version v1 --weight_col WEIGHT_IMLIN
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers ELG_LOPnotqso --version v1 --weight_col WEIGHT_IMLIN
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers QSO --version v1 --weight_col WEIGHT_IMLIN
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers BGS_BRIGHT-21.5 --version v1 --weight_col WEIGHT_IMLIN
+
+#add bitweights
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+#regressis imaging systematic weights
+python scripts/main/mkCat_main.py --type QSO --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type LRG --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+
+#sysnet imaging systematic weights
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetELG_zbins_new.sh v1
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/Y1_sysnetBGS.sh v1 1
+
+#redo linear systematic weights for LRG using extra maps for different zbins in S; when doing so noticed bug that catalogs weren't being cut to good z, so redo all types
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+
+#get blinded catalogs
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --wsyscol WEIGHT_IMLIN --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y 
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type QSO --wsyscol WEIGHT_RF --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type BGS_BRIGHT-21.5 --wsyscol WEIGHT_SN --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type ELG_LOPnotqso --wsyscol WEIGHT_SN --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+#redoing BGS with latest fastspecfit, which is v2.0
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_fs y --survey Y1 --version v1
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --survey Y1 --version v1 --redoBGS215 y
+#re-calculate imaging systematics weights for linear case
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey Y1 --verspec iron --imsys_zbin y --version v1 --use_map_veto _HPmapcut
+python /global/homes/a/ajross/LSS/scripts/validation/validation_improp_full.py --tracers BGS_BRIGHT-21.5 --version v1 --weight_col WEIGHT_IMLIN
+#re produce blinded catalogs, switch to WEIGHT_IMLIN
+module swap pyrecon/main pyrecon/mpi
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type BGS_BRIGHT-21.5 --wsyscol WEIGHT_IMLIN --version v1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+#get unblinded catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --fulld n --survey Y1 --verspec iron --version v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO  --fulld n --survey Y1 --verspec iron --version v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG  --fulld n --survey Y1 --verspec iron --version v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --fulld n --survey Y1 --verspec iron --version v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#jan 10th re-add bitweights
+python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+python scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1

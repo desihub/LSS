@@ -19,21 +19,23 @@ zcol = 'Z_not4clus'
 ram = 0
 rax = 360
 ra0 = (ram+rax)/2.
-decm = -0.25
-decx = .25
+decm = -0.5
+decx = .5
 zmin = 0
 zmax = 3.5
 
 
 #plt.figure()
-fig, ax = plt.subplots(dpi=300)
+fig, ax = plt.subplots(dpi=1000)
 ax.set_aspect('equal')
 ax.patch.set_facecolor('black')
 #ax.patch.set_alpha(1)
 
+msdic = {'QSO':.24,'ELG':.21,'LRG':.21,'BGS_ANY':.1}
+
 tps = ['QSO','LRG','BGS_ANY','ELG']
 cl = ['y','r','lime','b']
-zordl = [10,5,2,1]
+zordl = [2,5,3,1]
 for tp,c,zo in zip(tps,cl,zordl):
     cols = ['RA','DEC',zcol,'ZWARN','DELTACHI2','LOCATION_ASSIGNED']
     if tp == 'ELG':
@@ -97,10 +99,10 @@ for tp,c,zo in zip(tps,cl,zordl):
     x = r*np.cos(phi)*np.sin(th)
     y = r*np.sin(phi)*np.sin(th)
     z = r*np.cos(th)
-    ax.plot(x,y,',',color=c,zorder=zo,lw=.1)
+    ax.plot(x,y,'s',color=c,zorder=zo,ms=msdic[tp],lw=0,mew=0,)
     if tp == 'QSO':
         sel = dt[zcol] > 2.1
-        ax.plot(x[sel],y[sel],',',color='white',zorder=zo,lw=1)
+        ax.plot(x[sel],y[sel],'s',color='white',zorder=zo,ms=msdic[tp],lw=0,mew=0)
     #plt.show()
     
     

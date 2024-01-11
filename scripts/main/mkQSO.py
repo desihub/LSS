@@ -156,7 +156,7 @@ qf = add_fminfo(qf,expinfo)
 common.write_LSS(qf,qsofn,extname=extname)
 
 #make the dark time any target type QSO catalog
-#build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
+build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
 print('loading '+qsofn+' to add columns to')
