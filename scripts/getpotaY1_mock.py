@@ -291,7 +291,7 @@ def parse_datetime(s):
     try:
         return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
     except ValueError:
-        d = datetime.strptime(rundate, "%Y-%m-%dT%H:%M:%S")
+        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
         # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
         d = d.replace(tzinfo=timezone.utc)
 
