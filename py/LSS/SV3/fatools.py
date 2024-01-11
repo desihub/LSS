@@ -26,11 +26,15 @@ log = get_logger()
 
 
 #hardcode target directories; these are fixed
+#JL - These change once at the very beginning of observations.
+#JL - Adding a format string to change versioning of photometry. 
 
 skydir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/skies'
 skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/skies'
+#skydirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/skies'
 tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.57.0/targets/sv3/resolve/'
 tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'
+#tdirMain = '/global/cfs/cdirs/desi/target/catalogs/dr9/{0}/targets/main/resolve/'
 # AR default REF_EPOCH for PMRA=PMDEC=REF_EPOCH=0 objects
 gaia_ref_epochs = {"dr2": 2015.5}
 
@@ -267,7 +271,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1', reproducing = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
@@ -361,14 +365,31 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
-            altcreate_mtl(tilef,
-            mtldir+prog,        
-            gaiadr,
-            fht['PMCORR'],
-            tarfn,
-            tdirMain+prog,
-            survey = 'main',
-            mock = mock)
+            if (not reproducing) or (targver == '1.1.1'):
+                if verbose:
+                    log.info('if reproducing is True, targver must be 1.1.1')
+                    log.info(f'targver  = {targver}')
+                    log.info(f'reproducing = {reproducing}')
+                altcreate_mtl(tilef,
+                mtldir+prog,        
+                gaiadr,
+                fht['PMCORR'],
+                tarfn,
+                tdirMain.format(targver)+prog,
+                survey = 'main',
+                mock = mock)
+            #tdirMain+prog,
+            elif targver == '1.0.0':
+                if verbose:
+                    log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
+                    log.info(f'targver  = {targver}')
+                    log.info(f'reproducing = {reproducing}')
+                if not os.path.exists(outdir):
+                    log.info('running makedirs. making {0}'.format(outdir))
+                    os.makedirs(outdir)
+                
+                shutil.copyfile(indir+ts+'-targ.fits', tarfn)
+
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -557,10 +578,13 @@ def altcreate_mtl(
     
     try:
         log.info('shape of read_targets_in_tiles output')
-        log.info(d.shape)  
+        log.info(d.shape)
+        ntargs = d.shape  
     except:
         log.info('len of read_targets_in_tiles output post failure of shape')
         log.info(len(d))
+        ntargs = len(d)
+    assert(ntargs)
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
@@ -583,10 +607,12 @@ def altcreate_mtl(
     #for col in tcol:
     #    columns.append(col) 
     if not mock:
+        log.info('len(d)= {0}'.format(len(d)))
+
         d = inflate_ledger(
                 d, targdir, columns=columns, header=False, strictcols=False, quick=True
             )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
-        
+        log.info('len(d)= {0}'.format(len(d)))
         if add_plate_cols:
             d = Table(d)
             d["PLATE_RA"] = d["RA"]

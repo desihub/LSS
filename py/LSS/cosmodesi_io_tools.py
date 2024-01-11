@@ -63,7 +63,7 @@ def get_zlims(tracer, tracer2=None, option=None):
                 logger.warning('extended is no longer a meaningful option')
                 #zlims = [0.8, 1.1, 1.6]
             if 'smallshells' in option:
-                zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]    
+                zlims = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6] 
 
     if tracer.startswith('QSO'):
         #zlims = [0.8, 1.1, 1.6, 2.1]
@@ -149,7 +149,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
-
     if option:
         if 'noNorth' in option:
             decmask = catalog['DEC'] < 32.375
@@ -158,6 +157,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
             mask &= ~zmask
+
         if 'elgzcatas' in option:
             zmask = ((catalog['Z'] >= 1.31) & (catalog['Z'] < 1.33))
             mask &= ~zmask
@@ -171,8 +171,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
                 opsp = option.split('>')
                 nt = int(opsp[1])
                 mask &= catalog['NTILE'] >= nt
-               
-         
+
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])

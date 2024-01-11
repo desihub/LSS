@@ -42,25 +42,13 @@ mtlBaseDir = args.outdir + '/Univ{0:03d}/'
 HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
 print(HPList)
 
-#mtlBaseDir = '/global/cscratch1/sd/jlasker/TestGeneralizedAltMTLScripts/alt_mtls_64dirs/Univ{0:03d}/'
-#outdir = '/global/cscratch1/sd/jlasker/TestGeneralizedAltMTLScripts/alt_mtls_64dirs/'
-#bw = makeBitweights(mtlBaseDir, ndirs = 64, hplist = hplist, debug = False)
-#writeBitweights(mtlBaseDir, ndirs = 128, hplist = sv3dark, debug = False, outdir = outdir, survey = 'sv3', obscon = 'dark', allFiles = True)
-#writeBitweights(mtlBaseDir, ndirs = 128, hplist = sv3dark, debug = False, outdir = outdir, survey = 'sv3', obscon = 'bright', allFiles = True)
-#writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None)
 def procFunc(nproc):
 
     thisHPList = np.array_split(HPList, args.ProcPerNode)[nproc]
 
     for hp in thisHPList:
         writeBitweights(mtlBaseDir, ndirs = args.ndir, hplist = [hp], debug = args.debug, verbose = args.verbose, outdir = args.outdir, survey = args.survey, obscon = args.obscon.lower(), allFiles = False, overwrite = args.overwrite)
-#if survey.lower() == 'main':
-#    for hp in HPList:
-        
-#else:
-#    writeBitweights(mtlBaseDir, ndirs = args.ndir, hplist = HPList, debug = args.debug, verbose = args.verbose, outdir = outdir, survey = survey, obscon = obscon.lower(), allFiles = True, overwrite = overwrite)
 
-#writeBitweights(mtlBaseDir, ndirs = ndir, hplist = HPList, debug = False, outdir = outdir, survey = survey, obscon = obscon.lower(), allFiles = True, overwrite = overwrite, splitByReal = splitByReal, splitNChunks = splitNChunks)
 try:
     NNodes = int(os.getenv('SLURM_JOB_NUM_NODES'))
 except:
