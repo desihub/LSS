@@ -97,28 +97,28 @@ tpl = ['LRG','LRG','LRG','ELG_LOPnotqso','ELG_LOPnotqso','QSO','BGS_BRIGHT-21.5'
 zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1),(0.8,1.1),(1.1,1.6),(0.8,2.1),(0.1,0.4)]
 
 for reg in regl:
-	for i in range(0,len(tpl)):
-	    tpi = tpl[i]
-	    zri = zrl[i]
-	    delta_i,fsky_i,frac_i,Ngal_i = get_delta(tpi,zri[0],zri[1],reg)
-		for j in range(i,len(tpl)):
-			tpj = tpl[j]
-			zrj = zrl[j]
-			fname_out = outdir + tpi+'zr'+str(zri[0])+'-'+str(zri[1])+'_cross_'+tpj+'zr'+str(zrj[0])+'-'+str(zrj[1])+reg
-			delta_j,fsky_j,frac_j,Ngal_j = get_delta(tpj,zrj[0],zrj[1],reg)
-			cl_ij = hp.anafast(delta_i,delta_j)
-			lmax = -300
-			fsky_eff = np.sqrt(fsky_i*fsky_j) #I doubt this is actually correct...should somehow be cross-correlation of mask?
-			Neff = np.sqrt(Ngal_i*Ngal_j) #I also doubt this is correct...
-			plt.loglog(ell[1:lmax],cl_zr[1:lmax]/fsky_eff-4.*np.pi*fsky/Neff)
-			plt.title(reg.strip('_')+' ' tpi+' '+str(zri[0])+'<z<'+str(zri[1])+' x '+tpj+' '+str(zrj[0])+'<z<'+str(zrj[1]))
-			plt.legend()
-			plt.xlabel(r'$\ell$')
-			plt.ylabel(r'$C_{\ell}$')
-			plt.savefig(fname_out+'_cell.png')
-			plt.clf()
-			
-			
+    for i in range(0,len(tpl)):
+        tpi = tpl[i]
+        zri = zrl[i]
+        delta_i,fsky_i,frac_i,Ngal_i = get_delta(tpi,zri[0],zri[1],reg)
+        for j in range(i,len(tpl)):
+            tpj = tpl[j]
+            zrj = zrl[j]
+            fname_out = outdir + tpi+'zr'+str(zri[0])+'-'+str(zri[1])+'_cross_'+tpj+'zr'+str(zrj[0])+'-'+str(zrj[1])+reg
+            delta_j,fsky_j,frac_j,Ngal_j = get_delta(tpj,zrj[0],zrj[1],reg)
+            cl_ij = hp.anafast(delta_i,delta_j)
+            lmax = -300
+            fsky_eff = np.sqrt(fsky_i*fsky_j) #I doubt this is actually correct...should somehow be cross-correlation of mask?
+            Neff = np.sqrt(Ngal_i*Ngal_j) #I also doubt this is correct...
+            plt.loglog(ell[1:lmax],cl_zr[1:lmax]/fsky_eff-4.*np.pi*fsky/Neff)
+            plt.title(reg.strip('_')+' ' tpi+' '+str(zri[0])+'<z<'+str(zri[1])+' x '+tpj+' '+str(zrj[0])+'<z<'+str(zrj[1]))
+            plt.legend()
+            plt.xlabel(r'$\ell$')
+            plt.ylabel(r'$C_{\ell}$')
+            plt.savefig(fname_out+'_cell.png')
+            plt.clf()
+            
+            
 
 # for tp in tps:
 #     print('doing '+tp)
