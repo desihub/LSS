@@ -45,7 +45,7 @@ th,phi = hp.pix2ang(256,pix_list)
 ra,dec = densvar.thphi2radec(th,phi)
 
 
-def get_delta(tp,zmin,zmax,reg,racol='RA',decol='DEC',wts='default',thresh=0,nest=False,appfrac=True,maskreg=None):#,ranpall=None
+def get_delta(tp,zmin,zmax,reg,racol='RA',decol='DEC',wts='default',thresh=0.1,nest=False,appfrac=True,maskreg=None):#,ranpall=None
     dat = fitsio.read(indir+tp+reg+'_clustering.dat.fits')
     sel = dat['Z'] > zmin
     sel &= dat['Z'] < zmax
