@@ -107,6 +107,7 @@ for reg in regl:
             fname_out = outdir + tpi+'zr'+str(zri[0])+'-'+str(zri[1])+'_cross_'+tpj+'zr'+str(zrj[0])+'-'+str(zrj[1])+reg
             delta_j,fsky_j,frac_j,Ngal_j = get_delta(tpj,zrj[0],zrj[1],reg)
             cl_ij = hp.anafast(delta_i,delta_j)
+            ell = np.arange(len(cl_ij))
             lmax = -300
             fsky_eff = np.sqrt(fsky_i*fsky_j) #I doubt this is actually correct...should somehow be cross-correlation of mask?
             Neff = np.sqrt(Ngal_i*Ngal_j) #I also doubt this is correct...
