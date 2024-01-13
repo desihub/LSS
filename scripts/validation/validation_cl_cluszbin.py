@@ -111,7 +111,7 @@ for reg in regl:
             lmax = -300
             fsky_eff = np.sqrt(fsky_i*fsky_j) #I doubt this is actually correct...should somehow be cross-correlation of mask?
             Neff = np.sqrt(Ngal_i*Ngal_j) #I also doubt this is correct...
-            plt.loglog(ell[1:lmax],cl_zr[1:lmax]/fsky_eff-4.*np.pi*fsky/Neff)
+            plt.loglog(ell[1:lmax],cl_ij[1:lmax]/fsky_eff-4.*np.pi*fsky/Neff)
             plt.title(reg.strip('_')+' ' +tpi+' '+str(zri[0])+'<z<'+str(zri[1])+' x '+tpj+' '+str(zrj[0])+'<z<'+str(zrj[1]))
             plt.legend()
             plt.xlabel(r'$\ell$')
