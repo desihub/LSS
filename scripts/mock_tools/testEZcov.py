@@ -175,7 +175,7 @@ for rec in recl:
             fig = compchi2stats(tp,zr[0],zr[1],20,200,rec=rec,ells=ells)
             figs.append(fig)
 
-outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/''
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
 with PdfPages(outdir+'testEZmockcov_smin20smax200.pdf') as pdf:
     for fig in figs:
         pdf.savefig(fig)
