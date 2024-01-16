@@ -165,7 +165,7 @@ for rec in recl:
             figs.append(fig)
 
 outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
-with PdfPages(outdir+'testEZmockcov_'+tp+_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
     for fig in figs:
         pdf.savefig(fig)
         plt.close()
@@ -178,7 +178,7 @@ for rec in recl:
         for ells in ellsl:
             fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells)
             figs.append(fig)
-with PdfPages(outdir+'testEZmockcov_'+tp+_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
     for fig in figs:
         pdf.savefig(fig)
         plt.close()
@@ -192,7 +192,7 @@ for rec in recl:
             fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells)
             figs.append(fig)
 
-with PdfPages(outdir+'testEZmockcov_'+tp+_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
     for fig in figs:
         pdf.savefig(fig)
         plt.close()
