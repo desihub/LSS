@@ -151,8 +151,8 @@ def compchi2stats(tracer,zmin,zmax,smin,smax,rec='',ells=[0,2,4]):
 
 figs = []
 
-smin=20
-smax=200
+smin=50
+smax=150
 recl = ['recon_recsym','']
 ellsl = [[0,2,4],[0,2],[0]]
 
