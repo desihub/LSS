@@ -31,7 +31,7 @@ if not os.path.exists(outdir):
 randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ranall = fitsio.read(randir+'randoms-allsky-1-0.fits',columns=['RA','DEC'])
 th,phi = densvar.radec2thphi(ranall['RA'],ranall['DEC'])
-ranpix = hp.ang2pix(256,th,phi)
+ranpix = hp.ang2pix(256,th,phi,nest=False)
 ranpall = np.zeros(12*256*256)
 for pix in ranpix:
     ranpall[pix] += 1.
