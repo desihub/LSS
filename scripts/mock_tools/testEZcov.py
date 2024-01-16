@@ -155,7 +155,7 @@ tp = 'QSO'
 zrl = [(0.8,2.1)]
 for rec in recl:
     for zr in zrl:
-        for ells in ellsl
+        for ells in ellsl:
 	        fig = compchi2stats(tp,zr[0],zr[1],20,200,rec=rec,ells=ells)
     	    figs.append(fig)
 
@@ -163,7 +163,7 @@ tp = 'ELG_LOP'
 zrl = [(0.8,1.1),(1.1,1.6)]
 for rec in recl:
     for zr in zrl:
-        for ells in ellsl
+        for ells in ellsl:
 	        fig = compchi2stats(tp,zr[0],zr[1],20,200,rec=rec,ells=ells)
     	    figs.append(fig)
 
@@ -171,7 +171,7 @@ tp = 'LRG'
 zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
 for rec in recl:
     for zr in zrl:
-        for ells in ellsl
+        for ells in ellsl:
 	        fig = compchi2stats(tp,zr[0],zr[1],20,200,rec=rec,ells=ells)
     	    figs.append(fig)
 
