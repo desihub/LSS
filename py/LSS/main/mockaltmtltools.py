@@ -11,6 +11,18 @@ from astropy.table import Table,join
 import memory_profiler
 from memory_profiler import profile
 
+
+##TEMP
+MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
+MODULE_NAME = 'desitarget'
+import importlib
+import sys
+spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
+spec.loader.exec_module(module)
+##
+
 import desitarget
 #from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
@@ -1247,8 +1259,16 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             if targets is None:
                 raise ValueError('If processing mocks, you MUST specify a target file')
             log.info('update loc a')
+            print('althpdirname')
+            print(althpdirname)
+            print('---------------------')
+            print('altZCat')
+            print(altZCat)
+            print('*************************')
+
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                       numobs_from_ledger=numobs_from_ledger)#, targets = targets)
+            print('AURE')
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')
@@ -1416,7 +1436,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         if debugOrig:
             altmtldir = altmtlbasedir
         else:
-            altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
+            altmtldir = os.path.join(altmtlbasedir.format(mock_number=n), 'Univ000/')
+            #altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
  
         althpdirname = desitarget.io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,

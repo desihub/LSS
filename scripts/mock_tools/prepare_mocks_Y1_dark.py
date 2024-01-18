@@ -86,18 +86,17 @@ if args.prog == 'dark':
         downsampling = {'ELG':0.7345658717688022, 'LRG':0.708798313382828, 'QSO':0.39728966594530174}
         percentage_elg_hip = 0.1
 
+Abacus_dir = 'AbacusSummit'
 
 if args.isProduction == 'y':
     args.base_output = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks'
     args.overwrite = False
     if args.new_version is not None:
         Abacus_dir = args.new_version
-    else:
-        'AbacusSummit'
 else:
     if args.base_output == '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks' or args.base_output == '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/':
-        args.base_output = scratch
-        print('This is not production, run on user scratch', scratch)
+        args.base_output = os.environ[scratch] 
+        print('This is not production, run on user scratch', os.environ[scratch])
     else:
         print('Saving to path', args.base_output)
 
@@ -234,6 +233,7 @@ for real in range(args.realmin, args.realmax):
                 
                 df_lop=data_lop.to_pandas()
                 df_vlo=data_vlo.to_pandas()
+
                 num_HIP_LOP = int(len(df_lop) * percentage_elg_hip)
                 df_HIP_LOP = df_lop.sample(n=num_HIP_LOP)
                 remaining_LOP = df_lop.drop(df_HIP_LOP.index)
@@ -249,6 +249,8 @@ for real in range(args.realmin, args.realmax):
                 remaining_LOP['PRIORITY_INIT'] = 3100
                 remaining_LOP['PRIORITY'] = 3100
                 remaining_LOP['DESI_TARGET'] = 2**5 + 2**1
+
+
                 remaining_VLO['PRIORITY_INIT'] = 3000
                 remaining_VLO['PRIORITY'] = 3000
                 remaining_VLO['DESI_TARGET'] = 2**7 + 2**1
@@ -259,7 +261,7 @@ for real in range(args.realmin, args.realmax):
 
                 df_HIP_VLO['PRIORITY_INIT'] = 3200
                 df_HIP_VLO['PRIORITY'] = 3200
-                df_HIP_VLO['DESI_TARGET'] = 2**6 + 2**1 + 2**5
+                df_HIP_VLO['DESI_TARGET'] = 2**6 + 2**1 + 2**7
 
                 remaining_LOP['NUMOBS_MORE'] = numobs[type_]
                 remaining_LOP['NUMOBS_INIT'] = numobs[type_]
@@ -321,7 +323,7 @@ for real in range(args.realmin, args.realmax):
     targets['OBSCONDITIONS'] = obsconditions.mask(args.prog.upper()) #np.zeros(n, dtype='i8')+int(3) 
     targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
     targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
-    targets['TARGETID'] = np.arange(1,n+1)
+    targets['TARGETID'] = np.random.permutation(np.arange(1,n+1))
 
     targets.write(out_file_name, overwrite = args.overwrite)
 

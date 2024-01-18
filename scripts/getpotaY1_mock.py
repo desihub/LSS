@@ -50,6 +50,7 @@ parser.add_argument("--base_input", help="base directory for input for EZ mocks 
 parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
                     default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
+parser.add_argument("--secgen_ver", default = None)
 parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
                     default=multiprocessing.cpu_count()//2, type=int)
 

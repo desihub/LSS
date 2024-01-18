@@ -23,6 +23,7 @@ import LSS.common_tools as common
 import LSS.mocktools as mocktools
 #import LSS.mkCat_singletile.fa4lsscat as fa
 from LSS.globals import main
+import errno
 
 if os.environ['NERSC_HOST'] == 'cori':
     scratch = 'CSCRATCH'
@@ -32,12 +33,22 @@ else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
+def test_dir(value):
+    if not os.path.exists(value):
+        try:
+            os.makedirs(value, 0o755)
+            print('made ' + value)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
+parser.add_argument("--ccut", help="extra-cut",default=None)
 parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
@@ -154,23 +165,26 @@ if args.add_gtl == 'y':
 
 
 lssdir = os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum)
-if not os.path.exists(lssdir):
-    os.mkdir(lssdir)
-    print('made '+lssdir)
+test_dir(lssdir)
+#if not os.path.exists(lssdir):
+#    os.mkdir(lssdir)
+#    print('made '+lssdir)
 
 dirout = os.path.join(lssdir, 'LSScats')
 dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+test_dir(dirout)
 
-if not os.path.exists(dirout):
-    os.makedirs(dirout)
-    print('made '+dirout)
+#if not os.path.exists(dirout):
+#    os.makedirs(dirout)
+#    print('made '+dirout)
 
 
 if args.tracer != 'dark' and args.tracer != 'bright':
     if args.tracer == 'BGS_BRIGHT':
         bit = targetmask.bgs_mask[args.tracer]
+        #desitarg='DESI_TARGET'
         desitarg='BGS_TARGET'
     else:
         bit = targetmask.desi_mask[args.tracer]
@@ -181,16 +195,15 @@ if args.tracer != 'dark' and args.tracer != 'bright':
 asn = None
 pa = None
 outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+test_dir(outdir)
+
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     print('--- START COMBD ---')
     print('entering altmtl')
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
-    fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
+    fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
-    
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
     print('entering common.combtiles_wdup_altmtl for FASSIGN')
 
     asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'])
@@ -198,7 +211,11 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     print('entering common.combtiles_wdup_altmtl for FAVAIL')
-    pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET'])
+
+    cols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
+    if pdir == 'bright':
+        cols.append('BGS_TARGET', 'R_MAG_ABS')
+    pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
@@ -436,29 +453,51 @@ if args.mkclusdat == 'y':
     nztl.append('')
     #fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
     #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit)#,ntilecut=ntile,ccut=ccut)
+    
+    if args.ccut is not None:
+        targets = Table(fitsio.read(os.path.join(args.targDir, 'forFA{MOCKNUM}.fits').format(MOCKNUM=mocknum).replace('global','dvs_ro'), columns=['TARGETID', 'R_MAG_ABS']))
+        ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
+        if 'R_MAG_ABS' not in ffile.columns:
+            nm = Table(join(ffile, targets, keys=['TARGETID']))
+        #print(nm)
+            common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+        #nm.write(ffile, overwrite=True)
+
+
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 
 
     
     
+finaltracer = args.tracer + notqso #+ '_'
+if args.tracer[:3] == 'BGS':
+    if args.ccut is not None:
+        finaltracer = args.tracer + str(args.ccut) #+ '_'
+
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA']
 if args.mkclusran == 'y':
     print('--- START MKCLUSRAN ---')
     if len(nztl) == 0:
         nztl.append('')
-    
+
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
         tsnrcol = 'TSNR2_BGS'
-    fl = os.path.join(dirout, args.tracer + notqso + '_')
+        if args.ccut is not None:
+            for rn in range(rannum[0], rannum[1]):
+                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(dirout, args.tracer), str(args.ccut), rn)):
+                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+                #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+            os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
+    fl = os.path.join(dirout, finaltracer) + '_'
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     global _parfun4
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
-        ct.mkclusran(os.path.join(readdir, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
+        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0
     if args.par == 'n':
@@ -478,7 +517,8 @@ if args.mkclusran == 'y':
     print('*** END WITH MKCLUSRAN ***')
 
 nproc = 18
-fb = os.path.join(dirout, tracer_clus)
+fb = os.path.join(dirout, finaltracer)
+##fb = os.path.join(dirout, tracer_clus)
 nran = rx-rm
 if args.nz == 'y':
     #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
