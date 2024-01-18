@@ -3380,7 +3380,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3611,23 +3611,27 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')
         #print(kl)
-        fcols = ['G','R','Z','W1','W2']
-        ff = common.add_dered_flux(ff,fcols)
-        for col in fcols:
-            kl.append('flux_'+col.lower()+'_dered')
-        print(kl)
-        if kemd == 'phot':
-            restcols = ['REST_GMR_0P1','REST_GMR_0P0','ABSMAG_RP0','ABSMAG_RP1']
-            for col in restcols:
-                kl.append(col)
+        if not ismock:
+            fcols = ['G','R','Z','W1','W2']
+            ff = common.add_dered_flux(ff,fcols)
+            for col in fcols:
+                kl.append('flux_'+col.lower()+'_dered')
+            print(kl)
+            if kemd == 'phot':
+                restcols = ['REST_GMR_0P1','REST_GMR_0P0','ABSMAG_RP0','ABSMAG_RP1']
+                for col in restcols:
+                    kl.append(col)
 
         if ccut == '-21.5':
-            from LSS.tabulated_cosmo import TabulatedDESI
-            cosmo = TabulatedDESI()
-            dis_dc = cosmo.comoving_radial_distance
-            dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
-            r_dered = 22.5 - 2.5*np.log10(ff['flux_r_dered'])
-            abr = r_dered -dm
+            if ismock:
+                abr = ff['R_MAG_ABS']
+            else:
+                from LSS.tabulated_cosmo import TabulatedDESI
+                cosmo = TabulatedDESI()
+                dis_dc = cosmo.comoving_radial_distance
+                dm = 5.*np.log10(dis_dc(ff['Z'])*(1.+ff['Z'])) + 25.
+                r_dered = 22.5 - 2.5*np.log10(ff['flux_r_dered'])
+                abr = r_dered -dm
             sel = abr < float(ccut)
             print('comparison before/after abs mag cut')
             print(len(ff),len(ff[sel]))

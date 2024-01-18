@@ -3,12 +3,10 @@ from desiutil.iers import freeze_iers
 freeze_iers()
 
 from multiprocessing import Pool
-from LSS.SV3 import altmtltools as amt
-from LSS.main import mockaltmtltools as mockamt
+from LSS.main import mockaltmtltools as amt
 from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
-#import dill
 from sys import argv
 import os
 import numpy as np
@@ -29,9 +27,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True, type=str, help = 'the path to the location where alt MTLs are stored, up to, but not including survey and obscon information.')
 
 parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
+parser.add_argument('-mockmin', '--mockmin', dest='mockmin', default=0, help = 'Minimum mock number', required = False, type = int)
+parser.add_argument('-mockmax', '--mockmax', dest='mockmax', default=6, help = 'Maximum mock number', required = False, type = int)
 parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
 parser.add_argument('-sec', '--secondary', dest = 'secondary', default=False, action='store_true', help = 'set flag to incorporate secondary targets.')
-parser.add_argument('-mock', '--mock', dest = 'mock', default=False, action='store_true', help = 'set flag if running pipeline on mocks.')
+parser.add_argument('-mock', '--mock', dest = 'mock', default=True, action='store_true', help = 'set flag if running pipeline on mocks.')
 parser.add_argument('-tf', '--targfile', dest='targfile', required=False, default = None, type=str, help = 'Location for target file for mocks or data. Only required if mocks are being processed.')
 parser.add_argument('-v', '--verbose', dest = 'verbose', default=False, action='store_true', help = 'set flag to enter verbose mode')
 parser.add_argument('-qr', '--quickRestart', dest = 'quickRestart', default=False, action='store_true', help = 'set flag to remove any AMTL updates that have already been performed. Useful for rapidfire debugging of steps in this part of the pipeline.')
@@ -107,7 +107,7 @@ def procFunc(nproc):
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
-        targets = Table.read(args.targfile)
+        targets = Table.read(args.targfile.format(mock_number=nproc))
         print('targets.dtype')
         print(targets.dtype)
         print('targets[0:5]')
@@ -118,10 +118,7 @@ def procFunc(nproc):
         print(targets['DEC'][0:5])
     else:
         targets = None
-    if args.mock:
-        retval = mockamt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
-    else:
-        retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:
@@ -139,23 +136,24 @@ def procFunc(nproc):
     return 42
 
 inds = []
-start = int(NodeID*NProc/SlurmNProcs)
-end = int((NodeID + 1)*NProc/SlurmNProcs)
+#start = int(NodeID*NProc/SlurmNProcs)
+#end = int((NodeID + 1)*NProc/SlurmNProcs)
 log.info('NodeID = {0:d}'.format(NodeID))
-log.info('StartProc = {0:d}'.format(start))
-log.info('EndProc = {0:d}'.format(end))
+log.info('StartProc = {0:d}'.format(args.mockmin))
+log.info('EndProc = {0:d}'.format(args.mockmax))
 
 
-for i in range(start, end):
+for i in range(args.mockmin, args.mockmax):
     log.info('Process i = {0}'.format(i))
-    files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
+    files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
+    #files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
     if len(files):
         pass
     else:
         log.info('no files in dir number {0}, not processing that directory.'.format(i))
         continue
     inds.append(i)
-    
+
 assert(len(inds))
 p = Pool(NProc)
 atexit.register(p.close)

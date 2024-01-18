@@ -263,6 +263,10 @@ for real in range(args.realmin, args.realmax):
                 print('size of BRIGHT', len(dat_bright))
                 print('size of FAINT', len(dat_faint))
 
+
+                
+
+
                 dat_bright['BGS_TARGET'] = 2**1
                 
                 dat_faint['BGS_TARGET'] = 2**0
@@ -274,12 +278,16 @@ for real in range(args.realmin, args.realmax):
 
                 datat.append(dat_bright)
                 
+                SubFracFaint=0.556
+                ran_faint = np.random.uniform(size = len(dat_faint))
+                dat_faint_subfrac = dat_faint[(ran_faint<=SubFracFaint)]
+
                 PromoteFracBGSFaint=0.2
 
-                ran_hip = np.random.uniform(size = len(dat_faint))
+                ran_hip = np.random.uniform(size = len(dat_faint_subfrac))
 
-                dat_faint_f = dat_faint[(ran_hip>PromoteFracBGSFaint)]
-                dat_faint_hip = dat_faint[(ran_hip<=PromoteFracBGSFaint)]
+                dat_faint_f = dat_faint_subfrac[(ran_hip>PromoteFracBGSFaint)]
+                dat_faint_hip = dat_faint_subfrac[(ran_hip<=PromoteFracBGSFaint)]
 
                 dat_faint_hip['BGS_TARGET'] += 2**3
 
