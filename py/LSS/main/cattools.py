@@ -3607,6 +3607,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         kl.append('WEIGHT_SN')
     if 'WEIGHT_RF' in cols:
         kl.append('WEIGHT_RF')
+    if 'WEIGHT_IMLIN' in cols:
+        kl.append('WEIGHT_RF')
+
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')
@@ -3717,17 +3720,20 @@ def add_tlobs_ran_array(ranf,tlf):
     nt = 0
     utls = np.unique(ranf['TILES'])
     gtls = np.isin(utls,tlf['TILES'])
+    nnf = 0
     for tls in ranf['TILES']:
         try:    
             fr = tldic[tls]
         except:
-            fr = 0
+            fr = 1
+            nnf += 1
         tlarray.append(fr)
         if nt%100000 == 0:
            print(nt,len(ranf))  
         nt += 1  
     tlarray = np.array(tlarray)
     sel = tlarray == 0
+    print('number of tiles not found in the data '+str(nnf))
     print(len(tlarray[sel]),' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
     return ranf
