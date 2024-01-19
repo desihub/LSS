@@ -3641,8 +3641,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             ff = ff[sel]
         
     wn = ff['PHOTSYS'] == 'N'
-
-    ff.keep_columns(kl)
+    kll = []
+    data_cols = list(ff.dtype.names)
+    for name in kl:
+        if name is in data_cols:
+            kll.append(name)
+        else:
+            print(name+' not found in input and will not be in clustering catalog')
+    ff.keep_columns(kll)
     print('minimum,maximum weight')
     print(np.min(ff['WEIGHT']),np.max(ff['WEIGHT']))
 
