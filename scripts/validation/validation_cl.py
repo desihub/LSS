@@ -148,7 +148,7 @@ for tp in tps:
     print('doing '+tp)
     dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
     ran = fitsio.read(indir+tp+zdw+'_0_full'+args.use_map_veto+'.ran.fits')
-    fnreg = indir+'/regressis_data/main_'+tp+'_256/RF/main_'+tp+'_imaging_weight_256.npy'
+    fnreg = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.1/regressis_data/main_LRG_256/RF/main_LRG_imaging_weight_256.npy' #region definitions should be static, could have loaded from regressis code...
     rfw = np.load(fnreg,allow_pickle=True)
     maskreg = rfw.item()['mask_region']
 
