@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
+parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
@@ -144,8 +145,8 @@ zdw = ''
 
 for tp in tps:
     print('doing '+tp)
-    dtf = fitsio.read(indir+tp+zdw+'_full.dat.fits')
-    ran = fitsio.read(indir+tp+zdw+'_0_full.ran.fits')
+    dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
+    ran = fitsio.read(indir+tp+zdw+'_0_full'+args.use_map_veto+'.ran.fits')
     fnreg = indir+'/regressis_data/main_'+tp+'_256/RF/main_'+tp+'_imaging_weight_256.npy'
     rfw = np.load(fnreg,allow_pickle=True)
     maskreg = rfw.item()['mask_region']
