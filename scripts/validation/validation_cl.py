@@ -17,6 +17,7 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--tracers", help="all runs all for given survey",default='all')
 parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
+parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SYS')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
@@ -156,7 +157,7 @@ for tp in tps:
     sel_gz = common.goodz_infull(tp[:3],dtf)
     sel_obs = dtf['ZWARN'] != 999999
     dtfoz = dtf[sel_obs&sel_gz]
-    wt = 1./dtfoz['FRACZ_TILELOCID']*dtfoz['WEIGHT_ZFAIL']*dtfoz['WEIGHT_SYS']
+    wt = 1./dtfoz['FRACZ_TILELOCID']*dtfoz['WEIGHT_ZFAIL']*dtfoz[args.weight_col]
     if 'FRAC_TLOBS_TILES' in list(dtfoz.dtype.names):
         print('using FRAC_TLOBS_TILES')
         wt *= 1/dtfoz['FRAC_TLOBS_TILES']
