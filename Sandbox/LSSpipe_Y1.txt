@@ -226,3 +226,16 @@ python scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/su
 python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
 
 python scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --add_bitweight y --verspec iron --survey Y1 --version v1
+
+
+====== Below are steps to make v1.1
+
+mkdir /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.1/
+cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1/*full* /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.1/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --fulld n --survey Y1 --verspec iron --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG  --fulld n --survey Y1 --verspec iron --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+add regressis weights to BGS_BRIGHT-21.5:
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
