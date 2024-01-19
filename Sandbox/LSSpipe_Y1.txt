@@ -239,3 +239,15 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mai
 
 add regressis weights to BGS_BRIGHT-21.5:
 python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --version v1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --fulld n --survey Y1 --verspec iron --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO  --fulld n --survey Y1 --verspec iron --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT  --fulld n --survey Y1 --verspec iron --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#get BGS_ANY catalogs that were requested
+srun -N 1 -C cpu -t 04:00:00 -q interactive python mkCat_main.py --type BGS_ANY --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec iron --survey Y1 --version v1.1
+
+
+
