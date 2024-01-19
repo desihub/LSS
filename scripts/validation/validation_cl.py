@@ -206,6 +206,7 @@ for tp in tps:
     print('doing w(theta)')
     sel = delta_raw != hp.UNSEEN
     angl,wth_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_raw[sel],frac[sel])
+    sel = delta_allz != hp.UNSEEN
     _,wth_allz = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_allz[sel],frac[sel])
     _,wth_zr = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
 
