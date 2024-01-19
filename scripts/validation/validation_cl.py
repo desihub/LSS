@@ -146,6 +146,10 @@ zdw = ''
 
 for tp in tps:
     print('doing '+tp)
+
+    dtf_raw = fitsio.read(indir+tp+zdw+'_full'+'.dat.fits')
+    ran_raw = fitsio.read(indir+tp+zdw+'_0_full'+'.ran.fits')
+
     dtf = fitsio.read(indir+tp+zdw+'_full'+args.use_map_veto+'.dat.fits')
     ran = fitsio.read(indir+tp+zdw+'_0_full'+args.use_map_veto+'.ran.fits')
     fnreg = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.1/regressis_data/main_LRG_256/RF/main_LRG_imaging_weight_256.npy' #region definitions should be static, could have loaded from regressis code...
@@ -179,7 +183,7 @@ for tp in tps:
 
     sel_zr = dtfoz['Z_not4clus'] > zmin
     sel_zr &= dtfoz['Z_not4clus'] < zmax
-    delta_raw,fsky,frac = get_delta(dtf,ran,maskreg=maskreg)
+    delta_raw,fsky,frac = get_delta(dtf_raw,ran_raw,maskreg=maskreg)
     cl_raw = hp.anafast(delta_raw)
     ell = np.arange(len(cl_raw))
     delta_allz,_,_ = get_delta(dtfoz,ran,wts=wt,maskreg=maskreg)
