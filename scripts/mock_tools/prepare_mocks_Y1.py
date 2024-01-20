@@ -7,7 +7,7 @@ import os
 import h5py
 import argparse
 import sys
-
+import pickle
 from desitarget.targetmask import obsconditions
 from desimodel.footprint import is_point_in_desi
 
@@ -30,6 +30,7 @@ parser.add_argument("--mockver", help="type of mock to use",default=None)
 parser.add_argument("--mockpath", help="Location of mock file(s)",default='/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/')
 parser.add_argument("--mockfile", help="formattable name of mock file(s). e.g. cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits. TYPE will be replaced with tracer type. PH will be replaced with realization number for simulation of mock.",default='cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits')
 #parser.add_argument("--realization", help="number for the realization",default=1,type=int)
+parser.add_argument("--tracer", help="if only running on one tracer, specify here. Default is None which will select all tracers for a given program.", default=None, type=str)
 parser.add_argument("--realmin", help="number for the realization",default=1,type=int)
 parser.add_argument("--realmax", help="number for the realization",default=2,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
@@ -37,13 +38,17 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='y')
 parser.add_argument("--par", help="running in parallel?",default='n')
+parser.add_argument("--collist", help='comma separated list of column names for (mock) data file', default = 'RA,DEC,Z,Z_COSMO,STATUS')
 
 args = parser.parse_args()
 
 tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-'+args.prog.upper()+'.fits')
 
 if args.prog == 'dark':
-    types = ['ELG', 'LRG', 'QSO']
+    if args.tracer is None:
+        types = ['ELG', 'LRG', 'QSO']
+    else:
+        types = [args.tracer]
     desitar = {'ELG':34,'LRG':1,'QSO':4}
     priority = {'ELG':3000,'LRG':3200,'QSO':3400}
     mainp = main(tp='QSO',specver='iron')
@@ -75,7 +80,7 @@ for real in range(args.realmin,args.realmax):
     else:
         mockpath = args.mockpath
         file_name = args.mockfile
-        out_file_name = args.base_output + '/forFA_Real{0}.fits'.format(real)
+        out_file_name = args.base_output + '/forFA{0}.fits'.format(real)
     
     print('will write to '+out_file_name)
     if not os.path.exists(args.base_output):
@@ -115,6 +120,26 @@ for real in range(args.realmin,args.realmax):
                     tars = vstack([tars1, tars2])
                     data = tars
                     #tars['TARGETID'] = np.arange(len(tars))
+            else:
+                #general GLAM filename: lightcone_galaxies_{TRACER}_{str(REAL).zfill(4)}.pickle
+                collist = args.collist.split(',')
+                thepath=os.path.join(mockpath, type_, file_name.format(TYPE = type_, PH = "%04d" % real))
+                if thepath.endswith('fits') or thepath.endswith('fit') or thepath.endswith('fits.gz') or thepath.endswith('fit.gz'):
+                    data = fitsio.read(thepath,columns=collist)
+                elif thepath.endswith('pickle'):
+                    data = pickle.load(open(thepath, 'rb'), fix_imports = True)
+                    if type(data) == dict:
+                        assert(len(data.keys()) == len(collist))
+                        origkeys = data.keys()
+                        newdict = {}
+                        for k, c in zip(origkeys, collist):
+                            newdict[c] = data[k]
+                        data = Table(newdict)
+                        print('add GALCAP Values here if needed')
+                        data['STATUS'] = 3*np.ones(len(data), dtype = int)*is_point_in_desi(tiletab, data['RA'], data['DEC'])
+                    else:
+                        raise NotImplementedError('Only correcting column names for fits files and pickled dictionaries.')
+
             #f = fits.open(thepath)
             print(data.dtype.names)
             print(type_,len(data))
