@@ -254,5 +254,16 @@ python scripts/main/mkCat_main.py --type BGS_ANY --basedir /global/cfs/cdirs/des
 #apply healpix map vetos
 srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/main/mkCat_main.py --type BGS_ANY --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --verspec iron --survey Y1 --version v1.1
 
+#add zfail weights
+python scripts/main/mkCat_main.py --type BGS_ANY --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1.1 --add_weight_zfail y --survey Y1  --use_map_veto _HPmapcut
 
+# produce blinded catalogs
+module swap pyrecon/main pyrecon/mpi
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type BGS_BRIGHT-21.5 --wsyscol WEIGHT_IMLIN --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --wsyscol WEIGHT_IMLIN --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type ELG_LOPnotqso --wsyscol WEIGHT_SN --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type QSO --wsyscol WEIGHT_RF --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
 
