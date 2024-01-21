@@ -1042,6 +1042,16 @@ if args.add_sysnet == 'y':
 
             #print(np.sum(sel))
             dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+            if tracer_clus == 'ELG_LOPnotqso':
+                if zl[0] == 0.8:
+                    selz = dd['Z_not4clus'] <= zl[0]
+                if zl[1] == 1.6:
+                    selz = dd['Z_not4clus'] > zl[1]
+                dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+        #assign weights to galaxies outside the z ranges
+        if tracer_clus == 'ELG_LOPnotqso':
+            zwl = '0.8_1.1'
+            
     #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
