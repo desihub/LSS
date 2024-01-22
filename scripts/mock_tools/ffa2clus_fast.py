@@ -257,7 +257,7 @@ for tracer in tracers:
             subfrac = 0.66
         if args.mockver == 'AbacusSummit_v3':
             subfrac = 0.66
-    elif tracer[:3] == 'BGS'#_BRIGHT-21.5':
+    elif tracer[:3] == 'BGS':#_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
     mainp = main(tracer,'iron','Y1')
