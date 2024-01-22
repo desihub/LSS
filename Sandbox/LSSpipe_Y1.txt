@@ -267,3 +267,13 @@ srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scri
 
 srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type QSO --wsyscol WEIGHT_RF --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
 
+#copy sysnet weights over
+cp -r /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1//sysnet/ /global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/v1.1/
+
+#re-add sysnet weights, so that lower/higher redshift z get weights (so blinded data outside of bounds will get weights)
+python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec iron --version v1.1 --add_sysnet y --survey Y1  --use_map_veto _HPmapcut
+
+#re-run blinding for ELG_LOP
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type ELG_LOPnotqso --wsyscol WEIGHT_SN --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
+
+
