@@ -206,6 +206,7 @@ recl = ['']
 thetacut='_thetacut0.05'
 ellsl = [[0,2,4],[0,2],[0]]
 
+figs = []
 tp = 'QSO'
 zrl = [(0.8,2.1)]
 for rec in recl:
