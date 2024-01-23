@@ -57,7 +57,7 @@ elif args.mock.lower() == 'glam':
     tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/GLAM/tartiles'+args.realization+'/'
     if not os.path.exists(tileoutdir):
         os.makedirs(tileoutdir)
-    paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
+    paoutdir = args.base_output+'SecondGenMocks/GLAM/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
     #     #tr = args.tracer
     #     rz = args.realization
