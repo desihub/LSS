@@ -201,6 +201,54 @@ with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pd
 
 smin=20
 smax=200
+
+recl = ['']
+thetacut='_thetacut0.05'
+ellsl = [[0,2,4],[0,2],[0]]
+
+tp = 'QSO'
+zrl = [(0.8,2.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
+with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+
+figs = []
+tp = 'ELG_LOP'
+zrl = [(0.8,1.1),(1.1,1.6)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+            
+figs = []
+tp = 'LRG'
+zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+
+with PdfPages(outdir+'testEZmockcov_'+thetacut+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+
+thetacut=''
+
 recl = ['recon_recsym','']
 ellsl = [[0,2,4],[0,2],[0]]
 
@@ -245,47 +293,3 @@ with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pd
         pdf.savefig(fig)
         plt.close()
 
-recl = ['']
-thetacut='_thetacut0.5'
-ellsl = [[0,2,4],[0,2],[0]]
-
-tp = 'QSO'
-zrl = [(0.8,2.1)]
-for rec in recl:
-    for zr in zrl:
-        for ells in ellsl:
-            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
-            figs.append(fig)
-
-outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
-with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
-    for fig in figs:
-        pdf.savefig(fig)
-        plt.close()
-
-figs = []
-tp = 'ELG_LOP'
-zrl = [(0.8,1.1),(1.1,1.6)]
-for rec in recl:
-    for zr in zrl:
-        for ells in ellsl:
-            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
-            figs.append(fig)
-with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
-    for fig in figs:
-        pdf.savefig(fig)
-        plt.close()
-            
-figs = []
-tp = 'LRG'
-zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
-for rec in recl:
-    for zr in zrl:
-        for ells in ellsl:
-            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
-            figs.append(fig)
-
-with PdfPages(outdir+'testEZmockcov_'+thetacut+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
-    for fig in figs:
-        pdf.savefig(fig)
-        plt.close()
