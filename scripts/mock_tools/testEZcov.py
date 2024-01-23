@@ -101,28 +101,28 @@ def get_xi_desipipe_ab_baseline(mockn,zr='0.4-0.6',tp='LRG',rec='recon_recsym',n
     result = np.loadtxt(fn).transpose()
     return result[0],result[2:5]
 
-def compchi2stats(tracer,zmin,zmax,smin,smax,rec='',ells=[0,2,4]):
+def compchi2stats(tracer,zmin,zmax,smin,smax,rec='',ells=[0,2,4],thetacut=''):
     indmin = smin//4
     indmax = smax//4
     zr = str(zmin)+'-'+str(zmax)
     twa = ''
     if tracer == 'ELG_LOP':
         twa = 'notqso'
-    xiave,cov = get_xi_cov_desipipe_baseline_txt(zr=zr,tp=tracer,smin=smin,smax=smax,rec=rec,ells=ells)
-    sep,xiave_abamtl = get_xiave_desipipe_ab_baseline(zr=zr,tp=tracer+twa,rec=rec,flavor='altmtl',mockversion='v3_1')
-    _,xiave_abffa = get_xiave_desipipe_ab_baseline(zr=zr,tp=tracer,rec=rec,flavor='ffa',mockversion='v3')
+    xiave,cov = get_xi_cov_desipipe_baseline_txt(zr=zr,tp=tracer,smin=smin,smax=smax,rec=rec,ells=ells,thetacut=thetacut)
+    sep,xiave_abamtl = get_xiave_desipipe_ab_baseline(zr=zr,tp=tracer+twa,rec=rec,flavor='altmtl',mockversion='v3_1',thetacut=thetacut)
+    _,xiave_abffa = get_xiave_desipipe_ab_baseline(zr=zr,tp=tracer,rec=rec,flavor='ffa',mockversion='v3',thetacut=thetacut)
     xiave_abamtl_cut =  cat_ells(xiave_abamtl[:len(ells)],indrange=[indmin,indmax])
     xiave_abffa_cut =  cat_ells(xiave_abffa[:len(ells)],indrange=[indmin,indmax])
     icov = np.linalg.inv(cov)
     chi2la = []
     chi2lf = []
     for i in range(0,25):
-        _,xi_amtl = get_xi_desipipe_ab_baseline(i,zr=zr,tp=tracer+twa,rec=rec,flavor='altmtl',mockversion='v3_1')
+        _,xi_amtl = get_xi_desipipe_ab_baseline(i,zr=zr,tp=tracer+twa,rec=rec,flavor='altmtl',mockversion='v3_1',thetacut=thetacut)
         xi_amtl_cut = cat_ells(xi_amtl[:len(ells)],indrange=[indmin,indmax])
         damtl = xi_amtl_cut-xiave_abamtl_cut
         chi2_amtl = np.dot(damtl,np.dot(damtl,icov))
         chi2la.append(chi2_amtl)
-        _,xi_ffa = get_xi_desipipe_ab_baseline(i,zr=zr,tp=tracer,rec=rec,flavor='ffa',mockversion='v3')
+        _,xi_ffa = get_xi_desipipe_ab_baseline(i,zr=zr,tp=tracer,rec=rec,flavor='ffa',mockversion='v3',thetacut=thetacut)
         xi_ffa_cut = cat_ells(xi_ffa[:len(ells)],indrange=[indmin,indmax])
         dffa = xi_ffa_cut-xiave_abffa_cut
         chi2_ffa = np.dot(dffa,np.dot(dffa,icov))
@@ -141,6 +141,8 @@ def compchi2stats(tracer,zmin,zmax,smin,smax,rec='',ells=[0,2,4]):
     titl = tracer+' '+str(zmin)+'<z<'+str(zmax)+' for '+str(smin)+'<s<'+str(smax)+' multipoles '+str(ells)
     if rec != '':
         titl += ' recsym'
+    if thetacut != '':
+        titl += ' thetacut'
     plt.title(titl)
     plt.ylabel('number of mocks')
     plt.xlabel(r'$\chi^2$')
@@ -197,3 +199,93 @@ with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pd
         pdf.savefig(fig)
         plt.close()
 
+smin=20
+smax=200
+recl = ['recon_recsym','']
+ellsl = [[0,2,4],[0,2],[0]]
+
+tp = 'QSO'
+zrl = [(0.8,2.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells)
+            figs.append(fig)
+
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+
+figs = []
+tp = 'ELG_LOP'
+zrl = [(0.8,1.1),(1.1,1.6)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells)
+            figs.append(fig)
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+            
+figs = []
+tp = 'LRG'
+zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells)
+            figs.append(fig)
+
+with PdfPages(outdir+'testEZmockcov_'+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+
+recl = ['']
+thetacut='_thetacut0.5'
+ellsl = [[0,2,4],[0,2],[0]]
+
+tp = 'QSO'
+zrl = [(0.8,2.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+
+outdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/'
+with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+
+figs = []
+tp = 'ELG_LOP'
+zrl = [(0.8,1.1),(1.1,1.6)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+with PdfPages(outdir+'testEZmockcov_'+tp+thetacut+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
+            
+figs = []
+tp = 'LRG'
+zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+for rec in recl:
+    for zr in zrl:
+        for ells in ellsl:
+            fig = compchi2stats(tp,zr[0],zr[1],smin,smax,rec=rec,ells=ells,thetacut=thetacut)
+            figs.append(fig)
+
+with PdfPages(outdir+'testEZmockcov_'+thetacut+tp+'_smin'+str(smin)+'smax'+str(smax)+'.pdf') as pdf:
+    for fig in figs:
+        pdf.savefig(fig)
+        plt.close()
