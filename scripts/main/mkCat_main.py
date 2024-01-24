@@ -87,6 +87,7 @@ parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systemat
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
 parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=4,type=int)
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
@@ -731,7 +732,7 @@ if args.imsys == 'y':
     selobs = dat['ZWARN'] != 999999
     dat = dat[selgood&selobs]
     ranl = []
-    for i in range(0,1):#int(args.maxr)):
+    for i in range(0,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
