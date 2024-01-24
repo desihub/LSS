@@ -82,7 +82,7 @@ fi
 seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=256
+ndir=128
 
 #Uncomment second option if you want to clobber already existing files for Alt MTL generation
 overwrite=''

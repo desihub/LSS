@@ -2,13 +2,13 @@ import numpy as np
 from astropy.table import Table,vstack
 import os
 
-program = 'dark'
+program = 'bright'
 
-rmin = 10
-rmax = 11
+rmin = 0
+rmax = 1
 
-path = '/pscratch/sd/a/acarnero/test_main/altmtl{MOCKNUM}/Univ000' 
-#path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl{MOCKNUM}/Univ000' 
+#path = '/pscratch/sd/a/acarnero/test_main/altmtl{MOCKNUM}/Univ000' 
+path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl{MOCKNUM}/Univ000' 
 
 extratiles = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/aux_data/extra_{PROGRAM}.ecsv'.format(PROGRAM = program), format='ascii.ecsv')
 
