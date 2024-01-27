@@ -33,7 +33,7 @@ parser.add_argument("--mock", default='ab2ndgen')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
-parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
+parser.add_argument("--tracer", help="tracer for CutSky mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for mocks", default = None)
 parser.add_argument("--counttiles", default = 'n')
 
@@ -50,13 +50,19 @@ if args.mock == 'ab2ndgen':
         os.makedirs(tileoutdir)
     paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
 elif args.mock.lower() == 'glam':
-    infn = args.base_input+'/forFA'+args.realization+'.fits'
+    if args.tracer is not None:
+        infn = args.base_input+f'/{args.tracer}/forFA{args.realization}.fits'
+    else:
+        infn = args.base_input+f'/forFA{args.realization}.fits'
+
     tars = fitsio.read(infn)
     
     tarcols = list(tars.dtype.names)
     tileoutdir = os.getenv('SCRATCH')+'/SecondGenMocks/GLAM/tartiles'+args.realization+'/'
+
     if not os.path.exists(tileoutdir):
         os.makedirs(tileoutdir)
+
     paoutdir = args.base_output+'/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
     
