@@ -84,7 +84,8 @@ for real in range(args.realmin,args.realmax):
         if args.tracer is None:
             out_file_name = args.base_output + '/forFA{0}.fits'.format(real)
         else:
-            out_file_name = args.base_output +  '/{0}/forFA{1}.fits'.format(args.tracer, real)
+            args.base_output += '/{0}/'.format(args.base_output)
+            out_file_name = args.base_output +  '/forFA{0}.fits'.format(real)
     else:
         mockpath = args.mockpath
         file_name = args.mockfile
@@ -138,7 +139,7 @@ for real in range(args.realmin,args.realmax):
                 #'xh,yh,zh,vx,vy,vz,mh,rvirh,rsh,TARGETID,Z_COSMO,Z,RA,DEC'
                 #gal_id (-> TARGETID), z_cos (-> Z_COSMO), z_obs (-> Z), ra (-> RA), dec (-> DEC)
                 data = Table()
-                data['TARGETID'] = temp['gal_id']
+                #data['TARGETID'] = temp['gal_id']
                 data['Z_COSMO'] = temp['z_cos']
                 data['Z'] = temp['z_obs']
                 data['RA'] = temp['ra']
