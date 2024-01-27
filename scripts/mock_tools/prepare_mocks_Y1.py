@@ -38,7 +38,7 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 parser.add_argument("--prep", help="prepare file for fiberassign?",default='y')
 parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='y')
 parser.add_argument("--par", help="running in parallel?",default='n')
-parser.add_argument("--collist", help='comma separated list of column names for (mock) data file', default = 'RA,DEC,Z,Z_COSMO,STATUS')
+
 
 args = parser.parse_args()
 
@@ -54,29 +54,37 @@ if args.prog == 'dark':
     mainp = main(tp='QSO',specver='iron')
 
 for real in range(args.realmin,args.realmax):
-    if not (args.mockver is None):
-        if args.mockver == 'ab_firstgen':
-            mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
-        
-            file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
-            out_file_name = args.base_output+'/FirstGenMocks/AbacusSummit/forFA'+str(real)+'.fits'
-            if not os.path.exists(args.base_output+'/FirstGenMocks'):
-                os.mkdir(args.base_output+'/FirstGenMocks')
-                print('made '+args.base_output+'/FirstGenMocks')
-            if not os.path.exists(args.base_output+'/FirstGenMocks/AbacusSummit'):
-                os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
-                print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
-            mockdir = args.base_output+'/FirstGenMocks/AbacusSummit/'
-        
-        if args.mockver == 'ezmocks6':
-            out_file_name = args.base_output + '/EZMocks_6Gpc/EZMocks_6Gpc_' + str(real) + '.fits'
-            if not os.path.exists(args.base_output + '/EZMocks_6Gpc'):
-                os.makedirs(args.base_output + '/EZMocks_6Gpc')
-                print('made ' + args.base_output + '/EZMocks_6Gpc')
-            mockdir = args.base_output + '/EZMocks_6Gpc/'
+    if args.mockver == 'ab_firstgen':
+        mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
+    
+        file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
+        out_file_name = args.base_output+'/FirstGenMocks/AbacusSummit/forFA'+str(real)+'.fits'
+        if not os.path.exists(args.base_output+'/FirstGenMocks'):
+            os.mkdir(args.base_output+'/FirstGenMocks')
+            print('made '+args.base_output+'/FirstGenMocks')
+        if not os.path.exists(args.base_output+'/FirstGenMocks/AbacusSummit'):
+            os.mkdir(args.base_output+'/FirstGenMocks/AbacusSummit')
+            print('made '+args.base_output+'/FirstGenMocks/AbacusSummit')
+        mockdir = args.base_output+'/FirstGenMocks/AbacusSummit/'
+    
+    if args.mockver == 'ezmocks6':
+        out_file_name = args.base_output + '/EZMocks_6Gpc/EZMocks_6Gpc_' + str(real) + '.fits'
+        if not os.path.exists(args.base_output + '/EZMocks_6Gpc'):
+            os.makedirs(args.base_output + '/EZMocks_6Gpc')
+            print('made ' + args.base_output + '/EZMocks_6Gpc')
+        mockdir = args.base_output + '/EZMocks_6Gpc/'
 
+    elif args.mockver == 'glam':
+        if args.mockfile is None:
+            file_name = 'lightcone_galaxies_{TYPE}_{PH}.pickle'
         else:
-            raise ValueError(args.mockver+' not supported with legacy mockver argument. Use mockpath/mockfilename arguments instead.')
+            file_name = args.mockfile
+        mockpath = args.mockpath
+        #file_name = args.mockfile
+        if args.tracer is None:
+            out_file_name = args.base_output + '/forFA{0}.fits'.format(real)
+        else:
+            out_file_name = args.base_output +  '/{0}/forFA{1}.fits'.format(args.tracer, real)
     else:
         mockpath = args.mockpath
         file_name = args.mockfile
@@ -120,31 +128,42 @@ for real in range(args.realmin,args.realmax):
                     tars = vstack([tars1, tars2])
                     data = tars
                     #tars['TARGETID'] = np.arange(len(tars))
-            else:
+            elif args.mockver.lower() == 'glam':
                 #general GLAM filename: lightcone_galaxies_{TRACER}_{str(REAL).zfill(4)}.pickle
-                collist = args.collist.split(',')
+                #thepath=os.path.join(mockpath, type_, file_name.format(TYPE = type_, PH = "%04d" % real))
+                file_name = 'lightcone_galaxies_{TYPE}_{PH}.pickle'
+                thepath=os.path.join(mockpath, file_name.format(TYPE = type_, PH = "%04d" % real))
+
+                temp = pickle.load(open(thepath, 'rb'), fix_imports = True)
+                #'xh,yh,zh,vx,vy,vz,mh,rvirh,rsh,TARGETID,Z_COSMO,Z,RA,DEC'
+                #gal_id (-> TARGETID), z_cos (-> Z_COSMO), z_obs (-> Z), ra (-> RA), dec (-> DEC)
+                data = Table()
+                data['TARGETID'] = temp['gal_id']
+                data['Z_COSMO'] = temp['z_cos']
+                data['Z'] = temp['z_obs']
+                data['RA'] = temp['ra']
+                data['DEC'] = temp['dec']
+                print('add GALCAP Values here if needed')
+                data['STATUS'] = 3*np.ones(len(data), dtype = int)*is_point_in_desi(tiletab, data['RA'], data['DEC'])
+                del temp
+
+            else:
                 thepath=os.path.join(mockpath, type_, file_name.format(TYPE = type_, PH = "%04d" % real))
                 if thepath.endswith('fits') or thepath.endswith('fit') or thepath.endswith('fits.gz') or thepath.endswith('fit.gz'):
-                    data = fitsio.read(thepath,columns=collist)
+                    data = fitsio.read(thepath)
                 elif thepath.endswith('pickle'):
                     data = pickle.load(open(thepath, 'rb'), fix_imports = True)
-                    if type(data) == dict:
-                        assert(len(data.keys()) == len(collist))
-                        origkeys = data.keys()
-                        newdict = {}
-                        for k, c in zip(origkeys, collist):
-                            newdict[c] = data[k]
-                        data = Table(newdict)
-                        print('add GALCAP Values here if needed')
-                        data['STATUS'] = 3*np.ones(len(data), dtype = int)*is_point_in_desi(tiletab, data['RA'], data['DEC'])
-                    else:
-                        raise NotImplementedError('Only correcting column names for fits files and pickled dictionaries.')
+                else:
+                    raise NotImplementedError('Only attempting to load generic mock files in fits and pickle formats.')
 
             #f = fits.open(thepath)
             print(data.dtype.names)
             print(type_,len(data))
             status = data['STATUS'][()]
             idx = np.arange(len(status))
+
+            #def mask(main=0, nz=0, Y5=0, sv3=0):
+            #    return main * (2**3) + sv3 * (2**2) + Y5 * (2**1) + nz * (2**0)
             mask_main = mask(main=0, nz=1, Y5=0, sv3=0) #no longer cutting to Y5 footprint because it doesn't actually cover Y1
             if type_ == 'LRG':
                 mask_main = mask(main=1, nz=1, Y5=0, sv3=0)
