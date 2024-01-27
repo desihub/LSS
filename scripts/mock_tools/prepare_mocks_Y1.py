@@ -84,7 +84,7 @@ for real in range(args.realmin,args.realmax):
         if args.tracer is None:
             out_file_name = args.base_output + '/forFA{0}.fits'.format(real)
         else:
-            args.base_output += '/{0}/'.format(args.base_output)
+            args.base_output += '/{0}/'.format(args.tracer)
             out_file_name = args.base_output +  '/forFA{0}.fits'.format(real)
     else:
         mockpath = args.mockpath
