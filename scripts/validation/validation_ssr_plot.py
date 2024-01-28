@@ -22,6 +22,8 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default='all')
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
+parser.add_argument("--focalplane_SSR_plot", help="plot 2D SSR on the focal plane or uts chi2 histogram",type=bool,default=True)
+parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",type=bool,default=None)
 
 
 args = parser.parse_args()
@@ -98,7 +100,7 @@ def SSR_chi2(goodz, allz, err):
 # list all tracers
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['BGS_BRIGHT']#,'ELG_LOPnotqso','QSO','LRG']
+    tps = ['BGS_BRIGHT','ELG_LOPnotqso','QSO','LRG']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -248,13 +250,18 @@ for tp in tps:
             
             ## the histogram of valid samples w.r.t quantities
             ## and that of the weighted good-redshift samples w.r.t quantities 
+            weight_type = ': ZFAIL'
             if args.data == 'mock':
                 bins = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs//Y1/LSS/iron/LSScats/test/plots/ssr/'+'{}_TSNR2_success_rate_z{}z{}_{}_{}_bins.txt'.format(tp,zmin,zmax,split,args.version))
                 ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz], binsbins=bins)
             elif args.data == 'LSS':
-                ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz]*full['WEIGHT_focal'][selection_gz])
+                if (not 'WEIGHT_focal' in full.colnames):
+                    ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz])
+                else:
+                    ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz]*full['WEIGHT_focal'][selection_gz])
+                weight_type = r': ZFAIL*$\epsilon_{\rm focal}$'
             meanssr = np.sum(GOOD)/np.sum(ALL)
-            ax[i,j].errorbar(BIN,GOOD/ALL/meanssr,err/meanssr,label=split+r': ZFAIL $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD,ALL,err),len(ALL)),fmt=fmt)
+            ax[i,j].errorbar(BIN,GOOD/ALL/meanssr,err/meanssr,label=split+weight_type+r'$\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD,ALL,err),len(ALL)),fmt=fmt)
             print('GOOD/ALL/meanssr',GOOD/ALL/meanssr)
             plt.xlabel(f'{quantity} at {zmin}<z<{zmax}')
             if q == 0:
@@ -327,35 +334,50 @@ for tp in tps:
         ax[0,cp] = fig.add_subplot(spec[0,cp])
         if split == 'N':
             selection = sel_obs&seln
-            ssr_wtN = 1./(ssrmodel/np.nanmean(ssrmodel))
-            ssr_wtN[np.isnan(ssr_wtN)] = 1.
         elif split == 'S':
             selection = sel_obs&~seln
-            ssr_wtS = 1./(ssrmodel/np.nanmean(ssrmodel))
-            ssr_wtS[np.isnan(ssr_wtS)] = 1.
         selection_gz = selection&selz&gz
 
         ALL, GOOD, BIN, err, _ = SSR(full, 'FIBER', selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz], fiberbins=FIB)
         ssrmodel = GOOD/ALL     
-        ssrmean= np.sum(GOOD)/np.sum(ALL)        
-        # fibrewise SSR and the correction
-        hb = ax[0,cp].scatter(xll,yll,c=ssrmodel/ssrmean,s=2,vmin=1-dv,vmax=1+dv)
-        if cp == 1:
-            cb = fig.colorbar(hb, ax=ax[0,1])
-            cb.set_label('rescaled SSR',fontsize=12)
-            plt.text(-150,410,f'{photos[cp]}',fontsize=15,weight='bold')
-            plt.yticks(alpha=0)
-        else:
-            plt.text(-190,410,f'{photos[cp]}',fontsize=15,weight='bold')
-            plt.ylabel('Y (mm)')
-        plt.xlabel('X (mm)')
-        plt.xlim(-470,470)
-        plt.ylim(-420,470)
-        chi2s = (ssrmodel-ssrmean)/err
-        print(f'chi2 in {split}'+' is {:.1f}/{}'.format(np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))))
+        ssrmean= np.sum(GOOD)/np.sum(ALL)     
 
-    plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}_{}.png'.format(tp,zmin,zmax,split,args.version))        
-    plt.close()
+        if args.focalplane_SSR_plot:
+            # fibrewise SSR and the correction
+            hb = ax[0,cp].scatter(xll,yll,c=ssrmodel/ssrmean,s=2,vmin=1-dv,vmax=1+dv)
+            if cp == 1:
+                cb = fig.colorbar(hb, ax=ax[0,1])
+                cb.set_label('rescaled SSR',fontsize=12)
+                plt.text(-150,410,f'{photos[cp]}',fontsize=15,weight='bold')
+                plt.yticks(alpha=0)
+            else:
+                plt.text(-190,410,f'{photos[cp]}',fontsize=15,weight='bold')
+                plt.ylabel('Y (mm)')
+            plt.xlabel('X (mm)')
+            plt.xlim(-470,470)
+            plt.ylim(-420,470)
+        else:
+            chi2s = (ssrmodel-ssrmean)/err
+            print(f'chi2 in {split}'+' is {:.1f}/{}'.format(np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))))
+            plt.hist(chi2s[np.isfinite(chi2s)],density=True,label=f'{tp} in {split}')
+            plt.xlabel('chi2')
+            if cp ==0:
+                plt.ylabel('normalised counts')
+            plt.legend()
+
+        if split == 'N':
+            ssr_wtN = 1./(ssrmodel/np.nanmean(ssrmodel))
+            ssr_wtN[np.isnan(ssr_wtN)] = 1.
+        elif split == 'S':
+            ssr_wtS = 1./(ssrmodel/np.nanmean(ssrmodel))
+            ssr_wtS[np.isnan(ssr_wtS)] = 1.
+    if args.focalplane_SSR_plot:
+        plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
+        plt.close('all')
+    else:
+        plt.savefig(f'{tp}_chi2_hist.png')
+        plt.close()
+
     #print('ssr_wt',ssr_wt)
     #print('BIN',list(BIN))
     #print('FIB',list(FIB))
@@ -365,27 +387,28 @@ for tp in tps:
     elif args.data == 'mock':
         full = Table(fitsio.read(indir+'ffa_full_' + tp+'.fits'))
  
-    '''full['WEIGHT_focal'] = np.ones_like(full['WEIGHT_ZFAIL'])
-    for i in range(len(full['FIBER'])):
-        #print('fiber',full['FIBER'][i])
-        #print('fib == fiber',np.where(FIB==full['FIBER'][i]))
-        #print('len ssr_wt',len(ssr_wt))
-        #print('len fib',len(FIB))
-        #print('len BIN',len(BIN))
-        
-        if full['FIBER'][i] != 999999:
-            if full['PHOTSYS'][i] == 'N':
-                if len(ssr_wtN[np.where(FIB==full['FIBER'][i])]) > 0:
-                
-                    print("ssr wt[FIB==full['FIBER'][i]]",ssr_wtN[np.where(FIB==full['FIBER'][i])])
-                    full['WEIGHT_focal'][i] = ssr_wtN[np.where(FIB==full['FIBER'][i])]
-                    print(i)
-            elif full['PHOTSYS'][i] == 'S':
-                if len(ssr_wtS[np.where(FIB==full['FIBER'][i])]) > 0:
-                
-                    print("ssr wt[FIB==full['FIBER'][i]]",ssr_wtS[np.where(FIB==full['FIBER'][i])])
-                    full['WEIGHT_focal'][i] = ssr_wtS[np.where(FIB==full['FIBER'][i])]
-                    print(i)
+    if (not 'WEIGHT_focal' in full.colnames)&(args.focalplane_SSR_LSS):
+        full['WEIGHT_focal'] = np.ones_like(full['WEIGHT_ZFAIL'])
+        for i in range(len(full['FIBER'])):
+            #print('fiber',full['FIBER'][i])
+            #print('fib == fiber',np.where(FIB==full['FIBER'][i]))
+            #print('len ssr_wt',len(ssr_wt))
+            #print('len fib',len(FIB))
+            #print('len BIN',len(BIN))
+            
+            if full['FIBER'][i] != 999999:
+                if full['PHOTSYS'][i] == 'N':
+                    if len(ssr_wtN[np.where(FIB==full['FIBER'][i])]) > 0:
+                    
+                        print("ssr wt[FIB==full['FIBER'][i]]",ssr_wtN[np.where(FIB==full['FIBER'][i])])
+                        full['WEIGHT_focal'][i] = ssr_wtN[np.where(FIB==full['FIBER'][i])]
+                        print(i)
+                elif full['PHOTSYS'][i] == 'S':
+                    if len(ssr_wtS[np.where(FIB==full['FIBER'][i])]) > 0:
+                    
+                        print("ssr wt[FIB==full['FIBER'][i]]",ssr_wtS[np.where(FIB==full['FIBER'][i])])
+                        full['WEIGHT_focal'][i] = ssr_wtS[np.where(FIB==full['FIBER'][i])]
+                        print(i)
 
-    full.write(indir + tp+'_full.dat.2.fits',overwrite=True)'''
+        full.write(indir + tp+'_full.dat.2.fits',overwrite=True)
     
