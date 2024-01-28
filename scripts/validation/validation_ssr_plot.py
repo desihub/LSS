@@ -23,7 +23,7 @@ parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default=
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
 parser.add_argument("--focalplane_SSR_plot", help="plot 2D SSR on the focal plane or uts chi2 histogram",type=bool,default=True)
-parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",type=bool,default=None)
+parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",type=bool,default=False)
 
 
 args = parser.parse_args()
@@ -225,7 +225,7 @@ for tp in tps:
     nrows = len(quantities)//ncols if len(quantities)%ncols ==0 else len(quantities)//ncols+1
     plt.rc('font', family='serif', size=12)
     fig   = plt.figure(figsize=(ncols*5,nrows*5))
-    spec  = gridspec.GridSpec(nrows=nrows,ncols=ncols,left = 0.05,right = 0.98,bottom=0.1,top = 0.98,wspace=0.2)#,hspace=0.15,wspace=0)
+    spec  = gridspec.GridSpec(nrows=nrows,ncols=ncols,left = 0.05,right = 0.99,bottom=0.1,top = 0.98,wspace=0.25)#,hspace=0.15,wspace=0)
     ax    = np.empty((nrows,ncols), dtype=type(plt.axes))
     for q in range(len(quantities)):
         i,j     = q//ncols,q%ncols
@@ -259,9 +259,9 @@ for tp in tps:
                     ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz])
                 else:
                     ALL, GOOD, BIN, err, bins = SSR(full, quantity, selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz]*full['WEIGHT_focal'][selection_gz])
-                weight_type = r': ZFAIL*$\epsilon_{\rm focal}$'
+                    weight_type = r': ZFAIL*$\epsilon_{\rm focal}$'
             meanssr = np.sum(GOOD)/np.sum(ALL)
-            ax[i,j].errorbar(BIN,GOOD/ALL/meanssr,err/meanssr,label=split+weight_type+r'$\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD,ALL,err),len(ALL)),fmt=fmt)
+            ax[i,j].errorbar(BIN,GOOD/ALL/meanssr,err/meanssr,label=split+weight_type+r', $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD,ALL,err),len(ALL)),fmt=fmt)
             print('GOOD/ALL/meanssr',GOOD/ALL/meanssr)
             plt.xlabel(f'{quantity} at {zmin}<z<{zmax}')
             if q == 0:
@@ -274,9 +274,13 @@ for tp in tps:
             ALL, GOOD_uncorr, BIN, err_uncorr,bins = SSR(full, quantity, selection, selection_gz, weights=np.ones(np.sum(selection_gz)))
             meanssr_uncorr = np.sum(GOOD_uncorr)/np.sum(ALL)
             plt.fill_between(BIN,(GOOD_uncorr/ALL+err_uncorr)/meanssr_uncorr,(GOOD_uncorr/ALL-err_uncorr)/meanssr_uncorr,color=fmt_model,alpha=0.2,label='_hidden')
-            ax[i,j].plot(BIN,GOOD_uncorr/ALL/meanssr_uncorr,label=split+r': unweighted $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD_uncorr,ALL,err_uncorr),len(ALL)),color=fmt_model,alpha=0.5)
+            ax[i,j].plot(BIN,GOOD_uncorr/ALL/meanssr_uncorr,label=split+r': unweighted, $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD_uncorr,ALL,err_uncorr),len(ALL)),color=fmt_model,alpha=0.5)
 
             ax[i,j].axhline(1,c='k')
+            handles, labels = plt.gca().get_legend_handles_labels()
+            order = [2,0,3,1]
+            plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order],frameon=False)
+
 
         plt.grid(True)        
         plt.legend()
