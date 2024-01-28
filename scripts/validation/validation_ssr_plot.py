@@ -277,13 +277,11 @@ for tp in tps:
             ax[i,j].plot(BIN,GOOD_uncorr/ALL/meanssr_uncorr,label=split+r': unweighted, $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD_uncorr,ALL,err_uncorr),len(ALL)),color=fmt_model,alpha=0.5)
 
             ax[i,j].axhline(1,c='k')
-            handles, labels = plt.gca().get_legend_handles_labels()
-            order = [2,0,3,1]
-            plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order],frameon=False)
-
+        handles, labels = plt.gca().get_legend_handles_labels()
+        order = [2,0,3,1]
+        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order],frameon=False)
 
         plt.grid(True)        
-        plt.legend()
         plt.ylabel('{} z success rate'.format(tp))
     
     plt.savefig(outdir+'{}_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
