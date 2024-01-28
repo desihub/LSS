@@ -22,8 +22,8 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default='all')
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
-parser.add_argument("--focalplane_SSR_plot", help="plot 2D SSR on the focal plane or uts chi2 histogram",type=bool,default=True)
-parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",type=bool,default=False)
+parser.add_argument("--focalplane_SSR_chi2", help="plot the chi2 histogram of 2D SSR? otherwise 2D SSR plot",action='store_true',default=False)
+parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",action='store_true',default=False)
 
 
 args = parser.parse_args()
@@ -329,7 +329,7 @@ for tp in tps:
     
     # plot the fibre-wise SSR
     fig = plt.figure(figsize=(8,4))
-    spec = gridspec.GridSpec(nrows=1,ncols=2, left = 0.1,right = 0.99,bottom=0.12,top = 0.98, wspace=0,width_ratios=[0.85,1])
+    spec = gridspec.GridSpec(nrows=1,ncols=2, left = 0.1,right = 0.99,bottom=0.12,top = 0.93, wspace=0,width_ratios=[0.85,1])
     ax = np.empty((1,2), dtype=type(plt.axes))
     plt.rc('font', family='serif', size=12)    
     for cp,split in enumerate(['N','S']):
@@ -343,8 +343,10 @@ for tp in tps:
         ALL, GOOD, BIN, err, _ = SSR(full, 'FIBER', selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz], fiberbins=FIB)
         ssrmodel = GOOD/ALL     
         ssrmean= np.sum(GOOD)/np.sum(ALL)     
+        chi2s = (ssrmodel-ssrmean)/err
+        plt.title('chi2 = {:.1f}/{}'.format(np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))))
 
-        if args.focalplane_SSR_plot:
+        if not args.focalplane_SSR_chi2:
             # fibrewise SSR and the correction
             hb = ax[0,cp].scatter(xll,yll,c=ssrmodel/ssrmean,s=2,vmin=1-dv,vmax=1+dv)
             if cp == 1:
@@ -359,8 +361,6 @@ for tp in tps:
             plt.xlim(-470,470)
             plt.ylim(-420,470)
         else:
-            chi2s = (ssrmodel-ssrmean)/err
-            print(f'chi2 in {split}'+' is {:.1f}/{}'.format(np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))))
             plt.hist(chi2s[np.isfinite(chi2s)],density=True,label=f'{tp} in {split}')
             plt.xlabel('chi2')
             if cp ==0:
@@ -373,11 +373,11 @@ for tp in tps:
         elif split == 'S':
             ssr_wtS = 1./(ssrmodel/np.nanmean(ssrmodel))
             ssr_wtS[np.isnan(ssr_wtS)] = 1.
-    if args.focalplane_SSR_plot:
+    if not args.focalplane_SSR_chi2:
         plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
         plt.close('all')
     else:
-        plt.savefig(f'{tp}_chi2_hist.png')
+        plt.savefig(outdir+f'{tp}_chi2_hist.png')
         plt.close()
 
     #print('ssr_wt',ssr_wt)
