@@ -269,9 +269,9 @@ mock_data.rename_column('RSDZ', 'Z')
 
     
 for tracer in tracers:
-
+    mainp = main(tracer,'iron','Y1')
     if args.prog == 'DARK':
-        mainp = main(tracer,'iron','Y1')
+        
         bit = bittest[tracer]#targetmask.desi_mask[tracer]
         seltar = mock_data[desitarg] & bit > 0
         mock_data_tr = mock_data[seltar]
