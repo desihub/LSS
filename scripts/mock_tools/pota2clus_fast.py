@@ -268,14 +268,16 @@ mock_data.rename_column('RSDZ', 'Z')
     
 for tracer in tracers:
 
-    mainp = main(tracer,'iron','Y1')
-    bit = bittest[tracer]#targetmask.desi_mask[tracer]
-    seltar = mock_data[desitarg] & bit > 0
-    mock_data_tr = mock_data[seltar]
-    lmockdat_noveto = len(mock_data_tr)
-    logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
-    logger.info(str(ndattot)+','+str(len(mock_data_tr)))
-
+    if args.prog == 'DARK':
+        mainp = main(tracer,'iron','Y1')
+        bit = bittest[tracer]#targetmask.desi_mask[tracer]
+        seltar = mock_data[desitarg] & bit > 0
+        mock_data_tr = mock_data[seltar]
+        lmockdat_noveto = len(mock_data_tr)
+        logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
+        logger.info(str(ndattot)+','+str(len(mock_data_tr)))
+    else:
+        mock_data_tr = mock_data
    
     tracerd = tracer
     if tracer == 'BGS_BRIGHT-21.5':
