@@ -234,6 +234,8 @@ cols = ['LOCATION',
 'MASKBITS','ZWARN',
 'COLLISION',
 'TILEID']
+if args.prog == 'BRIGHT':
+    cols.append('R_MAG_ABS')
 mock_data = fitsio.read(in_data_fn,columns=cols)
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
