@@ -484,9 +484,10 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys
         for rn in range(rm,rx):
             addrancol(rn)
     if args.par == 'y':
-        nproc = 9
+        #nproc = 9
         nran = rx-rm
-        inds = np.arange(nran)
+        nproc = nran
+        inds = np.arange(rm,rx)
         from multiprocessing import Pool
         with Pool(processes=nproc) as pool:
             res = pool.map(addrancol, inds)
