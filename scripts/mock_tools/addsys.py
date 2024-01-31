@@ -32,7 +32,7 @@ parser.add_argument("--base_dir", help="base directory for input/output",default
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data_version",help="version for redshifts",default='v0.6')
-parser.add_argument("--mockcatver", default='v2', help = "if not None, gets added to the output path")
+parser.add_argument("--mockcatver", default=None, help = "if not None, gets added to the output path")
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
 parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
