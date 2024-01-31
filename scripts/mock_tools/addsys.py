@@ -176,8 +176,8 @@ if args.imsys == 'y':
     print(len(dat))
     ranl = []
     for i in range(0,1):
-        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS']) 
+        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS']) 
         ran = np.concatenate((rann,rans))
         #ran = common.addNS(Table(ran))
         #ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])
