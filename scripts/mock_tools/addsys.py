@@ -170,7 +170,7 @@ if args.imsys == 'y':
     print('in imsys loop')
     datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
     dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
-    #dat = np.concatenate((datn,dats))
+    dat = np.concatenate((datn,dats))
     #dat = common.addNS(Table(dat))
     #dat = Table(fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits')))
     print(len(dat))
