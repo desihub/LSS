@@ -168,19 +168,19 @@ if args.imsys == 'y':
     use_maps = fit_maps
        
     print('in imsys loop')
-    #datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
-    #dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
+    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     #dat = np.concatenate((datn,dats))
     #dat = common.addNS(Table(dat))
-    dat = Table(fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits')))
+    #dat = Table(fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits')))
     print(len(dat))
     ranl = []
     for i in range(0,1):
-        #rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        #rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        #ran = np.concatenate((rann,rans))
+        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        ran = np.concatenate((rann,rans))
         #ran = common.addNS(Table(ran))
-        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])
+        #ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])
         ranl.append(ran)
     rands = np.concatenate(ranl)
     print(len(rands))
