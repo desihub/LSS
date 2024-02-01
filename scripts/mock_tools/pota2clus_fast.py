@@ -282,8 +282,8 @@ for tracer in tracers:
         mock_data_tr = mock_data
    
     tracerd = tracer
-    if tracer == 'BGS_BRIGHT-21.5':
-        tracerd = 'BGS'
+    #if tracer == 'BGS_BRIGHT-21.5':
+    #    tracerd = 'BGS'
 
     out_data_fn = outdir+tracerd+'_complete_clustering.dat.fits'
     out_data_froot = outdir+tracerd+'_complete_'
