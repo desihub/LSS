@@ -22,7 +22,6 @@ parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default='all')
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
-parser.add_argument("--focalplane_SSR_chi2", help="plot the chi2 histogram of 2D SSR? otherwise 2D SSR plot",action='store_true',default=False)
 parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",action='store_true',default=False)
 
 
@@ -100,7 +99,7 @@ def SSR_chi2(goodz, allz, err):
 # list all tracers
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['BGS_BRIGHT','ELG_LOPnotqso','QSO','LRG']
+    tps = ['ELG_LOPnotqso']#['BGS_BRIGHT','ELG_LOPnotqso','QSO','LRG']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -288,7 +287,6 @@ for tp in tps:
     plt.close('all')
 
     # obtain the fibre-wise SSR
-    dv        = 0.05
     photos    = ['BASS/MzLS','DECaLS']
     # the fibreIDs
     dl        = np.loadtxt(f'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.1/{tp}_zsuccess_fromfull.txt').transpose()
@@ -327,65 +325,91 @@ for tp in tps:
         f6l.append(fibf6_dict[fib])
         f8l.append(fibf8_dict[fib])
     
-    # plot the fibre-wise SSR
-    fig = plt.figure(figsize=(8,4))
-    spec = gridspec.GridSpec(nrows=1,ncols=2, left = 0.1,right = 0.99,bottom=0.12,top = 0.93, wspace=0,width_ratios=[0.85,1])
-    ax = np.empty((1,2), dtype=type(plt.axes))
-    plt.rc('font', family='serif', size=12)    
-    for cp,split in enumerate(['N','S']):
-        ax[0,cp] = fig.add_subplot(spec[0,cp])
-        if split == 'N':
-            selection = sel_obs&seln
-        elif split == 'S':
-            selection = sel_obs&~seln
-        selection_gz = selection&selz&gz
-
-        ALL, GOOD, BIN, err, _ = SSR(full, 'FIBER', selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz], fiberbins=FIB)
-        ssrmodel = GOOD/ALL     
-        ssrmean= np.sum(GOOD)/np.sum(ALL)     
-        chi2s = (ssrmodel-ssrmean)/err
-        plt.title('chi2 = {:.1f}/{}'.format(np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))))
-
-        if not args.focalplane_SSR_chi2:
-            # fibrewise SSR and the correction
-            hb = ax[0,cp].scatter(xll,yll,c=ssrmodel/ssrmean,s=2,vmin=1-dv,vmax=1+dv)
-            if cp == 1:
-                cb = fig.colorbar(hb, ax=ax[0,1])
-                cb.set_label('rescaled SSR',fontsize=12)
-                plt.text(-150,410,f'{photos[cp]}',fontsize=15,weight='bold')
-                plt.yticks(alpha=0)
-            else:
-                plt.text(-190,410,f'{photos[cp]}',fontsize=15,weight='bold')
-                plt.ylabel('Y (mm)')
-            plt.xlabel('X (mm)')
-            plt.xlim(-470,470)
-            plt.ylim(-420,470)
+    # plot the SSR and chi2 on the focal plane (fibre-wise SSR)
+    for ptype in ['noZFAIL','SSR','chi2','chi2hist']:
+        if ptype != 'chi2hist':
+            right = 0.93
         else:
-            plt.hist(chi2s[np.isfinite(chi2s)],density=True,label=f'{tp} in {split}')
-            plt.xlabel('chi2')
-            if cp ==0:
-                plt.ylabel('normalised counts')
-            plt.legend()
+            right = 0.99
+        fig = plt.figure(figsize=(9,4))
+        spec = gridspec.GridSpec(nrows=1,ncols=2, left = 0.1,right = right,bottom=0.12,top = 0.93, wspace=0,width_ratios=[0.85,1])
+        ax = np.empty((1,2), dtype=type(plt.axes))
+        plt.rc('font', family='serif', size=12)    
+        for cp,split in enumerate(['N','S']):
+            ax[0,cp] = fig.add_subplot(spec[0,cp])
+            if split == 'N':
+                selection = sel_obs&seln
+            elif split == 'S':
+                selection = sel_obs&~seln
+            selection_gz = selection&selz&gz
+            
+            if ptype == 'noZFAIL':
+                ALL, GOOD, BIN, err, _ = SSR(full, 'FIBER', selection, selection_gz, weights=np.ones(np.sum(selection_gz)), fiberbins=FIB)
+                ptypetl = 'no ZFAIL weight'
+            else:
+                ALL, GOOD, BIN, err, _ = SSR(full, 'FIBER', selection, selection_gz, weights=full['WEIGHT_ZFAIL'][selection_gz], fiberbins=FIB)
+                ptypetl = 'ZFAIL weight'                
+            ssrmodel   = GOOD/ALL     
+            ssrmean    = np.sum(GOOD)/np.sum(ALL)   
+            err[err==0]= 1  
+            chi2s      = (ssrmodel-ssrmean)/err
+            plt.title('{} chi2 = {:.1f}/{}'.format(ptypetl,np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))),fontsize=10)
 
-        if split == 'N':
-            ssr_wtN = 1./(ssrmodel/np.nanmean(ssrmodel))
-            ssr_wtN[np.isnan(ssr_wtN)] = 1.
-        elif split == 'S':
-            ssr_wtS = 1./(ssrmodel/np.nanmean(ssrmodel))
-            ssr_wtS[np.isnan(ssr_wtS)] = 1.
-    if not args.focalplane_SSR_chi2:
-        plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
+            if ptype != 'chi2hist':
+                if (ptype == 'SSR')|(ptype == 'noZFAIL'):
+                    # fibrewise SSR 
+                    dv      = 0.05
+                    vmin    = 1-dv
+                    vmax    = 1+dv
+                    value   = ssrmodel/ssrmean
+                    cblabel = 'rescaled SSR'
+                    # mock weight, don't need to repeat with plots
+                    if split == 'N':
+                        ssr_wtN = 1./(ssrmodel/np.nanmean(ssrmodel))
+                        ssr_wtN[np.isnan(ssr_wtN)] = 1.
+                    elif split == 'S':
+                        ssr_wtS = 1./(ssrmodel/np.nanmean(ssrmodel))
+                        ssr_wtS[np.isnan(ssr_wtS)] = 1.
+                elif ptype == 'chi2':
+                    # fibrewise SSR chi2
+                    dv      = 2
+                    vmin    = -dv
+                    vmax    = +dv
+                    value   = chi2s
+                    cblabel = r'SSR $\chi^2$'
+                hb = ax[0,cp].scatter(xll,yll,c=value,s=2,vmin=vmin,vmax=vmax)
+                if cp == 1:
+                    cb = fig.colorbar(hb, ax=ax[0,1])
+                    cb.set_label(cblabel,fontsize=12)
+                    plt.text(-150,410,f'{photos[cp]}',fontsize=15,weight='bold')
+                    plt.yticks(alpha=0)
+                else:
+                    plt.text(-190,410,f'{photos[cp]}',fontsize=15,weight='bold')
+                    plt.ylabel('Y (mm)')
+                plt.xlabel('X (mm)')
+                plt.xlim(-470,470)
+                plt.ylim(-420,470)
+            else:
+                # the histogram of fibrewise SSR chi2
+                plt.hist(chi2s[np.isfinite(chi2s)],density=True,label=f'{tp} in {split}')
+                plt.xlabel('chi2')
+                if cp ==0:
+                    plt.ylabel('normalised counts')
+                plt.legend()
+
+        if ptype == 'SSR':
+            plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
+        else:
+            plt.savefig(outdir+'{}_focalplane_success_rate_{}_z{}z{}_{}.png'.format(tp,ptype,zmin,zmax,args.version))                    
+
         plt.close('all')
-    else:
-        plt.savefig(outdir+f'{tp}_chi2_hist.png')
-        plt.close()
 
     #print('ssr_wt',ssr_wt)
     #print('BIN',list(BIN))
     #print('FIB',list(FIB))
     #print('FIBER',full['FIBER'])
     if args.data == 'LSS':
-        full = Table(fitsio.read(indir+tp+'_full.dat.fits'))
+        full = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
     elif args.data == 'mock':
         full = Table(fitsio.read(indir+'ffa_full_' + tp+'.fits'))
  
