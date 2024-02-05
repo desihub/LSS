@@ -35,7 +35,7 @@ if args.tracers == 'all':
 for tp in tps:
     mainp = main(tp,args.verspec,survey=args.survey)
     df_cutdisk = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
-    df_cutdisk.remove_columns(['BITWEIGHTS','PROBOBS'])
+    df_cutdisk.remove_columns(['BITWEIGHTS','PROB_OBS'])
     df_cutdisk_cols = list(df_cutdisk.dtype.names)
     df = Table(fitsio.read(indir+tp+'_full.dat.fits'))
     df_cols = list(df.dtype.names)
