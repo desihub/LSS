@@ -9,6 +9,7 @@ import fitsio
 from astropy.table import join,Table
 
 import LSS.common_tools as common
+from LSS.globals import main
 
 
 parser = argparse.ArgumentParser()
