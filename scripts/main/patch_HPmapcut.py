@@ -30,7 +30,7 @@ nside = 256
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['QSO','LRG','ELG_LOPnotqso']#'BGS_BRIGHT'
+    tps = ['ELG_LOPnotqso','QSO','LRG']#'BGS_BRIGHT'
 
 for tp in tps:
     mainp = main(tp,args.verspec,survey=args.survey)
