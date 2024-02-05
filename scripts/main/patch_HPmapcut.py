@@ -35,7 +35,16 @@ if args.tracers == 'all':
 for tp in tps:
     mainp = main(tp,args.verspec,survey=args.survey)
     df_cutdisk = fitsio.read(indir+tp+'_full_HPmapcut.dat.fits')
+    df_cutdisk_cols = list(df_cutdisk.dtype.names)
     df = fitsio.read(indir+tp+'_full.dat.fits')
+    df_cols = list(df.dtype.names)
+    for name in df_cols:
+        if name not in df_cutdisk_cols:
+            print(name+' not in HPmapcut file')
+    for name in df_cutdisk_cols:
+        if name not in df_cols:
+            print(name+' not in not cut file')
+        
     mapn = fitsio.read(lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
     maps = fitsio.read(lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
     mapcuts = mainp.mapcuts
