@@ -6,7 +6,7 @@ import sys
 import argparse
 
 import fitsio
-from astropy.table import join,Table
+from astropy.table import join,Table,vstack
 
 import LSS.common_tools as common
 from LSS.globals import main
@@ -53,7 +53,8 @@ for tp in tps:
     df_cut = common.apply_map_veto_arrays(df,mapn,maps,mapcuts)
     sel_idmatch = np.isin(df_cut['TARGETID'],df_cutdisk['TARGETID'])
     df_cutnomatch = df_cut[~sel_idmatch]
-    df_comb = np.concatenate((df_cutdisk,df_cutnomatch))
+    #df_comb = np.concatenate((df_cutdisk,df_cutnomatch))
+    df_comb = vstack((df_cutdisk,df_cutnomatch))
     print(tp,len(df_comb),len(np.unique(df_comb['TARGETID']))) 
     if tp[:3] != 'BGS':
         bitf = fitsio.read(mainp.darkbitweightfile)
