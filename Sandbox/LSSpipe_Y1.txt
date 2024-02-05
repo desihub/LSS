@@ -276,4 +276,8 @@ python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cf
 #re-run blinding for ELG_LOP
 srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type ELG_LOPnotqso --wsyscol WEIGHT_SN --version v1.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y --mv_out2cfs y
 
+#patch HPmapcut files to return bad redshifts that were cut by accident in the IMLIN fitting
+#from an interactive node (runs out of memory otherwise)
+python scripts/main/patch_HPmapcut.py --version v1.1
+
 
