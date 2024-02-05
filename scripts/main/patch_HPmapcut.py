@@ -61,5 +61,5 @@ for tp in tps:
     else:
         bitf = fitsio.read(mainp.brightbitweightfile)
     df_comb = join(df,bitf,keys=['TARGETID'],join_type='left')
-    print(len(df_comb))
+    print(len(df_comb['TARGETID']))
     print(df_comb.dtype.names)
