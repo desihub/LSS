@@ -63,3 +63,4 @@ for tp in tps:
     df_comb = join(df_comb,bitf,keys=['TARGETID'],join_type='left')
     print(len(df_comb['TARGETID']))
     print(df_comb.dtype.names)
+    common.write_LSS(df_comb,indir+tp+'_full_HPmapcut.dat.fits')
