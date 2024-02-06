@@ -4,8 +4,8 @@ import os
 
 program = 'bright'
 
-rmin = 0
-rmax = 1
+rmin = 1
+rmax = 25
 
 #path = '/pscratch/sd/a/acarnero/test_main/altmtl{MOCKNUM}/Univ000' 
 path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl{MOCKNUM}/Univ000' 
