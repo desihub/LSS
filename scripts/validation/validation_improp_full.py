@@ -212,6 +212,8 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     plt.ylim(yl[0],yl[1])
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
     fname = outdir_txt + 'ngalvs_'+xlab+titl.replace(' ','')
+    fname = fname.replace(' - ','')
+    fname = fname.replace('<','')
     fo = open(fname,'w')
     for i in range(0,len(bc)):
         fo.write(str(bc[i])+' '+str(svw[i])+' '+str(sv[i])+' '+str(ep[i])+'\n')
