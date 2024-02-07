@@ -1,11 +1,13 @@
 #!/bin/bash
 start=`date +%s.%N`
 
+##TEMPrealization=0
+
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
 simName="altmtl{mock_number}"
 #Location where you have cloned the LSS Repo
-path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin
+path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
 # Flags for debug/verbose mode/profiling code time usage. 
 # Uncomment second set of options to turn on the modes
@@ -16,23 +18,24 @@ debug='--debug'
 verbose='--verbose'
 #profile='--profile'
 
-if [ -z "$debug" ]
-then
-    echo "\$debug is empty"
-else 
-    echo "\$debug is set"
-    pwd
-    InitWorkingDirectory=`pwd`
-    cd $path2LSS
-    cd ..
-    pwd
-    pip install --user .
-    cd $InitWorkingDirectory
-    pwd
-    echo "end of pip in script attempt"
-fi
+#if [ -z "$debug" ]
+#then
+#    echo "\$debug is empty"
+#else 
+#    echo "\$debug is set"
+#    pwd
+#    InitWorkingDirectory=`pwd`
+#    cd $path2LSS
+#    cd ..
+#    pwd
+#    pip install --user .
+#    cd $InitWorkingDirectory
+#    pwd
+#    echo "end of pip in script attempt"
+#fi
 
 #Uncomment second option if running on mocks
+#mock=''
 mock='--mock'
 
 #ALTMTLHOME is a home directory for all of your alternate MTLs. Default is your scratch directory
@@ -42,6 +45,7 @@ mock='--mock'
 
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
+#ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
 ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
@@ -81,9 +85,10 @@ fi
 seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-mockinit=0
-mockend=5
-let ndir=$mockend-$mockinit
+#Mock realization
+mockinit=5
+mockend=25
+let ndir=$mockend-$mockinit 
 
 
 #Uncomment second option if you want to clobber already existing files for Alt MTL generation
@@ -91,8 +96,8 @@ overwrite=''
 #overwrite='--overwrite'
 
 #Observing conditions for generating MTLs (should be all caps "DARK" or "BRIGHT")
-#obscon='DARK'
 obscon='BRIGHT'
+#obscon='BRIGHT'
 
 #Survey to generate MTLs for (should be lowercase "sv3" or "main", sv2, sv1, and cmx are untested and will likely fail)
 #survey='sv3'
@@ -127,7 +132,8 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $s
 
 #List of healpixels to create Alt MTLs for
 #hpListFile="$path2LSS/MainSurveyHPList_mock.txt"
-hpListFile="/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl0/initled/hpxlist_bright.txt"
+##TEMPhpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3/altmtl$realization/initled/hpxlist_dark.txt"
+#hpListFile="$path2LSS/MainSurveyHPList.txt"
 #hpListFile="$path2LSS/DebugMainHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
 
@@ -141,25 +147,24 @@ hpListFile="/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/Abacu
 shuffleBrightPriorities=''
 
 
-#shuffleELGPriorities=''
+shuffleELGPriorities=''
 #shuffleELGPriorities='--shuffleELGPriorities'
 
 #PromoteFracBGSFaint=0.2
 PromoteFracBGSFaint=0.0
 #PromoteFracELG=0.1
-PromoteFracELG=0.0
+PromoteFracELG=0.
 
 # location of original MTLs to shuffle.
 # Default directory is a read only mount of the CFS filesystem
 # You can only access that directory from compute nodes. 
 # Do NOT use the commented out directory (the normal mount of CFS)
 # unless the read only mount is broken
-#exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
+##TEMPexampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3/altmtl$realization/initled
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #exampleLedgerBase=$SCRATCH/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #Options for DateLoopAltMTL and runAltMTLParallel
-exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl0/initled
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
 #Default = Empty String/False. Uncomment second option if you want to restart from the first observations
@@ -180,6 +185,10 @@ echo 'setting QVal here for debug. Fix later.'
 #QVal='debug'
 QVal='regular'
 #QVal='interactive'
+#
+
+
+
 #Number of nodes to run on. This will launch up to 64*N jobs 
 #if that number of alternate universes have already been generated
 #Calculated automatically from number of sims requested and number of processes per node. Be careful if setting manually
@@ -195,8 +204,8 @@ getosubp=''
 #subpriorities are shuffled. debug mode for main survey
 #will only require these flags to be set by uncommenting second options
 
-#dontShuffleSubpriorities=''
-#reproducing=''
+dontShuffleSubpriorities=''
+reproducing=''
 #dontShuffleSubpriorities='--dontShuffleSubpriorities'
 #reproducing='--reproducing'
 #Include secondary targets?
@@ -208,8 +217,8 @@ secondary=''
 #Otherwise this is optional
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/forFA{mock_number}.fits"
-#targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
+#targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 

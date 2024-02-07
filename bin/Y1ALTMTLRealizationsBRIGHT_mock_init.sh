@@ -3,7 +3,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName="altmtl0"
+simName="altmtl5"
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin
 
@@ -124,7 +124,7 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $s
 
 #List of healpixels to create Alt MTLs for
 #hpListFile="$path2LSS/MainSurveyHPList_mock.txt"
-hpListFile="/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl0/initled/hpxlist_bright.txt"
+hpListFile="/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl5/initled/hpxlist_bright.txt"
 #hpListFile="$path2LSS/DebugMainHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
 
@@ -156,7 +156,7 @@ PromoteFracELG=0.1
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #exampleLedgerBase=$SCRATCH/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #Options for DateLoopAltMTL and runAltMTLParallel
-exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl0/initled
+exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/altmtl5/initled
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
 #Default = Empty String/False. Uncomment second option if you want to restart from the first observations
@@ -205,7 +205,7 @@ secondary=''
 #Otherwise this is optional
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/forFA0.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS/forFA5.fits"
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 

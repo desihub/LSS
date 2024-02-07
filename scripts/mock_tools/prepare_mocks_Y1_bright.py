@@ -129,7 +129,7 @@ for real in range(args.realmin, args.realmax):
                 mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'AbacusSummit')
             elif args.prog == 'bright':
 
-                mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'AbacusSummitBGS')
+                mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'AbacusSummitBGS_v2')
 
             out_file_name = os.path.join(mockdir, 'forFA{real}.fits'.format(real=real))
 
@@ -172,7 +172,7 @@ for real in range(args.realmin, args.realmax):
             thepath = os.path.join(mockpath, type_, 'v0.1', zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
             print('thepath')
             print(thepath)
-            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'R_MAG_APP', 'R_MAG_ABS', 'IN_Y1']))
+            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'R_MAG_APP', 'R_MAG_ABS', 'IN_Y1', 'G_R_OBS', 'G_R_REST']))
             print("Length before rbandcut")
             print(len(data))
             

@@ -38,10 +38,11 @@ nside,nest = 256,True
 indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/imaging/'
 outdir = outdir.replace('dvs_ro','global')
+outdir_txt = outdir+'ngalvsysfiles/'
 print('writing to '+outdir)
 
-if not os.path.exists(outdir):
-    os.makedirs(outdir)
+if not os.path.exists(outdir_txt):
+    os.makedirs(outdir_txt)
 
 
 zcol = 'Z_not4clus'
@@ -210,6 +211,14 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1),d
     plt.grid()
     plt.ylim(yl[0],yl[1])
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
+    fname = outdir_txt + 'ngalvs_'+xlab+titl.replace(' ','')+'.txt'
+    fname = fname.replace(' - ','')
+    fname = fname.replace('<','')
+    fo = open(fname,'w')
+    for i in range(0,len(bc)):
+        fo.write(str(bc[i])+' '+str(svw[i])+' '+str(sv[i])+' '+str(ep[i])+'\n')
+    fo.close()
+    print('wrote to '+fname)
     return chi2,chi2nw
         
 

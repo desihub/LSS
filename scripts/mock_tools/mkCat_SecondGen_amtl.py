@@ -214,7 +214,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
 
     cols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
     if pdir == 'bright':
-        cols.append('BGS_TARGET', 'R_MAG_ABS')
+        cols.append('BGS_TARGET')
+        cols.append('R_MAG_ABS')
     pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
@@ -455,9 +456,9 @@ if args.mkclusdat == 'y':
     #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
     
     if args.ccut is not None:
-        targets = Table(fitsio.read(os.path.join(args.targDir, 'forFA{MOCKNUM}.fits').format(MOCKNUM=mocknum).replace('global','dvs_ro'), columns=['TARGETID', 'R_MAG_ABS']))
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         if 'R_MAG_ABS' not in ffile.columns:
+            targets = Table(fitsio.read(os.path.join(args.targDir, 'forFA{MOCKNUM}.fits').format(MOCKNUM=mocknum).replace('global','dvs_ro'), columns=['TARGETID', 'R_MAG_ABS']))
             nm = Table(join(ffile, targets, keys=['TARGETID']))
         #print(nm)
             common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
