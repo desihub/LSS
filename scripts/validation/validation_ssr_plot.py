@@ -23,6 +23,7 @@ parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default=
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
 parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",action='store_true',default=False)
+parser.add_argument("--fulltype", help="use full_HPmapcut data or not (full data instead)",default='',choices=['','_HPmapcut'])
 
 
 args = parser.parse_args()
@@ -55,7 +56,7 @@ if args.data == 'mock':
 else:
     indir = args.basedir+'/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
     ############
-    outdir = indir+'plots/ssr/'
+    outdir = indir+'plots/ssr'+args.fulltype+'/'
     ############
 
 # create the susscessful rate vs observation figure
@@ -99,7 +100,7 @@ def SSR_chi2(goodz, allz, err):
 # list all tracers
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso']#['BGS_BRIGHT','ELG_LOPnotqso','QSO','LRG']
+    tps = ['BGS_BRIGHT','ELG_LOPnotqso','QSO','LRG']
 
 if args.survey == 'SV3' and args.tracers == 'all':
     tps = ['QSO','LRG','BGS_ANY','BGS_BRIGHT','ELG','ELG_HIP','ELG_HIPnotqso','ELGnotqso']
@@ -112,20 +113,25 @@ for tp in tps:
     if tp[:3] == 'QSO':
         zmin = float(args.zmin)
         zmax = float(args.zmax)
+        dv   = 0.08
     elif tp[:3] == 'ELG':
         zmin = 0.01
         zmax = 1.8
         flux = 'G'
+        dv   = 0.05
     elif tp[:3] == 'LRG':
         zmin = float(args.zmin)
         zmax = float(args.zmax)
+        dv   = 0.02
     elif tp[:3] == 'BGS':
         zmin = 0.01
         zmax = 0.5
         flux = 'Z'
+        dv   = 0.02
     # read the full catalogue 
     if args.data == 'LSS':
-        full = Table(fitsio.read(indir+tp+'_full.dat.fits'))
+        
+        full = Table(fitsio.read(indir+tp+'_full'+args.fulltype+'.dat.fits'))
     elif args.data == 'mock':
         full = Table(fitsio.read(indir+'ffa_full_' + tp+'.fits'))
     # add new deducted observing conditions
@@ -353,12 +359,10 @@ for tp in tps:
             ssrmean    = np.sum(GOOD)/np.sum(ALL)   
             err[err==0]= 1  
             chi2s      = (ssrmodel-ssrmean)/err
-            plt.title('{} chi2 = {:.1f}/{}'.format(ptypetl,np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(ssrmodel))),fontsize=10)
 
             if ptype != 'chi2hist':
                 if (ptype == 'SSR')|(ptype == 'noZFAIL'):
                     # fibrewise SSR 
-                    dv      = 0.05
                     vmin    = 1-dv
                     vmax    = 1+dv
                     value   = ssrmodel/ssrmean
@@ -396,6 +400,7 @@ for tp in tps:
                 if cp ==0:
                     plt.ylabel('normalised counts')
                 plt.legend()
+            plt.title('{} chi2 = {:.1f}/{}'.format(ptypetl,np.sum(chi2s[np.isfinite(chi2s)]**2),np.sum(np.isfinite(chi2s))),fontsize=10)
 
         if ptype == 'SSR':
             plt.savefig(outdir+'{}_focalplane_success_rate_z{}z{}_{}.png'.format(tp,zmin,zmax,args.version))        
