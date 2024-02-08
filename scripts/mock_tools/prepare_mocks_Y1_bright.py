@@ -278,7 +278,7 @@ for real in range(args.realmin, args.realmax):
 
                 datat.append(dat_bright)
                 
-                SubFracFaint=0.556
+                SubFracFaint=0.695
                 ran_faint = np.random.uniform(size = len(dat_faint))
                 dat_faint_subfrac = dat_faint[(ran_faint<=SubFracFaint)]
 
