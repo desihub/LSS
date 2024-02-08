@@ -280,4 +280,18 @@ srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scri
 #from an interactive node (runs out of memory otherwise)
 python scripts/main/patch_HPmapcut.py --version v1.1
 
+==== Steps to make v1.2 (bug with FRACZ_TLOBS_TILES was not actually fixed)
+mkdir /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.2/
+cp /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.1/*full* /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.2/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey Y1 --verspec iron --version v1.2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --fulld n --survey Y1 --verspec iron --version v1.2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey Y1 --verspec iron --version v1.2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --fulld n --survey Y1 --verspec iron --version v1.2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+
+
 
