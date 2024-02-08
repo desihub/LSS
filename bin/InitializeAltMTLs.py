@@ -1,4 +1,7 @@
 #!/global/common/software/desi/cori/desiconda/20211217-2.0.0/conda/bin/python -u
+from desiutil.iers import freeze_iers
+freeze_iers()
+
 from astropy.table import Table
 import desitarget.io as io
 import glob

@@ -218,7 +218,7 @@ secondary=''
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{mock_number}.fits"
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
