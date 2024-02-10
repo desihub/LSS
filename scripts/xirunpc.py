@@ -422,7 +422,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
     #catalog_kwargs['recon_dir'] = recon_dir
-    with_shifted = rec_type is not None
+    with_shifted = rec_type is not None or recon_dir != "n"
 
     if 'angular' in weight_type and wang is None:
         wang = compute_angular_weights(nthreads=nthreads, gpu=gpu, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
