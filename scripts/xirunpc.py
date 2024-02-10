@@ -422,7 +422,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
     #catalog_kwargs['recon_dir'] = recon_dir
-    with_shifted = rec_type is not None
+    with_shifted = rec_type is not None or recon_dir != "n"
 
     if 'angular' in weight_type and wang is None:
         wang = compute_angular_weights(nthreads=nthreads, gpu=gpu, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
@@ -597,7 +597,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_arrays', help = 'use pre-stored arrays rather than reading from memory again', default = 'n')
     parser.add_argument('--write_arrays', help = 'save the pre-stored arrays', default = 'n')
     #only relevant for reconstruction
-    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
+    parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention, but only if included in the catalog filename between dots, otherwise leave blank', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
     parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
 
     parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
