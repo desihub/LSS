@@ -23,7 +23,7 @@ parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default=
 parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
 parser.add_argument("--zmax", help="maximum redshift",default=1.5)
 parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",action='store_true',default=False)
-parser.add_argument("--fulltype", help="use full_HPmapcut data or not (full data instead)",default='',choices=['','_HPmapcut'])
+parser.add_argument("--fullonly", help="use full data instead of full_HPmapcut",action='store_true',default=False)
 
 
 args = parser.parse_args()
@@ -130,8 +130,10 @@ for tp in tps:
         dv   = 0.02
     # read the full catalogue 
     if args.data == 'LSS':
-        
-        full = Table(fitsio.read(indir+tp+'_full'+args.fulltype+'.dat.fits'))
+        if args.fullonly:
+            full = Table(fitsio.read(indir+tp+'_full.dat.fits'))
+        else:
+            full = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
     elif args.data == 'mock':
         full = Table(fitsio.read(indir+'ffa_full_' + tp+'.fits'))
     # add new deducted observing conditions
@@ -414,7 +416,10 @@ for tp in tps:
     #print('FIB',list(FIB))
     #print('FIBER',full['FIBER'])
     if args.data == 'LSS':
-        full = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
+        if args.fullonly:
+            full = Table(fitsio.read(indir+tp+'_full.dat.fits'))
+        else:
+            full = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
     elif args.data == 'mock':
         full = Table(fitsio.read(indir+'ffa_full_' + tp+'.fits'))
  
