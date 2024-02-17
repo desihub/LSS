@@ -118,7 +118,8 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 def ran_col_assign(randoms,data,sample_columns,tracer):
-    data.rename_column('TARGETID', 'TARGETID_DATA')
+    if (not 'TARGETID_DATA' in data.colnames)&('TARGETID' in data.colnames):
+        data.rename_column('TARGETID', 'TARGETID_DATA')
     def _resamp(selregr,selregd):
         for col in sample_columns:
             randoms[col] =  np.zeros(len(randoms))
