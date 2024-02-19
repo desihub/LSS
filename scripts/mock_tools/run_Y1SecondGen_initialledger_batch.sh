@@ -1,4 +1,4 @@
-SeconGenVer=AbacusSummit_v4 #AbacusSummit
+SeconGenVer=AbacusSummit_v4 #AbacusSummitBGS_v2
 for j in {0..24}
 do
 #j=0
