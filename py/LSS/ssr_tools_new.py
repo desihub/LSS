@@ -172,13 +172,13 @@ class model_ssr_zfac:
         self.maxz = maxz
         
         self.res_mod_slp = self.get_slpfunc()
-		fo = open(self.outdir+outfn_root+'slp_wzfac.txt','w')
-		fo.write('self.res_mod_slp')
-		#fo.write('#a b c chi2\n')
-		#for par in pars:
-	    #	fo.write(str(par)+' ')
-		#fo.write(str(chi2)+'\n')
-		fo.close()
+        fo = open(self.outdir+outfn_root+'slp_wzfac.txt','w')
+        fo.write('self.res_mod_slp')
+        #fo.write('#a b c chi2\n')
+        #for par in pars:
+        #   fo.write(str(par)+' ')
+        #fo.write(str(chi2)+'\n')
+        fo.close()
 
         self.ssrtot = len(self.cat[self.selgz])/len(self.cat)
         self.tracer = tracer
