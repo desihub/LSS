@@ -172,8 +172,8 @@ class model_ssr_zfac:
         self.maxz = maxz
         
         self.res_mod_slp = self.get_slpfunc()
-        fo = open(self.outdir+outfn_root+'slp_wzfac.txt','w')
-        fo.write('self.res_mod_slp')
+        fo = open(outdir+outfn_root+'slp_wzfac.txt','w')
+        fo.write(str(self.res_mod_slp))
         #fo.write('#a b c chi2\n')
         #for par in pars:
         #   fo.write(str(par)+' ')
