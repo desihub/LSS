@@ -174,6 +174,11 @@ class model_ssr_zfac:
         self.res_mod_slp = self.get_slpfunc()
         fo = open(outdir+outfn_root+'slp_wzfac.txt','w')
         fo.write(str(self.res_mod_slp))
+        fo = open(outdir+outfn_root+'slp_vszfac.txt','w')
+        for i in range(0,len(self.slpl)):
+            fo.write(str(self.zfacl[i])+' '+str(self.slpl[i])+' ')
+        fo.close()
+
         #fo.write('#a b c chi2\n')
         #for par in pars:
         #   fo.write(str(par)+' ')
@@ -210,6 +215,8 @@ class model_ssr_zfac:
             res = normed_linfit(self.cat,seltot,sel)
             slpl.append(res[0])
             zfacl.append(np.median(self.relzfac[sel]))
+        self.slpl = slpl
+        self.zfacl = zfacl
         res = np.polyfit(zfacl,slpl,1)
         return res
 
