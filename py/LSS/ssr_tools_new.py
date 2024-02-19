@@ -176,7 +176,7 @@ class model_ssr_zfac:
         fo.write(str(self.res_mod_slp))
         fo = open(outdir+outfn_root+'slp_vszfac.txt','w')
         for i in range(0,len(self.slpl)):
-            fo.write(str(self.zfacl[i])+' '+str(self.slpl[i])+' ')
+            fo.write(str(self.zfacl[i])+' '+str(self.slpl[i])+'\n')
         fo.close()
 
         #fo.write('#a b c chi2\n')
