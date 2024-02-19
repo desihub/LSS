@@ -1505,3 +1505,7 @@ def return_altmtl_fba_fadate(tileid):
     fhtOrig = fitsio.read_header(FAOrigName)
     fadate = fhtOrig['RUNDATE']
     return ''.join(fadate.split('T')[0].split('-'))
+
+def return_hp_givenradec(nside, ra, dec):
+    theta, phi = np.radians(90-dec), np.radians(ra)
+    return hp.ang2pix(nside, theta, phi, nest=True)

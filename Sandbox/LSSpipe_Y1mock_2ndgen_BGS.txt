@@ -42,7 +42,9 @@ This process runs on regular queue that takes 12 hours but to complete the opera
 10) RUN A SECOND TIME
 >> nohup ./Y1ALTMTLRealizationsBRIGHT_mock.sh &
 
+11) Combd calling run1_AMTLmock_combd_LSS.sh from abamtl_combd_cat_sbatch.sh (Change path accordingly)
 
+12) run1_AMTLmock_LSS_BGS.sh with abBGSamtl_cat_sbatch.sh
 
 
 

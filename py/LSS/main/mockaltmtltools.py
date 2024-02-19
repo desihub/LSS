@@ -12,16 +12,16 @@ import memory_profiler
 from memory_profiler import profile
 
 
-##TEMP
-#MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
-#MODULE_NAME = 'desitarget'
-#import importlib
-#import sys
-#spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
-#module = importlib.util.module_from_spec(spec)
-#sys.modules[spec.name] = module
-#spec.loader.exec_module(module)
-##
+#TEMP
+MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
+MODULE_NAME = 'desitarget'
+import importlib
+import sys
+spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
+spec.loader.exec_module(module)
+#
 
 import desitarget
 from desitarget import io, mtl

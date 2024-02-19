@@ -1,5 +1,15 @@
 from desiutil.iers import freeze_iers
 freeze_iers()
+#TEMP
+MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
+MODULE_NAME = 'desitarget'
+import importlib
+import sys
+spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
+spec.loader.exec_module(module)
+#
 
 import collections.abc
 from time import time
@@ -12,7 +22,7 @@ import memory_profiler
 from memory_profiler import profile
 
 import desitarget
-#from desitarget import io, mtl
+from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed

@@ -45,8 +45,8 @@ mock='--mock'
 
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
-ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
-#ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/
+#ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -86,8 +86,8 @@ seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 #Mock realization
-mockinit=10
-mockend=11
+mockinit=0
+mockend=25
 let ndir=$mockend-$mockinit 
 
 
@@ -183,8 +183,8 @@ NObsDates=99999
 multiDate='--multiDate'
 echo 'setting QVal here for debug. Fix later.'
 #QVal='debug'
-#QVal='regular'
-QVal='interactive'
+QVal='regular'
+#QVal='interactive'
 #
 
 
@@ -217,8 +217,8 @@ secondary=''
 #Otherwise this is optional
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
-targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-##targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA{mock_number}.fits"
+#targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 

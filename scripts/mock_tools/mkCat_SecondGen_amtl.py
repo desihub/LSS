@@ -88,6 +88,7 @@ parser.add_argument("--nran_clus_data", help="number of random catalogues to use
 parser.add_argument("--use_map_veto", help="Tag for extraveto added in name, for example, _HPmapcut", default = '')
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
+parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 
 #--use_map_veto _HPmapcut
 
@@ -216,6 +217,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     if pdir == 'bright':
         cols.append('BGS_TARGET')
         cols.append('R_MAG_ABS')
+        cols.append('G_R_OBS')
+        cols.append('G_R_REST')
     pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
@@ -464,7 +467,8 @@ if args.mkclusdat == 'y':
             common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
         #nm.write(ffile, overwrite=True)
 
-
+#    if args.add_bitweights is not None:
+#        mocktools.add_bitweights(args.add_bitweights, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
     ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')

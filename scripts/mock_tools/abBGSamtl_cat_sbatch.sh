@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=02:30:00
+#SBATCH --time=05:00:00
 #SBATCH --qos=regular
 #SBATCH --nodes=1
 #SBATCH --constraint=cpu

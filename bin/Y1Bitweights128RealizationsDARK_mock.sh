@@ -3,7 +3,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName=altmtl1_R64
+simName=altmtl1_R128
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
@@ -82,7 +82,7 @@ fi
 seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=64
+ndir=128
 
 #Uncomment second option if you want to clobber already existing files for Alt MTL generation
 overwrite=''
@@ -273,7 +273,6 @@ else
    mkdir -p $outputMTLFinalDestination
    cp $0 $outputMTLFinalDestination
 fi
-
 if [ -z $getosubp ]
 then
     touch $outputMTLFinalDestination/GetOSubpTrue
@@ -281,22 +280,22 @@ fi
 
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
-#echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
-#srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
+echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
+srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
 
-#cp -r $outputMTLFinalDestination/ "$ALTMTLHOME/BACKUPInitial_$simName/"
-#exit 1234
-#if [ $? -ne 0 ]; then
-#    exit 1234
-#    endInit=`date +%s.%N`
-#    runtimeInit=$( echo "$endInit - $start" | bc -l )
-#    echo "runtime for initialization"
-#    echo $runtimeInit
-#fi
-#endInit=`date +%s.%N`
-#runtimeInit=$( echo "$endInit - $start" | bc -l )
-#echo "runtime for initialization"
-#echo $runtimeInit
+cp -r $outputMTLFinalDestination/ "$ALTMTLHOME/BACKUPInitial_$simName/"
+exit 1234
+if [ $? -ne 0 ]; then
+    exit 1234
+    endInit=`date +%s.%N`
+    runtimeInit=$( echo "$endInit - $start" | bc -l )
+    echo "runtime for initialization"
+    echo $runtimeInit
+fi
+endInit=`date +%s.%N`
+runtimeInit=$( echo "$endInit - $start" | bc -l )
+echo "runtime for initialization"
+echo $runtimeInit
 
 printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
 

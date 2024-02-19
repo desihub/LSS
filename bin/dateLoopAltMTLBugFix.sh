@@ -37,7 +37,7 @@ fi
 if [ $QVal = 'regular' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:20481531 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:21570852 $path2LSS/runAltMTLParallel.py $argstring
 fi
 
 if [ $QVal = 'debug' ]; 

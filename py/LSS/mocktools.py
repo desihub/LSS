@@ -446,6 +446,8 @@ def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
 
 
 
-    
+#def add_bitweights(bitweight_filename, input_file):
+#    data_ = Table(fitsio.read(input_file))
+#    hpix = list(common.
 
     
