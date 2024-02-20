@@ -185,7 +185,11 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         print('multiplying weights by WEIGHT_ZFAIL')
     if 'default' in weight_type and 'bitwise' not in weight_type:
         weights *= catalog['WEIGHT'][mask]
-        print('multiplying weights by WEIGHT')
+        print('multiplying weights by WEIGHT')     
+    if 'removeIMSYS' in weight_type:
+        #assumes default already added the rest of the weights and that SYS was used as default weight
+        weights /= catalog['WEIGHT_SYS'][mask]
+        print('dividing weights by WEIGHT_SYS') 
     #if 'RF' in weight_type:
     #    weights *= catalog['WEIGHT_RF'][mask]
     #    print('multiplying weights by WEIGHT_RF')
