@@ -17,7 +17,7 @@ import logging
 
 import numpy as np
 
-from astropy.table import Table, vstack
+from astropy.table import Table, vstack, join
 from matplotlib import pyplot as plt
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
@@ -87,7 +87,7 @@ def get_zlims(tracer, tracer2=None, option=None):
 
 
 def get_regions(survey, rec=False):
-    regions = ['N', 'S']#, '']
+    regions = ['NGC', 'SGC']#, '']
     #if survey in ['main', 'DA02']:
     #    regions = ['DN', 'DS', 'N', 'S']
     #    if rec: regions = ['DN', 'N']
@@ -108,12 +108,12 @@ def select_region(ra, dec, region):
     return mask
 
 
-def catalog_dir(survey='main', verspec='guadalupe', version='test', base_dir='/global/cfs/cdirs/desi/survey/catalogs'):
+def catalog_dir(survey='Y1', verspec='iron', version='v1.2', base_dir='/global/cfs/cdirs/desi/survey/catalogs'):
     return os.path.join(base_dir, survey, 'LSS', verspec, 'LSScats', version)
 
 
 
-def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',recon_dir='n',rec_type=False, nrandoms=4, cat_dir=None, survey='main', **kwargs):
+def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',recon_dir='n',rec_type=False, nrandoms=4, cat_dir=None, survey='Y1', **kwargs):
     #print(kwargs)
     if cat_dir is None:
         cat_dir = catalog_dir(survey=survey, **kwargs)
@@ -121,7 +121,8 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     #    tracer += 'zdone'
     if 'edav1' in cat_dir:
         cat_dir += ctype
-           
+    if ctype == 'clustering':
+        cat_dir += '/unblinded/'           
     if ctype == 'full':
         region = ''
     dat_or_ran = name[:3]
@@ -149,6 +150,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
+    mask &= (catalog['FRAC_TLOBS_TILES'] != 0)
     if option:
         if 'noNorth' in option:
             decmask = catalog['DEC'] < 32.375
@@ -241,9 +243,12 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         print('dividing weights by WEIGHT_COMP')
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
 
-#     if name == 'randoms':
-#         if 'default' in weight_type:
-#             weights *= catalog['WEIGHT'][mask]
+    if name == 'randoms':
+        if 'default' in weight_type:
+            weights *= catalog['WEIGHT'][mask]
+        if 'bitwise' in weight_type:
+            weights /= catalog['FRAC_TLOBS_TILES'][mask]
+            print('dividing weights by FRAC_TLOBS_TILES')
 #         if 'RF' in weight_type:
 #             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
 #         if 'zfail' in weight_type:
@@ -282,13 +287,19 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
+                if name=='data':
+                    cat_full = catalog_fn(ctype='full_HPmapcut', name=name, **kwargs)
+#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
                 logger.info('Loading {}.'.format(cat_fns))
                 isscalar = not isinstance(cat_fns, (tuple, list))
    
                 
                 if isscalar:
                     cat_fns = [cat_fns]
-                positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                if name=='data':
+                    positions_weights = [get_clustering_positions_weights(join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left'), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                else:
+                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
                 
                 if isscalar:
                     positions.append(positions_weights[0][0])
@@ -340,7 +351,9 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
     if region in ['DS', 'DN']:
         mask &= select_region(catalog['RA'], catalog['DEC'], region)
     elif region:
-        mask &= catalog['PHOTSYS'] == region.strip('_')
+        #mask &= catalog['PHOTSYS'] == region.strip('_')
+        mask &= catalog['PHOTSYS'] == region.strip('GC')
+        
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
     positions = [catalog['RA'][mask], catalog['DEC'][mask], catalog['DEC'][mask]]
@@ -356,11 +369,13 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
 
 
 def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', weight_attrs=None, **kwargs):
-
+    if 'GC' in region:
+        region = [region]
     def read_positions_weights(name):
         positions, weights = [], []
         for reg in region:
-            cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
+            cat_fn = catalog_fn(ctype='full_HPmapcut', name=name, **kwargs)
+            #cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
             logger.info('Loading {}.'.format(cat_fn))
             if isinstance(cat_fn, (tuple, list)):
                 catalog = vstack([Table.read(fn) for fn in cat_fn])
