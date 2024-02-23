@@ -297,7 +297,11 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                 if isscalar:
                     cat_fns = [cat_fns]
                 if name=='data':
-                    positions_weights = [get_clustering_positions_weights(join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left'), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                    if 'bitwise' in weight_type:
+                        tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
+                    else:
+                        tab = Table.read(cat_fn)
+                    positions_weights = [get_clustering_positions_weights(tab, distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
                 else:
                     positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
                 
