@@ -121,10 +121,12 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     #    tracer += 'zdone'
     if 'edav1' in cat_dir:
         cat_dir += ctype
-    if ctype == 'clustering':
-        cat_dir += '/unblinded/'           
+    #if ctype == 'clustering':
+    #    cat_dir += '/unblinded/'           
     if ctype == 'full':
         region = ''
+        cat_dir = cat_dir.replace('/unblinded','')
+        cat_dir = cat_dir.replace('/blinded','')
     dat_or_ran = name[:3]
     if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':
         tracer = 'LRG'
