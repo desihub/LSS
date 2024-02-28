@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --qos=regular
 #SBATCH --nodes=1
 #SBATCH --constraint=cpu
-#SBATCH --array=12,13,15-24
+#SBATCH --array=1-24
 #SBATCH --account=desi
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
-srun /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/run1_AMTLmock_LSS_BGS.sh $SLURM_ARRAY_TASK_ID
+srun /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/run1_prepmock_LSS.sh $SLURM_ARRAY_TASK_ID

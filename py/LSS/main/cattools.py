@@ -3609,6 +3609,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         kl.append('WEIGHT_RF')
     if 'WEIGHT_IMLIN' in cols:
         kl.append('WEIGHT_RF')
+    if 'BITWEIGHTS' in cols:
+        kl.append('BITWEIGHTS')
+        kl.append('PROB_OBS')
 
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
@@ -3639,7 +3642,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print('comparison before/after abs mag cut')
             print(len(ff),len(ff[sel]))
             ff = ff[sel]
-        
+        if 'G_R_OBS' in cols:
+            kl.append('G_R_OBS')
+        if 'G_R_REST' in cols:
+            kl.append('G_R_REST')
+        if 'R_MAG_ABS' in cols:
+            kl.append('R_MAG_ABS')
+        if 'R_MAG_APP' in cols:
+            kl.append('R_MAG_APP')
+
     wn = ff['PHOTSYS'] == 'N'
     kll = []
     data_cols = list(ff.dtype.names)

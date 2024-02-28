@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -87,7 +87,7 @@ seed=3593589
 #However, you can choose smaller numbers for debugging
 #Mock realization
 mockinit=0
-mockend=25
+mockend=1
 let ndir=$mockend-$mockinit 
 
 
@@ -218,7 +218,7 @@ secondary=''
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/forFA{mock_number}.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 

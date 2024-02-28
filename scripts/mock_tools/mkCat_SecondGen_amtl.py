@@ -276,15 +276,6 @@ if args.fulld == 'y':
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
-#    fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
-    
-#    if not os.path.isfile(fcoll):
-#        fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
-        #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
-#        fcoll = mocktools.create_collision_from_pota(fin, fcoll)
-#    else:
-#        print('collision file already exist', fcoll)
-
     ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     print('*** END WITH FULLD ***')
 
@@ -455,8 +446,6 @@ nztl = []
 if args.mkclusdat == 'y':
     print('--- START MKCLUSDAT ---')
     nztl.append('')
-    #fin = os.path.join(dirout, args.tracer + notqso + '_full' + args.use_map_veto + '.dat.fits')
-    #ct.mkclusdat(os.path.join(dirout,args.tracer+notqso),tp=args.tracer,dchi2=None,tsnrcut=0,zmin=zmin,zmax=zmax)#,ntilecut=ntile)
     
     if args.ccut is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
@@ -467,9 +456,13 @@ if args.mkclusdat == 'y':
             common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
         #nm.write(ffile, overwrite=True)
 
-#    if args.add_bitweights is not None:
-#        mocktools.add_bitweights(args.add_bitweights, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto,subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
+    if args.add_bitweights is not None:
+        ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
+        bitweights_file = Table.read(args.add_bitweights)
+        nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
+        common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 

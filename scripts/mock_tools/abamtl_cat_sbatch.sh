@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --qos=regular
 #SBATCH --nodes=1
 #SBATCH --constraint=cpu
-#SBATCH --array=0-24
+#SBATCH --array=20,21,24
 #SBATCH --account=desi
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main

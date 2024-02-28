@@ -3,12 +3,13 @@ from astropy.table import Table,vstack
 import os
 
 program = 'dark'
+#program = 'bright'
 
 rmin = 0
-rmax = 25
+rmax = 1
 
-#path = '/pscratch/sd/a/acarnero/test_main/altmtl{MOCKNUM}/Univ000' 
-path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/altmtl{MOCKNUM}/Univ000' 
+path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl{MOCKNUM}/Univ000' 
+#path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS_v2/altmtl{MOCKNUM}/Univ000' 
 
 extratiles = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/aux_data/extra_{PROGRAM}.ecsv'.format(PROGRAM = program), format='ascii.ecsv')
 

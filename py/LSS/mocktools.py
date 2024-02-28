@@ -445,9 +445,3 @@ def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
     return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
 
 
-
-#def add_bitweights(bitweight_filename, input_file):
-#    data_ = Table(fitsio.read(input_file))
-#    hpix = list(common.
-
-    
