@@ -545,11 +545,11 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #tj.write(outfs,format='fits', overwrite=True)
             print('joined to spec data and wrote out to '+outfs)
 
-        #if uptileloc:
-        #    print('counting tiles')
-        #    tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
-        #    print('writing tile counts')
-        #    tc.write(outtc,format='fits', overwrite=True)
+        if uptileloc:
+            print('counting tiles')
+            tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel) 
+            print('writing tile counts')
+            tc.write(outtc,format='fits', overwrite=True)
 
 
 if args.get_petalsky == 'y':
