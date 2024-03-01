@@ -370,8 +370,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     
     if prog == 'dark':
         if args.tracer == 'all':
-            tps = ['LRG','ELG','QSO','ELG_LOP','ELG_LOP']
-            notqsos = ['','','','','notqso']
+            tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+            notqsos = ['','','notqso','','']
         else:
             tps = [args.tracer]
             notqsos = [args.notqso]    
