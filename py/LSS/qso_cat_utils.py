@@ -2,8 +2,8 @@
 # coding: utf-8
 
 """
-author:  edmond chaussidon (CEA saclay)
-contact: edmond.chaussidon@cea.fr
+author:  edmond chaussidon (CEA Saclay --> LBL)
+contact: echaussidon@lbl.gov
 
 Remarks:
     * 1) log:
@@ -231,6 +231,11 @@ def is_target_in_survey(QSO_cat, DESI_TARGET, target_name):
     from desitarget.sv1.sv1_targetmask import desi_mask as sv1_mask
     from desitarget.cmx.cmx_targetmask import cmx_mask
 
+    from desitarget.targetmask import scnd_mask
+    from desitarget.sv3.sv3_targetmask import scnd_mask as sv3_scnd_mask
+    from desitarget.sv2.sv2_targetmask import scnd_mask as sv2_scnd_mask
+    from desitarget.sv1.sv1_targetmask import scnd_mask as sv1_scnd_mask
+
     mask_bit = None
 
     if target_name == 'BGS':
@@ -266,8 +271,24 @@ def is_target_in_survey(QSO_cat, DESI_TARGET, target_name):
             mask_bit = sv1_mask.mask('QSO')
         elif DESI_TARGET == 'CMX_TARGET':
             mask_bit = cmx_mask.mask('SV0_QSO|MINI_SV_QSO')
+    elif target_name == 'WISE_VAR_QSO':
+        if DESI_TARGET == 'DESI_TARGET':
+            DESI_TARGET = 'SCND_TARGET'
+            mask_bit = scnd_mask.mask('WISE_VAR_QSO')
+        elif DESI_TARGET == 'SV3_DESI_TARGET':
+            mask_bit = sv3_scnd_mask.mask('WISE_VAR_QSO')
+        elif DESI_TARGET == 'SV2_DESI_TARGET':
+            DESI_TARGET = 'SV2_SCND_TARGET'
+            mask_bit = sv2_scnd_mask.mask('WISE_VAR_QSO')
+        elif DESI_TARGET == 'SV1_DESI_TARGET':
+            DESI_TARGET = 'SV1_SCND_TARGET'
+            mask_bit = sv1_scnd_mask.mask('WISE_VAR_QSO')
+        else:
+            # to avoid error, return one of the column, SV2_SCND_TARGET should be full of 0.
+            DESI_TARGET = 'SV2_SCND_TARGET'
+            mask_bit = sv2_scnd_mask.mask('WISE_VAR_QSO')
     else:
-        print("not ready for other targets tahan BGS / ELG")
+        print("not ready for other targets than BGS / ELG / QSO / WISE_VAR_QSO")
         sys.exit(1)
 
     return QSO_cat[DESI_TARGET].values & mask_bit != 0
@@ -347,7 +368,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     is_BGS = is_target_in_survey(QSO_cat, DESI_TARGET, 'BGS')
     is_ELG = is_target_in_survey(QSO_cat, DESI_TARGET, 'ELG')
     is_QSO = is_target_in_survey(QSO_cat, DESI_TARGET, 'QSO')
-
+    is_WAR_WISE_QSO = is_target_in_survey(QSO_cat, DESI_TARGET, 'WISE_VAR_QSO')
+    
     is_OK_for_BGS = (QSO_cat['SPECTYPE'] == 'QSO') & (QSO_cat['IS_QSO_QN_06'] | QSO_cat['IS_QSO_MGII'])
     QSO_cat.loc[is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'QSO_MASKBITS'] += 2**5
     # do not forget to update redshift for QN object !
@@ -374,6 +396,12 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'QSO_MASKBITS'] += 2**4
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+
+    # selection for WISE_VAR_QSO targets (secondary target) --> same as QSO
+    is_WAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_095']
+    QSO_cat.loc[is_WAR_WISE_QSO & is_WAR_WISE_QSO, 'QSO_MASKBITS'] += 2**7 
+    QSO_cat.loc[is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    QSO_cat.loc[is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # Add quality cuts: no cut on zwarn, cut on fiberstatus
     QSO_cat.loc[~((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 8388608) | (QSO_cat['COADD_FIBERSTATUS'] == 16777216)), 'QSO_MASKBITS'] = 0
@@ -563,10 +591,10 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_pixel, arguments), ignore_index=True)
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
 
-    if not keep_all:
-        # to save computational time
-        log.info('Compute the TS probas...')
-        compute_RF_TS_proba(QSO_cat)
+    # if not keep_all:
+    #     # to save computational time
+    #     log.info('Compute the TS probas...')
+    #     compute_RF_TS_proba(QSO_cat)
 
     if keep_qso_targets:
         log.info('Keep only qso targets...')
