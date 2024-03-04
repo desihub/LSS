@@ -32,7 +32,7 @@ def fit_cons(dl,el,minv=0,step=0.01):
     
     return oldcost,c
 
-def get_tsnr2z(tracer='ELG',night=20230128,expid=165078,tsnrdir='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/TSNR2z/'):
+def get_tsnr2z(tracer='ELG',night=20230128,expid=165078,tsnrdir='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/TSNR2z/',dz=0.001):
     '''
     get the relative template signal to noise ^2 for a given tracer type, night, and expid
     Copied from script from Julien Guy
@@ -119,7 +119,7 @@ def get_tsnr2z(tracer='ELG',night=20230128,expid=165078,tsnrdir='/global/cfs/cdi
         dflux = tflux-smooth_flux
 
         # compute tsnr2 on a redshift range
-        redshift=np.linspace(0,1.7,int(1.700001/0.001)+1)
+        redshift=np.linspace(0,1.7,int(1.700001/dz)+1)
         tsnr2=np.zeros(redshift.shape)
         for i,z in enumerate(redshift):
             tmp=np.interp(wave,twave*(1+z)/(1+zref),dflux)
