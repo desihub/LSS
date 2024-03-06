@@ -79,7 +79,7 @@ parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n
 parser.add_argument("--maskz", help="apply sky line mask to redshifts?",default='n')
 parser.add_argument("--faver", help="version of fiberassign code to use for random; versions for main should be 5.0.0 or greater",default='5.0.0')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18) 
+parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=4) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
