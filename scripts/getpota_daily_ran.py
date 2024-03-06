@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--getcoll", choices=['n','y'],default='y')
 parser.add_argument("--minr",default=0,type=int)
-parser.add_argument("--maxr",default=18,type=int)
+parser.add_argument("--maxr",default=4,type=int)
 
 args = parser.parse_args()
 
