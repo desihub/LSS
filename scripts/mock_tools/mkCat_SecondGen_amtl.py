@@ -482,6 +482,15 @@ if args.mkclusran == 'y':
 
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
+        fl = os.path.join(dirout, finaltracer) + '_'
+        cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
+        if 'G_R_OBS' in cols_clustering:
+            rcols.append('G_R_OBS')
+        if 'G_R_REST' in cols_clustering:
+            rcols.append('G_R_REST')
+        if 'R_MAG_ABS' in cols_clustering:
+            rcols.append('R_MAG_ABS')
+
         tsnrcol = 'TSNR2_BGS'
         if args.ccut is not None:
             for rn in range(rannum[0], rannum[1]):
@@ -495,6 +504,7 @@ if args.mkclusran == 'y':
     global _parfun4
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
+#        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0

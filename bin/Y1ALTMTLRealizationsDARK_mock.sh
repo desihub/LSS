@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -218,7 +218,7 @@ secondary=''
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
@@ -250,30 +250,30 @@ thisFileName=$outputMTLFinalDestination/$0
 
 echo $thisFileName
 
-#if [ -f "$thisFileName" ]
-#then
-#    echo "File is found. Checking to see it is identical to the original."
-#    cmp  $0 $thisFileName
-#    comp=$?
-#    if  [[ $comp -eq 1 ]]
-#    then 
-#        echo "Files are not identical."
-#        echo "If this is intended, please delete or edit the original copied script at $thisFileName"
-#        echo "If this is unintended, you can reuse the original copied script at that same location"
-#        echo "goodbye"
-#        exit 3141
-#    elif [[ $comp -eq 0 ]] 
-#    then
-#        echo "files are same, continuing"
-#    else 
-#        echo "Something has gone very wrong. Exit code for cmp was $a"
-#        exit $a
-#    fi
-#else
-#   echo "Copied script is not found. Copying now, making directories as needed."
-#   mkdir -p $outputMTLFinalDestination
-#   cp $SLURM_SUBMIT_DIR $0 $outputMTLFinalDestination/$0
-#fi
+if [ -f "$thisFileName" ]
+then
+    echo "File is found. Checking to see it is identical to the original."
+    cmp  $0 $thisFileName
+    comp=$?
+    if  [[ $comp -eq 1 ]]
+    then 
+        echo "Files are not identical."
+        echo "If this is intended, please delete or edit the original copied script at $thisFileName"
+        echo "If this is unintended, you can reuse the original copied script at that same location"
+        echo "goodbye"
+        exit 3141
+    elif [[ $comp -eq 0 ]] 
+    then
+        echo "files are same, continuing"
+    else 
+        echo "Something has gone very wrong. Exit code for cmp was $a"
+        exit $a
+    fi
+else
+   echo "Copied script is not found. Copying now, making directories as needed."
+   mkdir -p $outputMTLFinalDestination
+   cp $SLURM_SUBMIT_DIR $0 $outputMTLFinalDestination/$0
+fi
 
 if [ -d "$outputMTLFinalDestination" ]
 then

@@ -42,7 +42,7 @@ mock='--mock'
 
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/
 #ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/ 
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
@@ -125,7 +125,7 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $s
 
 #List of healpixels to create Alt MTLs for
 #hpListFile="$path2LSS/MainSurveyHPList_mock.txt"
-hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl0/initled/hpxlist_dark.txt"
+hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/altmtl0/initled/hpxlist_dark.txt"
 #hpListFile="/pscratch/sd/a/acarnero/test_main/altmtl10/initled/hpxlist_dark.txt"
 #hpListFile="$path2LSS/DebugMainHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
@@ -158,7 +158,7 @@ PromoteFracELG=0.0
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #exampleLedgerBase=$SCRATCH/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #Options for DateLoopAltMTL and runAltMTLParallel
-exampleLedgerBase=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl0/initled/
+exampleLedgerBase=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/altmtl0/initled/
 #exampleLedgerBase=/pscratch/sd/a/acarnero/test_main/altmtl10/initled/
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
@@ -209,7 +209,7 @@ secondary=''
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA10.fits"
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA0.fits"
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/forFA0.fits"
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 

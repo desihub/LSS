@@ -6,7 +6,7 @@ program = 'dark'
 #program = 'bright'
 
 rmin = 0
-rmax = 1
+rmax = 25
 
 path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl{MOCKNUM}/Univ000' 
 #path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummitBGS_v2/altmtl{MOCKNUM}/Univ000' 

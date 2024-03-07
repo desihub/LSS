@@ -1,5 +1,5 @@
-from desiutil.iers import freeze_iers
-freeze_iers()
+#from desiutil.iers import freeze_iers
+#freeze_iers()
 
 import collections.abc
 from time import time
@@ -13,14 +13,14 @@ from memory_profiler import profile
 
 
 #TEMP
-MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
-MODULE_NAME = 'desitarget'
-import importlib
-import sys
-spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
-module = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = module
-spec.loader.exec_module(module)
+#MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
+#MODULE_NAME = 'desitarget'
+#import importlib
+#import sys
+#spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+#module = importlib.util.module_from_spec(spec)
+#sys.modules[spec.name] = module
+#spec.loader.exec_module(module)
 #
 
 import desitarget
@@ -1240,6 +1240,10 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         # ADM ZTILEID, and other columns addes for the Main Survey. These
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
+        print('AURE')
+        print('zcat columns', zcat.columns)
+        print('altZCat columns', altZCat.columns)
+
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
         if zcat.dtype.descr != zcatdm.dtype.descr:
             msg = "zcat data model must be {} not {}!".format(
@@ -1265,7 +1269,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             print('altZCat')
             print(altZCat)
             print('*************************')
-
+            print('version of astropy at this moment', astropy.__version__)
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                       numobs_from_ledger=numobs_from_ledger)#, targets = targets)
             print('AURE')

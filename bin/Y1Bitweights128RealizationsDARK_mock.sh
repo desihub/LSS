@@ -3,7 +3,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName=altmtl1_R128
+simName=altmtl10_R64
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
@@ -43,7 +43,7 @@ mock='--mock'
 
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -82,7 +82,7 @@ fi
 seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
-ndir=128
+ndir=64
 
 #Uncomment second option if you want to clobber already existing files for Alt MTL generation
 overwrite=''
@@ -128,7 +128,7 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $s
 #hpListFile="$path2LSS/MainSurveyHPList.txt"
 #hpListFile="$path2LSS/DebugMainHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
-hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1/initled/hpxlist_dark.txt"
+hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl10/initled/hpxlist_dark.txt"
 
 #These two options only are considered if the obscon is BRIGHT
 #First option indicates whether to shuffle the top level priorities
@@ -153,7 +153,7 @@ PromoteFracELG=0.0
 # You can only access that directory from compute nodes. 
 # Do NOT use the commented out directory (the normal mount of CFS)
 # unless the read only mount is broken
-exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1/initled/
+exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl10/initled/
 #exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
@@ -209,7 +209,7 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA1.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA10.fits"
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
 numobs_from_ledger=''

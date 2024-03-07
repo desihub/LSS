@@ -46,7 +46,7 @@ fi
 if [ $QVal = 'regular' ]; 
 then
 	echo "srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:22017975 $path2LSS/runAltMTLRealizations.py $argstring"
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:22017975 $path2LSS/runAltMTLRealizations.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:22562205 $path2LSS/runAltMTLRealizations.py $argstring
     #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
 fi
 

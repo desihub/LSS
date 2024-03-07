@@ -1,5 +1,5 @@
-SeconGenVer=AbacusSummit_v4 #AbacusSummitBGS_v2
-for j in {0..24}
+SeconGenVer=AbacusSummit_v4_1 #AbacusSummitBGS_v2
+for j in {1..24}
 do
 #j=0
 echo $j
