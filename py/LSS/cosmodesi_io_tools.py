@@ -301,10 +301,14 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                     cat_fns = [cat_fns]
                 if name=='data':
                     def _get_tab(cat_fn):
+                        tab = Table.read(cat_fn)
                         if 'bitwise' in weight_type:
-                            tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
-                        else:
-                            tab = Table.read(cat_fn)
+                            if 'BITWEIGHTS' in list(tab.dtype.names):
+                                pass
+                            else:   
+                                tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
+                        #else:
+                            
                         return tab
                     positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
                 else:
