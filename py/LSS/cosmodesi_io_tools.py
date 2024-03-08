@@ -248,7 +248,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
-        if 'bitwise' in weight_type:
+        if 'bitwise' in weight_type and 'default' in weight_type:
             weights /= catalog['FRAC_TLOBS_TILES'][mask]
             print('dividing weights by FRAC_TLOBS_TILES')
 #         if 'RF' in weight_type:
