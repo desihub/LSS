@@ -241,8 +241,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         print('multiplying weights by WEIGHT_focal')
         
     if name == 'data' and 'bitwise' in weight_type:
-        weights /= catalog['WEIGHT_COMP'][mask]
-        print('dividing weights by WEIGHT_COMP')
+        if 'default' in weight_type:
+            weights /= catalog['WEIGHT_COMP'][mask]
+            print('dividing weights by WEIGHT_COMP')
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
 
     if name == 'randoms':
