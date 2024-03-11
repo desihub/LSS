@@ -47,7 +47,7 @@ for tp in tps:
             print(name+' not in HPmapcut file')
             rem_cols.append(name)
     if len(rem_cols) > 0:
-        df_cutdisk.remove_columns(rem_cols)
+        df.remove_columns(rem_cols)
     for name in df_cutdisk_cols:
         if name not in df_cols:
             df[name] = np.ones(len(df))
