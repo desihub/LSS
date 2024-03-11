@@ -552,7 +552,7 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
 
-if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1':
+if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1' args.clusd == 'y':
     ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
