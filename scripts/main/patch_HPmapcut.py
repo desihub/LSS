@@ -49,8 +49,8 @@ for tp in tps:
             df[name] = np.ones(len(df))
             print(name+' added to not file as 1')
         
-    mapn = fitsio.read(lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-    maps = fitsio.read(lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+    mapn = fitsio.read(lssmapdirout+tp.replace('-21.5','')+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout+tp.replace('-21.5','')+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
     mapcuts = mainp.mapcuts
     df_cut = common.apply_map_veto_arrays(df,mapn,maps,mapcuts)
     sel_idmatch = np.isin(df_cut['TARGETID'],df_cutdisk['TARGETID'])
