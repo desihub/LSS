@@ -40,7 +40,7 @@ for tp in tps:
         df_cutdisk.remove_columns(['BITWEIGHTS','PROB_OBS'])
     if 'BITWEIGHTS_1' in df_cutdisk_cols:
         df_cutdisk.remove_columns(['BITWEIGHTS_1','PROB_OBS_1','BITWEIGHTS_2','PROB_OBS_2'])
-    
+    df_cutdisk_cols = list(df_cutdisk.dtype.names)
     df = Table(fitsio.read(indir+tp+'_full.dat.fits'))
     df_cols = list(df.dtype.names)
     rem_cols = []
