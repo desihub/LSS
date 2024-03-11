@@ -60,6 +60,7 @@ for tp in tps:
     sel_idmatch = np.isin(df_cut['TARGETID'],df_cutdisk['TARGETID'])
     df_cutnomatch = df_cut[~sel_idmatch]
     #df_comb = np.concatenate((df_cutdisk,df_cutnomatch))
+    print(df_cutdisk.dtype.names,df_cutnomatch.dtype.names)
     df_comb = vstack((df_cutdisk,df_cutnomatch))
     print(tp,len(df_comb),len(np.unique(df_comb['TARGETID']))) 
     if tp[:3] != 'BGS':
