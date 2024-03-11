@@ -41,9 +41,13 @@ for tp in tps:
     
     df = Table(fitsio.read(indir+tp+'_full.dat.fits'))
     df_cols = list(df.dtype.names)
+    rem_cols = []
     for name in df_cols:
         if name not in df_cutdisk_cols:
             print(name+' not in HPmapcut file')
+            rem_cols.append(name)
+    if len(rem_cols) > 0:
+        df_cutdisk.remove_columns(rem_cols)
     for name in df_cutdisk_cols:
         if name not in df_cols:
             df[name] = np.ones(len(df))
