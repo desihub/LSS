@@ -152,7 +152,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1]) & (catalog['ABSMAG_R'] >= maglim[0]) & (catalog['ABSMAG_R'] < maglim[1])
-    mask &= (catalog['FRAC_TLOBS_TILES'] != 0)
+    if 'bitwise' in weight_type and 'default' in weight_type:
+        mask &= (catalog['FRAC_TLOBS_TILES'] != 0)
     if option:
         if 'noNorth' in option:
             decmask = catalog['DEC'] < 32.375
