@@ -103,8 +103,19 @@ def select_region(ra, dec, region):
     elif region == 'DS':
         mask = dec > -25
         mask &= ~mask_ra
-    else:
-        raise ValueError('Input region must be one of ["DN", "DS"].')
+    elif 'GC' in region:
+        from astropy.coordinates import SkyCoord
+        import astropy.units as u
+        c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        gc = c.transform_to('galactic')
+        sel_ngc = gc.b > 0
+        if region == 'NGC':
+            mask = sel_ngc
+        if region == 'SGC':
+            mask = ~sel_ngc
+        
+    #else:
+    #    raise ValueError('Input region must be one of ["DN", "DS"].')
     return mask
 
 
@@ -362,11 +373,11 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
     from pycorr.twopoint_counter import get_inverse_probability_weight
     if weight_attrs is None: weight_attrs = {}
     mask = np.ones(len(catalog), dtype='?')
-    if region in ['DS', 'DN']:
-        mask &= select_region(catalog['RA'], catalog['DEC'], region)
-    elif region:
-        #mask &= catalog['PHOTSYS'] == region.strip('_')
-        mask &= catalog['PHOTSYS'] == region.strip('GC')
+    #if region in ['DS', 'DN']:
+    mask &= select_region(catalog['RA'], catalog['DEC'], region)
+    #elif region:
+    #    #mask &= catalog['PHOTSYS'] == region.strip('_')
+    #    mask &= catalog['PHOTSYS'] == region.strip('GC')
         
 
     if fibered: mask &= catalog['LOCATION_ASSIGNED']
