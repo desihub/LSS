@@ -30,4 +30,4 @@ HPList = np.array(open(hpL_file, 'r').readlines()[0].split(',')).astype(int)
 BW_dir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/BitweightFiles/'
 
 
-concatenateBWFiles(BW_dir, HPList, skipFailures=True, overwrite=True)
+concatenateBWFiles(BW_dir, HPList, skipFailures=False, overwrite=True)
