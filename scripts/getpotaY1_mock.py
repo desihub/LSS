@@ -17,8 +17,8 @@ from desitarget.io import read_targets_in_tiles
 import desimodel.focalplane
 import desimodel.footprint
 trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-
-
+import time 
+import multiprocessing
 import fitsio
 
 import LSS.common_tools as common
@@ -27,16 +27,33 @@ from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
 
+t_start = time.time()
+
+log = Logger.get()
+
 parser = argparse.ArgumentParser()
+
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--mock", default='ab2ndgen')
+parser.add_argument("--mock_version",default='')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/')
 parser.add_argument("--tracer", help="tracer for CutSky mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for mocks", default = None)
 parser.add_argument("--counttiles", default = 'n')
+parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
+                    default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
+parser.add_argument("--secgen_ver", default = None)
+parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
+                    default=multiprocessing.cpu_count()//2, type=int)
 
+# On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
+#   If you didn't want this for some reason, you could revert '/dvs_ro/cfs/cdirs/desi' to '/global/cfs/cdirs/desi' in the following.
+desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
+
+args = parser.parse_args()
+print(args)
 args = parser.parse_args()
 
 if not os.path.exists(os.environ['SCRATCH']+'/rantiles/'):
