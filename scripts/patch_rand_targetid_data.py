@@ -34,7 +34,7 @@ for tracer in tracers:
         data_cat_fn = indir +tracer+'_'+reg+'_clustering.dat.fits'
         data = Table.read(data_cat_fn,memmap=True)
         data.rename_column('TARGETID', 'TARGETID_DATA')
-        data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA,WEIGHT_SYS'])
+        data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA','WEIGHT_SYS'])
         datal.append(data)
     data = vstack(datal)
     for reg in regl:
