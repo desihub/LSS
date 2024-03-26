@@ -122,7 +122,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         data.rename_column('TARGETID', 'TARGETID_DATA')
     def _resamp(selregr,selregd):
         for col in sample_columns:
-            randoms[col] =  np.zeros(len(randoms))
+            randoms[col] =  np.zeros_like(data[col],shape=len(randoms))
         rand_sel = [selregr,~selregr]
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):

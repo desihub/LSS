@@ -3791,7 +3791,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     #def _resamp(selregr,selregd,ffr,fcdn):
     def _resamp(rand_sel,dat_sel,ffr,fcdn):
         for col in rcols:
-            ffr[col] =  np.zeros(len(ffr))
+            ffr[col] =  np.zeros_like(fcdn[col],shape=len(ffr))
         #rand_sel = [selregr,~selregr]
         #dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
@@ -3973,7 +3973,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     len_o = len(ffr)
     def _resamp(selregr,selregd,ffr,fcdn):
         for col in rcols:
-            ffr[col] =  np.zeros(len(ffr))
+            ffr[col] =  np.zeros_like(fcdn[col],shape=len(ffr))
         rand_sel = [selregr,~selregr]
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
