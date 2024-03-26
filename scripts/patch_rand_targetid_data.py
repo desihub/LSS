@@ -49,10 +49,15 @@ for tracer in tracers:
             len_mask = len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])
             if len_mask == 0 and len(ran) == len(join_cat):
                 common.write_LSS(join_cat,ran_cat_fn)
-            print(tracer,reg,str(rann))
-            print(f"number of null TARGETID_DATA in joined catalog = {len_mask}")
-            print(f"length of original random catalog = {len(ran)}")
-            print(f"length of new joined catalog  ... = {len(join_cat)}")
+                
+                print(tracer,reg,str(rann))
+                print('SUCCESS')
+            else:
+                print(tracer,reg,str(rann))
+                print('FAILURE!')
+                print(f"number of null TARGETID_DATA in joined catalog = {len_mask}")
+                print(f"length of original random catalog = {len(ran)}")
+                print(f"length of new joined catalog  ... = {len(join_cat)}")
 
 
 
