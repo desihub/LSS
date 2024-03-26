@@ -8,7 +8,7 @@ from numpy import ma
 import glob
 
 
-
+parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for catalogs",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
