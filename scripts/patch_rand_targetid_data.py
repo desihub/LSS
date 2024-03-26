@@ -48,7 +48,7 @@ for tracer in tracers:
 
             len_mask = len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])
             if len_mask == 0 and len(ran) == len(join_cat):
-                common.write_LSS(join_cat,ran_cat_fn)
+                common.write_LSS(join_cat,ran_cat_fn.replace('dvs_ro','global'))
                 
                 print(tracer,reg,str(rann))
                 print('SUCCESS')
