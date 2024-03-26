@@ -35,7 +35,7 @@ for tracer in tracers:
         data.rename_column('TARGETID', 'TARGETID_DATA')
         data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA'])
         for rann in range(0,args.nran):
-            ran_cat_fn = indir +tracer+'_'+reg+'_'+str(rann)+'_clustering.dat.fits'
+            ran_cat_fn = indir +tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.fits'
             ran = Table(fitsio.read(ran_cat_fn))
             # remove current random TARGETID_DATA
             ran.remove_column('TARGETID_DATA')
