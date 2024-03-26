@@ -6,6 +6,7 @@ import argparse
 import numpy as np
 from numpy import ma
 import glob
+import fitsio
 
 
 parser = argparse.ArgumentParser()
