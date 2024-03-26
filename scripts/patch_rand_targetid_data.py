@@ -24,7 +24,7 @@ args = parser.parse_args()
 indir = args.basedir+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'+args.blinded+'/'
 regl = ['NGC','SGC']
 tracers = ['LRG','ELG_LOPnotqso','QSO','BGS_BRIGHT-21.5']
-if args.tracers != 'all'
+if args.tracers != 'all':
     tracers = [args.tracers]
 for tracer in tracers:
     # load catalogs
@@ -36,15 +36,15 @@ for tracer in tracers:
         for rann in range(0,args.nran):
             ran_cat_fn = indir tracer+'_'+reg+'_'+str(rann)+'_clustering.dat.fits'
             ran = Table(fitsio.read(ran_cat_fn))
-			# remove current random TARGETID_DATA
-			ran.remove_column('TARGETID_DATA')
-			# join catalogs
-			join_cat = join(ran, data, keys = ['Z','WEIGHT_COMP'], join_type ='left')
+            # remove current random TARGETID_DATA
+            ran.remove_column('TARGETID_DATA')
+            # join catalogs
+            join_cat = join(ran, data, keys = ['Z','WEIGHT_COMP'], join_type ='left')
 
-			print(tracer,reg,str(rann))
-			print(f"number of null TARGETID_DATA in joined catalog = {len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])}")
-			print(f"length of original random catalog = {len(rand_cat)}")
-			print(f"length of new joined catalog  ... = {len(join_cat)}")
+            print(tracer,reg,str(rann))
+            print(f"number of null TARGETID_DATA in joined catalog = {len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])}")
+            print(f"length of original random catalog = {len(rand_cat)}")
+            print(f"length of new joined catalog  ... = {len(join_cat)}")
 
 
 
