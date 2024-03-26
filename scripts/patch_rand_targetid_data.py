@@ -31,12 +31,12 @@ for tracer in tracers:
     # load catalogs
     for reg in regl:
         data_cat_fn = indir +tracer+'_'+reg+'_clustering.dat.fits'
-        data = Table(fitsio.read(data_cat_fn))
+        data = Table.read(data_cat_fn,memmap=True)
         data.rename_column('TARGETID', 'TARGETID_DATA')
         data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA'])
         for rann in range(0,args.nran):
             ran_cat_fn = indir +tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.fits'
-            ran = Table(fitsio.read(ran_cat_fn))
+            ran = Table.read(ran_cat_fn,memmap=True)
             # remove current random TARGETID_DATA
             ran.remove_column('TARGETID_DATA')
             # join catalogs
