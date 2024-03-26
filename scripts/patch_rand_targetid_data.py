@@ -34,7 +34,7 @@ for tracer in tracers:
         data_cat_fn = indir +tracer+'_'+reg+'_clustering.dat.fits'
         data = Table.read(data_cat_fn,memmap=True)
         data.rename_column('TARGETID', 'TARGETID_DATA')
-        data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA'])
+        data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA,WEIGHT_SYS'])
         datal.append(data)
     data = vstack(datal)
     for reg in regl:
@@ -44,7 +44,7 @@ for tracer in tracers:
             # remove current random TARGETID_DATA
             ran.remove_column('TARGETID_DATA')
             # join catalogs
-            join_cat = join(ran, data, keys = ['Z','WEIGHT_COMP'], join_type ='left')
+            join_cat = join(ran, data, keys = ['Z','WEIGHT_COMP','WEIGHT_SYS'], join_type ='left')
 
             print(tracer,reg,str(rann))
             print(f"number of null TARGETID_DATA in joined catalog = {len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])}")
