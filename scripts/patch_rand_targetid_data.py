@@ -32,7 +32,7 @@ for tracer in tracers:
     for reg in regl:
         data_cat_fn = indir +tracer+'_'+reg+'_clustering.dat.fits'
         data = Table(fitsio.read(data_cat_fn))
-        data_cat.rename_column('TARGETID', 'TARGETID_DATA')
+        data.rename_column('TARGETID', 'TARGETID_DATA')
         data.keep_columns(['Z','WEIGHT_COMP','TARGETID_DATA'])
         for rann in range(0,args.nran):
             ran_cat_fn = indir +tracer+'_'+reg+'_'+str(rann)+'_clustering.dat.fits'
