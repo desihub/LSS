@@ -46,8 +46,11 @@ for tracer in tracers:
             # join catalogs
             join_cat = join(ran, data, keys = ['Z','WEIGHT_COMP','WEIGHT_SYS'], join_type ='left')
 
+            len_mask = len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])
+            if len_mask == 0 and len(ran) == len(join_cat):
+                common.write_LSS(join_cat,ran_cat_fn)
             print(tracer,reg,str(rann))
-            print(f"number of null TARGETID_DATA in joined catalog = {len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])}")
+            print(f"number of null TARGETID_DATA in joined catalog = {len_mask}")
             print(f"length of original random catalog = {len(ran)}")
             print(f"length of new joined catalog  ... = {len(join_cat)}")
 
