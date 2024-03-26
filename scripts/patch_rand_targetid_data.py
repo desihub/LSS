@@ -44,7 +44,7 @@ for tracer in tracers:
 
             print(tracer,reg,str(rann))
             print(f"number of null TARGETID_DATA in joined catalog = {len(join_cat[join_cat['TARGETID_DATA'] == ma.masked])}")
-            print(f"length of original random catalog = {len(rand_cat)}")
+            print(f"length of original random catalog = {len(ran)}")
             print(f"length of new joined catalog  ... = {len(join_cat)}")
 
 
