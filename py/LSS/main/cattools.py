@@ -1242,8 +1242,8 @@ def count_tiles_input(fjg):
     return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
     '''
     fjg.keep_columns(['TARGETID','TILEID','TILELOCID'])
-    fjg = np.arrau(fjg)
-    print(fjg.dtype.names)
+    fjg = np.array(fjg)
+    #print(fjg.dtype.names)
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
     tids = np.unique(fjg['TARGETID'])
