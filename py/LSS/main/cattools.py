@@ -1241,7 +1241,8 @@ def count_tiles_input(fjg):
     take input array with require columns TARGETID TILEID TILELOCID
     return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
     '''
-
+    fjg.keep_columns(['TARGETID','TILEID','TILELOCID'])
+    fjg = np.arrau(fjg)
     print(fjg.dtype.names)
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
@@ -2175,11 +2176,9 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
-    dzasub = np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID']))
-    logger.info(str(dzasub.dtype.names))
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
-        dzpd = count_tiles_input(dzasub)#dz[wg])#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+        dzpd = count_tiles_input(dz[wg])#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = Table.read(ftiles)
 
@@ -2195,7 +2194,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     #    wf = np.isin(dz['TILELOCID'],tlid_full)
     #    dz['LOCFULL'][wf] = 1
 
-
+    logger.info(str(dz.dtype.names))
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
