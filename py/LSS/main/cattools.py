@@ -2207,7 +2207,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     #sel = dz[tscol] > min_tsnr2
     #dz['GOODTSNR'][sel] = 1
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*1+dz['GOODPRI']*dz['GOODHARDLOC']*1
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
     logger.info(dz.dtype.names)
     logger.info(str(rann)+' about to do sort')
