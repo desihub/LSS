@@ -2188,16 +2188,16 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
     sel = dz['PRIORITY'] <= maxp
     dz['GOODPRI'][sel] = 1
-    t0 = dz[tscol]*0 != 0
-    t0 |= dz[tscol] == 999999
-    t0 |= dz[tscol] == 1.e20
-    dz[tscol][t0] = 0
+    #t0 = dz[tscol]*0 != 0
+    #t0 |= dz[tscol] == 999999
+    #t0 |= dz[tscol] == 1.e20
+    #dz[tscol][t0] = 0
     
-    dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
-    sel = dz[tscol] > min_tsnr2
-    dz['GOODTSNR'][sel] = 1
-    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
-
+    #dz['GOODTSNR'] = np.zeros(len(dz)).astype('bool')
+    #sel = dz[tscol] > min_tsnr2
+    #dz['GOODTSNR'][sel] = 1
+    #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*dz['GOODTSNR']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1#-0.5*dz['LOCFULL']#*(1+dz[tsnr])
+    dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']*1+dz['GOODPRI']*dz['GOODHARDLOC']*dz['GOODTSNR']*1
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
     logger.info(dz.dtype.names)
     logger.info(str(rann)+' about to do sort')
@@ -2781,7 +2781,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
     print(specf)
     fs = fitsio.read(specf)
-    fs = common.cut_specdat(fs,badfib)
+    fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
@@ -2830,10 +2830,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     wnts |= dz[tscol] == 999999
     dz[tscol][wnts] = 0
     print(np.max(dz[tscol]))
-    dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
-    if min_tsnr2 > 0:
-        sel = dz[tscol] > min_tsnr2
-        dz['GOODTSNR'][sel] = 1
+    #dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
+    #if min_tsnr2 > 0:
+    #    sel = dz[tscol] > min_tsnr2
+    #    dz['GOODTSNR'][sel] = 1
     
     if ftiles is None:
         dtl = count_tiles_input(dz[wg])
@@ -2845,10 +2845,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         selnp = dz['LOCATION_ASSIGNED'] == 0
         pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
         pv[selnp] = 0
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#
     else:
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-    
+        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
     #else:
     #    selnp = dz['LOCATION_ASSIGNED'] == 0
     #    pv = dz['PRIORITY']

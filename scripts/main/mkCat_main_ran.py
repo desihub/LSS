@@ -230,7 +230,7 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 

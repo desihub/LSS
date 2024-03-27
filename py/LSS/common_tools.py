@@ -27,7 +27,7 @@ def thphi2radec(theta,phi):
 
 #functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz,badfib=None):
+def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG'):
     from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
@@ -47,6 +47,10 @@ def cut_specdat(dz,badfib=None):
         bad = np.isin(fs['FIBER'],badfib)
         print('number at bad fibers '+str(sum(bad)))
         wfqa &= ~bad
+    if tsnr_min > 0:
+        low_tsnr = dz[tsnr_col] < tsnr_min
+        wfqa &= ~low_tsnr
+        print('number at low tsnr2 '+str(sum(low_tsnr)))
     return fs[wfqa]
 
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
