@@ -2176,7 +2176,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
     dzasub = np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID']))
-    logger.info(str(dzasub.dtype.names)
+    logger.info(str(dzasub.dtype.names))
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
         dzpd = count_tiles_input(dzasub)#dz[wg])#.keep_columns(['TARGETID','TILEID','TILELOCID']))
