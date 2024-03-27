@@ -2177,7 +2177,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODHARDLOC'][wg] = 1
 
     if ftiles is None:
-        dzpd = count_tiles_input(np.array(dz[wg])).keep_columns(['TARGETID','TILEID','TILELOCID'])
+        dzpd = count_tiles_input(np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID'])))
     else:
         dzpd = Table.read(ftiles)
 
