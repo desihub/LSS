@@ -16,7 +16,7 @@ from time import time
 import astropy
 import astropy.io
 import astropy.io.fits as pf
-from astropy.table import Table,join
+from astropy.table import Table,join,vstack
 
 import memory_profiler
 from memory_profiler import profile
@@ -35,6 +35,7 @@ from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 from desiutil.log import get_logger
 
 import fitsio
+import LSS.common_tools as common
 
 import healpy as hp
 
@@ -1570,8 +1571,14 @@ def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey =
     if not jupyter:
         plt.close()
 
+def return_path_fba(zz, path):
+    import glob
+    curr = glob.glob(os.path.join(path,'*','fba-%s.fits' % zz))[0]
+    return curr
+
+
 #@profile
-def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False, verbose = False):
+def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False, verbose = False, gtl = None):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations
 
@@ -1612,7 +1619,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
         Array of probabilities a target gets observed over {ndirs} realizations
         
     """
-    
+   
     TIDs = None
     if splitByReal:
 
@@ -1632,6 +1639,10 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
         realizations = np.arange(ndirs, dtype=np.int32)
         my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
         MyObsFlagList = np.empty((my_realizations.shape[0], ntar), dtype = bool)
+
+
+
+
         #MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
         for i, r in enumerate(my_realizations):
             mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
@@ -1640,7 +1651,6 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
                 TIDs = MTL['TARGETID']
             else:
                 assert(np.array_equal(TIDs, MTL['TARGETID']))
-
             MyObsFlagList[i][:] = MTL['NUMOBS'] > 0.5
         
         ObsFlagList = None
@@ -1675,16 +1685,52 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
         for i in range(ndirs):
             mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
             MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+
+            if gtl is not None:
+                ztile = MTL['ZTILEID']
+                unique_tiles = np.unique(ztile)
+                unique_tiles = unique_tiles[unique_tiles != -1]
+                
+                if len(unique_tiles) == 0:
+                    new_column_data = np.full(len(MTL), -1, dtype=int)
+                    new_MTL = np.empty(MTL.shape, dtype = MTL.dtype.descr + [('TILELOCID', int)])
+                    for field in MTL.dtype.names:
+                        new_MTL[field] = MTL[field]  # Copy existing columns
+                        new_MTL['TILELOCID'] = new_column_data  # Add the new column filled with -1
+                    MTL = new_MTL
+
+                else:
+                    cat = Table()
+                    for zz in unique_tiles:
+                        fba_file = return_path_fba(str(zz).zfill(6), os.path.join(mtlBaseDir.format(i), 'fa', 'MAIN'))
+                        with fitsio.FITS(fba_file.replace('global', 'dvs_ro')) as hdulist:
+                            ff_temp = hdulist['FASSIGN'].read()
+                        ff_temp = Table(ff_temp)
+    #                    print(ff_temp.columns)
+                        ff_temp['TILELOCID'] = 10000*zz +ff_temp['LOCATION']
+                        ff_temp['ZTILEID'] = [zz]*len(ff_temp)
+                        cat = vstack([cat, ff_temp])
+                    MTL = join(MTL, cat, join_type='left', keys=['TARGETID', 'ZTILEID'])
+                    del cat
+                
             if TIDs is None:
                 TIDs = MTL['TARGETID']
             else:
                 assert(np.array_equal(TIDs, MTL['TARGETID']))
             try:
-                ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
+                if gtl is not None:
+                    print('Create ObsFlagList')
+                    ObsFlagList = np.column_stack((ObsFlagList, (MTL['NUMOBS'] > 0.5)&(np.isin(MTL['TILELOCID'], gtl))))
+                else:
+                    ObsFlagList = np.column_stack((ObsFlagList, (MTL['NUMOBS'] > 0.5)))
+
             except:
                 log.info('hplist[0] = {0:d}'.format(hplist[0]))
                 log.info('This message should only appear once for the first realization.')
-                ObsFlagList = MTL['NUMOBS'] > 0.5
+                if gtl is not None:
+                    ObsFlagList = (MTL['NUMOBS'] > 0.5)&(np.isin(MTL['TILELOCID'], gtl))
+                else:
+                    ObsFlagList = (MTL['NUMOBS'] > 0.5)
         if debug or verbose:
             log.info(ObsFlagList.shape)
         ObsArr = np.sum(ObsFlagList, axis = 1)
@@ -1706,7 +1752,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
 
 
 
-def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None, verbose = False):
+def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None, verbose = False, gtl=None):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations.
     Then writes them to (a) file(s)
@@ -1772,7 +1818,10 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
             if not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
                 os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
     elif not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
-        os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
+        try:
+            os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
+        except:
+            log.info('makedir exist already for %s/BitweightFiles/%s/%s' %(outdir, survey, obscon))
     if type(hplist) == int:
         hplist = [hplist]
     if allFiles:
@@ -1803,9 +1852,9 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
                 log.info('split {0}'.format(i))
                 log.info(split)
             if i == 0:
-                TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+                TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
             else:
-                TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+                TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
                 
                 if mpi_rank == 0:
                     if debug or verbose:
@@ -1825,7 +1874,7 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
     else:
         if debug or verbose:
             log.info('makeBitweights2')
-        TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal)
+        TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
     if splitByReal:
         if debug or verbose:
             log.info('----')

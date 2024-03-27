@@ -12,6 +12,10 @@ import multiprocessing as mp
 from multiprocessing import Pool
 import logging
 import atexit
+import fitsio
+import LSS.common_tools as common
+from astropy.table import Table
+
 log = get_logger()
 parser = argparse.ArgumentParser(
                     prog = 'MakeBitweights',
@@ -42,13 +46,36 @@ mtlBaseDir = args.outdir + '/Univ{0:03d}/'
 HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
 print(len(HPList), HPList)
 
+'''path_to_compare = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/BitweightFiles/main/dark'
+HPListtemp = []
+for hp in HPList:
+    if not os.path.isfile(os.path.join(path_to_compare, 'mainbw-dark-hp-%d.fits' % hp)):
+        HPListtemp.append(hp)
+
+HPList = np.array(HPListtemp)
+print(len(HPList), HPList)
+'''
+
+
+
+from LSS.globals import main
+mainp = main('All', 'iron', survey='Y1')
+specf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/datcomb_dark_spec_zdone.fits'
+with fitsio.FITS(specf.replace('global', 'dvs_ro')) as hdulist:
+    fs = hdulist[1].read() #specf.replace('global', 'dvs_ro'))
+fs = common.cut_specdat(fs, mainp.badfib)
+fs = Table(fs)
+fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+gtl = np.unique(fs['TILELOCID'])
+
 def procFunc(nproc):
+#    print(gtl)
 
 #    thisHPList = np.array_split(HPList, args.ProcPerNode)[nproc]
     #print('suma todo ---', len(thisHPList), '---')
 
     for hp in nproc:
-        writeBitweights(mtlBaseDir, ndirs = args.ndir, hplist = [hp], debug = args.debug, verbose = args.verbose, outdir = args.outdir, survey = args.survey, obscon = args.obscon.lower(), allFiles = False, overwrite = args.overwrite)
+        writeBitweights(mtlBaseDir, ndirs = args.ndir, hplist = [hp], debug = args.debug, verbose = args.verbose, outdir = args.outdir, survey = args.survey, obscon = args.obscon.lower(), allFiles = False, overwrite = args.overwrite, gtl=gtl)
 
 try:
     NNodes = int(os.getenv('SLURM_JOB_NUM_NODES'))
@@ -62,7 +89,6 @@ if args.verbose or args.debug:
     log.debug('requested number of nodes: {0:d}'.format(NNodes))
     log.debug('requested number of directories/realizations: {0:d}'.format(args.ndir))
     log.debug('requested number of processes: {0:d}'.format(NProc))
-
 '''inds = []
 start = int(NodeID*NProc/SlurmNProcs)
 end = int((NodeID + 1)*NProc/SlurmNProcs)
@@ -81,11 +107,12 @@ for i in range(start, end):
         log.info(i)
     inds.append(i)
 '''
-
+##NProc = 1
 batches_lims = np.array_split(HPList, NProc)
-
+print(batches_lims)
 #NProc = len(inds)
 #assert(len(inds))
+
 
 log.info('running on NProc = {0} processes'.format(NProc))
 p = Pool(NProc)

@@ -72,6 +72,7 @@ if args.getosubp:
     Path(args.altMTLBaseDir + '/GETOSUBPTRUE').touch()
 
 #Get information about environment for multiprocessing
+##TEMP
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
 try:
@@ -91,7 +92,6 @@ if args.ProcPerNode is None:
 NProc = int(NNodes*args.ProcPerNode)
 log.info('NProc = {0:d}'.format(NProc))
 log.info('NNodes = {0:d}'.format(NNodes))
-
 
 
 
@@ -154,7 +154,8 @@ for i in range(args.mockmin, args.mockmax):
         continue
     inds.append(i)
 
-assert(len(inds))
+###assert(len(inds))
+##p = Pool(1)
 p = Pool(NProc)
 atexit.register(p.close)
 result = p.map(procFunc,inds)
