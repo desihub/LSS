@@ -2144,8 +2144,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz = Table.read(zf)
     logger.info(dz.dtype.names)
 
-    zfpd = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
-    dzpd = Table.read(zfpd)
+
     
     #dz = join(dz,dzpd,keys=['TARGETID'])
     #print('length including duplicates '+str(len(dz)))
@@ -2176,6 +2175,16 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
+
+    if ftiles is None:
+        dzpd = count_tiles_input(np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID']))
+    else:
+        dzpd = Table.read(ftiles)
+
+
+    #zfpd = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'
+    #dzpd = Table.read(zfpd)
+
 
     #dzpd = count_tiles_input(np.array(dz[wg].keep_columns(['TARGETID','TILEID','TILELOCID']))
 
@@ -2821,15 +2830,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
     cols = list(dz.dtype.names)
-    if tscol not in cols:
-        dz[tscol] = np.ones(len(dz))
-        print('added '+tscol+' and set all to 1') 
+    #if tscol not in cols:
+    #    dz[tscol] = np.ones(len(dz))
+    #    print('added '+tscol+' and set all to 1') 
 
 
-    wnts = dz[tscol]*0 != 0
-    wnts |= dz[tscol] == 999999
-    dz[tscol][wnts] = 0
-    print(np.max(dz[tscol]))
+    #wnts = dz[tscol]*0 != 0
+    #wnts |= dz[tscol] == 999999
+    #dz[tscol][wnts] = 0
+    #print(np.max(dz[tscol]))
     #dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
     #if min_tsnr2 > 0:
     #    sel = dz[tscol] > min_tsnr2
