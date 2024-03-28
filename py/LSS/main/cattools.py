@@ -3246,7 +3246,8 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
     if tp == 'LRG':
         selobs &= ff['TSNR2_ELG'] > tsnrcut
         mintsnr=500/12.15
-        maxtsnr =2000/12.15
+        #maxtsnr =2000/12.15
+        maxtsnr =1700/12.15
         band = 'Z'
         
     if tp[:3] == 'BGS':
