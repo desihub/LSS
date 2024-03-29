@@ -237,6 +237,12 @@ if not os.path.exists(ldirspec+'LSScats'):
     print('made '+ldirspec+'LSScats')
 
 dirout = ldirspec+'LSScats/'+version+'/'
+
+if not os.path.exists(dirout):
+    os.mkdir(dirout)
+    print('made '+dirout)
+
+
 logfn = dirout+'log.txt'
 if os.path.isfile(logfn):
     logf = open(logfn,'a')
