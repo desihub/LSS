@@ -75,7 +75,7 @@ gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
 
-def get_good_real(real_num)
+def get_good_real(real_num):
     indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     all_asgn = get_all_asgn(indir)
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
