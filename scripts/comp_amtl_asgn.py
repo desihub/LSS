@@ -61,7 +61,7 @@ wd &= mt['FAPRGRM'] == pdir
 wd &=mt['ZDATE'] < 20220900 #Y1 cutoff
 
 mtld = mt[wd]
-
+ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/'
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
