@@ -63,13 +63,13 @@ wd &=mt['ZDATE'] < 20220900 #Y1 cutoff
 mtld = mt[wd]
 ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/'
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
+#logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-logger.info('loaded specf file '+specfo)
+#logger.info('loaded specf file '+specfo)
 specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
 gtl = np.unique(specfc['TILELOCID'])
 
