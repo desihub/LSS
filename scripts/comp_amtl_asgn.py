@@ -121,7 +121,7 @@ logger.info('about to get '+str(Nreal)+' realizations in parallel')
 #    #pool.map(get_good_real,inds)
 #    pool.map(test,inds)
 
-from multiprocess import Process, Manager
+from multiprocessing import Process, Manager
 manager = Manager()
 d = manager.dict()
 job = [Process(target=test, args=(d, i)) for i in inds]
