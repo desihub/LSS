@@ -98,8 +98,9 @@ gtl = np.unique(specfc['TILELOCID'])
 assign_real_dic = {}
 testl = []
 
-def test(real_num):
-    testl.append((real_num,np.random.random(10)))
+def test(d,real_num):
+    d[real_num] = np.random.random(10)
+    #testl.append((real_num,np.random.random(10)))
 
 def get_good_real(real_num):
     indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
@@ -116,12 +117,19 @@ Nreal = 64
 inds = np.arange(0,Nreal)
 #pool = sharedmem.MapReduce()
 logger.info('about to get '+str(Nreal)+' realizations in parallel')
-with Pool() as pool:
-    #pool.map(get_good_real,inds)
-    pool.map(test,inds)
+#with Pool() as pool:
+#    #pool.map(get_good_real,inds)
+#    pool.map(test,inds)
+
+from multiprocess import Process, Manager
+manager = Manager()
+d = manager.dict()
+job = [Process(target=test, args=(d, i)) for i in inds]
+_ = [p.start() for p in job]
+_ = [p.join() for p in job]
 
 logger.info('got all realizations')
-logger.info(str(len(testl)))
+logger.info('dictionary keys are '+str(d.keys()))
 import sys
 sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
