@@ -141,4 +141,4 @@ for i in range(0,len(alltids)):
     prob = nt/Nreal
     probl[i] = prob
     if i%1e5 == 0:
-        logger.info(str(i))
+        logger.info(str(i)+' '+str(prob))
