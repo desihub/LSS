@@ -134,11 +134,16 @@ import sys
 #sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 probl = np.zeros(len(alltids))
-for i in range(0,len(alltids)):
-    nt = 0
-    for real in inds:
-        nt += assign_real_dic[real][i]
-    prob = nt/Nreal
-    probl[i] = prob
-    if i%1e5 == 0:
-        logger.info(str(i)+' '+str(prob))
+for real in inds:
+    probl += assign_real_dic[real]*1.
+probl = probl/64   
+h = np.histogram(probl)
+print(h) 
+#for i in range(0,len(alltids)):
+#    nt = 0
+#    for real in inds:
+#        nt += assign_real_dic[real][i]
+#    prob = nt/Nreal
+#    probl[i] = prob
+#    if i%1e5 == 0:
+#        logger.info(str(i)+' '+str(prob))
