@@ -31,6 +31,7 @@ logger.addHandler(ch)
 
 alltids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA1.fits',columns=['TARGETID'])
 alltids = np.unique(alltids['TARGETID'])
+logger.info(str(len(alltids))+ ' TARGETID will get their number of assignments tracked')
 
 def removeLeadingZeros(num): 
   
