@@ -96,6 +96,10 @@ specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=
 gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
+testl = []
+
+def test(real_num):
+    testl.append((real_num,np.random.random(10)))
 
 def get_good_real(real_num):
     indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
@@ -113,9 +117,13 @@ inds = np.arange(0,Nreal)
 #pool = sharedmem.MapReduce()
 logger.info('about to get '+str(Nreal)+' realizations in parallel')
 with Pool() as pool:
-    pool.map(get_good_real,inds)
+    #pool.map(get_good_real,inds)
+    pool.map(test)
 
 logger.info('got all realizations')
+logger.info(str(len(testl)))
+import sys
+sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 probl = np.zeros(len(alltids))
 for i in range(0,len(alltids)):
