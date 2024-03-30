@@ -129,7 +129,7 @@ _ = [p.start() for p in job]
 _ = [p.join() for p in job]
 
 logger.info('got all realizations')
-logger.info('dictionary keys are '+str(d.keys()))
+#logger.info('dictionary keys are '+str(d.keys()))
 import sys
 #sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
