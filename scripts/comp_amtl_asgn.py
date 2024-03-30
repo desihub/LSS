@@ -102,7 +102,7 @@ def get_good_real(real_num):
     all_asgn = get_all_asgn(indir)
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
     good_asgn = np.isin(asgn_tloc,gtl)
-    good_tids = all_asgn['TARGETID'][gtl]
+    good_tids = all_asgn['TARGETID'][good_asgn]
     asgn_real = np.isin(alltids,good_tids)
     assign_real_dic[real_num] = asgn_real
     del asgn_real
