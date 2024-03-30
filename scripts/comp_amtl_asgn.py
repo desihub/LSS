@@ -102,7 +102,7 @@ def test(d,real_num):
     d[real_num] = np.random.random(10)
     #testl.append((real_num,np.random.random(10)))
 
-def get_good_real(real_num):
+def get_good_real(dic,real_num):
     indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     all_asgn = get_all_asgn(indir)
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
