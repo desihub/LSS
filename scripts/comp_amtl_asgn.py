@@ -116,7 +116,7 @@ with Pool() as pool:
     pool.map(get_good_real,inds)
 
 logger.info('got all realizations')
-
+logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 probl = np.zeros(len(alltids))
 for i in range(0,len(alltids)):
     nt = 0
