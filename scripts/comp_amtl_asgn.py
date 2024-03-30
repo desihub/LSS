@@ -6,6 +6,27 @@ from astropy.table import Table
 import LSS.common_tools as common
 from LSS.globals import main
 
+import logging
+
+# create logger
+logname = 'bitweights'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+
 #just start with the mock 1 v3_1 altmtl as an example
 
 alltids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA1.fits',columns=['TARGETID'])
@@ -63,13 +84,13 @@ wd &=mt['ZDATE'] < 20220900 #Y1 cutoff
 mtld = mt[wd]
 ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/'
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-#logger.info('loading specf file '+specfo)
+logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-#logger.info('loaded specf file '+specfo)
+logger.info('loaded specf file '+specfo)
 specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
 gtl = np.unique(specfc['TILELOCID'])
 
@@ -83,15 +104,17 @@ def get_good_real(real_num):
     good_tids = all_asgn['TARGETID'][gtl]
     asgn_real = np.isin(alltids,good_tids)
     assign_real_dic[real_num] = asgn_real
+    del asgn_real
 
 from multiprocessing import Pool
 Nreal = 64
 inds = np.arange(0,Nreal)
-pool = sharedmem.MapReduce(np=6)
+pool = sharedmem.MapReduce()
+logger.info('about to get '+str(Nreal)+' realizations in parallel')
 with pool:
     pool.map(get_good_real,inds)
 
-print('got all realizations')
+logger.info('got all realizations')
 
 probl = np.zeros(len(alltids))
 for i in range(0,len(alltids)):
