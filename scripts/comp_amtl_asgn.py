@@ -123,15 +123,15 @@ logger.info('about to get '+str(Nreal)+' realizations in parallel')
 
 from multiprocessing import Process, Manager
 manager = Manager()
-d = manager.dict()
-job = [Process(target=test, args=(d, i)) for i in inds]
+assign_real_dic = manager.dict()
+job = [Process(target=get_good_real, args=(assign_real_dic, i)) for i in inds]
 _ = [p.start() for p in job]
 _ = [p.join() for p in job]
 
 logger.info('got all realizations')
 logger.info('dictionary keys are '+str(d.keys()))
 import sys
-sys.exit()
+#sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 probl = np.zeros(len(alltids))
 for i in range(0,len(alltids)):
@@ -140,3 +140,5 @@ for i in range(0,len(alltids)):
         nt += assign_real_dic[real][i]
     prob = nt/Nreal
     probl[i] = prob
+    if i%1e5 == 0:
+        logger.info(str(i))
