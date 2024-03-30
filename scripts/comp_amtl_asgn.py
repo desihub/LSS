@@ -118,7 +118,7 @@ inds = np.arange(0,Nreal)
 logger.info('about to get '+str(Nreal)+' realizations in parallel')
 with Pool() as pool:
     #pool.map(get_good_real,inds)
-    pool.map(test)
+    pool.map(test,inds)
 
 logger.info('got all realizations')
 logger.info(str(len(testl)))
