@@ -26,7 +26,7 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-
+logger.info('script is starting')
 #just start with the mock 1 v3_1 altmtl as an example
 
 alltids = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA1.fits',columns=['TARGETID'])
@@ -110,9 +110,9 @@ def get_good_real(real_num):
 from multiprocessing import Pool
 Nreal = 64
 inds = np.arange(0,Nreal)
-pool = sharedmem.MapReduce()
+#pool = sharedmem.MapReduce()
 logger.info('about to get '+str(Nreal)+' realizations in parallel')
-with pool:
+with Pool() as pool:
     pool.map(get_good_real,inds)
 
 logger.info('got all realizations')
