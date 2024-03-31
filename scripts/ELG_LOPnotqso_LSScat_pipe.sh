@@ -8,7 +8,7 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 TRACER='ELG_LOP'
 
-python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec iron --survey Y1 --version $1
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec iron --survey Y1 --version $1
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --type $TRACER --notqso y--combwspec n --fullr y --survey Y1 --maxr 18 --version $1
 
