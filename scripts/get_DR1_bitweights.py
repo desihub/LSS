@@ -124,7 +124,7 @@ assign_real_dic = {}
 
 
 def get_good_real(dic,real_num):
-    indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/'+args.amtl_ver+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
+    indir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/'+args.amtl_version+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     all_asgn = get_all_asgn(indir)
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
     good_asgn = np.isin(asgn_tloc,gtl)
