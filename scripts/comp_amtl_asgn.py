@@ -4,6 +4,7 @@ import glob
 from astropy.table import Table
 
 import LSS.common_tools as common
+import LSS.cattools as ct
 from LSS.globals import main
 from LSS.bitweights import pack_bitweights
 
@@ -78,23 +79,30 @@ tnsrcol = mainp.tsnrcol
 badfib = mainp.badfib
 
 
-wd = mt['SURVEY'] == 'main'
-wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == pdir
-wd &=mt['ZDATE'] < 20220900 #Y1 cutoff
+#wd = mt['SURVEY'] == 'main'
+#wd &= mt['ZDONE'] == 'true'
+#wd &= mt['FAPRGRM'] == pdir
+#wd &=mt['ZDATE'] < 20220900 #Y1 cutoff
 
-mtld = mt[wd]
-ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/'
-specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
-sel = np.isin(specf['TILEID'],mtld['TILEID'])
-specf = specf[sel]
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+#mtld = mt[wd]
+#ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/'
+#specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+#logger.info('loading specf file '+specfo)
+#specf = Table(fitsio.read(specfo))
+#sel = np.isin(specf['TILEID'],mtld['TILEID'])
+#specf = specf[sel]
+#specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib)#,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
-gtl = np.unique(specfc['TILELOCID'])
+#logger.info('loaded specf file '+specfo)
+#specfc = common.cut_specdat(specf,badfib=mainp.badfib)#,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
+#gtl = np.unique(specfc['TILELOCID'])
+
+specdat = ct.get_specdat(ldirspec,pdir,'iron',badfib= main('LRG', 'iron', survey='Y1').badfib)
+tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
+gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
+
+
+logger.info('good goodhardware list')
 
 assign_real_dic = {}
 testl = []
