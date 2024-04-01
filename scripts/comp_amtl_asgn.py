@@ -151,6 +151,7 @@ bitweights = pack_bitweights(bool_2d)
 
 probl = np.zeros(len(alltids))
 for real in inds:
+    logger.info('number of assignments in realization '+str(real)+' '+str(np.sum(assign_real_dic[real])))
     probl += assign_real_dic[real]*1.
 probl = probl/64   
 
