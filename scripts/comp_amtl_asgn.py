@@ -135,8 +135,8 @@ import sys
 #sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 bool_list = []
-for key in assign_real_dic.keys():
-    bool_list.append(assign_real_dic[key])
+for real in inds::
+    bool_list.append(assign_real_dic[real])
 bool_2d = np.vstack(bool_list).transpose()
 logger.info('about to pack bitweights from array of shape '+str(np.shape(bool_2d)))
 bitweights = pack_bitweights(bool_2d)
@@ -152,7 +152,7 @@ out_tab['TARGETID'] = alltids
 out_tab['BITWEIGHTS'] = bitweights
 out_tab['PROB_OBS'] = probl
 
-commone.write_LSS(out_tab,outf)
+common.write_LSS(out_tab,outf)
 
 #h = np.histogram(probl)
 #print(h) 
