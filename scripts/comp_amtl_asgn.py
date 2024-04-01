@@ -137,8 +137,8 @@ logger.info('dictionary keys are '+str(assign_real_dic.keys()))
 bool_list = []
 for key in assign_real_dic.keys():
     bool_list.append(assign_real_dic[key])
-bool_2d = np.vstack(bool_list)
-
+bool_2d = np.vstack(bool_list).transpose()
+logger.info('about to pack bitweights from array of shape '+str(np.shape(bool_2d)))
 bitweights = pack_bitweights(bool_2d)
 
 probl = np.zeros(len(alltids))
