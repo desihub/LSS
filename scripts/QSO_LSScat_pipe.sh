@@ -34,5 +34,5 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 python scripts/main/mkCat_main.py --type $TRACER --version $1  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type $TRACER --notqso y  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type $TRACER  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF--basedir /global/cfs/cdirs/desi/survey/catalogs/
 
