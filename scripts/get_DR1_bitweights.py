@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--amtl_version",default='JL_Y1Run2')
 parser.add_argument("--cat_version",default='test')
-parser.add_argument("--nreal",default=128,dtype=int)
+parser.add_argument("--nreal",default=128,type=int)
 args = parser.parse_args()
 
 
