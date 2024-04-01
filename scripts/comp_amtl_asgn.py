@@ -4,7 +4,7 @@ import glob
 from astropy.table import Table
 
 import LSS.common_tools as common
-import LSS.cattools as ct
+import LSS.main.cattools as ct
 from LSS.globals import main
 from LSS.bitweights import pack_bitweights
 
