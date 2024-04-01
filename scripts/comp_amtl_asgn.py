@@ -5,6 +5,7 @@ from astropy.table import Table
 
 import LSS.common_tools as common
 from LSS.globals import main
+from LSS.bitweights import pack_bitweights
 
 import logging
 
@@ -133,12 +134,28 @@ logger.info('got all realizations')
 import sys
 #sys.exit()
 logger.info('dictionary keys are '+str(assign_real_dic.keys()))
+bool_list = []
+for key in assign_real_dic.keys():
+    bool_list.append(assign_real_dic[key])
+bool_2d = np.vstack(bool_list)
+
+bitweights = pack_bitweights(bool_2d)
+
 probl = np.zeros(len(alltids))
 for real in inds:
     probl += assign_real_dic[real]*1.
 probl = probl/64   
-h = np.histogram(probl)
-print(h) 
+
+outf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R64/bitweights.fits'
+out_tab = Table()
+out_tab['TARGETID'] = alltids
+out_tab['BITWEIGHTS'] = bitweights
+out_tab['PROB_OBS'] = probl
+
+commone.write_LSS(out_tab,outf)
+
+#h = np.histogram(probl)
+#print(h) 
 #for i in range(0,len(alltids)):
 #    nt = 0
 #    for real in inds:
