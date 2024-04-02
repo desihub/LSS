@@ -13,6 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--cat_version",default='test')
+parser.add_argument("--tracers",default='all')
 args = parser.parse_args()
 
 
@@ -26,7 +27,10 @@ if args.prog == 'BRIGHT':
 
 
 if args.prog == 'DARK':
-    tpl = ['LRG','QSO','ELG_LOPnotqso']
+    if args.tracers == 'all':
+        tpl = ['LRG','QSO','ELG_LOPnotqso']
+    else:
+        tpl = [args.tracers]
 
 bitf = fitsio.read(lssdir+args.prog+'_bitweights.fits')
 fl = ['full_noveto','full','full_HPmapcut','clustering','NGC_clustering','SGC_clustering']
