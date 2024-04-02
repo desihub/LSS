@@ -540,7 +540,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
         if bin_type == 'lin':
             edges = (sedges, np.linspace(-40., 40, 101)) #transverse and radial separations are coded to be the same here
         else:
-            edges = (sedges, np.linspace(0., 40., 41))
+            edges = (sedges, np.linspace(-40., 40., 81))
     elif corr_type == 'theta':
         edges = (np.linspace(0., 4., 101),)
     else:
