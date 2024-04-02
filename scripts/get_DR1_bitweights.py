@@ -42,7 +42,7 @@ logger.info('script is starting')
 lssdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.cat_version+'/'
 
 if args.prog == 'BRIGHT':
-    alltids = fitsio.read(lssdir+tp+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
+    alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
     alltids = np.unique(alltids['TARGETID'])
 
 
