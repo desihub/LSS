@@ -38,7 +38,7 @@ for tp in tpl:
         infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
         lij = len(infl)
         if li == lij:
-            common.write_LSS(infl,infnm)
+            common.write_LSS(infl,inflnm)
         else:
             print('mismatch after join!')
             print(tp,li,lij)    
