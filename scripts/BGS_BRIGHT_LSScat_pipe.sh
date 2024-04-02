@@ -27,5 +27,5 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER  --basedir /global
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER   --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --swap20211212 y --verspec iron --survey Y1 --version $1
 
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type $TRACER  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF--basedir /global/cfs/cdirs/desi/survey/catalogs/
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type $TRACER  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/
 
