@@ -23,6 +23,13 @@ python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/de
 #to combine the emission line files:
 python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --mkemlin y --dospec n --combpix n --survey Y1
 
+#!!!pipelines that run everything for v1, except for the addition of bitweights, starting from here, are
+scripts/LRG_LSScat_pipe.sh <version>
+scripts/QSO_LSScat_pipe.sh <version>
+scripts/ELG_LSScat_pipe.sh <version>
+scripts/BGS_BRIGHT_LSScat_pipe.sh <version>
+scripts/BGS_BRIGHT-21.5_LSScat_pipe.sh <version> #needs to be after BGS_BRIGHT
+
 
 #the below script is run for this list of target types + notqso combinations in order to generate the "full" LSS catalogs, pre veto masks
 #in this step, only unique targetid are kept, prioritizing those with an observation and then those with the greatest tsnr2
