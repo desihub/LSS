@@ -2,7 +2,7 @@
 
 set -e
 
-source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
@@ -14,5 +14,5 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --basedir
 
 python $LSSCODE/LSS/scripts/validation/validation_improp_full.py --tracers BGS_BRIGHT-21.5 --version $1 --weight_col WEIGHT_IMLIN
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/cripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5  --fulld n --survey Y1 --verspec iron --version $1 --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/
 
