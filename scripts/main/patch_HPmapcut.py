@@ -30,16 +30,16 @@ nside = 256
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','QSO','LRG']#'BGS_BRIGHT'
+    tps = ['QSO','LRG','ELG_LOPnotqso']#'BGS_BRIGHT'
 
 for tp in tps:
     mainp = main(tp,args.verspec,survey=args.survey)
     df_cutdisk = Table(fitsio.read(indir+tp+'_full_HPmapcut.dat.fits'))
     df_cutdisk_cols = list(df_cutdisk.dtype.names)
-    if 'BITWEIGHTS' in df_cutdisk_cols:
-        df_cutdisk.remove_columns(['BITWEIGHTS','PROB_OBS'])
-    if 'BITWEIGHTS_1' in df_cutdisk_cols:
-        df_cutdisk.remove_columns(['BITWEIGHTS_1','PROB_OBS_1','BITWEIGHTS_2','PROB_OBS_2'])
+    #if 'BITWEIGHTS' in df_cutdisk_cols:
+    #    df_cutdisk.remove_columns(['BITWEIGHTS','PROB_OBS'])
+    #if 'BITWEIGHTS_1' in df_cutdisk_cols:
+    #    df_cutdisk.remove_columns(['BITWEIGHTS_1','PROB_OBS_1','BITWEIGHTS_2','PROB_OBS_2'])
     df_cutdisk_cols = list(df_cutdisk.dtype.names)
     df = Table(fitsio.read(indir+tp+'_full.dat.fits'))
     df_cols = list(df.dtype.names)
@@ -65,11 +65,11 @@ for tp in tps:
     print(df_cutdisk.dtype.names,df_cutnomatch.dtype.names)
     df_comb = vstack((df_cutdisk,df_cutnomatch))
     print(tp,len(df_comb),len(np.unique(df_comb['TARGETID']))) 
-    if tp[:3] != 'BGS':
-        bitf = fitsio.read(mainp.darkbitweightfile)
-    else:
-        bitf = fitsio.read(mainp.brightbitweightfile)
-    df_comb = join(df_comb,bitf,keys=['TARGETID'],join_type='left')
+    #if tp[:3] != 'BGS':
+    #    bitf = fitsio.read(mainp.darkbitweightfile)
+    #else:
+    #    bitf = fitsio.read(mainp.brightbitweightfile)
+    #df_comb = join(df_comb,bitf,keys=['TARGETID'],join_type='left')
     print(len(df_comb['TARGETID']))
     print(df_comb.dtype.names)
     common.write_LSS(df_comb,indir+tp+'_full_HPmapcut.dat.fits')
