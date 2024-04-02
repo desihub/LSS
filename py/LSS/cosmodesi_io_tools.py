@@ -258,12 +258,20 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights = catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
             #print('dividing weights by WEIGHT_COMP')
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
+    if name == 'data' and 'IIP' in weight_type:
+        weights = 129/(1+128*catalog['PROB_OBS'][mask])
+        if 'default' in weight_type:
+            #weights /= catalog['WEIGHT_COMP'][mask]
+            weights *= catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
 
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
         if 'bitwise' in weight_type and 'default' in weight_type:
             weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
+        if 'IIP' in weight_type and 'default' in weight_type:
+            weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
+        logger.info('all random weights set to 1')
             #weights /= catalog['FRAC_TLOBS_TILES'][mask]
             #print('dividing weights by FRAC_TLOBS_TILES')
 #         if 'RF' in weight_type:
