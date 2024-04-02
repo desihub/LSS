@@ -116,7 +116,7 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib)#,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
 gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
@@ -164,7 +164,7 @@ bitweights = pack_bitweights(bool_2d)
 probl = np.zeros(len(alltids))
 for real in inds:
     probl += assign_real_dic[real]*1.
-probl = probl/64   
+probl = probl/Nreal   
 
 outf = lssdir+args.prog+'_bitweights.fits'
 out_tab = Table()
