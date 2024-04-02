@@ -254,7 +254,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         
     if name == 'data' and 'bitwise' in weight_type:
         if 'default' in weight_type:
-            weights /= catalog['WEIGHT_COMP'][mask]
+            #weights /= catalog['WEIGHT_COMP'][mask]
+            weights = catalog['WEIGHT_SYS']*catalog['WEIGHT_ZFAIL']
             print('dividing weights by WEIGHT_COMP')
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
 
@@ -409,6 +410,11 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
             p, w = get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=reg, weight_attrs=weight_attrs)
             positions.append(p)
             weights.append(w)
+            if fibered:
+                logger.info('loaded fibered full for '+name )
+            else:
+                logger.info('loaded parent full for '+name)    
+            logger.info(str(len(p))+' entries')
         return positions, weights
 
     if isinstance(name, (tuple, list)):
