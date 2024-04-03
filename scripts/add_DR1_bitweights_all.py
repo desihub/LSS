@@ -20,11 +20,6 @@ args = parser.parse_args()
 
 lssdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/'+args.cat_version+'/'
 
-if args.prog == 'BRIGHT':
-    sys.exit('needs to be written')
-    #alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
-    #alltids = np.unique(alltids['TARGETID'])
-
 
 if args.prog == 'DARK':
     if args.tracers == 'all':
