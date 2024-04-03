@@ -89,8 +89,13 @@ def get_all_asgn(indir):
 
 #get the list of good tilelocid
 
-mainp = main('LRG','iron')
-pdir = 'dark'
+if args.prog == 'DARK':
+    mainp = main('LRG','iron')
+    pdir = 'dark'
+else:
+    mainp = main('BGS','iron')
+    pdir = 'bright'
+
 mt = mainp.mtld
 tiles = mainp.tiles
 
