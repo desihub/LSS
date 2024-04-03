@@ -32,10 +32,20 @@ if args.prog == 'DARK':
     else:
         tpl = [args.tracers]
 
+if args.prog == 'BRIGHT':
+    if args.tracers == 'all':
+        tpl = ['BGS_BRIGHT-21.5','BGS_BRIGHT','BGS_ANY']
+    else:
+        tpl = [args.tracers]
+
+
 bitf = fitsio.read(lssdir+args.prog+'_bitweights.fits')
 fl = ['full_noveto','full','full_HPmapcut','clustering','NGC_clustering','SGC_clustering']
 for tp in tpl:
-    for ft in fl:
+    fll = fl
+    if tp == 'BGS_BRIGHT-21.5':
+        fll = ['clustering','NGC_clustering','SGC_clustering'] #full catalogs don't really make sense for abs mag cut because they require a redshift
+    for ft in fll:
         inflnm = lssdir+tp+'_'+ft+'.dat.fits'
         infl = fitsio.read(lssdir+tp+'_'+ft+'.dat.fits')
         li = len(infl)
