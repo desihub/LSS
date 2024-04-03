@@ -46,7 +46,7 @@ for tp in tpl:
         infl = Table(fitsio.read(lssdir+tp+'_'+ft+'.dat.fits'))
         cols = list(infl.dtype.names)
         dojoin = 'y'
-        if 'PROB_OBS' in cols
+        if 'PROB_OBS' in cols:
             if args.replace == 'y':
                 print('removing columns before adding info back')
                 infl.remove_columns(['PROB_OBS','BITWEIGHTS'])
