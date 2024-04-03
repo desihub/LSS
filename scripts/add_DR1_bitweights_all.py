@@ -54,12 +54,12 @@ for tp in tpl:
                 dojoin = 'n'
                 print('PROB_OBS is in original and replace is set to n, so just moving to next file')
         if dojoin == 'y':
-			li = len(infl)
-			infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
-			lij = len(infl)
-			if li == lij:
-				common.write_LSS(infl,inflnm)
-			else:
-				print('mismatch after join!')
-				print(tp,li,lij)    
+            li = len(infl)
+            infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
+            lij = len(infl)
+            if li == lij:
+                common.write_LSS(infl,inflnm)
+            else:
+                print('mismatch after join!')
+                print(tp,li,lij)    
 
