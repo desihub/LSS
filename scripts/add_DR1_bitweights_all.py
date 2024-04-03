@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--tracers",default='all')
+parser.add_argument("--replace",default='y')
 args = parser.parse_args()
 
 
@@ -42,13 +43,23 @@ for tp in tpl:
         fll = ['clustering','NGC_clustering','SGC_clustering'] #full catalogs don't really make sense for abs mag cut because they require a redshift
     for ft in fll:
         inflnm = lssdir+tp+'_'+ft+'.dat.fits'
-        infl = fitsio.read(lssdir+tp+'_'+ft+'.dat.fits')
-        li = len(infl)
-        infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
-        lij = len(infl)
-        if li == lij:
-            common.write_LSS(infl,inflnm)
-        else:
-            print('mismatch after join!')
-            print(tp,li,lij)    
+        infl = Table(fitsio.read(lssdir+tp+'_'+ft+'.dat.fits'))
+        cols = list(infl.dtype.names)
+        dojoin = 'y'
+        if 'PROB_OBS' in cols
+            if args.replace == 'y':
+                print('removing columns before adding info back')
+                infl.remove_columns(['PROB_OBS','BITWEIGHTS'])
+            else:
+                dojoin = 'n'
+                print('PROB_OBS is in original and replace is set to n, so just moving to next file')
+        if dojoin == 'y':
+			li = len(infl)
+			infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
+			lij = len(infl)
+			if li == lij:
+				common.write_LSS(infl,inflnm)
+			else:
+				print('mismatch after join!')
+				print(tp,li,lij)    
 
