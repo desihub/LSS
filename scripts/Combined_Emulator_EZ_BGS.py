@@ -51,6 +51,9 @@ if (args.mockver == "EZmock") and ("BGS" not in args.tracer):
 elif (args.mockver == "EZmock") and ("BGS" in args.tracer):
     prep_script = f"{path2LSS}/LSS/scripts/mock_tools/prepare_mocks_Y1.py"
     subdir = "EZmock"
+elif (args.mockver.lower() == 'glam'):
+    prep_script = f"{path2LSS}/LSS/scripts/mock_tools/prepare_mocks_Y1.py"
+    subdir = 'GLAM'
 else:
     prep_script = f"{path2LSS}/LSS/scripts/mock_tools/prepare_mocks_Y1.py"
     subdir = args.mockver #"AbacusSummit"
@@ -64,19 +67,20 @@ getpota_tiledir = getpota_tiledir + "/"
 if not os.path.exists(getpota_tiledir):
     os.makedirs(getpota_tiledir)
     print('made ' + getpota_tiledir)
-if args.mockver.lower() == 'glam':
-    NTILE_assign_indir = args.base_output + add_string + "/mock" + str(args.real) + "/"
-    DESIwemu_indir = args.base_output + add_string + "/" 
-    DESIwemu_outdir = args.emulator_dir + "fof_v1.0/in/"
-else:
-    NTILE_assign_indir = args.base_output + add_string + "SecondGenMocks/" + subdir + "/mock" + str(args.real) + "/"
-    DESIwemu_indir = args.base_output + add_string + "SecondGenMocks/" + subdir +"/" 
-    DESIwemu_outdir = args.emulator_dir + "fof_v1.0/in/"
+#if args.mockver.lower() == 'glam':
+#    NTILE_assign_indir = args.base_output + add_string + "/mock" + str(args.real) + "/"
+#    DESIwemu_indir = args.base_output + add_string + "/" 
+#    DESIwemu_outdir = args.emulator_dir + "fof_v1.0/in/"
+#else:
+NTILE_assign_indir = args.base_output + add_string + "SecondGenMocks/" + subdir + "/mock" + str(args.real) + "/"
+DESIwemu_indir = args.base_output + add_string + "SecondGenMocks/" + subdir +"/" 
+DESIwemu_outdir = args.emulator_dir + "fof_v1.0/in/"
 #cmd_string1 = "python /global/homes/s/sikandar/PerlmutterLSS/LSS/scripts/mock_tools/prepare_mocks_Y1.py --rbandcut 19.5 --mockver %s --prog %s --downsampling n --overwrite 1 --realmin %s --realmax %s --base_output %s" %(args.mockver, args.prog.lower(), args.real, int(args.real) + 1, args.base_output)
 if args.mockver == "EZmock":
     cmd_string1 = "python %s --mockver %s --realmin %s --realmax %s --prog %s --base_output %s --downsampling n"%(prep_script, args.mockver, args.real, int(args.real) + 1, args.prog.lower(), "/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA_BGS/FFA_temp/SecondGenMocks/EZmock/forFA/")
 elif args.mockver.lower() == 'glam':
-    cmd_string1 = "python %s --mockpath %s --mockver %s --prog %s --downsampling n --overwrite 1 --realmin %s --realmax %s --base_output %s --mockver glam --tracer=%s " %(prep_script, args.mockpath, args.mockver, args.prog.lower(), args.real, int(args.real) + 1, args.base_output, tracer_string)
+    getpota_outdir = os.path.join(args.base_output, 'SecondGenMocks', 'GLAM')
+    cmd_string1 = "python %s --mockpath %s --mockver %s --prog %s --downsampling n --overwrite 1 --realmin %s --realmax %s --base_output %s --mockver glam --tracer=%s " %(prep_script, args.mockpath, args.mockver, args.prog.lower(), args.real, int(args.real) + 1, getpota_outdir, tracer_string)
 else:
     cmd_string1 = "python %s --rbandcut 19.5 --mockver %s --prog %s --downsampling n --overwrite 1 --realmin %s --realmax %s --base_output %s" %(prep_script, args.mockver, args.prog.lower(), args.real, int(args.real) + 1, args.base_output)
 if args.mockver.lower() == 'glam':
@@ -544,6 +548,8 @@ for tr_i in tracer_arr:
             pathstr = "SecondGenMocks/EZmock/"
         elif args.mockver == "ab_secondgen_cosmosim":
             pathstr = "SecondGenMocks/AbacusSummit/"
+        elif args.mockver.lower() == "glam":
+            pathstr = "SecondGenMocks/GLAM/"
 
         if new_target == "ELG":
             target_write_name = "ELG_LOP"

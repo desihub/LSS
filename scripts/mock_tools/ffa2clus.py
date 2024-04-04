@@ -34,7 +34,7 @@ else:
 
 
 parser = argparse.ArgumentParser()
-#parser.add_argument("--tracer", help="tracer type to be selected")
+
 parser.add_argument("--realization",type=int)
 parser.add_argument("--prog", default="DARK")
 parser.add_argument("--veto",default='_imaging')
@@ -65,7 +65,7 @@ notqso = ''
 
 
 
-if args.prog == 'DARK':
+if args.prog.upper() == 'DARK':
     #bit = targetmask.desi_mask[args.tracer]
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
@@ -130,13 +130,16 @@ for tracer in tracers:
         #do this later after cutting to unique and getting completeness info
         #if args.remove_unassigned == 'y':
         #    mock_data = mock_data[mock_data["WEIGHT_IIP"] != 1e+20]
+    elif args.mockver.lower() == 'glam':
+        mockdir = args.base_dir + 'mock' + str(args.realization) + '/'
+        in_data_fn = mockdir + '/ffa_full_'+args.tracer+'.fits'
 
     else:
-        sys.exit('mock versions other than ' +abacus2ff+' not supported')
+        sys.exit('mock versions other than abacus2ffa and GLAM not supported')
 
     out_data_fn = mockdir+tracer+'_ffa'+args.veto+'_clustering.dat.fits'
     out_data_froot = mockdir+tracer+'_ffa'+args.veto+'_'
-    subfrac = 1
+    subfrac = 1    
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1

@@ -92,6 +92,8 @@ if args.prog == 'dark':
         percentage_elg_hip = 0.1
     if args.mockver.lower() == 'glam':
         percentage_elg_hip = 0.1
+        #CHANGEME For GLAM LRGs and QSOs
+        downsampling = {'ELG':0.7345658717688022, 'LRG':1.0, 'QSO':1.0}
 
 if args.isProduction == 'y':
     args.base_output = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks'
@@ -142,13 +144,21 @@ for real in range(args.realmin,args.realmax):
             else:
                 file_name = args.mockfile
             mockpath = args.mockpath
-            mockdir = args.base_output
+            #mockdir = args.base_output
+            mockdir = os.path.join(args.base_output, 'SecondGenMocks', 'GLAM')
             #file_name = args.mockfile
-            if args.tracer is None:
-                out_file_name = args.base_output + '/forFA{0}.fits'.format(real)
-            else:
-                args.base_output += '/{0}/'.format(args.tracer)
-                out_file_name = args.base_output +  '/forFA{0}.fits'.format(real)
+            
+            #if args.tracer is None:
+            #    out_file_name = mockdir  + '/forFA{0}.fits'.format(real)
+
+            #else:
+            #    mockdir += '/{0}/'.format(args.tracer)
+            #    out_file_name = mockdir  +  '/forFA{0}.fits'.format(real)
+            if not (args.tracer is None):
+                mockdir += f'/{args.tracer}/'
+            out_file_name = mockdir  +  f'/forFA{real}.fits'
+            if not os.path.exists(mockdir):
+                os.makedirs(mockdir)
         else:
             mockpath = args.mockpath
             file_name = args.mockfile
@@ -166,7 +176,7 @@ for real in range(args.realmin,args.realmax):
     create_dir(mockdir)
     print('will write outputs to ', out_file_name)
     
-    mockdir = args.base_output
+    #mockdir = args.base_output
     datat = []
     #if args.prep == 'y':
     for type_ in types:

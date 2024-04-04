@@ -68,9 +68,9 @@ if args.mock == 'ab2ndgen':
     paoutdir = args.base_output+'SecondGenMocks/AbacusSummit/mock'+args.realization+'/'
 elif args.mock.lower() == 'glam':
     if args.tracer is not None:
-        infn = args.base_input+f'/{args.tracer}/forFA{args.realization}.fits'
+        infn = args.base_input+f'/SecondGenMocks/GLAM/{args.tracer}/forFA{args.realization}.fits'
     else:
-        infn = args.base_input+f'/forFA{args.realization}.fits'
+        infn = args.base_input+f'/SecondGenMocks/GLAM/forFA{args.realization}.fits'
 
     tars = fitsio.read(infn)
     
@@ -80,7 +80,7 @@ elif args.mock.lower() == 'glam':
     if not os.path.exists(tileoutdir):
         os.makedirs(tileoutdir)
 
-    paoutdir = args.base_output+'/mock'+args.realization+'/'
+    paoutdir = args.base_output+'/SecondGenMocks/GLAM/mock'+args.realization+'/'
 elif args.mock == 'ezmocks6':
     
     infn = args.base_input + 'EZMocks_6Gpc/EZMocks_6Gpc_' + args.realization + '.fits'
