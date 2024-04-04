@@ -58,15 +58,17 @@ print(len(HPList), HPList)
 
 
 
-from LSS.globals import main
-mainp = main('All', 'iron', survey='Y1')
-specf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/datcomb_dark_spec_zdone.fits'
-with fitsio.FITS(specf.replace('global', 'dvs_ro')) as hdulist:
-    fs = hdulist[1].read() #specf.replace('global', 'dvs_ro'))
-fs = common.cut_specdat(fs, mainp.badfib)
-fs = Table(fs)
-fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-gtl = np.unique(fs['TILELOCID'])
+#from LSS.globals import main
+#mainp = main('All', 'iron', survey='Y1')
+#specf = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/datcomb_dark_spec_zdone.fits'
+#with fitsio.FITS(specf.replace('global', 'dvs_ro')) as hdulist:
+#    fs = hdulist[1].read() #specf.replace('global', 'dvs_ro'))
+#fs = common.cut_specdat(fs, mainp.badfib)
+#fs = Table(fs)
+#fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+#gtl = np.unique(fs['TILELOCID'])
+
+gtl = np.loadtxt('/pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/mynew_gtl.txt',unpack=True,dtype=int)
 
 def procFunc(nproc):
 #    print(gtl)
