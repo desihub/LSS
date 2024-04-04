@@ -69,8 +69,9 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 
 # input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
-
+fe = False
 if os.path.isfile(output_path):
+    fe = True
     if args.overwrite == 'n' and args.test == 'n':
         raise ValueError(output_path+' already exists!')
     if args.overwrite == 'n' and args.test == 'y':
@@ -186,10 +187,10 @@ res.sort('idx')
 res.remove_column('idx')
 
 #if output_path.endswith('.fits'):
-ow = False
-if args.overwrite == 'y':
-    ow = True
-res.write(output_path,overwrite=ow)
+#ow = False
+if fe == False or args.overwrite == 'y':
+    #ow = True
+    res.write(output_path,overwrite=True)
 #else:
 #    np.write(output_path, np.array(res['masknobs']))
 
