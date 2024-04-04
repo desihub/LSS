@@ -64,7 +64,7 @@ parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to r
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=0)
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--nzfull", help="get n(z) from full files",default='n')
@@ -1077,7 +1077,7 @@ if args.ran_utlid == 'y':
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
-inds = np.arange(args.minr,args.maxr)
+inds = np.arange(rm,rx)
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -1112,7 +1112,7 @@ if mkclusran:
 
 if args.NStoGC == 'y':
     fb = dirout+tracer_clus+'_'
-    ct.clusNStoGC(fb, args.maxr - args.minr)#,par=args.par)
+    ct.clusNStoGC(fb, rx - rm)#,par=args.par)
 
 
 if type == 'QSO':
@@ -1133,7 +1133,7 @@ if type[:3] == 'ELG':
 if type[:3] == 'BGS':
     P0 = 7000
 
-nran = args.maxr-args.minr
+nran = rx-rm
 regions = ['NGC', 'SGC']
 
 def splitGC(flroot,datran='.dat',rann=0):
