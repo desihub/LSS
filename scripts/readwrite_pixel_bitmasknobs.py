@@ -28,6 +28,7 @@ parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
 parser.add_argument('--overwrite', default = 'n', required=False )
+parser.add_argument('--test', default = 'n', required=False )
 parser.add_argument('--n_processes', default = 128, required=False ,type=int)
 
 args = parser.parse_args()
@@ -70,8 +71,10 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
 
 if os.path.isfile(output_path):
-    if args.overwrite == 'n':
+    if args.overwrite == 'n' and args.test == 'n':
         raise ValueError(output_path+' already exists!')
+    if args.overwrite == 'n' and args.test == 'y':
+        print('will run and get timing, but no output will be written (because path exists)')
     if args.overwrite == 'y':
         print('will overwrite '+output_path)
 
