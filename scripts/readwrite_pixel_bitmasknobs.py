@@ -28,7 +28,7 @@ parser.add_argument('--random_tracer', default = 'LRG', required = False)
 parser.add_argument('--mock_number', default = 0, required = False)
 parser.add_argument('--outdir', default = '', required=False )
 parser.add_argument('--overwrite', default = 'n', required=False )
-parser.add_argument('--n_processes', default = 32, required=False ,type=int)
+parser.add_argument('--n_processes', default = 128, required=False ,type=int)
 
 args = parser.parse_args()
 
@@ -183,7 +183,10 @@ res.sort('idx')
 res.remove_column('idx')
 
 #if output_path.endswith('.fits'):
-res.write(output_path,overwrite=True)
+ow = False
+if args.overwrite == 'y':
+    ow = True
+res.write(output_path,overwrite=ow)
 #else:
 #    np.write(output_path, np.array(res['masknobs']))
 
