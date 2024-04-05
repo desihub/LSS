@@ -60,6 +60,8 @@ parser.add_argument('--test', default = 'n', required=False )
 
 args = parser.parse_args()
 
+
+
 output_path = None
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
@@ -90,6 +92,10 @@ if args.cat_type == 'abacus':
             output_path = input_dir + ran_tr + "_1_full_matched_input_full_masknobs.ran.fits"
             print("Output to " + output_path)
 
+mpicomm = MPI.COMM_WORLD
+mpiroot = 0
+
+
 if args.cat_type == 'genran':
     from mockfactory import RandomCutskyCatalog
     cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=3e7, seed=44, mpicomm=mpicomm)
@@ -101,8 +107,6 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
 fe = False
 
-mpicomm = MPI.COMM_WORLD
-mpiroot = 0
 
 ra,dec = None,None
 
