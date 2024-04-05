@@ -43,8 +43,8 @@ if args.cat_type == 'abacus':
     if args.do_randoms == 'n':
         fa_num = args.abacus_fa_num
         str_fa_num = str(fa_num)
-        input_dir = "/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit_v4_1/"
-        input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/mocks/FirstGenMocks/AbacusSummit_v4_1/forFA' + str_fa_num + '.fits'
+        input_dir = "/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/"
+        input_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA' + str_fa_num + '.fits'
         if args.outdir != '':
             output_path = args.outdir + "/" + "forFA" + str_fa_num + "_matched_input_full_masknobs.fits"
         elif args.outdir == '':
