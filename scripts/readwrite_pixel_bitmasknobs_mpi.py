@@ -99,8 +99,8 @@ mpiroot = 0
 
 if args.cat_type == 'genran':
     from mockfactory import RandomCutskyCatalog
-    #cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=int(3e7), seed=44, mpicomm=mpicomm)
-    cutsky = RandomCutskyCatalog(rarange=(28., 30.), decrange=(1., 2.), csize=10000, seed=44, mpicomm=mpicomm)
+    cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=int(3e7), seed=44, mpicomm=mpicomm)
+    #cutsky = RandomCutskyCatalog(rarange=(28., 30.), decrange=(1., 2.), csize=10000, seed=44, mpicomm=mpicomm)
     ra, dec = cutsky['RA'], cutsky['DEC']
 
 bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
@@ -162,4 +162,4 @@ if mpicomm.rank == 0:
     logger.info('Pixel-level quantities read in {:2.2f} s.'.format(MPI.Wtime() - start))
 
 
-logger.info('Done!')
+#logger.info('Done!')
