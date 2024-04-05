@@ -62,7 +62,7 @@ args = parser.parse_args()
 
 
 
-output_path = None
+#output_path = None
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_masknobs.fits'
@@ -92,13 +92,15 @@ if args.cat_type == 'abacus':
             output_path = input_dir + ran_tr + "_1_full_matched_input_full_masknobs.ran.fits"
             print("Output to " + output_path)
 
+start = MPI.Wtime()
 mpicomm = MPI.COMM_WORLD
 mpiroot = 0
 
 
 if args.cat_type == 'genran':
     from mockfactory import RandomCutskyCatalog
-    cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=int(3e7), seed=44, mpicomm=mpicomm)
+    #cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=int(3e7), seed=44, mpicomm=mpicomm)
+    cutsky = RandomCutskyCatalog(rarange=(28., 30.), decrange=(1., 2.), csize=10000, seed=44, mpicomm=mpicomm)
     ra, dec = cutsky['RA'], cutsky['DEC']
 
 bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
@@ -108,9 +110,9 @@ bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 fe = False
 
 
-ra,dec = None,None
+#ra,dec = None,None
 
-if mpicomm.rank == mpiroot:
+if mpicomm.rank == mpiroot and args.cat_type != 'genran':
 	if os.path.isfile(output_path):
 		fe = True
 		if args.overwrite == 'n' and args.test == 'n':
@@ -146,7 +148,7 @@ if mpicomm.rank == mpiroot:
 	
 	ra, dec = cat['RA'], cat['DEC']
 
-start = MPI.Wtime()
+
 columns = {}
 columns['maskbits'] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-maskbits.fits.fz', 'dtype': 'i2', 'default': 1}
 bl = ['g','r','z']
