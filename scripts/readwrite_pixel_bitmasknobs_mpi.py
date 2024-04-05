@@ -96,6 +96,7 @@ start = MPI.Wtime()
 mpicomm = MPI.COMM_WORLD
 mpiroot = 0
 
+ra,dec = [],[]
 
 if args.cat_type == 'genran':
     from mockfactory import RandomCutskyCatalog
