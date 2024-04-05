@@ -320,20 +320,20 @@ exit 54321
 
 
 
-printf -v OFBW "%s/MakeBitweights%sOutput%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
+#printf -v OFBW "%s/MakeBitweights%sOutput%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
+#srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
 
-endBW=`date +%s.%N`
+#endBW=`date +%s.%N`
 
 
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 runtimeDateLoop=$( echo "$endDL - $endInit" | bc -l )
-runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
+#runtimeBitweights=$( echo "$endBW - $endDL" | bc -l )
 
 echo "runtime for initialization"
 echo $runtimeInit
 echo "runtime for Dateloop of $NObsDates days"
 echo $runtimeDateLoop
-echo "runtime for making bitweights"
-echo $runtimeBitweights
+#echo "runtime for making bitweights"
+#echo $runtimeBitweights
