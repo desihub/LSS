@@ -48,7 +48,7 @@ logger.addHandler(ch)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument( '--cat_type', default='obielg', choices=['obielg', 'abacus'],required=False)
+parser.add_argument( '--cat_type', default='obielg',required=False)#, choices=['obielg', 'abacus'])
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 parser.add_argument('--abacus_fa_num', default = 0, required = False)
 parser.add_argument('--do_randoms', default = 'n', choices = ['n','y'], required = False)
