@@ -98,7 +98,7 @@ mpiroot = 0
 
 if args.cat_type == 'genran':
     from mockfactory import RandomCutskyCatalog
-    cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=3e7, seed=44, mpicomm=mpicomm)
+    cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=int(3e7), seed=44, mpicomm=mpicomm)
     ra, dec = cutsky['RA'], cutsky['DEC']
 
 bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
