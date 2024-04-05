@@ -1,6 +1,4 @@
 # Get bitmask values from pixel-level per-brick masks for a catalog
-# Examples:
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmaskmasknobs.py 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import numpy as np
@@ -62,7 +60,7 @@ parser.add_argument('--test', default = 'n', required=False )
 
 args = parser.parse_args()
 
-
+output_path = None
 if args.cat_type == 'obielg':
     input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_masknobs.fits'
@@ -91,7 +89,11 @@ if args.cat_type == 'abacus':
         elif args.outdir == '':
             output_path = input_dir + ran_tr + "_1_full_matched_input_full_masknobs.ran.fits"
             print("Output to " + output_path)
-    
+
+if args.cat_type == 'genran':
+    from mockfactory import RandomCutskyCatalog
+    cutsky = RandomCutskyCatalog(rarange=(0., 180.), decrange=(0, 90.), csize=3e7, seed=44, mpicomm=mpicomm)
+    ra, dec = cutsky['RA'], cutsky['DEC']
 
 bitmask_dir = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/'
 
@@ -102,6 +104,7 @@ fe = False
 mpicomm = MPI.COMM_WORLD
 mpiroot = 0
 
+ra,dec = None,None
 
 if mpicomm.rank == mpiroot:
 	if os.path.isfile(output_path):
