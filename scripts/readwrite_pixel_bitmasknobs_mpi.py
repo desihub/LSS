@@ -139,6 +139,8 @@ if mpicomm.rank == mpiroot:
 	
 	ra, dec = cat['RA'], cat['DEC']
 
+start = MPI.Wtime()
+columns = {}
 columns['maskbits'] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-maskbits.fits.fz', 'dtype': 'i2', 'default': 1}
 bl = ['g','r','z']
 for band in bl:
