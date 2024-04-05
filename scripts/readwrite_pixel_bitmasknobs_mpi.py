@@ -156,6 +156,8 @@ for band in bl:
     columns['nobs_'+band] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-nexp-'+band+'.fits.fz', 'dtype': 'i2', 'default': 0}
 columns['brickname'] = None
 columns['photsys'] = None
+if mpicomm.rank == 0:
+    logger.info('getting brick pixel quantities')
 catalog = get_brick_pixel_quantities(ra, dec, columns, mpicomm=mpicomm)
 if mpicomm.rank == 0:
     logger.info('Output columns are {}.'.format(list(catalog.keys())))
