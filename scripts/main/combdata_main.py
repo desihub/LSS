@@ -271,7 +271,7 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    combtiles_wdup(tiles4comb,fout=tarfo)
+    ct.combtiles_wdup(tiles4comb,fout=tarfo)
     
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
