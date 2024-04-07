@@ -304,19 +304,27 @@ if specrel == 'daily' and args.survey == 'DA2':
         #print(tl_tab)
         tab = ct.get_tiletab(tl_tab)
         logger.info(str(tab.dtype.names))
-        from multiprocessing import Process, Manager
-        manager = Manager()
-        tile_list = manager.list()
-        def _tab2list(tlist,tid):
+        #from multiprocessing import Process, Manager
+        #manager = Manager()
+        #tile_list = manager.list()
+        #def _tab2list(tlist,tid):
+        def _tab2list(tid):
             sel = tiles4comb['TILEID'] == tid
             logger.info('at TILEID '+str(tid))
             tl_tab = tiles4comb[sel]
             tab = ct.get_tiletab(tl_tab)
-            tlist.append(tab)
+            return tab
+        #    tlist.append(tab)
         inds = np.arange(len(tiles4comb))
-        job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
-        _ = [p.start() for p in job]
-        _ = [p.join() for p in job]
+        tids = list(tiles4comb['TILEID'])#tiles4comb['TILEID'][i])) for i in inds
+        #job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
+        #_ = [p.start() for p in job]
+        #_ = [p.join() for p in job]
+        from concurrent.futures import ProcessPoolExecutor
+        tile_list = []
+        with ProcessPoolExecutor() as executor:
+            for tab in executor.map(_tab2list, tids):
+                tile_list.append(tab)
         logger.info('tiles in list of length '+str(len(tile_list)))
         logger.info('concatenating')
         logger.info(str(tile_list[0].dtype.names))
