@@ -70,6 +70,28 @@ parser.add_argument("--notqso", help="tracer type",default='')
 args = parser.parse_args()
 print(args)
 
+import logging
+# create logger
+logname = 'comb_inputs'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+logger.info('script is starting')
+
+
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
@@ -96,11 +118,11 @@ badfib = mainp.badfib
 wd = mt['SURVEY'] == 'main'
 #wd &= mt['EFFTIME_SPEC']/mt['GOALTIME'] > 0.85
 wd &= mt['ZDONE'] == 'true'
-print('number of tiles with zdone true '+str(len(mt[wd])))
+logger.info('number of tiles with zdone true '+str(len(mt[wd])))
 wd &= mt['ARCHIVEDATE'] > 0
-print('and with archivedate > 0 '+str(len(mt[wd])))
+logger.info('and with archivedate > 0 '+str(len(mt[wd])))
 wd &= mt['FAPRGRM'] == prog
-print('and in '+prog+' '+str(len(mt[wd])))
+logger.info('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
     #if specrel == 'everest':
@@ -114,7 +136,7 @@ if specrel != 'daily':
 
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
-print('found '+str(len(mtd))+' '+prog+' time '+args.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
+logger.info('found '+str(len(mtd))+' '+prog+' time '+args.survey+' survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
 
 tiles4comb = Table()
@@ -123,8 +145,8 @@ tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
 
 
-print('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
-print('Is that what was expected based on MTL updates?')
+logger.info('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))
+logger.info('Is that what was expected based on MTL updates?')
 if args.check_date_only == 'y':
     sys.exit()
 
@@ -133,37 +155,37 @@ tiles.keep_columns(['TILEID','RA','DEC'])
 
 tiles4comb = join(tiles4comb,tiles,keys=['TILEID'])
 
-print('check that length of tiles4comb matches '+str(len(tiles4comb)))
+logger.info('check that length of tiles4comb matches '+str(len(tiles4comb)))
 
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
 if not os.path.exists(maindir+'/logs'):
     os.mkdir(maindir+'/logs')
-    print('made '+maindir+'/logs')
+    logger.info('made '+maindir+'/logs')
 
 if not os.path.exists(maindir+'/LSScats'):
     os.mkdir(maindir+'/LSScats')
-    print('made '+maindir+'/LSScats')
+    logger.info('made '+maindir+'/LSScats')
 
 dirout = maindir+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
     os.mkdir(dirout)
-    print('made '+dirout)
+    logger.info('made '+dirout)
 
 dailydir = maindir+'daily/'
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
-    print('made '+ldirspec)
+    logger.info('made '+ldirspec)
 if not os.path.exists(ldirspec+'healpix'):
     os.mkdir(ldirspec+'healpix')
-    print('made '+ldirspec+'healpix')
+    logger.info('made '+ldirspec+'healpix')
 
 if args.make_tile_file == 'y':
     tiles4comb.write(maindir+'tiles-'+prog.upper()+'.fits',overwrite=True,format='fits')
 
-print('specrel is '+specrel)
+logger.info('specrel is '+specrel)
 if specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     #if not os.path.isfile(specfo) and args.subguad != 'y':
@@ -177,7 +199,7 @@ if specrel == 'daily':
     #,'LOCATION','FIBER','COADD_FIBERSTATUS','TILEID','TILELOCID','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
     #,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
     spec_cols_4tar = ['TARGETID','ZWARN','ZWARN_MTL','LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
-    print(spec_cols_4tar)
+    logger.info(str(spec_cols_4tar))
     if args.subguad == 'y':
         dz = Table(fitsio.read(specfo))
         dz.keep_columns(speccols)
@@ -273,12 +295,15 @@ if specrel == 'daily' and args.survey == 'main':
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
     if args.par == 'y':
+        
         #test of what goes in parallel
         tid = tiles4comb['TILEID'][0]
         sel = tiles4comb['TILEID'] == tid
+        logger.info('at TILEID '+str(tid))
         tl_tab = tiles4comb[sel]
-        print(tl_tab)
+        #print(tl_tab)
         tab = ct.get_tiletab(tl_tab)
+        logger.info(str(tab.dtype.names))
         from multiprocessing import Process, Manager
         manager = Manager()
         tile_list = manager.list()
@@ -291,13 +316,13 @@ if specrel == 'daily' and args.survey == 'DA2':
         job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
         _ = [p.start() for p in job]
         _ = [p.join() for p in job]
-        print('tiles in list of length '+str(len(tile_list)))
-        print('concatenating')
+        logger.info('tiles in list of length '+str(len(tile_list)))
+        logger.info('concatenating')
         tarsn = vstack(tile_list)
         del tile_list
-        print('doing TARGETID sort')
+        logger.info('doing TARGETID sort')
         tarsn.sort('TARGETID')
-        print('sort done')
+        logger.info('sort done')
         common.write_LSS(tarsn,fout)
     
     else:
