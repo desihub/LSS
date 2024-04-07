@@ -355,42 +355,42 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
         tarf = fitsio.read(tarfo)#,columns=cols)
         print('loaded tarspecwdup file')
-		#tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-		if tp == 'BGS_BRIGHT':
-			sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
-		else:
-			sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
-		if notqso == 'notqso':
-			sel &= (tarf['DESI_TARGET'] & 4) == 0
+        #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+        if tp == 'BGS_BRIGHT':
+            sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
+        else:
+            sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+        if notqso == 'notqso':
+            sel &= (tarf['DESI_TARGET'] & 4) == 0
         tarf = tarf[sel]
         print('cut to target type')
-		
-		tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarfn['LOCATION']
-		print('added TILELOCID, about to do joins')
-		#tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+        
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarfn['LOCATION']
+        print('added TILELOCID, about to do joins')
+        #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
-		#seems to run out of memory on join
-		tjl = []
-		print(tarf.dtype.names)
-		selreg = tarf['DEC'] > 0
-		print(len(tarf[selreg]))
-		remcol = ['LOCATION','TILEID']
-		for col in remcol:
-			try:
-				specf.remove_columns([col])
-			except:
-				print('column '+col +' was not in stacked spec table') 
-		tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-		tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-		print('1st join done')
-		tjl.append(join(tarf[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-		tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-		print('2nd join done')
-		del tarf
-		tj = vstack(tjl)
-		print('stacked now writing out')
-		common.write_LSS(tj,outfs)
-		print('joined to spec data and wrote out to '+outfs)
+        #seems to run out of memory on join
+        tjl = []
+        print(tarf.dtype.names)
+        selreg = tarf['DEC'] > 0
+        print(len(tarf[selreg]))
+        remcol = ['LOCATION','TILEID']
+        for col in remcol:
+            try:
+                specf.remove_columns([col])
+            except:
+                print('column '+col +' was not in stacked spec table') 
+        tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+        tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+        print('1st join done')
+        tjl.append(join(tarf[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+        tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+        print('2nd join done')
+        del tarf
+        tj = vstack(tjl)
+        print('stacked now writing out')
+        common.write_LSS(tj,outfs)
+        print('joined to spec data and wrote out to '+outfs)
 
 
         
