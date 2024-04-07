@@ -57,6 +57,7 @@ parser.add_argument("--counts_only",help="skip to just counting overlaps",defaul
 parser.add_argument("--combpix",help="if n, just skip to next stage",default='y')
 parser.add_argument("--get_petalsky",help="if y, combine info across tiles to get dispersion in sky fibers",default='n')
 parser.add_argument("--comb_petalqa",help="if y, combine petal qa info across tiles ",default='n')
+parser.add_argument("--par",help="if y, using multiprocessing ",default='n')
 
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
@@ -271,7 +272,28 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    ct.combtiles_wdup(tiles4comb,fout=tarfo)
+    if args.par == 'y':
+        from multiprocessing import Process, Manager
+        manager = Manager()
+        tile_list = manager.list()
+        def _tab2list(tlist,tile_row):
+            tab = ct.get_tiletab(tile_row)
+            tlist.append(tab)
+        inds = np.arange(len(tab))
+        job = [Process(target=_tab2list, args=(tile_list, tiles4comb[i])) for i in inds]
+        _ = [p.start() for p in job]
+        _ = [p.join() for p in job]
+        print('tiles in list of length '+str(len(tile_list)))
+        print('concatenating')
+        tarsn = vstack(tile_list)
+        del tile_list
+        print('doing TARGETID sort')
+        tarsn.sort('TARGETID')
+        print('sort done')
+        common.write_LSS(tarsn,fout)
+    
+    else:
+        ct.combtiles_wdup(tiles4comb,fout=tarfo)
     
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
