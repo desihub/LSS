@@ -319,9 +319,9 @@ if specrel == 'daily' and args.survey == 'DA2':
         _ = [p.join() for p in job]
         logger.info('tiles in list of length '+str(len(tile_list)))
         logger.info('concatenating')
-        logger.info(str(tile_list[0].dtype.names)
+        logger.info(str(tile_list[0].dtype.names))
         tarsn = vstack(tile_list)
-        logger.info(str(tarsn.dtype.names)
+        logger.info(str(tarsn.dtype.names))
         del tile_list
         logger.info('doing TARGETID sort')
         tarsn.sort('TARGETID')
