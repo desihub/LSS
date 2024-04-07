@@ -1008,26 +1008,26 @@ def goodlocdict(tf):
 
 def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     from desitarget.io import read_targets_in_tiles
-	
-	tile = tile_row['TILEID']
-	ts = str(tile).zfill(6)
-	faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-	fht = fitsio.read_header(faf)
-	mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
-	if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
-		mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
-	if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
-		mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
-	#wt = tiles['TILEID'] == tile
-	tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
-	#tars.keep_columns(tarcols)
-	tars = tars[[b for b in tarcol]]
+    
+    tile = tile_row['TILEID']
+    ts = str(tile).zfill(6)
+    faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+    fht = fitsio.read_header(faf)
+    mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+    if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
+        mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
+    if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
+        mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
+    #wt = tiles['TILEID'] == tile
+    tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    #tars.keep_columns(tarcols)
+    tars = tars[[b for b in tarcol]]
 
-	tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
-	tars = join(tars,tt,keys=['TARGETID'])
-	tars['TILEID'] = tile
-	tars.remove_columns(['ZWARN'])
-	return tars
+    tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
+    tars = join(tars,tt,keys=['TARGETID'])
+    tars['TILEID'] = tile
+    tars.remove_columns(['ZWARN'])
+    return tars
 
 
 def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
