@@ -273,11 +273,16 @@ if specrel == 'daily' and args.survey == 'main':
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
     if args.par == 'y':
+        #test of what goes in parallel
+        tid = tiles4comb['TILEID'][0]
+        sel = tiles4comb['TILEID'] = tid
+        tl_tab = tiles4comb[sel]
+        tab = ct.get_tiletab(tl_tab)
         from multiprocessing import Process, Manager
         manager = Manager()
         tile_list = manager.list()
         def _tab2list(tlist,tid):
-            sel = tiles4comb['TILEID']==tid
+            sel = tiles4comb['TILEID'] = tid
             tl_tab = tiles4comb[sel]
             tab = ct.get_tiletab(tl_tab)
             tlist.append(tab)
