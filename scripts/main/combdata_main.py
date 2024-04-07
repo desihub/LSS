@@ -276,11 +276,13 @@ if specrel == 'daily' and args.survey == 'DA2':
         from multiprocessing import Process, Manager
         manager = Manager()
         tile_list = manager.list()
-        def _tab2list(tlist,tile_row):
-            tab = ct.get_tiletab(tile_row)
+        def _tab2list(tlist,tid):
+            sel = tiles4comb['TILEID']==tid
+            tl_tab = tiles4comb[sel]
+            tab = ct.get_tiletab(tl_tab)
             tlist.append(tab)
         inds = np.arange(len(tiles4comb))
-        job = [Process(target=_tab2list, args=(tile_list, tiles4comb[i])) for i in inds]
+        job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
         _ = [p.start() for p in job]
         _ = [p.join() for p in job]
         print('tiles in list of length '+str(len(tile_list)))
