@@ -279,7 +279,7 @@ if specrel == 'daily' and args.survey == 'DA2':
         def _tab2list(tlist,tile_row):
             tab = ct.get_tiletab(tile_row)
             tlist.append(tab)
-        inds = np.arange(len(tiles4combb))
+        inds = np.arange(len(tiles4comb))
         job = [Process(target=_tab2list, args=(tile_list, tiles4comb[i])) for i in inds]
         _ = [p.start() for p in job]
         _ = [p.join() for p in job]
