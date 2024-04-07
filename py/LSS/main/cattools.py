@@ -1009,7 +1009,7 @@ def goodlocdict(tf):
 def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     from desitarget.io import read_targets_in_tiles
     
-    tile = tile_row['TILEID']
+    tile = tile_row['TILEID'][0]
     ts = str(tile).zfill(6)
     faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
     fht = fitsio.read_header(faf)
