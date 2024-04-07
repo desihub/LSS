@@ -108,6 +108,8 @@ if specrel != 'daily':
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
     if args.survey == 'Y1':
         wd &= mt['ZDATE'] < 20220900
+    if args.survey == 'DA2':
+        wd &= mt['ZDATE'] < 20240400
 
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -244,7 +246,7 @@ regl = ['N','S']
 #outf = maindir+'datcomb_'+prog+'_spec_premtlup.fits'
 #tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
 #ct.combtiles_wdup(tiles4comb,tarfo)
-if specrel == 'daily':
+if specrel == 'daily' and args.survey == 'main':
     hpxs = foot.tiles2pix(8, tiles=tiles4comb)
     npx = 0
     if args.counts_only != 'y' and combpix:
@@ -267,16 +269,20 @@ if specrel == 'daily':
                 npx += 1
             tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
+if specrel == 'daily' and args.survey == 'DA2':
+    tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+    combtiles_wdup(tiles4comb,fout=tarfo)
+    
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    if specrel == 'daily':
+    if specrel == 'daily' and args.survey == 'main':
         ct.combtile_qso(tiles4comb,outf,restart=redoqso)
     else:
         ct.combtile_qso_alt(tiles4comb,outf,coaddir=coaddir)
 
 if  args.mkemlin == 'y':
     outf = ldirspec+'emlin_catalog.fits'
-    if specrel == 'daily':
+    if specrel == 'daily' and args.survey == 'main':
         outdir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emtiles/'
         guadtiles = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits',columns=['TILEID'])
         guadtiles = np.unique(guadtiles['TILEID'])
@@ -309,6 +315,85 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         tc.write(outtc,format='fits', overwrite=True)
 
 
+if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
+    specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    if os.path.isfile(specfo) and args.redospec == 'n':
+        specf = Table.read(specfo)
+        specf.keep_columns(speccols)
+    newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
+    specf = Table.read(specfo)
+    if newspec:
+        print('new tiles were found for spec dataso there were updates to '+specfo)
+    else:
+        print('no new tiles were found for spec data, so no updates to '+specfo)
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    specf.keep_columns(spec_cols_4tar)
+    #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+    
+    if prog == 'dark':
+        if args.tracer == 'all':
+            tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+            notqsos = ['','','notqso','','']
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
+    if prog == 'bright':
+        if args.tracer == 'all':
+            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            notqsos = ['',''] 
+        else:
+            tps = [args.tracer]
+            notqsos = [args.notqso]    
+    for tp,notqso in zip(tps,notqsos):
+        print('now doing '+tp+notqso)
+        print(len(tiles4comb['TILEID']))
+        #outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        update = True
+        dotarspec = True
+
+        tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+        tarf = fitsio.read(tarfo)#,columns=cols)
+        print('loaded tarspecwdup file')
+		#tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+		if tp == 'BGS_BRIGHT':
+			sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
+		else:
+			sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+		if notqso == 'notqso':
+			sel &= (tarf['DESI_TARGET'] & 4) == 0
+        tarf = tarf[sel]
+        print('cut to target type')
+		
+		tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarfn['LOCATION']
+		print('added TILELOCID, about to do joins')
+		#tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+
+		#seems to run out of memory on join
+		tjl = []
+		print(tarf.dtype.names)
+		selreg = tarf['DEC'] > 0
+		print(len(tarf[selreg]))
+		remcol = ['LOCATION','TILEID']
+		for col in remcol:
+			try:
+				specf.remove_columns([col])
+			except:
+				print('column '+col +' was not in stacked spec table') 
+		tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+		tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+		print('1st join done')
+		tjl.append(join(tarf[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+		tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+		print('2nd join done')
+		del tarf
+		tj = vstack(tjl)
+		print('stacked now writing out')
+		common.write_LSS(tj,outfs)
+		print('joined to spec data and wrote out to '+outfs)
+
+
+        
 if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo) and args.redospec == 'n':

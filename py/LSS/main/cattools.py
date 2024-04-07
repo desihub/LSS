@@ -1010,10 +1010,12 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
     from desitarget.io import read_targets_in_tiles
     s = 0
     n = 0
+    tl = []
     if os.path.isfile(fout):
-        tarsn = Table.read(fout)
-        s = 1
-        tdone = np.unique(tarsn['TILEID'])
+        tars = Table.read(fout)
+        tl.append(tars)
+        #s = 1
+        tdone = np.unique(tars['TILEID'])
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         tmask = np.ones(len(tiles)).astype('bool')
@@ -1035,15 +1037,23 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
         tars = join(tars,tt,keys=['TARGETID'])
         tars['TILEID'] = tile
         tars.remove_columns(['ZWARN'])
-        if s == 0:
-            tarsn = tars
-            s = 1
-        else:
-            tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
-        tarsn.sort('TARGETID')
+        tl.append(tars)
+        #if s == 0:
+        #    tarsn = tars
+        #    s = 1
+        #else:
+        #    tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
+        #tarsn.sort('TARGETID')
         n += 1
-        print(tile,n,len(tiles[tmask]),len(tarsn))
-    tarsn.write(fout,format='fits', overwrite=True)
+        print(tile,n,len(tiles[tmask]))#,len(tarsn))
+    if np.sum(tmask) > 0:
+        print('about to stack')
+        tarsn = vstack(tl)
+        tarsn.sort('TARGETID')
+        common.write_LSS(tarsn,fout)
+        #tarsn.write(fout,format='fits', overwrite=True)
+    else:
+        print('nothing to update, done')
 
 def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
     import desimodel.footprint as foot
