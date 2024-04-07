@@ -324,17 +324,19 @@ if specrel == 'daily' and args.survey == 'DA2':
         tile_list = []
         with ProcessPoolExecutor() as executor:
             for tab in executor.map(_tab2list, tids):
-                tile_list.append(tab)
+                tile_list.append(np.array(tab))
         logger.info('tiles in list of length '+str(len(tile_list)))
         logger.info('concatenating')
         logger.info(str(tile_list[0].dtype.names))
-        tarsn = vstack(tile_list)
+        tarsn = np.concatenate(tile_list)#vstack(tile_list,metadata_conflicts='silent')
         logger.info(str(tarsn.dtype.names))
         del tile_list
         logger.info('doing TARGETID sort')
+        tarsn = Table(tarsn)
         tarsn.sort('TARGETID')
+        
         logger.info('sort done')
-        common.write_LSS(tarsn,fout)
+        common.write_LSS(tarsn,tarfo)
     
     else:
         ct.combtiles_wdup(tiles4comb,fout=tarfo)
