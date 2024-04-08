@@ -187,7 +187,8 @@ if args.make_tile_file == 'y':
 
 logger.info('specrel is '+specrel)
 if specrel == 'daily':
-    specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    #specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    specfo = basedir+'main/LSS/daily/datcomb_'+prog+'_spec_zdone.fits'
     #if not os.path.isfile(specfo) and args.subguad != 'y':
     if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
         specf = fitsio.read(specfo)    
@@ -294,53 +295,56 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    if args.par == 'y':
+    if os.path.isfile(specfo) == 'False':
+        if args.par == 'y':
+            
+            #test of what goes in parallel
+            #tid = tiles4comb['TILEID'][0]
+            #sel = tiles4comb['TILEID'] == tid       
+            #tl_tab = tiles4comb[sel]
+            #print(tl_tab)
+            #tab = ct.get_tiletab(tl_tab)
+            #logger.info(str(tab.dtype.names))
+            
+            #from multiprocessing import Process, Manager
+            #manager = Manager()
+            #tile_list = manager.list()
+            #def _tab2list(tlist,tid):
+            def _tab2list(tid):
+                sel = tiles4comb['TILEID'] == tid
+                logger.info('at TILEID '+str(tid))
+                tl_tab = tiles4comb[sel]
+                tab = ct.get_tiletab(tl_tab)
+                return tab
+            #    tlist.append(tab)
+            inds = np.arange(len(tiles4comb))
+            tids = list(tiles4comb['TILEID'])#tiles4comb['TILEID'][i])) for i in inds
+            #job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
+            #_ = [p.start() for p in job]
+            #_ = [p.join() for p in job]
+            from concurrent.futures import ProcessPoolExecutor
+            tile_list = []
+            with ProcessPoolExecutor() as executor:
+                for tab in executor.map(_tab2list, tids):
+                    tile_list.append(np.array(tab))
+            logger.info('tiles in list of length '+str(len(tile_list)))
+            logger.info('concatenating')
+            logger.info(str(tile_list[0].dtype.names))
+            tarsn = np.concatenate(tile_list)#vstack(tile_list,metadata_conflicts='silent')
+            logger.info(str(tarsn.dtype.names))
+            del tile_list
+            logger.info('doing TARGETID sort')
+            tarsn = Table(tarsn)
+            tarsn.sort('TARGETID')
+            
+            logger.info('sort done')
+            common.write_LSS(tarsn,tarfo)
         
-        #test of what goes in parallel
-        #tid = tiles4comb['TILEID'][0]
-        #sel = tiles4comb['TILEID'] == tid       
-        #tl_tab = tiles4comb[sel]
-        #print(tl_tab)
-        #tab = ct.get_tiletab(tl_tab)
-        #logger.info(str(tab.dtype.names))
-        
-        #from multiprocessing import Process, Manager
-        #manager = Manager()
-        #tile_list = manager.list()
-        #def _tab2list(tlist,tid):
-        def _tab2list(tid):
-            sel = tiles4comb['TILEID'] == tid
-            logger.info('at TILEID '+str(tid))
-            tl_tab = tiles4comb[sel]
-            tab = ct.get_tiletab(tl_tab)
-            return tab
-        #    tlist.append(tab)
-        inds = np.arange(len(tiles4comb))
-        tids = list(tiles4comb['TILEID'])#tiles4comb['TILEID'][i])) for i in inds
-        #job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
-        #_ = [p.start() for p in job]
-        #_ = [p.join() for p in job]
-        from concurrent.futures import ProcessPoolExecutor
-        tile_list = []
-        with ProcessPoolExecutor() as executor:
-            for tab in executor.map(_tab2list, tids):
-                tile_list.append(np.array(tab))
-        logger.info('tiles in list of length '+str(len(tile_list)))
-        logger.info('concatenating')
-        logger.info(str(tile_list[0].dtype.names))
-        tarsn = np.concatenate(tile_list)#vstack(tile_list,metadata_conflicts='silent')
-        logger.info(str(tarsn.dtype.names))
-        del tile_list
-        logger.info('doing TARGETID sort')
-        tarsn = Table(tarsn)
-        tarsn.sort('TARGETID')
-        
-        logger.info('sort done')
-        common.write_LSS(tarsn,tarfo)
-    
+        else:
+            ct.combtiles_wdup(tiles4comb,fout=tarfo)
     else:
-        ct.combtiles_wdup(tiles4comb,fout=tarfo)
-    
+        print('not remaking '+tarfo)
+            
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
     if specrel == 'daily' and args.survey == 'main':
