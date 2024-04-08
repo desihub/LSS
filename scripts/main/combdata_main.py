@@ -392,7 +392,10 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(specfo) and args.redospec == 'n':
         specf = Table.read(specfo)
-        specf.keep_columns(speccols)
+        if list(specf.dtype.names) != speccols:
+            logger.info('writing original file back out with subselection of columns')
+            specf.keep_columns(speccols)
+            common.write_LSS(specf,specfo)
     newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
     specf = Table.read(specfo)
     if newspec:
