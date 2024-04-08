@@ -73,9 +73,9 @@ if args.cat_type == 'abacus':
 
 columns = {}
 columns['maskbits'] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-maskbits.fits.fz', 'dtype': 'i2', 'default': 1}
-# bl = ['g','r','z']
-# for band in bl:
-#     columns['nobs_'+band] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-nexp-'+band+'.fits.fz', 'dtype': 'i2', 'default': 0}
+bl = ['g','r','z']
+for band in bl:
+    columns['nobs_'+band] = {'fn': '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/{region}/coadd/{brickname:.3s}/{brickname}/legacysurvey-{brickname}-nexp-'+band+'.fits.fz', 'dtype': 'i2', 'default': 0}
 columns['brickname'] = None
 columns['photsys'] = None
 
@@ -89,8 +89,8 @@ for i in range(len(cat_list)):
 
     idx_begin, idx_end = int(np.sum(cat_size_list[:i])), int(np.sum(cat_size_list[:i+1])) if i < len(cat_size_list) else int(np.sum(cat_size_list))
     cat['MASKBITS'] = catalog['maskbits'][idx_begin:idx_end]
-    # for band in bl:
-    #     cat['NOBS_{band}'] = catalog['nobs_{band}'][idx_begin:idx_end]
+    for band in bl:
+         cat['NOBS_{band}'] = catalog['nobs_{band}'][idx_begin:idx_end]
 
     if args.overwrite == 'n' and args.test == 'n':
         raise ValueError(output_path + ' already exists!')
@@ -99,8 +99,8 @@ for i in range(len(cat_list)):
     if args.overwrite == 'y':
         logger.info('Will overwrite ' + output_path)
 
-    # ## SAVE FILE:
-    # if (not os.path.isfile(output_path)) or (args.overwrite == 'y'):
-    #     logger.info('Write: {output_path}')
-    #     car.write(output_path, mpicomm=mpicomm)
+    ## SAVE FILE:
+    if (not os.path.isfile(output_path)) or (args.overwrite == 'y'):
+        logger.info('Write: {output_path}')
+         cat.write(output_path, mpicomm=mpicomm)
 
