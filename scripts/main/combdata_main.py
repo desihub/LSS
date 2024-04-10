@@ -347,7 +347,7 @@ if specrel == 'daily' and args.survey == 'DA2':
         else:
             ct.combtiles_wdup(tiles4comb,fout=tarfo)
     else:
-        print('not remaking '+tarfo)
+        logger.info('not remaking '+tarfo)
             
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
