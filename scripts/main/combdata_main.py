@@ -485,7 +485,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         tarf = tarf[sel]
         print('cut to target type')
         
-        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarfn['LOCATION']
+        tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
         print('added TILELOCID, about to do joins')
         #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
 
