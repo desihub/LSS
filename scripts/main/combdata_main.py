@@ -412,7 +412,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             newspec = False
         else:
             newspec = True
-            tiles_2comb = tiles[tmask]
+            tiles_2comb = tiles4comb[tmask]
             def _get_tile(ind):
                 
                 trow = tiles_2comb[ind]
