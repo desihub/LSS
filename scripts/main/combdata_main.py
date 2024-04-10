@@ -351,7 +351,7 @@ if specrel == 'daily' and args.survey == 'DA2':
             
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
-    if specrel == 'daily' and args.survey == 'main':
+    if specrel == 'daily':# and args.survey == 'main':
         ct.combtile_qso(tiles4comb,outf,restart=redoqso)
     else:
         ct.combtile_qso_alt(tiles4comb,outf,coaddir=coaddir)
