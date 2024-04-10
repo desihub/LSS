@@ -418,7 +418,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
                 trow = tiles_2comb[ind]
                 tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
                 logger.info('combining spec data for TILEID '+str(tile))
-                tspec = ct.combspecdata(tile,zdate,tdate)
+                tspec = ct.combspecdata(str(tile),str(zdate),str(tdate))
                 if tspec:
                     tspec['TILEID'] = tile
                     tspec = np.array(tspec)
