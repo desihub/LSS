@@ -398,6 +398,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             logger.info('writing original file back out with subselection of columns')
             specf.keep_columns(speccols)
             common.write_LSS(specf,specfo)
+        del specf
     if args.par == 'y':
         tl = []
         if os.path.isfile(specfo) :
@@ -408,6 +409,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
 
         else:
             tmask = np.ones(len(tiles4comb)).astype('bool')
+        logger.info('there are '+str(np.sum(tmask))+ ' tiles to add to spec data')
         if np.sum(tmask) == 0:
             newspec = False
         else:
@@ -436,7 +438,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         specd = np.hstack(tl)
         kp = (specd['TARGETID'] > 0)
         specd = specd[kp]
-        common.write_LSS(specf,specfo)
+        common.write_LSS(specd,specfo)
         del specd
         del tl
     else:
