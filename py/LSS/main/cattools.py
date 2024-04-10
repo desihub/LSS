@@ -145,7 +145,7 @@ def combtile_qso_alt(tiles,outf='',coaddir=''):
 
 
 
-def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',prog='dark'):
+def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',prog='dark',par='n'):
     s = 0
     n = 0
     nfail = 0
@@ -173,45 +173,71 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
     else:
         tmask = np.ones(len(tiles)).astype('bool')
 
-    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
-        tdate = str(tdate)
-        if md == 'zmtl':
-            #if specver ==
-            #tspec = combzmtl(tile,zdate,tdate)
-            tspec = combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
-        else:
-            tspec = combspecdata(tile,zdate,tdate)
-        if tspec:
-            tspec['TILEID'] = tile
-            tspec = np.array(tspec)
-            #this is stupid but should speed up concatenation
-            #tspec.write('temp.fits',format='fits', overwrite=True)
-            #tspec = fitsio.read('temp.fits')
-            #tspec = np.empty(len(tspecio),dtype=dt)
-
-            if s == 0:
-                specd = tspec
-                s = 1
-            #else:
-            #specd = vstack([specd,tspec],metadata_conflicts='silent')
-            #column order got mixed up
-            new = np.empty(len(tspec),dtype=specd.dtype)
-            cols = specd.dtype.names
-            for colname in cols:
-                new[colname][...] = tspec[colname][...]
-
-                #specd = np.hstack((specd,tspec))
-                #specd = np.hstack((specd,new))
-            tl.append(new)
-            #specd.sort('TARGETID')
-            #kp = (specd['TARGETID'] > 0)
-            #specd = specd[kp]
-
-            n += 1
-            print(tile,n,len(tiles[tmask]))#,len(specd))
-        else:
-            print(str(tile)+' failed')
-            nfail += 1
+    if par == 'y':
+        tiles_2comb = tiles[tmask]
+        def _get_tile(ind):
+            trow = tiles_2comb[ind]
+            tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
+			if md == 'zmtl':
+				#if specver ==
+				#tspec = combzmtl(tile,zdate,tdate)
+				tspec = combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
+			else:
+				tspec = combspecdata(tile,zdate,tdate)
+			if tspec:
+				tspec['TILEID'] = tile
+				tspec = np.array(tspec)
+				new = np.empty(len(tspec),dtype=specd.dtype)
+				cols = specd.dtype.names
+				for colname in cols:
+					new[colname][...] = tspec[colname][...]
+			return new
+		inds = np.arange(len(tiles_2comb))
+		from concurrent.futures import ProcessPoolExecutor
+		
+		with ProcessPoolExecutor() as executor:
+			for specd in executor.map(_get_tile, tids):
+				tl.append(np.array(specd))
+    else:
+		for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+			tdate = str(tdate)
+			if md == 'zmtl':
+				#if specver ==
+				#tspec = combzmtl(tile,zdate,tdate)
+				tspec = combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
+			else:
+				tspec = combspecdata(tile,zdate,tdate)
+			if tspec:
+				tspec['TILEID'] = tile
+				tspec = np.array(tspec)
+				#this is stupid but should speed up concatenation
+				#tspec.write('temp.fits',format='fits', overwrite=True)
+				#tspec = fitsio.read('temp.fits')
+				#tspec = np.empty(len(tspecio),dtype=dt)
+	
+				if s == 0:
+					specd = tspec
+					s = 1
+				#else:
+				#specd = vstack([specd,tspec],metadata_conflicts='silent')
+				#column order got mixed up
+				new = np.empty(len(tspec),dtype=specd.dtype)
+				cols = specd.dtype.names
+				for colname in cols:
+					new[colname][...] = tspec[colname][...]
+	
+					#specd = np.hstack((specd,tspec))
+					#specd = np.hstack((specd,new))
+				tl.append(new)
+				#specd.sort('TARGETID')
+				#kp = (specd['TARGETID'] > 0)
+				#specd = specd[kp]
+	
+				n += 1
+				print(tile,n,len(tiles[tmask]))#,len(specd))
+			else:
+				print(str(tile)+' failed')
+				nfail += 1
     specd = np.hstack(tl)
     kp = (specd['TARGETID'] > 0)
     specd = specd[kp]

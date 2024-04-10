@@ -396,7 +396,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             logger.info('writing original file back out with subselection of columns')
             specf.keep_columns(speccols)
             common.write_LSS(specf,specfo)
-    newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
+    newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog,par=args.par)
     specf = Table.read(specfo)
     if newspec:
         print('new tiles were found for spec dataso there were updates to '+specfo)
