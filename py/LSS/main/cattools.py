@@ -174,30 +174,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
         tmask = np.ones(len(tiles)).astype('bool')
 
     if par == 'y':
-        tiles_2comb = tiles[tmask]
-        def _get_tile(ind):
-            trow = tiles_2comb[ind]
-            tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
-            if md == 'zmtl':
-                #if specver ==
-                #tspec = combzmtl(tile,zdate,tdate)
-                tspec = combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
-            else:
-                tspec = combspecdata(tile,zdate,tdate)
-            if tspec:
-                tspec['TILEID'] = tile
-                tspec = np.array(tspec)
-                new = np.empty(len(tspec),dtype=specd.dtype)
-                cols = specd.dtype.names
-                for colname in cols:
-                    new[colname][...] = tspec[colname][...]
-            return new
-        inds = np.arange(len(tiles_2comb))
-        from concurrent.futures import ProcessPoolExecutor
-        
-        with ProcessPoolExecutor() as executor:
-            for specd in executor.map(_get_tile, inds):
-                tl.append(np.array(specd))
+        print('defunct')
     else:
         for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
             tdate = str(tdate)

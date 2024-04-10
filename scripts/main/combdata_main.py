@@ -59,6 +59,7 @@ parser.add_argument("--get_petalsky",help="if y, combine info across tiles to ge
 parser.add_argument("--comb_petalqa",help="if y, combine petal qa info across tiles ",default='n')
 parser.add_argument("--par",help="if y, using multiprocessing ",default='n')
 
+parser.add_argument("--redotardup",help="re-run the potential assignments concatenation",default='n')
 parser.add_argument("--redotarspec",help="re-join target and spec data even if no updates",default='n')
 parser.add_argument("--fixspecf",help="search for problem tiles and fix them in spec comb file",default='n')
 parser.add_argument("--subguad",help="replace daily data with guadalupe tiles with gauadlupe info",default='n')
@@ -129,10 +130,11 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
-    if args.survey == 'Y1':
-        wd &= mt['ZDATE'] < 20220900
-    if args.survey == 'DA2':
-        wd &= mt['ZDATE'] < 20240400
+
+if args.survey == 'Y1':
+    wd &= mt['ZDATE'] < 20220900
+if args.survey == 'DA2':
+    wd &= mt['ZDATE'] < 20240400
 
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
@@ -296,7 +298,7 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    if os.path.isfile(specfo) == 'False':
+    if os.path.isfile(specfo) == 'False' or args.redotardup == 'y':
         if args.par == 'y':
             
             #test of what goes in parallel
@@ -396,12 +398,59 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             logger.info('writing original file back out with subselection of columns')
             specf.keep_columns(speccols)
             common.write_LSS(specf,specfo)
-    newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog,par=args.par)
+    if args.par == 'y':
+        tl = []
+        if os.path.isfile(specfo) :
+            specd = fitsio.read(specfo)
+            tl.append(specd)
+            tdone = np.unique(specd['TILEID'])
+            tmask = ~np.isin(tiles4comb['TILEID'],tdone)
+
+        else:
+            tmask = np.ones(len(tiles4comb)).astype('bool')
+        if np.sum(tmask) > 0:
+            newspec = False
+        else:
+            newspec = True
+            tiles_2comb = tiles[tmask]
+            def _get_tile(ind):
+                
+                trow = tiles_2comb[ind]
+                tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
+                logger.info('combining spec data for TILEID '+str(tile))
+                if md == 'zmtl':
+                    #if specver ==
+                    #tspec = combzmtl(tile,zdate,tdate)
+                    tspec = ct.combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
+                else:
+                    tspec = ct.combspecdata(tile,zdate,tdate)
+                if tspec:
+                    tspec['TILEID'] = tile
+                    tspec = np.array(tspec)
+                    new = np.empty(len(tspec),dtype=specd.dtype)
+                    cols = specd.dtype.names
+                    for colname in cols:
+                        new[colname][...] = tspec[colname][...]
+                return new
+            inds = np.arange(len(tiles_2comb))
+            from concurrent.futures import ProcessPoolExecutor
+            
+            with ProcessPoolExecutor() as executor:
+                for specd in executor.map(_get_tile, inds):
+                    tl.append(np.array(specd))
+        specd = np.hstack(tl)
+        kp = (specd['TARGETID'] > 0)
+        specd = specd[kp]
+        common.write_LSS(specf,specfo)
+        del specd
+        del tl
+    else:
+        newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog,par=args.par)
     specf = Table.read(specfo)
     if newspec:
-        print('new tiles were found for spec dataso there were updates to '+specfo)
+        logger.info('new tiles were found for spec dataso there were updates to '+specfo)
     else:
-        print('no new tiles were found for spec data, so no updates to '+specfo)
+        logger.info('no new tiles were found for spec data, so no updates to '+specfo)
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
