@@ -408,7 +408,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
 
         else:
             tmask = np.ones(len(tiles4comb)).astype('bool')
-        if np.sum(tmask) > 0:
+        if np.sum(tmask) == 0:
             newspec = False
         else:
             newspec = True
