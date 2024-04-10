@@ -298,7 +298,7 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    if os.path.isfile(specfo) == 'False' or args.redotardup == 'y':
+    if os.path.isfile(tarfo) == 'False' or args.redotardup == 'y':
         if args.par == 'y':
             
             #test of what goes in parallel
@@ -428,13 +428,16 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
                     cols = specd.dtype.names
                     for colname in cols:
                         new[colname][...] = tspec[colname][...]
+                else:
+                    new = None
                 return new
             inds = np.arange(len(tiles_2comb))
             from concurrent.futures import ProcessPoolExecutor
             
             with ProcessPoolExecutor() as executor:
                 for specd in executor.map(_get_tile, inds):
-                    tl.append(np.array(specd))
+                    if specd is not None:
+                        tl.append(np.array(specd))
         specd = np.hstack(tl)
         kp = (specd['TARGETID'] > 0)
         specd = specd[kp]
