@@ -475,7 +475,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         logger.info(len(tiles4comb['TILEID']))
         #outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
-        if os.path.isfile(outfs) == False
+        if os.path.isfile(outfs) == False:
 			#update = True
 			#dotarspec = True
 	
