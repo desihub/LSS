@@ -484,7 +484,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
         if notqso == 'notqso':
             sel &= (tarf['DESI_TARGET'] & 4) == 0
-        tarf = tarf[sel]
+        tarf = Table(tarf[sel])
         print('cut to target type')
         
         tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
