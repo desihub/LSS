@@ -196,7 +196,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
         from concurrent.futures import ProcessPoolExecutor
         
         with ProcessPoolExecutor() as executor:
-            for specd in executor.map(_get_tile, tids):
+            for specd in executor.map(_get_tile, inds):
                 tl.append(np.array(specd))
     else:
         for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
