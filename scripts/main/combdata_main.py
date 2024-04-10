@@ -298,7 +298,7 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    if os.path.isfile(tarfo) == 'False' or args.redotardup == 'y':
+    if os.path.isfile(tarfo) == False or args.redotardup == 'y':
         logger.info('creating '+tarfo)
         if args.par == 'y':
             
