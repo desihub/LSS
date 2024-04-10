@@ -476,50 +476,50 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         #outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
         if os.path.isfile(outfs) == False:
-			#update = True
-			#dotarspec = True
-	
-			tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-			tarf = fitsio.read(tarfo)#,columns=cols)
-			logger.info('loaded tarspecwdup file')
-			#tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-			if tp == 'BGS_BRIGHT':
-				sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
-			else:
-				sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
-			if notqso == 'notqso':
-				sel &= (tarf['DESI_TARGET'] & 4) == 0
-			tarf = Table(tarf[sel])
-			print('cut to target type')
-			
-			tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-			print('added TILELOCID, about to do joins')
-			#tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-	
-			#seems to run out of memory on join
-			tjl = []
-			logger.info(tarf.dtype.names)
-			selreg = tarf['DEC'] > 0
-			logger.info(len(tarf[selreg]))
-			remcol = ['LOCATION','TILEID']
-			for col in remcol:
-				try:
-					specf.remove_columns([col])
-				except:
-					print('column '+col +' was not in stacked spec table') 
-			tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-			tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-			logger.info('1st join done')
-			tjl.append(join(tarf[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-			tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-			logger.info('2nd join done')
-			del tarf
-			tj = vstack(tjl)
-			logger.info('stacked now writing out')
-			common.write_LSS(tj,outfs)
-			logger.info('joined to spec data and wrote out to '+outfs)
-		else:
-		    logger.info(outfs +' exists already, not making again')
+            #update = True
+            #dotarspec = True
+    
+            tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+            tarf = fitsio.read(tarfo)#,columns=cols)
+            logger.info('loaded tarspecwdup file')
+            #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            if tp == 'BGS_BRIGHT':
+                sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
+            else:
+                sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+            if notqso == 'notqso':
+                sel &= (tarf['DESI_TARGET'] & 4) == 0
+            tarf = Table(tarf[sel])
+            print('cut to target type')
+            
+            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            print('added TILELOCID, about to do joins')
+            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+    
+            #seems to run out of memory on join
+            tjl = []
+            logger.info(tarf.dtype.names)
+            selreg = tarf['DEC'] > 0
+            logger.info(len(tarf[selreg]))
+            remcol = ['LOCATION','TILEID']
+            for col in remcol:
+                try:
+                    specf.remove_columns([col])
+                except:
+                    print('column '+col +' was not in stacked spec table') 
+            tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+            logger.info('1st join done')
+            tjl.append(join(tarf[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+            logger.info('2nd join done')
+            del tarf
+            tj = vstack(tjl)
+            logger.info('stacked now writing out')
+            common.write_LSS(tj,outfs)
+            logger.info('joined to spec data and wrote out to '+outfs)
+        else:
+            logger.info(outfs +' exists already, not making again')
 
 
         
