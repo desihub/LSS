@@ -418,12 +418,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
                 trow = tiles_2comb[ind]
                 tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
                 logger.info('combining spec data for TILEID '+str(tile))
-                if md == 'zmtl':
-                    #if specver ==
-                    #tspec = combzmtl(tile,zdate,tdate)
-                    tspec = ct.combzmtl(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/'+specver+'/tiles/cumulative/')
-                else:
-                    tspec = ct.combspecdata(tile,zdate,tdate)
+                tspec = ct.combspecdata(tile,zdate,tdate)
                 if tspec:
                     tspec['TILEID'] = tile
                     tspec = np.array(tspec)
