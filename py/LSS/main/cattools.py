@@ -576,7 +576,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
     else:
         return False
 
-def combtile_em_daily(tiles,outf='',md='',prog='dark',coaddir=''):
+def combtile_em_daily(tiles,outf='',md='',prog='dark',coaddir='',redo='n'):
 
     s = 0
     n = 0
