@@ -576,6 +576,69 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
     else:
         return False
 
+def combtile_em_daily(tiles,outf='',md='',prog='dark',coaddir=''):
+
+    s = 0
+    n = 0
+    nfail = 0
+
+    if os.path.isfile(outf) and redo == 'n':
+        #specd = Table.read(outf)
+        specd = fitsio.read(outf)
+        #dt = specd.dtype
+        #specd = np.empty(len(specio),dtype=dt)
+        #cols = fw.dtype.names
+        #for colname in cols:
+        #    specd[colname][...] = specio[colname][...]
+        #del specio
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+
+    
+        s = 1
+        tdone = np.unique(specd['TILEID'])
+        tmask = ~np.isin(tiles['TILEID'],tdone)
+    else:
+        tmask = np.ones(len(tiles)).astype('bool')
+
+    for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
+        tdate = str(tdate)
+        tspec = None
+        tspec = combEMdata_daily(tile,zdate,tdate)
+        if tspec is not None:
+            tspec = np.array(tspec)
+
+            if s == 0:
+                specd = tspec
+                s = 1
+            else:
+                #specd = vstack([specd,tspec],metadata_conflicts='silent')
+                #column order got mixed up
+                new = np.empty(len(tspec),dtype=specd.dtype)
+                cols = specd.dtype.names
+                for colname in cols:
+                    new[colname][...] = tspec[colname][...]
+
+                #specd = np.hstack((specd,tspec))
+                specd = np.hstack((specd,new))
+            #specd.sort('TARGETID')
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+
+            n += 1
+            print(tile,n,len(tiles[tmask]),len(specd))
+        else:
+            print(str(tile)+' failed')
+            nfail += 1
+    print('total number of failures was '+str(nfail))
+    if n > 0:
+        #specd.write(outf,format='fits', overwrite=True)
+        fitsio.write(outf,specd,clobber=True)
+        return True
+    else:
+        return False
+
 
 
 def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guadalupe/tiles/cumulative/'):
@@ -598,7 +661,28 @@ def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guad
     else:
         return None
 
-def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
+def combEMdata_daily(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'):
+    remcol = ['Z', 'ZWARN', 'SPECTYPE', 'DELTACHI2', 'TARGET_RA', 'TARGET_DEC', 'OBJTYPE']
+    zfn = 'emline'
+    dl = []
+    for si in range(0,10):
+        ff = coaddir+str(tile)+'/'+zdate+'/'+zfn+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        fz = coaddir+str(tile)+'/'+zdate+'/redrock'+'-'+str(si)+'-'+str(tile)+'-thru'+tdate+'.fits'
+        if os.path.isfile(ff):
+            d = Table(fitsio.read(ff))
+            fm = fitsio.read(fz,ext='FIBERMAP',columns=['LOCATION'])
+            d['LOCATION'] = fm['LOCATION']
+            dl.append(d)
+    if len(dl) > 0:
+        dt = vstack(dl,metadata_conflicts='silent')
+        dt['TILEID'] = tile
+        dt.remove_columns(remcol)
+        return dt
+    else:
+        return None
+
+
+def combEMdata_daily_old(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',outf='temp.fits'):
     from desispec.io.emlinefit import read_emlines_inputs
     from desispec.emlinefit import get_emlines
 

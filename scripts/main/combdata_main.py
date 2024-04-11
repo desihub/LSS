@@ -130,6 +130,8 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
+else:
+    coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/''
 
 if args.survey == 'Y1':
     wd &= mt['ZDATE'] < 20220900
@@ -369,13 +371,15 @@ if  args.mkemlin == 'y':
             outft = outdir+'emline-'+str(tile)+'.fits'
             if not os.path.isfile(outf):
                 tdate = str(tdate)
-                ct.combEMdata_daily(tile,zdate,tdate,outf=outft)
+                ct.combEMdata_daily_old(tile,zdate,tdate,outf=outft)
                 print('wrote '+outf)
                 ndone += 1
                 print('completed '+str(ndone)+' tiles')
         ct.combtile_em(tiles4comb,outf)
-    else:
+    elif specrel != 'daily':
         ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
+    else:
+        ct.combtile_em_daily(tiles4comb,outf)
 
 if args.survey == 'Y1' and args.counts_only == 'y':    
     if prog == 'dark':
