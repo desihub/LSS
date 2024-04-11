@@ -19,11 +19,14 @@ import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
+parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
+parser.add_argument("--minr", default=0,type=int)
+parser.add_argument("--maxr", default=18,type=int)
 
 args = parser.parse_args()
 
 
-tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/tiles-'+args.prog+'.fits')
+tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/tiles-'+args.prog+'.fits')
 
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -138,10 +141,10 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
     inds = np.arange(len(tls))
-    for rann in range(0,18):
+    for rann in range(int(args.minr),int(args.maxr)):
         with Pool(processes=128) as pool:
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         print(len(colltot),np.sum(colltot['COLLISION']))
-        common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
+        common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs'+args.survey+'/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
 
