@@ -605,7 +605,7 @@ def combtile_em_daily(tiles,outf='',md='',prog='dark',coaddir='',redo='n'):
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = None
-        tspec = combEMdata_daily(tile,zdate,tdate)
+        tspec = combEMdata_daily(tile,str(zdate),tdate)
         if tspec is not None:
             tspec = np.array(tspec)
 
