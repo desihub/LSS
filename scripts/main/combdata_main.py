@@ -131,7 +131,7 @@ if specrel != 'daily':
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 else:
-    coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/''
+    coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
 
 if args.survey == 'Y1':
     wd &= mt['ZDATE'] < 20220900
