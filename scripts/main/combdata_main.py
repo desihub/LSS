@@ -379,7 +379,7 @@ if  args.mkemlin == 'y':
     elif specrel != 'daily':
         ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
     else:
-        if par == 'y':
+        if args.par == 'y':
             tl = []
             if os.path.isfile(outf):
                 specd = fitsio.read(outf)
