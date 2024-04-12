@@ -1300,6 +1300,49 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     print('moved output to ' + outf)
     return True
 
+def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS'):
+    '''
+    ff is the structured array/Table to be written out as an LSS catalog
+    outf is the full path to write out
+    comments is a list of comments to include in the header
+    this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
+    '''
+    import shutil
+    ranstring = int(np.random.random()*1e10)
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
+    if os.path.isfile(tmpfn):
+        os.system('rm ' + tmpfn)
+    fd = fitsio.FITS(tmpfn, "rw")
+    fd.write(np.array(ff), extname=extname)
+    if comments is not None:
+        for comment in comments:
+            fd[extname].write_comment(comment)
+    #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    fd.close()
+    print('closed fits file')
+    #shutil.move(tmpfn, outf)
+    #os.rename(tmpfn, outf)
+    testcol = list(ff.dtype.names)[0]
+    try:
+        fitsio.read(tmpfn,columns=(testcol))
+    except:
+        print('read failed, output corrupted?!')
+        return 'FAILED'    
+    os.system('cp ' + tmpfn + ' ' + outf) 
+    os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    print('moved output to ' + outf)
+    df = 0
+    try:
+        fitsio.read(outf,columns=(testcol))
+        df = 1
+    except:
+        print('read failed, copy failed?! check temporary file '+tmpfn)
+        return 'FAILED'    
+    if df == 1:
+        os.system('rm '+tmpfn)
+    return True
+
+
 def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
     """
     It is a real nightmare to work with all the fits file in hpdirname_list more than 800 for each directory. Rewrite it in a smaller number of files.
