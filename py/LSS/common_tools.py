@@ -707,12 +707,15 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
     return True
 
 def join_with_fastspec(infn,fscols=['TARGETID','ABSMAG01_SDSS_G','ABSMAG01_SDSS_R'],inroot='/dvs_ro/cfs/cdirs/',\
-outroot='/global/cfs/cdirs/',fsver='v1.0',fsrel='dr1',specrel='iron',prog='bright'):
-
+outroot='/global/cfs/cdirs/',fsver='v2.0',fsrel='dr1',specrel='iron',prog='bright'):
+    #v2.0 used in v1 through v1.2 of catalogs
     indata = fitsio.read(inroot+infn)
     print(len(indata))
     #fsfn = '/dvs_ro/cfs/cdirs/desi/public/'+fsrel+'/vac/'+fsrel+'/fastspecfit/'+specrel+'/'+fsver+'/catalogs/fastspec-'+specrel+'-main-'+prog+'.fits'
-    fsfn = '/dvs_ro/cfs/cdirs/desi/spectro/fastspecfit/'+specrel+'/catalogs/fastspec-'+specrel+'-main-'+prog+'.fits'
+    if fsver == 'latest':
+        fsfn = '/dvs_ro/cfs/cdirs/desi/spectro/fastspecfit/'+specrel+'/catalogs/fastspec-'+specrel+'-main-'+prog+'.fits'
+    else:
+        fsfn = '/dvs_ro/cfs/cdirs/desi/public/'+fsrel+'/vac/'+fsrel+'/fastspecfit/'+specrel+'/'+fsver+'/catalogs/fastspec-'+specrel+'-main-'+prog+'.fits'
     fastspecdata = fitsio.read(fsfn,columns=fscols)
     dcols = list(indata.dtype.names)
     indata = Table(indata)

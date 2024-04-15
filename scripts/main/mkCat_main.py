@@ -478,7 +478,7 @@ if type[:3] == 'BGS':
 
 if args.add_fs == 'y':
     fscols=['TARGETID','ABSMAG01_SDSS_G','ABSMAG01_SDSS_R']
-    fsver = 'v1.0'
+    fsver = 'v2.0'
     fsrel = 'dr1'
     fsspecver = args.verspec
     logf.write('adding columns from fastspecfit version ' +fsver+' '+fsrel+' '+str(datetime.now()))
