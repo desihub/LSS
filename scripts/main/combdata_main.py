@@ -300,8 +300,25 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+    tids = list(tiles4comb['TILEID'])
+    def _tab2list(tid):
+        sel = tiles4comb['TILEID'] == tid
+        logger.info('at TILEID '+str(tid))
+        tl_tab = tiles4comb[sel]
+        tab = ct.get_tiletab(tl_tab)
+        return tab
+
     if os.path.isfile(tarfo) == False or args.redotardup == 'y':
         logger.info('creating '+tarfo)
+        tile_list = []
+        tids_todo = tids
+    else:
+        logger.info('not remaking '+tarfo)
+        tile_list = [fitsio.read(tarfo)]
+        tids_c = np.unique(tile_list[0]['TILEID'])
+        tids_todo_inds = ~np.isin(tids,tids_c)
+        tids_todo = tids[tids_todo_inds]
+    if len(tids_todo) > 0:    
         if args.par == 'y':
             
             #test of what goes in parallel
@@ -316,22 +333,16 @@ if specrel == 'daily' and args.survey == 'DA2':
             #manager = Manager()
             #tile_list = manager.list()
             #def _tab2list(tlist,tid):
-            def _tab2list(tid):
-                sel = tiles4comb['TILEID'] == tid
-                logger.info('at TILEID '+str(tid))
-                tl_tab = tiles4comb[sel]
-                tab = ct.get_tiletab(tl_tab)
-                return tab
             #    tlist.append(tab)
-            inds = np.arange(len(tiles4comb))
-            tids = list(tiles4comb['TILEID'])#tiles4comb['TILEID'][i])) for i in inds
+            #inds = np.arange(len(tiles4comb))
+            #tiles4comb['TILEID'][i])) for i in inds
             #job = [Process(target=_tab2list, args=(tile_list, tiles4comb['TILEID'][i])) for i in inds]
             #_ = [p.start() for p in job]
             #_ = [p.join() for p in job]
             from concurrent.futures import ProcessPoolExecutor
-            tile_list = []
+            
             with ProcessPoolExecutor() as executor:
-                for tab in executor.map(_tab2list, tids):
+                for tab in executor.map(_tab2list, tids_todo):
                     tile_list.append(np.array(tab))
             logger.info('tiles in list of length '+str(len(tile_list)))
             logger.info('concatenating')
@@ -344,12 +355,14 @@ if specrel == 'daily' and args.survey == 'DA2':
             tarsn.sort('TARGETID')
             
             logger.info('sort done')
-            common.write_LSS(tarsn,tarfo)
+                common.write_LSS(tarsn,tarfo)
         
         else:
             ct.combtiles_wdup(tiles4comb,fout=tarfo)
     else:
-        logger.info('not remaking '+tarfo)
+        logger.info('no new tiles to combine')
+        
+        
             
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
@@ -444,6 +457,9 @@ if args.survey == 'Y1' and args.counts_only == 'y':
 
 if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    dotarspec = False
+    if args.redotarspec == 'y':
+        dotarspec = True
     if os.path.isfile(specfo) and args.redospec == 'n':
         specf = Table.read(specfo)
         if list(specf.dtype.names) != speccols:
@@ -501,6 +517,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
     specf = Table.read(specfo)
     if newspec:
         logger.info('new tiles were found for spec dataso there were updates to '+specfo)
+        dotarspec = True
     else:
         logger.info('no new tiles were found for spec data, so no updates to '+specfo)
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -526,7 +543,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
         logger.info(len(tiles4comb['TILEID']))
         #outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
-        if os.path.isfile(outfs) == False:
+        if os.path.isfile(outfs) == False or dotarspec or :
             #update = True
             #dotarspec = True
     
