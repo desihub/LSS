@@ -136,7 +136,7 @@ else:
 if args.survey == 'Y1':
     wd &= mt['ZDATE'] < 20220900
 if args.survey == 'DA2':
-    wd &= mt['ZDATE'] < 20240400
+    wd &= mt['ZDATE'] < 20240410
 
 mtd = mt[wd]
 #print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
