@@ -12,16 +12,20 @@ learnrate=$6
 model=$7
 loss=$8
 
-real=${9} #realization number
-mockversion=${14}
-if [ "${mockversion}" == "v0" ]
-then
-    output_nn=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/${tracer}_${run}
-    input_data=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/prep_${tracer}_${run}.fits
-else
-    output_nn=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/$mockversion/sysnet/${tracer}_${run}
-    input_data=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/$mockversion/sysnet/prep_${tracer}_${run}.fits
-fi
+basedir=${9}
+output_nn=$basedir/sysnet/${tracer}_${run}
+input_data=$basedir/sysnet/prep_${tracer}_${run}.fits
+
+#real=${9} #realization number
+#mockversion=${14}
+#if [ "${mockversion}" == "v0" ]
+#then
+#    output_nn=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/${tracer}_${run}
+#    input_data=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/sysnet/prep_${tracer}_${run}.fits
+#else
+#    output_nn=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/$mockversion/sysnet/${tracer}_${run}
+#    input_data=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/mock$real/$mockversion/sysnet/prep_${tracer}_${run}.fits
+#fi
 echo using $input_data and saving to $output_nn
 
 
