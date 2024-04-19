@@ -127,6 +127,23 @@ def splitGC_wo(flroot,datran='.dat',rann=0):
     outf_sgc = flroot+'SGC_'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
+def splitGC_from_array(in_array, flroot,datran='.dat',rann=0):
+    # same as splitGC_wo but does not read full file, instead it 
+    # is given as an array beforehand
+    import LSS.common_tools as common
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    app = 'clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = str(rann)+'_clustering'+datran+'.fits'
+
+    fn = in_array
+    sel_ngc = common.splitGC(fn)
+    outf_ngc = flroot+'NGC_'+app
+    common.write_LSS(fn[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_'+app
+    common.write_LSS(fn[~sel_ngc],outf_sgc)
+
 
 mockdir = args.base_dir+'mock'+str(args.realization)+'/'
 if args.mockcatver is not None:
@@ -227,29 +244,33 @@ if args.imsys == 'y':
 
 
 if args.prepsysnet == 'y':
-    nran = 18
+    if args.use_allsky_rands == 'y': nran = 1
+    else: nran = 18
     #logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
         print('made '+dirout+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
-    #_HPmapcut'
-    #datn = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_clustering.dat.fits'))
-    #dats = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_clustering.dat.fits'))
-    #dat = np.concatenate((datn,dats))
-    #dat = common.addNS(Table(dat))
-    dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_clustering.dat.fits'))
+    
+    print(f"preparing data for SYSNet")
+    print("reading .dat files for NGC and SGC")
+    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
+    dat = Table(np.concatenate((datn,dats)))
+    print('concat .dat files len: ',len(dat))
+    print('concat randoms')
     ranl = []
     for i in range(0,nran):
-        print(f"reading randoms {i+1}/{nran}")
-        #rann = fitsio.read(os.path.join(dirout, tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
-        #rans = fitsio.read(os.path.join(dirout, tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
-        #ran = np.concatenate((rann,rans))
+        print(f'concat {i+1}/{nran} randoms')
+        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        ran = np.concatenate((rann,rans))
         #ran = common.addNS(Table(ran))
-        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP','PHOTSYS'])        
         ranl.append(ran)
     rands = np.concatenate(ranl)
+    rands = common.addNS(Table(rands))
+    print('concat randoms len: ',len(rands))
     
     #if args.use_allsky_rands == 'y':
     #    print('using randoms allsky for frac_area')
@@ -292,10 +313,11 @@ if args.prepsysnet == 'y':
             #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
-        
+            print("Templates to be used for training ", fit_maps)
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, allsky_rands=allrands, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
                     nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
+            print("prepared and saving ", fnout)
             common.write_LSS(prep_table,fnout)
 
 if args.regressis == 'y':
@@ -375,8 +397,13 @@ if args.add_regressis == 'y':
     fb = dirout+tp
     regl = ['NGC','SGC']
     #for reg in regl:
-    fcd = fb+'_clustering.dat.fits'
-    dd = Table.read(fcd)
+    #fcd = fb+'_clustering.dat.fits'
+    #dd = Table.read(fcd)
+    print("reading .dat files for NGC and SGC")
+    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
+    dd = Table(np.concatenate((datn,dats)))
+    print('concat .dat files len: ',len(dat))
     dd['WEIGHT_RF'] = np.ones(len(dd))
 
     for zl in zrl:    
@@ -397,9 +424,10 @@ if args.add_regressis == 'y':
         print(np.mean(dd['WEIGHT_RF'][selz]))
     #logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
 
-    common.write_LSS(dd,fcd)#,comments)
+    #common.write_LSS(dd,fcd)#,comments)
     flroot = os.path.join(dirout, tp+'_')
-    splitGC_wo(flroot)
+    #splitGC_wo(flroot)
+    splitGC_from_array(dd,flroot)
 
 regl = ['NGC','SGC']
 
@@ -415,10 +443,15 @@ if args.add_sysnet == 'y':
 
     regl_sysnet = ['N','S']
     #regl = ['NGC','SGC']
-    fb = dirout+tp
+    #fb = dirout+tp
     #for reg in regl:
-    fcd = fb+'_clustering.dat.fits'
-    dd = Table.read(fcd)
+    #fcd = fb+'_clustering.dat.fits'
+    #dd = Table.read(fcd)
+    print("reading .dat files for NGC and SGC")
+    datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
+    dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
+    dd = Table(np.concatenate((datn,dats)))
+    print('concat .dat files len: ',len(dat))
     dd['WEIGHT_SN'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
     dpix = hp.ang2pix(256,dth,dphi)
@@ -452,9 +485,10 @@ if args.add_sysnet == 'y':
         #comments = []
         #comments.append("Using sysnet for WEIGHT_SYS")
 
-    common.write_LSS(dd,fcd)#,comments)
+    #common.write_LSS(dd,fcd)#,comments)
     flroot = os.path.join(dirout, tp+'_')
-    splitGC_wo(flroot)
+    #splitGC_wo(flroot)
+    splitGC_from_array(dd,flroot)
 
 if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys_ran == 'y':
     if args.add_regressis_ran == 'y':
