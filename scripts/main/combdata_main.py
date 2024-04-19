@@ -506,11 +506,12 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
                 for specd in executor.map(_get_tile, inds):
                     if specd is not None:
                         tl.append(np.array(specd))
-        specd = np.hstack(tl)
-        kp = (specd['TARGETID'] > 0)
-        specd = specd[kp]
-        common.write_LSS(specd,specfo)
-        del specd
+        if newspec:
+            specd = np.hstack(tl)
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+            common.write_LSS(specd,specfo)
+            del specd
         del tl
     else:
         newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog,par=args.par)
