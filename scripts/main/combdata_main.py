@@ -355,7 +355,7 @@ if specrel == 'daily' and args.survey == 'DA2':
             tarsn.sort('TARGETID')
             
             logger.info('sort done')
-                common.write_LSS(tarsn,tarfo)
+            common.write_LSS(tarsn,tarfo)
         
         else:
             ct.combtiles_wdup(tiles4comb,fout=tarfo)
