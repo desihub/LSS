@@ -572,27 +572,28 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1': #and args.clusd == 'y':
 
     
 if args.add_bitweight == 'y':
-    logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
-    fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
-    print(fn)
-    ff = Table(fitsio.read(fn))
-    try:
-        ff.remove_columns(['BITWEIGHTS_1','PROB_OBS_1','BITWEIGHTS_2','PROB_OBS_2'])
-        print('removed ','BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2')
-    except:
-        print('not removing 1/2 bitweights')
-    try:
-        ff.remove_columns(['BITWEIGHTS','PROB_OBS'])
-        print('removed ','BITWEIGHTS','PROB_OBS')
-    except:
-        print('not removing bitweights')
-
-    if type[:3] != 'BGS':
-        bitf = fitsio.read(mainp.darkbitweightfile)
-    else:
-        bitf = fitsio.read(mainp.brightbitweightfile)
-    ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ff,fn)#,comments='Added alt MTL info')
+    print('USE add_DR1_bitweights_all.py script instead!')
+    #logf.write('added bitweights to data catalogs for '+tp+' '+str(datetime.now()))
+    #fn = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    #print(fn)
+    #ff = Table(fitsio.read(fn))
+    #try:
+    #    ff.remove_columns(['BITWEIGHTS_1','PROB_OBS_1','BITWEIGHTS_2','PROB_OBS_2'])
+    #    print('removed ','BITWEIGHTS_1','PROBOBS_1','BITWEIGHTS_2','PROBOBS_2')
+    #except:
+    #    print('not removing 1/2 bitweights')
+    #try:
+    #    ff.remove_columns(['BITWEIGHTS','PROB_OBS'])
+    #    print('removed ','BITWEIGHTS','PROB_OBS')
+    #except:
+    #    print('not removing bitweights')
+    #
+    #if type[:3] != 'BGS':
+    #    bitf = fitsio.read(mainp.darkbitweightfile)
+    #else:
+    #    bitf = fitsio.read(mainp.brightbitweightfile)
+    #ff = join(ff,bitf,keys=['TARGETID'],join_type='left')
+    #common.write_LSS(ff,fn)#,comments='Added alt MTL info')
 
 if args.swap20211212 == 'y':
     dirspec = '/global/cfs/cdirs/desi/spectro/redux/reproc_20211212_iron/tiles/cumulative/'
