@@ -300,7 +300,7 @@ if specrel == 'daily' and args.survey == 'main':
 
 if specrel == 'daily' and args.survey == 'DA2':
     tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-    tids = list(tiles4comb['TILEID'])
+    tids = tiles4comb['TILEID']#list()
     def _tab2list(tid):
         sel = tiles4comb['TILEID'] == tid
         logger.info('at TILEID '+str(tid))
@@ -342,7 +342,7 @@ if specrel == 'daily' and args.survey == 'DA2':
             from concurrent.futures import ProcessPoolExecutor
             
             with ProcessPoolExecutor() as executor:
-                for tab in executor.map(_tab2list, tids_todo):
+                for tab in executor.map(_tab2list, list(tids_todo)):
                     tile_list.append(np.array(tab))
             logger.info('tiles in list of length '+str(len(tile_list)))
             logger.info('concatenating')
