@@ -1,0 +1,15 @@
+#steps for DA2
+source /global/common/software/desi/desi_environment.sh main
+export LSSCODE=$HOME
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+
+#comb of spec and tar files (dark then bright)
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --survey DA2 --par y (--redotarspec y)
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog bright --survey DA2 --par y (--redotarspec y)
+
+#qso catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --doqso y --survey DA2
+
+#em line catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --mkemlin y --par y --survey DA2
