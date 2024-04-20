@@ -26,7 +26,7 @@ parser.add_argument("--maxr", default=18,type=int)
 args = parser.parse_args()
 
 
-tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/tiles-'+args.prog+'.fits')
+tiletab = Table.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/tiles-'+args.prog+'.fits')
 
 margins = dict(pos=0.05,
                    petal=0.4,
@@ -48,7 +48,7 @@ def getcoll(ind):
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
 
-    fbah = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    fbah = fitsio.read_header('/dvs_ro/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
     t = Table(tiletab[ind])
@@ -83,9 +83,9 @@ def getcoll(ind):
     tagalong = create_tagalong(plate_radec=plate_radec)
 
     # Load target files...
-    load_target_file(tgs, tagalong, '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile)
+    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile)
     #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
+    tar_tab = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
