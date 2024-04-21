@@ -20,8 +20,8 @@ parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--version", help="catalog version",default='test')
 parser.add_argument("--tracers", help="only ELG_LOPnotqso is available",default='all')
-parser.add_argument("--zmin", help="minimum redshift",default=-0.1)
-parser.add_argument("--zmax", help="maximum redshift",default=1.5)
+parser.add_argument("--zmin", help="minimum redshift",type=float,default=None)
+parser.add_argument("--zmax", help="maximum redshift",type=float,default=None)
 parser.add_argument("--focalplane_SSR_LSS", help="add WEIGHT_focal to the full data or not",action='store_true',default=False)
 parser.add_argument("--fullonly", help="use full data instead of full_HPmapcut",action='store_true',default=False)
 
@@ -55,9 +55,10 @@ if args.data == 'mock':
     os.system('mkdir %s' % outdir)
 else:
     indir = args.basedir+'/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
-    ############
-    outdir = indir+'plots/ssr'+args.fulltype+'/'
-    ############
+    if args.fullonly:
+        outdir = indir+'plots/ssr/'
+    else:
+        outdir = indir+'plots/ssr_HPmapcut/'
 
 # create the susscessful rate vs observation figure
 if args.data == 'LSS':
@@ -110,22 +111,31 @@ if args.survey == 'SV3' and args.tracers == 'all':
 
 for tp in tps:
     # redshift range of different tracers
+    if (args.zmin is not None)&(args.zmax is not None):
+        zmin = args.zmin
+        zmax = args.zmax
+    else:
+        if tp[:3] == 'QSO':
+            zmin = 0.8
+            zmax = 3.5
+        elif tp[:3] == 'ELG':
+            zmin = 0.01
+            zmax = 1.8
+        elif tp[:3] == 'LRG':
+            zmin = 0.01
+            zmax = 0.4
+        elif tp[:3] == 'BGS':
+            zmin = 0.01
+            zmax = 0.5
+    # SSR variation amplitude
     if tp[:3] == 'QSO':
-        zmin = float(args.zmin)
-        zmax = float(args.zmax)
         dv   = 0.08
     elif tp[:3] == 'ELG':
-        zmin = 0.01
-        zmax = 1.8
         flux = 'G'
         dv   = 0.05
     elif tp[:3] == 'LRG':
-        zmin = float(args.zmin)
-        zmax = float(args.zmax)
         dv   = 0.02
     elif tp[:3] == 'BGS':
-        zmin = 0.01
-        zmax = 0.5
         flux = 'Z'
         dv   = 0.02
     # read the full catalogue 
@@ -166,7 +176,7 @@ for tp in tps:
     elif args.data == 'mock':
         quantities = [f'TSNR2_{tp[:3]}']
     # sample selections 
-    ## 'N' = 'BASS+MzLS' photometric information, 'S' = 'DeCaLS'
+    ## 'N' = 'BASS+MzLS' photometric information, 'S' = 'DECam'
     seln = full['PHOTSYS'] == 'N' 
     ## the selection of valid samples
     sel_obs = full['ZWARN'] != 999999
@@ -177,7 +187,7 @@ for tp in tps:
     if tp[:3] == 'QSO':
 	    sel_obs &= full['PRIORITY'] == 3400 #repeats throw things off  
     # the selection of redshift
-    print('full columns',full.columns)
+    #print('full columns',full.columns)
     if args.data == 'LSS':
         selz    = (zmin<full['Z_not4clus'])&(full['Z_not4clus']<zmax)
     elif args.data == 'mock':
@@ -269,7 +279,7 @@ for tp in tps:
                     weight_type = r': ZFAIL*$\epsilon_{\rm focal}$'
             meanssr = np.sum(GOOD)/np.sum(ALL)
             ax[i,j].errorbar(BIN,GOOD/ALL/meanssr,err/meanssr,label=split+weight_type+r', $\chi^2/dof={:.1f}/{}$'.format(SSR_chi2(GOOD,ALL,err),len(ALL)),fmt=fmt)
-            print('GOOD/ALL/meanssr',GOOD/ALL/meanssr)
+            #print('GOOD/ALL/meanssr',GOOD/ALL/meanssr)
             plt.xlabel(f'{quantity} at {zmin}<z<{zmax}')
             if q == 0:
                 np.savetxt(outdir+'{}_TSNR2_success_rate_z{}z{}_{}_{}.txt'.format(tp,zmin,zmax,split,args.version),np.array([BIN, GOOD/ALL/meanssr,err/meanssr]).T)   
@@ -295,7 +305,7 @@ for tp in tps:
     plt.close('all')
 
     # obtain the fibre-wise SSR
-    photos    = ['BASS/MzLS','DECaLS']
+    photos    = ['BASS/MzLS','DECam']
     # the fibreIDs
     dl        = np.loadtxt(f'/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.1/{tp}_zsuccess_fromfull.txt').transpose()
     FIB       = np.append(dl[0],999999)
