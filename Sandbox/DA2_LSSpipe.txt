@@ -23,3 +23,8 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_ran.py  --prog DARK --survey DA2
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_ran.py  --prog BRIGHT --survey DA2
+
+#assignment collisions, BRIGHT and DARK
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getcollisions_dat.py  --prog BRIGHT --survey DA2
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getcollisions_dat.py  --prog DARK --survey DA2
