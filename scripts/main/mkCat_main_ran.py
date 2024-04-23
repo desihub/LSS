@@ -357,7 +357,7 @@ def doran(ii):
         logger.info('combining with spec info')
         infile = maindir+'random'+str(ii)+'/pota-'+type.upper()+'.fits'
         mask_coll = False
-        if args.survey == 'Y1':
+        if args.survey != 'main':
             mask_coll = True
         ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
     
