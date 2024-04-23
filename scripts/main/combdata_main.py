@@ -559,10 +559,10 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             if notqso == 'notqso':
                 sel &= (tarf['DESI_TARGET'] & 4) == 0
             tarf = Table(tarf[sel])
-            print('cut to target type')
+            logger.info('cut to target type')
             
             tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
-            print('added TILELOCID, about to do joins')
+            logger.info('added TILELOCID, about to do joins')
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
             #seems to run out of memory on join
@@ -575,7 +575,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
                 try:
                     specf.remove_columns([col])
                 except:
-                    print('column '+col +' was not in stacked spec table') 
+                    logger.info('column '+col +' was not in stacked spec table') 
             tjl.append(join(tarf[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
             logger.info('1st join done')
