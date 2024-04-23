@@ -570,7 +570,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             logger.info(tarf.dtype.names)
             selreg = tarf['DEC'] > 0
             logger.info(len(tarf[selreg]))
-            remcol = ['LOCATION','TILEID']
+            remcol = ['LOCATION','TILEID','FIBER','PRIORITY']
             for col in remcol:
                 try:
                     specf.remove_columns([col])
