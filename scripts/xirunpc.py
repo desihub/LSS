@@ -387,7 +387,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
                                             estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
+                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
 
     # First D1R2_parent/D1R2_IIP angular weight
     # Input bitwise weights are automatically turned into IIP
@@ -398,7 +398,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_randoms_positions2, randoms_weights2=parent_randoms_weights2,
                                             estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
+                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
     wangR1D2 = None
     if not autocorr:
         wangR1D2 = TwoPointCorrelationFunction('theta', tedges, data_positions1=parent_randoms_positions1, data_weights1=parent_randoms_weights1,
@@ -406,7 +406,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                                randoms_positions1=parent_randoms_positions1, randoms_weights1=parent_randoms_weights1,
                                                randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
                                                estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                               dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
+                                               dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
 
     wang = {}
     wang['D1D2_twopoint_weights'] = wangD1D2
@@ -519,7 +519,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
-                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs)#,weight_attrs={'normalization': 'counter'})
+                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs,weight_attrs={'normalization': 'counter'})
             D1D2 = tmp.D1D2
             result += tmp
         results.append(result)
