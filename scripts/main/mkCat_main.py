@@ -315,13 +315,13 @@ if mkfulld:
 
     else:
         dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
-        tlf = ldirspec+type+'_tilelocs.dat.fits'
+        tlf = None
         if type[:3] == 'ELG':
             azf = mainp.elgzf
         if type[:3] == 'QSO':
             azf = mainp.qsozf
-    if args.survey == 'Y1':
-        tlf = None
+    if args.survey == 'main':        
+        tlf = ldirspec+type+'_tilelocs.dat.fits'
 
  
     ftar = fitsio.read(tarf)   
@@ -335,7 +335,7 @@ if mkfulld:
         desitarg='DESI_TARGET'
     
     maskcoll = False
-    if args.survey == 'Y1':
+    if args.survey != 'main':
         maskcoll = True
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
 
