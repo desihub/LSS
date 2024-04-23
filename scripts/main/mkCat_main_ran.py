@@ -209,6 +209,10 @@ wd &= mt['FAPRGRM'] == pdir
 if args.survey == 'Y1':
     wd &=mt['ZDATE'] < 20220900
 
+if args.survey == 'DA2':
+    wd &=mt['ZDATE'] < 20240410
+
+
 mtld = mt[wd]
 #logger.info('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 logger.info('found '+str(len(mtld))+' '+pdir+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
