@@ -40,6 +40,11 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --survey DA2
 
+#add spec info to random potential assignments
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --combwspec y --survey DA2 --maxr 18
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type bright --combwspec y --survey DA2 --maxr 18
+
 #make full_noveto randoms
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type QSO --combwspec n --fullr y --survey DA2 --maxr 18
 
