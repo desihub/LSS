@@ -23,6 +23,8 @@ parser.add_argument("--mockfile", help="formattable name of mock file(s). e.g. c
 parser.add_argument("--real", help="number for the realization",default=0)
 parser.add_argument("--prog", help="dark or bright",default='bright')
 parser.add_argument("--base_output", help="base directory for output", default = "/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA_BGS/FFA_temp/")#default='/pscratch/sd/s/sikandar/Y1/mocks/')
+
+parser.add_argument("--path2LSS", help="path where LSS module was cloned to find scripts. If None, defaults to $HOME/.local/LSS/", default = None)#default='/pscratch/sd/s/sikandar/Y1/mocks/')
 parser.add_argument("--tracer", help="which tracer to do", nargs = '+')
 parser.add_argument("--emulator_dir", help="base directory of ffa emulator")
 parser.add_argument("--galcap")
@@ -44,7 +46,11 @@ tracer_string = " ".join(tracer_arr)
 # else:
 #     add_string = ""
 add_string = ""
-path2LSS='/global/homes/j/jlasker/.local/desicode/'
+if args.path2LSS is None:
+    homedir = os.getenv('HOME')
+    path2LSS = f'{homedir}/.local/'
+else:
+    path2LSS=args.path2LSS
 if (args.mockver == "EZmock") and ("BGS" not in args.tracer):
     prep_script = f"{path2LSS}/LSS/scripts/mock_tools/prepare_mocks_Y1EZ.py"
     subdir = "EZmock"
@@ -62,7 +68,10 @@ else:
 getpota_indir = args.base_output + add_string 
 getpota_outdir = args.base_output + add_string
 #getpota_tiledir = os.path.join(os.environ['SCRATCH'], 'rantiles','mock'+args.real)
-getpota_tiledir = os.path.join("/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/random_tiles/", 'mock'+args.real)
+if not args.mockver == 'EZmock':
+    getpota_tiledir = os.path.join(f'{args.base_output}/random_tiles/', 'mock'+args.real)
+else:
+    getpota_tiledir = os.path.join("/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/random_tiles/", 'mock'+args.real)
 getpota_tiledir = getpota_tiledir + "/"
 if not os.path.exists(getpota_tiledir):
     os.makedirs(getpota_tiledir)
