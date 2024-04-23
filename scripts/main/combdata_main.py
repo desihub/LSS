@@ -549,7 +549,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             #dotarspec = True
     
             tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
-            tarf = fitsio.read(tarfo)#,columns=cols)
+            tarf = fitsio.read(tarfo.replace('global','dvs_ro'))#,columns=cols)
             logger.info('loaded tarspecwdup file')
             #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
             if tp == 'BGS_BRIGHT':
@@ -585,7 +585,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             del tarf
             tj = vstack(tjl)
             logger.info('stacked now writing out')
-            common.write_LSS(tj,outfs)
+            common.write_LSS_scratchcp(tj,outfs)
             logger.info('joined to spec data and wrote out to '+outfs)
         else:
             logger.info(outfs +' exists already, not making again')
