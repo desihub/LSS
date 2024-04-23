@@ -585,7 +585,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
             del tarf
             tj = vstack(tjl)
             logger.info('stacked now writing out')
-            common.write_LSS_scratchcp(tj,outfs)
+            common.write_LSS_scratchcp(tj,outfs,logger=logger)
             logger.info('joined to spec data and wrote out to '+outfs)
         else:
             logger.info(outfs +' exists already, not making again')

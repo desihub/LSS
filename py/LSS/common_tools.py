@@ -1303,7 +1303,7 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     print('moved output to ' + outf)
     return True
 
-def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS'):
+def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
@@ -1322,25 +1322,44 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS'):
             fd[extname].write_comment(comment)
     #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
-    print('closed fits file')
+    if logger is None:
+        print('closed fits file')
+    else:
+        logger.info('closed fits file')
     #shutil.move(tmpfn, outf)
     #os.rename(tmpfn, outf)
     testcol = list(ff.dtype.names)[0]
     try:
         fitsio.read(tmpfn,columns=(testcol))
     except:
-        print('read failed, output corrupted?!')
+        if logger is None:
+            print('read failed, output corrupted?!')
+        else:
+            logger.info('read failed, output corrupted?!')
         return 'FAILED'    
     os.system('cp ' + tmpfn + ' ' + outf) 
     os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    print('moved output to ' + outf)
+    if logger is None:
+        print('moved output to ' + outf)
+    else:
+        logger.info('moved output to ' + outf)
     df = 0
+    if logger is None:
+        print('checking read of column ' + testcol)
+    else:
+        logger.info('checking read of column ' + testcol)
+
     try:
-        fitsio.read(outf,columns=(testcol))
+        fitsio.read(outf.replace('global','dvs_ro'),columns=(testcol))
         df = 1
     except:
         print('read failed, copy failed?! check temporary file '+tmpfn)
         return 'FAILED'    
+    if logger is None:
+        print('removing temp file')
+    else:
+        logger.info('removing temp file')
+
     if df == 1:
         os.system('rm '+tmpfn)
     return True
