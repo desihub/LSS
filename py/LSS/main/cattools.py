@@ -2920,6 +2920,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     fs.keep_columns(['TILELOCID','PRIORITY'])
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+    print(dz.dtype.names)
     del fs
     dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
