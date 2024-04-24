@@ -453,9 +453,9 @@ if __name__ == '__main__':
         for i in range(rm,rx):
             inds.append(i)
         #with sharedmem.MapReduce() as pool:
-        pool = sharedmem.MapReduce(np=6)
-        with pool:
-        
+        #pool = sharedmem.MapReduce(np=6)
+        #with pool:
+        with Pool(processes=6) as pool:
             #def reduce(ii, r):
             #    logger.info('chunk done '+str(ii))
             #    return r
