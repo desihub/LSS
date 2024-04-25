@@ -1193,7 +1193,7 @@ if args.resamp == 'y':
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
 nzcompmd = 'ran'
-if args.compmd == 'altmtl'
+if args.compmd == 'altmtl':
     nzcompmd = args.compmd
 if args.nz == 'y':
     for reg in regions:#allreg:
