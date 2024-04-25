@@ -3937,7 +3937,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             dshuf = fcdn[dsel][inds]
             for col in rcols:
                 ffr[col][rsel] = dshuf[col]
-        ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+        if compmd == 'ran':
+            ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
         rdl = []
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])

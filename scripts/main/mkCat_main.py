@@ -1100,6 +1100,11 @@ if args.compmd == 'altmtl':
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
+nzcompmd = 'ran'
+if args.compmd == 'altmtl':
+    nzcompmd = args.compmd
+
+
 inds = np.arange(rm,rx)
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
@@ -1122,7 +1127,7 @@ if mkclusran:
 
     clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)
+        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
@@ -1210,9 +1215,6 @@ if args.resamp == 'y':
     
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
 if args.nz == 'y':
     for reg in regions:#allreg:
         fb = dirout+tracer_clus+'_'+reg
