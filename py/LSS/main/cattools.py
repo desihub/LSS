@@ -3673,7 +3673,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
-
+    else:
+        ff['WEIGHT_COMP'] = 129/(1+128*ff['PROB_OBS'])
+        ff['WEIGHT'] *= ff['WEIGHT_COMP']
 #    if 'WEIGHT_SYS' not in cols:
 #        ff['WEIGHT_SYS'] =  np.ones(len(ff)) #need to initialize these at 1
 #    ff['WEIGHT'] *= ff['WEIGHT_SYS']
