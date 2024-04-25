@@ -1077,7 +1077,7 @@ if args.ran_utlid == 'y':
 
 #needs to happen before randoms so randoms can get z and weights
 weighttileloc=True
-if args.compmd = 'altmtl':
+if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
     ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
