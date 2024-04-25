@@ -539,7 +539,7 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,logger=None):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -650,7 +650,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fn)
+        write_LSS_scratchcp(fd,fn,logger=logger)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
         #fd = np.array(fd)
         #ff['LSS'].write(fd)
