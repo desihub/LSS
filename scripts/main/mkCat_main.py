@@ -13,8 +13,26 @@ from astropy.table import Table,join,unique,vstack
 from matplotlib import pyplot as plt
 
 import logging
-logger = logging.getLogger('mkCat')
-logger.setLevel(level=logging.INFO)
+logname = 'mkCat'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+
+#logger = logging.getLogger('mkCat')
+#logger.setLevel(level=logging.INFO)
 
 #from desihub
 #from desitarget import targetmask
@@ -1104,7 +1122,7 @@ if mkclusran:
 
     clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)
+        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
