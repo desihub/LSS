@@ -3674,6 +3674,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
     else:
+        print('using PROB_OBS for WEIGHT_COMP')
         ff['WEIGHT_COMP'] = 129/(1+128*ff['PROB_OBS'])
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
 #    if 'WEIGHT_SYS' not in cols:

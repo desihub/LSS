@@ -98,6 +98,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
+parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
@@ -1075,8 +1076,11 @@ if args.ran_utlid == 'y':
 
 
 #needs to happen before randoms so randoms can get z and weights
+weighttileloc=True
+if args.compmd = 'altmtl':
+    weightileloc = False
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
 
 inds = np.arange(rm,rx)
 if mkclusran:
@@ -1188,14 +1192,17 @@ if args.resamp == 'y':
     
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
+nzcompmd = 'ran'
+if args.compmd == 'altmtl'
+    nzcompmd = args.compmd
 if args.nz == 'y':
     for reg in regions:#allreg:
         fb = dirout+tracer_clus+'_'+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
 
     
 
