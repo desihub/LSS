@@ -258,7 +258,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
             weights = catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]#/(129/(1+128*catalog['PROB_OBS'][mask]))
             #print('dividing weights by WEIGHT_COMP')
         if 'pip' in weight_type:
-            weights = catalog['WEIGHT']/catalog['WEIGHT_COMP'][mask]
+            weights = catalog['WEIGHT'][mask]/catalog['WEIGHT_COMP'][mask]
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
     if name == 'data' and 'IIP' in weight_type:
         weights = 129/(1+128*catalog['PROB_OBS'][mask])
