@@ -270,7 +270,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
         if 'bitwise' in weight_type:# and 'default' in weight_type:
-            if default in weight_type:
+            if 'default' in weight_type:
                 weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
             if 'pip' in weight_type:
                 weights = catalog['WEIGHT'][mask]
