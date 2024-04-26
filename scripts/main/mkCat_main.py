@@ -1094,7 +1094,7 @@ if args.ran_utlid == 'y':
 
 
 #needs to happen before randoms so randoms can get z and weights
-weighttileloc=True
+weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
