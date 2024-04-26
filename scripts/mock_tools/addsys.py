@@ -53,6 +53,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 #AJRM 
 #parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
+parser.add_argument("--use_altmtl", help="if yes, use altmtl",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -144,8 +145,10 @@ def splitGC_from_array(in_array, flroot,datran='.dat',rann=0):
     outf_sgc = flroot+'SGC_'+app
     common.write_LSS(fn[~sel_ngc],outf_sgc)
 
-
-mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+if args.use_altmtl == 'y':
+    mockdir = args.base_dir+f"altmtl{str(args.realization)}/mock{str(args.realization)}/LSScats/"
+else:
+    mockdir = args.base_dir+'mock'+str(args.realization)+'/'
 if args.mockcatver is not None:
     mockdir += args.mockcatver+'/'
 
@@ -266,24 +269,11 @@ if args.prepsysnet == 'y':
         rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
         rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
         ran = np.concatenate((rann,rans))
-        #ran = common.addNS(Table(ran))
         ranl.append(ran)
     rands = np.concatenate(ranl)
-    rands = common.addNS(Table(rands))
+    if 'PHOTSYS' not in rands.dtype.names:
+        rands = common.addNS(Table(rands))
     print('concat randoms len: ',len(rands))
-    
-    #if args.use_allsky_rands == 'y':
-    #    print('using randoms allsky for frac_area')
-    #    allsky_fn = "/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_nran18_nside256_ring.fits"
-    #    allsky_rands = fitsio.read(allsky_fn)
-    #    allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
-        #ranl = []
-        #randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-        #for i in range(0,nran):
-        #    print(f"reading allsky randoms {i+1}/{nran}")
-        #    ran = fitsio.read(randir+f'randoms-allsky-1-{i}.fits',columns=['RA','DEC','PHOTSYS'])
-        #    ranl.append(ran)
-        #allsky_rands = np.concatenate(ranl)
         
     regl = ['N','S']
     
@@ -292,7 +282,8 @@ if args.prepsysnet == 'y':
         if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
         for reg in regl:
-            pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            #pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -309,13 +300,16 @@ if args.prepsysnet == 'y':
                 allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
                 allsky_rands = fitsio.read(allsky_fn)
                 allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
-            #    selr_all = allsky_rands['PHOTSYS'] == reg
-            #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
             print("Templates to be used for training ", fit_maps)
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, allsky_rands=allrands, zcolumn='Z', zmin=zl[0], zmax=zl[1], nran_exp=None,
-                    nside=nside, nest=True, use_obiwan=False, columns=fit_maps,wtmd='wt_iip',tp=tp[:3])
+            if args.use_altmtl == 'y':
+                wtmd='fracz'
+            else: 
+                wtmd='wt_iip'
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', allsky_rands=allrands,
+                                                  zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True,use_obiwan=False, 
+                                                  columns=fit_maps,wtmd=wtmd,tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             print("prepared and saving ", fnout)
             common.write_LSS(prep_table,fnout)

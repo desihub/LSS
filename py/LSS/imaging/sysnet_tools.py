@@ -29,11 +29,14 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
 
 
     if wtmd == 'fracz':
-        print('using 1/FRACZ_TILELOCID based completeness weights')
-        wts = 1/data['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols:
-            print('using FRAC_TLOBS_TILES')
-            wts *= 1/data['FRAC_TLOBS_TILES']
+        if 'FRACZ_TILELOCID' in cols:
+            print('using 1/FRACZ_TILELOCID based completeness weights')
+            wts = 1/data['FRACZ_TILELOCID']
+        else:
+            wts = data['WEIGHT_COMP']
+        #if 'FRAC_TLOBS_TILES' in cols:
+        #    print('using FRAC_TLOBS_TILES')
+        wts *= 1/data['FRAC_TLOBS_TILES']
     if wtmd == 'wt_iip':
         wts = data['WEIGHT_IIP']
 

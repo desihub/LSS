@@ -18,20 +18,26 @@ export LSSDIR=$HOME/LSS
 PYTHONPATH=$PYTHONPATH:$LSSDIR/py
 
 RUN_SYSNET=$LSSDIR/scripts/run_sysnetELG_ab2ndgen.sh 
-
+#/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1//altmtl0/mock0/LSScats
 # REGION only useful for ELGs right now
 DATA_VERSION='v1.3'
 REGION='all'
-TRACER=ELG_LOP_ffa
-BASEDIR='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/'
-MOCKVERSION='v0'
+TRACER=ELG_LOPnotqso
+MOCKVERSION=/SecondGenMocks/AbacusSummit_v4_1/
+BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
+MOCKCATVER='v0'
+ALTMTL='y'
 #REAL=$SLURM_ARRAY_TASK_ID
+
 REAL=0
 do_RF=false
 do_prep=false
-do_SN=false
-add_SN=true # if true make sure all weights are available, if not this will fail
+do_SN=true
+add_SN=false # if true make sure all weights are available, if not this will fail
 do_validation=false
+
+#DIR=$BASEDIR/mock$REAL
+DIR=$BASEDIR/altmtl$REAL/mock$REAL/LSScats
 
 SUBSTRING=${TRACER:0:3}
 echo $SUBSTRING
@@ -40,7 +46,7 @@ if [ $do_RF == true ]
 then
     echo "doing RF regression and adding weights"
     # Compute and add regressis weights to mocks
-    srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER --regressis y --add_regressis y --add_regressis_ran y --par y --base_dir $BASEDIR --mock_version $MOCKVERSION --data_version $DATA_VERSION
+    srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER --regressis y --add_regressis y --add_regressis_ran y --par y --base_dir $BASEDIR --mockcatver $MOCKCATVER --use_altmtl $ALTMTL --data_version $DATA_VERSION
     echo "finished doing RF regression and adding RF weights"
 fi
 
@@ -48,11 +54,11 @@ if [ $do_prep == true ]
 then
     echo "preparing data for SYSNet"
     # prepare data for SYSNet
-    if [ $MOCKVERSION == 'v0' ]
+    if [ $MOCKCATVER == 'v0' ]
     then
-        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --tracer $TRACER --prepsysnet y --base_dir $BASEDIR --realization $REAL --use_allsky_rands 'y' --data_version $DATA_VERSION
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --tracer $TRACER --prepsysnet y --base_dir $BASEDIR --realization $REAL --use_allsky_rands 'y' --use_altmtl $ALTMTL --data_version $DATA_VERSION
     else
-        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --tracer $TRACER --prepsysnet y --base_dir $BASEDIR --realization $REAL --mockcatver $MOCKVERSION --use_allsky_rands 'y' --data_version $DATA_VERSION
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --tracer $TRACER --prepsysnet y --base_dir $BASEDIR --realization $REAL --mockcatver $MOCKCATVER --use_allsky_rands 'y' --use_altmtl $ALTMTL  --data_version $DATA_VERSION
     fi
 fi
 
@@ -63,7 +69,6 @@ then
     echo "running SYSNet on ${TRACER}"
     zbin1=0.8_1.1
     zbin2=1.1_1.6
-    DIR=$BASEDIR/mock$REAL/
     if [ $REGION == 'all' ]
     then 
         # Some NN parameters for North
@@ -131,25 +136,26 @@ if [ $add_SN == true ]
 then
     echo "add SYSNet weights to catalogs"
     # add SYSNet weights
-    if [ $MOCKVERSION == 'v0' ]
+    if [ $MOCKCATVER == 'v0' ]
     then
-        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER  --add_sysnet y --add_sysnet_ran y --par y --base_dir $BASEDIR --data_version $DATA_VERSION
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER  --add_sysnet y --add_sysnet_ran y --par y --base_dir $BASEDIR --use_altmtl $ALTMTL --data_version $DATA_VERSION
     else
-        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER  --add_sysnet y --add_sysnet_ran y --par y --base_dir $BASEDIR --mockcatver $MOCKVERSION --data_version $DATA_VERSION
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER  --add_sysnet y --add_sysnet_ran y --par y --base_dir $BASEDIR --use_altmtl $ALTMTL --mockcatver $MOCKCATVER --data_version $DATA_VERSION
     fi
     echo "finished adding SYSNet weights"
 fi
 
 if [ $do_validation == true ]
 then
+    VALIDATION=$LSSDIR/scripts/validation/validation_improp_mock_FFA.py
     echo "running validation on mocks"
-    if [ $MOCKVERSION == 'v0' ]
+    if [ $MOCKCATVER == 'v0' ]
     then
-        python $LSSDIR/scripts/validation/validation_improp_mock_FFA.py --tracer ELG_LOP --mockn $REAL --base_dir $BASEDIR --data_version $DATA_VERSION
-        python $LSSDIR/scripts/validation/validation_improp_mock_FFA.py --tracer ELG_LOP --mockn $REAL --base_dir $BASEDIR --weight_col WEIGHT_SN --data_version $DATA_VERSION
+        python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION
+        python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --weight_col WEIGHT_SN 
     else
-        python $LSSDIR/scripts/validation/validation_improp_mock_FFA.py --tracer ELG_LOP --mockn $REAL --base_dir $BASEDIR --mockcatver $MOCKVERSION --data_version $DATA_VERSION
-        python $LSSDIR/scripts/validation/validation_improp_mock_FFA.py --tracer ELG_LOP --mockn $REAL --base_dir $BASEDIR --mockcatver $MOCKVERSION --weight_col WEIGHT_SN --data_version $DATA_VERSION
+        python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER
+        python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col WEIGHT_SN
     fi
     echo "finished validations"
 fi
