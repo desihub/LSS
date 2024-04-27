@@ -93,7 +93,7 @@ else:
 
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 in_data_fn = mockdir+'pota-'+args.prog+'.fits'
-print(in_data_fn)
+logger.info(in_data_fn)
 out_data_fn = mockdir+tracer+'_complete_noveto_clustering.dat.fits'
 out_data_froot = mockdir+tracer+'_complete_noveto_'
 cols = ['LOCATION',
@@ -120,8 +120,8 @@ if args.prog == 'DARK':
 ndattot = len(mock_data)
 seltar = mock_data[desitarg] & bit > 0
 mock_data = mock_data[seltar]
-print('length before/after cut to target type '+args.tracer)
-print(ndattot,len(mock_data))
+logger.info('length before/after cut to target type '+args.tracer)
+logger.info(str(ndattot,len(mock_data)))
 
 '''
 PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
@@ -133,7 +133,7 @@ mock_data = mock_data[selz]
 mock_data = Table(mock_data)
 mock_data = unique(mock_data,keys=['TARGETID'])
 mock_data = common.addNS(mock_data)
-print('length after cutting to redshift and unique targetid',len(mock_data))
+logger.info('length after cutting to redshift and unique targetid '+str(len(mock_data)))
 mock_data.rename_column('RSDZ', 'Z')
 mock_data['WEIGHT'] = np.ones(len(mock_data))
 common.write_LSS_scratchcp(mock_data,out_data_fn)
@@ -151,9 +151,9 @@ def splitGC(flroot,datran='.dat',rann=0):
     gc = c.transform_to('galactic')
     sel_ngc = gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 splitGC(out_data_froot,'.dat')
 
@@ -224,7 +224,7 @@ def _mkran(rann):
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
     ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
-    common.write_LSS_scratchcp(ran,out_ran_fn)
+    common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
     splitGC(out_data_froot,'.ran',rann)
     return True	
 
