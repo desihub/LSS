@@ -191,7 +191,7 @@ if not os.path.exists(outdir):
 logger.info('input directory is '+mockdir)
 logger.info('output directory is '+outdir)    
 
-in_data_fn = args.base_dir+args.mockver+'/forFA.fits'
+in_data_fn = args.base_dir+args.mockver+'/forFA'+str(args.realization)+'.fits'
 logger.info(in_data_fn)
 cols = [
 'TARGETID',
