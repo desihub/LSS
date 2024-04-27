@@ -140,6 +140,11 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         des_resamp = True
     selregr = randoms['PHOTSYS'] ==  'N'
     selregd = data['PHOTSYS'] ==  'N'
+    logger.info('number of randoms in N:'+str(len(randoms[selregr])))
+    logger.info('number of data in N:'+str(len(data[selregd])))
+    logger.info('number of randoms in S:'+str(len(randoms[~selregr])))
+    logger.info('number of data in S:'+str(len(data[~selregd])))
+
     _resamp(selregr,selregd)
     rand_sel = [selregr,~selregr]
     dat_sel = [ selregd,~selregd]
