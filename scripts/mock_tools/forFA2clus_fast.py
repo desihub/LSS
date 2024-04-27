@@ -220,6 +220,7 @@ mock_data.rename_column('RSDZ', 'Z')
 mock_data['PHOTSYS'] = 'S'
 seln = mock_data['DEC'] > 32.375
 mock_data[seln]['PHOTSYS'] = 'N'
+logger.info(print(np.unique(mock_data['PHOTSYS'],return_counts=True)))
 
 
     
