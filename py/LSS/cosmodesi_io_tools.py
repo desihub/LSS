@@ -337,7 +337,10 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                             else:   
                                 tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
                         #else:
-                            
+                        if 'RSDZ' in option:
+                            if 'Z' in list(tab.dtype.names):
+                                tab.remove_column('Z')
+                            tab.rename_column('RSDZ', 'Z')    
                         return tab
                     positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
                 else:
