@@ -218,13 +218,32 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
     return randoms
 
 
-for rann in range(rm,rx):
+def _mkran(rann):
     in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
     ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
     common.write_LSS(ran,out_ran_fn)
     splitGC(out_data_froot,'.ran',rann)
+    return True	
+
+inds = np.arange(rm,rx)
+if args.par == 'y':
+	from multiprocessing import Pool
+	with Pool(processes=nproc) as pool:
+		res = pool.map(_mkran, inds)
+else:
+	for rn in inds:#range(rm,rx):
+		 _mkran(rn)
+
+
+#for rann in range(rm,rx):
+#    in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
+#    out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
+#    ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
+#    ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
+#    common.write_LSS(ran,out_ran_fn)
+#    splitGC(out_data_froot,'.ran',rann)
 
 
 
