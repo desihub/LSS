@@ -134,7 +134,7 @@ mock_data = unique(mock_data,keys=['TARGETID'])
 mock_data = common.addNS(mock_data)
 print('length after cutting to redshift and unique targetid',len(mock_data))
 mock_data.rename_column('RSDZ', 'Z')
-mock_data['WEIGHT'] = 1
+mock_data['WEIGHT'] = np.ones(len(mock_data))
 common.write_LSS(mock_data,out_data_fn)
 
 def splitGC(flroot,datran='.dat',rann=0):
