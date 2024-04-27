@@ -36,9 +36,9 @@ parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
 parser.add_argument("--prog", default="DARK")
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
-parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/')
+parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/')
 parser.add_argument("--random_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/')
-
+parser.add_argument("--mockver", default='AbacusSummit_v4_1', help = "which mocks to use")
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
 
@@ -70,7 +70,7 @@ else:
     sys.exit('tracer type '+args.tracer+' not supported (yet)')
 
 
-mockdir = args.base_dir+'mock'+str(args.realization)+'/'
+mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 in_data_fn = mockdir+'pota-'+args.prog+'.fits'
 print(in_data_fn)
 out_data_fn = mockdir+tracer+'_complete_noveto_clustering.dat.fits'
@@ -137,18 +137,71 @@ splitGC(out_data_froot,'.dat')
 
 ran_samp_cols = ['Z','WEIGHT']
 
-def ran_col_assign(randoms,data,sample_columns):
-    inds = np.random.choice(len(data),len(randoms))
-    dshuf = data[inds]
-    for col in sample_columns:
-        randoms[col] =  dshuf[col]
+
+def ran_col_assign(randoms,data,sample_columns,tracer):
+    data.rename_column('TARGETID', 'TARGETID_DATA')
+    def _resamp(selregr,selregd):
+        for col in sample_columns:
+            randoms[col] =  np.zeros_like(data[col],shape=len(randoms))
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
+            #logger.info(str(len(data[dsel]),len(inds),np.max(inds))
+            dshuf = data[dsel][inds]
+            for col in sample_columns:
+                randoms[col][rsel] = dshuf[col]
+        
+        rdl = []
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
+            rdl.append(rd)
+        rdr = rdl[0]/rdl[1]
+        logger.info('norm factor is '+str(rdr))
+        randoms['WEIGHT'][rand_sel[1]] *= rdr
+
+    des_resamp = False
+    if 'QSO' in tracer:
+        des_resamp = True
+    selregr = randoms['PHOTSYS'] ==  'N'
+    selregd = data['PHOTSYS'] ==  'N'
+    _resamp(selregr,selregd)
+    rand_sel = [selregr,~selregr]
+    dat_sel = [ selregd,~selregd]
+    
+    for dsel,rsel in zip(dat_sel,rand_sel):
+        rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
+        logger.info('data/random weighted ratio after resampling:'+str(rd))
+
+
+    if des_resamp:
+        logger.info('resampling in DES region')
+        from regressis import footprint
+        import healpy as hp
+        foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
+        north, south, des = foot.get_imaging_surveys()
+        th_ran,phi_ran = (-randoms['DEC']+90.)*np.pi/180.,randoms['RA']*np.pi/180.
+        th_dat,phi_dat = (-data['DEC']+90.)*np.pi/180.,data['RA']*np.pi/180.
+        pixr = hp.ang2pix(256,th_ran,phi_ran,nest=True)
+        selregr = des[pixr]
+        pixd = hp.ang2pix(256,th_dat,phi_dat,nest=True)
+        selregd = des[pixd]
+        _resamp(selregr,selregd)
+        rand_sel = [selregr,~selregr]
+        dat_sel = [ selregd,~selregd]
+    
+        for dsel,rsel in zip(dat_sel,rand_sel):
+            rd = np.sum(randoms[rsel]['WEIGHT'])/np.sum(data[dsel]['WEIGHT'])
+            logger.info('data/random weighted ratio after resampling:'+str(rd))
+
     return randoms
+
 
 for rann in range(rm,rx):
     in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-    ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC']))
-    ran = ran_col_assign(ran,mock_data,ran_samp_cols)
+    ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
+    ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
     common.write_LSS(ran,out_ran_fn)
     splitGC(out_data_froot,'.ran',rann)
 
