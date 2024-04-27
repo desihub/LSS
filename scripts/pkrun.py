@@ -272,7 +272,11 @@ if __name__ == '__main__':
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
 
-
+    if type(regions) is list:
+        logger.info(str(regions))
+    else:
+        regions = list(regions)
+        logger.info(str(regions))
     option = args.option#
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
