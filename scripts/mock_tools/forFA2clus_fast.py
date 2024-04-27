@@ -203,7 +203,7 @@ cols = [
 'MASKBITS']
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
-mock_data = fitsio.read(in_data_fn,columns=cols)
+mock_data = Table(fitsio.read(in_data_fn,columns=cols))
 
 if args.prog == 'DARK':
     bittest = targetmask.desi_mask
