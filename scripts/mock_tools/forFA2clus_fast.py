@@ -290,7 +290,7 @@ for tracer in tracers:
             tracerr = tracer
             in_ran_fn = ran_fname_base+str(rann)+'.fits' 
             out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-            rcols = ['RA','DEC','PHOTSYS','TARGETID','NTILE']
+            rcols = ['RA','DEC','PHOTSYS','TARGETID','NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
             ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
             selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
             ran = ranin[selY1]
