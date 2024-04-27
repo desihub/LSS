@@ -61,7 +61,7 @@ parser.add_argument("--prog", default="DARK")
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is all 18)",default=18,type=int) 
-parser.add_argument("--mockver", default='AbacusSummit_v3_1', help = "which mocks to use")
+parser.add_argument("--mockver", default='AbacusSummit_v4_1', help = "which mocks to use")
 parser.add_argument("--mockcatver", default=None, help = "if not None, gets added to the output path")
 
 parser.add_argument("--tracer", default = 'all')
@@ -279,7 +279,7 @@ for tracer in tracers:
     tracerr = tracer
     if tracer[:3] == 'BGS':
         tracerr = 'BGS_BRIGHT'
-    randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/''
+    randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     ran_fname_base = randir.replace('global','dvs_ro') +'randoms-1-'
 
     if args.mkran == 'y':
