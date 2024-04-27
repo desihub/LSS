@@ -111,6 +111,7 @@ selz &= mock_data['RSDZ'] < zmax
 mock_data = mock_data[selz]
 mock_data = Table(mock_data)
 mock_data = unique(mock_data,keys=['TARGETID'])
+mock_data = common.addNS(mock_data)
 print('length after cutting to redshift and unique targetid',len(mock_data))
 mock_data.rename_column('RSDZ', 'Z')
 mock_data['WEIGHT'] = 1
