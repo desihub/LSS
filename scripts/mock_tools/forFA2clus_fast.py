@@ -76,7 +76,7 @@ parser.add_argument("--splitGC", default = 'y')
 
 args = parser.parse_args()
 logger.info(args)
-
+tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{PROG}.fits'.format(PROG = args.prog.upper()))
 rm = int(args.minr)
 rx = int(args.maxr)
 
