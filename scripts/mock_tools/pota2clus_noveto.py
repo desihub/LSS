@@ -231,7 +231,7 @@ def _mkran(rann):
 inds = np.arange(rm,rx)
 if args.par == 'y':
 	from multiprocessing import Pool
-	with Pool(processes=nproc) as pool:
+	with Pool() as pool:#processes=nproc
 		res = pool.map(_mkran, inds)
 else:
 	for rn in inds:#range(rm,rx):
