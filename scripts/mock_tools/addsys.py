@@ -445,7 +445,7 @@ if args.add_sysnet == 'y':
     datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
     dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     dd = Table(np.concatenate((datn,dats)))
-    print('concat .dat files len: ',len(dat))
+    print('concat .dat files len: ',len(dd))
     dd['WEIGHT_SN'] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
     dpix = hp.ang2pix(256,dth,dphi)

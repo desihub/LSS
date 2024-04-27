@@ -32,9 +32,10 @@ ALTMTL='y'
 REAL=0
 do_RF=false
 do_prep=false
-do_SN=true
+do_SN=false
 add_SN=false # if true make sure all weights are available, if not this will fail
-do_validation=false
+do_validation_ffa=false
+do_validation_altmtl=true
 
 #DIR=$BASEDIR/mock$REAL
 DIR=$BASEDIR/altmtl$REAL/mock$REAL/LSScats
@@ -145,7 +146,7 @@ then
     echo "finished adding SYSNet weights"
 fi
 
-if [ $do_validation == true ]
+if [ $do_validation_ffa == true ]
 then
     VALIDATION=$LSSDIR/scripts/validation/validation_improp_mock_FFA.py
     echo "running validation on mocks"
@@ -156,6 +157,24 @@ then
     else
         python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER
         python $VALIDATION --tracer ELG_LOP --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col WEIGHT_SN
+    fi
+    echo "finished validations"
+fi
+
+
+if [ $do_validation_altmtl == true ]
+then
+    VALIDATION=$LSSDIR/scripts/validation/validation_improp_mock_altmtl.py
+    echo "running validation on mocks"
+    if [ $MOCKCATVER == 'v0' ]
+    then
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --weight_col WEIGHT_SN &
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION &
+        wait
+    else
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col WEIGHT_SN &
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER &
+        wait
     fi
     echo "finished validations"
 fi
