@@ -87,7 +87,7 @@ cols = ['LOCATION',
  'NOBS_Z',
  'MASKBITS','ZWARN',
  'COLLISION',
- 'TILEID']
+ 'TILEID','PHOTSYS']
 mock_data = fitsio.read(in_data_fn,columns=cols)
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
