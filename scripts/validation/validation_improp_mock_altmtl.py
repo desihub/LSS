@@ -286,7 +286,7 @@ for tp in tps:
     bs = 0.01
 
     yl = (0.8,1.1)    
-
+        
     #nz = common.mknz_full(fcd,rf,tp,bs=bs,zmin=zmin,zmax=zmax)
     
     #seld &= z_suc
@@ -299,11 +299,13 @@ for tp in tps:
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
-    mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits'
-    mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits'
+    #mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits'
+    #mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits'
     
-    mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
-    'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
+    #mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
+    #'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
+    mf = {'N':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
+    'S':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     P0 = 10000
     nbar = 0.0004
@@ -329,7 +331,6 @@ for tp in tps:
         zbins = [(0.1,0.4)]
         P0 = 7000
         nbar = 0.0005
-
 
     ntl = np.unique(dtf['NTILE'])
     comp_ntl = np.zeros(len(ntl))
@@ -365,8 +366,8 @@ for tp in tps:
         zmax = zb[1]
         selz = dtf[zcol] > zmin
         selz &= dtf[zcol] < zmax
-        selz_ran = rt[zcol] > zmin
-        selz_ran &= rt[zcol] < zmax
+        #selz_ran = rt[zcol] > zmin
+        #selz_ran &= rt[zcol] < zmax
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
@@ -408,14 +409,11 @@ for tp in tps:
                 if args.weight_col is not None:
                     n_ratiow = np.sum(dt_reg['WEIGHT_FKP'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n
                     s_ratiow = np.sum(dt_reg['WEIGHT_FKP'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
+                    #n_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
+                    #s_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
                     norm_nvw = n_ratiow/s_ratiow
                     norm_nw[~seln] = norm_nvw
                     print(norm_nvw)
-                    #n_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][seln]*dt_reg[args.weight_col][seln]*dcomp[seln])/ransum_n                
-                    #s_ratiow = np.sum(dt_reg['WEIGHT_FKPU'][~seln]*dt_reg[args.weight_col][~seln]*dcomp[~seln])/ransum_s
-                    #norm_nvw = n_ratiow/s_ratiow
-                    #norm_nw[~seln] = norm_nvw
-                    #print(norm_nvw)
                 else:
                     norm_nw = norm_n
                 
