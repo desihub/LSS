@@ -212,6 +212,9 @@ if args.prog == 'DARK':
 ndattot = len(mock_data)
 
 mock_data.rename_column('RSDZ', 'Z')
+mock_data['PHOTSYS'] = 'S'
+seln = mock_data['DEC'] > 32.375
+mock_data[seln]['PHOTSYS'] = 'N'
 
 
     
@@ -295,7 +298,7 @@ for tracer in tracers:
             selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
             ran = ranin[selY1]
             del ranin
-            logger.info(len(ran),' in Y1 area')
+            logger.info(str(len(ran))+' in Y1 area')
             ran = common.cutphotmask(ran, bits=mainp.imbits)
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
