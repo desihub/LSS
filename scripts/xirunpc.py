@@ -24,7 +24,7 @@ from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsamp
 
 from LSS.tabulated_cosmo import TabulatedDESI
 import LSS.cosmodesi_io_tools as io
-import LSS.main.cattools as ct
+
 
 
 
@@ -627,6 +627,7 @@ if __name__ == '__main__':
         mpiroot = 0
 
     if args.use_arrays == 'y':
+        import LSS.main.cattools as ct
         print("Using arrays")
         tracer2 = None
         tracer = args.tracer[0]
