@@ -1323,9 +1323,9 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     #fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     fd.close()
     if logger is None:
-        print('closed fits file')
+        print('closed fits file '+tmpfn)
     else:
-        logger.info('closed fits file')
+        logger.info('closed fits file '+tmpfn)
     #shutil.move(tmpfn, outf)
     #os.rename(tmpfn, outf)
     testcol = list(ff.dtype.names)[0]
@@ -1333,9 +1333,9 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
         fitsio.read(tmpfn,columns=(testcol))
     except:
         if logger is None:
-            print('read failed, output corrupted?!')
+            print('read failed, output corrupted?! '+tmpfn)
         else:
-            logger.info('read failed, output corrupted?!')
+            logger.info('read failed, output corrupted?! '+tmpfn)
         return 'FAILED'    
     os.system('cp ' + tmpfn + ' ' + outf) 
     os.system('chmod 775 ' + outf) #this should fix permissions for the group
