@@ -53,7 +53,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=0, rpcut=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=0, thetacut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -101,8 +101,8 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     direct_edges = win_direct_selection_attrs = direct_selection_attrs = None
     if wang or mpicomm.bcast(len(data_weights1) > 1 if mpicomm.rank == mpiroot else None):
         direct_selection_attrs = {'theta': (0., 1.)}
-    elif rpcut is not None:
-        win_direct_selection_attrs = direct_selection_attrs = {'rp': (0., rpcut)}
+    elif thetacut is not None:
+        win_direct_selection_attrs = direct_selection_attrs = {'theta': (0., thetacut)}
         #direct_edges = {'min': 0., 'step': 0.1, 'max': 200.}  # use this to reduce the computing time for direct pair counts to a few seconds
         direct_edges = {'min': 0., 'step': 0.1}
 
@@ -151,7 +151,7 @@ def get_edges():
     return {'min': 0., 'step': 0.001}
 
 
-def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
+def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, thetacut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
@@ -161,14 +161,14 @@ def power_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zma
         zmax = str(zmax) + option
 
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
-    if rpcut is not None:
-        root += '_rpcut{}'.format(rpcut)
+    if thetacut is not None:
+        root += '_thetacut{}'.format(thetacut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'pkpoles_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
+def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, thetacut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
@@ -178,14 +178,14 @@ def window_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zm
         zmax = str(zmax) + option
 
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
-    if rpcut is not None:
-        root += '_rpcut{}'.format(rpcut)
+    if thetacut is not None:
+        root += '_thetacut{}'.format(thetacut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'window_smooth_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
-def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, rpcut=None, out_dir='.'):
+def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n', rec_type=False, weight_type='default', bin_type='lin',option=None, thetacut=None, out_dir='.'):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
@@ -195,8 +195,8 @@ def wmatrix_fn(region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon
         zmax = str(zmax) + option
 
     root = '{}_{}_{}_{}_{}'.format(tracer, zmin, zmax, weight_type, bin_type)
-    if rpcut is not None:
-        root += '_rpcut{}'.format(rpcut)
+    if thetacut is not None:
+        root += '_thetacut{}'.format(thetacut)
     return os.path.join(out_dir, 'wmatrix_smooth_{}.npy'.format(root))
 
 
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
     parser.add_argument('--ran_sw', help='extra string in random name', type=str, default='')
-    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS', 'NGC', 'SGC','ALL'], default=None)
+    parser.add_argument('--region', help='regions; by default, run on N, S; pass NS to run on concatenated N + S', type=str, nargs='*', choices=['N', 'S', 'NS', 'NGC', 'SGC', 'ALL'], default=None)
     parser.add_argument('--zlim', help='z-limits, or options for z-limits, e.g. "highz", "lowz", "fullonly"', type=str, nargs='*', default=None)
     parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', default='n')
     parser.add_argument('--vis', help='show plot of each pk?', action='store_true', default=False)
     parser.add_argument('--rebinning', help='whether to rebin the pk or just keep the original .npy file', default='n')
-    parser.add_argument('--rpcut', help='apply this rp-cut', type=float, default=None)
+    parser.add_argument('--thetacut', help='apply this theta-cut, standard 0.05', type=float, default=None)
     parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention', choices=['IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
@@ -272,13 +272,7 @@ if __name__ == '__main__':
     if regions is None:
         regions = get_regions(args.survey, rec=bool(args.rec_type))
 
-    if type(regions) is list:
-        if mpicomm.rank == mpiroot:
-            logger.info(str(regions))
-    else:
-        regions = list(regions)
-        if mpicomm.rank == mpiroot:
-            logger.info(str(regions))
+
     option = args.option#
     if args.zlim is None:
         zlims = get_zlims(tracer, tracer2=tracer2)
@@ -298,13 +292,13 @@ if __name__ == '__main__':
         logger.info('Computing power spectrum multipoles in regions {} in redshift ranges {}.'.format(regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), rpcut=args.rpcut,option=option)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir, rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bin_type, out_dir=os.path.join(out_dir, 'pk'), thetacut=args.thetacut,option=option)
         for region in regions:
             if mpicomm.rank == mpiroot:
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, rpcut=args.rpcut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, thetacut=args.thetacut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             if mpicomm.rank == mpiroot:
                 fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
                 result.save(fn)
