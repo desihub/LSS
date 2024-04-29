@@ -197,6 +197,7 @@ logger.info('input directory is '+mockdir)
 logger.info('output directory is '+outdir)    
 
 in_data_fn = args.base_dir+args.mockver+'/forFA'+str(args.realization)+'.fits'
+in_data_fn = in_data_fn.replace('global','dvs_ro')
 logger.info(in_data_fn)
 cols = [
 'TARGETID',
