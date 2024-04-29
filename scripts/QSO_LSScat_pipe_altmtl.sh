@@ -2,7 +2,7 @@
 
 set -e
 
-source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
