@@ -121,7 +121,7 @@ ndattot = len(mock_data)
 seltar = mock_data[desitarg] & bit > 0
 mock_data = mock_data[seltar]
 logger.info('length before/after cut to target type '+args.tracer)
-logger.info(str(ndattot,len(mock_data)))
+logger.info(str(ndattot)+' '+str(len(mock_data)))
 
 '''
 PUT IN SOMETHING HERE TO MASK TO GOODHARDLOC AS AN OPTION
