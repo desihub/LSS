@@ -299,13 +299,13 @@ for tp in tps:
     if 'PHOTSYS' not in list(rt.dtype.names):
         rt = common.addNS(Table(rt))
 
-    #mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits'
-    #mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits'
+    mapfn_n = 'QSO_mapprops_healpix_nested_nside256_N.fits'
+    mapfn_s = 'QSO_mapprops_healpix_nested_nside256_S.fits'
     
-    #mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
-    #'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
-    mf = {'N':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
-    'S':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
+    mf = {'N':fitsio.read(datadir+'hpmaps/'+mapfn_n),\
+          'S':fitsio.read(datadir+'hpmaps/'+mapfn_s)}
+    #mf = {'N':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
+    #'S':fitsio.read(datadir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
     P0 = 10000
     nbar = 0.0004
