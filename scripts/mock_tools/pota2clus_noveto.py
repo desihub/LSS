@@ -160,15 +160,17 @@ splitGC(out_data_froot,'.dat')
 ran_samp_cols = ['Z','WEIGHT']
 
 
-def ran_col_assign(randoms,data,sample_columns,tracer):
-    data.rename_column('TARGETID', 'TARGETID_DATA')
+def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
+    #data.rename_column('TARGETID', 'TARGETID_DATA')
+    rng = np.random.default_rng(seed=seed)
     def _resamp(selregr,selregd):
         for col in sample_columns:
             randoms[col] =  np.zeros_like(data[col],shape=len(randoms))
         rand_sel = [selregr,~selregr]
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
-            inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
+            #inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
+            inds = rng.choice(len(data[dsel]),len(randoms[rsel]))
             #logger.info(str(len(data[dsel]),len(inds),np.max(inds))
             dshuf = data[dsel][inds]
             for col in sample_columns:
@@ -218,13 +220,13 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
 
     return randoms
 
-
+mock_data.rename_column('TARGETID', 'TARGETID_DATA')
 def _mkran(rann):
     in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
-    with mock_data as data:
-        ran = ran_col_assign(ran,data,ran_samp_cols,args.tracer)
+    #with mock_data as data:
+    ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer,seed=rann)
     common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
     splitGC(out_data_froot,'.ran',rann)
     return True	
