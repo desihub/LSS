@@ -61,7 +61,7 @@ parser.add_argument("--random_dir",help="where to find the data randoms",default
 parser.add_argument("--mockver", default='AbacusSummit_v4_1', help = "which mocks to use")
 parser.add_argument("--outloc", default = None)
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=1,type=int) 
+parser.add_argument("--maxr", help="maximum for random files",default=18,type=int) 
 parser.add_argument("--par", default = 'y',help='whether to run random steps in parallel or not')
 
 args = parser.parse_args()
