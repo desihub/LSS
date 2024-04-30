@@ -3815,7 +3815,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             common.write_LSS(ffs,outfn,comments)
         else:
             outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS(ff,outfn)
+            common.write_LSS_scratchcp(ff,outfn)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
@@ -3899,6 +3899,7 @@ def add_tlobs_ran_array(ranf,tlf):
     
 def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='y',logger=None):
     import LSS.common_tools as common
+    rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
     wzm = ''
     if zmask:
@@ -3932,7 +3933,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         #rand_sel = [selregr,~selregr]
         #dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
-            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            #inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            inds = rng.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
             print(len(fcdn[dsel]),len(inds),np.max(inds))
             dshuf = fcdn[dsel][inds]
             for col in rcols:
@@ -4089,6 +4091,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
     import LSS.common_tools as common
+    rng = np.random.default_rng(seed=rann)
     ffr = Table.read(flin+'_'+str(rann)+'_clustering.ran.fits')
     for col in rcols:
         try:
@@ -4116,7 +4119,8 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
         rand_sel = [selregr,~selregr]
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
-            inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            #inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
+            inds = rng.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
             print(len(fcdn[dsel]),len(inds),np.max(inds))
             dshuf = fcdn[dsel][inds]
             for col in rcols:
