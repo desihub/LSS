@@ -223,7 +223,8 @@ def _mkran(rann):
     in_ran_fn = args.random_dir+'QSO_'+str(rann)+'_full_noveto.ran.fits' #type isn't important, all noveto have same ra,dec
     out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
     ran = Table(fitsio.read(in_ran_fn,columns=['RA','DEC','PHOTSYS','TARGETID']))
-    ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
+    with mockdata as data:
+        ran = ran_col_assign(ran,data,ran_samp_cols,args.tracer)
     common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
     splitGC(out_data_froot,'.ran',rann)
     return True	
