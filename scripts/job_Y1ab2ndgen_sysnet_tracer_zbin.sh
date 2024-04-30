@@ -5,7 +5,7 @@
 #SBATCH -J sys_Y1ab2ndgen
 #SBATCH -t 4:00:00
 #SBATCH -L SCRATCH
-#SBATCH --output=/path/to/slurm_outputs/Y1ab2ndgen_sysnet_%A_%a.out
+#SBATCH --output=/pscratch/sd/a/arosado/slurm/Y1ab2ndgen_sysnet_%A_%a.out
 #SBATCH --array=0-24
 
 set -e
@@ -27,13 +27,13 @@ MOCKVERSION=/SecondGenMocks/AbacusSummit_v4_1/
 BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
 MOCKCATVER='v0'
 ALTMTL='y'
-#REAL=$SLURM_ARRAY_TASK_ID
 
-REAL=0
+REAL=$SLURM_ARRAY_TASK_ID
+#REAL=0
 do_RF=false
-do_prep=false
-do_SN=false
-add_SN=false # if true make sure all weights are available, if not this will fail
+do_prep=true
+do_SN=true
+add_SN=true # if true make sure all weights are available, if not this will fail
 do_validation_ffa=false
 do_validation_altmtl=true
 
