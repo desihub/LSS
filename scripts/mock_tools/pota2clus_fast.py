@@ -120,9 +120,9 @@ def splitGC(flroot,datran='.dat',rann=0):
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS(fn[sel_ngc],outf_ngc)
+    common.write_LSS_cpscratch(fn[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS(fn[~sel_ngc],outf_sgc)
+    common.write_LSS_cpscratch(fn[~sel_ngc],outf_sgc)
 
 
 
@@ -336,7 +336,7 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS(mock_data_tr,out_data_fn)
+        common.write_LSS_scratchcp(mock_data_tr,out_data_fn)
 
         #splitGC(out_data_froot,'.dat')
 
@@ -366,7 +366,7 @@ for tracer in tracers:
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
-            common.write_LSS(ran,out_ran_fn)
+            common.write_LSS_scratchcp(ran,out_ran_fn)
             del ran
             return True
             #splitGC(out_data_froot,'.ran',rann)
