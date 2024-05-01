@@ -126,7 +126,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 
-def ran_col_assign(randoms,data,sample_columns,tracer):
+def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
     data.rename_column('TARGETID', 'TARGETID_DATA')
     rng = np.random.default_rng(seed=seed)
     def _resamp(selregr,selregd):
@@ -365,7 +365,7 @@ for tracer in tracers:
             rcols = ['RA','DEC','PHOTSYS','TARGETID','NTILE']
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
-            ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
+            ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer,seed=rann)
             common.write_LSS_scratchcp(ran,out_ran_fn)
             del ran
             return True
