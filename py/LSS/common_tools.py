@@ -1311,7 +1311,8 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     '''
     import shutil
-    ranstring = int(np.random.random()*1e10)
+    rng = np.random.default_rng()#seed=rann)
+    ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
