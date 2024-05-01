@@ -329,6 +329,7 @@ for tracer in tracers:
     if args.mkran == 'y':
         if args.mkdat == 'n':
             mock_data_tr = Table(fitsio.read(out_data_fn))
+        mock_data_tr.rename_column('TARGETID', 'TARGETID_DATA')
         def _mkran(rann):
             
             tracerr = tracer

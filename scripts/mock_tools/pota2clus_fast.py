@@ -127,7 +127,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
-    data.rename_column('TARGETID', 'TARGETID_DATA')
+    
     rng = np.random.default_rng(seed=seed)
     def _resamp(selregr,selregd):
         for col in sample_columns:
@@ -351,6 +351,7 @@ for tracer in tracers:
     if args.mkran == 'y':
         if args.mkdat == 'n':
             mock_data_tr = Table(fitsio.read(out_data_fn))
+        mock_data_tr.rename_column('TARGETID', 'TARGETID_DATA')
         def _mkran(rann):
             
             tracerr = tracer
