@@ -554,7 +554,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff = fitsio.FITS(fn,'rw')
     #fd = Table(ff['LSS'].read())
     #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
-    fd = Table(fitsio.read(fn))
+    fd = Table(fitsio.read(fn.replace('global','dvs_ro')))
     zl = fd['Z']
     nl = np.zeros(len(zl))
     for ii in range(0,len(zl)):
@@ -563,11 +563,17 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         if z > zmin and z < zmax:
             nl[ii] = nzd[zind]
     mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
-    print('mean completeness '+str(mean_comp))
+    if logger is None:
+        print('mean completeness '+str(mean_comp))
+    else:
+        logger.info('mean completeness '+str(mean_comp))
     nont = 0
     if 'NTILE' not in list(fd.dtype.names):
         fd['NTILE'] = np.ones(len(fd),dtype=int)
-        print('added NTILE = 1 column because column did not exist')
+        if logger is None:
+            print('added NTILE = 1 column because column did not exist')
+        else:
+            logger.info('added NTILE = 1 column because column did not exist')
         nont = 1
     ntl = np.unique(fd['NTILE'])
     comp_ntl = np.ones(len(ntl))
@@ -579,7 +585,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
     
     if compmd == 'ran':
-        fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+        fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
         fttl = np.zeros(len(ntl))
         for i in range(0,len(ntl)): 
             sel = fran['NTILE'] == ntl[i]
@@ -661,7 +667,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     if par == 'n':
         for rann in range(ranmin,nran):
             _parfun(rann)
-            print('done with random number '+str(rann))
+            #print('done with random number '+str(rann))
     else:
         inds = np.arange(ranmin,nran)
         from multiprocessing import Pool
