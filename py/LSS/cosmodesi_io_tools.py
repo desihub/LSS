@@ -248,20 +248,32 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'addSSR' in weight_type:
         weights *= catalog['WEIGHT_focal'][mask]
         print('multiplying weights by WEIGHT_focal')
+    if 'FKP' in weight_type:
+        weights *= catalog['WEIGHT_FKP'][mask]
+        print('multiplying weights by WEIGHT_FKP')
         
     if name == 'data' and 'bitwise' in weight_type:
         if 'default' in weight_type:
             #weights /= catalog['WEIGHT_COMP'][mask]
             weights = catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]#/(129/(1+128*catalog['PROB_OBS'][mask]))
+            
+
             #print('dividing weights by WEIGHT_COMP')
         if 'pip' in weight_type:
             weights = catalog['WEIGHT'][mask]/catalog['WEIGHT_COMP'][mask]
+        if 'FKP' in weight_type:
+            weights *= catalog['WEIGHT_FKP'][mask]
+            print('multiplying weights by WEIGHT_FKP')
+
         weights = _format_bitweights(catalog['BITWEIGHTS'][mask]) + [weights]
     if name == 'data' and 'IIP' in weight_type:
         weights = 129/(1+128*catalog['PROB_OBS'][mask])
         if 'default' in weight_type:
             #weights /= catalog['WEIGHT_COMP'][mask]
             weights *= catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
+        if 'FKP' in weight_type:
+            weights *= catalog['WEIGHT_FKP'][mask]
+            print('multiplying weights by WEIGHT_FKP')
 
     if name == 'randoms':
         #if 'default' in weight_type:
@@ -272,9 +284,17 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
                 logger.info('all random weights set to 1')
             if 'pip' in weight_type:
                 weights = catalog['WEIGHT'][mask]
+            if 'FKP' in weight_type:
+                weights *= catalog['WEIGHT_FKP'][mask]
+                print('multiplying weights by WEIGHT_FKP')
+
         if 'IIP' in weight_type and 'default' in weight_type:
             weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
             logger.info('all random weights set to 1')
+            if 'FKP' in weight_type:
+                weights *= catalog['WEIGHT_FKP'][mask]
+                print('multiplying weights by WEIGHT_FKP')
+
             #weights /= catalog['FRAC_TLOBS_TILES'][mask]
             #print('dividing weights by FRAC_TLOBS_TILES')
 #         if 'RF' in weight_type:
@@ -292,9 +312,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
 #         if 'fluxfail' in weight_type:
 #             weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
 
-    if 'FKP' in weight_type:
-        weights *= catalog['WEIGHT_FKP'][mask]
-        print('multiplying weights by WEIGHT_FKP')
 
 
     if return_mask:
