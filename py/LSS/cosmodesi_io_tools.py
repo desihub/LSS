@@ -239,9 +239,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if 'EB' in weight_type:
         weights *=  catalog['WEIGHT_SYSEB'][mask]
         print('multiplying weights by WEIGHT_SYSEB')
-    if 'FKP' in weight_type:
-        weights *= catalog['WEIGHT_FKP'][mask]
-        print('multiplying weights by WEIGHT_FKP')
     if 'nofail' in weight_type:
         weights /= catalog['WEIGHT_ZFAIL'][mask]
         print('dividing weights by WEIGHT_ZFAIL')
@@ -294,6 +291,11 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
 #             weights /= catalog['WEIGHT_ZFAIL'][mask]
 #         if 'fluxfail' in weight_type:
 #             weights *= (catalog['WEIGHT_ZFAIL_FIBERFLUX'][mask]/catalog['WEIGHT_ZFAIL'][mask])
+
+    if 'FKP' in weight_type:
+        weights *= catalog['WEIGHT_FKP'][mask]
+        print('multiplying weights by WEIGHT_FKP')
+
 
     if return_mask:
         return positions, weights, mask
@@ -415,8 +417,11 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
 
 
 def read_full_positions_weights(name='data', weight_type='default', fibered=False, region='', weight_attrs=None, **kwargs):
-    if 'GC' in region:
+    #if 'GC' in region:
+    #    region = [region]
+    if type(region) is not list:
         region = [region]
+
     def read_positions_weights(name):
         positions, weights = [], []
         for reg in region:
@@ -431,9 +436,9 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
             positions.append(p)
             weights.append(w)
             if fibered:
-                logger.info('loaded fibered full for '+name )
+                logger.info('loaded fibered full for '+name + ' for region '+reg)
             else:
-                logger.info('loaded parent full for '+name)    
+                logger.info('loaded parent full for '+name+ ' for region '+reg)    
             logger.info(str(len(p))+' entries')
         return positions, weights
 
