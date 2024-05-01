@@ -111,13 +111,14 @@ def splitGC(flroot,datran='.dat',rann=0):
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS(fn[sel_ngc],outf_ngc)
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS(fn[~sel_ngc],outf_sgc)
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
 
 
 
-def ran_col_assign(randoms,data,sample_columns,tracer):
+def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
+    rng = np.random.default_rng(seed=seed)
     if (not 'TARGETID_DATA' in data.colnames)&('TARGETID' in data.colnames):
         data.rename_column('TARGETID', 'TARGETID_DATA')
     def _resamp(selregr,selregd):
@@ -126,7 +127,8 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
         rand_sel = [selregr,~selregr]
         dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
-            inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
+            #inds = np.random.choice(len(data[dsel]),len(randoms[rsel]))
+            inds = rng.choice(len(data[dsel]),len(randoms[rsel]))
             print(len(data[dsel]),len(inds),np.max(inds))
             dshuf = data[dsel][inds]
             for col in sample_columns:
@@ -312,7 +314,7 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS(mock_data_tr,out_data_fn)
+        common.write_LSS_scratchcp(mock_data_tr,out_data_fn)
 
         #splitGC(out_data_froot,'.dat')
 
@@ -341,8 +343,8 @@ for tracer in tracers:
             rcols = ['RA','DEC','TILELOCID','PHOTSYS','TARGETID','NTILE','FRAC_TLOBS_TILES']
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
-            ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
-            common.write_LSS(ran,out_ran_fn)
+            ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer,seed=rann)
+            common.write_LSS_scratchcp(ran,out_ran_fn)
             del ran
             return True
             #splitGC(out_data_froot,'.ran',rann)
