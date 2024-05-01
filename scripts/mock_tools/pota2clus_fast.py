@@ -120,9 +120,9 @@ def splitGC(flroot,datran='.dat',rann=0):
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_cpscratch(fn[sel_ngc],outf_ngc)
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_cpscratch(fn[~sel_ngc],outf_sgc)
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
 
 
 
