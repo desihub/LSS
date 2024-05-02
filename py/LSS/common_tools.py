@@ -539,6 +539,70 @@ def get_comp(fb,ran_sw=''):
     print(comp_ntl)
     return comp_ntl
 
+def get_weight_ntile(in_data):
+    '''
+    in_data should be an array of the clustering catalog data
+    returns the mean weight as a function of NTILE, dividing by the completeness weight
+    this is for eventual use in angular upweighting
+    '''
+    ntl = np.unique(in_data['NTILE'])
+    weight_ntl = np.ones(len(ntl))
+    fkp_ntl = np.ones(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = in_data['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(in_data['WEIGHT'][sel]/in_data['WEIGHT_COMP'][sel]) #we want the mean weight used without WEIGHT_COMP       
+        weight_ntl[i] = mean_ntweight
+        fkp_ntl[i] = np.mean(in_data['WEIGHT_FKP'][sel])
+    return weight_ntl,fkp_ntl
+
+def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n'):
+    fn = fb+'_NGC_clustering.dat.fits'
+    clus_dn = fitsio.read(fn.replace('global','dvs_ro'))
+    fs = fb+'_SGC_clustering.dat.fits'
+    clus_ds = fitsio.read(fs.replace('global','dvs_ro'))
+    clus_d = np.concatenate((clus_dn,clus_ds))
+    weight_ntl,fkp_ntl = get_weight_ntile(clus_d)
+    
+    full_name = fb+'_full_HPmapcut.dat.fits'
+    full_d = Table(fitsio.read(full_name))
+    full_d['WEIGHT_NTILE'] = weight_ntl[full_d['NTILE']-1]
+    full_d['WEIGHT_FKP_NTILE'] = fkp_ntl[full_d['NTILE']-1]
+    write_LSS_scratchcp(full_d,full_name,logger=logger)
+    
+    def _parfun(rann):
+        fn = fb+'_NGC_'+str(rann)+'_clustering.ran.fits'
+        clus_rn = fitsio.read(fn.replace('global','dvs_ro') )
+        fs = fb+'_SGC_'+str(rann)+'_clustering.ran.fits'
+        clus_rs = fitsio.read(fs.replace('global','dvs_ro') )
+        clus_r = np.concatenate((clus_rn,clus_rs))
+        weight_ntl,fkp_ntl = get_weight_ntile(clus_r)
+    
+        full_name = fb+'_'+str(rann)+'_full_HPmapcut.ran.fits'
+        full_r = Table(fitsio.read(full_name))
+        full_r['WEIGHT_NTILE'] = weight_ntl[full_r['NTILE']-1]
+        full_r['WEIGHT_FKP_NTILE'] = fkp_ntl[full_r['NTILE']-1]
+        write_LSS_scratchcp(full_r,full_name,logger=logger)
+
+    if par == 'n':
+        for rann in range(ranmin,nran):
+            _parfun(rann)
+            #print('done with random number '+str(rann))
+    else:
+        inds = np.arange(ranmin,nran)
+        from multiprocessing import Pool
+    
+        #nproc = 9 #try this so doesn't run out of memory
+        pool = sharedmem.MapReduce(np=nproc)
+        #with Pool(processes=nproc) as pool:
+        with pool:
+            res = pool.map(_parfun, inds)
+
+    return True
+    
+    
+    
+
+
 def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,logger=None):
     '''
     fb is the root of the file name, including the path
@@ -612,7 +676,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fn)
+        write_LSS_scratchcp(fd,fn,logger=logger)
     #fd = np.array(fd)
     #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
     #ff['LSS'].write(fd)
