@@ -536,7 +536,7 @@ if args.nz == 'y':
     fcd = fb+'_clustering.dat.fits'
     fout = fb+'_nz.txt'
     common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-    common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,nproc=nproc)
+    common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,nproc=nproc,logger=logger)
 
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
@@ -552,10 +552,10 @@ def splitGC(flroot,datran='.dat',rann=0):
     sel_ngc = common.splitGC(fn)#gc.b > 0
     #outf_ngc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'NGC_'+app
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS(fn[sel_ngc],outf_ngc)
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
     #outf_sgc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'SGC_'+app
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS(fn[~sel_ngc],outf_sgc)
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 inds = np.arange(rm,rx)
 if args.splitGC == 'y':
@@ -595,7 +595,7 @@ if args.resamp == 'y':
         fcd = flin+'_clustering.dat.fits'
         fout = flin+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-        common.addnbar(flin,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par)
+        common.addnbar(flin,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,logger=logger)
 
 
     
