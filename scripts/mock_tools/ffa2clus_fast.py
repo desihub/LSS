@@ -199,7 +199,7 @@ nproc = 18
 mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 if args.overwrite == 'n':
     if os.path.isfile(mockdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'):
-        sys.exit('ELG LSS catalog already exists')
+        sys.exit('ELG LSS catalog '+mockdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'+ ' already exists')
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
 
