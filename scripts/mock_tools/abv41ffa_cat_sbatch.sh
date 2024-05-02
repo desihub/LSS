@@ -9,4 +9,4 @@
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
-srun scripts/mock_tools/run1_FFA_abv41_LSS.sh $SLURM_ARRAY_TASK_ID
+srun scripts/mock_tools/run1_FFA_abv41fixran_LSS.sh $SLURM_ARRAY_TASK_ID
