@@ -196,10 +196,14 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
 
 nproc = 18
 
-mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
+mcatver = args.mockcatver
+if mcatver is None:
+    mcatver = ''
 
-if args.mockcatver is not None:
-    mockdir += args.mockcatver + '/'
+mockdir = args.base_dir+args.mockver+'/'+mcatver+'/mock'+str(args.realization)+'/'
+
+#if args.mockcatver is not None:
+#    mockdir += args.mockcatver + '/'
 
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
