@@ -45,8 +45,8 @@ parser.add_argument("--data_dir",help="where to find the data randoms",default='
 parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is all 18)",default=18,type=int) 
-parser.add_argument("--mockver", default='AbacusSummit', help = "which mocks to use")
-parser.add_argument("--mockcatver", default='AbacusSummit_v4_1fixran', help = "if not None, gets added to the output path")
+parser.add_argument("--mockver", default='AbacusSummit_v4_1fixran', help = "which mocks to use")
+parser.add_argument("--mockcatver", default=None, help = "if not None, gets added to the output path")
 
 parser.add_argument("--tracer", default = 'all')
 parser.add_argument("--outloc", default = None)
