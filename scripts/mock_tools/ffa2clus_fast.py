@@ -201,13 +201,14 @@ mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
 if args.mockcatver is not None:
     mockdir += args.mockcatver + '/'
 
-if args.overwrite == 'n':
-    if os.path.isfile(outdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'):
-        sys.exit('ELG LSS catalog '+outdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'+ ' already exists')
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
 if args.outloc == 'prod':
     outdir = mockdir
+
+if args.overwrite == 'n':
+    if os.path.isfile(outdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'):
+        sys.exit('ELG LSS catalog '+outdir+'ELG_LOP_ffa_NGC_clustering.dat.fits'+ ' already exists')
 
 
 if not os.path.exists(outdir):
