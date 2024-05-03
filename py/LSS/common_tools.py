@@ -556,6 +556,7 @@ def get_weight_ntile(in_data):
     return weight_ntl,fkp_ntl
 
 def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n'):
+    #from desitarget.internal import sharedmem
     fn = fb+'_NGC_clustering.dat.fits'
     clus_dn = fitsio.read(fn.replace('global','dvs_ro'))
     fs = fb+'_SGC_clustering.dat.fits'
@@ -592,9 +593,9 @@ def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n'):
         from multiprocessing import Pool
     
         #nproc = 9 #try this so doesn't run out of memory
-        pool = sharedmem.MapReduce(np=nproc)
-        #with Pool(processes=nproc) as pool:
-        with pool:
+        #pool = sharedmem.MapReduce(np=nproc)
+        with Pool() as pool:#Pool(processes=nproc) as pool:
+        #with pool:
             res = pool.map(_parfun, inds)
 
     return True
