@@ -432,7 +432,7 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
         if 'default' in weight_type or 'completeness' in weight_type:
             weights = get_inverse_probability_weight(_format_bitweights(catalog['BITWEIGHTS'][mask]), **weight_attrs)
         if 'bitwise' in weight_type:
-            weights = _format_bitweights(catalog['BITWEIGHTS'][mask])+weights
+            weights = _format_bitweights(catalog['BITWEIGHTS'][mask])#+weights
     #else: weights = np.ones_like(positions[0])
     if return_mask:
         return positions, weights, mask
