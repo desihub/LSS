@@ -593,7 +593,7 @@ def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n'):
         from multiprocessing import Pool
     
         #nproc = 9 #try this so doesn't run out of memory
-        pool = sharedmem.MapReduce()
+        pool = sharedmem.MapReduce(np=9)
         #with Pool() as pool:#Pool(processes=nproc) as pool:
         with pool:
             res = pool.map(_parfun, inds)
