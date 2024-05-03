@@ -431,8 +431,8 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
         weights *= catalog['WEIGHT_FKP_NTILE'][mask]
 
     if name == 'data' and fibered:
-        if 'default' in weight_type or 'completeness' in weight_type:
-            weights = get_inverse_probability_weight(_format_bitweights(catalog['BITWEIGHTS'][mask]), **weight_attrs)
+        #if 'default' in weight_type or 'completeness' in weight_type:
+        #    weights = get_inverse_probability_weight(_format_bitweights(catalog['BITWEIGHTS'][mask]), **weight_attrs)
         if 'bitwise' in weight_type:
             weights = _format_bitweights(catalog['BITWEIGHTS'][mask])+[weights]
     #else: weights = np.ones_like(positions[0])
