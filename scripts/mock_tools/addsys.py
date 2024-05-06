@@ -385,9 +385,11 @@ if args.regressis == 'y':
     if 'SGR' in fit_maps:
         use_sgr = True
         fit_maps.remove('SGR')
-        
+    
+    use_map_veto=''
     regr_func = rt.get_desi_data_clus_compute_weight
     if args.use_altmtl == 'y':
+        use_map_veto='_HPmapcut'
         regr_func = rt.get_desi_data_full_compute_weight
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
@@ -396,7 +398,7 @@ if args.regressis == 'y':
         regr_func(dirout, 'main', tp, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
                   suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
                   max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
-                  feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+                  feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=use_map_veto)
         #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 
