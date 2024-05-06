@@ -286,7 +286,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 
     zcol = 'Z'
     
-    cols = ['RA','DEC',zcol,'WEIGHT_COMP','WEIGHT','WEIGHT_FKP']
+    cols = ['RA','DEC',zcol,'WEIGHT_COMP','WEIGHT','WEIGHT_FKP','FRAC_TLOBS_TILES']
     LSS = LSS.replace('global','dvs_ro')
     datan = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_NGC_clustering.dat.fits'),columns=cols)
     datas = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_SGC_clustering.dat.fits'),columns=cols)
@@ -296,7 +296,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     wz &= data[zcol] < z_lim[1]
 
     data = data[wz]
-    wts =  data['WEIGHT_COMP']#data['WEIGHT'].values*data['WEIGHT_FKP'].values
+    wts =  data['WEIGHT_COMP'].values/data['FRAC_TLOBS_TILES'].values#data['WEIGHT'].values*data['WEIGHT_FKP'].values
     map_data = build_healpix_map(nside, data['RA'].values, data['DEC'].values, weights=wts, in_deg2=False)
 
     #load photometric regions:
@@ -387,7 +387,9 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     print('in weight function')
     zcol = 'Z_not4clus'
     
-    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','DELTACHI2','FRAC_TLOBS_TILES','WEIGHT_ZFAIL']
+    cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','FRAC_TLOBS_TILES']#,'WEIGHT_ZFAIL']
+    if tracer[:3] != 'QSO':
+        cols.append('DELTACHI2')
     if tracer[:3] == 'ELG':
         cols.append('o2c')
         cols.append('LOCATION_ASSIGNED')
