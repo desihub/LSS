@@ -6,8 +6,8 @@
 #SBATCH -t 4:00:00
 #SBATCH -L SCRATCH
 #SBATCH --output=/pscratch/sd/a/arosado/slurm/Y1ab2ndgen_sysnet_%A_%a.out
-#SBATCH --array=0-24
-
+#SBATCH --array=1-24
+set start_time=%time%
 set -e
 # This script can be run as a sbatch job, or an interactive job
 # if run in an interactive node then manually set mock realization 
@@ -20,22 +20,24 @@ PYTHONPATH=$PYTHONPATH:$LSSDIR/py
 RUN_SYSNET=$LSSDIR/scripts/run_sysnetELG_ab2ndgen.sh 
 #/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1//altmtl0/mock0/LSScats
 # REGION only useful for ELGs right now
-DATA_VERSION='v1.3'
+DATA_VERSION='v0.6'
 REGION='all'
-TRACER=ELG_LOPnotqso
+#TRACER=ELG_LOPnotqso
+TRACER=QSO
 MOCKVERSION=/SecondGenMocks/AbacusSummit_v4_1/
 BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
 MOCKCATVER='v0'
 ALTMTL='y'
 
-REAL=$SLURM_ARRAY_TASK_ID
-#REAL=0
-do_RF=false
-do_prep=true
-do_SN=true
-add_SN=true # if true make sure all weights are available, if not this will fail
+#REAL=$SLURM_ARRAY_TASK_ID
+REAL=0
+do_RF=true
+do_prep=false
+do_SN=false
+add_SN=false # if true make sure all weights are available, if not this will fail
 do_validation_ffa=false
-do_validation_altmtl=true
+do_validation_altmtl=false
+do_RF_validation_altmtl=true
 
 #DIR=$BASEDIR/mock$REAL
 DIR=$BASEDIR/altmtl$REAL/mock$REAL/LSScats
@@ -47,7 +49,12 @@ if [ $do_RF == true ]
 then
     echo "doing RF regression and adding weights"
     # Compute and add regressis weights to mocks
-    srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER --regressis y --add_regressis y --add_regressis_ran y --par y --base_dir $BASEDIR --mockcatver $MOCKCATVER --use_altmtl $ALTMTL --data_version $DATA_VERSION
+    if [ $MOCKCATVER == 'v0' ]
+    then
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER --regressis y --add_regressis y --add_regressis_ran y --par y --base_dir $BASEDIR --use_altmtl $ALTMTL --data_version $DATA_VERSION
+    else
+        srun -N 1 -n 1 python $LSSDIR/scripts/mock_tools/addsys.py --realization $REAL --tracer $TRACER --regressis y --add_regressis y --add_regressis_ran y --par y --base_dir $BASEDIR --mockcatver $MOCKCATVER --use_altmtl $ALTMTL --data_version $DATA_VERSION
+    fi
     echo "finished doing RF regression and adding RF weights"
 fi
 
@@ -164,17 +171,51 @@ fi
 
 if [ $do_validation_altmtl == true ]
 then
+    WEIGHT=WEIGHT_SN
     VALIDATION=$LSSDIR/scripts/validation/validation_improp_mock_altmtl.py
     echo "running validation on mocks"
     if [ $MOCKCATVER == 'v0' ]
     then
-        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --weight_col WEIGHT_SN &
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --weight_col $WEIGHT &
         srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION &
         wait
     else
-        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col WEIGHT_SN &
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col $WEIGHT &
         srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER &
         wait
     fi
     echo "finished validations"
 fi
+
+if [ $do_RF_validation_altmtl == true ]
+then
+    WEIGHT=WEIGHT_RF
+    VALIDATION=$LSSDIR/scripts/validation/validation_improp_mock_altmtl.py
+    echo "running validation on mocks"
+    if [ $MOCKCATVER == 'v0' ]
+    then
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --weight_col $WEIGHT 
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION
+    else
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER --weight_col $WEIGHT
+        srun -N 1 -n 1 python $VALIDATION --tracer $TRACER --mockn $REAL --dataver $DATA_VERSION --mockversion $MOCKVERSION --mockcatver $MOCKCATVER
+    fi
+    echo "finished validations"
+fi
+
+
+set end_time=%time%
+#Calculate the time difference
+#Convert start and end times to seconds
+for /f "tokens=1-4 delims=:.," %%a in ("%start_time%") do set /a "start_seconds=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
+for /f "tokens=1-4 delims=:.," %%a in ("%end_time%") do set /a "end_seconds=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
+
+#Calculate the difference in seconds
+set /a "time_diff=end_seconds-start_seconds"
+
+#Convert the difference back to hours, minutes, and seconds
+set /a "hours=time_diff/360000"
+set /a "minutes=(time_diff%%360000)/6000"
+set /a "seconds=(time_diff%%6000)/100"
+
+echo Script execution time: %hours% hours %minutes% minutes %seconds% seconds
