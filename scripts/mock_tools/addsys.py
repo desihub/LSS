@@ -390,7 +390,7 @@ if args.regressis == 'y':
     regr_func = rt.get_desi_data_clus_compute_weight
     if args.use_altmtl == 'y':
         use_map_veto='_HPmapcut'
-        regr_func = rt.get_desi_data_full_compute_weight
+        #regr_func = rt.get_desi_data_full_compute_weight
     for zl in zrl:    
         zw = str(zl[0])+'_'+str(zl[1])
         print('computing RF regressis weight for '+tp+zw)
