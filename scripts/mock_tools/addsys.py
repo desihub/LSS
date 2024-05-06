@@ -247,8 +247,9 @@ if args.imsys == 'y':
 
 
 if args.prepsysnet == 'y':
-    if args.use_allsky_rands == 'y': nran = 1
-    else: nran = 18
+    #if args.use_allsky_rands == 'y': nran = 1
+    #else: nran = 18
+    nran=18
     #logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
@@ -266,8 +267,8 @@ if args.prepsysnet == 'y':
     ranl = []
     for i in range(0,nran):
         print(f'concat {i+1}/{nran} randoms')
-        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
-        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT','WEIGHT_FKP']) 
+        rann = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
+        rans = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_'+str(i)+'_clustering.ran.fits'), columns=['RA', 'DEC','WEIGHT']) 
         ran = np.concatenate((rann,rans))
         ranl.append(ran)
     rands = np.concatenate(ranl)
@@ -281,9 +282,13 @@ if args.prepsysnet == 'y':
         zw = ''
         if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
-        for reg in regl:
-            pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
-            #pwf = lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        for reg in regl:                
+            if args.use_altmtl == 'y':
+                if args.data_version!='v0.6': print("when running SYSNet on altmtl mocks should use tracer specific v0.6 hpmaps")
+                pwf = lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            else:
+                pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            print(pwf)
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -354,7 +359,13 @@ if args.regressis == 'y':
     regl = ['N','S']
     
     for reg in regl:
-        pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        if args.use_altmtl == 'y':
+            if args.data_version!='v0.6': print("when running SYSNet on altmtl mocks should use tracer specific v0.6 hpmaps")
+            pwf = lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        else:
+            pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        print(pwf)
+        #pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:
@@ -374,7 +385,7 @@ if args.regressis == 'y':
     if 'SGR' in fit_maps:
         use_sgr = True
         fit_maps.remove('SGR')
-    
+        
     regr_func = rt.get_desi_data_clus_compute_weight
     if args.use_altmtl == 'y':
         regr_func = rt.get_desi_data_full_compute_weight
@@ -383,10 +394,11 @@ if args.regressis == 'y':
         print('computing RF regressis weight for '+tp+zw)
         #logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
         regr_func(dirout, 'main', tp, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
-        suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
-         max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
-         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+                  suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
+                  max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
+                  feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
         #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
+
 
 if args.add_regressis == 'y':
     from LSS.imaging import densvar
@@ -400,7 +412,7 @@ if args.add_regressis == 'y':
     datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
     dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     dd = Table(np.concatenate((datn,dats)))
-    print('concat .dat files len: ',len(dat))
+    print('concat .dat files len: ',len(dd))
     dd['WEIGHT_RF'] = np.ones(len(dd))
 
     for zl in zrl:    
