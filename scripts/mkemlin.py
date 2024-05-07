@@ -80,7 +80,7 @@ def mkEMtile(ii):
         outf = outdir+'emline-'+str(tile)+'.fits'
         if not os.path.isfile(outf):
             tdate = str(tdate)
-            ct.combEMdata_daily(tile,zdate,tdate,outf=outf)
+            ct.combEMdata_daily_old(tile,zdate,tdate,outf=outf)
             print('wrote '+outf)
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 #!/bin/bash
+#to run as individual jobs `srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi <command>`
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --maxr 1 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec daily --maxr 1 
