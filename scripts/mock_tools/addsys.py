@@ -212,7 +212,13 @@ if args.imsys == 'y':
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
         print(reg)
-        pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        if args.use_altmtl == 'y':
+            if args.data_version!='v0.6': print("when running SYSNet on altmtl mocks should use tracer specific v0.6 hpmaps")
+            pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        else:
+            pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        print(pwf)
+        #pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:

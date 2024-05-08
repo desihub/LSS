@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH -N 2
+#SBATCH -N 1
 #SBATCH -C cpu
 #SBATCH -q regular
 #SBATCH -J sys_Y1ab2ndgen
-#SBATCH -t 4:00:00
+#SBATCH -t 1:00:00
 #SBATCH -L SCRATCH
-#SBATCH --output=/pscratch/sd/a/arosado/slurm/Y1ab2ndgen_sysnet_%A_%a.out
+#SBATCH --output=/pscratch/sd/a/arosado/slurm/Y1ab2ndgen_regressis_%A_%a.out
 #SBATCH --array=1-24
-set start_time=%time%
+start_time=$(date +%s)
 set -e
 # This script can be run as a sbatch job, or an interactive job
 # if run in an interactive node then manually set mock realization 
@@ -29,8 +29,8 @@ BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
 MOCKCATVER='v0'
 ALTMTL='y'
 
-#REAL=$SLURM_ARRAY_TASK_ID
-REAL=0
+REAL=$SLURM_ARRAY_TASK_ID
+#REAL=0
 do_RF=true
 do_prep=false
 do_SN=false
@@ -203,19 +203,15 @@ then
     echo "finished validations"
 fi
 
+# Record the end time
+end_time=$(date +%s)
 
-set end_time=%time%
-#Calculate the time difference
-#Convert start and end times to seconds
-for /f "tokens=1-4 delims=:.," %%a in ("%start_time%") do set /a "start_seconds=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
-for /f "tokens=1-4 delims=:.," %%a in ("%end_time%") do set /a "end_seconds=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
+# Calculate the difference in seconds
+time_diff=$((end_time - start_time))
 
-#Calculate the difference in seconds
-set /a "time_diff=end_seconds-start_seconds"
+# Convert seconds to hours, minutes, and seconds
+hours=$((time_diff / 3600))
+minutes=$(( (time_diff % 3600) / 60 ))
+seconds=$((time_diff % 60))
 
-#Convert the difference back to hours, minutes, and seconds
-set /a "hours=time_diff/360000"
-set /a "minutes=(time_diff%%360000)/6000"
-set /a "seconds=(time_diff%%6000)/100"
-
-echo Script execution time: %hours% hours %minutes% minutes %seconds% seconds
+echo "Script execution time: $hours hours $minutes minutes $seconds seconds"
