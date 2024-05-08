@@ -255,7 +255,7 @@ def _compute_weight(survey, tracer, footprint, suffix_tracer, suffix_regressor, 
     _ = regression.get_weight(save=True)
     #regression.plot_maps_and_systematics(max_plot_cart=max_plot_cart, cut_fracarea=cut_fracarea)
 
-def get_desi_data_clus_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,\
+def get_desi_data_clus_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,data_type='data',\
 fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
 max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
 feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto=''):
@@ -355,7 +355,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     _ = regression.get_weight(save=True)
 
 
-def get_desi_data_full_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,\
+def get_desi_data_full_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,data_type='data',\
 fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
 max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
 feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto=''):
@@ -388,6 +388,10 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     zcol = 'Z_not4clus'
     
     cols = ['RA','DEC',zcol,'ZWARN','FRACZ_TILELOCID','FRAC_TLOBS_TILES']#,'WEIGHT_ZFAIL']
+    if data_type=='data':
+        cols.append('WEIGHT_ZFAIL')
+    else:
+        cols.append('TARGETID')
     if tracer[:3] != 'QSO':
         cols.append('DELTACHI2')
     if tracer[:3] == 'ELG':
@@ -397,6 +401,21 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     LSS = LSS.replace('global','dvs_ro')
     data = read_fits_to_pandas(os.path.join(LSS, f'{tracer}'+'_full'+use_map_veto+'.dat.fits'),columns=cols)
     print('read data')
+    if data_type=='mock':
+        # cut full cat based on NGC+SGC clustering cats TARGETID
+        dt_n = fitsio.read(os.path.join(LSS, tracer+'_NGC_clustering.dat.fits'),columns=['TARGETID'])
+        dt_s = fitsio.read(os.path.join(LSS, tracer+'_SGC_clustering.dat.fits'),columns=['TARGETID'])
+        df_concat = np.concatenate([dt_n,dt_s])
+
+        df_ids = np.unique(data['TARGETID'])
+        df_concat_ids = np.unique(df_concat['TARGETID'])
+        mask = np.isin(df_ids,df_concat_ids)
+        dsize_before = len(data)
+        data = data[mask]
+        print(dsize_before,len(data),dsize_before-len(data))
+        
+        data['WEIGHT_ZFAIL'] = np.ones_like(data['RA'])
+    
     if tracer == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = data[zcol]*0 == 0
