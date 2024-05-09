@@ -361,7 +361,7 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran',wtmd
 
     df = fitsio.read(fcd)
 
-    nbin = int((zmax-zmin)/bs)
+    nbin = int((zmax-zmin)*(1+bs/10)/bs)
     if wtmd == 'clus':
         #this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
         wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
