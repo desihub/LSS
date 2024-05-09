@@ -29,8 +29,8 @@ BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
 MOCKCATVER='v0'
 ALTMTL='y'
 
-REAL=$SLURM_ARRAY_TASK_ID
-#REAL=0
+#REAL=$SLURM_ARRAY_TASK_ID
+REAL=4
 do_RF=true
 do_prep=false
 do_SN=false
