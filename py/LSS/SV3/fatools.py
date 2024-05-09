@@ -431,7 +431,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         elif faver > 2.4 and faver < 5.0:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
-        else faver >= 5.0:
+        else:
             assert faver >= 5.0
             fo.write("module swap fiberassign/5.0.0\n")
     else:
