@@ -407,9 +407,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
         dt_s = fitsio.read(os.path.join(LSS, tracer+'_SGC_clustering.dat.fits'),columns=['TARGETID'])
         df_concat = np.concatenate([dt_n,dt_s])
 
-        df_ids = np.unique(data['TARGETID'])
-        df_concat_ids = np.unique(df_concat['TARGETID'])
-        mask = np.isin(df_ids,df_concat_ids)
+        mask = np.isin(data['TARGETID'],df_concat['TARGETID'])
         dsize_before = len(data)
         data = data[mask]
         print(dsize_before,len(data),dsize_before-len(data))
