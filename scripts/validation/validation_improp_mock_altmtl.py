@@ -250,8 +250,9 @@ for tp in tps:
     #fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
     #fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
     print('test test')
-    dtf_n = fitsio.read(fcd_n)
-    dtf_s = fitsio.read(fcd_s)
+    cols = ['RA','DEC','Z','WEIGHT_COMP',wcol,'NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+    dtf_n = fitsio.read(fcd_n,columns=cols)
+    dtf_s = fitsio.read(fcd_s,columns=cols)
     dtf = np.concatenate([dtf_n,dtf_s])
     #full_data_fn = fulldir.replace('global','dvs_ro')  + 'ffa_full_'+tp+'.fits'
     #full_data = fitsio.read(full_data_fn,columns=['TARGETID','WEIGHT_IIP'])
@@ -292,6 +293,7 @@ for tp in tps:
     #seld &= z_suc
 
     #dtf = dtf[seld]
+    rcols = ['RA','DEC','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
     rt_n = fitsio.read(rf_n)
     rt_s = fitsio.read(rf_s)
     rt = np.concatenate((rt_n,rt_s))
