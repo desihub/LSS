@@ -245,8 +245,13 @@ for tracer in tracers:
     elif (tracer == 'ELG_LOP') or (tracer == 'ELG'):
         zmin = 0.8
         zmax = 1.6
+        subfrac1 = .8
+        subfrac2 = .63
+        zsplit = 1.5
+
         if args.mockver == 'AbacusSummit':
             subfrac = .785 #determined from ration of clustering catalogs; SGC 0.77 NGC 0.793
+            zsplit = None
         if args.mockver == 'EZmock/FFA':
             subfrac1 = .72
             subfrac2 = .54
@@ -260,6 +265,7 @@ for tracer in tracers:
     elif tracer == 'QSO':
         zmin = 0.8
         zmax = 2.1
+        subfrac = 0.66
         if args.mockver == 'AbacusSummit':
             subfrac = 0.62 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1
         if args.mockver == 'EZmock/FFA':
