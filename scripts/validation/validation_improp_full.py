@@ -127,6 +127,7 @@ if args.mapmd == 'all':
     dosky_g = 'y'
     do_ebvnew_diff = 'y'
     do_lrgmask = 'y'
+    do_ebvnocib_diff = 'y'
     
 
 if args.test == 'y':
@@ -532,6 +533,27 @@ for tp in tps:
                     figs.append(fig)
                     if args.mapmd == 'validate':
                         fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFD'+' '+str(chi2)+' '+str(chi2nw)+'\n')
+
+                    chi2tot += chi2
+                    nmaptot += 1
+
+            if do_ebvnocib_diff == 'y':
+                #dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
+                dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'
+                nside = 256#64
+                nest = False
+                eclrs = ['gr','rz']
+                ebvnocib = hp.reorder(mf[reg]['EBV_CHIANG_SFDcorr'],n2r=True)
+                for ec in eclrs:
+                    #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
+                    ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+                    debv = ebvn['EBV_DESI_'+ec.upper()]-ebvnocib#-ebvn['EBV_SFD_'+ec.upper()]
+                    parv = debv
+                    fig = plt.figure()
+                    chi2,chi2nw = plot_reldens(parv,hp.reorder(pixlg,n2r=True),hp.reorder(pixlgw,n2r=True),hp.reorder(pixlr,n2r=True),cl=cl,xlab='EBV_DESI_'+ec.upper()+' - EBV_SFD',titl=args.survey+' '+tp+zr+' '+reg,desnorm=desnorm)
+                    figs.append(fig)
+                    if args.mapmd == 'validate':
+                        fo.write('EBV_DESI_'+ec.upper()+'-EBV_SFDnoCIB'+' '+str(chi2)+' '+str(chi2nw)+'\n')
 
                     chi2tot += chi2
                     nmaptot += 1
