@@ -832,17 +832,44 @@ if args.prepsysnet == 'y':
     #_HPmapcut'
     dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
     ranl = []
-    for i in range(0,18):
-        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
-        ranl.append(ran)
+    import time
+    time_start = time.time()
+    print('Loading randoms...')
+    if args.par == 'y':
+        def read_catalogs(randoms_path):
+            return fitsio.read(randoms_path,columns=['RA', 'DEC','PHOTSYS'])
+        rands_paths=[]
+        for i in range(0,18):
+            rands_paths.append(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits')) 
+        from multiprocessing import Pool
+        with Pool() as pool:
+            ranl = pool.map(read_catalogs, rands_paths)
+    else:
+        for i in range(0,18):
+            ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+            ranl.append(ran)
     rands = np.concatenate(ranl)
+    print('Randoms loaded and stacked', time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
     regl = ['N','S']
     
     for zl in zrl:
         zw = ''
+        zmin,zmax=zl[0],zl[1]
         if args.imsys_zbin == 'y':
-            zw = str(zl[0])+'_'+str(zl[1])
+            zw = str(zmin)+'_'+str(zmax)
         for reg in regl:
+            if type == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
             pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
@@ -864,10 +891,10 @@ if args.prepsysnet == 'y':
             #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
-        
+            print(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}")
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
-                                                  columns=fit_maps,wtmd='fracz',tp=args.type[:3])
+                                                  columns=fitmapsbin,wtmd='fracz',tp=args.type[:3])
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 
