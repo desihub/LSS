@@ -709,6 +709,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
             print('added NTILE = 1 column because column did not exist')
 
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
+        #the following lines should keep the relative weighting and the region normalization in place
         wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
         if compmd == 'ran':
             wt *= fd['FRAC_TLOBS_TILES']
