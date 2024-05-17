@@ -831,10 +831,10 @@ if args.prepsysnet == 'y':
     
     #_HPmapcut'
     dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
-    ranl = []
     import time
     time_start = time.time()
     print('Loading randoms...')
+    ranl = []
     if args.par == 'y':
         def read_catalogs(randoms_path):
             return fitsio.read(randoms_path,columns=['RA', 'DEC','PHOTSYS'])
