@@ -1,4 +1,5 @@
 #!/bin/bash
+# bash Y1_sysnetLRG_zbins_v1.4.1.sh
 set -e
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
@@ -11,9 +12,9 @@ VERSION=v1.4.1
 TRACER=LRG
 do_prep=false
 do_lr=false
-do_SN=true
+do_SN=false
 add_weights=false
-do_validation=false
+do_validation=true
 
 # Some NN parameters for North
 LR_N1=0.01     # learning rate for LRG1 N
@@ -39,7 +40,7 @@ RUN_SYSNET=$LSSDIR/LSS/scripts/run_sysnetELG_cd_new.sh
 if [ $do_prep == true ]
 then
     # If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
-    srun -N 1 -n 1 python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type LRG --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION --use_allsky_rands y
+    python $LSSDIR/LSS/scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type LRG --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $VERSION --use_allsky_rands y --par y
 fi
 
 if [ $do_lr == true ]
