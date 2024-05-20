@@ -1,5 +1,5 @@
-#from desiutil.iers import freeze_iers
-#freeze_iers()
+from desiutil.iers import freeze_iers
+freeze_iers()
 
 import collections.abc
 from time import time
