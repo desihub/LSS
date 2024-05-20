@@ -32,19 +32,27 @@ echo "$argstring"
 if [ $QVal = 'interactive' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 02:00:00 -e mylog_error.txt --dependency=afterany:17881308 python $path2LSS/runAltMTLParallel.py $argstring
 fi
 if [ $QVal = 'regular' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:23940763 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 24:00:00 -e mylog_error.txt -K --dependency=afterany:24949299 python  $path2LSS/runAltMTLParallel.py $argstring
 fi
 
 if [ $QVal = 'debug' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:15:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:15:00 -e mylog_error.txt --dependency=afterany:17881308 python  $path2LSS/runAltMTLParallel.py $argstring
+    #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 00:15:00 --mem-per-cpu=1500 -K -e mylog_error.txt --dependency=afterany:17881308  $path2LSS/runAltMTLParallel.py $argstring
 fi
+
+#if [ $QVal = 'shared' ];
+#then
+
+#    srun --ntasks=128 -C $CVal --qos=$QVal -A desi -t 24:00:00 --mem=64G $path2LSS/runAltMTLParallel.py $argstring
+#fi
+
 #retcode=$?
 #qR=0 #DO NOT CHANGE. This prevents further restarts after the first if qR is set to 1 at top.
 #if [ $retcode -ne 0 ]; then
