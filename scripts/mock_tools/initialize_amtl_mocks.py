@@ -29,14 +29,12 @@ obscon = sys.argv[3] #DARK or BRIGHT
 initledger_path = os.path.join(arg2, 'initled')
 
 altmtl_path = os.path.join(arg2, 'Univ000')
-
 '''
 print('Running initial ledgers')
 if par:
-    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=12)
+    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=128)
 else:
     mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper())
-'''
 
 print('Creating list of tiles to be processed by AltMTL mock production')
 
@@ -65,7 +63,7 @@ print('Copying initial ledgers to altmtl directory ', path_to_altmtl)
 create_dirs(path_to_altmtl)
 
 os.system('cp %s %s' % (os.path.join(path,'*'), path_to_altmtl))
-
+'''
 print('Creating tileTracker file and tilestatus file')
 
 startDateShort = 19990101
