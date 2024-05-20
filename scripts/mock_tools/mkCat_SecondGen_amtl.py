@@ -80,7 +80,7 @@ parser.add_argument("--splitGC",help='whether to combine N/S and then split NGC/
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2,type=int) 
-parser.add_argument("--par", help="run different random number in parallel?",default='y')
+parser.add_argument("--par", help="run different random number in parallel?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--equal_data_dens", help="if y, make mock n(z) equal data n(z)", default = 'n')
@@ -89,6 +89,7 @@ parser.add_argument("--use_map_veto", help="Tag for extraveto added in name, for
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
+parser.add_argument("--add_weight_ntile", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 
 #--use_map_veto _HPmapcut
 
@@ -350,7 +351,8 @@ if args.fullr == 'y':
 
         inds = np.arange(rannum[0], rannum[1])
         #(rannum[1]-rannum[0])*2
-        nproc = 18 #try 9 if runs out of memory
+        nproc = rx-rm #try 9 if runs out of memory
+        ####HERE nproc = 18 #try 9 if runs out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun1, inds)
             pool.close()
@@ -524,10 +526,14 @@ if args.mkclusran == 'y':
 #        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
     print('*** END WITH MKCLUSRAN ***')
 
-nproc = 18
+
 fb = os.path.join(dirout, finaltracer)
-##fb = os.path.join(dirout, tracer_clus)
 nran = rx-rm
+
+
+
+nproc = 18
+##fb = os.path.join(dirout, tracer_clus)
 if args.nz == 'y':
     #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
     #for reg in allreg:
@@ -598,4 +604,7 @@ if args.resamp == 'y':
         common.addnbar(flin,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,logger=logger)
 
 
-    
+if args.add_weight_ntile == 'y':
+    bo = common.add_weight_ntile(fb, ranmin=rm, nran=rx, par=args.par)
+
+   
