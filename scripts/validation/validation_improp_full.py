@@ -489,7 +489,7 @@ for tp in tps:
 
             if dosky_r == 'y':
                 fig = plt.figure()
-                parv = sky_g
+                parv = sky_r
                 mp = 'r_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
@@ -499,7 +499,7 @@ for tp in tps:
 
             if dosky_z == 'y':
                 fig = plt.figure()
-                parv = sky_g
+                parv = sky_z
                 mp = 'z_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
