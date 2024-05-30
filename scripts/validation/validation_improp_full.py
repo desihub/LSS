@@ -104,18 +104,24 @@ sel = ranmap > 0
 lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
 sky_g = np.zeros(256*256*12)
+sky_r = np.zeros(256*256*12)
+sky_z = np.zeros(256*256*12)
 f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
 pixr = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pixr)
 for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g[pix] = f['sky_median_g'][i]
+    sky_r[pix] = f['sky_median_r'][i]
+    sky_z[pix] = f['sky_median_z'][i]
 f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
 pix = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pix)
 for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g[pix] = f['sky_median_g'][i]
+    sky_r[pix] = f['sky_median_r'][i]
+    sky_z[pix] = f['sky_median_z'][i]
 
 
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
@@ -473,6 +479,26 @@ for tp in tps:
                 fig = plt.figure()
                 parv = sky_g
                 mp = 'g_sky_res'
+                
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
+
+            if dosky_r == 'y':
+                fig = plt.figure()
+                parv = sky_g
+                mp = 'r_sky_res'
+                
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
+
+            if dosky_z == 'y':
+                fig = plt.figure()
+                parv = sky_g
+                mp = 'z_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
                 figs.append(fig)
