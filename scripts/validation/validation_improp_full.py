@@ -131,6 +131,8 @@ if args.mapmd == 'all':
     dmaps = all_dmaps
     dosag = 'y'
     dosky_g = 'y'
+    dosky_r = 'y'
+    dosky_z = 'y'
     do_ebvnew_diff = 'y'
     do_lrgmask = 'y'
     do_ebvnocib_diff = 'y'
