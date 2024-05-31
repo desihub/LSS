@@ -392,7 +392,54 @@ if  args.mkemlin == 'y':
                 print('completed '+str(ndone)+' tiles')
         ct.combtile_em(tiles4comb,outf)
     elif specrel != 'daily':
-        ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
+        if args.par == 'y':
+            tl = []
+            if os.path.isfile(outf):
+                specd = fitsio.read(outf)
+                tl.append(specd)
+                tdone = np.unique(specd['TILEID'])
+                tmask = ~np.isin(tiles4comb['TILEID'],tdone)
+            else:
+                tmask = np.ones(len(tiles4comb)).astype('bool')
+            logger.info('there are '+str(np.sum(tmask))+ ' tiles to add to emline data')
+            if np.sum(tmask) == 0:
+                newem = False
+            else:
+                newem = True
+                tiles_2comb = tiles4comb[tmask]
+                def _get_tile(ind):
+                
+                    trow = tiles_2comb[ind]
+                    tile,zdate,tdate = trow['TILEID'],trow['ZDATE'],trow['THRUDATE']
+                    logger.info('combining emline data for TILEID '+str(tile))
+                    #tspec = ct.combEMdata_daily(str(tile),str(zdate),str(tdate))
+                    tspec = ct.combEMdata_rel(str(tile),str(tdate),coaddir)
+                    if tspec:
+                        tspec['TILEID'] = tile
+                        tspec = np.array(tspec)
+                        new = np.empty(len(tspec),dtype=specd.dtype)
+                        cols = specd.dtype.names
+                        for colname in cols:
+                            new[colname][...] = tspec[colname][...]
+                    else:
+                        new = None
+                    return new
+                inds = np.arange(len(tiles_2comb))
+                from concurrent.futures import ProcessPoolExecutor
+            
+                with ProcessPoolExecutor() as executor:
+                    for specd in executor.map(_get_tile, inds):
+                        if specd is not None:
+                            tl.append(np.array(specd))
+            specd = np.hstack(tl)
+            kp = (specd['TARGETID'] > 0)
+            specd = specd[kp]
+            common.write_LSS(specd,outf)
+            del specd
+            del tl
+
+        else:
+            ct.combtile_em_alt(tiles4comb,outf,prog='dark',coaddir=coaddir)
     else:
         if args.par == 'y':
             tl = []
@@ -401,9 +448,9 @@ if  args.mkemlin == 'y':
                 tl.append(specd)
                 tdone = np.unique(specd['TILEID'])
                 tmask = ~np.isin(tiles4comb['TILEID'],tdone)
-
             else:
                 tmask = np.ones(len(tiles4comb)).astype('bool')
+
             logger.info('there are '+str(np.sum(tmask))+ ' tiles to add to emline data')
             if np.sum(tmask) == 0:
                 newem = False
