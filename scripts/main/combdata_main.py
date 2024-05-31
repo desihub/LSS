@@ -128,7 +128,8 @@ if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
     #if specrel == 'everest':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/tiles/cumulative/'
-    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrel+'/zcatalog/ztile-main-'+prog+'-cumulative.fits')
+    specrell = specrel.split('-')
+    specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/'+specrell[0]+'/zcatalog/'+specrell[1]+'/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'],np.unique(specf['TILEID']))
 else:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
