@@ -883,11 +883,27 @@ if specrel != 'daily' and args.dospec == 'y':
             #first test to see if we need to update any
             print('now doing '+tp+notqso)
             print(len(tiles4comb['TILEID']))
-            tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
+            #tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
             outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
-            outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
+            #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
-            tarf = Table.read(tarfo)
+            #tarf = Table.read(tarfo)
+            tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+            tarf = fitsio.read(tarfo.replace('global','dvs_ro'))#,columns=cols)
+            logger.info('loaded tarspecwdup file')
+            #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            if tp == 'BGS_BRIGHT':
+                sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
+            else:
+                sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
+            if notqso == 'notqso':
+                sel &= (tarf['DESI_TARGET'] & 4) == 0
+            tarf = Table(tarf[sel])
+            logger.info('cut to target type')
+            
+            tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
+            logger.info('added TILELOCID, about to do joins')
+
             remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
             for col in remcol:
                 try:
