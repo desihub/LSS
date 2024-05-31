@@ -163,9 +163,12 @@ def add_fminfo(qf,expinfo):
     
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
-zcat = Table(fitsio.read(reldir+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits',columns=columns))
-expinfo = Table(fitsio.read(reldir+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
+logger.info('loading zcat')
+zcat = Table(fitsio.read(reldir.replace('global','dvs_ro')+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits',columns=columns))
+logger.info('loading exp info')
+expinfo = Table(fitsio.read(reldir.replace('global','dvs_ro')+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
 #make the dark time QSO target only QSO catalog
+logger.info('about to make QSO catalog')
 if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
