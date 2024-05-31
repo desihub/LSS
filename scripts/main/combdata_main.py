@@ -417,13 +417,15 @@ if  args.mkemlin == 'y':
                     if tspec:
                         tspec['TILEID'] = tile
                         tspec = np.array(tspec)
-                        new = np.empty(len(tspec),dtype=specd.dtype)
-                        cols = specd.dtype.names
-                        for colname in cols:
-                            new[colname][...] = tspec[colname][...]
+                        return tspec
+                        #new = np.empty(len(tspec),dtype=specd.dtype)
+                        #cols = specd.dtype.names
+                        #for colname in cols:
+                        #    new[colname][...] = tspec[colname][...]
                     else:
-                        new = None
-                    return new
+                        return None
+                        #new = None
+                    #return new
                 inds = np.arange(len(tiles_2comb))
                 from concurrent.futures import ProcessPoolExecutor
             
