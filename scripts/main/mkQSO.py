@@ -18,6 +18,28 @@ from desimodel.footprint import is_point_in_desi
 import desimodel.footprint as foot
 from desitarget import targetmask
 
+import logging
+# create logger
+logname = 'QSO_CAT_UTILS'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+logger.info('script is starting')
+
+
 #import logging
 #logging.getLogger().setLevel(logging.ERROR)
 
@@ -57,7 +79,7 @@ print(args)
 nproc = 20
 if args.node == 'y':
     nproc = 128
-print(nproc)
+logger.info('number of processors being used '+str(nproc))
 
 basedir = args.basedir
 version = args.version
