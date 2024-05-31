@@ -891,7 +891,7 @@ if specrel != 'daily' and args.dospec == 'y':
             #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
             #tarf = Table.read(tarfo)
-            tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
+            tarfo = dailydir+'/datcomb_'+prog+'_tarwdup_zdone.fits'
             tarf = fitsio.read(tarfo.replace('global','dvs_ro'))#,columns=cols)
             logger.info('loaded tarspecwdup file')
             #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
