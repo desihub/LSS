@@ -857,7 +857,7 @@ if specrel != 'daily' and args.dospec == 'y':
         ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrell[0])
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if os.path.isfile(outfs):
-        specf = fitiso.read(outfs.replace('global','dvs_ro'))
+        specf = fitsio.read(outfs.replace('global','dvs_ro'))
     else:
         fzmtl = fitsio.read(specfo)
         specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
