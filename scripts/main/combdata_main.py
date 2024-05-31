@@ -854,7 +854,7 @@ if specrel != 'daily' and args.dospec == 'y':
     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY','DESI_TARGET','BGS_TARGET','TARGET_RA','TARGET_DEC','LASTNIGHT'])
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     if args.redo_zmtl == 'y':
-        ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrel)
+        ct.combtile_spec(tiles4comb,specfo,md='zmtl',specver=specrell[0])
     fzmtl = fitsio.read(specfo)
     specf = join(specf,fzmtl,keys=['TARGETID','TILEID'])
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
