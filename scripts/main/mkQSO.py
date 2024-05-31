@@ -43,7 +43,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
-parser.add_argument("--verspec",help="version for redshifts",default='himalayas')
+parser.add_argument("--verspec",help="version for redshifts",default='jura')
+parser.add_argument("--verspecrel",help="version for redshifts",default='v1')
 parser.add_argument("--mkqso",help="whether to perform the 1st stage",default='y')
 
 
@@ -134,8 +135,8 @@ def add_fminfo(qf,expinfo):
     
 
 #load the dark time healpix zcatalog, to be used for getting extra columns
-zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits',columns=columns))
-expinfo = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
+zcat = Table(fitsio.read(reldir+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits',columns=columns))
+expinfo = Table(fitsio.read(reldir+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
 #make the dark time QSO target only QSO catalog
 if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=20, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
