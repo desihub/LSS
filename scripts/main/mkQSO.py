@@ -170,8 +170,8 @@ if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
-print('loading '+qsofn+' to add columns to')
-qf = fitsio.read(qsofn)
+logger.info('loading '+qsofn+' to add columns to')
+qf = fitsio.read(qsofn.replace('global','dvs_ro'))
 qcols = list(qf.dtype.names)
 kc = ['TARGETID']
 for col in columns:
@@ -182,19 +182,19 @@ qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
 qf = add_fminfo(qf,expinfo)
-common.write_LSS(qf,qsofn,extname=extname)
+common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
 
 #make the dark time any target type QSO catalog
 build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
-print('loading '+qsofn+' to add columns to')
-qf = fitsio.read(qsofn)
+logger.info('loading '+qsofn+' to add columns to')
+qf = fitsio.read(qsofn.replace('global','dvs_ro'))
 qf = join(qf,zcat,keys=['TARGETID'])
 #get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
 qf = add_fminfo(qf,expinfo)
-common.write_LSS(qf,qsofn,extname=extname)
+common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
 #build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='bright', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
