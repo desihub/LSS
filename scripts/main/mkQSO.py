@@ -57,6 +57,7 @@ print(args)
 nproc = 20
 if args.node == 'y':
     nproc = 128
+print(nproc)
 
 basedir = args.basedir
 version = args.version
