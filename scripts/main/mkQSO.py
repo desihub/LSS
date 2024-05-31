@@ -171,6 +171,7 @@ expinfo = Table(fitsio.read(reldir.replace('global','dvs_ro')+'/zcatalog/'+args.
 logger.info('about to make QSO catalog')
 if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
+    logger.info('made 1st QSO catalog')
 #load what was written out and get extra columns
 qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
 logger.info('loading '+qsofn+' to add columns to')

@@ -39,6 +39,8 @@ import fitsio
 import numpy as np
 import pandas as pd
 
+from LSS import common_tools as common
+
 
 log = logging.getLogger("QSO_CAT_UTILS")
 
@@ -512,7 +514,8 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     log.info('Compute the TS probas...')
     compute_RF_TS_proba(QSO_cat)
 
-    save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'))
+    #save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'))
+    common.write_LSS_scratchcp(QSO_cat.to_records(index=False),os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'),extname="QSO_CAT",logger=log)
 
 
 def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_all=False):
@@ -595,15 +598,17 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
     #     # to save computational time
     #     log.info('Compute the TS probas...')
     #     compute_RF_TS_proba(QSO_cat)
-
+    extname="QSO_CAT"
     if keep_qso_targets:
         log.info('Keep only qso targets...')
-        save_dataframe_to_fits(QSO_cat.iloc[QSO_cat[desi_target_from_survey(survey)].values & 2**2 != 0], os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix_only_qso_targets_v{qsoversion}.fits'))
+        common.write_LSS_scratchcp(QSO_cat.iloc[QSO_cat[desi_target_from_survey(survey)].values & 2**2 != 0].to_records(index=False),os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix_only_qso_targets_v{qsoversion}.fits'),extname=extname,logger=log)
+        #save_dataframe_to_fits(QSO_cat.iloc[QSO_cat[desi_target_from_survey(survey)].values & 2**2 != 0], os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix_only_qso_targets_v{qsoversion}.fits'))
 
     suffix = ''
     if keep_all:
         suffix = '_all_targets'
-    save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix{suffix}_v{qsoversion}.fits'))
+    common.write_LSS_scratchcp(QSO_cat.to_records(index=False),os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix{suffix}_v{qsoversion}.fits'),extname=extname,logger=log)
+    #save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_{survey}_{program}_healpix{suffix}_v{qsoversion}.fits'))
 
 
 def afterburner_is_missing_in_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', outdir=''):
