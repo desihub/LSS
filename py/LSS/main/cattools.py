@@ -3086,6 +3086,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
+        arz['TILEID'] = arz['TILEID'].astype(int)
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
