@@ -1651,3 +1651,9 @@ def return_altmtl_fba_fadate(tileid):
 def return_hp_givenradec(nside, ra, dec):
     theta, phi = np.radians(90-dec), np.radians(ra)
     return hp.ang2pix(nside, theta, phi, nest=True)
+
+def printlog(message,logger):
+    if logger is not None:
+        logger.info(message)
+    else:
+        print(message)

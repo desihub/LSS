@@ -3017,6 +3017,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #    pv = dz['PRIORITY']
     #    pv[selnp] = 0
     #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
+    if logger is not None:
+        logger.info('about to sort')
+    else:
+        print('about to sort')
+
     dz.sort('sort')
     if logger is not None:
         logger.info('sorted')
@@ -3029,7 +3034,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if logger is not None:
         logger.info('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
         logger.info('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])))
-        logger.info('cut number assigned at good priority and good hardwared '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])))
+        logger.info('cut number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])))
 
     else:
         print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
@@ -3071,7 +3076,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits)
-        print('length after imaging mask; should not have changed '+str(len(dz)))
+        if logger is not None:
+            logger.info('length after imaging mask; should not have changed '+str(len(dz)))
+        else:
+            print('length after imaging mask; should not have changed '+str(len(dz)))
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
@@ -3082,31 +3090,39 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         w |= dz['OII_FLUX'] < 0
         o2c[w] = -20
         dz['o2c'] = o2c
-        print('check length after merge with OII strength file:' +str(len(dz)))
+        if logger is not None:
+            logger.info('check length after merge with OII strength file:' +str(len(dz)))
+        else:
+            print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
-        print(arz.dtype.names)
+        #print(arz.dtype.names)
         dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
     if tp[:3] == 'ELG' and azf != '':
-        print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+        if logger is not None:
+            logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+        else:
+            print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
+        message = 'adding healpix based QSO info'
+        common.printlog(message,logger)
         arz = Table(fitsio.read(azf))
         sel = arz['SURVEY'] == 'main'
         sel &= arz['PROGRAM'] == 'dark'
         arz = arz[sel]
         arz.keep_columns(['TARGETID','Z','ZERR','Z_QN','TSNR2_LYA','TSNR2_QSO','QSO_MASKBITS'])
         
-        print(arz.dtype.names)
+        #print(arz.dtype.names)
         #arz['TILE'].name = 'TILEID'
-        print('length of dz before QSO join '+str(len(dz)))
+        common.printlog('length of dz before QSO join '+str(len(dz)),logger)
         dz = join(dz,arz,keys=['TARGETID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-        print('length of dz after QSO join (shoudl be the same)'+str(len(dz)))
+        common.printlog('length of dz after QSO join (shoudl be the same)'+str(len(dz)),logger)
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
 
@@ -3116,23 +3132,22 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz[mockz].name = 'Z' 
         
     if tp == 'QSO' and azf != '':
-        print('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)))
+        common.printlog('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)),logger)
     try:
         dz['Z'] = dz['Z'].filled(999999)
     except:
-        print('filling masked Z rows did not succeed')
+        common.printlog('filling masked Z rows did not succeed',logger)
     selm = dz['Z'] == 999999
-    print('999999s for Z',len(dz[selm]))
+    common.printlog('999999s for Z '+str(len(dz[selm])),logger)
     selo = dz['LOCATION_ASSIGNED'] == True
-    print('unique Z for unassigned:')
-    print(np.unique(dz[~selo]['Z']))
+    common.printlog('unique Z for unassigned: '+str(np.unique(dz[~selo]['Z'])),logger)
 
-    print('length after cutting to unique targetid '+str(len(dz)))
-    print('LOCATION_ASSIGNED numbers')
-    print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
+    common.printlog('length after cutting to unique targetid '+str(len(dz)),logger)
+    common.printlog('LOCATION_ASSIGNED numbers',logger)
+    common.printlog(str(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True)),logger)
 
-    print('TILELOCID_ASSIGNED numbers')
-    print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
+    printlog('TILELOCID_ASSIGNED numbers')
+    printlog(str(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True)),logger)
 
     probl = np.zeros(len(dz))
 
@@ -3165,10 +3180,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
                 break
 
         if ti%1000 == 0:
-            print('at tiles '+str(ti)+' of '+str(nts))
+            common.printlog('at tiles '+str(ti)+' of '+str(nts),logger)
 
         if nli == 0:
-            print('no data for '+str(tlslu[ti]))
+            common.printlog('no data for '+str(tlslu[ti]),logger)
             cp = 0
         else:
             cp = nai/nli#no/nt
@@ -3182,20 +3197,20 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         fcompa.append(comp_dicta[tl])
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
-    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))
+    common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
 
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
 
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    print(np.max(nloclz),np.min(loclz))
+    #print(np.max(nloclz),np.min(loclz))
     
-    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+    #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
-    print('number of unique targets around unassigned locations is '+str(np.sum(natloc)))
+    common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
 
-    print('getting fraction assigned for each tilelocid')
+    common.printlog('getting fraction assigned for each tilelocid',logger)
     nm = 0
     nmt =0
     pd = []
@@ -3211,14 +3226,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     pd = dict(pd)
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
-    print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)
+    common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
+    #print(nm,nmt)
 
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match')
-    print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
+    common.printlog('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match',logger)
+    common.printlog(str(np.sum(1./dz[wz]['FRACZ_TILELOCID']))+','+str(np.sum(1./dz[wz]['COMP_TILE']))+','+str(len(dz)),logger)
 
-    print(np.unique(dz['NTILE']))
+    common.printlog('number of unique tileid: '+str(np.unique(dz['NTILE'])),logger)
     
     #needs to change, because specver should still point to real data
     if specver == 'mock':
@@ -3230,7 +3245,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz['PHOTSYS'][sel] = 'S'
                
     
-    common.write_LSS(dz,outf)
+    common.write_LSS_scratchcp(dz,outf,logger=logger)
 
 
 def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
