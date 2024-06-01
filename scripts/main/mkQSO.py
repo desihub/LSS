@@ -215,6 +215,6 @@ if args.mkqso == 'y':
 
 #make the per tile version; only used for LSS
 if args.mkqso_tiles == 'y':
-    build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=nproc, tiles_to_use=None, qsoversion=args.version,program_sel='dark',survey_sel='main')
+    build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=nproc, tiles_to_use=None, qsoversion=args.version,program_sel='dark',survey_sel='main',addTSprob=False)
 
 

@@ -470,7 +470,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
     return pd.concat([run_catalog_maker(path_to_tile, tile, last_night, petal, survey, program) for petal in range(10)], ignore_index=True)
 
 
-def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test',survey_sel=None,program_sel=None):
+def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test',survey_sel=None,program_sel=None,addTSprob=True):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -516,7 +516,8 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
 
     log.info('Compute the TS probas...')
-    compute_RF_TS_proba(QSO_cat)
+    if addTSprob:
+        compute_RF_TS_proba(QSO_cat)
 
     #save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'))
     common.write_LSS_scratchcp(QSO_cat.to_records(index=False),os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'),extname="QSO_CAT",logger=log)
