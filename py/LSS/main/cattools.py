@@ -3029,7 +3029,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if logger is not None:
         logger.info('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
         logger.info('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])))
-        logger.ifno('cut number assigned at good priority and good hardwared '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])))
+        logger.info('cut number assigned at good priority and good hardwared '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])))
 
     else:
         print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
