@@ -1358,6 +1358,7 @@ def cut_specdat(dz):
 
 
 def count_tiles_input(fjg,logger=None):
+    import LSS.common_tools as common
     '''
     take input array with require columns TARGETID TILEID TILELOCID
     return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
