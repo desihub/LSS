@@ -1357,7 +1357,7 @@ def cut_specdat(dz):
 #     return fs[wfqa]
 
 
-def count_tiles_input(fjg):
+def count_tiles_input(fjg,logger=None):
     '''
     take input array with require columns TARGETID TILEID TILELOCID
     return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
@@ -1368,7 +1368,7 @@ def count_tiles_input(fjg):
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
     tids = np.unique(fjg['TARGETID'])
-    print('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid')
+    common.printlog('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid',logger)
     nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
     nt = []
     tl = []
@@ -1395,7 +1395,7 @@ def count_tiles_input(fjg):
         tli.append("-".join(tlisu.astype(str)))
 
         if ti%100000 == 0:
-            print(ti)
+            common.printlog(str(ti),logger)
         ti += 1
     tc = Table()
     tc['TARGETID'] = tids
@@ -2997,8 +2997,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #    sel = dz[tscol] > min_tsnr2
     #    dz['GOODTSNR'][sel] = 1
     
+    common.printlog('getting tile counts',logger)
     if ftiles is None:
-        dtl = count_tiles_input(dz[wg])
+        dtl = count_tiles_input(dz[wg],logger=logger)
     else:
         dtl = Table.read(ftiles)
     
@@ -3146,8 +3147,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     common.printlog('LOCATION_ASSIGNED numbers',logger)
     common.printlog(str(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True)),logger)
 
-    printlog('TILELOCID_ASSIGNED numbers')
-    printlog(str(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True)),logger)
+    common.printlog('TILELOCID_ASSIGNED numbers')
+    common.printlog(str(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True)),logger)
 
     probl = np.zeros(len(dz))
 
