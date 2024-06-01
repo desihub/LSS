@@ -972,7 +972,9 @@ if specrel != 'daily' and args.dospec == 'y':
             del tarf
             #del specf
             print('joined tar and spec, now writing')
-            tj.write(outfs,format='fits', overwrite=True)
+            #tj.write(outfs,format='fits', overwrite=True)
+            common.write_LSS_scratchcp(tj,outfs,logger=logger)
+            del tj
             #print('wrote, now counting tiles')
             #tc = ct.count_tiles_better('dat',tp+notqso,specrel=specrel,survey=args.survey) 
             #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
