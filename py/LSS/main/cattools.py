@@ -1937,7 +1937,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
     return rv
 
 def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG',logger=None):
-    from LSS.common_tools import write_LSS
+    from LSS.common_tools import write_LSS,write_LSS_scratchcp
     fgu = Table(fitsio.read(infile))
     if mask_coll:
         print('length before masking collisions '+str(len(fgu)))
