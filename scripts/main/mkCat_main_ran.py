@@ -184,7 +184,7 @@ if not os.path.exists(ldirspec):
 
 dirout = ldirspec+'LSScats/'+version+'/'
 if not os.path.exists(dirout):
-    os.mkdir(dirout)
+    os.makedirs(dirout)
     logger.info('made '+dirout)
 
 mainp = main(type,args.verspec)
