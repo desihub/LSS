@@ -1394,7 +1394,7 @@ def count_tiles_input(fjg,logger=None):
         tl.append("-".join(tlsu.astype(str)))
         tli.append("-".join(tlisu.astype(str)))
 
-        if ti%100000 == 0:
+        if ti%1000000 == 0:
             common.printlog(str(ti),logger)
         ti += 1
     tc = Table()
