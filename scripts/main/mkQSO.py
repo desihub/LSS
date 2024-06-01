@@ -68,6 +68,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='jura')
 parser.add_argument("--verspecrel",help="version for redshifts",default='v1')
 parser.add_argument("--mkqso",help="whether to perform the 1st stage",default='y')
+parser.add_argument("--mkqso_tiles",help="whether to perform the 1st stage",default='y')
 parser.add_argument("--node",help="whether or not you are running on a node",default='y')
 
 
@@ -172,33 +173,33 @@ logger.info('about to make QSO catalog')
 if args.mkqso == 'y':
     build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
     logger.info('made 1st QSO catalog')
-#load what was written out and get extra columns
-qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
-logger.info('loading '+qsofn+' to add columns to')
-qf = fitsio.read(qsofn.replace('global','dvs_ro'))
-qcols = list(qf.dtype.names)
-kc = ['TARGETID']
-for col in columns:
-    if col not in qcols:
-        kc.append(col)
-zcat.keep_columns(kc)
-qf = join(qf,zcat,keys=['TARGETID'])
-#get night/tile info from tiles zcat
-#add_lastnight(qf,prog='dark')
-qf = add_fminfo(qf,expinfo)
-common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
-
-#make the dark time any target type QSO catalog
-build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
-#load what was written out and get extra columns
-qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
-logger.info('loading '+qsofn+' to add columns to')
-qf = fitsio.read(qsofn.replace('global','dvs_ro'))
-qf = join(qf,zcat,keys=['TARGETID'])
-#get night/tile info from tiles zcat
-#add_lastnight(qf,prog='dark')
-qf = add_fminfo(qf,expinfo)
-common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
+	#load what was written out and get extra columns
+	qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
+	logger.info('loading '+qsofn+' to add columns to')
+	qf = fitsio.read(qsofn.replace('global','dvs_ro'))
+	qcols = list(qf.dtype.names)
+	kc = ['TARGETID']
+	for col in columns:
+		if col not in qcols:
+			kc.append(col)
+	zcat.keep_columns(kc)
+	qf = join(qf,zcat,keys=['TARGETID'])
+	#get night/tile info from tiles zcat
+	#add_lastnight(qf,prog='dark')
+	qf = add_fminfo(qf,expinfo)
+	common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
+	
+	#the dark time any target type QSO catalog should have been made in the first call above
+	#build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
+	#load what was written out and get extra columns
+	qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
+	logger.info('loading '+qsofn+' to add columns to')
+	qf = fitsio.read(qsofn.replace('global','dvs_ro'))
+	qf = join(qf,zcat,keys=['TARGETID'])
+	#get night/tile info from tiles zcat
+	#add_lastnight(qf,prog='dark')
+	qf = add_fminfo(qf,expinfo)
+	common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
 
 #make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
 #build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='bright', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
@@ -213,6 +214,7 @@ common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
 #common.write_LSS(qf,qsofn,extname=extname)
 
 #make the per tile version; only used for LSS
-build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=nproc, tiles_to_use=None, qsoversion=args.version)
+if args.mkqso_tiles == 'y':
+    build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=nproc, tiles_to_use=None, qsoversion=args.version,program_sel='dark',survey_sel='main')
 
 

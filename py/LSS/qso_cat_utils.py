@@ -470,7 +470,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
     return pd.concat([run_catalog_maker(path_to_tile, tile, last_night, petal, survey, program) for petal in range(10)], ignore_index=True)
 
 
-def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test'):
+def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test',survey_sel=None,program_sel=None):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -499,11 +499,15 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     last_night = np.array(tile_info['LASTNIGHT'][:], dtype='str')
     survey = np.array(tile_info['SURVEY'][:], dtype='str')
     program = np.array(tile_info['PROGRAM'][:], dtype='str')
-
+    sel = np.ones(len(tiles),dtype=bool)
     if tiles_to_use is not None:
         sel = np.isin(tiles, tiles_to_use)
-        tiles, last_night, survey, program = tiles[sel], last_night[sel], survey[sel], program[sel]
-
+        #tiles, last_night, survey, program = tiles[sel], last_night[sel], survey[sel], program[sel]
+    if survey_sel is not None:
+        sel &= survey == survey_sel 
+    if program_sel is not None:
+        sel &= program == program_sel
+    tiles, last_night, survey, program = tiles[sel], last_night[sel], survey[sel], program[sel]
     log.info(f'There are {tiles.size} tiles to treat with npool={npool}')
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
