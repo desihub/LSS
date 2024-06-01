@@ -102,13 +102,13 @@ def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_s
     return debv
 
 
-def cutphotmask(aa,bits):
-    print(str(len(aa)) +' before imaging veto' )
+def cutphotmask(aa,bits,logger=None):
+    printlog(str(len(aa)) +' before imaging veto' ,logger=logger)
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
     for biti in bits:
         keep &= ((aa['MASKBITS'] & 2**biti)==0)
     aa = aa[keep]
-    print(str(len(aa)) +' after imaging veto' )
+    printlog(str(len(aa)) +' after imaging veto',logger=logger )
     return aa
 
 def splitGC(input_array):

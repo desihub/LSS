@@ -3054,9 +3054,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
     dz['NTILE'][~tin] = 0
-    print(np.unique(dz['NTILE']))
+    #print(np.unique(dz['NTILE']))
     if ftar is not None:
-        print('joining to full imaging')
+        common.printlog('joining to full imaging',logger)
         remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
     
         for col in remcol:
@@ -3077,7 +3077,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
     
     if len(imbits) > 0:
-        dz = common.cutphotmask(dz,imbits)
+        dz = common.cutphotmask(dz,imbits,logger=logger)
         if logger is not None:
             logger.info('length after imaging mask; should not have changed '+str(len(dz)))
         else:
@@ -3157,7 +3157,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     compa = []
     tll = []
     ti = 0
-    print('getting completeness')
+    common.printlog('getting completeness',logger)
     dz['TILES'] = dz['TILES'].filled('0')
     dz.sort('TILES')
     tlsl = dz['TILES']
@@ -3220,7 +3220,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     lzs = np.isin(locl,loclz)
     for i in range(0,len(locl)):
         if i%100000 == 0:
-            print('at row '+str(i)+' of '+str(nloclt))
+            common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
         nt = nlocl[i]
         nz = lzs[i]
         loc = locl[i]
