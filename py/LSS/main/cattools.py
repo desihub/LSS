@@ -566,7 +566,7 @@ def combtile_em_alt(tiles,outf='',md='',prog='dark',coaddir=''):
             n += 1
             print(tile,n,len(tiles[tmask]),len(specd))
         else:
-            print(str(tile)+' failed')
+            print(str(tile)+' '+coaddir+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
     if n > 0:
@@ -1936,7 +1936,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
         rv = False
     return rv
 
-def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG'):
+def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG',logger=None):
     from LSS.common_tools import write_LSS
     fgu = Table(fitsio.read(infile))
     if mask_coll:
@@ -1966,7 +1966,7 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     else:
         outf = lspecdir+'/rancomb_'+str(rann)+tp+'wdupspec_zdone.fits'
     print('writing to '+outf)
-    write_LSS(fgu,outf)
+    write_LSS_scratchcp(fgu,outf,logger=logger)
     #fgu.write(outf,format='fits', overwrite=True)
     
 
