@@ -315,6 +315,7 @@ if type[:3] == 'BGS':
        
 if mkfulld:
     logf.write('creating full data catalogs for '+tp+' '+str(datetime.now()))
+    logger.info('creating full data catalogs for '+tp)
     azf=''
     azfm = 'cumul'        
     if args.survey == 'DA02':
@@ -356,7 +357,7 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,mask_coll=maskcoll,logger=logger)
 
 
 if args.add_veto == 'y':

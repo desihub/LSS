@@ -2843,7 +2843,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     
     common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ',mask_coll=False):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ',mask_coll=False,logger=None):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2887,17 +2887,29 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
-        print('removing QSO targets')
+        if logger is not None:
+            logger.info('removing QSO targets')
+        else:
+            print('removing QSO targets')
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    print(len(dz[wtype]))
+    if logger is not None:
+        print('length of input cut to type is '+str(len(dz[wtype])))
+    else:
+        print(len(dz[wtype]))
     dz = dz[wtype]
 
     if mask_coll:
         coll = Table(fitsio.read(collf))
-        print('length before masking collisions '+str(len(dz)))
+        if logger is not None:
+            logger.info('length before masking collisions '+str(len(dz)))
+        else:
+            print('length before masking collisions '+str(len(dz)))
         dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
-        print('length after masking collisions '+str(len(dz)))
+        if logger is not None:
+            logger.info('length after masking collisions '+str(len(dz)))
+        else:        
+            print('length after masking collisions '+str(len(dz)))
 
     #instead of full spec data, we are going to get type specific data and cut to unique entries
     #in the end, we can only use the data associated with an observation
@@ -2910,17 +2922,23 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         prog = 'bright'
 
     specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-    print(specf)
+    if logger is not None:
+        logger.info('reading from spec file '+specf)
+    else:
+        print(specf)
     fs = fitsio.read(specf)
     fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
-    print(len(gtl))
+    #print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
-    print(dz.dtype.names)
+    if logger is not None:
+        logger.info('columns after join to spec info '+str(dz.dtype.names))
+    else:
+        print(dz.dtype.names)
     del fs
     dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
     dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
@@ -2929,28 +2947,40 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
-    print(len(dz[wg]))
+    #print(len(dz[wg]))
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
-    print(len(dz[wg]))
+    if logger is not None:
+        logger.info('number at good hardware '+str(len(dz[wg])))
+    else:
+        print(len(dz[wg]))
     #print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
-    print('length after selecting type '+str(len(dz)))
+    #print('length after selecting type '+str(len(dz)))
 
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
-    print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-    print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
-    print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
+    if logger is not None:
+        logger.info('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
+        logger.info('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
+        logger.info('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
+
+    else:
+        print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
+        print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
+        print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['TILELOCID_ASSIGNED'][wtl] = 1
-    print('number of unique targets at assigned tilelocid:')
-    print(len(np.unique(dz[wtl]['TARGETID'])))
+    if logger is not None:
+        logger.info('number of unique targets at assigned tilelocid: '+str(len(np.unique(dz[wtl]['TARGETID']))) )
+    else:
+        print('number of unique targets at assigned tilelocid:')
+        print(len(np.unique(dz[wtl]['TARGETID'])))
 
     cols = list(dz.dtype.names)
     #if tscol not in cols:
@@ -2988,16 +3018,29 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #    pv[selnp] = 0
     #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
     dz.sort('sort')
-    print('sorted')
+    if logger is not None:
+        logger.info('sorted')
+    else:
+        print('sorted')
     
     dz = unique(dz,keys=['TARGETID'],keep='last')
     dz.remove_column('sort')
-    print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-    print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
-    print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
+    
+    if logger is not None:
+        logger.info('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
+        logger.info('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])))
+        logger.ifno('cut number assigned at good priority and good hardwared '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])))
+
+    else:
+        print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
+        print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
+        print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
 
 
-    print('length after cutting to unique targets '+str(len(dz)))
+    if logger is not None:
+        logger.info('length after cutting to unique targets '+str(len(dz)))
+    else:
+        print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
 
     dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
