@@ -2300,7 +2300,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     dz['GOODHARDLOC'][wg] = 1
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
-        dzpd = count_tiles_input(dz[wg])#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+        dzpd = count_tiles_input(dz[wg],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = Table.read(ftiles)
 
@@ -2367,7 +2367,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dz['PHOTSYS'][sel] = 'S'
 
 
-    common.write_LSS(dz,outf)
+    common.write_LSS_scratchcp(dz,outf,logger=logger)
     #dz.write(outf,format='fits', overwrite=True)
     logger.info('wrote to '+outf)
     del dz
