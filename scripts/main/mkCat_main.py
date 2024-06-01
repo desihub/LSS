@@ -141,7 +141,7 @@ parser.add_argument("--swapz", help="if blinded, swap some fraction of redshifts
 parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
 
 args = parser.parse_args()
-print(args)
+common.printlog(str(args),logger)
 
 type = args.type
 tp = type
@@ -154,7 +154,7 @@ rm = int(args.minr)
 rx = int(args.maxr)
 
 
-print('running catalogs for tracer type '+type)
+common.printlog('running catalogs for tracer type '+type,logger)
 
 redotar = False
 if args.redotar == 'y':
@@ -166,7 +166,7 @@ if args.fulld == 'n':
         
     
 if mkfulld:
-    print('making "full" catalog file for data')    
+    common.printlog('making "full" catalog file for data',logger)    
     
     
 #mkfullr = True #make the random files associated with the full data files
@@ -183,14 +183,14 @@ if args.clusd == 'y':
     mkclusdat = True
     
 if mkclusdat:
-    print('making clustering catalog for data')
+    common.printlog('making clustering catalog for data',logger)
     
 if args.clusran == 'y':
     mkclusran = True
     
 if mkclusran:
-    print('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx))
-    print('(if running all, consider doing in parallel)')  
+    common.printlog('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx),logger)
+    common.printlog('(if running all, consider doing in parallel)',logger)  
 
 notqso = ''
 if args.notqso == 'y':
@@ -249,17 +249,17 @@ maindir = basedir +'/'+args.survey+'/LSS/'
 ldirspec = maindir+specrel+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
-    print('made '+ldirspec)
+    common.printlog('made '+ldirspec,logger)
     
 if not os.path.exists(ldirspec+'LSScats'):
     os.mkdir(ldirspec+'LSScats')
-    print('made '+ldirspec+'LSScats')
+    common.printlog('made '+ldirspec+'LSScats',logger)
 
 dirout = ldirspec+'LSScats/'+version+'/'
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
-    print('made '+dirout)
+    common.printlog('made '+dirout,logger)
 
 
 logfn = dirout+'log.txt'
@@ -274,7 +274,7 @@ if args.blinded == 'y':
 
 if not os.path.exists(dirout):
     os.mkdir(dirout)
-    print('made '+dirout)    
+    logger.printlog('made '+dirout,logger)    
 
 tarver = '1.1.1'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'

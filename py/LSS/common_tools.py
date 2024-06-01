@@ -27,7 +27,7 @@ def thphi2radec(theta,phi):
 
 #functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG'):
+def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None):
     from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
@@ -36,21 +36,21 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG'):
     #first, need to find locations to veto based data
     nodata = fs["ZWARN_MTL"] & zwarn_mask["NODATA"] != 0
     num_nod = np.sum(nodata)
-    print('number with no data '+str(num_nod))
+    printlog('number with no data '+str(num_nod),logger)
     badqa = fs["ZWARN_MTL"] & zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA") != 0
     num_badqa = np.sum(badqa)
-    print('number with bad qa '+str(num_badqa))
+    printlog('number with bad qa '+str(num_badqa),logger)
     nomtl = nodata | badqa
     wfqa = ~nomtl
     #veto fibers later determined to have poor success rates
     if badfib is not None:
         bad = np.isin(fs['FIBER'],badfib)
-        print('number at bad fibers '+str(sum(bad)))
+        printlog('number at bad fibers '+str(sum(bad)),logger)
         wfqa &= ~bad
     if tsnr_min > 0:
         low_tsnr = dz[tsnr_col] < tsnr_min
         wfqa &= ~low_tsnr
-        print('number at low tsnr2 '+str(sum(low_tsnr)))
+        printlog('number at low tsnr2 '+str(sum(low_tsnr)),logger)
     return fs[wfqa]
 
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
