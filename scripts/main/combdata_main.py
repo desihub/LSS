@@ -935,8 +935,8 @@ if specrel != 'daily' and args.dospec == 'y':
     if args.dotarspec == 'y':
         for tp,notqso in zip(tps,notqsos):
             #first test to see if we need to update any
-            print('now doing '+tp+notqso)
-            print(len(tiles4comb['TILEID']))
+            logger.info('now doing '+tp+notqso)
+            #logger.info(str(len(tiles4comb['TILEID'])))
             #tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
             outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
             #outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
