@@ -359,7 +359,7 @@ def doran(ii):
         mask_coll = False
         if args.survey != 'main':
             mask_coll = True
-        ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll)
+        ct.combran_wdupspec(ii,type,ldirspec,specf,infile,keepcols=kc,mask_coll=mask_coll,logger=logger)
     
     if args.counttiles == 'y':    
         logger.info('counting tiles')
