@@ -162,7 +162,7 @@ class main:
 
         if specver == 'jura-v1':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/emlin_catalog.fits'
-            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/QSO/jura/QSO_cat_iron_cumulative_v1.fits'
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/QSO/jura/QSO_cat_jura_cumulative_v1.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/unique_badfibers.txt')
 
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
