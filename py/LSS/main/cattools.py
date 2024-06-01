@@ -2964,9 +2964,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
     if logger is not None:
-        logger.info('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-        logger.info('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
-        logger.info('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
+        logger.info('number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
+        logger.info('number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.)))
+        logger.info('number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.)))
 
     else:
         print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
