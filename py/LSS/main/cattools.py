@@ -3148,7 +3148,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     common.printlog('LOCATION_ASSIGNED numbers',logger)
     common.printlog(str(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True)),logger)
 
-    common.printlog('TILELOCID_ASSIGNED numbers')
+    common.printlog('TILELOCID_ASSIGNED numbers',logger)
     common.printlog(str(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True)),logger)
 
     probl = np.zeros(len(dz))
