@@ -953,14 +953,14 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     write_LSS_scractchcp(df,fn,logger=logger)#,comments)
 
 
-def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):
+def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
     df = fitsio.read(fn.replace('global','dvs_ro'))
     if np.isin(tracer_mask+'_mask',list(df.dtype.names)):
-        print('mask column already in '+fn)
+        printlog('mask column already in '+fn,logger)
         if redo:
             df = Table(df)
             df.remove_columns([tracer_mask+'_mask'])
@@ -968,11 +968,11 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
         else:
             return True
     else:
-        print('adding '+tracer_mask)
-    print(len(df))
+        printlog('adding '+tracer_mask,logger)
+    #print(len(df))
     sel = np.isin(maskf['TARGETID'],df['TARGETID'])
     maskf = maskf[sel]
-    print(len(maskf))
+    #print(len(maskf))
     maskf = Table(maskf)
     maskf.sort('TARGETID')
     df = Table(df)
@@ -982,9 +982,9 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     else:
         return('TARGETIDs do not match! exiting')
     #df = join(df,maskf,keys=['TARGETID'])
-    print(len(df),'should match above')
+    #print(len(df),'should match above')
     #comments = ['Adding imaging mask column']
-    write_LSS(df,fn)#,comments)
+    write_LSS_scratchcp(df,fn,logger=logger)#,comments)
     del df
 
 def parse_circandrec_mask(custom_mask_fn):

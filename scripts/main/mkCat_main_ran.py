@@ -392,7 +392,8 @@ def doran(ii):
     #logger.info('ran mkfullran\n')
     if args.add_veto == 'y':
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii)
+        logger.info('adding veto column')
+        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii,logger=logger)
 
     if args.fillran == 'y':
         logger.info('filling randoms with imaging properties')
