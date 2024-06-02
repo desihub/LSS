@@ -955,7 +955,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     #print(len(df))
     #comments = ['Adding map columns']
     printlog('about to write to '+fn,logger)
-    write_LSS_scractchcp(df,fn,logger=logger)#,comments)
+    write_LSS_scratchcp(df,fn,logger=logger)#,comments)
     printlog('wrote to '+fn,logger)
     return
 
