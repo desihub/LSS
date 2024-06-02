@@ -933,7 +933,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     rannew = fitsio.read(new_fn,columns=cols2read_new)
     printlog('read '+new_fn,logger)
     df = join(df,rannew,keys=['TARGETID'])
-    printlog('joined '+new_fn)
+    printlog('joined '+new_fn,logger)
     del rannew
     cols2read_fid = ['TARGETID']
     for col in fid_cols:
