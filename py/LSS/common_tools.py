@@ -893,7 +893,7 @@ def join_etar(fn,tracer,tarver='1.1.1'):
     write_LSS(df,fn,comments)
 
 
-def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=True):
+def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'],fid_cols=['EBV','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z'],redo=True):
     fid_fn = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(rann)+'.fits'
     new_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'
@@ -903,12 +903,12 @@ def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R
     col = 'SKYMAP_MASK'
     domask = True
     if np.isin(col,list(df.dtype.names)):
-        print(col+' already in '+fn)
+        printlog(col+' already in '+fn,logger)
         if redo:
             df.remove_columns([col])
-            print('will replace '+col) 
+            printlog('will replace '+col,logger) 
         else:
-            print('not replacing '+col)
+            printlog('not replacing '+col,logger)
             domask = False
     if domask:
         mask = fitsio.read(mask_fn)
@@ -918,13 +918,13 @@ def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R
     cols2read_new = ['TARGETID']
     for col in new_cols:
         if np.isin(col,list(df.dtype.names)):
-            print(col+' already in '+fn)
+            printlog(col+' already in '+fn,logger)
             if redo:
                 df.remove_columns([col])
-                print('will replace '+col)
+                printlog('will replace '+col,logger)
                 cols2read_new.append(col)
             else:
-                print('not replacing '+col)
+                printlog('not replacing '+col,logger)
         else:
             cols2read_new.append(col)
 
@@ -934,22 +934,22 @@ def add_map_cols(fn,rann,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R
     cols2read_fid = ['TARGETID']
     for col in fid_cols:
         if np.isin(col,list(df.dtype.names)):
-            print(col+' already in '+fn)
+            printlog(col+' already in '+fn,logger)
             if redo:
                 df.remove_columns([col])
-                print('will replace '+col)
+                printlog('will replace '+col,logger)
                 cols2read_fid.append(col)
             else:
-                print('not replacing '+col)
+                printlog('not replacing '+col,logger)
         else:
             cols2read_fid.append(col)
 
     ranfid = fitsio.read(fid_fn,columns=cols2read_fid)
     df = join(df,ranfid,keys=['TARGETID'])
 
-    print(len(df))
-    comments = ['Adding map columns']
-    write_LSS_scractchcp(df,fn,comments)
+    #print(len(df))
+    #comments = ['Adding map columns']
+    write_LSS_scractchcp(df,fn,logger=logger)#,comments)
 
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False):

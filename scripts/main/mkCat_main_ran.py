@@ -400,7 +400,7 @@ def doran(ii):
         #ct.addcol_ran(fn,ii)
         new_cols=mainp.new_cols
         fid_cols=mainp.fid_cols
-        common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
+        common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols,logger=logger)
         logger.info('done with '+str(ii))
 
 
