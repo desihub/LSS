@@ -1060,7 +1060,7 @@ def maskcircandrec(indata,maskfn):
     
     
 
-def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None,wo='y',mapveto=''):
+def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,reccircmasks=None,wo='y',mapveto='',logger=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -1069,20 +1069,20 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
     maxp is the maximum priority to keep in the data files
     '''
     ff = Table(fitsio.read(fin.replace('global','dvs_ro')))#+'full_noveto.'+dr+'.fits')
-    print('length of input '+str(len(ff)))
+    printlog('length of input '+str(len(ff)),logger)
     seld = ff['GOODHARDLOC'] == 1
-    print('length after cutting to good locations '+str(len(ff[seld])))
+    printlog('length after cutting to good locations '+str(len(ff[seld])),logger)
     if '.dat' in fin:
         #seld &= ff['PRIORITY_INIT'] <= maxp
         seld &= ff['PRIORITY_ASSIGNED'] <= maxp
-        print('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])))
+        printlog('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])),logger)
     if '.ran' in fin:
         #seld &= ff['ZPOSSLOC'] == 1
         #print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
         #selp9 = ff['PRIORITY'] == 999999
         #ff['PRIORITY'][selp9] = -999999
         seld &= ff['PRIORITY'] <= maxp
-        print('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])))
+        printlog('length after cutting locations with priority > '+str(maxp)+': '+str(len(ff[seld])),logger)
 
 
     ff = ff[seld]
@@ -1093,13 +1093,13 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
             ff = ff[~mask]
     
     if ebits is not None:
-        print('number before imaging mask '+str(len(ff)))
+        printlog('number before imaging mask '+str(len(ff)),logger)
         if ebits == 'lrg_mask':
             sel = ff['lrg_mask'] == 0
             ff = ff[sel]
         else:
             ff = cutphotmask(ff,ebits)
-        print('number after imaging mask '+str(len(ff)))
+        printlog('number after imaging mask '+str(len(ff)),logger)
 
     if zmask:
         whz = ff['Z'] < 1.6
@@ -1116,7 +1116,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
 
     if '.dat' in fin:
         ff['Z'].name = 'Z_not4clus'
-        print('updating completeness')
+        printlog('updating completeness',logger)
         compa = []
         fractl = []
         tll = []
@@ -1127,7 +1127,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         tlslu = np.unique(tlsl)
         laa = ff['LOCATION_ASSIGNED']
         lta = ff['TILELOCID_ASSIGNED']
-        print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+        #print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
 
         # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
         i = 0
@@ -1150,7 +1150,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
                     break
 
             if ti % 10000 == 0:
-                print('at tiles ' + str(ti) + ' of ' + str(nts))
+                printlog('at tiles ' + str(ti) + ' of ' + str(nts),logger)
 
             tot += nli
             atot += nai
@@ -1178,23 +1178,23 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fracta)
-        print('data quantities measured, moving to write-out phase')
+        printlog('data quantities measured, moving to write-out phase',logger)
         #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         #if comp_only:
         #    return True
     if '.ran' in fin:
-        print('area is ' + str(len(ff) / 2500))
+        printlog('area is ' + str(len(ff) / 2500),logger)
     #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
     if fout is not None and wo == 'y':
-        write_LSS(ff, fout)#, comments)
+        write_LSS_scratchcp(ff, fout,logger=logger)#, comments)
     if '.dat' in fin:
         wz = ff['ZWARN'] != 999999
         wz &= ff['ZWARN'] * 0 == 0
         wz &= ff['ZWARN'] != 1.e20
         comp = len(ff[wz])/len(ff)
-        print('assignment completeness is '+str(comp))
-        print('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match')
-        print(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])), np.sum(1. / ff[wz]['COMP_TILE']), len(ff))
+        printlog('assignment completeness is '+str(comp),logger)
+        printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match',logger)
+        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])))+','+ str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str( len(ff)))
     if fout is None or wo == 'n':
         return ff
     del ff
