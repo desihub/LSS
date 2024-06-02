@@ -954,8 +954,10 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
 
     #print(len(df))
     #comments = ['Adding map columns']
+    printlog('about to write to '+fn)
     write_LSS_scractchcp(df,fn,logger=logger)#,comments)
-
+    printlog('wrote to '+fn)
+    return
 
 def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
