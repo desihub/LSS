@@ -898,6 +898,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     new_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-'+str(rann)+'-skymapvalues.fits'
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/maskvalues/randoms-1-'+str(rann)+'-skymapmask.fits'
    
+    printlog('reading '+fn.replace('global','dvs_ro'),logger)
     df = Table(fitsio.read(fn.replace('global','dvs_ro')))
     
     col = 'SKYMAP_MASK'
