@@ -900,6 +900,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
    
     printlog('reading '+fn.replace('global','dvs_ro'),logger)
     df = Table(fitsio.read(fn.replace('global','dvs_ro')))
+    printlog('read '+fn.replace('global','dvs_ro'),logger)
     
     col = 'SKYMAP_MASK'
     domask = True
@@ -930,7 +931,9 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
             cols2read_new.append(col)
 
     rannew = fitsio.read(new_fn,columns=cols2read_new)
+    printlog('read '+new_fn,logger)
     df = join(df,rannew,keys=['TARGETID'])
+    printlog('joined '+new_fn)
     del rannew
     cols2read_fid = ['TARGETID']
     for col in fid_cols:
@@ -946,6 +949,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
             cols2read_fid.append(col)
 
     ranfid = fitsio.read(fid_fn,columns=cols2read_fid)
+    printlog('read '+fid_fn,logger)
     df = join(df,ranfid,keys=['TARGETID'])
 
     #print(len(df))
