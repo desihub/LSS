@@ -3889,7 +3889,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
 #         comments = ["DA02 'clustering' LSS catalog for data, DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffs[sel],outfn,comments)
 
-def add_tlobs_ran(fl,rann,hpmapcut='',wo=True):
+def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     import LSS.common_tools as common
     rf_name = fl+str(rann)+'_full'+hpmapcut+'.ran.fits'
     ranf = Table(fitsio.read(rf_name.replace('global','dvs_ro')))
@@ -3920,16 +3920,16 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True):
             fr = 0
         tlarray.append(fr)
         if nt%100000 == 0:
-           print(nt,len(ranf))  
+           common.printlog(str(nt)+','+str(len(ranf)),logger)  
         nt += 1  
     #        tlarray[i] = fr
     tlarray = np.array(tlarray)
     sel = tlarray == 0
-    print(len(tlarray[sel]),' number with 0 frac')
+    common.printlog(str(len(tlarray[sel]))+', number with 0 frac',logger)
     ranf['FRAC_TLOBS_TILES'] = tlarray
     outf = rf_name#fl+str(rann)+'_full.ran.fits'
     
-    common.write_LSS(ranf,outf)
+    common.write_LSS_scratchcp(ranf,outf,logger=logger)
     del ranf
     return True
   
