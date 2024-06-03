@@ -382,7 +382,7 @@ for tp in tps:
         plot_map(nside,odhp,   vmin=vm,vmax=vx,title=titl+' for Year-1, including all corrections',   save_path=outf,nest=nest,cmap='viridis')
         
         outf = outdir+tp+f'_weighted_noimaging_healpix{nside}.png'
-        plot_map(nside,od_ochp,vmin=vm,vmax=vx,title=titl+' for Year-1, without imaging corrections',save_path=outf,nest=nest,cmap='viridis')
+        plot_map_healpix(nside,od_ochp,vmin=vm,vmax=vx,title=titl+' for Year-1, without imaging corrections',save_path=outf,nest=nest,cmap='viridis')
 
         
         
