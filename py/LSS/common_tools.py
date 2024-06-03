@@ -1201,7 +1201,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         comp = len(ff[wz])/len(ff)
         printlog('assignment completeness is '+str(comp),logger)
         printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match',logger)
-        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])))+','+ str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str( len(ff)))
+        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])))+','+ str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str( len(ff)),logger)
     if fout is None or wo == 'n':
         return ff
     del ff
