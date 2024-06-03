@@ -29,10 +29,11 @@ args = parser.parse_args()
 
 indir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 outdir = indir+'plots/sky/'
+
 outdir = outdir.replace('dvs_ro','global')
 if args.data == 'LSS':
     if not os.path.exists(outdir):
-        os.mkdir(outdir)
+        os.makedirs(outdir)
         print('made '+outdir)
 
 
