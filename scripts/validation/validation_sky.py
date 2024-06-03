@@ -208,7 +208,13 @@ for tp in tps:
         dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
         if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
             dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
-
+        cols = list(dt.dtype.names)
+        if args.weight_col not in cols:
+            print('no '+args.weight_col+', getting set to 1 for plotting')
+            dt[args.weight_col] = np.ones(len(dt))
+        if 'WEIGHT_ZFAIL' not in cols:
+            dt['WEIGHT_ZFAIL'] = np.ones(len(dt))
+            print('no redshift failure weight, getting set to 1 for plotting')
         dt['WEIGHT'] = dt['WEIGHT_COMP']*dt['WEIGHT_ZFAIL']*dt[args.weight_col]
         sel_nan = dt['WEIGHT']*0 != 0
         if len(dt[sel_nan]) != 0:
