@@ -2277,9 +2277,9 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dz[tscol] = np.ones(len(dz))
 
 
-    if 'TILELOCID' not in list(dz.dtype.names):
-        dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION']
-        print(dz.dtype.names)
+    #if 'TILELOCID' not in list(dz.dtype.names):
+    dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
+    #print(dz.dtype.names)
     
     
     if lznp is None:
