@@ -419,7 +419,7 @@ def doran(ii):
 
     if args.add_tlcomp == 'y':
         fl = dirout+type+notqso+'_'
-        ct.add_tlobs_ran(fl,ii)
+        ct.add_tlobs_ran(fl,ii,logger=logger)
 
     if mkclusran:
 #         tsnrcol = 'TSNR2_ELG'
