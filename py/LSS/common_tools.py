@@ -1025,7 +1025,7 @@ def parse_circandrec_mask(custom_mask_fn):
     
     return circ_mask, rect_mask
 
-def maskcircandrec(indata,maskfn):
+def maskcircandrec(indata,maskfn,logger=None):
     '''
     indata should have RA,DEC columns
     mask should be path to text file with entries for circular and rectangular masks
@@ -1036,8 +1036,7 @@ def maskcircandrec(indata,maskfn):
     for radec in rect_mask:
         ramin, ramax, decmin, decmax = radec
         mask_rect |= (indata['RA']>ramin) & (indata['RA']<ramax) & (indata['DEC']>decmin) & (indata['DEC']<decmax)
-    print('comparison of data removed by rectangular mask:')
-    print(len(indata),len(indata[mask_rect]))
+    printlog('comparison of data removed by rectangular mask: '+str(len(indata))+','+str(len(indata[mask_rect])),logger)
     
     dat_cx = np.cos(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
     dat_cy = np.sin(np.radians(indata['RA']))*np.cos(np.radians(indata['DEC']))
@@ -1054,13 +1053,13 @@ def maskcircandrec(indata,maskfn):
     
     mask = np.any(dist>np.cos(np.radians(circ_mask['radius']/3600.)), axis=1)
     
-    print('comparison of data removed by circular mask:')
-    print(len(indata),len(indata[mask]))
+    printlog('comparison of data removed by circular mask: '+str(len(indata))+','+str(len(indata[mask])),logger)
+    #print(len(indata),len(indata[mask]))
     
     mask |= mask_rect
     
-    print('comparison of data removed by both rectangular and circular mask:')
-    print(len(indata),len(indata[mask]))
+    printlog('comparison of data removed by both rectangular and circular mask: '+str(len(indata))+','+str(len(indata[mask])),logger)
+    #print(len(indata),len(indata[mask]))
     
     return mask
     
@@ -1096,7 +1095,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
     
     if reccircmasks is not None:
         for maskfn in reccircmasks:
-            mask = maskcircandrec(ff,maskfn)
+            mask = maskcircandrec(ff,maskfn,logger=logger)
             ff = ff[~mask]
     
     if ebits is not None:
