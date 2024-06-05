@@ -455,13 +455,13 @@ if args.apply_map_veto == 'y':
         fout = dirout+type+notqso+'_full.dat.fits'
         fin = fout.replace('global','dvs_ro')  
         fout = fout.replace('_full','_full_HPmapcut')      
-        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts,logger=logger)
     print('data veto done, now doing randoms')
     def _parfun(rn):
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         fin = fin = fout.replace('global','dvs_ro')   
         fout = fout.replace('_full','_full_HPmapcut')          
-        common.apply_map_veto(fin,fout,mapn,maps,mapcuts)
+        common.apply_map_veto(fin,fout,mapn,maps,mapcuts,logger=logger)
         print('random veto '+str(rn)+' done')
     if args.par == 'n':
         for rn in range(rm,rx):

@@ -1214,9 +1214,9 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
 #     os.system('mv '+tmpfn+' '+fout)
     #ff.write(fout,overwrite=True,format='fits')
 
-def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
+def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256,logger=None):
     din = fitsio.read(fin)
-    din = apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=nside)
+    din = apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=nside,logger=logger)
 #     mask = np.ones(len(din),dtype='bool')
 #     if 'PHOTSYS' not in list(din.dtype.names):
 #         din = addNS(Table(din))
@@ -1251,7 +1251,7 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256):
 #    write_LSS(din[mask],fout) 
     write_LSS(din,fout) 
  
-def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256):
+def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256,logger=None):
     mask = np.ones(len(din),dtype='bool')
     if 'PHOTSYS' not in list(din.dtype.names):
         din = addNS(Table(din))
@@ -1263,7 +1263,7 @@ def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256):
     pix = hp.ang2pix(nside,th,phi,nest=True)
     maps2cut = list(mapcuts.keys())
     inlen = len(din)
-    print('initial',inlen)
+    printlog('initial '+str(inlen),logger)
     for mp in maps2cut:
         mvals = np.zeros(len(din))
         if 'DEPTH' in mp:
@@ -1271,18 +1271,18 @@ def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256):
             mvals[seln] = mapn[mp][pix[seln]]*10**(-0.4*ext_coeff[bnd]*mapn['EBV'][pix[seln]])
             mvals[~seln] = maps[mp][pix[~seln]]*10**(-0.4*ext_coeff[bnd]*maps['EBV'][pix[~seln]])
             mask &= mvals > mapcuts[mp]
-            print(mp,len(din[mask]),len(din[mask])/inlen)
+            printlog(mp+','+str(len(din[mask]))+','+str(len(din[mask])/inlen),logger)
             
         else:
             mvals[seln] = mapn[mp][pix[seln]]
             if len(mvals[seln]) > 0:
-                print(np.min(mvals[seln]),np.max(mvals[seln]))
+                printlog(str(np.min(mvals[seln]))+','+str(np.max(mvals[seln])),logger=logger)
             mvals[~seln] = maps[mp][pix[~seln]]
-            print(np.min(mvals[~seln]),np.max(mvals[~seln]))
+            printlog(str(np.min(mvals[~seln]))+','+str(np.max(mvals[~seln])),logger)
             if mp == 'STARDENS':
                 mvals = np.log10(mvals)
             mask &= mvals < mapcuts[mp]   
-            print(mp,len(din[mask]),len(din[mask])/inlen)
+            printlog(mp+','+str(len(din[mask]))+','+str(len(din[mask])/inlen),logger)
     return din[mask]
 
             
