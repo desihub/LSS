@@ -86,7 +86,7 @@ def plot_map_sindec(ra,sin_dec,od,vm,vx,titl,outf,size_fac=2):
 	plt.clf()
 
 def plot_map_healpix(nside, v, pix=None, vmin=None, vmax=None, cmap='jet', title=None, save_path=None,
-             xsize=None, dpi=None, show=True, timing=True, nest=False, coord=None, cbar_label=''):
+             xsize=None, dpi=None, show=True, timing=False, nest=False, coord=None, cbar_label=''):
     from astropy.coordinates import SkyCoord
     from astropy import units
     import healpy as hp
