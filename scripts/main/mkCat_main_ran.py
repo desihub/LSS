@@ -414,7 +414,7 @@ def doran(ii):
             maxp = 2100
         fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,logger=logger)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks)
         #logger.info('random veto '+str(ii)+' done')
 
     if args.add_tlcomp == 'y':
