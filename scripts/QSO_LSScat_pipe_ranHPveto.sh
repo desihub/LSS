@@ -8,7 +8,7 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 TRACER='QSO'
 
-python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --ranonly y --apply_map_veto y --imsys y --survey Y1 --verspec iron --imsys_zbin y --use_map_veto _HPmapcut --version $1
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --ranonly y --apply_map_veto y --imsys y --survey Y1 --verspec iron --imsys_zbin y --use_map_veto _HPmapcut --version $1
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME
