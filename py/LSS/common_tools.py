@@ -1249,7 +1249,7 @@ def apply_map_veto(fin,fout,mapn,maps,mapcuts,nside=256,logger=None):
 #             mask &= mvals < mapcuts[mp]   
 #             print(mp,len(din[mask]),len(din[mask])/inlen)
 #    write_LSS(din[mask],fout) 
-    write_LSS(din,fout) 
+    write_LSS_scratchcp(din,fout,logger=logger) 
  
 def apply_map_veto_arrays(din,mapn,maps,mapcuts,nside=256,logger=None):
     mask = np.ones(len(din),dtype='bool')
