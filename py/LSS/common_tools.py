@@ -1104,7 +1104,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
             sel = ff['lrg_mask'] == 0
             ff = ff[sel]
         else:
-            ff = cutphotmask(ff,ebits)
+            ff = cutphotmask(ff,ebits,logger=logger)
         printlog('number after imaging mask '+str(len(ff)),logger)
 
     if zmask:
