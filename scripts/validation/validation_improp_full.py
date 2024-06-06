@@ -249,7 +249,7 @@ for tp in tps:
         dosky_z = 'n'
         do_ebvnew_diff = 'y'
         do_lrgmask = 'n'
-        do_ebvnocib_diff = 'y'
+        do_ebvnocib_diff = 'n'
         print('doing validation for '+tp)
         
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
