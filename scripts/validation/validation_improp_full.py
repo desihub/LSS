@@ -245,6 +245,8 @@ for tp in tps:
         dmaps = []
         dosag = 'n'
         dosky_g = 'n'
+        dosky_r = 'n'
+        dosky_Z = 'n'
         do_ebvnew_diff = 'y'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'y'
