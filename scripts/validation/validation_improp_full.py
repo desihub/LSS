@@ -246,7 +246,7 @@ for tp in tps:
         dosag = 'n'
         dosky_g = 'n'
         dosky_r = 'n'
-        dosky_Z = 'n'
+        dosky_z = 'n'
         do_ebvnew_diff = 'y'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'y'
