@@ -250,7 +250,8 @@ for tp in tps:
     #fcd_n = indir+tp+args.famd+'_NGC_clustering.dat.fits'
     #fcd_s = indir+tp+args.famd+'_SGC_clustering.dat.fits'
     print('test test')
-    cols = ['RA','DEC','Z','WEIGHT_COMP',wcol,'NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+    cols = ['RA','DEC','Z','WEIGHT_COMP','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+    if wcol != 'noweights': cols+= [wcol]
     dtf_n = fitsio.read(fcd_n,columns=cols)
     dtf_s = fitsio.read(fcd_s,columns=cols)
     dtf = np.concatenate([dtf_n,dtf_s])

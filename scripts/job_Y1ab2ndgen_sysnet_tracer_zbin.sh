@@ -22,22 +22,23 @@ RUN_SYSNET=$LSSDIR/scripts/run_sysnetELG_ab2ndgen.sh
 # REGION only useful for ELGs right now
 DATA_VERSION='v0.6'
 REGION='all'
-#TRACER=ELG_LOPnotqso
-TRACER=QSO
-MOCKVERSION=/SecondGenMocks/AbacusSummit_v4_1/
+TRACER=ELG_LOPnotqso
+#TRACER=LRG
+MOCKVERSION=/SecondGenMocks/AbacusSummit_v4_1fixran/
 BASEDIR=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/$MOCKVERSION
 MOCKCATVER='v0'
 ALTMTL='y'
 
 #REAL=$SLURM_ARRAY_TASK_ID
-REAL=4
-do_RF=true
+REAL=0
+do_RF=false
 do_prep=false
-do_SN=false
-add_SN=false # if true make sure all weights are available, if not this will fail
+do_SN_ELG=false
+do_SN_LRG=false
+add_SN=true # if true make sure all weights are available, if not this will fail
 do_validation_ffa=false
 do_validation_altmtl=false
-do_RF_validation_altmtl=true
+do_RF_validation_altmtl=false
 
 #DIR=$BASEDIR/mock$REAL
 DIR=$BASEDIR/altmtl$REAL/mock$REAL/LSScats
@@ -70,7 +71,7 @@ then
     fi
 fi
 
-if [ $do_SN == true ]
+if [ $do_SN_ELG == true ]
 then
     # Run SYSNET different options for different zbins
     # Must have data prepared
@@ -139,6 +140,49 @@ then
         wait
     fi
 fi
+
+
+if [ $do_SN_LRG == true ]
+then
+    # Some NN parameters for North
+    LR_N1=0.01     # learning rate for LRG1 N
+    LR_N2=0.008    # learning rate for LRG2 N
+    LR_N3=0.007    # learning rate for LRG3 N
+    NBATCH_N=256   # Powers of 2
+    NCHAIN_N=4     # chains
+    NEPOCH_N=70    # number of epochs
+    NNS_N=(3 20)   # NN structure (# layers, # units)
+
+    # Some NN parameters for South
+    LR_S1=0.008    # learning rate for LRG1 S
+    LR_S2=0.007    # learning rate for LRG2 S
+    LR_S3=0.007    # learning rate for LRG3 S
+    NBATCH_S=1024  # Powers of 2
+    NCHAIN_S=4     # chains
+    NEPOCH_S=70    # number of epochs
+    NNS_S=(3 20)   # NN structure (# layers, # units)
+    
+    # Find learning rate for North
+    $RUN_SYSNET N LRG0.8_1.1 true false $NBATCH_N 0.003 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+    $RUN_SYSNET N LRG0.6_0.8 true false $NBATCH_N 0.003 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+    $RUN_SYSNET N LRG0.4_0.6 true false $NBATCH_N 0.003 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+    # Find learning rate for South
+    $RUN_SYSNET S LRG0.8_1.1 true false $NBATCH_S 0.003 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_N[@]}
+    $RUN_SYSNET S LRG0.6_0.8 true false $NBATCH_S 0.003 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_N[@]}
+    $RUN_SYSNET S LRG0.4_0.6 true false $NBATCH_S 0.003 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_N[@]}
+
+    # Run SYSNet for North
+    srun -N 1 $RUN_SYSNET N LRG0.8_1.1 false true $NBATCH_N $LR_N3 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]} &
+    srun -N 1 $RUN_SYSNET N LRG0.6_0.8 false true $NBATCH_N $LR_N2 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]} &
+    srun -N 1 $RUN_SYSNET N LRG0.4_0.6 false true $NBATCH_N $LR_N1 dnnp pnll $DIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]} &
+    wait
+    # Run SYSNet for South
+    srun -N 1 $RUN_SYSNET S LRG0.8_1.1 false true $NBATCH_S $LR_S3 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]} &
+    srun -N 1 $RUN_SYSNET S LRG0.6_0.8 false true $NBATCH_S $LR_S2 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]} &
+    srun -N 1 $RUN_SYSNET S LRG0.4_0.6 false true $NBATCH_S $LR_S1 dnnp pnll $DIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]} &
+    wait
+fi
+
 
 if [ $add_SN == true ]
 then

@@ -185,7 +185,7 @@ print(args.imsys)
 
 if args.imsys == 'y':
     from LSS.imaging import densvar
-    use_maps = fit_maps
+    #use_maps = fit_maps
        
     print('in imsys loop')
     datn = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_NGC'+'_clustering.dat.fits'))
@@ -241,7 +241,20 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fit_maps,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wtfkp',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
+            if tp[:3] == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
+            use_maps = fitmapsbin
+            wsysl = densvar.get_imweight(dat,rands[selr],zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',wtmd='wtfkp',figname=dirout+args.tracer+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
@@ -288,7 +301,19 @@ if args.prepsysnet == 'y':
         zw = ''
         if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
-        for reg in regl:                
+        for reg in regl:    
+            if tp[:3] == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
             if args.use_altmtl == 'y':
                 if args.data_version!='v0.6': print("when running SYSNet on altmtl mocks should use tracer specific v0.6 hpmaps")
                 pwf = lssmapdirout+tp+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
@@ -302,7 +327,7 @@ if args.prepsysnet == 'y':
                     bnd = col.split('_')[-1]
                     sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
             for ec in ['GR','RZ']:
-                if 'EBV_DIFF_'+ec in fit_maps: 
+                if 'EBV_DIFF_'+ec in fitmapsbin: 
                     sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
 
             seld = dat['PHOTSYS'] == reg
@@ -313,14 +338,14 @@ if args.prepsysnet == 'y':
                 allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             else:
                 allrands = None
-            print("Templates to be used for training ", fit_maps)
+            print("Templates to be used for training ", fitmapsbin)
             if args.use_altmtl == 'y':
                 wtmd='fracz'
             else: 
                 wtmd='wt_iip'
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', allsky_rands=allrands,
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True,use_obiwan=False, 
-                                                  columns=fit_maps,wtmd=wtmd,tp=tp[:3])
+                                                  columns=fitmapsbin,wtmd=wtmd,tp=tp[:3])
             fnout = dirout+'/sysnet/prep_'+tp+zw+'_'+reg+'.fits'
             print("prepared and saving ", fnout)
             common.write_LSS(prep_table,fnout)
