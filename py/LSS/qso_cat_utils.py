@@ -411,8 +411,11 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # remove useless columns:
     QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_095', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
 
-    # Correct bump at z~3.7
-    sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.95) | (QSO_cat['C_CIV'] < 0.95))
+    # Correct bump at z~3.7 and ~5.2 (overlap between two arms of the spectrograph ..)
+    # With Iron and before:
+    #sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.95) | (QSO_cat['C_CIV'] < 0.95))
+    # From Jura : performance of QuasarNET at these redshift drastically decrease ... with these cuts I can recover most of the qso from DR1 with iron.. (I did also some visual investigation)
+    sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.5) | (QSO_cat['C_CIV'] < 0.5))
     log.info(f'Remove bump at z~3.7: exclude {sel_pb_redshift.sum()} QSOs.')
     QSO_cat.loc[sel_pb_redshift, 'QSO_MASKBITS'] = 0
 
@@ -428,7 +431,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
         return QSO_cat
 
 
-def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
+def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep_all=False):
     """
     Build the QSO catalog for the tile using the last_night. It is relevant for cumulative directory.
     This function is usefull to be called in pool.starmap under multiprocessing.
@@ -452,7 +455,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
 
         if os.path.isfile(redrock):
             if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
-                qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner)
+                qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all)
                 qso_cat['TILEID'] = int(tile)
                 qso_cat['LASTNIGHT'] = int(night)
                 qso_cat['PETAL_LOC'] = int(petal)
@@ -470,7 +473,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program):
     return pd.concat([run_catalog_maker(path_to_tile, tile, last_night, petal, survey, program) for petal in range(10)], ignore_index=True)
 
 
-def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test',survey_sel=None,program_sel=None,addTSprob=True):
+def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test', survey_sel=None, program_sel=None, addTSprob=True, keep_all=False):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -511,12 +514,12 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     log.info(f'There are {tiles.size} tiles to treat with npool={npool}')
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
-        arguments = zip(repeat(DIR), tiles, last_night, survey, program)
+        arguments = zip(repeat(DIR), tiles, last_night, survey, program, repeat(keep_all))
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_tile, arguments), ignore_index=True)
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
 
-    log.info('Compute the TS probas...')
     if addTSprob:
+        log.info('Compute the TS probas...')
         compute_RF_TS_proba(QSO_cat)
 
     #save_dataframe_to_fits(QSO_cat, os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'))
