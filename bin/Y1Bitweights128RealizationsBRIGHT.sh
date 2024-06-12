@@ -280,7 +280,7 @@ fi
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
 echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
+srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive python $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
 if [ $? -ne 0 ]; then
     exit 1234
     endInit=`date +%s.%N`
@@ -318,7 +318,7 @@ exit 54321
 
 
 printf -v OFBW "%s/MakeBitweights%sOutput%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
-srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
+srun --nodes=1 -C $CVal -q $QVal -A desi -t 04:00:00 --mem=120000 python $path2LSS/MakeBitweights.py --survey=$survey --obscon=$obscon --ndir=$ndir --ProcPerNode=$ProcPerNode --HPListFile=$hpListFile --outdir=$outputMTLFinalDestination $overwrite2 $verbose $debug >& $OFBW
 
 endBW=`date +%s.%N`
 

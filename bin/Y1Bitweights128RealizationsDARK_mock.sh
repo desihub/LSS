@@ -3,7 +3,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName=altmtl10_R64
+simName=altmtl21_R64
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
@@ -128,7 +128,7 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $s
 #hpListFile="$path2LSS/MainSurveyHPList.txt"
 #hpListFile="$path2LSS/DebugMainHPList.txt"
 #hpListFile="$path2LSS/SV3HPList.txt"
-hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl10/initled/hpxlist_dark.txt"
+hpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl21/initled/hpxlist_dark.txt"
 
 #These two options only are considered if the obscon is BRIGHT
 #First option indicates whether to shuffle the top level priorities
@@ -153,7 +153,7 @@ PromoteFracELG=0.0
 # You can only access that directory from compute nodes. 
 # Do NOT use the commented out directory (the normal mount of CFS)
 # unless the read only mount is broken
-exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl10/initled/
+exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl21/initled/
 #exampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
 #exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
@@ -209,7 +209,7 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA10.fits"
+targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA21.fits"
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
 numobs_from_ledger=''
@@ -281,17 +281,17 @@ fi
 printf -v OFIM "%s/Initialize%sAltMTLsParallelOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $date
 
 echo "srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM"
-srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
+srun --nodes=$NNodes -C $CVal -q $QVal -A desi -t 04:00:00 --mem=0 --exclusive python $path2LSS/InitializeAltMTLsParallel.py --seed=$seed --ndir=$ndir  --obscon=$obscon --survey=$survey --outputMTLDirBase=$outputMTLDirBase --PromoteFracBGSFaint=$PromoteFracBGSFaint --PromoteFracELG=$PromoteFracELG --HPListFile=$hpListFile --exampleLedgerBase=$exampleLedgerBase --ProcPerNode=$ProcPerNode     --finalDir="$outputMTLFinalDestination/Univ{0:03d}" $overwrite $shuffleBrightPriorities $shuffleELGPriorities $usetmp $dontShuffleSubpriorities $reproducing $debug $verbose  --startDate=$startDate --endDate=$endDate >& $OFIM
 
-cp -r $outputMTLFinalDestination/ "$ALTMTLHOME/BACKUPInitial_$simName/"
-exit 1234
-if [ $? -ne 0 ]; then
-    exit 1234
-    endInit=`date +%s.%N`
-    runtimeInit=$( echo "$endInit - $start" | bc -l )
-    echo "runtime for initialization"
-    echo $runtimeInit
-fi
+##cp -r $outputMTLFinalDestination/ "$ALTMTLHOME/BACKUPInitial_$simName/"
+##exit 1234
+##if [ $? -ne 0 ]; then
+##    exit 1234
+##    endInit=`date +%s.%N`
+##    runtimeInit=$( echo "$endInit - $start" | bc -l )
+##    echo "runtime for initialization"
+##    echo $runtimeInit
+##fi
 endInit=`date +%s.%N`
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 echo "runtime for initialization"

@@ -1,5 +1,5 @@
-from desiutil.iers import freeze_iers
-freeze_iers()
+##from desiutil.iers import freeze_iers
+##freeze_iers()
 
 import fitsio
 import numpy as np
@@ -577,6 +577,7 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
             verbose=verbose,
+            tabform='ascii.ecsv'
         )
         
     

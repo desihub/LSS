@@ -5,10 +5,10 @@ import os
 program = 'dark'
 
 rmin = 0
-rmax = 128
+rmax = 64
 
 #path = '/pscratch/sd/a/acarnero/test_main/altmtl{MOCKNUM}/Univ000' 
-path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/altmtl1_R128/Univ{MOCKNUM}' 
+path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl21_R64/Univ{MOCKNUM}' 
 
 extratiles = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/aux_data/extra_{PROGRAM}.ecsv'.format(PROGRAM = program), format='ascii.ecsv')
 

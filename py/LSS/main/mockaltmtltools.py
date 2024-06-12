@@ -1,5 +1,5 @@
-from desiutil.iers import freeze_iers
-freeze_iers()
+##from desiutil.iers import freeze_iers
+##freeze_iers()
 
 import collections.abc
 from time import time
@@ -1240,16 +1240,36 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         # ADM ZTILEID, and other columns addes for the Main Survey. These
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
-        print('AURE')
-        print('zcat columns', zcat.columns)
-        print('altZCat columns', altZCat.columns)
+        #print('AURE')
+        #print('zcat columns', zcat.columns)
+        #print('altZCat columns', altZCat.columns)
 
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
         if zcat.dtype.descr != zcatdm.dtype.descr:
-            msg = "zcat data model must be {} not {}!".format(
-                zcatdm.dtype.descr, zcat.dtype.descr)
+            msg = "altZCat data model must be {} not {}!".format(
+            ##TEMPmsg = "zcat data model must be {} not {}!".format(
+                zcatdm.dtype.descr, altZCat.dtype.descr)
             log.critical(msg)
+        #    log.critical('Changing format')
+            #print('BEFORE')
+            #print(altZCat)
+            #correct_dtype = np.dtype([('RA', '>f8'), ('DEC', '>f8'), ('TARGETID', '>i8'), ('NUMOBS', '>i4'),
+            #                          ('Z', '>f8'), ('ZWARN', '>i8'), ('ZTILEID', '>i4'), ('Z_QN', '>f8'), 
+            #                          ('IS_QSO_QN', '>i2'), ('DELTACHI2', '>f8')])
+            #corrected_data = Table()
+            #for colname in altZCat.colnames:
+            #    corrected_data[colname] = altZCat[colname].astype(correct_dtype[colname])
+            #print('AFTER')
+            #print(corrected_data)
+            #altZCat = corrected_data
+        #if altZCat.dtype.descr != zcatdm.dtype.descr:
+        #    msg = "altZCat data model must be {} not {}!".format(
+        #        zcatdm.dtype.descr, altZCat.dtype.descr)
+        #    log.critical(msg)
+
             raise ValueError(msg)
+        #else:
+        #    print('WE PASS IT!!')
         # ADM useful to know how many targets were updated.
         _, _, _, _, sky, _ = decode_targetid(zcat["TARGETID"])
         ntargs, nsky = np.sum(sky == 0), np.sum(sky)
@@ -1258,32 +1278,13 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         log.info(msg)
         didUpdateHappen = False
         # ADM update the appropriate ledger.
-        if mock:
 
-            if targets is None:
-                raise ValueError('If processing mocks, you MUST specify a target file')
-            log.info('update loc a')
-            print('althpdirname')
-            print(althpdirname)
-            print('---------------------')
-            print('altZCat')
-            print(altZCat)
-            print('*************************')
-            print('version of astropy at this moment', astropy.__version__)
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)#, targets = targets)
-            print('AURE')
-            didUpdateHappen = True
-        elif targets is None:
-            log.info('update loc b')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)
-            didUpdateHappen = True
-        else:
-            log.info('update loc c')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets)
-            didUpdateHappen = True
+        if targets is None:
+            raise ValueError('If processing mocks, you MUST specify a target file')
+        log.info('update loc a')
+        update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
+                  numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
+        didUpdateHappen = True
         assert(didUpdateHappen)
         if verbose or debug:
             log.info('if main, should sleep 1 second')

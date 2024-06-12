@@ -1,3 +1,6 @@
+from desiutil.iers import freeze_iers
+freeze_iers()
+
 """
 Functions for calculating PIP weights
 """

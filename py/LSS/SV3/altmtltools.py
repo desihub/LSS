@@ -1,5 +1,6 @@
-from desiutil.iers import freeze_iers
-freeze_iers()
+##from desiutil.iers import freeze_iers
+##freeze_iers()
+
 #TEMP
 #MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
 #MODULE_NAME = 'desitarget'
@@ -1259,7 +1260,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
                 raise ValueError('If processing mocks, you MUST specify a target file')
             log.info('update loc a')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)#, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')

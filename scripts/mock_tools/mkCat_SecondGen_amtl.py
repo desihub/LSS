@@ -90,6 +90,9 @@ parser.add_argument("--resamp",help="resample radial info for different selectio
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--add_weight_ntile", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
+parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+
+
 
 #--use_map_veto _HPmapcut
 
@@ -443,6 +446,11 @@ readdir = dirout
 if args.start_from_full == 'y':
 	readdir = dirfinal
 
+weightileloc=True
+if args.compmd == 'altmtl':
+    weightileloc = False
+
+
 
 nztl = []
 if args.mkclusdat == 'y':
@@ -464,12 +472,16 @@ if args.mkclusdat == 'y':
         nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
         common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
 
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
-    #ct.mkclusdat(os.path.join(dirout, args.tracer + notqso), tp = args.tracer, dchi2 = None, splitNS='y', tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, tsnrcut= 0, zmin=zmin, zmax=zmax, use_map_veto=args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)
+    #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 
 
-    
+nzcompmd = 'ran'
+if args.compmd == 'altmtl':
+    nzcompmd = args.compmd
+
+   
     
 finaltracer = args.tracer + notqso #+ '_'
 if args.tracer[:3] == 'BGS':
@@ -507,7 +519,10 @@ if args.mkclusran == 'y':
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
+
+        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
+
+        ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0
     if args.par == 'n':
@@ -552,7 +567,10 @@ def splitGC(flroot,datran='.dat',rann=0):
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
 
-    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    print('inside splitGC')
+    print(flroot +app)
+    fn = Table(fitsio.read(flroot +app))
+    ####fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
@@ -570,9 +588,11 @@ if args.splitGC == 'y':
     #if not os.path.exists(dirout):
     #    os.makedirs(dirout)
     #print('made '+dirout)
-    splitGC(fb+'_','.dat')
+    print(fb+'_')
+    splitGC(fb+'_', datran='.dat')
+    print('done with data')
     def _spran(rann):
-        splitGC(fb+'_','.ran',rann)
+        splitGC(fb+'_', datran='.ran', rann=rann)
     #inds = np.arange(nran)
     if args.par == 'y':
         from multiprocessing import Pool

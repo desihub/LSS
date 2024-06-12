@@ -1,3 +1,6 @@
+##from desiutil.iers import freeze_iers
+##freeze_iers()
+
 #functions to help with running fiberassign, using SV3 parameters/targets
 
 import fitsio
