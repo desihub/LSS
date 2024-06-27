@@ -2551,7 +2551,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
     print(specf)
     fs = fitsio.read(specf.replace('global', 'dvs_ro'))
-    fs = common.cut_specdat(fs,badfib)
+    fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
@@ -2599,19 +2599,19 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     print(len(np.unique(dz[wtl]['TARGETID'])))
 
     cols = list(dz.dtype.names)
-    if tscol not in cols:
-        dz[tscol] = np.ones(len(dz))
-        print('added '+tscol+' and set all to 1') 
+    #if tscol not in cols:
+    #    dz[tscol] = np.ones(len(dz))
+    #    print('added '+tscol+' and set all to 1') 
 
 
-    wnts = dz[tscol]*0 != 0
-    wnts |= dz[tscol] == 999999
-    dz[tscol][wnts] = 0
-    print(np.max(dz[tscol]))
-    dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
-    if min_tsnr2 > 0:
-        sel = dz[tscol] > min_tsnr2
-        dz['GOODTSNR'][sel] = 1
+    #wnts = dz[tscol]*0 != 0
+    #wnts |= dz[tscol] == 999999
+    #dz[tscol][wnts] = 0
+    #print(np.max(dz[tscol]))
+    #dz['GOODTSNR'] = np.ones(len(dz)).astype('bool')
+    #if min_tsnr2 > 0:
+    #    sel = dz[tscol] > min_tsnr2
+    #    dz['GOODTSNR'][sel] = 1
     
     if ftiles is None:
         dtl = count_tiles_input(dz[wg])
@@ -2625,6 +2625,8 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
     #print('ECHO ',dz['TARGETID'][0])
     #if tp[:3] != 'QSO':
+    
+    ##AURE MAYBE KEEP OR NOT? SHOULD NOT HARM
     dz['ransort'] = np.random.random(len(dz))
     dz.sort('ransort')
     print('randomly sorted')
@@ -2633,15 +2635,11 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         selnp = dz['LOCATION_ASSIGNED'] == 0
         pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
         pv[selnp] = 0
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
+
     else:
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-    
-    #else:
-    #    selnp = dz['LOCATION_ASSIGNED'] == 0
-    #    pv = dz['PRIORITY']
-    #    pv[selnp] = 0
-    #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
+        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
+
     dz.sort('sort')
     print('sorted')
     
@@ -2688,6 +2686,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
+        arz['TILEID'] = arz['TILEID'].astype(int)
         dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
@@ -2842,7 +2841,8 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         dz['PHOTSYS'][sel] = 'S'
                
     
-    common.write_LSS(dz,outf)
+    common.write_LSS_scratchcp(dz,outf)
+    #common.write_LSS(dz,outf)
 
 def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None,mockz='RSDZ',mask_coll=False,logger=None):
     import LSS.common_tools as common
@@ -3617,7 +3617,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
-        wz &= ff['TSNR2_ELG'] > tsnrcut
+        if not ismock:
+            wz &= ff['TSNR2_ELG'] > tsnrcut
 
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
@@ -3629,8 +3630,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print('length after oII cut '+str(len(ff[wz])))
         wz &= ff['LOCATION_ASSIGNED'] == 1
         print('length after also making sure location assigned '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+        if not ismock:
+            wz &= ff['TSNR2_ELG'] > tsnrcut
+            print('length after tsnrcut '+str(len(ff[wz])))
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -3638,15 +3640,19 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz = ff['ZWARN'] == 0
         wz &= ff['ZWARN']*0 == 0
         wz &= ff['ZWARN'] != 999999
-
-        if dchi2 is not None:
-            selg = ssr_tools.LRG_goodz(ff)
-            wz &= selg
+        if ismock:
+            wz &= ff['Z']<1.5
+        else:
+            if dchi2 is not None:
+                selg = ssr_tools.LRG_goodz(ff)
+                wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
         print('length after Rongpu cut '+str(len(ff[wz])))
-        wz &= ff['TSNR2_ELG'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+        
+        if not ismock:
+            wz &= ff['TSNR2_ELG'] > tsnrcut
+            print('length after tsnrcut '+str(len(ff[wz])))
 
     if tp[:3] == 'BGS':
         wz = ff['ZWARN'] == 0
@@ -3811,6 +3817,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if 'BITWEIGHTS' in cols:
         kl.append('BITWEIGHTS')
         kl.append('PROB_OBS')
+    if 'WEIGHT_NT_MISSPW' in cols:
+        kl.append('WEIGHT_NT_MISSPW')
 
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']

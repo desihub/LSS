@@ -444,4 +444,56 @@ def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
     shutil.copy(alltileloc, os.path.join(outdir, alltileloc.split('/')[-1]))
     return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
 
+def calc_weight_nt_misspw(data_full):
+    nbits = 64 * np.shape(data_full['BITWEIGHTS'])[1]
+    recurr_full = data_full['PROB_OBS']*nbits
+    wiip_full = (nbits+1)/(recurr_full+1)
+    zerop_msk_full = (data_full['PROB_OBS']==0) & (~data_full['LOCATION_ASSIGNED'])
+    ntile_range = [0, 10]
+    idx_nt_full = []
+    idx_nt_full_zp = []
+    idx_nt_full_la = []
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        idx_nt_full.append(np.where(data_full['NTILE'] == n))
+        idx_nt_full_zp.append(np.where((data_full['NTILE'] == n) & (zerop_msk_full)))
+        idx_nt_full_la.append(np.where((data_full['NTILE'] == n) & (data_full['LOCATION_ASSIGNED'])))
+    s1 = 0
+    s2 = 0
+    s3 = 0
+    #f_ntzp = np.ones(ntile_range[1]+1)
+    f_ntmisspw = np.ones(ntile_range[1]+1)
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        n_nt = len(idx_nt_full[n][0])
+        n_ntzp = len(idx_nt_full_zp[n][0])
+        n_ntwiip = np.sum(wiip_full[idx_nt_full_la[n][0]])
+        n_ntmisspw = n_nt - n_ntwiip
+#        print(n, n_nt, n_ntzp, n_ntmisspw)
+        s1 += n_nt
+        s2 += n_ntzp
+        s3 += n_ntwiip
+        #if n_nt > 0: f_ntzp[n] = n_ntzp / n_nt
+        if n_nt > 0: f_ntmisspw[n] = n_ntmisspw / n_nt
 
+    #w_ntzp_full = np.ones(len(data_full['RA']))
+    w_ntmisspw_full = np.ones(len(data_full['RA']))
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        #if 1-f_ntzp[n] > 0: w_ntzp_full[idx_nt_full[n][0]] = 1/(1-f_ntzp[n])
+        if 1-f_ntmisspw[n] > 0: w_ntmisspw_full[idx_nt_full[n][0]] = 1/(1-f_ntmisspw[n])
+
+    data_full['WEIGHT_NT_MISSPW'] = w_ntmisspw_full
+    return data_full, f_ntmisspw
+
+def calc_weight_nt_misspw_ran(data_full_ran, f_ntmisspw):
+    ntile_range = [0, 10]
+    idx_nt_full_ran = []
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        idx_nt_full_ran.append(np.where(data_full_ran['NTILE'] == n))
+
+#    f_ntmisspw = np.ones(ntile_range[1]+1)
+#    w_ntzp_full_ran = np.ones(len(data_full_ran['RA']))
+    w_ntmisspw_full_ran = np.ones(len(data_full_ran['RA']))
+    for n in range(ntile_range[0], ntile_range[1]+1):
+    #    w_ntzp_full_ran[idx_nt_full_ran[n][0]] = 1-f_ntzp[n]
+        w_ntmisspw_full_ran[idx_nt_full_ran[n][0]] = 1-f_ntmisspw[n]
+    data_full_ran['WEIGHT_NT_MISSPW'] = w_ntmisspw_full_ran
+    return data_full_ran

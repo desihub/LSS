@@ -17,7 +17,7 @@ from desitarget import targetmask
 from desitarget.internal import sharedmem
 from desimodel.footprint import is_point_in_desi
 
-
+import gc
 import LSS.main.cattools as ct
 import LSS.common_tools as common
 import LSS.mocktools as mocktools
@@ -91,6 +91,8 @@ parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final cl
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--add_weight_ntile", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
+parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
 
 
 
@@ -147,7 +149,7 @@ maindir = args.base_output
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = maindir
+    args.targDir = maindir.format(MOCKNUM=mocknum)
 
 
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
@@ -174,8 +176,26 @@ test_dir(lssdir)
 #if not os.path.exists(lssdir):
 #    os.mkdir(lssdir)
 #    print('made '+lssdir)
+if args.compmd != 'altmtl':
+    dirout = os.path.join(lssdir, 'LSScats')
+else:
+    dirout = os.path.join(lssdir, 'LSScatsPIP')
+    args.start_from_full = 'y'
+    args.fulld = 'n'
+    args.fullr = 'n'
+#    args.add_tlcomp = 'n'
+    args.apply_veto_ran = 'n'
+    args.apply_veto = 'n'
+#    args.add_weight_ntile = 'y'
+    print('Doing weights with PIP, forcing output to LSScatsPIP. Everything should be in LSScats before doing doing PIP and add_bitweights should be different from None')
+    if args.add_bitweights is None:
+        raise Exception('BITWEIGHT IS NONE WITH compmd = altmtl. Exiting now')
+    else:
+        if not os.path.isdir(dirout):
+            os.system('cp -r %s %s'%(os.path.join(lssdir, 'LSScats'), dirout))
+        else:
+            os.system('rsync -av --ignore-existing %s %s/.'% (os.path.join(lssdir, 'LSScats', '%s*' % args.tracer), dirout))
 
-dirout = os.path.join(lssdir, 'LSScats')
 dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
@@ -265,8 +285,8 @@ if args.joindspec == 'y':
 #specver = 'mock'    
 imbits = []   
 maxp = 3400
-if args.tracer[:3] == 'ELG':
-    maxp = 3000
+#if args.tracer[:3] == 'ELG':
+#    maxp = 3000
 if args.tracer[:3] == 'LRG' or notqso == 'notqso':
     maxp = 3200
 if args.tracer[:3] == 'BGS':
@@ -278,10 +298,11 @@ if args.fulld == 'y':
 
     ftar = None
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
-    tlf = os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
+    tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     print('*** END WITH FULLD ***')
+    gc.collect()
 
 #    maxp = 3400
 pthresh = 3000
@@ -323,53 +344,93 @@ if args.tracer[:3] == 'BGS':
 #        maxp = 3200
 
 nzmd = 'mock'
+mainp = main(args.tracer, args.specdata, survey=args.survey)
+imbits = mainp.imbits
+tsnrcut = mainp.tsnrcut
 
     
 if args.fullr == 'y':
+    print('Calculate GTL')
+    
+    tempdir = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey, 'LSS', args.specdata)
+    
+    
+    specfo = os.path.join(tempdir, 'datcomb_'+pdir+'_spec_zdone.fits')
+
+    specf = Table(fitsio.read(specfo))
+    
+    mt = mainp.mtld
+    wd = mt['SURVEY'] == 'main'
+    wd &= mt['ZDONE'] == 'true'
+    wd &= mt['FAPRGRM'] == pdir
+    if args.survey == 'Y1':
+        wd &=mt['ZDATE'] < 20220900
+
+    if args.survey == 'DA2':
+        wd &=mt['ZDATE'] < 20240410
+
+    mtld = mt[wd]
+
+    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+    specf = specf[sel]
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut, tsnr_col=mainp.tsnrcol)
+    gtl = np.unique(specfc['TILELOCID'])
+    del specfc
+
     print('--- START FULLR ---')
-    ldata = os.path.join(maindir, 'mock%d'% mocknum, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits').format(MOCKNUM=mocknum)
-    specft = fitsio.read(ldata) #Is this from data or mock? 
-    wg = np.isin(specft['TILELOCID'], gtl)
-    specft = Table(specft[wg])
+
+
+    #ldata = os.path.join(maindir, 'mock%d'% mocknum, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits').format(MOCKNUM=mocknum)
+    #specft = fitsio.read(ldata) #Is this from data or mock? 
+    #wg = np.isin(specft['TILELOCID'], gtl)
+    #specft = Table(specft[wg])
     #lznp = common.find_znotposs(specft) #doesn't actually get used and takes a long time
     lznp = None
-    del specft
-    mainp = main(args.tracer, args.specdata, survey=args.survey)
-    imbits = mainp.imbits
-    tsnrcut = mainp.tsnrcut
-    global _parfun1
+    #del specft
+#    global _parfun1
     def _parfun1(rann):
         ranfile = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%swdupspec_zdone.fits' % (rann, pdir)) 
         alltileloc = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%s_Alltilelocinfo.fits' % (rann, pdir)) 
-            
-        ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits').format(MOCKNUM=mocknum), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
+        #os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
+        if not os.path.isfile(os.path.join(lssdir, ranfile.split('/')[-1])) or not os.path.isfile(os.path.join(lssdir, alltileloc.split('/')[-1])):
+
+            ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits').format(MOCKNUM=mocknum), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
         outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')
-        ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut) 
+        ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
+        gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
     if args.par == 'n':
         for rn in range(rannum[0], rannum[1]):
-            _parfun1(rn)
+            if os.path.isfile(os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')):
+                pass
+            else:
+                _parfun1(rn)
     else:
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
+        #inds_t = []
+        #for ii in inds:
+        #    if not os.path.isfile(os.path.join(dirout, args.tracer+notqso+'_'+str(ii)+'_full_noveto.ran.fits')):
+        #        inds_t.append(ii)
         #(rannum[1]-rannum[0])*2
-        nproc = rx-rm #try 9 if runs out of memory
+        nproc = 6 #rx-rm #try 9 if runs out of memory
+        
         ####HERE nproc = 18 #try 9 if runs out of memory
         with Pool(processes=nproc) as pool:
-            res = pool.map(_parfun1, inds)
-            pool.close()
-            pool.join()
+            pool.map(_parfun1, inds)
+            #pool.join()
     print('*** END WITH FULLR ***')
 
-mainp = main(args.tracer, args.specdata, survey=args.survey)
 
 tracer_clus = args.tracer + notqso 
 
 if args.apply_veto == 'y':
     print('--- START APPLY_VETO; including HP maps---')
     print('applying vetos to mock ' + str(mocknum))
-    import healpy as hp
+#    import healpy as hp
     nside = 256
     lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
@@ -411,8 +472,15 @@ if args.apply_veto == 'y':
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
     dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
-    common.write_LSS(dataf,fout)
+    common.write_LSS_scratchcp(dataf,fout)
     print('data veto done, now doing randoms')
+
+if args.apply_veto_ran == 'y':
+    nside = 256
+    lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
+    mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))       
+    maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
+    mapcuts = mainp.mapcuts
     
     global _parfun2
     def _parfun2(rann):
@@ -432,15 +500,34 @@ if args.apply_veto == 'y':
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
-        nproc = 18 #try this so doesn't run out of memory
-        if tracer == 'QSO' or tracer == 'LRG':
-            nproc = 9 #QSO has OOM with all 18
+        nproc = 9 #try this so doesn't run out of memory
+#        if tracer == 'QSO' or tracer == 'LRG':
+#            nproc = 9 #QSO has OOM with all 18
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun2, inds)
-            pool.close()
-            pool.join()
-    print('*** END VETO ***')
+    
+    print('*** END RANDOM VETO ***')
     #print('random veto '+str(ii)+' done')
+
+
+if args.add_tlcomp == 'y':
+    fl = os.path.join(dirout,args.tracer+notqso+'_')
+    global _parfun3
+    def _parfun3(rann):
+        ct.add_tlobs_ran(fl, rann, hpmapcut=args.use_map_veto, logger=logger)
+
+    if args.par == 'n':
+        for rn in range(rannum[0], rannum[1]):
+            _parfun3(rn)
+    else:
+        from multiprocessing import Pool
+        nproc = 9
+        inds = np.arange(rannum[0], rannum[1])
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_parfun3, inds)
+
+            #ct.add_tlobs_ran(fl, rn, hpmapcut=args.use_map_veto, logger=logger)
+    print('*** END RANDOM ADD TILE COMP ***')
 
 readdir = dirout
 if args.start_from_full == 'y':
@@ -452,10 +539,10 @@ if args.compmd == 'altmtl':
 
 
 
-nztl = []
+#nztl = []
 if args.mkclusdat == 'y':
     print('--- START MKCLUSDAT ---')
-    nztl.append('')
+    #nztl.append('')
     
     if args.ccut is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
@@ -463,16 +550,28 @@ if args.mkclusdat == 'y':
             targets = Table(fitsio.read(os.path.join(args.targDir, 'forFA{MOCKNUM}.fits').format(MOCKNUM=mocknum).replace('global','dvs_ro'), columns=['TARGETID', 'R_MAG_ABS']))
             nm = Table(join(ffile, targets, keys=['TARGETID']))
         #print(nm)
-            common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
         #nm.write(ffile, overwrite=True)
-
+        readdir = dirout
     if args.add_bitweights is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
-        bitweights_file = Table.read(args.add_bitweights)
-        nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
-        common.write_LSS(nm, os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+        if 'PROB_OBS' not in ffile.columns:
+            bitweights_file = Table.read(args.add_bitweights)
+            nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
+            if args.add_nt_misspw == 'y':
+                nm = mocktools.calc_weight_nt_misspw(nm)
 
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, tsnrcut= 0, zmin=zmin, zmax=zmax, use_map_veto=args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)
+            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+        else:
+            if args.add_nt_misspw == 'y':
+                nm, f_ntmisspw = mocktools.calc_weight_nt_misspw(ffile)
+            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+
+            print('PROB_OBS already in full catalog')
+        readdir = dirout
+
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, tsnrcut=0, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
+    ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
     #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 
@@ -491,8 +590,8 @@ if args.tracer[:3] == 'BGS':
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA']
 if args.mkclusran == 'y':
     print('--- START MKCLUSRAN ---')
-    if len(nztl) == 0:
-        nztl.append('')
+    #if len(nztl) == 0:
+    #    nztl.append('')
 
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
@@ -512,6 +611,32 @@ if args.mkclusran == 'y':
                     os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
                 #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
+    if args.add_nt_misspw == 'y':
+        global _parfun41
+        def _parfun41(rann):
+            print('doing new weight in randoms', rann)
+            if not os.path.isfile(os.path.join(readdir, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits')):
+                ffile = Table.read(os.path.join(dirfinal, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits').replace('global','dvs_ro'))
+            else:
+                ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits').replace('global','dvs_ro'))
+            nm = mocktools.calc_weight_nt_misspw_ran(ffile, f_ntmisspw)
+            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_' + '%d_full' %rann + args.use_map_veto + '.ran.fits'))
+        if args.par == 'n':
+            for rn in range(rannum[0], rannum[1]):
+                _parfun41(rn)
+        else:
+            from multiprocessing import Pool
+            inds = np.arange(rannum[0], rannum[1])
+            nproc = 6
+            with Pool(processes=nproc) as pool:
+                res = pool.map(_parfun41, inds)
+        readdir = dirout
+    
+    for rn in range(rannum[0], rannum[1]):
+        if not os.path.isfile(os.path.join(readdir, args.tracer + notqso + '_frac_tlobs.fits')):
+            print('copying ' + args.tracer + notqso + '_frac_tlobs.fits' + ' to ' + readdir) 
+            os.system('cp %s %s' %(os.path.join(dirfinal, args.tracer + notqso + '_frac_tlobs.fits'), os.path.join(readdir, args.tracer + notqso + '_frac_tlobs.fits')))
+
     fl = os.path.join(dirout, finaltracer) + '_'
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
@@ -532,11 +657,9 @@ if args.mkclusran == 'y':
         from multiprocessing import Pool
 
         inds = np.arange(rannum[0], rannum[1])
-        nproc = 18 #try this so doesn't run out of memory
+        nproc = 9 #try this so doesn't run out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun4, inds)
-            pool.close()
-            pool.join()
 
 #        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
     print('*** END WITH MKCLUSRAN ***')
@@ -544,20 +667,8 @@ if args.mkclusran == 'y':
 
 fb = os.path.join(dirout, finaltracer)
 nran = rx-rm
+regions = ['NGC', 'SGC']
 
-
-
-nproc = 18
-##fb = os.path.join(dirout, tracer_clus)
-if args.nz == 'y':
-    #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
-    #for reg in allreg:
-    
-    fcr = fb+'_0_clustering.ran.fits'
-    fcd = fb+'_clustering.dat.fits'
-    fout = fb+'_nz.txt'
-    common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-    common.addnbar(fb,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,nproc=nproc,logger=logger)
 
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
@@ -567,64 +678,119 @@ def splitGC(flroot,datran='.dat',rann=0):
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
 
-    print('inside splitGC')
-    print(flroot +app)
-    fn = Table(fitsio.read(flroot +app))
-    ####fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
-    #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
-    #gc = c.transform_to('galactic')
+    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     sel_ngc = common.splitGC(fn)#gc.b > 0
-    #outf_ngc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'NGC_'+app
     outf_ngc = flroot+'NGC_'+app
     common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
-    #outf_sgc = flroot.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')+'SGC_'+app
     outf_sgc = flroot+'SGC_'+app
     common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
-inds = np.arange(rm,rx)
 if args.splitGC == 'y':
-    #dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
-
-    #if not os.path.exists(dirout):
-    #    os.makedirs(dirout)
-    #print('made '+dirout)
-    print(fb+'_')
-    splitGC(fb+'_', datran='.dat')
-    print('done with data')
+    fb_split = os.path.join(dirout,tracer_clus+'_')
+   # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
+    splitGC(fb_split, '.dat')
+    
     def _spran(rann):
-        splitGC(fb+'_', datran='.ran', rann=rann)
-    #inds = np.arange(nran)
-    if args.par == 'y':
-        from multiprocessing import Pool
-        with Pool(processes=nproc) as pool:
-            res = pool.map(_spran, inds)
-    else:
-        for rn in inds:#range(rm,rx):
-             _spran(rn)
-
-if args.resamp == 'y':
-    regions = ['NGC','SGC']        
-    for reg in regions:
-        flin = fb + '_'+reg    
-        def _parfun_re(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-        
-        
+        splitGC(fb_split,'.ran',rann)
+    inds = np.arange(nran)
+    try:
         if args.par == 'y':
             from multiprocessing import Pool
             with Pool() as pool:
-                res = pool.map(_parfun_re, inds)
+                res = pool.map(_spran, inds)
+        else:
+            for rn in inds:#range(rm,rx):
+                _spran(rn)
+    except:
+        print('No randoms present yet')
+
+if args.resamp == 'y':
+
+    for reg in regions:
+        flin = dirout + tracer_clus + '_'+reg
+        def _parfun(rannum):
+            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+
+
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool() as pool:
+                res = pool.map(_parfun, inds)
         else:
             for rn in range(rm,rx):
-                _parfun_re(rn)
-        fcr = flin+'_0_clustering.ran.fits'
-        fcd = flin+'_clustering.dat.fits'
-        fout = flin+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz_step,zmin=zmin,zmax=zmax)
-        common.addnbar(flin,bs=dz_step,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,logger=logger)
+                _parfun(rn)
+
+#allreg = ['N','S','NGC', 'SGC']
+#allreg = ['NGC','SGC']
+
+if args.nz == 'y':
+    for reg in regions:#allreg:
+        fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
+        fcr = fb_nz+'_0_clustering.ran.fits'
+        fcd = fb_nz+'_clustering.dat.fits'
+        fout = fb_nz+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,compmd=nzcompmd)
+        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+
+
+
 
 
 if args.add_weight_ntile == 'y':
     bo = common.add_weight_ntile(fb, ranmin=rm, nran=rx, par=args.par)
 
-   
+'''
+if args.FKPfull == 'y':
+
+    fb = dirout+tracer_clus
+    fbr = fb
+    if type == 'BGS_BRIGHT-21.5':
+        fbr = dirout+'BGS_BRIGHT'
+
+    fcr = fbr+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
+    nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+    common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+
+if args.nzfull == 'y':
+    fb = dirout+tracer_clus
+    fbr = fb
+    if type == 'BGS_BRIGHT-21.5':
+        fbr = dirout+'BGS_BRIGHT'
+    fcr = fbr+'_0_full.ran.fits'
+    fcd = fb+'_full.dat.fits'
+    zmax = 1.6
+    zmin = 0.01
+    bs = 0.01
+    if type[:3] == 'QSO':
+        zmax = 4
+        bs = 0.02
+    for reg in regl:
+        reg = reg.strip('_')
+        common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)
+        nzf = np.loadtxt(fb+'_full_'+reg+'_nz.txt').transpose()
+        plt.plot(nzf[0],nzf[3],label=reg)
+    plt.xlabel('redshift')
+    plt.ylabel('n(z) (h/Mpc)^3')
+    plt.legend()
+    plt.grid()
+    if tracer_clus == 'ELG_LOPnotqso':
+        plt.ylim(0,0.001)
+    if tracer_clus == 'BGS_BRIGHT':
+        plt.yscale('log')
+        plt.xlim(0,0.6)
+        plt.ylim(1e-5,0.15)
+    if tracer_clus == 'BGS_BRIGHT-21.5':
+        plt.xlim(0,0.5)
+    plt.title(tracer_clus)
+    plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
+
+if args.addnbar_ran == 'y':
+    utlid_sw = ''
+    if utlid:
+        utlid_sw = '_utlid'
+
+    for reg in regl:
+        fb = dirout+tracer_clus+utlid_sw+reg
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
+'''
