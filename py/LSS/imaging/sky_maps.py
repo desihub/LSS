@@ -1376,7 +1376,8 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
 
     # MMM loop over sets of files.
     for randomcat in randomcatlist:
-
+        #read from dvs_ro
+        randomcat = randomcat.replace('global','dvs_ro')
         # MMM log file we are reading.
         log.info("Reading in random catalog {} and associated files...t = {:.1f}s"
                  .format(randomcat, time()-start))
