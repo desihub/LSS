@@ -1391,6 +1391,9 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
         ranvalues, ranhdr = fitsio.read(randomcat, columns=stdfcol+['RA', 'DEC'],
                                         header=True)
 
+        log.info("Read in random catalog {} and associated files...t = {:.1f}s"
+                 .format(randomcat, time()-start))
+
         # MMM read field values; only if need be.
         if skyfcol:
             skymapvalues = fitsio.read(skymapvaluescat, columns=skyfcol)
@@ -1407,7 +1410,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
             regsel = regcol['PHOTSYS'] == reg
             oldlength = len(ranvalues)
             ranvalues = ranvalues[regsel]
-            print('cut randoms to selected region, kept '+str(len(ranvalues))+' out of '+str(oldlength)) 
+            log.info('cut randoms to selected region, kept '+str(len(ranvalues))+' out of '+str(oldlength)) 
         if not randomswithallfields:
             skymapmask = fitsio.read(skymapmaskcat, columns=maskcol)
         else:
