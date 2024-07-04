@@ -291,6 +291,11 @@ class model_ssr:
                 maxv = 1.01*high_failrate
             bguess = 10*medt/120.
             aguess = -16*medt/120.
+            if tracer == 'QSO':
+                #DR1 S parameters
+                aguess = -3.1
+                bguess = 6.33
+                high_failrate = 0.33
             res = minimize(self.wrapper_hist, [aguess, bguess, high_failrate], bounds=((-2*tsnr_max, 2*tsnr_max), (0.001, tsnr_max), (0., maxv)),method='Powell')#,
                #method='Powell', tol=1e-6)
             pars = res.x
