@@ -416,7 +416,8 @@ def get_full_positions_weights(catalog, name='data', weight_type='default', fibe
     if weight_attrs is None: weight_attrs = {}
     mask = np.ones(len(catalog), dtype='?')
     #if region in ['DS', 'DN']:
-    mask &= select_region(catalog['RA'], catalog['DEC'], region)
+    if region != 'full':
+        mask &= select_region(catalog['RA'], catalog['DEC'], region)
     #elif region:
     #    #mask &= catalog['PHOTSYS'] == region.strip('_')
     #    mask &= catalog['PHOTSYS'] == region.strip('GC')
