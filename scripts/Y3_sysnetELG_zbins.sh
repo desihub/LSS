@@ -26,4 +26,4 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi $LSSDIR/LSS/script
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $1
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/validation/validation_improp_full.py --tracers ELG_LOPnotqso --version $1 --verspec $verspec --survey $survey
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/validation/validation_improp_full.py --tracers ELG_LOPnotqso --version $1 --verspec $verspec --survey $survey --weight_col WEIGHT_SN
