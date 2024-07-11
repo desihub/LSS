@@ -171,6 +171,11 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         if 'noNorth' in option:
             decmask = catalog['DEC'] < 32.375
             mask &= decmask
+            
+        if 'noDES' in option:
+            from LSS import common_tools as common
+            isDES = common.select_regressis_DES(catalog)
+            mask &= ~ isDES
         
         if 'elgzmask' in option:
             zmask = ((catalog['Z'] >= 1.49) & (catalog['Z'] < 1.52))
