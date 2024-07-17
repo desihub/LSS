@@ -178,6 +178,8 @@ test_dir(lssdir)
 #    print('made '+lssdir)
 if args.compmd != 'altmtl':
     dirout = os.path.join(lssdir, 'LSScats')
+    args.add_bitweights = None
+    args.add_nt_misspw = 'n'
 else:
     dirout = os.path.join(lssdir, 'LSScatsPIP')
     args.start_from_full = 'y'
@@ -195,7 +197,6 @@ else:
             os.system('cp -r %s %s'%(os.path.join(lssdir, 'LSScats'), dirout))
         else:
             os.system('rsync -av --ignore-existing %s %s/.'% (os.path.join(lssdir, 'LSScats', '%s*' % args.tracer), dirout))
-
 dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
@@ -529,21 +530,49 @@ if args.add_tlcomp == 'y':
             #ct.add_tlobs_ran(fl, rn, hpmapcut=args.use_map_veto, logger=logger)
     print('*** END RANDOM ADD TILE COMP ***')
 
+finaltracer = args.tracer + notqso #+ '_'
 readdir = dirout
 if args.start_from_full == 'y':
-	readdir = dirfinal
+    os.system('rsync -av --ignore-existing %s %s'%(os.path.join(dirfinal, finaltracer + '*full' + args.use_map_veto + '*.fits'), readdir))
+    os.system('rsync -av --ignore-existing %s %s'%(os.path.join(dirfinal, finaltracer + '_frac_tlobs.fits'), readdir))
+    readdir = dirfinal
 
 weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 
 
-
 #nztl = []
+if args.add_bitweights is not None:
+    ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
+
+    if 'PROB_OBS' not in ffile.columns:
+        bitweights_file = Table.read(args.add_bitweights)
+        nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
+            #if args.add_nt_misspw == 'y':
+            #    nm = mocktools.calc_weight_nt_misspw(nm)
+
+        common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+        readdir = dirout
+    else:
+        print('PROB_OBS already in full catalog')
+        readdir = dirout
+ 
+
+fb = os.path.join(readdir, finaltracer)
+
+if args.add_nt_misspw == 'y':
+    bo = mocktools.do_weight_nt_misspw(fb, ranmin=rm, ranmax=rx, par=args.par, dirout=dirout)
+    readdir = dirout
+
+
+
+
 if args.mkclusdat == 'y':
     print('--- START MKCLUSDAT ---')
     #nztl.append('')
     
+
     if args.ccut is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         if 'R_MAG_ABS' not in ffile.columns:
@@ -551,26 +580,15 @@ if args.mkclusdat == 'y':
             nm = Table(join(ffile, targets, keys=['TARGETID']))
         #print(nm)
             common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+            boolDir = True
         #nm.write(ffile, overwrite=True)
-        readdir = dirout
-    if args.add_bitweights is not None:
-        ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
-        if 'PROB_OBS' not in ffile.columns:
-            bitweights_file = Table.read(args.add_bitweights)
-            nm = Table(join(ffile, bitweights_file, join_type='left', keys=['TARGETID']))
-            if args.add_nt_misspw == 'y':
-                nm = mocktools.calc_weight_nt_misspw(nm)
+        #readdir = dirout
 
-            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
-        else:
-            if args.add_nt_misspw == 'y':
-                nm, f_ntmisspw = mocktools.calc_weight_nt_misspw(ffile)
-            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+       #readdir = dirout
+    
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, tsnrcut=0, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut) #, return_cat='y', write_cat='n')
+#    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
-            print('PROB_OBS already in full catalog')
-        readdir = dirout
-
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, tsnrcut=0, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
     #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
@@ -582,7 +600,6 @@ if args.compmd == 'altmtl':
 
    
     
-finaltracer = args.tracer + notqso #+ '_'
 if args.tracer[:3] == 'BGS':
     if args.ccut is not None:
         finaltracer = args.tracer + str(args.ccut) #+ '_'
@@ -592,10 +609,10 @@ if args.mkclusran == 'y':
     print('--- START MKCLUSRAN ---')
     #if len(nztl) == 0:
     #    nztl.append('')
-
+    
     tsnrcol = 'TSNR2_ELG'
     if args.tracer[:3] == 'BGS':
-        fl = os.path.join(dirout, finaltracer) + '_'
+        fl = os.path.join(readdir, finaltracer) + '_'
         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
         if 'G_R_OBS' in cols_clustering:
             rcols.append('G_R_OBS')
@@ -607,37 +624,12 @@ if args.mkclusran == 'y':
         tsnrcol = 'TSNR2_BGS'
         if args.ccut is not None:
             for rn in range(rannum[0], rannum[1]):
-                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(dirout, args.tracer), str(args.ccut), rn)):
-                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
+                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
                 #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
-    if args.add_nt_misspw == 'y':
-        global _parfun41
-        def _parfun41(rann):
-            print('doing new weight in randoms', rann)
-            if not os.path.isfile(os.path.join(readdir, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits')):
-                ffile = Table.read(os.path.join(dirfinal, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits').replace('global','dvs_ro'))
-            else:
-                ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_' + '%d_full' % rann + args.use_map_veto + '.ran.fits').replace('global','dvs_ro'))
-            nm = mocktools.calc_weight_nt_misspw_ran(ffile, f_ntmisspw)
-            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_' + '%d_full' %rann + args.use_map_veto + '.ran.fits'))
-        if args.par == 'n':
-            for rn in range(rannum[0], rannum[1]):
-                _parfun41(rn)
-        else:
-            from multiprocessing import Pool
-            inds = np.arange(rannum[0], rannum[1])
-            nproc = 6
-            with Pool(processes=nproc) as pool:
-                res = pool.map(_parfun41, inds)
-        readdir = dirout
     
-    for rn in range(rannum[0], rannum[1]):
-        if not os.path.isfile(os.path.join(readdir, args.tracer + notqso + '_frac_tlobs.fits')):
-            print('copying ' + args.tracer + notqso + '_frac_tlobs.fits' + ' to ' + readdir) 
-            os.system('cp %s %s' %(os.path.join(dirfinal, args.tracer + notqso + '_frac_tlobs.fits'), os.path.join(readdir, args.tracer + notqso + '_frac_tlobs.fits')))
-
-    fl = os.path.join(dirout, finaltracer) + '_'
+    fl = os.path.join(readdir, finaltracer) + '_'
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     global _parfun4
@@ -645,7 +637,8 @@ if args.mkclusran == 'y':
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
 
-        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
+        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
+        #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
 
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
@@ -668,6 +661,10 @@ if args.mkclusran == 'y':
 fb = os.path.join(dirout, finaltracer)
 nran = rx-rm
 regions = ['NGC', 'SGC']
+
+#if args.add_nt_misspw == 'y':
+#    bo = mocktools.do_weight_nt_misspw(fb, ranmin=rm, ranmax=rx, par=args.par)
+
 
 
 def splitGC(flroot,datran='.dat',rann=0):
@@ -738,6 +735,8 @@ if args.nz == 'y':
 
 if args.add_weight_ntile == 'y':
     bo = common.add_weight_ntile(fb, ranmin=rm, nran=rx, par=args.par)
+
+
 
 '''
 if args.FKPfull == 'y':

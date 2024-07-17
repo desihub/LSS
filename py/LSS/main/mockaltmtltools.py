@@ -1965,7 +1965,7 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     theta, phi = np.radians(90-altZCat["DEC"]), np.radians(altZCat["RA"])
     pixnum = hp.ang2pix(nside, theta, phi, nest=True)
     pixnum = list(set(pixnum))
-    targets = desitarget.io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False)
+    targets = desitarget.io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False, tabform='ascii.ecsv')
 
     # ADM remove OVERRIDE entries, which should never need reprocessing.
     targets, _ = desitarget.mtl.remove_overrides(targets)

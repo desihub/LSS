@@ -3990,8 +3990,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         tlf = fitsio.read(flin+'frac_tlobs.fits')
         ffc = add_tlobs_ran_array(ffc,tlf)
     if return_cat == 'y' and nosplit=='y':
+        tempcols = ['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+        if 'WEIGHT_NT_MISSPW' in ffc.columns:
+            tempcols.append('WEIGHT_NT_MISSPW')
         #this option will then pass the arrays to the clusran_resamp_arrays function
-        ffc.keep_columns(['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS'])
+        ffc.keep_columns(tempcols)
         return ffc
     if utlid:
         ffc = unique(ffc,keys=['TILELOCID'])
@@ -4003,9 +4006,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         #rand_sel = [selregr,~selregr]
         #dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
+            print('aqui len fcdn dsel and ffr rsel', len(fcdn[dsel]),len(ffr[rsel]))
             #inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
             inds = rng.choice(len(fcdn[dsel]),len(ffr[rsel]))
-            print(len(fcdn[dsel]),len(inds),np.max(inds))
             dshuf = fcdn[dsel][inds]
             for col in rcols:
                 ffr[col][rsel] = dshuf[col]
@@ -4062,6 +4065,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
         kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+        if 'WEIGHT_NT_MISSPW' in ffc.columns:
+            kc.append('WEIGHT_NT_MISSPW')
+
         rcols = np.array(rcols)
         wc = np.isin(rcols,list(fcdn.dtype.names))
         rcols = rcols[wc]
@@ -4083,8 +4089,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             selregr = ffcn['PHOTSYS'] ==  'N'
             selregd = fcdn['PHOTSYS'] ==  'N'
             rand_sel = [selregr,~selregr]
-            dat_sel = [ selregd,~selregd]
-
+            dat_sel = [selregd,~selregd]
+            print('rand_sel', set(rand_sel[0]), set(rand_sel[1]))
+            print('dat_sel', set(dat_sel[0]), set(dat_sel[1]))
             ffcn = _resamp(rand_sel,dat_sel,ffcn,fcdn)
 
         if des_resamp and reg == '':

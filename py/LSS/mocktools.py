@@ -8,7 +8,7 @@ import sys
 import tempfile
 import shutil
 import re
-
+import astropy.io.fits as pf
 # time
 from time import time
 from datetime import datetime, timedelta
@@ -445,7 +445,10 @@ def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
     return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
 
 def calc_weight_nt_misspw(data_full):
-    nbits = 64 * np.shape(data_full['BITWEIGHTS'])[1]
+    if len(np.shape(data_full['BITWEIGHTS'])) == 1:
+        nbits = 64
+    else:        
+        nbits = 64 * np.shape(data_full['BITWEIGHTS'])[1]
     recurr_full = data_full['PROB_OBS']*nbits
     wiip_full = (nbits+1)/(recurr_full+1)
     zerop_msk_full = (data_full['PROB_OBS']==0) & (~data_full['LOCATION_ASSIGNED'])
@@ -497,3 +500,57 @@ def calc_weight_nt_misspw_ran(data_full_ran, f_ntmisspw):
         w_ntmisspw_full_ran[idx_nt_full_ran[n][0]] = 1-f_ntmisspw[n]
     data_full_ran['WEIGHT_NT_MISSPW'] = w_ntmisspw_full_ran
     return data_full_ran
+
+def do_weight_nt_misspw(fb, ranmin=0, ranmax=18, par='n', dirout=None):
+
+    if dirout is not None:
+        fb_full_destiny = os.path.join(dirout, fb.split('/')[-1])
+    else:
+        fb_full_destiny = fb
+
+    fb_full = fb + '_full_HPmapcut.dat.fits'
+    data_to_concat = []
+    rans_sgc_to_concat = []
+    rans_ngc_to_concat = []
+    
+    print('aqui',fb_full)
+    inputdata = Table(pf.open(fb_full)[1].data)
+
+    ngc_mask = common.splitGC(inputdata)
+
+    for cap in ['NGC', 'SGC']:
+        #selngc = common.splitGC(inputdata)
+        if cap == 'SGC':
+            datacap = inputdata[~ngc_mask]
+        else:
+            datacap = inputdata[ngc_mask]
+
+        datacap, f_ntmisspw = calc_weight_nt_misspw(datacap)
+
+        data_to_concat.append(datacap)
+
+        for rn in range(ranmin, ranmax):
+            fb_full = Table.read(fb + '_%d_full_HPmapcut.ran.fits' % rn)
+            selngc = common.splitGC(fb_full)
+            #ngc_mask = common.splitGC(fb_full)   
+
+            if cap == 'SGC':
+                datacap = calc_weight_nt_misspw_ran(fb_full[~selngc], f_ntmisspw)
+                rans_sgc_to_concat.append(datacap)
+            else:
+            #    rans_sgc_to_concat.append(datacap)
+            #else:
+
+                datacap = calc_weight_nt_misspw_ran(fb_full[selngc], f_ntmisspw)
+                rans_ngc_to_concat.append(datacap)
+
+    concatenated_table = vstack(data_to_concat)
+    common.write_LSS(concatenated_table, fb_full_destiny + '_full_HPmapcut.dat.fits')
+    #concatenated_table.write(fb_full_destiny + '_full_HPmapcut.dat.fits')
+    for ran_sgc, ran_ngc, rn in zip(rans_sgc_to_concat, rans_ngc_to_concat, np.arange(ranmin, ranmax)):
+        concatenated_table = vstack([ran_sgc, ran_ngc])
+        common.write_LSS(concatenated_table, fb_full_destiny + '_{RANNUM}_full_HPmapcut.ran.fits'.format(RANNUM=rn))
+        #concatenated_table.write(fb_full_destiny + '_{RANNUM}_full_HPmapcut.ran.fits'.format(RANNUM=rn))
+    return True
+
+

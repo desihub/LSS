@@ -1,0 +1,7 @@
+sbatch abamtl_prepmock_sbatch_da2.sh
+
+nohup ./script_lrgmask_DA2.sh &
+
+nohup ./script_initialize_da2.sh >> nohup_init_da2 &
+
+nohup ./getpota_DA2_script.sh >> nohup_pota_da2 &

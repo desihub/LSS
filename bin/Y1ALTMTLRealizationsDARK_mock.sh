@@ -5,7 +5,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName="altmtl{mock_number}_R128"
+simName="altmtl{mock_number}"
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/ALTMTL_EZmock/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -81,13 +81,13 @@ fi
 #Random seed. Change to any integer you want (or leave the same)
 #If seed is different between two otherwise identical runs, the initial MTLs will also be different
 #seed is also saved in output directory
-#seed=14126579
-seed=3593589
+seed=14126579
+#seed=3593589
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 #Mock realization
 mockinit=1
-mockend=2
+mockend=3
 let ndir=$mockend-$mockinit 
 
 
@@ -218,7 +218,7 @@ secondary=''
 #targfile='' #CHANGEME IF RUNNING ON MOCKS
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-targfile="--targfile=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3_1/forFA{mock_number}.fits"
+targfile="--targfile=$DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/forFA{mock_number}.fits"
 #targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
