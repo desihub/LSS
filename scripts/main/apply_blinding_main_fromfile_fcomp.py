@@ -175,7 +175,7 @@ elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/
 else:
     sys.exit('verspec '+args.verspec+' not supported')
 
-dirout = args.basedir_out + '/LSScats/' + version + '/blinded/'
+dirout = args.basedir_out + '/LSScats/' + version + '/BAO/blinded/'
 
 def mkdir(dirname):
     """Try to create ``dirname`` and catch :class:`OSError`."""
