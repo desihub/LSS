@@ -65,7 +65,7 @@ def plot_all_petal(petal):
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'masked in Y1',zorder=1000)
-        if tp == 'ELG':
+        if tp == 'ELG_LOPnotqso':
             plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
         if tp == 'QSO':
