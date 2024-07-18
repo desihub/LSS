@@ -69,6 +69,23 @@ else:
 # to remove jax warning (from cosmoprimo)
 logging.getLogger("jax._src.lib.xla_bridge").addFilter(logging.Filter("No GPU/TPU found, falling back to CPU."))
 
+logname = 'LSS_blinding'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
@@ -295,14 +312,14 @@ if root:
         nz_in = common.mknz_full(fcd_in, fcr_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo, randens=randens, md=nzmd)
 
         if 'WEIGHT_FKP' not in cols:
-            print('adding FKP weights')
+            common.printlog('adding FKP weights',logger)
             common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
 
         
         data = Table(fitsio.read(fcd_in))
         data['Z_not4clus'] = np.clip(data['Z_not4clus'],0.01,3.6)
         outf = dirout + type + notqso + '_full.dat.fits'
-        print('output going to '+outf)
+        common.printlog('output going to '+outf,logger)
         blind.apply_zshift_DE(data, outf, w0=w0_blind, wa=wa_blind, zcol='Z_not4clus')
 
         #fb_out = dirout + type + notqso
@@ -317,7 +334,7 @@ if root:
             if args.wsyscol is not None:
                 fd['WEIGHT_SYS'] = np.copy(fd[args.wsyscol])
             else:
-                print('did not find WEIGHT_SYS, putting it in as all 1')
+                common.printlog('did not find WEIGHT_SYS, putting it in as all 1',logger)
                 fd['WEIGHT_SYS'] = np.ones(len(fd))
         zl = fd['Z']
         zind = ((zl - zmin) / dz).astype(int)
@@ -353,7 +370,7 @@ if root:
 
 
     if args.mkclusdat == 'y':
-        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax,compmd=args.compmd)
+        ct.mkclusdat(dirout + type + notqso, tp=type, dchi2=dchi2, tsnrcut=tsnrcut, zmin=zmin, zmax=zmax,compmd=args.compmd,logger=logger)
 
 
     if args.mkclusran == 'y':
@@ -370,7 +387,7 @@ if root:
         #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)#, ntilecut=ntile, ccut=ccut)
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
@@ -389,7 +406,7 @@ if root:
             for ii in inds:
                 _parfun(ii)
                 #ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
-                print(ii,clus_arrays[0].dtype.names)
+                common.printlog(str(ii),logger)#,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         #ct.clusNStoGC(fb, args.maxr - args.minr)
@@ -513,7 +530,7 @@ if root:
         for reg in regions:
             flin = dirout + args.type + notqso + '_'+reg    
             def _parfun(rannum):
-                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd,logger=logger)#, ntilecut=ntile, ccut=ccut)
             
             inds = np.arange(nran)
             from multiprocessing import Pool
@@ -547,7 +564,7 @@ if root:
             fcd = fb+'_clustering.dat.fits'
             fout = fb+'_nz.txt'
             common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,randens=randens)
-            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par='y')
+            common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par='y',logger=logger)
 
 
 
