@@ -183,8 +183,9 @@ def mkdir(dirname):
         os.makedirs(dirname)  # MPI...
     except OSError:
         return
-    
-mkdir(dirout)
+
+if root:    
+    mkdir(dirout)
 
 
 #if root and (not os.path.exists(dirout)):
@@ -219,7 +220,7 @@ if root:
         fn = LSSdir + 'filerow.txt'
         if not os.path.isfile(fn):
             ind_samp = int(random()*1000)
-            fo = open(fn,'w')
+            fo = open(fn.replace('dvs_ro','global'),'w')
             fo.write(str(ind_samp)+'\n')
             fo.close()
         ind = int(np.loadtxt(fn))    
