@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl{MOCKNUM} --mockver ab_secondgen --mocknum $1 --survey Y1 --specdata iron --add_gtl n --tracer ELG_LOP --notqso y --minr 0 --maxr 18 --outmd 'scratch' --par y --fulld y --fullr y --apply_veto y --apply_veto_ran y --add_tl y --use_map_veto _HPmapcut --mkclusran y --mkclusdat y --splitGC y --nz y --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1
+python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/altmtl{MOCKNUM} --mockver ab_secondgen --mocknum $1 --survey Y1 --specdata iron --add_gtl n --tracer QSO --notqso n --minr 0 --maxr 18 --outmd 'scratch' --par y --fulld y --fullr y --apply_veto y --apply_veto_ran y --add_tl y --use_map_veto _HPmapcut --mkclusran y --mkclusdat y --splitGC y --nz y --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4
 
 #python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl{MOCKNUM} --mockver ab_secondgen --mocknum $1 --survey Y1 --specdata iron --add_gtl n --tracer QSO --notqso n --minr 0 --maxr 18 --outmd 'scratch' --par y --fulld y --fullr y --apply_veto y --apply_veto_ran y --add_tl y --use_map_veto _HPmapcut --mkclusran y --mkclusdat y --splitGC y --nz y --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1
 
