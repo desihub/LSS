@@ -36,8 +36,9 @@ tracers = ['QSO','LRG','ELG','BGS_ANY']
 
 #bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
 #bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
-bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/unique_badfibers.txt")
+bfib = np.loadtxt(basedir+'/Y1/LSS/iron/unique_badfibers.txt')
 
+indir = basedir+'/'+survey+'/LSS/'+specver+"/LSScats/"+args.version+'/'
 
 def plot_all_petal(petal):
     for tp in tracers:
@@ -45,7 +46,7 @@ def plot_all_petal(petal):
             from LSS.globals import main
             pars = main(tp,args.verspec)   
 
-        fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
+        fn = indir+tp+'_zsuccess_fromfull.txt'
         d = np.loadtxt(fn).transpose()
         fibl = d[0]
         f_succ = d[1]
@@ -63,7 +64,7 @@ def plot_all_petal(petal):
 
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'masked in Y1',zorder=1000)
         if tp == 'ELG':
             plt.errorbar(fibl[sel]+.25,f_succ[sel],err[sel],fmt='.b',label='ELG')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
@@ -89,7 +90,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
             from LSS.globals import main
             pars = main(tp,args.verspec)   
 
-        fn = basedir+'/'+survey+'/LSS/'+specver+"/"+tp+'_zsuccess.txt'
+        fn = indir+tp+'_zsuccess_fromfull.txt'
         d = np.loadtxt(fn).transpose()
         fibl = d[0]
         f_succ = d[1]
@@ -110,7 +111,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
         if tp == 'LRG':
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',label='true value below min ',zorder=100)
-            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'4$\sigma$ outlier',zorder=1000)
+            plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'masked in Y1',zorder=1000)
         if tp == 'BGS_ANY':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',zorder=100)
