@@ -3813,7 +3813,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if 'WEIGHT_RF' in cols:
         kl.append('WEIGHT_RF')
     if 'WEIGHT_IMLIN' in cols:
-        kl.append('WEIGHT_RF')
+        kl.append('WEIGHT_IMLIN')
     if 'BITWEIGHTS' in cols:
         kl.append('BITWEIGHTS')
         kl.append('PROB_OBS')
