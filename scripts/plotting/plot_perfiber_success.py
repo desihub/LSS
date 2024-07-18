@@ -32,7 +32,7 @@ survey  = args.survey
 specver = args.verspec
 
 
-tracers = ['QSO','LRG','ELG','BGS_ANY']
+tracers = ['QSO','LRG','ELG_LOPnotqso','BGS_BRIGHT']
 
 #bfib = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/LRGbad.txt')#pars.badfib
 #bfib = np.concatenate((bfib,np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+"/"+args.version+'/BGSbad.txt')))
