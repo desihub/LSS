@@ -71,7 +71,7 @@ def plot_all_petal(petal):
         if tp == 'QSO':
             plt.errorbar(fibl[sel]-0.25,f_succ[sel],err[sel],fmt='.g',label='QSO')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
-        if tp == 'BGS_ANY':
+        if tp == 'BGS_BRIGHT':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
     plt.grid()
@@ -85,7 +85,7 @@ def plot_all_petal(petal):
     #plt.show()
 
 def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
-    for tp in ['LRG','BGS_ANY']:
+    for tp in ['LRG','BGS_BRIGHT']:
         if args.survey != 'SV3':
             from LSS.globals import main
             pars = main(tp,args.verspec)   
@@ -112,7 +112,7 @@ def plot_LRGBGS_petal(petal,ymin=0.8,ymax=1.05):
             plt.errorbar(fibl[sel],f_succ[sel],err[sel],fmt='.r',label='LRG')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',label='true value below min ',zorder=100)
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',label=r'masked in Y1',zorder=1000)
-        if tp == 'BGS_ANY':
+        if tp == 'BGS_BRIGHT':
             plt.errorbar(fibl[sel]+0.5,f_succ[sel],err[sel],fmt='.',label='BGS',color='brown')
             plt.plot(fibl[sel][sel_low],f_succ[sel][sel_low],'kv',zorder=100)
             plt.plot(fibl[sel][sel_bfib],f_succ[sel][sel_bfib],'kx',zorder=1000)
