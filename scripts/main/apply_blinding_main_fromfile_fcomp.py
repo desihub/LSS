@@ -313,7 +313,7 @@ if root:
 
         if 'WEIGHT_FKP' not in cols:
             common.printlog('adding FKP weights',logger)
-            common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd)
+            common.addFKPfull(fcd_in, nz_in, type[:3], bs=dz, zmin=zmin, zmax=zmax, P0=P0, md=nzmd,logger=logger)
 
         
         data = Table(fitsio.read(fcd_in))
