@@ -746,7 +746,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
 
     return True
 
-def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus'):
+def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='data',zcol='Z_not4clus',logger=None):
     '''
     fb is the file name, including the path
     nran is the number of random files to add the nz to
@@ -769,13 +769,13 @@ def addFKPfull(fb,nz,tp,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,md='da
     nl = np.zeros(len(fd))
     nl[gz] = nz[zind[gz]]
     mean_comp = len(fd[gz])/np.sum(1./fd[gz]['FRACZ_TILELOCID'])
-    print('mean completeness '+str(mean_comp))
+    printlog('mean completeness '+str(mean_comp),logger)
 
     fkpl = 1./(1+nl*P0*mean_comp)
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS(fd,fb.replace('dvs_ro','global'))
+        write_LSS_scratchcp(fd,fb.replace('dvs_ro','global'),logger=logger)
     return True
 
 def join_with_fastspec(infn,fscols=['TARGETID','ABSMAG01_SDSS_G','ABSMAG01_SDSS_R'],inroot='/dvs_ro/cfs/cdirs/',\
