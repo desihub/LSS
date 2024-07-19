@@ -429,8 +429,9 @@ if args.fullr == 'y':
 tracer_clus = args.tracer + notqso 
 
 if args.apply_veto == 'y':
-    print('--- START APPLY_VETO; including HP maps---')
-    print('applying vetos to mock ' + str(mocknum))
+    #print('--- START APPLY_VETO; including HP maps---')
+    #print('applying vetos to mock ' + str(mocknum))
+    common.printlog('--- START APPLY_VETO; including HP maps---', logger)
 #    import healpy as hp
     nside = 256
     lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
@@ -453,7 +454,7 @@ if args.apply_veto == 'y':
     if np.sum(coltest) != len(maskcols):
         addcols = 1
         joinmask = 1
-        print(maskcols,coltest,colnames)
+        #print(maskcols,coltest,colnames)
         #sys.exit()
     if 'PHOTSYS' not in colnames:
         addcols = 1
@@ -471,12 +472,15 @@ if args.apply_veto == 'y':
 
 
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
+    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto, logger=logger) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
     common.write_LSS_scratchcp(dataf,fout)
-    print('data veto done, now doing randoms')
-
+    #print('data veto done, now doing randoms')
+    common.printlog('data veto done, now doing randoms',logger)
+    
 if args.apply_veto_ran == 'y':
+
+    common.printlog('starting apply veto_ran',logger)
     nside = 256
     lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))       
@@ -485,7 +489,8 @@ if args.apply_veto_ran == 'y':
     
     global _parfun2
     def _parfun2(rann):
-        print('applying vetos to random ' + str(rann))
+        #print('applying vetos to random ' + str(rann))
+        common.printlog('applying vetos to random ' + str(rann), logger)
         fin = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
         fout = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full'+args.use_map_veto + '.ran.fits')
         if args.tracer == 'LRG':
@@ -493,6 +498,7 @@ if args.apply_veto_ran == 'y':
         ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks)
         ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts)
         common.write_LSS(ranf,fout)
+        common.printlog('finish applying vetos to random '+str(rann),logger)
     
     if args.par == 'n':
         for rn in range(rannum[0], rannum[1]):
@@ -507,7 +513,8 @@ if args.apply_veto_ran == 'y':
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun2, inds)
     
-    print('*** END RANDOM VETO ***')
+    #print('*** END RANDOM VETO ***')
+    common.printlog('*** END RANDOM VETO ***', logger)
     #print('random veto '+str(ii)+' done')
 
 
