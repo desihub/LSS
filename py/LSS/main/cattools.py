@@ -3576,7 +3576,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3627,12 +3627,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['ZWARN'] != 999999
         if dchi2 is not None:
             wz &= ff['o2c'] > dchi2
-            print('length after oII cut '+str(len(ff[wz])))
+            common.printlog('length after oII cut '+str(len(ff[wz])),logger)
         wz &= ff['LOCATION_ASSIGNED'] == 1
-        print('length after also making sure location assigned '+str(len(ff[wz])))
+        common.printlog('length after also making sure location assigned '+str(len(ff[wz])),logger)
         if not ismock:
             wz &= ff['TSNR2_ELG'] > tsnrcut
-            print('length after tsnrcut '+str(len(ff[wz])))
+            common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -3648,7 +3648,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
                 wz &= selg
 
         #wz &= ff['DELTACHI2'] > dchi2
-        print('length after Rongpu cut '+str(len(ff[wz])))
+        common.printlog('length after Rongpu cut '+str(len(ff[wz])),logger)
         
         if not ismock:
             wz &= ff['TSNR2_ELG'] > tsnrcut
@@ -3662,7 +3662,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         if dchi2 is not None:
             print('applying extra cut for BGS')
             wz &= ff['DELTACHI2'] > dchi2
-            print('length after dchi2 cut '+str(len(ff[wz])))
+            common.printlog('length after dchi2 cut '+str(len(ff[wz])),logger)
         wz &= ff['TSNR2_BGS'] > tsnrcut
         print('length after tsnrcut '+str(len(ff[wz])))
 
@@ -3681,7 +3681,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= keep
         
     ff = ff[wz]
-    print('length after cutting to good z '+str(len(ff)))
+    common.printlog('length after cutting to good z '+str(len(ff)),logger)
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
     if 'WEIGHT_ZFAIL' not in cols:
         ff['WEIGHT_ZFAIL'] = np.ones(len(ff))
@@ -3813,7 +3813,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
     if 'WEIGHT_RF' in cols:
         kl.append('WEIGHT_RF')
     if 'WEIGHT_IMLIN' in cols:
-        kl.append('WEIGHT_RF')
+        kl.append('WEIGHT_IMLIN')
     if 'BITWEIGHTS' in cols:
         kl.append('BITWEIGHTS')
         kl.append('PROB_OBS')
