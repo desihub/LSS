@@ -234,7 +234,8 @@ if root:
         [w0_blind, wa_blind] = w0wa[ind]
 
     if args.get_par_mode == 'from_file':
-        fn = LSSdir + 'filerow.txt'
+        #fn = LSSdir + 'filerow.txt'
+        fn = maindir + 'filerow.txt' #location switched for DR2 so that same blinding can be applied to different spectroscopic reductions
         if not os.path.isfile(fn):
             ind_samp = int(random()*1000)
             fo = open(fn.replace('dvs_ro','global'),'w')
