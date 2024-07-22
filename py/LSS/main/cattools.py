@@ -3941,7 +3941,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     del ranf
     return True
   
-def add_tlobs_ran_array(ranf,tlf):
+def add_tlobs_ran_array(ranf,tlf,logger=None):
     import LSS.common_tools as common
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     tlarray = []
@@ -3957,17 +3957,17 @@ def add_tlobs_ran_array(ranf,tlf):
             nnf += 1
         tlarray.append(fr)
         if nt%100000 == 0:
-           print(nt,len(ranf))  
+           common.printlog(str(nt)+','+str(len(ranf)),logger)  
         nt += 1  
     tlarray = np.array(tlarray)
     sel = tlarray == 0
-    print('number of tiles not found in the data '+str(nnf))
-    print(len(tlarray[sel]),' number with 0 frac')
+    common.printlog('number of tiles not found in the data '+str(nnf),logger)
+    common.printlog(str(len(tlarray[sel]))+' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='y',logger=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None):
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -3979,16 +3979,28 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ws = 'utlid_'
     in_fname = flin+str(rann)+'_full'+use_map_veto+'.ran.fits'
     
-    ffr = Table.read(in_fname.replace('global','dvs_ro'))
-
+    ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS',tsnrcol]
+    if add_tlobs == 'n':
+        try:
+            fitsio.read(in_fname.replace('global','dvs_ro'),columns=['FRAC_TLOBS_TILES'],rows=1)
+            ran_cols.append('FRAC_TLOBS_TILES')
+        except:
+            common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it',logger)
+            add_tlobs = 'y'
+            ran_cols.append('TILES')    
+    else:
+        ran_cols.append('TILES')
+    ffr = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
+    common.printlog('loaded '+in_fname,logger)
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]
-    print('length after,before tsnr cut:')
-    print(len(ffc),len(ffr))
+    common.printlog(str(rann)+' length after,before tsnr cut:'+' '+str(len(ffc))+','+str(len(ffr)),logger)
+    #print(len(ffc),len(ffr))
     del ffr
     if add_tlobs == 'y':
+        
         tlf = fitsio.read(flin+'frac_tlobs.fits')
-        ffc = add_tlobs_ran_array(ffc,tlf)
+        ffc = add_tlobs_ran_array(ffc,tlf,logger)
     if return_cat == 'y' and nosplit=='y':
         tempcols = ['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
         if 'WEIGHT_NT_MISSPW' in ffc.columns:
@@ -4006,7 +4018,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         #rand_sel = [selregr,~selregr]
         #dat_sel = [ selregd,~selregd]
         for dsel,rsel in zip(dat_sel,rand_sel):
-            print('aqui len fcdn dsel and ffr rsel', len(fcdn[dsel]),len(ffr[rsel]))
+            #print('aqui len fcdn dsel and ffr rsel', len(fcdn[dsel]),len(ffr[rsel]))
             #inds = np.random.choice(len(fcdn[dsel]),len(ffr[rsel]))
             inds = rng.choice(len(fcdn[dsel]),len(ffr[rsel]))
             dshuf = fcdn[dsel][inds]
@@ -4020,11 +4032,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             rdl.append(rd)
         for i in range(0,len(rand_sel)-1):
             rdr = rdl[0]/rdl[i+1]
-            print('norm factor is '+str(rdr))
+            #print('norm factor is '+str(rdr))
             ffr['WEIGHT'][rand_sel[i+1]] *= rdr
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
-            print('data/random weighted ratio after resampling:'+str(rd))
+            common.printlog(str(rann)+' data/random weighted ratio after resampling:'+str(rd),logger)
 
 #         tabsr = []
 #         ffrn = ffr[selregr]
@@ -4071,8 +4083,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         rcols = np.array(rcols)
         wc = np.isin(rcols,list(fcdn.dtype.names))
         rcols = rcols[wc]
-        print('columns sampled from data are:')
-        print(rcols)
+        common.printlog(str(rann)+' columns sampled from data are:' +str(rcols),logger)
+        #print(rcols)
 
         if reg != '':
             wn = ffc['PHOTSYS'] == reg.strip('_')
@@ -4090,12 +4102,12 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             selregd = fcdn['PHOTSYS'] ==  'N'
             rand_sel = [selregr,~selregr]
             dat_sel = [selregd,~selregd]
-            print('rand_sel', set(rand_sel[0]), set(rand_sel[1]))
-            print('dat_sel', set(dat_sel[0]), set(dat_sel[1]))
+            #print('rand_sel', set(rand_sel[0]), set(rand_sel[1]))
+            #print('dat_sel', set(dat_sel[0]), set(dat_sel[1]))
             ffcn = _resamp(rand_sel,dat_sel,ffcn,fcdn)
 
         if des_resamp and reg == '':
-            print('resampling in DES region')
+            common.printlog(str(rann) +' resampling in DES region',logger)
             from regressis import footprint
             foot = footprint.DR9Footprint(256, mask_lmc=False, clear_south=True, mask_around_des=False, cut_desi=False)
             north, south, des = foot.get_imaging_surveys()
@@ -4115,7 +4127,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         if reg == 'N' or (reg == 'S' and des_resamp == False):
             no_resamp = True
         if no_resamp:
-            print('Not doing any re-sampling')
+            common.printlog('Not doing any re-sampling',logger)
             inds = np.random.choice(len(fcdn),len(ffcn))
             dshuf = fcdn[inds]
             for col in rcols:
