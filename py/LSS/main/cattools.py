@@ -3979,7 +3979,10 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ws = 'utlid_'
     in_fname = flin+str(rann)+'_full'+use_map_veto+'.ran.fits'
     
-    ffr = Table.read(in_fname.replace('global','dvs_ro'))
+    ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS',tsnrcol]
+    if add_tlobs == 'n':
+        ran_cols.append('FRAC_TLOBS_TILES')
+    ffr = Table.read(in_fname.replace('global','dvs_ro'),columns=ran_cols)
     common.printlog('loaded '+infname,logger)
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]
@@ -3987,6 +3990,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     #print(len(ffc),len(ffr))
     del ffr
     if add_tlobs == 'y':
+        
         tlf = fitsio.read(flin+'frac_tlobs.fits')
         ffc = add_tlobs_ran_array(ffc,tlf)
     if return_cat == 'y' and nosplit=='y':
