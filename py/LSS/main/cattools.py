@@ -3967,7 +3967,7 @@ def add_tlobs_ran_array(ranf,tlf):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='y',logger=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None):
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -3981,7 +3981,13 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     
     ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS',tsnrcol]
     if add_tlobs == 'n':
-        ran_cols.append('FRAC_TLOBS_TILES')
+        try:
+            fitsio.read(in_fname.replace('global','dvs_ro'),columns=['FRAC_TLOBS_TILES'],rows=1)
+            ran_cols.append('FRAC_TLOBS_TILES')
+        except:
+            common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it')
+            add_tlobs = 'y'
+            ran_cols.append('TILES')    
     else:
         ran_cols.append('TILES')
     ffr = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
