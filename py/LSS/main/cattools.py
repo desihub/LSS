@@ -3941,7 +3941,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     del ranf
     return True
   
-def add_tlobs_ran_array(ranf,tlf):
+def add_tlobs_ran_array(ranf,tlf,logger=None):
     import LSS.common_tools as common
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
     tlarray = []
@@ -3957,12 +3957,12 @@ def add_tlobs_ran_array(ranf,tlf):
             nnf += 1
         tlarray.append(fr)
         if nt%100000 == 0:
-           print(nt,len(ranf))  
+           common.printlog(str(nt)+','+str(len(ranf)),logger)  
         nt += 1  
     tlarray = np.array(tlarray)
     sel = tlarray == 0
-    print('number of tiles not found in the data '+str(nnf))
-    print(len(tlarray[sel]),' number with 0 frac')
+    common.printlog('number of tiles not found in the data '+str(nnf),logger)
+    common.printlog(str(len(tlarray[sel]))+' number with 0 frac')
     ranf['FRAC_TLOBS_TILES'] = tlarray
     return ranf
   
@@ -3985,7 +3985,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             fitsio.read(in_fname.replace('global','dvs_ro'),columns=['FRAC_TLOBS_TILES'],rows=1)
             ran_cols.append('FRAC_TLOBS_TILES')
         except:
-            common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it')
+            common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it',logger)
             add_tlobs = 'y'
             ran_cols.append('TILES')    
     else:
@@ -4000,7 +4000,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     if add_tlobs == 'y':
         
         tlf = fitsio.read(flin+'frac_tlobs.fits')
-        ffc = add_tlobs_ran_array(ffc,tlf)
+        ffc = add_tlobs_ran_array(ffc,tlf,logger)
     if return_cat == 'y' and nosplit=='y':
         tempcols = ['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
         if 'WEIGHT_NT_MISSPW' in ffc.columns:
