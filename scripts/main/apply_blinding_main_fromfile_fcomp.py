@@ -411,7 +411,7 @@ if root:
         #if args.split_GC == 'y':
         fb = dirout + args.type + notqso + '_'
         #ct.clusNStoGC(fb, args.maxr - args.minr)
-        ct.splitclusGC(fb, args.maxr - args.minr)
+        ct.splitclusGC(fb, args.maxr - args.minr,par='y')
 
     sys.stdout.flush()
 
