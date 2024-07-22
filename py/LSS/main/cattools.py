@@ -4077,7 +4077,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         rcols = np.array(rcols)
         wc = np.isin(rcols,list(fcdn.dtype.names))
         rcols = rcols[wc]
-        common.printlog(str(rann)+' columns sampled from data are:' +str(rcols))
+        common.printlog(str(rann)+' columns sampled from data are:' +str(rcols),logger)
         #print(rcols)
 
         if reg != '':
