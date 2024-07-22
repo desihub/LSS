@@ -4036,7 +4036,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             ffr['WEIGHT'][rand_sel[i+1]] *= rdr
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
-            common.printlog(str(rann)+' data/random weighted ratio after resampling:'+str(rd))
+            common.printlog(str(rann)+' data/random weighted ratio after resampling:'+str(rd),logger)
 
 #         tabsr = []
 #         ffrn = ffr[selregr]
