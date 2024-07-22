@@ -3982,7 +3982,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS',tsnrcol]
     if add_tlobs == 'n':
         ran_cols.append('FRAC_TLOBS_TILES')
-    ffr = Table.read(in_fname.replace('global','dvs_ro'),columns=ran_cols)
+    ffr = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
     common.printlog('loaded '+infname,logger)
     wz = ffr[tsnrcol] > tsnrcut
     ffc = ffr[wz]
