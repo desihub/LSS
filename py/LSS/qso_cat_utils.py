@@ -322,7 +322,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # selection of which column will be in the final QSO_cat:
     columns_zbest = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE']  # , 'SUBTYPE', 'DELTACHI2', 'CHI2']
     # remark: check if the name exist before selecting them
-    columns_fibermap = ['TARGETID', 'TARGET_RA', 'TARGET_DEC', 'LOCATION', 'MORPHTYPE', 'OBJTYPE'
+    columns_fibermap = ['TARGETID', 'TARGET_RA', 'TARGET_DEC', 'LOCATION', 'MORPHTYPE', 'OBJTYPE',
                         'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME',
                         'EBV', 'FLUX_G', 'FLUX_R', 'FLUX_Z', 'FLUX_W1', 'FLUX_W2',
                         'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2', 'MASKBITS',
@@ -360,7 +360,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     log.info('Increase the QN threshold selection from 0.5 to 0.95.')
     qn['IS_QSO_QN_095'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
     qn['IS_QSO_QN_06'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.6
-
+    
     log.info('Merge on TARGETID all the info into a singe dataframe.')
     QSO_cat = reduce(lambda left, right: pd.merge(left, right, on=['TARGETID'], how='outer'), [zbest, fibermap, tsnr2, mgii, qn])
 
