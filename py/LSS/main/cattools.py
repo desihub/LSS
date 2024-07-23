@@ -4177,7 +4177,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
 #         comments = ["DA02 'clustering' LSS catalog for random number "+str(rann)+", DECaLS"+com+"region","entries are only for data with good redshifts"]
 #         common.write_LSS(ffss,outfn,comments)
 
-def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
+def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran',logger=None):
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
@@ -4283,7 +4283,7 @@ def clusran_resamp(flin,rann,rcols=['Z','WEIGHT'],write_cat='y',compmd='ran'):
     
     if write_cat == 'y':
         #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
-        common.write_LSS(ffr,outfn)
+        common.write_LSS_scratchcp(ffr,outfn,logger=logger)
 
 def clusran_resamp_arrays(ffr,fcdn,reg,tracer,rcols=['Z','WEIGHT'],compmd='ran'):
     #take existing data/random clustering catalogs and re-sample redshift dependent quantities to assign to randoms

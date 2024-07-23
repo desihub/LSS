@@ -471,6 +471,7 @@ if root and (args.rsdblind == 'y'):
     #if args.reg_md == 'NS':
     #    cl = regl
     #if args.reg_md == 'GC':
+    common.printlog('doing RSD blinding',logger)
     cl = gcl
     for reg in cl:
         fnd = dirout + type + notqso + reg + '_clustering.dat.fits'
@@ -483,10 +484,12 @@ if root and (args.rsdblind == 'y'):
                                fgrowth_fid=args.fiducial_f,
                                fgrowth_blind=fgrowth_blind)#,
                                #comments=f"f_blind: {fgrowth_blind}, w0_blind: {w0_blind}, wa_blind: {wa_blind}")
-
+    common.printlog('done with RSD blinding',logger)
+    
 if args.fnlblind == 'y':
     if mpicomm is None:
         sys.exit('fNL blinding requires MPI, exiting')
+    common.printlog('doing fNL blinding',logger)
     from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
     logger = logging.getLogger('recon')
     if root:
@@ -554,16 +557,19 @@ if args.fnlblind == 'y':
             data['WEIGHT_COMP'] = data['WEIGHT_COMP'] * fnl_blind_weights
             common.write_LSS(data, data_fn)
 
+    common.printlog('done with fNL blinding',logger)
+
 if root:
     #re-sample redshift dependent columns from data
     nran = args.maxr-args.minr
     if args.resamp == 'y':
+        common.printlog('doing resampling',logger)
         regions = ['NGC', 'SGC']
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
         for reg in regions:
             flin = dirout + args.type + notqso + '_'+reg    
             def _parfun(rannum):
-                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+                ct.clusran_resamp(flin,rannum,rcols=rcols,compmd=args.compmd,logger=logger)#, ntilecut=ntile, ccut=ccut)
             
             inds = np.arange(nran)
             from multiprocessing import Pool
