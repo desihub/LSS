@@ -309,7 +309,7 @@ for tracer in tracers:
     
         if tracer == 'BGS_BRIGHT-21.5':
             if args.mockver == 'AbacusSummitBGS_v2/':
-                selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
+                selm = (mock_data_tr['R_MAG_ABS']) < -21.5
             else:
                 selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
             mock_data_tr = mock_data_tr[selm]
