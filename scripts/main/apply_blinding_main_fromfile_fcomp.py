@@ -421,8 +421,11 @@ if root:
         if datran == '.ran':
             app = str(rann)+'_clustering'+datran+'.fits'
     
+        common.printlog('GC split: reading '+flroot+app,logger)
         fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+        common.printlog('GC split read '+flroot+app,logger)
         sel_ngc = common.splitGC(fn)#gc.b > 0
+        common.printlog('split '+flroot+app,logger)
         outf_ngc = flroot+'NGC_'+app
         common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
         outf_sgc = flroot+'SGC_'+app
@@ -441,7 +444,7 @@ if root:
                 res = pool.map(_gcparfun, inds)
         else:
             for ii in inds:
-                _parfun(ii)
+                _gcparfun(ii)
 
 
 if args.dorecon == 'y':
