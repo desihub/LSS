@@ -434,14 +434,14 @@ if args.splitGC == 'y':
     splitGC(fb)
     def _gcparfun(rann):
         splitGC(fb,'.ran',rann)
-	inds = np.arange(args.minr,args.maxr)
-	if args.useMPI == 'y':
-		from multiprocessing import Pool
-		with Pool() as pool:
-			res = pool.map(_gcparfun, inds)
-	else:
-		for ii in inds:
-			_parfun(ii)
+    inds = np.arange(args.minr,args.maxr)
+    if args.useMPI == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_gcparfun, inds)
+    else:
+        for ii in inds:
+            _parfun(ii)
 
 
 if args.dorecon == 'y':
