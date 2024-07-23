@@ -427,9 +427,9 @@ if root:
         sel_ngc = common.splitGC(fn)#gc.b > 0
         common.printlog('split '+flroot+app,logger)
         outf_ngc = flroot+'NGC_'+app
-        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
         outf_sgc = flroot+'SGC_'+app
-        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
     
     
     if args.splitGC == 'y':
