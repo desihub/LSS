@@ -33,7 +33,7 @@ Remarks:
        * From jura: 
            * Several improvements from redrock (cf Allyson works ect...) since the SV.
            * New cuts to remove SKY fibers: https://github.com/desihub/desispec/issues/2278
-           * ZWARN == 0 or 4 and OBJTYPE=SKY
+           * OBJTYPE=SKY --> NO cuts on ZWARN due to OBJTYPE reject obejct with ZWARN expect ZWARN 0 and 4 
            
            
 """
@@ -411,8 +411,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.loc[is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
   
     # Add quality cuts: cut on zwarn, objtype and cut on fiberstatus 
-    bad_qso = QSO_cat['OBJTYPE'] != 'TGT'
-    bad_qso |= ~ ((QSO_cat['ZWARN'] == 0) | (QSO_cat['ZWARN'] == 2**4))
+    bad_qso = QSO_cat['OBJTYPE'] != 'TGT'  # creating the excess (due to sky fiber) around z~3.7 and lower redshit.
+    #bad_qso |= ~ ((QSO_cat['ZWARN'] & 2**0 != 0) | (QSO_cat['ZWARN'] & 2**4 != 0)) ## DO we still need ZWARN CUT if we are using OBJTYPE?
     bad_qso |= ~ ((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 8388608) | (QSO_cat['COADD_FIBERSTATUS'] == 16777216))
     QSO_cat.loc[bad_qso, 'QSO_MASKBITS'] = 0
 
