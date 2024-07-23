@@ -413,35 +413,35 @@ if root:
 
     sys.stdout.flush()
 
-	def splitGC(flroot,datran='.dat',rann=0):
-		import LSS.common_tools as common
-		from astropy.coordinates import SkyCoord
-		import astropy.units as u
-		app = 'clustering'+datran+'.fits'
-		if datran == '.ran':
-			app = str(rann)+'_clustering'+datran+'.fits'
-	
-		fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
-		sel_ngc = common.splitGC(fn)#gc.b > 0
-		outf_ngc = flroot+'NGC_'+app
-		common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
-		outf_sgc = flroot+'SGC_'+app
-		common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
-	
-	
-	if args.splitGC == 'y':
-		fb = dirout + args.type + notqso + '_'
-		splitGC(fb)
-		def _gcparfun(rann):
-			splitGC(fb,'.ran',rann)
-		inds = np.arange(args.minr,args.maxr)
-		if args.useMPI == 'y':
-			from multiprocessing import Pool
-			with Pool() as pool:
-				res = pool.map(_gcparfun, inds)
-		else:
-			for ii in inds:
-				_parfun(ii)
+    def splitGC(flroot,datran='.dat',rann=0):
+        import LSS.common_tools as common
+        from astropy.coordinates import SkyCoord
+        import astropy.units as u
+        app = 'clustering'+datran+'.fits'
+        if datran == '.ran':
+            app = str(rann)+'_clustering'+datran+'.fits'
+    
+        fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+        sel_ngc = common.splitGC(fn)#gc.b > 0
+        outf_ngc = flroot+'NGC_'+app
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
+        outf_sgc = flroot+'SGC_'+app
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
+    
+    
+    if args.splitGC == 'y':
+        fb = dirout + args.type + notqso + '_'
+        splitGC(fb)
+        def _gcparfun(rann):
+            splitGC(fb,'.ran',rann)
+        inds = np.arange(args.minr,args.maxr)
+        if args.useMPI == 'y':
+            from multiprocessing import Pool
+            with Pool() as pool:
+                res = pool.map(_gcparfun, inds)
+        else:
+            for ii in inds:
+                _parfun(ii)
 
 
 if args.dorecon == 'y':
