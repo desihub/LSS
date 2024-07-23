@@ -109,6 +109,7 @@ parser.add_argument("--compmd", help="whether the extra completeness gets added 
 parser.add_argument("--mkclusdat", help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)", default='n')
 parser.add_argument("--wsyscol", help="column name to use for WEIGHT_SYS", default='WEIGHT_SN')
 parser.add_argument("--mkclusran", help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)", default='n')
+parser.add_argument("--splitGC", help="if y, split the clustering data and random by Galactic cap", default='y')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)# use 1 for abacus mocks
 parser.add_argument("--maxr", help="maximum for random files, default is 1", default=1, type=int) # use 2 for abacus mocks
 parser.add_argument("--dorecon", help="if y, run the recon needed for RSD blinding", default='n')
@@ -409,11 +410,39 @@ if root:
                 #ct.mkclusran(ranin, dirout + args.type + notqso + '_', ii, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays)
                 common.printlog(str(ii),logger)#,clus_arrays[0].dtype.names)
         #if args.split_GC == 'y':
-        fb = dirout + args.type + notqso + '_'
-        #ct.clusNStoGC(fb, args.maxr - args.minr)
-        ct.splitclusGC(fb, args.maxr - args.minr,par='y')
 
     sys.stdout.flush()
+
+def splitGC(flroot,datran='.dat',rann=0):
+    import LSS.common_tools as common
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    app = 'clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = str(rann)+'_clustering'+datran+'.fits'
+
+    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    sel_ngc = common.splitGC(fn)#gc.b > 0
+    outf_ngc = flroot+'NGC_'+app
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc)
+    outf_sgc = flroot+'SGC_'+app
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc)
+
+
+if args.splitGC == 'y':
+    fb = dirout + args.type + notqso + '_'
+    splitGC(fb)
+    def _gcparfun(rann):
+        splitGC(fb,'.ran',rann)
+	inds = np.arange(args.minr,args.maxr)
+	if args.useMPI == 'y':
+		from multiprocessing import Pool
+		with Pool() as pool:
+			res = pool.map(_gcparfun, inds)
+	else:
+		for ii in inds:
+			_parfun(ii)
+
 
 if args.dorecon == 'y':
     distance = TabulatedDESI().comoving_radial_distance
