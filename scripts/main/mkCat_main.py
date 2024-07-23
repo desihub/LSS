@@ -580,7 +580,7 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
 
-if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1': #and args.clusd == 'y':
+if type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
     ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
@@ -590,6 +590,21 @@ if type == 'BGS_BRIGHT-21.5' and args.survey == 'Y1': #and args.clusd == 'y':
         if args.absmagmd == 'spec':
             sel = (fin['ABSMAG01_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
             #sys.exit('need to code up using fastspecfit for abs mag selection!')
+        if args.absmagmd == 'nok':
+            #don't use any k-correction at all, yields ~constant density
+            from LSS.tabulated_cosmo import TabulatedDESI
+            cosmo = TabulatedDESI()
+            dis_dc = cosmo.comoving_radial_distance
+            z2use = np.copy(fin['Z_not4clus'])
+            selz = z2use <= 0
+            selz |= z2use > 2
+            z2use[selz] = 2
+            dm = 5.*np.log10(dis_dc(z2use)*(1.+z2use)) + 25.
+            cfluxr = fin['FLUX_R']/fin['MW_TRANSMISSION_R']
+            r_dered = 22.5 - 2.5*np.log10(cfluxr)
+            abr = r_dered -dm
+            sel = abr < -21.6 +0.15*z2use
+            sel &= z2use < 2
         common.write_LSS(fin[sel],ffull)
 
     
