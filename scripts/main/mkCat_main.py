@@ -92,7 +92,7 @@ parser.add_argument("--addnbar_ran", help="just add nbar/fkp to randoms",default
 parser.add_argument("--add_ke", help="add k+e corrections for BGS data to clustering catalogs",default='n')
 parser.add_argument("--add_fs", help="add rest frame info from fastspecfit",default='n')
 parser.add_argument("--redoBGS215", help="whether to use purely photometry+z based rest frame info or fastspecfit",default='n')
-parser.add_argument("--absmagmd", help="whether to use purely photometry+z based rest frame info or fastspecfit",choices=['spec','phot'],default='spec')
+parser.add_argument("--absmagmd", help="whether to use purely photometry+z based rest frame info or fastspecfit, or no k correction at all",choices=['spec','phot','nok'],default='spec')
 
 parser.add_argument("--blinded", help="are we running on the blinded full catalogs?",default='n')
 
