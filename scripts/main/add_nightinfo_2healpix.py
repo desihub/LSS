@@ -66,7 +66,7 @@ parser.add_argument("--infile", help="the full path of the file you are adding t
 parser.add_argument("--outfile", help="the full path to where output gets saved")
 parser.add_argument("--verspec",help="version for redshifts",default='jura')
 parser.add_argument("--verspecrel",help="version for redshifts",default='v1')
-parser.add_argument("--survery",help="e.g., main, sv3",default='main')
+parser.add_argument("--survey",help="e.g., main, sv3",default='main')
 
 
 
