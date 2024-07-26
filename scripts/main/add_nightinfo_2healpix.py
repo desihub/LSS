@@ -75,8 +75,6 @@ args = parser.parse_args()
 print(args)
 
 
-basedir = args.basedir
-version = args.version
 specrel = args.verspec
 
 #required columns for importing from zcatalogs, add any as needed
