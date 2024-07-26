@@ -159,5 +159,5 @@ if len(kc) > 1:
 #get night/tile info from tiles zcat
 #add_lastnight(qf,prog='dark')
 qf = add_fminfo(qf,expinfo)
-common.write_LSS_scratchcp(qf,args.outfile,extname=extname,logger=logger)
+common.write_LSS_scratchcp(qf,args.outfile,logger=logger)
     
