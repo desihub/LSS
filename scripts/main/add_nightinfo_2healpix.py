@@ -20,7 +20,7 @@ from desitarget import targetmask
 
 import logging
 # create logger
-logname = 'QSO_CAT_UTILS'
+logname = 'add_night_info'
 logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
 
@@ -62,14 +62,11 @@ else:
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=scratch)
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
+parser.add_argument("--infile", help="the full path of the file you are adding the columns to")
+parser.add_argument("--outfile", help="the full path to where output gets saved")
 parser.add_argument("--verspec",help="version for redshifts",default='jura')
 parser.add_argument("--verspecrel",help="version for redshifts",default='v1')
-parser.add_argument("--mkqso",help="whether to perform the 1st stage",default='y')
-parser.add_argument("--mkqso_tiles",help="whether to perform the 1st stage",default='y')
-parser.add_argument("--node",help="whether or not you are running on a node",default='y')
+parser.add_argument("--survery",help="e.g., main, sv3",default='main')
 
 
 
@@ -77,36 +74,19 @@ parser.add_argument("--node",help="whether or not you are running on a node",def
 args = parser.parse_args()
 print(args)
 
-nproc = 20
-if args.node == 'y':
-    nproc = 128
-logger.info('number of processors being used '+str(nproc))
 
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
 
-
-qsodir = basedir +'/'+args.survey+'/QSO/'+specrel
-if not os.path.exists(basedir +'/'+args.survey+'/QSO/'):
-    os.mkdir(basedir +'/'+args.survey+'/QSO/')
-
-if not os.path.exists(qsodir):
-    os.mkdir(qsodir)
-    print('made '+qsodir)
-
 #required columns for importing from zcatalogs, add any as needed
 columns = ['TARGETID','ZWARN','ZERR','SPECTYPE','TSNR2_QSO', 'TSNR2_LYA','TSNR2_ELG','TSNR2_LRG']
 
-surpipe = 'main'
-if args.survey == 'SV3':
-    surpipe = 'sv3'
+
+surpipe = args.survey
 
 reldir = '/global/cfs/cdirs/desi/spectro/redux/'+specrel
 
-os.system('rm '+qsodir+'/*.tmp')
-
-extname = 'QSO_CAT'
 
 def add_lastnight(qf,prog='dark'):
     qf['LASTNIGHT'] = np.zeros(len(qf),dtype=int)
@@ -168,53 +148,18 @@ logger.info('loading zcat')
 zcat = Table(fitsio.read(reldir.replace('global','dvs_ro')+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits',columns=columns))
 logger.info('loading exp info')
 expinfo = Table(fitsio.read(reldir.replace('global','dvs_ro')+'/zcatalog/'+args.verspecrel+'/zpix-'+surpipe+'-dark.fits', 'EXP_FIBERMAP', columns=['TARGETID', 'NIGHT', 'MJD','EXPTIME']))
-#make the dark time QSO target only QSO catalog
-logger.info('about to make QSO catalog')
-if args.mkqso == 'y':
-    build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=True, keep_all=False,qsoversion=args.version)
-    logger.info('made 1st QSO catalog')
-    #load what was written out and get extra columns
-    qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_only_qso_targets_v'+args.version+'.fits'
-    logger.info('loading '+qsofn+' to add columns to')
-    qf = fitsio.read(qsofn.replace('global','dvs_ro'))
-    qcols = list(qf.dtype.names)
-    kc = ['TARGETID']
-    for col in columns:
-        if col not in qcols:
-            kc.append(col)
+logger.info('loading '+args.infile+' to add columns to')
+qf = fitsio.read(args.infile.replace('global','dvs_ro'))
+qcols = list(qf.dtype.names)
+kc = ['TARGETID']
+for col in columns:
+    if col not in qcols:
+        kc.append(col)
+if len(kc) > 1:
     zcat.keep_columns(kc)
     qf = join(qf,zcat,keys=['TARGETID'])
-    #get night/tile info from tiles zcat
-    #add_lastnight(qf,prog='dark')
-    qf = add_fminfo(qf,expinfo)
-    common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
+#get night/tile info from tiles zcat
+#add_lastnight(qf,prog='dark')
+qf = add_fminfo(qf,expinfo)
+common.write_LSS_scratchcp(qf,args.outfile,extname=extname,logger=logger)
     
-    #the dark time any target type QSO catalog should have been made in the first call above
-    #build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='dark', dir_output=qsodir, npool=nproc, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
-    #load what was written out and get extra columns
-    qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_dark_healpix_v'+args.version+'.fits'
-    logger.info('loading '+qsofn+' to add columns to')
-    qf = fitsio.read(qsofn.replace('global','dvs_ro'))
-    qf = join(qf,zcat,keys=['TARGETID'])
-    #get night/tile info from tiles zcat
-    #add_lastnight(qf,prog='dark')
-    qf = add_fminfo(qf,expinfo)
-    common.write_LSS_scratchcp(qf,qsofn,extname=extname,logger=logger)
-
-#make the bright time any target type QSO catalog; when run the first time, it failed because of a lack of data to concatenate
-#build_qso_catalog_from_healpix( release=args.verspec, survey=surpipe, program='bright', dir_output=qsodir, npool=20, keep_qso_targets=False, keep_all=False,qsoversion=args.version)
-#load the bright time healpix zcatalog, to be used for getting extra columns
-#zcat = Table(fitsio.read(reldir+'/zcatalog/zpix-'+surpipe+'-bright.fits',columns=columns))
-#zcat.keep_columns(kc)
-#load bright time QSO cat and get extra columns
-#qsofn = qsodir+'/QSO_cat_'+specrel+'_'+surpipe+'_bright_healpix_v'+args.version+'.fits'
-#print('loading '+qsofn+' to add columns to')
-#qf = fitsio.read(qsofn)
-#qf = join(qf,zcat,keys=['TARGETID'])
-#common.write_LSS(qf,qsofn,extname=extname)
-
-#make the per tile version; only used for LSS
-if args.mkqso_tiles == 'y':
-    build_qso_catalog_from_tiles( release=args.verspec, dir_output=qsodir, npool=nproc, tiles_to_use=None, qsoversion=args.version,program_sel='dark',survey_sel='main',addTSprob=False)
-
-
