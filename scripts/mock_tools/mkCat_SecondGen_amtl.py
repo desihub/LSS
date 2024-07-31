@@ -473,8 +473,8 @@ if args.apply_veto == 'y':
 
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
     dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto, logger=logger) #returns vetoed array
-    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
-    common.write_LSS_scratchcp(dataf,fout)
+    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
+    common.write_LSS_scratchcp(dataf,fout,logger=logger)
     #print('data veto done, now doing randoms')
     common.printlog('data veto done, now doing randoms',logger)
     
@@ -495,9 +495,9 @@ if args.apply_veto_ran == 'y':
         fout = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full'+args.use_map_veto + '.ran.fits')
         if args.tracer == 'LRG':
             common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann)
-        ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks)
-        ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts)
-        common.write_LSS(ranf,fout)
+        ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,logger=logger)
+        ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts,logger=logger)
+        common.write_LSS_scratchcp(ranf,fout,logger=logger)
         common.printlog('finish applying vetos to random '+str(rann),logger)
     
     if args.par == 'n':
