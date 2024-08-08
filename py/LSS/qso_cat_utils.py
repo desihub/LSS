@@ -356,9 +356,10 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
         if not(DESI_TARGET_TMP in fibermap.columns):
             fibermap[DESI_TARGET_TMP] = np.zeros(fibermap['TARGETID'].size, dtype=np.int64)
 
-    # QN afterburner is run with a threshold 0.5. With VI, we choose 0.95 as final threshold.
-    log.info('Increase the QN threshold selection from 0.5 to 0.95.')
-    qn['IS_QSO_QN_095'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
+    # QN afterburner is run with a threshold 0.5. With VI, we choose 0.95 as final threshold. Note the new version of QN from Jura imporve the older one. Increase the confidence level to 0.99.
+    log.info('Increase the QN threshold selection from 0.5 to 0.99.')
+    #qn['IS_QSO_QN_095'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
+    qn['IS_QSO_QN_099'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.99
     qn['IS_QSO_QN_06'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.6
     
     log.info('Merge on TARGETID all the info into a singe dataframe.')
@@ -393,19 +394,19 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # selection for QSO targets
     # &= since IS_QSO_QN_NEW_RR contains only QSO for QN which are not QSO for RR AND which are RR but with correct new redshift .
     # I do this here to match the same behavior than previously !
-    QSO_cat['IS_QSO_QN_NEW_RR'] &= QSO_cat['IS_QSO_QN_095']
+    QSO_cat['IS_QSO_QN_NEW_RR'] &= QSO_cat['IS_QSO_QN_099']
     log.info('Selection with SPECTYPE.')
     QSO_cat.loc[is_QSO & (QSO_cat['SPECTYPE'] == 'QSO'), 'QSO_MASKBITS'] += 2**1
     log.info('Selection with MgII.')
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_MGII'], 'QSO_MASKBITS'] += 2**2
     log.info('Selection with QN (add new z from Redrock with QN prior where it is relevant).')
-    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_095'], 'QSO_MASKBITS'] += 2**3
+    QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_099'], 'QSO_MASKBITS'] += 2**3
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'QSO_MASKBITS'] += 2**4
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # selection for WISE_VAR_QSO targets (secondary target) --> same as QSO
-    is_WAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_095']
+    is_WAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_099']
     QSO_cat.loc[is_WAR_WISE_QSO & is_WAR_WISE_QSO, 'QSO_MASKBITS'] += 2**7 
     QSO_cat.loc[is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
     QSO_cat.loc[is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_WAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
@@ -417,7 +418,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.loc[bad_qso, 'QSO_MASKBITS'] = 0
 
     # remove useless columns:
-    QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_095', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
+    QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_099', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
 
     # Correct bump at z~3.7 and ~5.2 (overlap between two arms of the spectrograph ..)
     # With Iron and before:
