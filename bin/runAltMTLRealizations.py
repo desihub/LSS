@@ -18,6 +18,7 @@ import glob
 import cProfile, pstats, io
 from pstats import SortKey
 import argparse
+import gc
 
 #Base directory for the alternate MTLs created in the InitializeAltMTLs script
 
@@ -120,6 +121,7 @@ def procFunc(nproc):
     else:
         targets = None
     retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
+    gc.collect()
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
     if type(retval) == int:

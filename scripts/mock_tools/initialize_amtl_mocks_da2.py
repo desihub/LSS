@@ -32,7 +32,7 @@ initledger_path = os.path.join(arg2, 'initled')
 altmtl_path = os.path.join(arg2, 'Univ000')
 print('Running initial ledgers')
 if par:
-    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=128)
+    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=64)
 else:
     mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper())
 

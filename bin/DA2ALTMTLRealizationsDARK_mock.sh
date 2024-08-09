@@ -86,8 +86,8 @@ seed=14126579
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 #Mock realization
-mockinit=0
-mockend=25
+mockinit=3
+mockend=11
 let ndir=$mockend-$mockinit 
 
 

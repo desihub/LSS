@@ -440,9 +440,12 @@ def createrancomb_wdupspec(outdir, ranfile, alltileloc, mockassign, fdataspec):
     randomdata = join(randomdata, specD, keys=['LOCATION','TILEID'], join_type='left')
 
     randomdata.write(os.path.join(outdir, ranfile.split('/')[-1]), overwrite=True)
-    print('copying alltileloc from spec dir to mock dir')
-    shutil.copy(alltileloc, os.path.join(outdir, alltileloc.split('/')[-1]))
-    return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
+    if alltileloc is not None:
+        print('copying alltileloc from spec dir to mock dir')
+        shutil.copy(alltileloc, os.path.join(outdir, alltileloc.split('/')[-1]))
+        return os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
+    else:
+        return os.path.join(outdir, ranfile.split('/')[-1]), None
 
 def calc_weight_nt_misspw(data_full):
     if len(np.shape(data_full['BITWEIGHTS'])) == 1:

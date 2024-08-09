@@ -10,7 +10,7 @@ from astropy.table import Table,join
 
 import memory_profiler
 from memory_profiler import profile
-
+import gc
 
 #TEMP
 #MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
@@ -467,6 +467,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         surveyForTSS = 'main'
         if survey.lower() == 'y1':
             TileFN = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{0}.fits'.format(obscon.upper())
+        elif survey.lower() == 'da2':
+            TileFN = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/tiles-{0}.fits'.format(obscon.upper())
         else:
             TileFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv'
     elif survey.lower() == 'sv3':
@@ -1490,6 +1492,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 
             else:
                 raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
+
+            gc.collect()
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 

@@ -159,16 +159,41 @@ tiles = fitsio.read(tile_fn)
 
 gtl = None
 if args.add_gtl == 'y':
-    print('--- START ADD_GTL ---')
-    datarel = args.specdata
-    if args.survey == 'DA02':
-        datarel = 'guadalupe'
-    datadir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'   
-    specdat = ct.get_specdat(datadir,pdir,datarel,badfib= main(args.tracer, args.specdata, survey=args.survey).badfib)
-    tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
-    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
-    del specdat
-    print('*** DONE WITH ADD_GTL ***')
+
+
+
+    print('--- Calculate good tiles from goodhardwARE IN DATA ---')
+    mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
+
+    specdata_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    specfc = common.cut_specdat(specf, badfib=mainp.badfib)
+    gtl = np.unique(specfc['TILELOCID'])
+
+
+#    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+#logger.info('loading specf file '+specfo)
+#specf = Table(fitsio.read(specfo))
+#logger.info(len(np.unique(specf['TILEID'])))
+#specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+#logger.info('loaded specf file '+specfo)
+#specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+#gtl = np.unique(specfc['TILELOCID'])
+
+
+
+
+
+#    datarel = args.specdata
+#    if args.survey == 'DA02':
+#        datarel = 'guadalupe'
+#    datadir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+datarel+'/'   
+#    specdat = ct.get_specdat(datadir,pdir,datarel,badfib= main(args.tracer, args.specdata, survey=args.survey).badfib)
+#    tlocid = 10000*specdat['TILEID'] +specdat['LOCATION']
+#    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
+#    del specdat
+#    print('*** DONE WITH ADD_GTL ***')
 
 
 lssdir = os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum)
@@ -258,6 +283,11 @@ if args.joindspec == 'y':
         pa = Table(fitsio.read(pafn))
         print('loaded potential assignements')
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
+    if gtl is not None:
+        goodtl = np.isin(pa['TILELOCID'], gtl)
+        pa = pa[goodtl]
+
+
     print('about to join assignments and potential assignments')
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     
@@ -393,9 +423,9 @@ if args.fullr == 'y':
 #    global _parfun1
     def _parfun1(rann):
         ranfile = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%swdupspec_zdone.fits' % (rann, pdir)) 
-        alltileloc = os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%s_Alltilelocinfo.fits' % (rann, pdir)) 
+        alltileloc = None #os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'rancomb_%d%s_Alltilelocinfo.fits' % (rann, pdir)) 
         #os.path.join(outdir, ranfile.split('/')[-1]), os.path.join(outdir, alltileloc.split('/')[-1])
-        if not os.path.isfile(os.path.join(lssdir, ranfile.split('/')[-1])) or not os.path.isfile(os.path.join(lssdir, alltileloc.split('/')[-1])):
+        if not os.path.isfile(os.path.join(lssdir, ranfile.split('/')[-1])): ## or not os.path.isfile(os.path.join(lssdir, alltileloc.split('/')[-1])):
 
             ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits').format(MOCKNUM=mocknum), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
         outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')
@@ -425,16 +455,23 @@ if args.fullr == 'y':
             #pool.join()
     print('*** END WITH FULLR ***')
 
+    gc.collect()
 
 tracer_clus = args.tracer + notqso 
+#    import healpy as hp
+nside = 256
+if survey == 'Y1' and args.specdata == 'iron':
+    vermap = 'v0.6'
+elif survey == 'DA2' and args.specdata == 'jura-v1':
+    vermap = 'v0.1'
+else:
+    raise Exception('survey and specdata not compatible')
+
+lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=survey, SPECDATA=args.specdata, VERMAP=vermap)
 
 if args.apply_veto == 'y':
-    #print('--- START APPLY_VETO; including HP maps---')
-    #print('applying vetos to mock ' + str(mocknum))
-    common.printlog('--- START APPLY_VETO; including HP maps---', logger)
-#    import healpy as hp
-    nside = 256
-    lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
+    print('--- START APPLY_VETO; including HP maps---')
+    print('applying vetos to mock ' + str(mocknum))
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
@@ -472,17 +509,13 @@ if args.apply_veto == 'y':
 
 
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto, logger=logger) #returns vetoed array
-    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
-    common.write_LSS_scratchcp(dataf,fout,logger=logger)
-    #print('data veto done, now doing randoms')
-    common.printlog('data veto done, now doing randoms',logger)
-    
-if args.apply_veto_ran == 'y':
+    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
+    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
+    common.write_LSS_scratchcp(dataf,fout)
+    print('data veto done, now doing randoms')
 
-    common.printlog('starting apply veto_ran',logger)
-    nside = 256
-    lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/hpmaps'
+    gc.collect()
+if args.apply_veto_ran == 'y':
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))       
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
@@ -517,6 +550,7 @@ if args.apply_veto_ran == 'y':
     common.printlog('*** END RANDOM VETO ***', logger)
     #print('random veto '+str(ii)+' done')
 
+    gc.collect()
 
 if args.add_tlcomp == 'y':
     fl = os.path.join(dirout,args.tracer+notqso+'_')
@@ -537,6 +571,7 @@ if args.add_tlcomp == 'y':
             #ct.add_tlobs_ran(fl, rn, hpmapcut=args.use_map_veto, logger=logger)
     print('*** END RANDOM ADD TILE COMP ***')
 
+    gc.collect()
 finaltracer = args.tracer + notqso #+ '_'
 readdir = dirout
 if args.start_from_full == 'y':
@@ -565,6 +600,7 @@ if args.add_bitweights is not None:
         print('PROB_OBS already in full catalog')
         readdir = dirout
  
+    gc.collect()
 
 fb = os.path.join(readdir, finaltracer)
 
@@ -600,6 +636,7 @@ if args.mkclusdat == 'y':
     #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     print('*** END WITH MKCLUSDAT ***')
 
+    gc.collect()
 
 nzcompmd = 'ran'
 if args.compmd == 'altmtl':
@@ -664,6 +701,7 @@ if args.mkclusran == 'y':
 #        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
     print('*** END WITH MKCLUSRAN ***')
 
+    gc.collect()
 
 fb = os.path.join(dirout, finaltracer)
 nran = rx-rm

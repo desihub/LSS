@@ -1,1 +1,6 @@
 srun -N 1 -C cpu -t 03:50:00 -q interactive --mem=0 python initialize_amtl_mocks.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/forFA2.fits $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/ALTMTL_EZmock/altmtl2 DARK
+
+srun -N 1 -C cpu -t 00:20:00 -q interactive --account desi python readwrite_pixel_bitmask_da2.py --tracer lrg --input $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/forFA1.fits --output $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/forFA1_matched_input_full_lrg_imask.fits --cat_type Generic
+
+srun -N 1 -C cpu  -t 01:00:00 -q interactive --account desi python getpotaDA2_mock.py --realization 1 --mock Generic --base_input $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/forFA1.fits --base_output $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/FFA_temp/SecondGenMocks/EZmock/forFA/mock1 
+
