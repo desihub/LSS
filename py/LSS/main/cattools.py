@@ -3326,7 +3326,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
-    selobs &= ff['GOODHARDLOC'] == 1
+    #selobs &= ff['GOODHARDLOC'] == 1
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selp = ff['PRIORITY'] == 3400
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
@@ -3494,7 +3494,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
     msr = np.ones(len(ff))
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
-    selobs &= ff['GOODHARDLOC'] == 1
+    #selobs &= ff['GOODHARDLOC'] == 1
     selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
     for reg,mod in zip(regl,modl):
