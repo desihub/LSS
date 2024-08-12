@@ -240,7 +240,7 @@ class model_ssr:
     This class will fit a model based on TSNR2_<type> and FIBERFLUX_<band> for the redshift success and produce weights
     that are the inverse of the relative predicted redshift success
     '''
-    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False):
+    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True):
         self.cat = input_data
 
         mask = self.cat['TSNR2_'+tracer]>tsnr_min
@@ -425,8 +425,9 @@ class model_ssr:
             self.flux_mod = self.ssrvflux_erf
                 
         else:
-            fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
-            fo.write('#fit parameters for maximum ssr as a function of flux\n')
+            if overwrite_pars_ssrmaxflux:
+                fo = open(self.outdir+outfn_root+rw+'pars_ssrmaxflux.txt','w')
+                fo.write('#fit parameters for maximum ssr as a function of flux\n')
         
 
             #if tracer == 'ELG':
@@ -455,10 +456,11 @@ class model_ssr:
             self.pars_ferf = ssrvflux.x
             print(self.pars_ferf)
             self.flux_mod = self.ssrvflux_erf
-            for par in self.pars_ferf :
-                fo.write(str(par)+' ')
-            fo.write('\n')    
-            fo.close()
+            if overwrite_pars_ssrmaxflux:
+                for par in self.pars_ferf :
+                    fo.write(str(par)+' ')
+                fo.write('\n')    
+                fo.close()
             plt.plot(self.mfl,self.consl,'rd')
             plt.plot(self.mfl,self.flux_mod(self.mfl),'r--')
             plt.plot(self.flux_vals,self.ssr_flux,'ko')
