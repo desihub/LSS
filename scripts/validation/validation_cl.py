@@ -50,43 +50,6 @@ cosdec = np.cos(dec*np.pi/180.)
 sinra = np.sin(ra*np.pi/180.)
 cosra = np.cos(ra*np.pi/180.)
 
-def get_wtheta_auto(sindec,cosdec,sinra,cosra,odens,frac,thmin=0,thmax=10,bs=.1):
-    '''
-    sines and cosines of ra,dec coordinates, already cut by whatever masking
-    overdensity (in same pixels)
-    fractional area of same pixels
-    '''
-    odens /= frac #because it got multiplied by frac for cl
-    fo = open('tempodenspczw.dat','w')
-    for i in range(len(sindec)):
-        fo.write(str(sinra[i])+' '+str(cosra[i])+' '+str(sindec[i])+' '+str(cosdec[i])+' '+str(odens[i])+' '+str(frac[i])+'\n ')
-    fo.close()
-    os.system('/global/homes/a/ajross/code/LSSanalysis/pix2p_linbin_test temp 1 '+str(bs)+' '+str(thmax))
-    res = np.loadtxt('temp2ptPixclb.dat').transpose()
-#     nbin = int((thmax-thmin)/bs)
-#     odl = np.zeros(nbin)
-#     fracl = np.zeros(nbin)
-#     binedges = []#np.zeros(nbin+1)
-#     th = thmax
-#     while th > thmin:
-#         be = np.cos(th*np.pi/180.)
-#         binedges.append(be)
-#         th -= 0.1
-#     print(len(binedges),len(odl))
-#     bin_angs = np.flip(np.arange(thmin+bs/2.,thmax,bs))
-#     for ii in range(0,len(sindec)):
-#         for jj in range(ii+1,len(cosdec)):
-#             cosang = cosdec[ii]*cosdec[jj]*(cosra[ii]*cosra[jj] + sinra[ii]*sinra[jj]) + sindec[ii]*sindec[jj]
-#             be = binedges[0]
-#             ba = -1 #start at -1 because of condition below
-#             while cosang > be:
-#                 ba += 1
-#                 be = binedges[ba+1]
-#             
-#             if ba > -1 and ba < nbin:
-#                 odl[ba] += odens[ii]*odens[jj] #note, frac was already applied to odl
-#                 fracl[ba] += frac[ii]*frac[jj] 
-    return res[0],res[1]#bin_angs,odl/fracl
 
 def get_delta(dat,ran,racol='RA',decol='DEC',wts=None,wtspix=None,thresh=0,nest=False,appfrac=True,maskreg=None):#,ranpall=None
     th,phi = densvar.radec2thphi(dat[racol],dat[decol])
@@ -203,23 +166,6 @@ for tp in tps:
     plt.ylabel(r'$C_{\ell}$')
     plt.savefig(outdir+tp+'_cell.png')
     plt.clf()
-    print('doing w(theta)')
-    sel = delta_raw != hp.UNSEEN
-    angl,wth_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_raw[sel],frac[sel])
-    sel = delta_allz != hp.UNSEEN
-    _,wth_allz = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_allz[sel],frac[sel])
-    _,wth_zr = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_zr[sel],frac[sel])
-
-    plt.plot(angl[:-1],1000*angl[:-1]*wth_raw[:-1],label='targets in Y1 area')
-    plt.plot(angl[:-1],1000*angl[:-1]*wth_allz[:-1],label='all z')
-    plt.plot(angl[:-1],1000*angl[:-1]*wth_zr[:-1],label=str(zmin)+' < z < '+str(zmax))
-    plt.grid()
-    plt.title(tp)
-    plt.legend()
-    plt.xlabel(r'$\theta$')
-    plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
-    plt.savefig(outdir+tp+'_wth.png')
-    plt.clf()
     
     
     regl = list(maskreg.keys())
@@ -238,11 +184,6 @@ for tp in tps:
         cls_raw.append(cl_reg_raw)
 
         fskys.append(fsky_reg)
-        sel = delta_reg != hp.UNSEEN
-        _,wth_reg = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg[sel],frac[sel])
-        wths.append(wth_reg)
-        _,wth_reg_raw = get_wtheta_auto(sindec[sel],cosdec[sel],sinra[sel],cosra[sel],delta_reg_raw[sel],frac[sel])
-        wths_raw.append(wth_reg_raw)
        
     for cl,reg,fsky in zip(cls,regl,fskys):
         plt.loglog(ell[1:],cl[1:]/fsky,label=reg)
@@ -263,23 +204,6 @@ for tp in tps:
     plt.clf()
 
     
-    for wth,reg in zip(wths,regl):
-        plt.plot(angl[:-1],1000*angl[:-1]*wth[:-1],label=reg)
-    plt.title(tp+' '+str(zmin)+' < z < '+str(zmax))
-    plt.legend()
-    plt.xlabel(r'$\theta$')
-    plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
-    plt.savefig(outdir+tp+'_wth_reg.png')
-    plt.clf()
-
-    for wth,reg in zip(wths_raw,regl):
-        plt.plot(angl[:-1],1000*angl[:-1]*wth[:-1],label=reg)
-    plt.title(tp+' targets in Y1')
-    plt.legend()
-    plt.xlabel(r'$\theta$')
-    plt.ylabel(r'$\theta\times w(\theta)\times 10^3$')
-    plt.savefig(outdir+tp+'_wth_regtar.png')
-    plt.clf()
     
         
         
