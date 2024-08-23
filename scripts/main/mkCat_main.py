@@ -1250,6 +1250,10 @@ if args.splitGC == 'y':
 
 if args.addNtileweight2full:
     froot = dirout+tracer_clus
+    if args.survey == 'Y1':
+        nproc = 9
+    if args.survey == 'DA2':
+        nproc = 6
     common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type)
 
 if args.resamp == 'y':
