@@ -572,9 +572,9 @@ def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n',extradir='',tp=''):
     
     def _parfun(rann):
         fn = fb+'_NGC_'+str(rann)+'_clustering.ran.fits'
-        clus_rn = fitsio.read(fn.replace('global','dvs_ro') )
+        clus_rn = fitsio.read(fn.replace('global','dvs_ro').replace(tp,extradir+tp) )
         fs = fb+'_SGC_'+str(rann)+'_clustering.ran.fits'
-        clus_rs = fitsio.read(fs.replace('global','dvs_ro') )
+        clus_rs = fitsio.read(fs.replace('global','dvs_ro').replace(tp,extradir+tp) )
         clus_r = np.concatenate((clus_rn,clus_rs))
         #weight_ntl,fkp_ntl = get_weight_ntile(clus_r) #just base it on data so it is equivalent for angular upweighting
     
