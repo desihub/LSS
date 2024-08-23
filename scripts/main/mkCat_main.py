@@ -1249,7 +1249,7 @@ if args.splitGC == 'y':
              _spran(rn)
 
 if args.addNtileweight2full:
-    froot = dirout+args.extra_clus_dir+tracer_clus+'_'
+    froot = dirout+tracer_clus
     common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type)
 
 if args.resamp == 'y':
