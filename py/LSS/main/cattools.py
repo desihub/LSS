@@ -3576,7 +3576,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir=''):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3602,7 +3602,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wzm += 'rmin'+str(rcut[0])+'rmax'+str(rcut[1])+'_'
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
-    outf = fl+wzm+'clustering.dat.fits'
+    outf = (fl+wzm+'clustering.dat.fits').replace(tp,extradir+tp)
     ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
@@ -3877,15 +3877,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         if splitNS == 'y':
             outfn = fl+wzm+'N_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-            common.write_LSS(ff[wn],outfn,comments)
+            common.write_LSS(ff[wn],outfn.replace(tp,extradir+tp),comments)
 
             outfn = fl+wzm+'S_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
             ffs = ff[~wn]
-            common.write_LSS(ffs,outfn,comments)
+            common.write_LSS(ffs,outfn.replace(tp,extradir+tp),comments)
         else:
             outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS_scratchcp(ff,outfn)
+            common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp))
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
@@ -3967,7 +3967,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None):
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='TSNR2_ELG',utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp=''):
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -4072,7 +4072,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     for ind in range(0,len(regl)):
         reg = regl[ind]
         if clus_arrays is None:
-            fcdn = Table.read(fl+wzm+reg+'clustering.dat.fits')
+            fcdn = Table.read((fl+wzm+reg+'clustering.dat.fits').replace(tp,extradir+tp))
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
@@ -4091,7 +4091,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'  
+        outfn =  (fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits').replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in flin:

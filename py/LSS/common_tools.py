@@ -555,12 +555,12 @@ def get_weight_ntile(in_data):
         fkp_ntl[i] = np.mean(in_data['WEIGHT_FKP'][sel])
     return weight_ntl,fkp_ntl
 
-def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n'):
+def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n',extradir='',tp=''):
     from desitarget.internal import sharedmem
     fn = fb+'_NGC_clustering.dat.fits'
-    clus_dn = fitsio.read(fn.replace('global','dvs_ro'))
+    clus_dn = fitsio.read(fn.replace('global','dvs_ro').replace(tp,extradir+tp))
     fs = fb+'_SGC_clustering.dat.fits'
-    clus_ds = fitsio.read(fs.replace('global','dvs_ro'))
+    clus_ds = fitsio.read(fs.replace('global','dvs_ro').replace(tp,extradir+tp))
     clus_d = np.concatenate((clus_dn,clus_ds))
     weight_ntl,fkp_ntl = get_weight_ntile(clus_d)
     

@@ -80,6 +80,8 @@ parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to r
 
 
 parser.add_argument("--fillran", help="add imaging properties to randoms",default='n')
+parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
+
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
@@ -117,6 +119,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+parser.add_argument("--addNtileweight2full",help="whether to add the NTILE weight to the full catalogs (necessary for consistent angular upweighting)",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
@@ -261,7 +264,12 @@ if not os.path.exists(dirout):
     os.mkdir(dirout)
     common.printlog('made '+dirout,logger)
 
+if not os.path.exists(dirout+args.extra_clus_dir):
+    os.mkdir(dirout+args.extra_clus_dir)
+    common.printlog('made '+dirout+args.extra_clus_dir,logger)
 
+
+args.extra_clus_dir
 logfn = dirout+'log.txt'
 if os.path.isfile(logfn):
     logf = open(logfn,'a')
@@ -1143,7 +1151,7 @@ weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,tsnrcut=tsnrcut,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
 
 nzcompmd = 'ran'
 if args.compmd == 'altmtl':
@@ -1172,7 +1180,7 @@ if mkclusran:
 
     clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger)
+        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,tsnrcut=tsnrcut,tsnrcol=tsnrcol,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
@@ -1226,7 +1234,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 if args.splitGC == 'y':
-    fb = dirout+tracer_clus+'_'
+    fb = dirout+args.extra_clus_dir+tracer_clus+'_'
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb,'.dat')
     def _spran(rann):
@@ -1240,7 +1248,9 @@ if args.splitGC == 'y':
         for rn in inds:#range(rm,rx):
              _spran(rn)
 
-
+if args.addNtileweight2full:
+    froot = dirout+args.extra_clus_dir+tracer_clus+'_'
+    common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type)
 
 if args.resamp == 'y':
             
@@ -1262,7 +1272,7 @@ if args.resamp == 'y':
 #allreg = ['NGC','SGC']
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb = dirout+tracer_clus+'_'+reg
+        fb = dirout+args.extra_clus_dir+tracer_clus+'_'+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
@@ -1291,64 +1301,64 @@ if args.nz == 'y':
 #        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax)
 #        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0)
 
-if args.FKPfull == 'y':
-    
-    fb = dirout+tracer_clus
-    fbr = fb
-    if type == 'BGS_BRIGHT-21.5':
-        fbr = dirout+'BGS_BRIGHT'
+# if args.FKPfull == 'y':
+#     
+#     fb = dirout+tracer_clus
+#     fbr = fb
+#     if type == 'BGS_BRIGHT-21.5':
+#         fbr = dirout+'BGS_BRIGHT'
+# 
+#     fcr = fbr+'_0_full.ran.fits'
+#     fcd = fb+'_full.dat.fits'
+#     nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
+#     common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
+# 
+# if args.nzfull == 'y':
+#     fb = dirout+tracer_clus
+#     fbr = fb
+#     if type == 'BGS_BRIGHT-21.5':
+#         fbr = dirout+'BGS_BRIGHT'
+#     fcr = fbr+'_0_full.ran.fits'
+#     fcd = fb+'_full.dat.fits'
+#     zmax = 1.6
+#     zmin = 0.01
+#     bs = 0.01
+#     if type[:3] == 'QSO':
+#         zmax = 4
+#         bs = 0.02
+#     for reg in regl:
+#         reg = reg.strip('_')
+#         common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
+#         nzf = np.loadtxt(fb+'_full_'+reg+'_nz.txt').transpose()
+#         plt.plot(nzf[0],nzf[3],label=reg)
+#     plt.xlabel('redshift')
+#     plt.ylabel('n(z) (h/Mpc)^3')
+#     plt.legend()
+#     plt.grid()
+#     if tracer_clus == 'ELG_LOPnotqso':
+#         plt.ylim(0,0.001)
+#     if tracer_clus == 'BGS_BRIGHT':
+#         plt.yscale('log')
+#         plt.xlim(0,0.6)
+#         plt.ylim(1e-5,0.15)
+#     if tracer_clus == 'BGS_BRIGHT-21.5':
+#         plt.xlim(0,0.5)
+#     plt.title(tracer_clus)
+#     plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
 
-    fcr = fbr+'_0_full.ran.fits'
-    fcd = fb+'_full.dat.fits'
-    nz = common.mknz_full(fcd,fcr,type[:3],bs=dz,zmin=zmin,zmax=zmax)
-    common.addFKPfull(fcd,nz,type[:3],bs=dz,zmin=zmin,zmax=zmax,P0=P0)
-
-if args.nzfull == 'y':
-    fb = dirout+tracer_clus
-    fbr = fb
-    if type == 'BGS_BRIGHT-21.5':
-        fbr = dirout+'BGS_BRIGHT'
-    fcr = fbr+'_0_full.ran.fits'
-    fcd = fb+'_full.dat.fits'
-    zmax = 1.6
-    zmin = 0.01
-    bs = 0.01
-    if type[:3] == 'QSO':
-        zmax = 4
-        bs = 0.02
-    for reg in regl:
-        reg = reg.strip('_')
-        common.mknz_full(fcd,fcr,type[:3],bs,zmin,zmax,randens=2500.,write='y',reg=reg)    
-        nzf = np.loadtxt(fb+'_full_'+reg+'_nz.txt').transpose()
-        plt.plot(nzf[0],nzf[3],label=reg)
-    plt.xlabel('redshift')
-    plt.ylabel('n(z) (h/Mpc)^3')
-    plt.legend()
-    plt.grid()
-    if tracer_clus == 'ELG_LOPnotqso':
-        plt.ylim(0,0.001)
-    if tracer_clus == 'BGS_BRIGHT':
-        plt.yscale('log')
-        plt.xlim(0,0.6)
-        plt.ylim(1e-5,0.15)
-    if tracer_clus == 'BGS_BRIGHT-21.5':
-        plt.xlim(0,0.5)
-    plt.title(tracer_clus)
-    plt.savefig(dirout+'plots/'+tracer_clus+'_nz.png')
-
-if args.addnbar_ran == 'y':
-    utlid_sw = ''
-    if utlid:
-        utlid_sw = '_utlid'
-    
-    for reg in regl:
-        fb = dirout+tracer_clus+utlid_sw+reg
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
-
-
-if args.swapz == 'y':
-    import LSS.blinding_tools as blind
-    for reg in regl:
-        fb = dirout+tracer_clus+reg+'_clustering.dat.fits'
-        data = Table(fitsio.read(fb))
-        blind.swap_z(data,fb,frac=0.01)        
+# if args.addnbar_ran == 'y':
+#     utlid_sw = ''
+#     if utlid:
+#         utlid_sw = '_utlid'
+#     
+#     for reg in regl:
+#         fb = dirout+tracer_clus+utlid_sw+reg
+#         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
+# 
+# 
+# if args.swapz == 'y':
+#     import LSS.blinding_tools as blind
+#     for reg in regl:
+#         fb = dirout+tracer_clus+reg+'_clustering.dat.fits'
+#         data = Table(fitsio.read(fb))
+#         blind.swap_z(data,fb,frac=0.01)        
