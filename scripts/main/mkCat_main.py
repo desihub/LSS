@@ -1248,13 +1248,6 @@ if args.splitGC == 'y':
         for rn in inds:#range(rm,rx):
              _spran(rn)
 
-if args.addNtileweight2full:
-    froot = dirout+tracer_clus
-    if args.survey == 'Y1':
-        nproc = 9
-    if args.survey == 'DA2':
-        nproc = 6
-    common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type,nproc=nproc)
 
 if args.resamp == 'y':
             
@@ -1283,6 +1276,13 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
 
+if args.addNtileweight2full:
+    froot = dirout+tracer_clus
+    if args.survey == 'Y1':
+        nproc = 9
+    if args.survey == 'DA2':
+        nproc = 6
+    common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type,nproc=nproc)
     
 
 #if args.nz == 'y':
