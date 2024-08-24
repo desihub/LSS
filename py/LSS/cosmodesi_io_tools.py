@@ -456,7 +456,7 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
     def read_positions_weights(name):
         positions, weights = [], []
         for reg in region:
-            cat_fn = catalog_fn(ctype='full_HPmapcut', name=name, **kwargs)
+            cat_fn = catalog_fn(ctype='full_HPmapcut', name=name, **kwargs).replace('PIP/','')
             #cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
             logger.info('Loading {}.'.format(cat_fn))
             if isinstance(cat_fn, (tuple, list)):
