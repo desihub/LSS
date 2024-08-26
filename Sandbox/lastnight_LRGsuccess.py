@@ -40,7 +40,7 @@ for ii in range(0, len(tidl)):
     w = exps['TILEID'] == tidl[ii]
     expt = np.sum(exps[w]['EFFTIME_ETC'])
     exptl[ii] = expt
-    print(tidl[ii],expt,np.sum(w))
+    print(tidl[ii],expt,np.sum(w),exps[w]['EFFTIME_ETC'])
 
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
