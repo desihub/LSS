@@ -655,7 +655,7 @@ def combEMdata_rel(tile,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/guad
             dl.append(d)
     if len(dl) > 0:
         dt = vstack(dl,metadata_conflicts='silent')
-        dt['TILEID'] = tile
+        dt['TILEID'] = int(tile)
         dt.remove_columns(remcol)
         return dt
     else:
