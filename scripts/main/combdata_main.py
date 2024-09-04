@@ -417,6 +417,7 @@ if  args.mkemlin == 'y':
                     if tspec is not None:
                         tspec['TILEID'] = tile
                         tspec = np.array(tspec)
+                        logger.info('tile '+str(tspec.shape))
                         return tspec
                         #new = np.empty(len(tspec),dtype=specd.dtype)
                         #cols = specd.dtype.names
