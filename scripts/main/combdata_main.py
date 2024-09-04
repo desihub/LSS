@@ -444,6 +444,9 @@ if  args.mkemlin == 'y':
                     temp = np.hstack([tl[0],t])
                 except:
                     logger.info(str(t[0]['TILEID'])+' and '+str(tl[0][0]['TILEID'])+' failed hstack')
+                    logger.info(str(tl[0]))
+                    logger.info(str(t))
+                    break
                 
             specd = np.hstack(tl)
             kp = (specd['TARGETID'] > 0)
