@@ -1276,7 +1276,7 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
 
-if args.addNtileweight2full:
+if args.addNtileweight2full == 'y':
     froot = dirout+tracer_clus
     if args.survey == 'Y1':
         nproc = 9
