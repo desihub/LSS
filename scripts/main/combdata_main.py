@@ -414,7 +414,7 @@ if  args.mkemlin == 'y':
                     logger.info('combining emline data for TILEID '+str(tile))
                     #tspec = ct.combEMdata_daily(str(tile),str(zdate),str(tdate))
                     tspec = ct.combEMdata_rel(str(tile),str(tdate),coaddir)
-                    if tspec:
+                    if tspec is not None:
                         tspec['TILEID'] = tile
                         tspec = np.array(tspec)
                         return tspec
@@ -423,6 +423,7 @@ if  args.mkemlin == 'y':
                         #for colname in cols:
                         #    new[colname][...] = tspec[colname][...]
                     else:
+                        logger.info('tile '+str(tile)+' failed for emline')
                         return None
                         #new = None
                     #return new
