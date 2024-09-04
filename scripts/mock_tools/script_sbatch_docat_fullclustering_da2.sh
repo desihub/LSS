@@ -3,7 +3,7 @@
 #SBATCH --qos=regular
 ##SBATCH --nodes=1
 #SBATCH --constraint=cpu
-#SBATCH --array=0-2
+#SBATCH --array=0
 #SBATCH --account=desi
 #SBATCH --mem=475G
 #SBATCH --cpus-per-task=9
