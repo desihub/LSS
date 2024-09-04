@@ -415,7 +415,7 @@ if  args.mkemlin == 'y':
                     #tspec = ct.combEMdata_daily(str(tile),str(zdate),str(tdate))
                     tspec = ct.combEMdata_rel(str(tile),str(tdate),coaddir)
                     if tspec is not None:
-                        tspec['TILEID'] = tile
+                        #tspec['TILEID'] = tile
                         tspec = np.array(tspec)
                         logger.info('tile '+str(tile)+' '+str(len(tspec.dtype.names))+' '+str(len(tspec)))
                         return tspec
@@ -435,15 +435,15 @@ if  args.mkemlin == 'y':
                     for specd in executor.map(_get_tile, inds):
                         if specd is not None:
                             tl.append(np.array(specd))
-            nms = list(tl[0].dtype.names)
-            for t in tl:
-                nmsi = list(t.dtype.names)
-                if nmsi != nms:
-                    logger.info(str(t[0]['TILEID'])+' has mismatched name list')
-                try:
-                    temp = np.hstack([tl[0],t])
-                except:
-                    logger.info(str(t[0]['TILEID'])+' failed hstack')
+            #nms = list(tl[0].dtype.names)
+            #for t in tl:
+            #    nmsi = list(t.dtype.names)
+            #    if nmsi != nms:
+            #        logger.info(str(t[0]['TILEID'])+' has mismatched name list')
+            #    try:
+            #        temp = np.hstack([tl[0],t])
+            #    except:
+            #        logger.info(str(t[0]['TILEID'])+' failed hstack')
                 
             specd = np.hstack(tl)
             kp = (specd['TARGETID'] > 0)
