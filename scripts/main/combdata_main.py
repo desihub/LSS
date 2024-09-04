@@ -443,7 +443,7 @@ if  args.mkemlin == 'y':
                 try:
                     temp = np.hstack([tl[0],t])
                 except:
-                    logger.info(str(t[0]['TILEID'])+' failed hstack')
+                    logger.info(str(t[0]['TILEID'])+' and '+str(tl[0][0]['TILEID'])+' failed hstack')
                 
             specd = np.hstack(tl)
             kp = (specd['TARGETID'] > 0)
