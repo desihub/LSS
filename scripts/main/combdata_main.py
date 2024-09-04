@@ -989,7 +989,7 @@ if specrel != 'daily' and args.dospec == 'y':
             for col in cols_fromspec:
                 if np.ma.is_masked(tj[col]):
                     tj[col] = tj[col].filled(999999)
-                    logger.info(str(np.unique(tj[col],return_counts=True)))
+                    #logger.info(str(np.unique(tj[col],return_counts=True)))
             #del specf
             logger.info('joined tar and spec, now writing')
             #tj.write(outfs,format='fits', overwrite=True)
