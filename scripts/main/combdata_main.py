@@ -978,15 +978,19 @@ if specrel != 'daily' and args.dospec == 'y':
                 try:
                     tarf.remove_columns([col] )#we get this where relevant from spec file
                 except:
-                    print('column '+col +' was not in stacked tarwdup table')    
+                    logger.info('column '+col +' was not in stacked tarwdup table')    
 
             #tarf.remove_columns(['ZWARN_MTL'])
             tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
             #specf.remove_columns(['PRIORITY'])
             tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
             del tarf
+            cols_fromspec = list(specf.dtype.names)
+            for col in cols_fromspec:
+                tj[col] = tj[col].filled(999999)
+                logger.info(str(np.unique(tj[col],return_counts=True))
             #del specf
-            print('joined tar and spec, now writing')
+            logger.info('joined tar and spec, now writing')
             #tj.write(outfs,format='fits', overwrite=True)
             common.write_LSS_scratchcp(tj,outfs,logger=logger)
             del tj
