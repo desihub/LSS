@@ -988,7 +988,7 @@ if specrel != 'daily' and args.dospec == 'y':
             cols_fromspec = list(specf.dtype.names)
             for col in cols_fromspec:
                 tj[col] = tj[col].filled(999999)
-                logger.info(str(np.unique(tj[col],return_counts=True))
+                logger.info(str(np.unique(tj[col],return_counts=True)))
             #del specf
             logger.info('joined tar and spec, now writing')
             #tj.write(outfs,format='fits', overwrite=True)
