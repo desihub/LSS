@@ -439,7 +439,12 @@ if  args.mkemlin == 'y':
             for t in tl:
                 nmsi = list(t.dtype.names)
                 if nmsi != nms:
-                    print(t['TILEID'])
+                    logger.info(str(t[0]['TILEID'])+' has mismatched name list')
+                try:
+                    temp = np.hstack([tl[0],t])
+                except:
+                    logger.info(str(t[0]['TILEID'])+' failed hstack')
+                
             specd = np.hstack(tl)
             kp = (specd['TARGETID'] > 0)
             specd = specd[kp]
