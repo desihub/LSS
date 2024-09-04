@@ -959,7 +959,7 @@ if specrel != 'daily' and args.dospec == 'y':
             #tarf = Table.read(tarfo)
             tarfo = dailydir+'/datcomb_'+prog+'_tarwdup_zdone.fits'
             tarf = fitsio.read(tarfo.replace('global','dvs_ro'))#,columns=cols)
-            logger.info('loaded tarspecwdup file')
+            logger.info('loaded tarwdup file')
             #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
             if tp == 'BGS_BRIGHT':
                 sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
@@ -987,8 +987,9 @@ if specrel != 'daily' and args.dospec == 'y':
             del tarf
             cols_fromspec = list(specf.dtype.names)
             for col in cols_fromspec:
-                tj[col] = tj[col].filled(999999)
-                logger.info(str(np.unique(tj[col],return_counts=True)))
+                if np.ma.is_masked(tj[col]):
+                    tj[col] = tj[col].filled(999999)
+                    logger.info(str(np.unique(tj[col],return_counts=True)))
             #del specf
             logger.info('joined tar and spec, now writing')
             #tj.write(outfs,format='fits', overwrite=True)
