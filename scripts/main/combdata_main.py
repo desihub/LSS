@@ -435,6 +435,11 @@ if  args.mkemlin == 'y':
                     for specd in executor.map(_get_tile, inds):
                         if specd is not None:
                             tl.append(np.array(specd))
+            nms = list(tl[0].dtype.names)
+            for t in tl:
+                nmsi = list(t.dtype.names)
+                if nmsi != nms:
+                    print(t['TILEID'])
             specd = np.hstack(tl)
             kp = (specd['TARGETID'] > 0)
             specd = specd[kp]
