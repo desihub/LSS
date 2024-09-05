@@ -69,6 +69,7 @@ parser.add_argument("--combwspec", help="combine the random potential assignment
 parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
 
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--fullr_mode", help="if prog, noveto files are only split dark/bright",default='prog')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--fillran", help="add columns",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
@@ -238,7 +239,7 @@ specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 
-if mkfullr:
+if mkfullr and args.mkfullr_mode != 'prog':
     logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
@@ -248,13 +249,15 @@ if mkfullr:
 
     lznp = common.find_znotposs(specft,logname=logname)    
     logger.info('finished finding znotposs')
-    if type == 'BGS_BRIGHT':
-        bit = targetmask.bgs_mask[type]
-        desitarg='BGS_TARGET'
-    else:
-        bit = targetmask.desi_mask[type]    
-        desitarg='DESI_TARGET'
     del specft
+
+if type == 'BGS_BRIGHT':
+	bit = targetmask.bgs_mask[type]
+	desitarg='BGS_TARGET'
+else:
+	bit = targetmask.desi_mask[type]    
+	desitarg='DESI_TARGET'
+
 
 kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
 specf.keep_columns(kc)
@@ -275,25 +278,6 @@ def doran(ii):
         ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
 
 
-#     if mkranmtl:
-#         logger.info('making random mtl files for each tile')
-#         if par:
-#             nti = int(len(ta)/rx)+1
-#             logger.info(nti,len(ta),ii)
-#             for jj in range(rm,rx):
-#                 logger.info(jj)
-#                 rt = fitsio.read(dirrt+'/randoms-1-'+str(jj)+'.fits',columns=['RA','DEC','TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'])
-#                 logger.info('read random file '+str(jj))
-#                 tim = nti*ii
-#                 tix = nti*(ii+1)
-#                 if tix < len(ta):
-#                     tiles = ta[tim:tix]
-#                 else:
-#                     tiles = ta[tim:]
-#                 logger.info('writing randoms to '+str(len(tiles))+' tiles')
-#                 ct.randomtiles_main_fromran(tiles,rt )
-#         else:
-#             ct.randomtiles_allmain(ta,imin=ii,imax=ii+1,dirrt=dirrt)
     
     if runrfa:
         logger.info('DID YOU DELETE THE OLD FILES!!!')
@@ -374,31 +358,34 @@ def doran(ii):
             maxp = 3200
         if type[:3] == 'BGS':
             maxp = 2100
-
-#         if specrel == 'everest':
-#             #specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/everest/zcatalog/ztile-main-'+pdir+'-cumulative.fits')
-#             #wt = np.isin(specf['TILEID'],ta['TILEID']) #cut spec file to dark or bright time tiles
-#             #specf = specf[wt]
-#             fbcol = 'COADD_FIBERSTATUS'
-#         if specrel == 'daily':
-#             #specf = Table.read(ldirspec+'datcomb_'+pdir+'_specwdup_Alltiles.fits')
-#             fbcol = 'FIBERSTATUS'
-
-        outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        logger.info('about to make full ran '+outf)
-        ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
+        if args.mkfullr_mode == 'prog':
+            outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+            logger.info('about to make full ran '+outf)
+            ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir)
+        
+        else:
+            outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+            logger.info('about to make full ran '+outf)
+            ct.mkfullran(gtl,lznp,ldirspec,ii,imbits,outf,type,pdir,notqso=notqso,maxp=maxp,min_tsnr2=tsnrcut)
         
     #logf.write('ran mkfullran\n')
     #logger.info('ran mkfullran\n')
     if args.add_veto == 'y':
-        fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
-        logger.info('adding veto column')
+        if args.mkfullr_mode == 'prog':
+            fin = dirout+pdir+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        else:
+            fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        logger.info('adding veto column to '+fin)
         common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=ii,logger=logger)
 
     if args.fillran == 'y':
-        logger.info('filling randoms with imaging properties')
-        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        
+        if args.mkfullr_mode == 'prog':
+            fn = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+        else:
+            fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         #ct.addcol_ran(fn,ii)
+        logger.info('filling randoms with imaging properties to '+fn)
         new_cols=mainp.new_cols
         fid_cols=mainp.fid_cols
         common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols,logger=logger)
@@ -412,7 +399,10 @@ def doran(ii):
             maxp = 3200
         if type[:3] == 'BGS':
             maxp = 2100
-        fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+        if args.mkfullr_mode == 'prog':
+            fin = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+        else:
+            fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(ii)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks)
         #logger.info('random veto '+str(ii)+' done')

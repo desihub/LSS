@@ -2249,6 +2249,99 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
+def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftiles=None):
+    import LSS.common_tools as common
+    #import logging
+    logger = logging.getLogger('LSSran')
+
+    if pd == 'bright':
+        tscol = 'TSNR2_BGS'
+    else:
+        tscol = 'TSNR2_ELG'
+
+
+    zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    logger.info('about to load '+zf)
+    dz = Table.read(zf)
+    logger.info(dz.dtype.names)
+
+
+    
+
+    cols = list(dz.dtype.names)
+    if tscol not in cols:
+        dz[tscol] = np.ones(len(dz))
+
+
+    dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
+
+    wg = np.isin(dz['TILELOCID'],gtl)
+    if badfib is not None:
+        bad = np.isin(dz['FIBER'],badfib)
+        logger.info('number at bad fibers '+str(sum(bad)))
+        wg &= ~bad
+
+    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    dz['GOODHARDLOC'][wg] = 1
+    if ftiles is None:
+        logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
+        dzpd = count_tiles_input(dz[wg],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+    else:
+        dzpd = Table.read(ftiles)
+
+
+    logger.info(str(dz.dtype.names))
+    p4sort = np.copy(dz['PRIORITY'] )
+    sel =  p4sort*0 != 0
+    p4sort[sel] = 999999
+    logger.info(str(np.sum(sel))+' had nan priority')
+    sel = p4sort <= 0
+    p4sort[sel] = 1
+    logger.info(str(np.sum(sel))+' had priority <= 0 set to 1 for sort')
+    dz['sort'] =  dz['GOODHARDLOC'] + 1/p4sort
+    #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
+    logger.info(dz.dtype.names)
+    logger.info(str(rann)+' about to do sort')
+
+    dz.sort('sort') #should allow to later cut on tsnr for match to data
+    dz = unique(dz,keys=['TARGETID'],keep='last')
+    logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
+    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
+    dz['NTILE'][~tin] = 0
+
+    logger.info(str(rann)+' length after joining to tiles info '+str(len(dz)))
+    logger.info(str(rann)+' '+str(np.unique(dz['NTILE'])))
+
+    if len(imbits) > 0:
+        logger.info(str(rann)+' joining with original randoms to get mask properties')
+        dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
+        #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
+        #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
+        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        dz = join(dz,tarf,keys=['TARGETID'])
+        logger.info(str(rann)+' completed join with original randoms to get mask properties')
+        del tarf
+        dz = common.cutphotmask(dz,imbits)
+        logger.info(str(rann)+' length after cutting to based on imaging veto mask '+str(len(dz)))
+
+
+    if 'PHOTSYS' not in cols:
+        dz['PHOTSYS'] = 'N'
+        sel = dz['DEC'] < 32.375
+        wra = (dz['RA'] > 100-dz['DEC'])
+        wra &= (dz['RA'] < 280 +dz['DEC'])
+        sel |= ~wra
+        dz['PHOTSYS'][sel] = 'S'
+
+
+    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    #dz.write(outf,format='fits', overwrite=True)
+    logger.info('wrote to '+outf)
+    del dz
+
+
 def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None,badfib=None,ftiles=None):
     import LSS.common_tools as common
     #import logging
