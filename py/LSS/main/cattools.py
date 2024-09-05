@@ -1369,7 +1369,7 @@ def count_tiles_input(fjg,logger=None):
     fjg = fjg[np.argsort(fjg['TARGETID'])]
 
     tids = np.unique(fjg['TARGETID'])
-    common.printlog('going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid',logger)
+    common.printlog('counting tiles, going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid',logger)
     nloc = []#np.zeros(len(np.unique(f['TARGETID'])))
     nt = []
     tl = []
@@ -1398,12 +1398,13 @@ def count_tiles_input(fjg,logger=None):
         if ti%1000000 == 0:
             common.printlog(str(ti),logger)
         ti += 1
+    del fjg
     tc = Table()
     tc['TARGETID'] = tids
     tc['NTILE'] = nt
     tc['TILES'] = tl
     tc['TILELOCIDS'] = tli
-
+    
     return tc
 
 def count_tiles_better(dr,pd,rann=0,specrel='daily',fibcol='COADD_FIBERSTATUS',px=False,survey='main',indir=None,gtl=None,badfib=None, prog_ = 'dark'):
@@ -2307,6 +2308,7 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     dz = unique(dz,keys=['TARGETID'],keep='last')
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    del dzpd
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
 
@@ -2323,7 +2325,7 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
         dz = join(dz,tarf,keys=['TARGETID'])
         logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf
-        dz = common.cutphotmask(dz,imbits)
+        dz = common.cutphotmask(dz,imbits,logger=logger)
         logger.info(str(rann)+' length after cutting to based on imaging veto mask '+str(len(dz)))
 
 
