@@ -1384,13 +1384,13 @@ def count_tiles_input(fjg,logger=None):
         while fjg[i]['TARGETID'] == tids[ti]:
             nli += 1
             tls.append(fjg[i]['TILEID'])
-            tlis.append(fjg[i]['TILELOCID'])
+            #tlis.append(fjg[i]['TILELOCID'])
             i += 1
             if i == len(fjg):
                 break
         nloc.append(nli)
         tlsu = np.unique(tls)
-        tlisu = np.unique(tlis)
+        #tlisu = np.unique(tlis)
         nt.append(len(tlsu))
         tl.append("-".join(tlsu.astype(str)))
         #tli.append("-".join(tlisu.astype(str)))
