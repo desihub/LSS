@@ -1393,7 +1393,7 @@ def count_tiles_input(fjg,logger=None):
         tlisu = np.unique(tlis)
         nt.append(len(tlsu))
         tl.append("-".join(tlsu.astype(str)))
-        tli.append("-".join(tlisu.astype(str)))
+        #tli.append("-".join(tlisu.astype(str)))
 
         if ti%1000000 == 0:
             common.printlog(str(ti),logger)
@@ -1403,7 +1403,7 @@ def count_tiles_input(fjg,logger=None):
     tc['TARGETID'] = tids
     tc['NTILE'] = nt
     tc['TILES'] = tl
-    tc['TILELOCIDS'] = tli
+    #tc['TILELOCIDS'] = tli
     
     return tc
 
