@@ -129,7 +129,7 @@ if type == 'bright' or type == 'dark':
     #don't do any of the actual catalogs in this case
     mkclus = False
     mkclusran = False
-    mkfullr = False
+    #mkfullr = False
 
 notqso = ''
 if args.notqso == 'y':
