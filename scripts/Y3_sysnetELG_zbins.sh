@@ -6,7 +6,7 @@ export LSSDIR=$HOME
 export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
 PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
 
-verspec=jura-v1
+verspec=kibo-v1
 survey=DA2
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $1
