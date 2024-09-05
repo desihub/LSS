@@ -239,7 +239,7 @@ specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 
-if mkfullr and args.mkfullr_mode != 'prog':
+if mkfullr and args.fullr_mode != 'prog':
     logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
     specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
