@@ -2300,10 +2300,10 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     dz = unique(dz,keys=['TARGETID'],keep='last')
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
-    del dzpd
+    
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
-
+    del dzpd
     logger.info(str(rann)+' length after joining to tiles info '+str(len(dz)))
     logger.info(str(rann)+' '+str(np.unique(dz['NTILE'])))
 
