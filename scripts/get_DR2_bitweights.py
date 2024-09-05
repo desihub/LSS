@@ -12,9 +12,9 @@ import logging
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--amtl_version",default='JL_Y1Run2')
+parser.add_argument("--amtl_version",default='Y3Run1')
 parser.add_argument("--amtl_dir",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
-parser.add_argument("--specrel",default='jura-v1')
+parser.add_argument("--specrel",default='kibo-v1')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--nreal",default=128,type=int)
 args = parser.parse_args()
