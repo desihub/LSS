@@ -251,12 +251,12 @@ if mkfullr and args.mkfullr_mode != 'prog':
     logger.info('finished finding znotposs')
     del specft
 
-if type == 'BGS_BRIGHT':
-	bit = targetmask.bgs_mask[type]
-	desitarg='BGS_TARGET'
-else:
-	bit = targetmask.desi_mask[type]    
-	desitarg='DESI_TARGET'
+    if type == 'BGS_BRIGHT':
+        bit = targetmask.bgs_mask[type]
+        desitarg='BGS_TARGET'
+    else:
+        bit = targetmask.desi_mask[type]    
+        desitarg='DESI_TARGET'
 
 
 kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
