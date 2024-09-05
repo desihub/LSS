@@ -358,7 +358,7 @@ def doran(ii):
             maxp = 3200
         if type[:3] == 'BGS':
             maxp = 2100
-        if args.mkfullr_mode == 'prog':
+        if args.fullr_mode == 'prog':
             outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
             logger.info('about to make full ran '+outf)
             ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir)
@@ -371,7 +371,7 @@ def doran(ii):
     #logf.write('ran mkfullran\n')
     #logger.info('ran mkfullran\n')
     if args.add_veto == 'y':
-        if args.mkfullr_mode == 'prog':
+        if args.fullr_mode == 'prog':
             fin = dirout+pdir+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
         else:
             fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
@@ -380,7 +380,7 @@ def doran(ii):
 
     if args.fillran == 'y':
         
-        if args.mkfullr_mode == 'prog':
+        if args.fullr_mode == 'prog':
             fn = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
         else:
             fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
@@ -399,7 +399,7 @@ def doran(ii):
             maxp = 3200
         if type[:3] == 'BGS':
             maxp = 2100
-        if args.mkfullr_mode == 'prog':
+        if args.fullr_mode == 'prog':
             fin = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
         else:
             fin = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
