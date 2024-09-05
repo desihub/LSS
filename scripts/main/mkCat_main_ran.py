@@ -82,6 +82,7 @@ parser.add_argument("--faver", help="version of fiberassign code to use for rand
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=4) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
+parser.add_argument("--nproc", help="number to run in parallel",default=6)
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
@@ -446,7 +447,7 @@ if __name__ == '__main__':
         #with sharedmem.MapReduce() as pool:
         #pool = sharedmem.MapReduce(np=6)
         #with pool:
-        with Pool(processes=6) as pool:
+        with Pool(processes=int(args.nproc)) as pool:
             #def reduce(ii, r):
             #    logger.info('chunk done '+str(ii))
             #    return r

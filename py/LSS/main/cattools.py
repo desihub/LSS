@@ -2255,24 +2255,16 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     #import logging
     logger = logging.getLogger('LSSran')
 
-    if pd == 'bright':
-        tscol = 'TSNR2_BGS'
-    else:
-        tscol = 'TSNR2_ELG'
 
 
     zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
-    dz = Table.read(zf)
+    in_cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'PRIORITY', 'TILELOCID']
+    dz = Table(fitsio.read(zf,columns=in_cols))
     logger.info(dz.dtype.names)
 
-
-    
-
     cols = list(dz.dtype.names)
-    if tscol not in cols:
-        dz[tscol] = np.ones(len(dz))
-
+ 
 
     dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
 
