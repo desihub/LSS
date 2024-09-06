@@ -4066,7 +4066,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
         ws = 'utlid_'
     in_fname = flin+str(rann)+'_full'+use_map_veto+'.ran.fits'
     
-    ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS',tsnrcol]
+    ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS']#,tsnrcol]
     if add_tlobs == 'n':
         try:
             fitsio.read(in_fname.replace('global','dvs_ro'),columns=['FRAC_TLOBS_TILES'],rows=1)
@@ -4077,13 +4077,13 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
             ran_cols.append('TILES')    
     else:
         ran_cols.append('TILES')
-    ffr = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
+    ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
     common.printlog('loaded '+in_fname,logger)
-    wz = ffr[tsnrcol] > tsnrcut
-    ffc = ffr[wz]
+    #wz = ffr[tsnrcol] > tsnrcut
+    #ffc = ffr#[wz]
     common.printlog(str(rann)+' length after,before tsnr cut:'+' '+str(len(ffc))+','+str(len(ffr)),logger)
     #print(len(ffc),len(ffr))
-    del ffr
+    #del ffr
     if add_tlobs == 'y':
         
         tlf = fitsio.read(flin+'frac_tlobs.fits')
