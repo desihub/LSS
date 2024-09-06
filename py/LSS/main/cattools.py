@@ -3443,9 +3443,9 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
         
 
 
-    plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
-    plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
-    plt.show()
+    #plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
+    #plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
+    #plt.show()
     
     common.write_LSS_scratchcp(ff,outdir+tp+'_full_noveto.dat.fits',logger=logger)
     ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
@@ -3571,7 +3571,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         #msr[selobs&selreg] =  np.array(ffwz['mod_success_rate'])
         #print(min(wzf),max(wzf))
         #s = 1
-    
+    common.printlog('model obtained',logger)
     if tp == 'BGS_BRIGHT-21.5':
         fullname = indir+tp+'_full'+hpmapcut+'.dat.fits'
     else:
@@ -3589,16 +3589,16 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         wts,md = mod.add_modpre(ff[selobs&selreg])
         wzf[selobs&selreg] = wts
         msr[selobs&selreg] = md
-        print('compare good z frac to sum of model')
-        print(len(ff[selgz&selobs&selreg])/len(ff[selobs&selreg]),np.sum(msr[selobs&selreg])/len(ff[selobs&selreg]))
+        common.printlog('compare good z frac to sum of model',logger)
+        common.printlog(str(len(ff[selgz&selobs&selreg])/len(ff[selobs&selreg]))+','+str(np.sum(msr[selobs&selreg])/len(ff[selobs&selreg])),logger)
 
     ff['WEIGHT_ZFAIL'] = wzf
     ff['mod_success_rate'] = msr
     
     #print(len(ff[wz]),len(ff))
 
-    print('min/max of zfail weights:')
-    print(np.min(ff[selobs]['WEIGHT_ZFAIL']),np.max(ff[selobs]['WEIGHT_ZFAIL']))
+    common.printlog('min/max of zfail weights:',logger)
+    common.printlog(str(np.min(ff[selobs]['WEIGHT_ZFAIL']))+','+str(np.max(ff[selobs]['WEIGHT_ZFAIL'])),logger)
  
         
 
