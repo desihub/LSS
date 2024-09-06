@@ -4081,7 +4081,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,tsnrcut=80,tsnrcol='
     common.printlog('loaded '+in_fname,logger)
     #wz = ffr[tsnrcol] > tsnrcut
     #ffc = ffr#[wz]
-    common.printlog(str(rann)+' length after,before tsnr cut:'+' '+str(len(ffc))+','+str(len(ffr)),logger)
+    #common.printlog(str(rann)+' length after,before tsnr cut:'+' '+str(len(ffc))+','+str(len(ffr)),logger)
     #print(len(ffc),len(ffr))
     #del ffr
     if add_tlobs == 'y':
