@@ -3447,7 +3447,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
     plt.show()
     
-    common.write_LSS(ff,outdir+tp+'_full_noveto.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS_scratchcp(ff,outdir+tp+'_full_noveto.dat.fits',logger=logger)
     ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
     ffc = Table.read(outdir+tp+'_full.dat.fits')
     cols = list(ffc.dtype.names)
@@ -3603,11 +3603,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         
 
 
-    plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
-    plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
-    plt.show()
+    #plt.plot(ff[selgz&selobs]['TSNR2_'+tp[:3]],ff[selgz&selobs]['WEIGHT_ZFAIL'],'k,')
+    #plt.xlim(np.percentile(ff[selgz]['TSNR2_'+tp[:3]],0.5),np.percentile(ff[selgz]['TSNR2_'+tp[:3]],99))
+    #plt.show()
     
-    common.write_LSS(ff,fullname)#,comments='added ZFAIL weight')
+    common.write_LSS_scratchcp(ff,fullname,logger=logger)#,comments='added ZFAIL weight')
     if tp != 'BGS_BRIGHT-21.5':
         ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
         ffc = Table.read(indir+tp+'_full.dat.fits')
