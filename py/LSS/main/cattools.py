@@ -3617,7 +3617,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
         ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-        common.write_LSS_scratchp(ffc,indir+tp+'_full.dat.fits',logger=logger)#,comments='added ZFAIL weight')
+        common.write_LSS_scratchcp(ffc,indir+tp+'_full.dat.fits',logger=logger)#,comments='added ZFAIL weight')
         fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
         if os.path.isfile(fname_mapveto):
             ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
