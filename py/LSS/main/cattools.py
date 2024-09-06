@@ -3361,7 +3361,7 @@ def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):
         print(tid,ssr_t,ssr_t/ssr_all)
     return ff
 
-def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
+def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logger=None):
     import LSS.common_tools as common
     from LSS import ssr_tools_new
 
@@ -3456,7 +3456,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
     if 'mod_success_rate' in cols:
         ffc.remove_columns(['mod_success_rate'])
     ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-    common.write_LSS(ffc,outdir+tp+'_full.dat.fits',comments='added ZFAIL weight')
+    common.write_LSS_scratchcp(ffc,outdir+tp+'_full.dat.fits',comments='added ZFAIL weight',logger=logger)
 
     fname_mapveto = outdir+tp+'_full_HPmapcut.dat.fits'
     if os.path.isfile(fname_mapveto):
@@ -3468,11 +3468,11 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False):
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
         ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-        common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
+        common.write_LSS_scratchcp(ffc,fname_mapveto,logger=logger)#,comments='added ZFAIL weight')
  
 
 
-def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmapcut'):
+def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmapcut',logger=None):
     import LSS.common_tools as common
     from LSS import ssr_tools_new
     '''
@@ -3617,7 +3617,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
         ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-        common.write_LSS(ffc,indir+tp+'_full.dat.fits')#,comments='added ZFAIL weight')
+        common.write_LSS_scratchp(ffc,indir+tp+'_full.dat.fits',logger=logger)#,comments='added ZFAIL weight')
         fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
         if os.path.isfile(fname_mapveto):
             ff.keep_columns(['TARGETID','WEIGHT_ZFAIL','mod_success_rate'])
@@ -3628,7 +3628,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
             if 'mod_success_rate' in cols:
                 ffc.remove_columns(['mod_success_rate'])
             ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
-            common.write_LSS(ffc,fname_mapveto)#,comments='added ZFAIL weight')
+            common.write_LSS_scratchcp(ffc,fname_mapveto,logger=logger)#,comments='added ZFAIL weight')
     
     
 #     if dchi2 is not None:

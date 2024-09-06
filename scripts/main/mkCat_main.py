@@ -714,9 +714,9 @@ if args.add_weight_zfail == 'y':
     if args.readpars == 'y':
         readpars = True
     if type[:3] == 'QSO':
-        ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars) 
+        ct.add_zfail_weight2fullQSO(ldirspec,version,mainp.qsozf,tsnrcut=tsnrcut,readpars=readpars,logger=logger) 
     else:
-        ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars)   
+        ct.add_zfail_weight2full(dirout,tp=type+notqso,tsnrcut=tsnrcut,readpars=readpars,logger=logger)   
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
