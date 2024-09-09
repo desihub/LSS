@@ -1,0 +1,15 @@
+#ideas on random processing for alt MTL mocks
+
+#PRIORITY values are needed for sort, so cannot skip to data dark/bright full_noveto
+#But, can copy current data processing and make dark/bright full_noveto
+#function cattools.mkfullran_prog
+# call it something like
+	outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+	logger.info('about to make full ran '+outf)
+	ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir)
+
+#TSNR2 masking now happens in good hardware definition, so in mock_tools.createrancomb_wdupspec , dataspec table should not be needed anymore
+
+#then, in masking section, need to tell it to read pdir instead of args.tracer + notqso, e.g., current line 527 would become
+
+fin = os.path.join(dirout, pdir + '_' + str(rann) + '_full_noveto.ran.fits')

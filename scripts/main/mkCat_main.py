@@ -454,9 +454,12 @@ if args.mkHPmaps == 'y':
 
 if args.apply_map_veto == 'y':
     import healpy as hp
-    
-    mapn = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-    maps = fitsio.read(lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+    tracer_clushp = tracer_clus
+    #BGS_ANY and BGS_BRIGHT should essentially have same footprint
+    if tracer_clus == 'BGS_ANY':
+        tracer_clushp = 'BGS_BRIGHT'
+    mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
     mapcuts = mainp.mapcuts
     common.printlog('apply map vetos',logger)
     if args.ranonly != 'y':
