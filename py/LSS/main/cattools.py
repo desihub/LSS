@@ -3138,7 +3138,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #dtl = Table.read(ftiles)
 
     common.printlog('joining to ntile info',logger=logger)
-    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
+    dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
     dz['NTILE'][~tin] = 0
