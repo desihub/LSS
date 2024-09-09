@@ -68,6 +68,7 @@ class main:
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
         self.ebits = None
         self.badfib = None
+        self.badfib_status = None
         self.tsnrcol = 'TSNR2_ELG'
         self.tsnrcut = 0
         self.dchi2 = 0
@@ -168,6 +169,7 @@ class main:
         if specver == 'kibo-v1':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/kibo/QSO_cat_kibo_cumulative_v1.fits'
+            self.badfib_status  = [13,14]
 
 
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
