@@ -452,7 +452,7 @@ if args.mkHPmaps == 'y':
     #                      lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
     regl = ['N','S']
     outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'
-    create_pixweight_file_allinone(rancatlist, fieldslist, masklist, nside_out=nside,
+    create_pixweight_file_allinone([rancatlist[0]], fieldslist, masklist, nside_out=nside,
                           lssmapdir=lssmapdir, outfn=outfn,regl=regl)
 if args.apply_map_veto == 'y':
     import healpy as hp
