@@ -433,7 +433,7 @@ regl = ['_N','_S']
 lssmapdirout = dirout+'/hpmaps/'
 nside = 256
 if args.mkHPmaps == 'y':
-    from LSS.imaging.sky_maps import create_pixweight_file, rancat_names_to_pixweight_name
+    from LSS.imaging.sky_maps import create_pixweight_file, reate_pixweight_file_allinone ,rancat_names_to_pixweight_name
     #logf.write('made healpix property maps for '+tp+' '+str(datetime.now()))
     if not os.path.exists(lssmapdirout):
         os.mkdir(lssmapdirout)
