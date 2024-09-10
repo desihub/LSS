@@ -1684,21 +1684,21 @@ def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_ou
         #for col, values in zip(stdfcol, ranvalues[regsel]):
         #    if len(col) > 0:
                 # ADM limit to just the fields/bitmasks corresponding to col.
-		jj = np.array([fld in fieldslist])
-		for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):
-			if need2setmask:
-				maskin = (ranvalues[regsel]['SKYMAP_MASK'] & bitmask) == 0
-			#    uniq, ii, cnt = np.unique(
-			#        randpixnums[maskin], return_inverse=True,
-			#        return_counts=True)
-			masknan = ranvalues[regsel][field]*0 == 0
-			maskhpun = ranvalues[regsel][field] != hp.UNSEEN
-			uniq, ii, cnt = np.unique(
-				randpixnums[maskin & masknan & maskhpun],
-				return_inverse=True, return_counts=True)
-			wcnt = np.bincount(ii, ranvalues[regsel][field][maskin & masknan & maskhpun])
-			counts[field][uniq] += cnt
-			wcounts[field][uniq] += wcnt
+        jj = np.array([fld in fieldslist])
+        for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):
+            if need2setmask:
+                maskin = (ranvalues[regsel]['SKYMAP_MASK'] & bitmask) == 0
+            #    uniq, ii, cnt = np.unique(
+            #        randpixnums[maskin], return_inverse=True,
+            #        return_counts=True)
+            masknan = ranvalues[regsel][field]*0 == 0
+            maskhpun = ranvalues[regsel][field] != hp.UNSEEN
+            uniq, ii, cnt = np.unique(
+                randpixnums[maskin & masknan & maskhpun],
+                return_inverse=True, return_counts=True)
+            wcnt = np.bincount(ii, ranvalues[regsel][field][maskin & masknan & maskhpun])
+            counts[field][uniq] += cnt
+            wcounts[field][uniq] += wcnt
 
         ##########################
         # MMM compute weighted means.
