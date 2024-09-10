@@ -1497,7 +1497,7 @@ def create_pixweight_file(randomcatlist, fieldslist, masklist, nside_out=512,
     return wcounts
 
 def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_out=512,
-                          lssmapdir=None, outfn=None, write=True, reg=None):
+                          lssmapdir=None, outfn=None, write=True, regl=None):
     """
     Creates a pixweight file from randoms filtered by bitmasks.
     This concatenates all of the random info before putting onto maps and expects a list for regl if it is not None
