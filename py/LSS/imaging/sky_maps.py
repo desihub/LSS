@@ -1672,7 +1672,7 @@ def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_ou
         #regsel = np.ones(len(ranvalues),dtype='bool')
     for reg in regl:
         if reg != 1:    
-            regsel = regcol['PHOTSYS'] == reg
+            regsel = ranvalues['PHOTSYS'] == reg
             outfn_tot = outfn+reg+'.fits'  
         else:
             regsel = np.ones(len(ranvalues),dtype='bool')
