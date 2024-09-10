@@ -1684,7 +1684,7 @@ def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_ou
         #for col, values in zip(stdfcol, ranvalues[regsel]):
         #    if len(col) > 0:
                 # ADM limit to just the fields/bitmasks corresponding to col.
-        jj = np.array([fld in fieldslist])
+        jj = np.array([for fld in fieldslist])
         for field, bitmask in zip(fieldsarray[jj], bitmaskarray[jj]):
             if need2setmask:
                 maskin = (ranvalues[regsel]['SKYMAP_MASK'] & bitmask) == 0
