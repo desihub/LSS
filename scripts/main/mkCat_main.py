@@ -446,12 +446,14 @@ if args.mkHPmaps == 'y':
     fieldslist = allmapcols
     masklist = list(np.zeros(len(fieldslist),dtype=int))
     
-    for reg in ['N','S']:
-        outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
-        create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
-                          lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
-
-
+    #for reg in ['N','S']:
+    #    outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+    #    create_pixweight_file(rancatlist, fieldslist, masklist, nside_out=nside,
+    #                      lssmapdir=lssmapdir, outfn=outfn,reg=reg)    
+    regl = ['N','S']
+    outfn = lssmapdirout+tracer_clus+'_mapprops_healpix_nested_nside'+str(nside)+'_'
+    create_pixweight_file_allinone(rancatlist, fieldslist, masklist, nside_out=nside,
+                          lssmapdir=lssmapdir, outfn=outfn,regl=regl)
 if args.apply_map_veto == 'y':
     import healpy as hp
     tracer_clushp = tracer_clus
