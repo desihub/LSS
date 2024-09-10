@@ -1694,7 +1694,7 @@ def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_ou
             masknan = ranvalues[regsel][field]*0 == 0
             maskhpun = ranvalues[regsel][field] != hp.UNSEEN
             uniq, ii, cnt = np.unique(
-                randpixnums[maskin[regsel] & masknan & maskhpun],
+                randpixnums[regsel][maskin[regsel] & masknan & maskhpun],
                 return_inverse=True, return_counts=True)
             wcnt = np.bincount(ii, ranvalues[regsel][field][maskin[regsel] & masknan & maskhpun])
             counts[field][uniq] += cnt
