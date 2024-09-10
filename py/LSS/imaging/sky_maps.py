@@ -1677,7 +1677,7 @@ def create_pixweight_file_allinone(randomcatlist, fieldslist, masklist, nside_ou
         else:
             regsel = np.ones(len(ranvalues),dtype='bool')
             outfn_tot = outfn+'.fits'
-        log.info('cut randoms to selected region, kept '+str(len(ranvalues[regsel]))+' out of '+str(oldlength))
+        log.info('cut randoms to selected region, kept '+str(len(ranvalues[regsel]))+' out of '+str(len(ranvalues)))
         # MMM ----- read all fields at once ----
         log.info("Determining counts for {}...t = {:.1f}s".format(
             randomcat, time()-start))
