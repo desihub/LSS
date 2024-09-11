@@ -117,16 +117,16 @@ for tp in tps:
     else:
         if tp[:3] == 'QSO':
             zmin = 0.8
-            zmax = 3.5
+            zmax = 2.1#3.5
         elif tp[:3] == 'ELG':
-            zmin = 0.01
-            zmax = 1.8
+            zmin = 0.8#0.01
+            zmax = 1.6
         elif tp[:3] == 'LRG':
-            zmin = 0.01
-            zmax = 0.4
+            zmin = 0.4#0.01
+            zmax = 1.1#0.4
         elif tp[:3] == 'BGS':
-            zmin = 0.01
-            zmax = 0.5
+            zmin = 0.1#0.01
+            zmax = 0.4#0.5
     # SSR variation amplitude
     if tp[:3] == 'QSO':
         dv   = 0.08
