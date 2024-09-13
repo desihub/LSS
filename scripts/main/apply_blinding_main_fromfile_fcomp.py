@@ -377,9 +377,9 @@ if root:
 
     if args.mkclusran == 'y':
         rcols = ['Z', 'WEIGHT', 'WEIGHT_SYS', 'WEIGHT_COMP', 'WEIGHT_ZFAIL','WEIGHT_FKP','TARGETID_DATA','WEIGHT_SN']
-        tsnrcol = 'TSNR2_ELG'
-        if args.type[:3] == 'BGS':
-            tsnrcol = 'TSNR2_BGS'
+        #tsnrcol = 'TSNR2_ELG'
+        #if args.type[:3] == 'BGS':
+        #    tsnrcol = 'TSNR2_BGS'
         #for rannum in range(args.minr, args.maxr):
         ranin = dirin + args.type + notqso + '_'
         if args.type == 'BGS_BRIGHT-21.5':
@@ -389,7 +389,8 @@ if root:
         #    clus_arrays.append(fitsio.read(dirout + type + notqso+'_'+reg+'_clustering.dat.fits'))
         
         def _parfun(rannum):
-            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)#, ntilecut=ntile, ccut=ccut)
+            #ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)#, ntilecut=ntile, ccut=ccut)
+            ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger
             #for clustering, make rannum start from 0
             if 'Y1/mock' in args.verspec:
                 for reg in regl:
