@@ -311,7 +311,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     asn = join(asn, tar_in, keys=['TARGETID'],join_type='left')
     #print(len(dat_comb))
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
-    write_LSS_scratchcp(asn,outf,logger=logger)
+    common.write_LSS_scratchcp(asn,outf,logger=logger)
 
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
@@ -346,7 +346,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
     #print(len(dat_comb))
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
-    write_LSS_scratchcp(pa,outf,logger=logger)
+    common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
 
