@@ -1593,7 +1593,7 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
         from concurrent.futures import ProcessPoolExecutor
         
         with ProcessPoolExecutor() as executor:
-            for fa in executor.map(tls, list(tls)):
+            for fa in executor.map(_get_fa, list(tls)):
                 tl.append(fa)
         
     dat_comb = vstack(tl)
